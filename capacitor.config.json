@@ -1,0 +1,6 @@
+{
+  "appId": "com.yubin.formyself",
+  "appName": "ForMyself",
+  "webDir": "dist",
+  "bundledWebRuntime": false
+}

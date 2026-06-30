@@ -1,0 +1,533 @@
+<script setup>
+import { ref, onMounted } from 'vue'
+import { StatusBar } from '@capacitor/status-bar'
+
+import { useAuthStore } from './stores/auth'
+import { App as CapacitorApp } from '@capacitor/app'
+import { useSettingsStore } from './stores/settings'
+import { useMoodStore } from './stores/mood'
+import { useDebtStore } from './stores/debt'
+import { useWeightStore } from './stores/weight'
+
+import DebtListView from './components/DebtListView.vue'
+import WeightView from './components/WeightView.vue'
+import MoodView from './components/MoodView.vue'
+import HomeView from './components/HomeView.vue'
+import SettingsView from './components/SettingsView.vue'
+
+const authStore = useAuthStore()
+const settingsStore = useSettingsStore()
+
+const pwdInput = ref('')
+
+onMounted(async () => {
+  try {
+    await StatusBar.show()
+    await StatusBar.setOverlaysWebView({ overlay: true })
+  } catch (e) {
+    console.warn('浏览器环境中无法设置状态栏')
+  }
+
+  const moodStore = useMoodStore()
+  const debtStore = useDebtStore()
+  const weightStore = useWeightStore()
+  await Promise.all([
+    authStore.loadAuthData(),
+    settingsStore.loadSettings(),
+    debtStore.loadDebts(),
+    weightStore.loadWeightRecords(),
+    moodStore.loadMoodRecords()
+  ])
+
+  try {
+    CapacitorApp.addListener('appStateChange', ({ isActive }) => {
+      if (isActive && moodStore.isDataLoaded) {
+        moodStore.autoFillMissingDays()
+      }
+    })
+  } catch (e) {
+    console.warn('浏览器环境中无法监听 App 状态', e)
+  }
+})
+
+const unlockApp = () => {
+  const ok = authStore.unlockWithPassword(pwdInput.value)
+  if (ok) {
+    pwdInput.value = ''
+  } else {
+    alert('密码验证未通过，请重试')
+  }
+}
+
+const unlockWithBiometric = async () => {
+  const ok = await authStore.unlockWithBiometric()
+  if (ok) pwdInput.value = ''
+}
+
+const setMasterPassword = async () => {
+  const ok = await authStore.setMasterPassword(pwdInput.value)
+  if (ok) {
+    pwdInput.value = ''
+  } else {
+    alert('安全主密码请勿少于 4 位数')
+  }
+}
+</script>
+
+<template>
+  <div
+    class="app-wrapper"
+    :style="
+      settingsStore.customBg
+        ? {
+            backgroundImage: `url(${settingsStore.customBg})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundAttachment: 'fixed'
+          }
+        : {}
+    "
+  >
+    <div v-if="settingsStore.customBg" class="bg-blur-layer"></div>
+
+    <div v-if="authStore.isLocked" class="lock-screen fade-in">
+      <div class="lock-card">
+        <h2 class="display-lg">ForMyself</h2>
+        <p class="body-text body-muted">
+          {{
+            authStore.hasMasterPassword
+              ? '使用主密码解锁你的计划'
+              : '第一次见面，请配置安全主密码'
+          }}
+        </p>
+        <input
+          v-model="pwdInput"
+          type="password"
+          placeholder="输入密码"
+          class="apple-input lock-input"
+          @keyup.enter="authStore.hasMasterPassword ? unlockApp() : setMasterPassword()"
+        />
+
+        <button
+          v-if="!authStore.hasMasterPassword"
+          class="button-primary lock-btn"
+          @click="setMasterPassword"
+        >
+          初始化并进入
+        </button>
+        <div v-else class="unlock-actions">
+          <button class="button-primary lock-btn" @click="unlockApp">解锁进入</button>
+          <button
+            v-if="authStore.hasBiometric"
+            class="button-secondary-pill"
+            style="width: 100%"
+            @click="unlockWithBiometric"
+          >
+            指纹快捷认证
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div v-else class="main-app fade-in">
+      <div class="top-nav sub-nav-frosted">
+        <button class="nav-link-btn" @click="settingsStore.isDrawerOpen = true">
+          <svg
+            viewBox="0 0 24 24"
+            width="24"
+            height="24"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            fill="none"
+          >
+            <path d="M4 6h16M4 12h16M4 18h16"></path>
+          </svg>
+        </button>
+        <h2 class="tagline">{{ settingsStore.viewTitle }}</h2>
+        <div style="width: 24px"></div>
+      </div>
+
+      <Teleport to="body">
+        <div
+          class="drawer-overlay"
+          v-if="settingsStore.isDrawerOpen"
+          @click="settingsStore.isDrawerOpen = false"
+        ></div>
+
+        <div class="drawer" :class="{ open: settingsStore.isDrawerOpen }">
+          <div class="drawer-header">
+            <h3 class="display-lg">ForMyself</h3>
+          </div>
+          <ul class="drawer-menu">
+            <li
+              :class="{ active: settingsStore.currentView === 'home' }"
+              @click="settingsStore.switchView('home')"
+            >
+              首页总览
+            </li>
+            <li
+              :class="{ active: settingsStore.currentView === 'debts' }"
+              @click="settingsStore.switchView('debts')"
+            >
+              省钱计划
+            </li>
+            <li
+              :class="{ active: settingsStore.currentView === 'weight' }"
+              @click="settingsStore.switchView('weight')"
+            >
+              体重记录
+            </li>
+            <li
+              :class="{ active: settingsStore.currentView === 'mood' }"
+              @click="settingsStore.switchView('mood')"
+            >
+              心情日记
+            </li>
+            <li
+              :class="{ active: settingsStore.currentView === 'settings' }"
+              @click="settingsStore.switchView('settings')"
+            >
+              通用配置
+            </li>
+          </ul>
+        </div>
+      </Teleport>
+
+      <div class="content-area">
+        <HomeView v-if="settingsStore.currentView === 'home'" />
+        <DebtListView v-if="settingsStore.currentView === 'debts'" />
+        <WeightView v-if="settingsStore.currentView === 'weight'" />
+        <MoodView v-if="settingsStore.currentView === 'mood'" />
+        <SettingsView v-if="settingsStore.currentView === 'settings'" />
+      </div>
+    </div>
+  </div>
+</template>
+
+<style>
+:root {
+  --primary: #0066cc;
+  --primary-focus: #0071e3;
+  --ink: #1d1d1f;
+  --body-muted: #86868b;
+  --divider-soft: #f0f0f0;
+  --hairline: #e0e0e0;
+  --canvas: #ffffff;
+  --canvas-parchment: #f5f5f7;
+  --surface-pearl: #fafafc;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  height: 100dvh !important;
+  overflow: hidden !important;
+  background-color: var(--canvas-parchment) !important;
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
+  font-family: 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  color: var(--ink);
+}
+
+#app {
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  overflow: hidden !important;
+}
+
+input,
+button,
+textarea {
+  -webkit-user-select: auto;
+  user-select: auto;
+  font-family: inherit;
+}
+
+.app-wrapper {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background-color: var(--canvas-parchment);
+}
+
+.bg-blur-layer {
+  position: fixed;
+  inset: 0;
+  background: rgba(245, 245, 247, 0.85);
+  backdrop-filter: blur(40px) saturate(150%);
+  z-index: 0;
+  pointer-events: none;
+}
+
+.display-lg {
+  font-family: 'SF Pro Display', -apple-system, sans-serif;
+  font-size: 40px;
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.374px;
+  margin: 0;
+  color: var(--ink);
+}
+
+.tagline {
+  font-family: 'SF Pro Display', -apple-system, sans-serif;
+  font-size: 21px;
+  font-weight: 600;
+  line-height: 1.19;
+  letter-spacing: 0.231px;
+  margin: 0;
+  color: var(--ink);
+}
+
+.body-strong {
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.24;
+  letter-spacing: -0.374px;
+}
+
+.body-text {
+  font-size: 17px;
+  font-weight: 400;
+  line-height: 1.47;
+  letter-spacing: -0.374px;
+}
+
+.body-muted {
+  color: var(--body-muted);
+}
+
+.caption {
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.43;
+  letter-spacing: -0.224px;
+}
+
+.button-primary {
+  background-color: var(--primary);
+  color: #ffffff;
+  font-size: 17px;
+  font-weight: 400;
+  border-radius: 9999px;
+  padding: 11px 22px;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.2s, background-color 0.2s;
+  text-align: center;
+}
+
+.button-primary:active {
+  transform: scale(0.95);
+  background-color: var(--primary-focus);
+}
+
+.button-secondary-pill {
+  background-color: transparent;
+  color: var(--primary);
+  font-size: 17px;
+  font-weight: 400;
+  border-radius: 9999px;
+  padding: 11px 22px;
+  border: 1px solid var(--primary);
+  cursor: pointer;
+  transition: transform 0.2s;
+  text-align: center;
+}
+
+.button-secondary-pill:active {
+  transform: scale(0.95);
+}
+
+.text-link {
+  color: var(--primary);
+  background: none;
+  border: none;
+  font-size: 17px;
+  font-weight: 400;
+  padding: 0;
+  cursor: pointer;
+}
+
+.apple-input {
+  background-color: var(--canvas);
+  color: var(--ink);
+  font-size: 17px;
+  font-weight: 400;
+  border-radius: 11px;
+  padding: 14px 16px;
+  border: 1px solid var(--hairline);
+  outline: none;
+  transition: border-color 0.2s;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.apple-input:focus {
+  border-color: var(--primary-focus);
+  outline: 2px solid rgba(0, 102, 204, 0.2);
+}
+
+.main-app {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  z-index: 1;
+}
+
+.content-area {
+  flex: 1;
+  width: 100%;
+  padding: 24px 20px;
+  max-width: 800px;
+  margin: 0 auto;
+  padding-bottom: 64px;
+}
+
+.sub-nav-frosted {
+  background: rgba(245, 245, 247, 0.8);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: calc(12px + env(safe-area-inset-top, 24px)) 24px 12px 24px;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.nav-link-btn {
+  background: none;
+  border: none;
+  color: var(--ink);
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+}
+
+.drawer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  height: 100%;
+  width: 280px;
+  background: var(--canvas);
+  z-index: 101;
+  transform: translateX(-100%);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow-y: auto;
+  border-right: 1px solid var(--hairline);
+}
+
+.drawer.open {
+  transform: translateX(0);
+}
+
+.drawer-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(2px);
+  z-index: 100;
+  transition: opacity 0.3s;
+}
+
+.drawer-header {
+  padding: 48px 24px 24px;
+  border-bottom: 1px solid var(--hairline);
+}
+
+.drawer-menu {
+  list-style: none;
+  padding: 16px 12px;
+  margin: 0;
+}
+
+.drawer-menu li {
+  padding: 12px 16px;
+  margin-bottom: 4px;
+  cursor: pointer;
+  font-size: 17px;
+  color: var(--ink);
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+
+.drawer-menu li.active {
+  background: var(--surface-pearl);
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.lock-screen {
+  position: fixed;
+  inset: 0;
+  background: var(--canvas-parchment);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.lock-card {
+  padding: 40px 24px;
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+}
+
+.lock-card p {
+  margin: 12px 0 32px 0;
+}
+
+.lock-input {
+  text-align: center;
+  letter-spacing: 4px;
+  margin-bottom: 24px;
+  border-radius: 9999px;
+}
+
+.lock-btn {
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.fade-in {
+  animation: fadeIn 0.4s ease forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+</style>
