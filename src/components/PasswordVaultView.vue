@@ -1,26 +1,45 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { Capacitor } from '@capacitor/core'
+import { NativeBiometric } from '@capgo/capacitor-native-biometric'
 import { usePasswordVaultStore } from '../stores/passwordVault'
+import {
+  BUILT_IN_VAULT_CATEGORIES,
+  DEFAULT_VAULT_CATEGORY,
+  compareVaultRecords,
+  getVaultCategories
+} from '../services/passwordVaultRecords.js'
+import { VAULT_ACCESS_RESULT, verifyVaultSecretAccess } from '../services/vaultAccessGuard.js'
 
 const vaultStore = usePasswordVaultStore()
 const searchQuery = ref('')
+const categoryFilter = ref('all')
+const favoritesOnly = ref(false)
 const visibleIds = ref(new Set())
+const verifyingId = ref(null)
 const showEditor = ref(false)
 const editingId = ref(null)
-const form = ref({ appName: '', account: '', password: '', extraFields: [] })
+const form = ref({ appName: '', account: '', password: '', category: DEFAULT_VAULT_CATEGORY, favorite: false, extraFields: [] })
+const visibilityTimers = new Map()
+
+const availableCategories = computed(() => getVaultCategories(vaultStore.records))
 
 const filteredRecords = computed(() => {
   const keyword = searchQuery.value.trim().toLowerCase()
-  if (!keyword) return vaultStore.records
-  return vaultStore.records.filter((record) =>
-    record.appName.toLowerCase().includes(keyword) ||
-    record.account.toLowerCase().includes(keyword)
-  )
+  return vaultStore.records
+    .filter(record => categoryFilter.value === 'all' || record.category === categoryFilter.value)
+    .filter(record => !favoritesOnly.value || record.favorite)
+    .filter(record => !keyword ||
+      record.appName.toLowerCase().includes(keyword) ||
+      record.account.toLowerCase().includes(keyword) ||
+      record.category.toLowerCase().includes(keyword)
+    )
+    .sort(compareVaultRecords)
 })
 
 const openAdd = () => {
   editingId.value = null
-  form.value = { appName: '', account: '', password: '', extraFields: [] }
+  form.value = { appName: '', account: '', password: '', category: DEFAULT_VAULT_CATEGORY, favorite: false, extraFields: [] }
   showEditor.value = true
 }
 
@@ -38,14 +57,63 @@ const saveRecord = () => {
 }
 
 const deleteRecord = (record) => {
-  if (confirm(`确认删除“${record.appName}”的密码记录？`)) vaultStore.deleteRecord(record.id)
+  if (confirm(`确认删除“${record.appName}”的密码记录？`)) {
+    hideSecret(record.id)
+    vaultStore.deleteRecord(record.id)
+  }
 }
 
-const toggleVisibility = (id) => {
+const hideSecret = (id) => {
   const next = new Set(visibleIds.value)
-  if (next.has(id)) next.delete(id)
-  else next.add(id)
+  next.delete(id)
   visibleIds.value = next
+  clearTimeout(visibilityTimers.get(id))
+  visibilityTimers.delete(id)
+}
+
+const hideAllSecrets = () => {
+  visibleIds.value = new Set()
+  visibilityTimers.forEach(timer => clearTimeout(timer))
+  visibilityTimers.clear()
+}
+
+const requestBiometricAccess = async (record, action) => {
+  if (verifyingId.value) return false
+  verifyingId.value = record.id
+  const result = await verifyVaultSecretAccess({
+    checkAvailability: async () => {
+      if (!Capacitor.isNativePlatform()) return { isAvailable: false }
+      return NativeBiometric.isAvailable({ useFallback: false })
+    },
+    verifyIdentity: () => NativeBiometric.verifyIdentity({
+      title: '密码库安全验证',
+      subtitle: record.appName || '密码记录',
+      reason: action === 'copy' ? '验证身份后复制密码' : '验证身份后查看密码',
+      description: '这是一次独立验证，不会使用主密码自动跳过。',
+      negativeButtonText: '取消',
+      useFallback: false,
+      maxAttempts: 3
+    })
+  })
+  verifyingId.value = null
+
+  if (result.granted) return true
+  if (result.code === VAULT_ACCESS_RESULT.BIOMETRIC_UNAVAILABLE) {
+    alert('设备尚未启用可用的生物识别，请先在系统设置中录入指纹或面容。')
+  } else {
+    alert('生物识别未通过，密码仍保持隐藏。')
+  }
+  return false
+}
+
+const toggleVisibility = async (record) => {
+  if (visibleIds.value.has(record.id)) {
+    hideSecret(record.id)
+    return
+  }
+  if (!await requestBiometricAccess(record, 'view')) return
+  visibleIds.value = new Set([...visibleIds.value, record.id])
+  visibilityTimers.set(record.id, setTimeout(() => hideSecret(record.id), 30000))
 }
 
 const copyText = async (text, label) => {
@@ -57,15 +125,42 @@ const copyText = async (text, label) => {
   }
 }
 
+const copyPassword = async (record) => {
+  if (!await requestBiometricAccess(record, 'copy')) return
+  await copyText(record.password, '密码')
+}
+
+const toggleFavorite = record => vaultStore.toggleFavorite(record.id)
+
 const addExtraField = () => form.value.extraFields.push({ fieldName: '', fieldValue: '' })
 const removeExtraField = (index) => form.value.extraFields.splice(index, 1)
+
+const handleVisibilityChange = () => {
+  if (document.hidden) hideAllSecrets()
+}
+
+onMounted(() => document.addEventListener('visibilitychange', handleVisibilityChange))
+onUnmounted(() => {
+  document.removeEventListener('visibilitychange', handleVisibilityChange)
+  hideAllSecrets()
+})
 </script>
 
 <template>
   <div class="vault-view fade-in">
     <div class="vault-toolbar">
-      <input v-model="searchQuery" class="apple-input" placeholder="搜索软件名称或账号" />
+      <input v-model="searchQuery" class="apple-input" placeholder="搜索名称、账号或分类" />
       <button class="button-primary add-password-btn" @click="openAdd">添加</button>
+    </div>
+
+    <div class="vault-filters">
+      <select v-model="categoryFilter" class="apple-input category-filter">
+        <option value="all">全部分类</option>
+        <option v-for="category in availableCategories" :key="category" :value="category">{{ category }}</option>
+      </select>
+      <button class="favorite-filter" :class="{ active: favoritesOnly }" @click="favoritesOnly = !favoritesOnly">
+        {{ favoritesOnly ? '★ 仅看收藏' : '☆ 仅看收藏' }}
+      </button>
     </div>
 
     <div v-if="vaultStore.loadError" class="vault-warning">{{ vaultStore.loadError }}</div>
@@ -84,8 +179,14 @@ const removeExtraField = (index) => form.value.extraFields.splice(index, 1)
     <div v-else class="vault-list">
       <article v-for="record in filteredRecords" :key="record.id" class="password-card glass-card">
         <div class="password-card-header">
-          <div>
-            <h3>{{ record.appName }}</h3>
+          <div class="password-title-wrap">
+            <button class="favorite-button" :class="{ active: record.favorite }" :aria-label="record.favorite ? '取消收藏' : '收藏'" @click="toggleFavorite(record)">
+              {{ record.favorite ? '★' : '☆' }}
+            </button>
+            <div>
+              <h3>{{ record.appName }}</h3>
+              <span class="category-badge">{{ record.category }}</span>
+            </div>
             <p class="caption body-muted">{{ record.account || '未填写账号' }}</p>
           </div>
           <div class="password-card-actions">
@@ -96,8 +197,10 @@ const removeExtraField = (index) => form.value.extraFields.splice(index, 1)
 
         <div class="secret-row">
           <span class="secret-value">{{ visibleIds.has(record.id) ? record.password || '未填写密码' : '••••••••••••' }}</span>
-          <button class="secret-action" @click="toggleVisibility(record.id)">{{ visibleIds.has(record.id) ? '隐藏' : '显示' }}</button>
-          <button class="secret-action" @click="copyText(record.password, '密码')">复制</button>
+          <button class="secret-action" :disabled="verifyingId === record.id" @click="toggleVisibility(record)">
+            {{ verifyingId === record.id ? '验证中…' : visibleIds.has(record.id) ? '隐藏' : '显示' }}
+          </button>
+          <button class="secret-action" :disabled="verifyingId === record.id" @click="copyPassword(record)">复制</button>
         </div>
 
         <div v-if="record.account" class="copy-account-row">
@@ -125,6 +228,15 @@ const removeExtraField = (index) => form.value.extraFields.splice(index, 1)
             <input v-model="form.account" class="apple-input" placeholder="手机号、邮箱或用户名" />
             <label>登录密码</label>
             <input v-model="form.password" class="apple-input" type="password" placeholder="输入密码" />
+            <label>分类</label>
+            <input v-model="form.category" class="apple-input" list="vault-category-options" maxlength="20" placeholder="选择或输入分类" />
+            <datalist id="vault-category-options">
+              <option v-for="category in BUILT_IN_VAULT_CATEGORIES" :key="category" :value="category"></option>
+            </datalist>
+            <label class="favorite-editor-option">
+              <input v-model="form.favorite" type="checkbox" />
+              收藏这条记录
+            </label>
 
             <div v-for="(field, index) in form.extraFields" :key="index" class="extra-field-editor">
               <input v-model="field.fieldName" class="apple-input" placeholder="字段名称" />
@@ -147,6 +259,10 @@ const removeExtraField = (index) => form.value.extraFields.splice(index, 1)
 .vault-toolbar { display: flex; gap: 12px; margin-bottom: 20px; }
 .vault-toolbar .apple-input { flex: 1; }
 .add-password-btn { flex-shrink: 0; }
+.vault-filters { display: flex; gap: 10px; margin: -8px 0 20px; }
+.category-filter { flex: 1; appearance: auto; }
+.favorite-filter { flex-shrink: 0; padding: 10px 14px; border: 1px solid var(--hairline); border-radius: 12px; background: var(--canvas); color: var(--body-muted); cursor: pointer; }
+.favorite-filter.active { border-color: #f5b800; background: #fff8dc; color: #8a6200; font-weight: 600; }
 .vault-warning { padding: 14px 16px; margin-bottom: 16px; border-radius: 12px; color: #b42318; background: #fef3f2; }
 .glass-card { background: rgba(255,255,255,.88); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,.75); box-shadow: 0 8px 28px rgba(0,0,0,.06); }
 .empty-vault { padding: 44px 24px; border-radius: 20px; text-align: center; }
@@ -156,6 +272,11 @@ const removeExtraField = (index) => form.value.extraFields.splice(index, 1)
 .vault-list { display: grid; gap: 16px; }
 .password-card { padding: 20px; border-radius: 18px; }
 .password-card-header { display: flex; justify-content: space-between; gap: 16px; align-items: flex-start; }
+.password-title-wrap { display: grid; grid-template-columns: auto 1fr; column-gap: 9px; align-items: start; }
+.password-title-wrap > p { grid-column: 2; margin-top: 5px; }
+.favorite-button { grid-row: 1 / span 2; padding: 0; border: 0; background: transparent; color: var(--body-muted); font-size: 24px; line-height: 1; cursor: pointer; }
+.favorite-button.active { color: #f5b800; }
+.category-badge { display: inline-flex; margin-top: 4px; padding: 3px 8px; border-radius: 999px; background: rgba(0,102,204,.09); color: var(--primary); font-size: 11px; font-weight: 600; }
 .password-card h3 { margin: 0 0 5px; font-size: 19px; }
 .password-card p { margin: 0; }
 .password-card-actions { display: flex; gap: 12px; }
@@ -164,6 +285,7 @@ const removeExtraField = (index) => form.value.extraFields.splice(index, 1)
 .secret-row { display: flex; align-items: center; gap: 10px; margin-top: 18px; padding: 12px 14px; background: var(--surface-pearl); border-radius: 12px; }
 .secret-value { flex: 1; min-width: 0; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; word-break: break-all; user-select: text; -webkit-user-select: text; }
 .secret-action { padding: 5px 8px; border: 0; background: transparent; color: var(--primary); font-size: 14px; cursor: pointer; }
+.secret-action:disabled { opacity: .5; cursor: wait; }
 .copy-account-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 2px 0; }
 .extra-info-list { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--divider-soft); }
 .extra-info-row { display: grid; grid-template-columns: 100px 1fr; gap: 12px; padding: 6px 0; }
@@ -172,11 +294,13 @@ const removeExtraField = (index) => form.value.extraFields.splice(index, 1)
 .vault-editor { width: min(520px, 100%); max-height: 85dvh; overflow-y: auto; padding: 24px; border-radius: 22px; }
 .vault-form { display: grid; gap: 9px; margin-top: 22px; }
 .vault-form label { margin-top: 7px; font-size: 14px; font-weight: 600; }
+.vault-form .favorite-editor-option { display: flex; align-items: center; gap: 9px; font-weight: 500; }
 .extra-field-editor { display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; margin-top: 8px; }
 .remove-field-btn { border: 0; background: transparent; color: #d92d20; cursor: pointer; }
 .add-field-link { margin-top: 16px; }
 .editor-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px; }
 @media (max-width: 520px) {
+  .vault-filters { align-items: stretch; }
   .password-card-header { flex-direction: column; }
   .extra-field-editor { grid-template-columns: 1fr; }
   .secret-row { flex-wrap: wrap; }

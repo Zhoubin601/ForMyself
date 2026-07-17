@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { ref, watch } from 'vue'
 import { Preferences } from '@capacitor/preferences'
 import CryptoJS from 'crypto-js'
+import { normalizePasswordVaultRecords } from '../services/passwordVaultRecords.js'
 
 const ENCRYPTED_KEY = 'my_password_vault_encrypted'
 const LEGACY_KEY = 'my_password_manager_data'
@@ -11,22 +12,6 @@ export const usePasswordVaultStore = defineStore('passwordVault', () => {
   const isDataLoaded = ref(false)
   const encryptionPassword = ref('')
   const loadError = ref('')
-
-  const normalizeRecords = (data) => {
-    if (!Array.isArray(data)) throw new Error('INVALID_VAULT_DATA')
-    return data.map((item) => ({
-      id: item.id || `${Date.now()}-${Math.random().toString(16).slice(2)}`,
-      appName: String(item.appName || '').trim(),
-      account: String(item.account || ''),
-      password: String(item.password || ''),
-      extraFields: Array.isArray(item.extraFields)
-        ? item.extraFields.map((field) => ({
-            fieldName: String(field.fieldName || ''),
-            fieldValue: String(field.fieldValue || '')
-          }))
-        : []
-    }))
-  }
 
   const persistEncrypted = async (password = encryptionPassword.value) => {
     if (!password) return
@@ -44,13 +29,15 @@ export const usePasswordVaultStore = defineStore('passwordVault', () => {
         const bytes = CryptoJS.AES.decrypt(encryptedResult.value, encryptionPassword.value)
         const plaintext = bytes.toString(CryptoJS.enc.Utf8)
         if (!plaintext) throw new Error('DECRYPT_FAILED')
-        records.value = normalizeRecords(JSON.parse(plaintext))
+        const parsed = JSON.parse(plaintext)
+        records.value = normalizePasswordVaultRecords(parsed)
+        if (JSON.stringify(parsed) !== JSON.stringify(records.value)) await persistEncrypted()
         return
       }
 
       const legacyResult = await Preferences.get({ key: LEGACY_KEY })
       if (legacyResult.value) {
-        records.value = normalizeRecords(JSON.parse(legacyResult.value))
+        records.value = normalizePasswordVaultRecords(JSON.parse(legacyResult.value))
         if (encryptionPassword.value) {
           await persistEncrypted()
           await Preferences.remove({ key: LEGACY_KEY })
@@ -70,12 +57,12 @@ export const usePasswordVaultStore = defineStore('passwordVault', () => {
   }, { deep: true })
 
   const addRecord = (record) => {
-    records.value.push(normalizeRecords([record])[0])
+    records.value.push(normalizePasswordVaultRecords([record])[0])
   }
 
   const updateRecord = (id, record) => {
     const index = records.value.findIndex((item) => item.id === id)
-    if (index !== -1) records.value[index] = { ...normalizeRecords([record])[0], id }
+    if (index !== -1) records.value[index] = { ...normalizePasswordVaultRecords([record])[0], id }
   }
 
   const deleteRecord = (id) => {
@@ -83,11 +70,16 @@ export const usePasswordVaultStore = defineStore('passwordVault', () => {
   }
 
   const replaceRecords = (data) => {
-    records.value = normalizeRecords(data)
+    records.value = normalizePasswordVaultRecords(data)
   }
 
   const appendRecords = (data) => {
-    records.value = [...records.value, ...normalizeRecords(data)]
+    records.value = normalizePasswordVaultRecords([...records.value, ...data])
+  }
+
+  const toggleFavorite = (id) => {
+    const record = records.value.find(item => item.id === id)
+    if (record) record.favorite = !record.favorite
   }
 
   const reencrypt = async (newPassword) => {
@@ -105,6 +97,7 @@ export const usePasswordVaultStore = defineStore('passwordVault', () => {
     deleteRecord,
     replaceRecords,
     appendRecords,
+    toggleFavorite,
     reencrypt
   }
 })
