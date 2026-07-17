@@ -297,18 +297,20 @@ const isToday = (day) => {
       </div>
     </Teleport>
 
-    <!-- 情绪回音壁 -->
-    <Transition name="fade-slide">
-      <div v-if="activeEcho" class="echo-bubble">
-        <div class="echo-avatar">✨</div>
-        <div class="echo-content">
-          <div class="echo-title">来自心底的回音...</div>
-          <p v-if="isEchoThinking" class="echo-thinking">闺蜜正在感知你的心情...</p>
-          <p v-else>{{ activeEcho }}</p>
+    <!-- 情绪回音壁：挂载到 body，避免被页面滚动和父级 transform 影响 -->
+    <Teleport to="body">
+      <Transition name="fade-slide">
+        <div v-if="activeEcho" class="echo-bubble">
+          <div class="echo-avatar">✨</div>
+          <div class="echo-content">
+            <div class="echo-title">来自心底的回音...</div>
+            <p v-if="isEchoThinking" class="echo-thinking">闺蜜正在感知你的心情...</p>
+            <p v-else>{{ activeEcho }}</p>
+          </div>
+          <button class="echo-close" @click="activeEcho = null">×</button>
         </div>
-        <button class="echo-close" @click="activeEcho = null">×</button>
-      </div>
-    </Transition>
+      </Transition>
+    </Teleport>
 
   </div>
 </template>
@@ -388,7 +390,7 @@ const isToday = (day) => {
 /* 情绪回音壁 */
 .echo-bubble {
   position: fixed;
-  bottom: 24px;
+  bottom: calc(24px + env(safe-area-inset-bottom, 0px));
   left: 50%;
   transform: translateX(-50%);
   max-width: 400px;
