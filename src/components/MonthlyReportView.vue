@@ -104,11 +104,11 @@ const generateMonthlySummary = async () => {
           <div class="mood-bar-track">
             <div class="mood-bar-fill" :style="{ width: `${report.mood.percentages[mood.key]}%`, background: mood.color }"></div>
           </div>
-          <span class="mood-count">{{ report.mood.distribution[mood.key] }}天</span>
+          <span class="mood-count">{{ report.mood.distribution[mood.key] }}次</span>
         </div>
       </div>
       <p v-else class="empty-copy">本月还没有心情记录。</p>
-      <p class="report-footnote">本月共记录 {{ report.mood.total }} 天</p>
+      <p class="report-footnote">本月共记录 {{ report.mood.totalEvents }} 个事件，覆盖 {{ report.mood.recordedDays }} 天</p>
     </section>
 
     <section class="report-card weight-report">

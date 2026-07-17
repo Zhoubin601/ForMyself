@@ -5,6 +5,7 @@ import { useMoodStore } from '../stores/mood'
 import { useWeightStore } from '../stores/weight'
 import { useDebtStore } from '../stores/debt'
 import { askAI } from '../services/aiEngine'
+import { compareMoodRecordsNewestFirst } from '../services/moodRecords'
 
 const settingsStore = useSettingsStore()
 const moodStore = useMoodStore()
@@ -27,7 +28,7 @@ const getDataFingerprint = () => {
   const debtPct = closestDebt.value ? closestDebt.value.progress : 0
   const debtName = closestDebt.value ? closestDebt.value.name : 'none'
   const weightVal = latestWeight.value ? latestWeight.value.weight : 0
-  const moodKey = todayMood.value ? todayMood.value.mood : 'none'
+  const moodKey = JSON.stringify(todayMoodEvents.value.map(item => [item.mood, item.tags, item.note]))
   const totSaved = totalSavedAmount.value
   return `${debtPct}|${debtName}|${weightVal}|${moodKey}|${totSaved}`
 }
@@ -43,8 +44,8 @@ const fetchAIQuote = async () => {
   settingsStore.dataFingerprint = fp
   const today = getTodayStr()
   try {
-    const allMoods = [...moodStore.moodRecords].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 3)
-    const last3Moods = allMoods.reverse().map(m => getMoodLabel(m.mood))
+    const allMoods = [...moodStore.moodRecords].sort(compareMoodRecordsNewestFirst).slice(0, 3)
+    const last3Moods = allMoods.reverse().map(m => `${getMoodLabel(m.mood)}（${(m.tags || ['学习']).join('、')}）`)
     const debtName = closestDebt.value ? closestDebt.value.name : '未设置目标'
     const savedAmount = closestDebt.value ? (closestDebt.value.totalAmount - closestDebt.value.remainingAmount) : 0
     const debtPct = closestDebt.value ? closestDebt.value.progress : 0
@@ -71,6 +72,11 @@ const todayMood = computed(() => {
   const d = String(now.getDate()).padStart(2, '0')
   const today = `${y}-${m}-${d}`
   return moodStore.getRecordByDate(today)
+})
+const todayMoodEvents = computed(() => {
+  const now = new Date()
+  const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
+  return moodStore.getRecordsByDate(today)
 })
 const isMoodLogged = computed(() => !!todayMood.value)
 const todayMoodEmoji = computed(() => {

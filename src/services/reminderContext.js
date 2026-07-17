@@ -1,3 +1,5 @@
+import { normalizeMoodTags } from './moodRecords.js'
+
 const MOOD_LABELS = {
   great: '非常好',
   good: '不错',
@@ -16,6 +18,7 @@ export function buildMoodReminderContext(records = []) {
     .map(item => ({
       date: item.date,
       mood: MOOD_LABELS[item.mood] || '一般',
+      tags: normalizeMoodTags(item.tags ?? item.tag),
       note: cleanText(item.note)
     }))
 }

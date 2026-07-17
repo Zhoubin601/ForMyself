@@ -1,14 +1,26 @@
 import { defineStore } from 'pinia'
 import { ref, watch } from 'vue'
 import { Preferences } from '@capacitor/preferences'
+import {
+  BUILT_IN_MOOD_TAGS,
+  DEFAULT_MOOD_TAG,
+  compareMoodRecordsNewestFirst,
+  getCustomMoodTags,
+  normalizeMoodRecord,
+  normalizeMoodRecords,
+  normalizeMoodTag,
+  normalizeMoodTags
+} from '../services/moodRecords.js'
 
 export const useMoodStore = defineStore('mood', () => {
   const moodRecords = ref([])
   const isDataLoaded = ref(false)
   const trackingStartDate = ref('')
+  const customTags = ref([])
 
   const STORAGE_KEY = 'my_mood_records_data'
   const START_DATE_KEY = 'my_mood_tracking_start_date'
+  const CUSTOM_TAGS_KEY = 'my_mood_custom_tags'
 
   const formatLocalDate = (date) => {
     const year = date.getFullYear()
@@ -19,13 +31,21 @@ export const useMoodStore = defineStore('mood', () => {
 
   const loadMoodRecords = async () => {
     try {
-      const [{ value }, startResult] = await Promise.all([
+      const [{ value }, startResult, customTagsResult] = await Promise.all([
         Preferences.get({ key: STORAGE_KEY }),
-        Preferences.get({ key: START_DATE_KEY })
+        Preferences.get({ key: START_DATE_KEY }),
+        Preferences.get({ key: CUSTOM_TAGS_KEY })
       ])
       if (value) {
-        moodRecords.value = JSON.parse(value)
+        const parsed = JSON.parse(value)
+        moodRecords.value = normalizeMoodRecords(parsed)
+        if (JSON.stringify(parsed) !== JSON.stringify(moodRecords.value)) {
+          await Preferences.set({ key: STORAGE_KEY, value: JSON.stringify(moodRecords.value) })
+        }
       }
+
+      const savedCustomTags = customTagsResult.value ? JSON.parse(customTagsResult.value) : []
+      customTags.value = getCustomMoodTags(moodRecords.value, savedCustomTags)
 
       if (startResult.value) {
         trackingStartDate.value = startResult.value
@@ -56,6 +76,16 @@ export const useMoodStore = defineStore('mood', () => {
     { deep: true }
   )
 
+  watch(
+    customTags,
+    async (newVal) => {
+      if (isDataLoaded.value) {
+        await Preferences.set({ key: CUSTOM_TAGS_KEY, value: JSON.stringify(newVal) })
+      }
+    },
+    { deep: true }
+  )
+
   // --- 自动补齐缺失日期的逻辑 ---
   const autoFillMissingDays = async () => {
     if (!trackingStartDate.value) return
@@ -81,7 +111,10 @@ export const useMoodStore = defineStore('mood', () => {
           id: `${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
           date: dateStr,
           mood: 'normal',
-          note: ''
+          note: '',
+          tags: [DEFAULT_MOOD_TAG],
+          autoFilled: true,
+          createdAt: Date.now()
         })
         existingDates.add(dateStr)
         needSave = true
@@ -98,25 +131,34 @@ export const useMoodStore = defineStore('mood', () => {
     }
   }
 
-  const addRecord = (date, mood = 'normal', note = '') => {
-    // 如果该日期已有记录，则覆盖更新
-    const existing = moodRecords.value.findIndex(r => r.date === date)
-    if (existing !== -1) {
-      moodRecords.value[existing] = { ...moodRecords.value[existing], mood, note }
-    } else {
-      moodRecords.value.push({
-        id: Date.now().toString(),
-        date,
-        mood,
-        note
-      })
-    }
+  const addRecord = (date, mood = 'normal', note = '', tags = [DEFAULT_MOOD_TAG]) => {
+    const record = normalizeMoodRecord({
+      id: `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+      date,
+      mood,
+      note,
+      tags,
+      createdAt: Date.now(),
+      autoFilled: false
+    })
+
+    // 用户首次为自动补记日写真实事件时，用真实事件替换占位记录。
+    const placeholderIndex = moodRecords.value.findIndex(r => r.date === date && r.autoFilled === true)
+    if (placeholderIndex !== -1) moodRecords.value[placeholderIndex] = record
+    else moodRecords.value.push(record)
+    syncCustomTagsFromRecords()
+    return record
   }
 
   const updateRecord = (id, updates) => {
     const idx = moodRecords.value.findIndex(r => r.id === id)
     if (idx !== -1) {
-      moodRecords.value[idx] = { ...moodRecords.value[idx], ...updates }
+      moodRecords.value[idx] = normalizeMoodRecord({
+        ...moodRecords.value[idx],
+        ...updates,
+        autoFilled: false
+      })
+      syncCustomTagsFromRecords()
     }
   }
 
@@ -125,11 +167,29 @@ export const useMoodStore = defineStore('mood', () => {
   }
 
   const updateMoodRecords = (newList) => {
-    moodRecords.value = newList
+    moodRecords.value = normalizeMoodRecords(newList)
+    syncCustomTagsFromRecords()
+  }
+
+  const getRecordsByDate = (date) => {
+    return moodRecords.value
+      .filter(r => r.date === date)
+      .sort(compareMoodRecordsNewestFirst)
   }
 
   const getRecordByDate = (date) => {
-    return moodRecords.value.find(r => r.date === date)
+    return getRecordsByDate(date)[0]
+  }
+
+  const addCustomTag = (value) => {
+    const tag = normalizeMoodTag(value)
+    if (!tag || BUILT_IN_MOOD_TAGS.includes(tag) || customTags.value.includes(tag)) return tag
+    customTags.value = [...customTags.value, tag].sort((a, b) => a.localeCompare(b, 'zh-CN'))
+    return tag
+  }
+
+  function syncCustomTagsFromRecords() {
+    customTags.value = getCustomMoodTags(moodRecords.value, customTags.value)
   }
 
   const getMonthStats = (year, month) => {
@@ -144,6 +204,8 @@ export const useMoodStore = defineStore('mood', () => {
 
   return {
     moodRecords,
+    customTags,
+    builtInTags: BUILT_IN_MOOD_TAGS,
     isDataLoaded,
     loadMoodRecords,
     autoFillMissingDays,
@@ -151,7 +213,10 @@ export const useMoodStore = defineStore('mood', () => {
     updateRecord,
     deleteRecord,
     updateMoodRecords,
+    getRecordsByDate,
     getRecordByDate,
-    getMonthStats
+    getMonthStats,
+    addCustomTag,
+    normalizeTags: normalizeMoodTags
   }
 })

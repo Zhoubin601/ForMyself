@@ -33,13 +33,16 @@ export function calculateMoodMonthlyStats(records = [], year, month) {
   monthRecords.forEach(item => {
     if (distribution[item.mood] !== undefined) distribution[item.mood]++
   })
-  const total = monthRecords.length
+  const totalEvents = monthRecords.length
+  const recordedDays = new Set(monthRecords.map(item => item.date)).size
   return {
-    total,
+    total: totalEvents,
+    totalEvents,
+    recordedDays,
     distribution,
     percentages: Object.fromEntries(MOOD_KEYS.map(key => [
       key,
-      total ? Math.round((distribution[key] / total) * 100) : 0
+      totalEvents ? Math.round((distribution[key] / totalEvents) * 100) : 0
     ])),
     longestStreak: longestDateStreak(monthRecords.map(item => item.date))
   }

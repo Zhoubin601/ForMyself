@@ -3,6 +3,7 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useMoodStore } from '../stores/mood'
 import { useSettingsStore } from '../stores/settings'
 import { askAI } from '../services/aiEngine'
+import { compareMoodRecordsNewestFirst } from '../services/moodRecords'
 
 const moodStore = useMoodStore()
 const settingsStore = useSettingsStore()
@@ -50,22 +51,24 @@ const nextMonth = () => {
   else currentMonth.value++
 }
 
-const getRecordForDay = (day) => {
+const getRecordsForDay = (day) => {
   const dateStr = `${currentYear.value}-${String(currentMonth.value).padStart(2, '0')}-${String(day).padStart(2, '0')}`
-  return moodStore.getRecordByDate(dateStr)
+  return moodStore.getRecordsByDate(dateStr)
 }
 
 const getMoodEmoji = (day) => {
-  const record = getRecordForDay(day)
+  const record = getRecordsForDay(day)[0]
   if (!record) return null
   return MOOD_OPTIONS.find(m => m.key === record.mood)?.emoji || null
 }
+
+const getEventCount = day => getRecordsForDay(day).length
 
 const monthRecords = computed(() => {
   const prefix = `${currentYear.value}-${String(currentMonth.value).padStart(2, '0')}`
   return moodStore.moodRecords
     .filter(r => r.date.startsWith(prefix))
-    .sort((a, b) => b.date.localeCompare(a.date))
+    .sort(compareMoodRecordsNewestFirst)
 })
 
 const monthStats = computed(() => moodStore.getMonthStats(currentYear.value, currentMonth.value))
@@ -92,52 +95,47 @@ const showModal = ref(false)
 const editDate = ref('')
 const editMood = ref(MOOD_DEFAULT)
 const editNote = ref('')
+const editTags = ref(['学习'])
+const customTagInput = ref('')
 const editingId = ref(null)
+
+const availableTags = computed(() => [...moodStore.builtInTags, ...moodStore.customTags])
+
+const resetEditor = (date) => {
+  editingId.value = null
+  editDate.value = date
+  editMood.value = MOOD_DEFAULT
+  editNote.value = ''
+  editTags.value = ['学习']
+  customTagInput.value = ''
+}
 
 const openAddModal = () => {
   const n = new Date()
   const today = `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}-${String(n.getDate()).padStart(2, '0')}`
-  editingId.value = null
-  editDate.value = today
-  // 检查今天是否有记录，有则显示已有记录
-  const todayRecord = moodStore.getRecordByDate(editDate.value)
-  if (todayRecord) {
-    editingId.value = todayRecord.id
-    editMood.value = todayRecord.mood
-    editNote.value = todayRecord.note || ''
-  } else {
-    editMood.value = MOOD_DEFAULT
-    editNote.value = ''
-  }
+  resetEditor(today)
   showModal.value = true
 }
 
-// 今日心情用于按钮显示
-const todayMood = computed(() => {
+const todayRecords = computed(() => {
   const n = new Date()
   const today = `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}-${String(n.getDate()).padStart(2, '0')}`
-  return moodStore.getRecordByDate(today)
-})
-const todayMoodEmoji = computed(() => {
-  if (!todayMood.value) return null
-  const MOOD_MAP = { great: '🤩', good: '🙂', normal: '😐', bad: '😔', terrible: '😫' }
-  return MOOD_MAP[todayMood.value.mood] || '😐'
+  return moodStore.getRecordsByDate(today)
 })
 
 const handleDayClick = (day) => {
   const dateStr = `${currentYear.value}-${String(currentMonth.value).padStart(2, '0')}-${String(day).padStart(2, '0')}`
-  const record = getRecordForDay(day)
-  if (record) {
-    editingId.value = record.id
-    editDate.value = record.date
-    editMood.value = record.mood
-    editNote.value = record.note || ''
-  } else {
-    editingId.value = null
-    editDate.value = dateStr
-    editMood.value = MOOD_DEFAULT
-    editNote.value = ''
-  }
+  resetEditor(dateStr)
+  showModal.value = true
+}
+
+const editRecord = (record) => {
+  editingId.value = record.id
+  editDate.value = record.date
+  editMood.value = record.mood
+  editNote.value = record.note || ''
+  editTags.value = moodStore.normalizeTags(record.tags)
+  customTagInput.value = ''
   showModal.value = true
 }
 
@@ -147,10 +145,11 @@ const isEchoThinking = ref(false)
 
 const saveRecord = async () => {
   if (!editDate.value) return alert('请选择日期')
+  if (!editTags.value.length) editTags.value = ['学习']
   if (editingId.value) {
-    moodStore.updateRecord(editingId.value, { date: editDate.value, mood: editMood.value, note: editNote.value })
+    moodStore.updateRecord(editingId.value, { date: editDate.value, mood: editMood.value, note: editNote.value, tags: editTags.value })
   } else {
-    moodStore.addRecord(editDate.value, editMood.value, editNote.value)
+    moodStore.addRecord(editDate.value, editMood.value, editNote.value, editTags.value)
   }
   showModal.value = false
 
@@ -159,7 +158,7 @@ const saveRecord = async () => {
     activeEcho.value = 'thinking'
     isEchoThinking.value = true
     try {
-      const prompt = `用户今天的心情评级为 [${editMood.value}]，并写下了日记内容："${editNote.value || '（今日无文字记录）'}"。\n请站在温柔闺蜜/挚友的角度，写一句 30 字以内的贴心回音，给予充分的共情。`
+      const prompt = `用户这次事件的心情评级为 [${editMood.value}]，标签为 [${editTags.value.join('、')}]，并写下了日记内容："${editNote.value || '（无文字记录）'}"。\n请站在温柔闺蜜/挚友的角度，写一句 30 字以内的贴心回音，给予充分的共情。`
       const echoText = await askAI(prompt)
       activeEcho.value = echoText
     } catch (e) {
@@ -176,6 +175,18 @@ const deleteRecord = (record) => {
 }
 
 const selectMood = (key) => { editMood.value = key }
+
+const toggleTag = (tag) => {
+  if (editTags.value.includes(tag)) editTags.value = editTags.value.filter(item => item !== tag)
+  else editTags.value = [...editTags.value, tag]
+}
+
+const createCustomTag = () => {
+  const tag = moodStore.addCustomTag(customTagInput.value)
+  if (!tag) return alert('请输入有效的标签名称')
+  if (!editTags.value.includes(tag)) editTags.value = [...editTags.value, tag]
+  customTagInput.value = ''
+}
 
 const getMoodInfo = (key) => MOOD_OPTIONS.find(m => m.key === key) || MOOD_OPTIONS[2]
 
@@ -212,7 +223,9 @@ const isToday = (day) => {
         <div v-for="i in firstDayOffset" :key="'b'+i" class="cal-day empty"></div>
         <div v-for="day in daysInMonth" :key="day" class="cal-day" :class="{ today: isToday(day) }" @click="handleDayClick(day)">
           <span class="cal-day-num">{{ day }}</span>
-          <span class="cal-day-mood" v-if="getMoodEmoji(day)">{{ getMoodEmoji(day) }}</span>
+          <span class="cal-day-mood" v-if="getMoodEmoji(day)">
+            {{ getMoodEmoji(day) }}<small v-if="getEventCount(day) > 1">×{{ getEventCount(day) }}</small>
+          </span>
         </div>
       </div>
 
@@ -228,8 +241,8 @@ const isToday = (day) => {
       <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" fill="none">
         <path d="M12 4v16M4 12h16"></path>
       </svg>
-      <span v-if="todayMood">{{ todayMoodEmoji }} 已记录今天心情</span>
-      <span v-else>记录今天的心情</span>
+      <span v-if="todayRecords.length">今天已有 {{ todayRecords.length }} 个事件，继续记录</span>
+      <span v-else>记录今天的第一个事件</span>
     </button>
 
     <!-- 记录列表 -->
@@ -239,7 +252,7 @@ const isToday = (day) => {
     </div>
 
     <div v-else class="mood-list">
-      <div v-for="record in paginatedRecords" :key="record.id" class="mood-card" @click="handleDayClick(parseInt(record.date.slice(-2)))">
+      <div v-for="record in paginatedRecords" :key="record.id" class="mood-card" @click="editRecord(record)">
         <div class="mood-card-left">
           <span class="mood-card-emoji">{{ getMoodInfo(record.mood).emoji }}</span>
         </div>
@@ -247,6 +260,9 @@ const isToday = (day) => {
           <div class="mood-card-header">
             <span class="mood-card-label">{{ getMoodInfo(record.mood).label }}</span>
             <span class="mood-card-date">{{ formatDate(record.date) }}</span>
+          </div>
+          <div class="mood-card-tags">
+            <span v-for="tag in record.tags" :key="tag" class="mood-tag">{{ tag }}</span>
           </div>
           <div v-if="record.note" class="mood-card-note">{{ record.note }}</div>
           <div v-else class="mood-card-note placeholder">无文字记录</div>
@@ -268,7 +284,7 @@ const isToday = (day) => {
     <Teleport to="body">
       <div v-if="showModal" class="modal-overlay" @click="showModal = false"></div>
       <div v-if="showModal" class="modal-panel">
-        <h3 class="body-strong" style="margin: 0 0 20px 0;">{{ editingId ? '编辑心情' : '记录心情' }}</h3>
+        <h3 class="body-strong" style="margin: 0 0 20px 0;">{{ editingId ? '编辑心情事件' : '记录一个心情事件' }}</h3>
 
         <div class="input-group">
           <label class="caption">日期</label>
@@ -286,8 +302,33 @@ const isToday = (day) => {
         </div>
 
         <div class="input-group">
-          <label class="caption">日记（可选）</label>
-          <textarea v-model="editNote" class="mood-textarea" placeholder="记录今天的心情想法..." rows="4"></textarea>
+          <label class="caption">事件标签（可多选）</label>
+          <div class="tag-selector">
+            <button
+              v-for="tag in availableTags"
+              :key="tag"
+              type="button"
+              class="tag-option"
+              :class="{ selected: editTags.includes(tag) }"
+              @click="toggleTag(tag)"
+            >{{ tag }}</button>
+          </div>
+          <div class="custom-tag-row">
+            <input
+              v-model="customTagInput"
+              class="apple-input"
+              maxlength="12"
+              placeholder="自定义标签"
+              @keyup.enter="createCustomTag"
+            />
+            <button type="button" class="button-secondary-pill custom-tag-add" @click="createCustomTag">添加</button>
+          </div>
+          <p v-if="!editTags.length" class="tag-hint">未选择时保存将默认使用“学习”</p>
+        </div>
+
+        <div class="input-group">
+          <label class="caption">事件记录（可选）</label>
+          <textarea v-model="editNote" class="mood-textarea" placeholder="发生了什么？记录这一刻的感受..." rows="4"></textarea>
         </div>
 
         <div style="display: flex; gap: 12px; margin-top: 24px;">
@@ -339,7 +380,8 @@ const isToday = (day) => {
 .cal-day.today .cal-day-num { background: var(--primary); color: #fff; border-radius: 50%; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; }
 
 .cal-day-num { font-size: 14px; font-weight: 500; color: var(--ink); line-height: 1; }
-.cal-day-mood { font-size: 16px; line-height: 1; }
+.cal-day-mood { display: flex; align-items: center; gap: 1px; font-size: 16px; line-height: 1; }
+.cal-day-mood small { color: var(--primary); font-size: 9px; font-weight: 700; }
 
 .calendar-stats { display: flex; justify-content: center; gap: 12px; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--divider-soft); flex-wrap: wrap; }
 .cs-item { font-size: 13px; color: var(--body-muted); font-weight: 400; }
@@ -357,6 +399,8 @@ const isToday = (day) => {
 .mood-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
 .mood-card-label { font-size: 16px; font-weight: 600; color: var(--ink); }
 .mood-card-date { font-size: 13px; color: var(--body-muted); }
+.mood-card-tags { display: flex; flex-wrap: wrap; gap: 5px; margin: 5px 0 7px; }
+.mood-tag { padding: 3px 8px; border-radius: 999px; background: rgba(0, 102, 204, 0.09); color: var(--primary); font-size: 11px; font-weight: 600; }
 .mood-card-note { font-size: 14px; color: var(--ink); line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; word-break: break-word; }
 .mood-card-note.placeholder { color: var(--body-muted); font-style: italic; }
 .mood-card-delete { flex-shrink: 0; background: transparent; border: none; color: #ff3b30; cursor: pointer; padding: 4px; border-radius: 8px; opacity: 0.5; transition: opacity 0.2s; margin-top: 2px; }
@@ -382,6 +426,14 @@ const isToday = (day) => {
 .mood-emoji { font-size: 28px; line-height: 1; }
 .mood-label { font-size: 12px; color: var(--body-muted); }
 .mood-option.selected .mood-label { color: var(--primary); font-weight: 600; }
+
+.tag-selector { display: flex; flex-wrap: wrap; gap: 8px; }
+.tag-option { appearance: none; border: 1px solid var(--hairline); border-radius: 999px; padding: 8px 13px; background: var(--surface-pearl); color: var(--body-muted); font-size: 14px; cursor: pointer; }
+.tag-option.selected { border-color: var(--primary); background: rgba(0, 102, 204, 0.1); color: var(--primary); font-weight: 600; }
+.custom-tag-row { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
+.custom-tag-row .apple-input { flex: 1; min-width: 0; }
+.custom-tag-add { flex-shrink: 0; padding: 10px 16px; }
+.tag-hint { margin: 7px 2px 0; color: var(--body-muted); font-size: 12px; }
 
 .mood-textarea { background-color: var(--canvas); color: var(--ink); font-size: 16px; font-weight: 400; border-radius: 11px; padding: 14px 16px; border: 1px solid var(--hairline); outline: none; transition: border-color 0.2s; width: 100%; box-sizing: border-box; resize: vertical; font-family: inherit; line-height: 1.5; }
 .mood-textarea:focus { border-color: var(--primary-focus); outline: 2px solid rgba(0, 102, 204, 0.2); }

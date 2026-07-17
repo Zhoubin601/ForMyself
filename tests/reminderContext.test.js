@@ -17,7 +17,7 @@ test('心情摘要只取最近三条并保留日记文字', () => {
     { date: '2026-07-16', mood: 'great', note: '完成了一件重要的事' }
   ])
   assert.equal(context.length, 3)
-  assert.deepEqual(context[0], { date: '2026-07-18', mood: '低落', note: '今天工作有点累' })
+  assert.deepEqual(context[0], { date: '2026-07-18', mood: '低落', tags: ['学习'], note: '今天工作有点累' })
   assert.equal(context[2].date, '2026-07-16')
 })
 

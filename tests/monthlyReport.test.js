@@ -17,6 +17,8 @@ test('心情统计计算分布、百分比和本月最长连续天数', () => {
     { date: '2026-06-30', mood: 'great' }
   ], 2026, 7)
   assert.equal(stats.total, 4)
+  assert.equal(stats.totalEvents, 4)
+  assert.equal(stats.recordedDays, 4)
   assert.equal(stats.distribution.good, 2)
   assert.equal(stats.percentages.good, 50)
   assert.equal(stats.longestStreak, 3)
@@ -29,6 +31,8 @@ test('重复日期不会虚增连续记录天数', () => {
     { date: '2026-07-02', mood: 'normal' }
   ], 2026, 7)
   assert.equal(stats.longestStreak, 2)
+  assert.equal(stats.totalEvents, 3)
+  assert.equal(stats.recordedDays, 2)
 })
 
 test('体重统计计算月平均、首末变化和目标差距', () => {
