@@ -8,6 +8,12 @@ import { NativeBiometric } from '@capgo/capacitor-native-biometric'
 import { askAI } from '../services/aiEngine'
 import { syncReminderNotifications } from '../services/notificationService'
 import { refreshPersonalizedReminderContent } from '../services/notificationPersonalizer'
+import { getPersonalizedReminderBodies } from '../services/reminderSchedule'
+import {
+  buildFullBackupSnapshot,
+  getFullBackupCounts,
+  normalizeFullBackupSnapshot
+} from '../services/fullBackup'
 
 import { useAuthStore } from '../stores/auth'
 import { useDebtStore } from '../stores/debt'
@@ -32,7 +38,7 @@ const confirmNewPwdInput = ref('')
 const fileInputRef = ref(null)
 const bgInputRef = ref(null)
 
-const exportDataType = ref('savings')
+const exportDataType = ref('full')
 
 // --- 看板设置 ---
 const localBanner = ref({ ...settingsStore.bannerSettings })
@@ -72,7 +78,7 @@ const changeMasterPasswordBio = async () => {
 
 // --- 数据导出/导入 ---
 const getDataTypeLabel = () => {
-  return { savings: '省钱', weight: '体重', mood: '心情', passwords: '密码库' }[exportDataType.value]
+  return { full: '完整数据', savings: '省钱', weight: '体重', mood: '心情', passwords: '密码库' }[exportDataType.value]
 }
 
 const getDataArray = () => {
@@ -96,7 +102,53 @@ const setDataArray = (data, overwrite) => {
 }
 
 const getFilePrefix = () => {
-  return { savings: 'Savings', weight: 'Weight', mood: 'Mood', passwords: 'Passwords' }[exportDataType.value]
+  return { full: 'Full', savings: 'Savings', weight: 'Weight', mood: 'Mood', passwords: 'Passwords' }[exportDataType.value]
+}
+
+const createFullBackupSnapshot = () => buildFullBackupSnapshot({
+  savings: debtStore.savedDebts,
+  weight: weightStore.weightRecords,
+  mood: moodStore.moodRecords,
+  passwords: vaultStore.records,
+  moodMetadata: {
+    trackingStartDate: moodStore.trackingStartDate,
+    customTags: moodStore.customTags
+  },
+  settings: settingsStore.getBackupSnapshot()
+})
+
+const applyFullBackupSnapshot = async (snapshot) => {
+  const results = await Promise.allSettled([
+    debtStore.restoreDebts(snapshot.data.savings),
+    weightStore.restoreWeightRecords(snapshot.data.weight),
+    moodStore.restoreMoodBackup(snapshot.data.mood, snapshot.metadata.mood),
+    vaultStore.restoreRecords(snapshot.data.passwords),
+    settingsStore.restoreBackupSnapshot(snapshot.settings)
+  ])
+  const failure = results.find(result => result.status === 'rejected')
+  if (failure) throw failure.reason
+}
+
+const restoreFullBackup = async (snapshot) => {
+  const previousSnapshot = createFullBackupSnapshot()
+  try {
+    await applyFullBackupSnapshot(snapshot)
+  } catch (error) {
+    try {
+      await applyFullBackupSnapshot(previousSnapshot)
+    } catch (rollbackError) {
+      console.error('完整备份恢复失败且回滚未完全成功', rollbackError)
+    }
+    throw error
+  }
+
+  try {
+    await syncReminderNotifications(settingsStore.notificationSettings, {
+      personalizedBodies: getPersonalizedReminderBodies(settingsStore.notificationAiContent)
+    })
+  } catch (error) {
+    console.warn('恢复完整备份后刷新通知失败', error)
+  }
 }
 
 const downloadAsFile = (content, filename) => {
@@ -113,12 +165,13 @@ const downloadAsFile = (content, filename) => {
 
 const exportJSON = async () => {
   const label = getDataTypeLabel()
-  const dataArray = getDataArray()
+  const isFullBackup = exportDataType.value === 'full'
+  const data = isFullBackup ? createFullBackupSnapshot() : getDataArray()
 
-  if (dataArray.length === 0) return alert(`没有检测到可导出的${label}数据`)
+  if (!isFullBackup && data.length === 0) return alert(`没有检测到可导出的${label}数据`)
 
   try {
-    const rawData = JSON.stringify(dataArray)
+    const rawData = JSON.stringify(data)
     const encryptedData = CryptoJS.AES.encrypt(rawData, authStore.savedMasterPwd).toString()
     const date = new Date().toISOString().slice(0, 10)
     const prefix = getFilePrefix()
@@ -150,15 +203,28 @@ const handleFileUpload = (event) => {
   const file = event.target.files[0]
   if (!file) return
   const reader = new FileReader()
-  reader.onload = (e) => {
+  reader.onload = async (e) => {
     try {
       const encryptedContent = e.target.result
       const bytes = CryptoJS.AES.decrypt(encryptedContent, authStore.savedMasterPwd)
       const decryptedData = bytes.toString(CryptoJS.enc.Utf8)
       if (!decryptedData) throw new Error('密码错误')
       const importedData = JSON.parse(decryptedData)
-      if (!Array.isArray(importedData)) throw new Error('格式错误')
       const label = getDataTypeLabel()
+
+      if (exportDataType.value === 'full') {
+        const snapshot = normalizeFullBackupSnapshot(importedData)
+        const counts = getFullBackupCounts(snapshot)
+        const confirmed = confirm(
+          `完整备份包含：\n省钱 ${counts.savings} 项、体重 ${counts.weight} 条、心情 ${counts.mood} 条、密码 ${counts.passwords} 项。\n\n继续将覆盖以上全部数据和应用设置。主密码与设备生物识别凭据不会改变。`
+        )
+        if (!confirmed) return
+        await restoreFullBackup(snapshot)
+        alert('完整数据恢复成功，主密码与设备生物识别凭据未改变')
+        return
+      }
+
+      if (!Array.isArray(importedData)) throw new Error('格式错误')
 
       if (confirm(`成功解密出 ${importedData.length} 条${label}项目。\n确认要覆盖当前${label}数据吗？取消则执行追加。`)) {
         setDataArray(importedData, true)
@@ -167,9 +233,14 @@ const handleFileUpload = (event) => {
       }
       alert(`${label}数据恢复成功`)
     } catch (err) {
-      alert('解密失败：主密码与当前备份包不匹配')
+      if (exportDataType.value === 'full') {
+        alert('完整备份恢复失败：文件损坏、版本不兼容或主密码不匹配')
+      } else {
+        alert('解密失败：主密码与当前备份包不匹配')
+      }
+    } finally {
+      event.target.value = ''
     }
-    event.target.value = ''
   }
   reader.readAsText(file)
 }
@@ -367,6 +438,7 @@ const testAIConnection = async () => {
       <div class="store-utility-card" style="margin-top: 8px;">
         <label class="caption" style="display: block; margin-bottom: 10px;">选择要操作的数据类型</label>
         <select v-model="exportDataType" class="apple-input backup-type-select">
+          <option value="full">完整数据（全部数据与设置）</option>
           <option value="savings">省钱数据</option>
           <option value="weight">体重数据</option>
           <option value="mood">心情数据</option>
@@ -383,7 +455,7 @@ const testAIConnection = async () => {
         </button>
         <input type="file" accept=".json" ref="fileInputRef" style="display: none" @change="handleFileUpload" />
       </div>
-      <p class="caption body-muted" style="padding: 12px 16px; margin: 0;">四类数据分别生成独立备份文件，并由当前主密码进行 AES 加密。</p>
+      <p class="caption body-muted" style="padding: 12px 16px; margin: 0;">完整备份包含四类数据、应用设置和 API Key，并由当前主密码进行 AES 加密；不会包含主密码或设备生物识别凭据。仍可选择单项备份并保持原有格式。</p>
     </div>
 
     <!-- AI 情绪陪伴引擎 -->

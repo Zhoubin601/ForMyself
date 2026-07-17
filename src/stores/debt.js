@@ -40,6 +40,14 @@ export const useDebtStore = defineStore('debt', () => {
     savedDebts.value = newList
   }
 
+  const restoreDebts = async (newList) => {
+    savedDebts.value = newList
+    await Preferences.set({
+      key: 'my_debt_manager_data',
+      value: JSON.stringify(savedDebts.value)
+    })
+  }
+
   const deleteDebt = (id) => {
     savedDebts.value = savedDebts.value.filter(d => d.id !== id)
   }
@@ -63,6 +71,7 @@ export const useDebtStore = defineStore('debt', () => {
     loadDebts,
     addDebt,
     updateDebts,
+    restoreDebts,
     deleteDebt,
     getDebtById,
     totalSaved

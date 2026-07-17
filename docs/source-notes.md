@@ -63,3 +63,18 @@
 - 真实体重备份成功解密出 14 条记录，字段为 `id/date/weight/note`，不含身高、目标体重或提醒设置。
 - 14 条记录覆盖 4 个自然周；旧体重备份继续保持数组输入格式，不因新增健康设置而改变。
 - 身高、目标体重和变化提醒属于设备健康设置，独立保存在 `my_health_settings`。
+
+## 2026-07-18 完整数据备份
+
+来源文件：
+
+- 当前项目的 `src/components/SettingsView.vue`
+- 当前项目的 `src/stores/debt.js`、`src/stores/weight.js`、`src/stores/mood.js`
+- 当前项目的 `src/stores/passwordVault.js`、`src/stores/settings.js`
+
+关键事实：
+
+- 原有备份入口按省钱、体重、心情、密码库四种数据类型分别导入导出，备份明文结构均为数组。
+- 所有备份文件均使用当前主密码通过 CryptoJS AES 加密。
+- 主密码只存在于认证 Store 的运行时状态中，设备生物识别凭据由系统及原生插件管理，不属于可导出的应用数据。
+- 完整备份需要覆盖四类业务数据、心情追踪元数据和应用设置；单项备份格式继续保持不变。

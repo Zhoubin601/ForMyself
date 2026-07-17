@@ -171,6 +171,18 @@ export const useMoodStore = defineStore('mood', () => {
     syncCustomTagsFromRecords()
   }
 
+  const restoreMoodBackup = async (records, metadata = {}) => {
+    moodRecords.value = normalizeMoodRecords(records)
+    customTags.value = getCustomMoodTags(moodRecords.value, metadata.customTags)
+    const existingDates = moodRecords.value.map(record => record.date).filter(Boolean).sort()
+    trackingStartDate.value = /^\d{4}-\d{2}-\d{2}$/.test(String(metadata.trackingStartDate || ''))
+      ? metadata.trackingStartDate
+      : existingDates[0] || formatLocalDate(new Date())
+    await Preferences.set({ key: START_DATE_KEY, value: trackingStartDate.value })
+    await Preferences.set({ key: STORAGE_KEY, value: JSON.stringify(moodRecords.value) })
+    await Preferences.set({ key: CUSTOM_TAGS_KEY, value: JSON.stringify(customTags.value) })
+  }
+
   const getRecordsByDate = (date) => {
     return moodRecords.value
       .filter(r => r.date === date)
@@ -205,6 +217,7 @@ export const useMoodStore = defineStore('mood', () => {
   return {
     moodRecords,
     customTags,
+    trackingStartDate,
     builtInTags: BUILT_IN_MOOD_TAGS,
     isDataLoaded,
     loadMoodRecords,
@@ -213,6 +226,7 @@ export const useMoodStore = defineStore('mood', () => {
     updateRecord,
     deleteRecord,
     updateMoodRecords,
+    restoreMoodBackup,
     getRecordsByDate,
     getRecordByDate,
     getMonthStats,

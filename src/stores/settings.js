@@ -9,6 +9,7 @@ import {
   normalizeReminderSettings
 } from '../services/reminderSchedule'
 import { normalizeHealthSettings } from '../services/weightInsights.js'
+import { normalizeFullBackupSettings } from '../services/fullBackup.js'
 
 export const useSettingsStore = defineStore('settings', () => {
   const bannerSettings = ref({ prefix: '你已经省下了', suffix: '元', subtitle: '可喜可贺，继续保持。✨', titleSize: 38 })
@@ -137,5 +138,65 @@ export const useSettingsStore = defineStore('settings', () => {
     weightChangeThreshold.value = health.weightChangeThreshold
   }
 
-  return { bannerSettings, customBg, currentView, isDrawerOpen, isDataLoaded, viewTitle, cachedQuote, dataFingerprint, lastEncouragement, aiProviderUrl, aiApiKey, aiModel, autoLockDelaySeconds, notificationSettings, notificationAiContent, targetWeight, heightCm, weightChangeReminderEnabled, weightChangeThreshold, loadSettings, switchView, updateBanner, updateBg, updateHealthSettings }
+  const getBackupSnapshot = () => ({
+    banner: { ...bannerSettings.value },
+    customBg: customBg.value,
+    ai: {
+      url: aiProviderUrl.value,
+      key: aiApiKey.value,
+      model: aiModel.value
+    },
+    autoLockDelaySeconds: autoLockDelaySeconds.value,
+    notificationSettings: notificationSettings.value,
+    notificationAiContent: notificationAiContent.value,
+    health: {
+      targetWeight: targetWeight.value,
+      heightCm: heightCm.value,
+      weightChangeReminderEnabled: weightChangeReminderEnabled.value,
+      weightChangeThreshold: weightChangeThreshold.value
+    },
+    homeCache: {
+      cachedQuote: cachedQuote.value,
+      dataFingerprint: dataFingerprint.value,
+      lastEncouragement: lastEncouragement.value
+    }
+  })
+
+  const restoreBackupSnapshot = async (value) => {
+    const backup = normalizeFullBackupSettings(value)
+    bannerSettings.value = backup.banner
+    customBg.value = backup.customBg
+    aiProviderUrl.value = backup.ai.url
+    aiApiKey.value = backup.ai.key
+    aiModel.value = backup.ai.model
+    autoLockDelaySeconds.value = backup.autoLockDelaySeconds
+    notificationSettings.value = backup.notificationSettings
+    notificationAiContent.value = backup.notificationAiContent
+    updateHealthSettings(backup.health)
+    cachedQuote.value = backup.homeCache.cachedQuote
+    dataFingerprint.value = backup.homeCache.dataFingerprint
+    lastEncouragement.value = backup.homeCache.lastEncouragement
+
+    const writes = [
+      Preferences.set({ key: 'my_banner_settings', value: JSON.stringify(backup.banner) }),
+      Preferences.set({ key: 'my_ai_settings', value: JSON.stringify(backup.ai) }),
+      Preferences.set({
+        key: 'my_security_settings',
+        value: JSON.stringify({ autoLockDelaySeconds: backup.autoLockDelaySeconds })
+      }),
+      Preferences.set({ key: 'my_notification_settings', value: JSON.stringify(backup.notificationSettings) }),
+      Preferences.set({ key: 'my_notification_ai_content', value: JSON.stringify(backup.notificationAiContent) }),
+      Preferences.set({ key: 'my_health_settings', value: JSON.stringify(backup.health) }),
+      Preferences.set({ key: 'my_home_cache', value: JSON.stringify(backup.homeCache) })
+    ]
+    if (backup.customBg) {
+      writes.push(Preferences.set({ key: 'my_custom_bg', value: backup.customBg }))
+    } else {
+      writes.push(Preferences.remove({ key: 'my_custom_bg' }))
+    }
+    await Promise.all(writes)
+    return backup
+  }
+
+  return { bannerSettings, customBg, currentView, isDrawerOpen, isDataLoaded, viewTitle, cachedQuote, dataFingerprint, lastEncouragement, aiProviderUrl, aiApiKey, aiModel, autoLockDelaySeconds, notificationSettings, notificationAiContent, targetWeight, heightCm, weightChangeReminderEnabled, weightChangeThreshold, loadSettings, switchView, updateBanner, updateBg, updateHealthSettings, getBackupSnapshot, restoreBackupSnapshot }
 })

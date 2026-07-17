@@ -73,6 +73,11 @@ export const usePasswordVaultStore = defineStore('passwordVault', () => {
     records.value = normalizePasswordVaultRecords(data)
   }
 
+  const restoreRecords = async (data) => {
+    records.value = normalizePasswordVaultRecords(data)
+    await persistEncrypted()
+  }
+
   const appendRecords = (data) => {
     records.value = normalizePasswordVaultRecords([...records.value, ...data])
   }
@@ -96,6 +101,7 @@ export const usePasswordVaultStore = defineStore('passwordVault', () => {
     updateRecord,
     deleteRecord,
     replaceRecords,
+    restoreRecords,
     appendRecords,
     toggleFavorite,
     reencrypt

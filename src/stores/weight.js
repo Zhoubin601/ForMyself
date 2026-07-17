@@ -40,6 +40,14 @@ export const useWeightStore = defineStore('weight', () => {
     weightRecords.value = newList
   }
 
+  const restoreWeightRecords = async (newList) => {
+    weightRecords.value = newList
+    await Preferences.set({
+      key: 'my_weight_records_data',
+      value: JSON.stringify(weightRecords.value)
+    })
+  }
+
   const deleteRecord = (id) => {
     weightRecords.value = weightRecords.value.filter(r => r.id !== id)
   }
@@ -50,6 +58,7 @@ export const useWeightStore = defineStore('weight', () => {
     loadWeightRecords,
     addRecord,
     updateWeightRecords,
+    restoreWeightRecords,
     deleteRecord
   }
 })
