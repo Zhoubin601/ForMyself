@@ -239,6 +239,18 @@ const testAIConnection = async () => {
         <button class="list-item text-link destructive" style="text-align: left;" @click="lockApp">安全锁定当前空间</button>
       </div>
 
+      <div class="store-utility-card" style="margin-top: 12px;">
+        <label class="caption" style="display: block; margin-bottom: 10px;">进入后台后自动锁定</label>
+        <select v-model.number="settingsStore.autoLockDelaySeconds" class="apple-input backup-type-select">
+          <option :value="0">立即锁定</option>
+          <option :value="60">1 分钟后</option>
+          <option :value="300">5 分钟后</option>
+          <option :value="600">10 分钟后</option>
+          <option :value="-1">关闭自动锁定</option>
+        </select>
+        <p class="caption body-muted" style="margin: 10px 0 0;">超过设定时间返回应用时，需要重新输入主密码或验证指纹。</p>
+      </div>
+
       <div v-if="isChangingPwd || isChangingPwdBio" class="store-utility-card">
         <h4 class="body-strong" style="margin-top:0;">重设空间密码</h4>
         <div v-if="isChangingPwd" class="input-group"><input v-model="oldPwdInput" type="password" placeholder="原主密码" class="apple-input" /></div>

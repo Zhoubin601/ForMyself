@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed, watch } from 'vue'
 import { Preferences } from '@capacitor/preferences'
+import { normalizeAutoLockDelay } from '../services/autoLockPolicy'
 
 export const useSettingsStore = defineStore('settings', () => {
   const bannerSettings = ref({ prefix: '你已经省下了', suffix: '元', subtitle: '可喜可贺，继续保持。✨', titleSize: 38 })
@@ -15,6 +16,7 @@ export const useSettingsStore = defineStore('settings', () => {
   const aiProviderUrl = ref('https://api.deepseek.com')
   const aiApiKey = ref('')
   const aiModel = ref('deepseek-chat')
+  const autoLockDelaySeconds = ref(0)
 
   const viewTitle = computed(() => ({ home: '首页总览', debts: '我的省钱计划', weight: '体重记录', mood: '心情日记', passwords: '我的密码库', settings: '通用配置' })[currentView.value])
 
@@ -26,6 +28,11 @@ export const useSettingsStore = defineStore('settings', () => {
       if (bannerRes.value) bannerSettings.value = JSON.parse(bannerRes.value)
       const aiRes = await Preferences.get({ key: 'my_ai_settings' })
       if (aiRes.value) { const c = JSON.parse(aiRes.value); if (c.url) aiProviderUrl.value = c.url; if (c.key) aiApiKey.value = c.key; if (c.model) aiModel.value = c.model }
+      const securityRes = await Preferences.get({ key: 'my_security_settings' })
+      if (securityRes.value) {
+        const security = JSON.parse(securityRes.value)
+        autoLockDelaySeconds.value = normalizeAutoLockDelay(security.autoLockDelaySeconds)
+      }
 
       const cacheRes = await Preferences.get({ key: 'my_home_cache' })
       if (cacheRes.value) {
@@ -48,6 +55,14 @@ export const useSettingsStore = defineStore('settings', () => {
 
   watch(bannerSettings, async (v) => { if (isDataLoaded.value) await Preferences.set({ key: 'my_banner_settings', value: JSON.stringify(v) }) }, { deep: true })
   watch(() => ({ url: aiProviderUrl.value, key: aiApiKey.value, model: aiModel.value }), async (v) => { if (isDataLoaded.value) await Preferences.set({ key: 'my_ai_settings', value: JSON.stringify(v) }) }, { deep: true })
+  watch(autoLockDelaySeconds, async (value) => {
+    if (isDataLoaded.value) {
+      await Preferences.set({
+        key: 'my_security_settings',
+        value: JSON.stringify({ autoLockDelaySeconds: normalizeAutoLockDelay(value) })
+      })
+    }
+  })
 
   watch(cachedQuote, () => persistHomeCache(), { deep: true })
   watch(dataFingerprint, () => persistHomeCache())
@@ -57,5 +72,5 @@ export const useSettingsStore = defineStore('settings', () => {
   const updateBanner = async (v) => { bannerSettings.value = v; await Preferences.set({ key: 'my_banner_settings', value: JSON.stringify(v) }) }
   const updateBg = async (b) => { customBg.value = b; if (b) await Preferences.set({ key: 'my_custom_bg', value: b }); else await Preferences.remove({ key: 'my_custom_bg' }) }
 
-  return { bannerSettings, customBg, currentView, isDrawerOpen, isDataLoaded, viewTitle, cachedQuote, dataFingerprint, lastEncouragement, aiProviderUrl, aiApiKey, aiModel, loadSettings, switchView, updateBanner, updateBg }
+  return { bannerSettings, customBg, currentView, isDrawerOpen, isDataLoaded, viewTitle, cachedQuote, dataFingerprint, lastEncouragement, aiProviderUrl, aiApiKey, aiModel, autoLockDelaySeconds, loadSettings, switchView, updateBanner, updateBg }
 })

@@ -9,6 +9,7 @@ import { useMoodStore } from './stores/mood'
 import { useDebtStore } from './stores/debt'
 import { useWeightStore } from './stores/weight'
 import { usePasswordVaultStore } from './stores/passwordVault'
+import { shouldLockOnBackground, shouldLockOnResume } from './services/autoLockPolicy'
 
 import DebtListView from './components/DebtListView.vue'
 import WeightView from './components/WeightView.vue'
@@ -22,6 +23,7 @@ const settingsStore = useSettingsStore()
 const vaultStore = usePasswordVaultStore()
 
 const pwdInput = ref('')
+let backgroundedAt = null
 
 onMounted(async () => {
   try {
@@ -45,9 +47,17 @@ onMounted(async () => {
 
   try {
     CapacitorApp.addListener('appStateChange', ({ isActive }) => {
-      if (isActive && moodStore.isDataLoaded) {
-        moodStore.autoFillMissingDays()
+      if (!isActive) {
+        backgroundedAt = Date.now()
+        if (shouldLockOnBackground(settingsStore.autoLockDelaySeconds)) authStore.lockApp()
+        return
       }
+
+      if (shouldLockOnResume(settingsStore.autoLockDelaySeconds, backgroundedAt, Date.now())) {
+        authStore.lockApp()
+      }
+      backgroundedAt = null
+      if (moodStore.isDataLoaded) moodStore.autoFillMissingDays()
     })
   } catch (e) {
     console.warn('浏览器环境中无法监听 App 状态', e)
