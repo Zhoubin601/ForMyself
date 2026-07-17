@@ -12,12 +12,14 @@ import { useDebtStore } from '../stores/debt'
 import { useWeightStore } from '../stores/weight'
 import { useMoodStore } from '../stores/mood'
 import { useSettingsStore } from '../stores/settings'
+import { usePasswordVaultStore } from '../stores/passwordVault'
 
 const authStore = useAuthStore()
 const debtStore = useDebtStore()
 const weightStore = useWeightStore()
 const moodStore = useMoodStore()
 const settingsStore = useSettingsStore()
+const vaultStore = usePasswordVaultStore()
 
 const isChangingPwd = ref(false)
 const isChangingPwdBio = ref(false)
@@ -46,6 +48,7 @@ const saveBannerSettings = () => {
 const changeMasterPassword = async () => {
   const err = await authStore.updatePassword(oldPwdInput.value, newPwdInput.value, confirmNewPwdInput.value)
   if (err) return alert(err)
+  await vaultStore.reencrypt(newPwdInput.value)
   oldPwdInput.value = ''; newPwdInput.value = ''; confirmNewPwdInput.value = ''; isChangingPwd.value = false
   alert('主密码已重设')
 }
@@ -60,18 +63,20 @@ const triggerBioChangePwd = async () => {
 const changeMasterPasswordBio = async () => {
   const err = await authStore.updatePassword(null, newPwdInput.value, confirmNewPwdInput.value)
   if (err) return alert(err)
+  await vaultStore.reencrypt(newPwdInput.value)
   newPwdInput.value = ''; confirmNewPwdInput.value = ''; isChangingPwdBio.value = false
   alert('主密码已重设')
 }
 
 // --- 数据导出/导入 ---
 const getDataTypeLabel = () => {
-  return { savings: '省钱', weight: '体重', mood: '心情' }[exportDataType.value]
+  return { savings: '省钱', weight: '体重', mood: '心情', passwords: '密码库' }[exportDataType.value]
 }
 
 const getDataArray = () => {
   if (exportDataType.value === 'savings') return debtStore.savedDebts
   if (exportDataType.value === 'weight') return weightStore.weightRecords
+  if (exportDataType.value === 'passwords') return vaultStore.records
   return moodStore.moodRecords
 }
 
@@ -80,13 +85,16 @@ const setDataArray = (data, overwrite) => {
     debtStore.updateDebts(overwrite ? data : [...debtStore.savedDebts, ...data])
   } else if (exportDataType.value === 'weight') {
     weightStore.updateWeightRecords(overwrite ? data : [...weightStore.weightRecords, ...data])
+  } else if (exportDataType.value === 'passwords') {
+    if (overwrite) vaultStore.replaceRecords(data)
+    else vaultStore.appendRecords(data)
   } else {
     moodStore.updateMoodRecords(overwrite ? data : [...moodStore.moodRecords, ...data])
   }
 }
 
 const getFilePrefix = () => {
-  return { savings: 'Savings', weight: 'Weight', mood: 'Mood' }[exportDataType.value]
+  return { savings: 'Savings', weight: 'Weight', mood: 'Mood', passwords: 'Passwords' }[exportDataType.value]
 }
 
 const downloadAsFile = (content, filename) => {
@@ -147,6 +155,7 @@ const handleFileUpload = (event) => {
       const decryptedData = bytes.toString(CryptoJS.enc.Utf8)
       if (!decryptedData) throw new Error('密码错误')
       const importedData = JSON.parse(decryptedData)
+      if (!Array.isArray(importedData)) throw new Error('格式错误')
       const label = getDataTypeLabel()
 
       if (confirm(`成功解密出 ${importedData.length} 条${label}项目。\n确认要覆盖当前${label}数据吗？取消则执行追加。`)) {
@@ -247,11 +256,12 @@ const testAIConnection = async () => {
 
       <div class="store-utility-card" style="margin-top: 8px;">
         <label class="caption" style="display: block; margin-bottom: 10px;">选择要操作的数据类型</label>
-        <div class="data-type-toggle tri-toggle">
-          <button :class="{ active: exportDataType === 'savings' }" @click="exportDataType = 'savings'">省钱</button>
-          <button :class="{ active: exportDataType === 'weight' }" @click="exportDataType = 'weight'">体重</button>
-          <button :class="{ active: exportDataType === 'mood' }" @click="exportDataType = 'mood'">心情</button>
-        </div>
+        <select v-model="exportDataType" class="apple-input backup-type-select">
+          <option value="savings">省钱数据</option>
+          <option value="weight">体重数据</option>
+          <option value="mood">心情数据</option>
+          <option value="passwords">密码库数据</option>
+        </select>
       </div>
 
       <div class="ios-list" style="margin-top: 8px;">
@@ -263,7 +273,7 @@ const testAIConnection = async () => {
         </button>
         <input type="file" accept=".json" ref="fileInputRef" style="display: none" @change="handleFileUpload" />
       </div>
-      <p class="caption body-muted" style="padding: 12px 16px; margin: 0;">三类数据有独立的备份文件，加密方式同为军事级 AES 算法。</p>
+      <p class="caption body-muted" style="padding: 12px 16px; margin: 0;">四类数据分别生成独立备份文件，并由当前主密码进行 AES 加密。</p>
     </div>
 
     <!-- AI 情绪陪伴引擎 -->
@@ -306,7 +316,5 @@ const testAIConnection = async () => {
 .input-group { margin-bottom: 12px; }
 .store-utility-card { background: var(--canvas); border: 1px solid var(--hairline); border-radius: 18px; padding: 24px; margin-top: 8px; }
 
-.data-type-toggle { display: flex; border: 1px solid var(--hairline); border-radius: 9999px; overflow: hidden; }
-.data-type-toggle button { flex: 1; background: transparent; border: none; padding: 10px 16px; font-size: 15px; color: var(--body-muted); cursor: pointer; transition: all 0.2s; }
-.data-type-toggle button.active { background: var(--primary); color: #fff; font-weight: 500; }
+.backup-type-select { appearance: auto; cursor: pointer; }
 </style>

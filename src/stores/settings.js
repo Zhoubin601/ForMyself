@@ -16,7 +16,7 @@ export const useSettingsStore = defineStore('settings', () => {
   const aiApiKey = ref('')
   const aiModel = ref('deepseek-chat')
 
-  const viewTitle = computed(() => ({ home: '首页总览', debts: '我的省钱计划', weight: '体重记录', mood: '心情日记', settings: '通用配置' })[currentView.value])
+  const viewTitle = computed(() => ({ home: '首页总览', debts: '我的省钱计划', weight: '体重记录', mood: '心情日记', passwords: '我的密码库', settings: '通用配置' })[currentView.value])
 
   const loadSettings = async () => {
     try {

@@ -8,15 +8,18 @@ import { useSettingsStore } from './stores/settings'
 import { useMoodStore } from './stores/mood'
 import { useDebtStore } from './stores/debt'
 import { useWeightStore } from './stores/weight'
+import { usePasswordVaultStore } from './stores/passwordVault'
 
 import DebtListView from './components/DebtListView.vue'
 import WeightView from './components/WeightView.vue'
 import MoodView from './components/MoodView.vue'
 import HomeView from './components/HomeView.vue'
 import SettingsView from './components/SettingsView.vue'
+import PasswordVaultView from './components/PasswordVaultView.vue'
 
 const authStore = useAuthStore()
 const settingsStore = useSettingsStore()
+const vaultStore = usePasswordVaultStore()
 
 const pwdInput = ref('')
 
@@ -38,6 +41,7 @@ onMounted(async () => {
     weightStore.loadWeightRecords(),
     moodStore.loadMoodRecords()
   ])
+  await vaultStore.loadRecords(authStore.savedMasterPwd)
 
   try {
     CapacitorApp.addListener('appStateChange', ({ isActive }) => {
@@ -67,6 +71,7 @@ const unlockWithBiometric = async () => {
 const setMasterPassword = async () => {
   const ok = await authStore.setMasterPassword(pwdInput.value)
   if (ok) {
+    await vaultStore.reencrypt(authStore.savedMasterPwd)
     pwdInput.value = ''
   } else {
     alert('安全主密码请勿少于 4 位数')
@@ -185,6 +190,12 @@ const setMasterPassword = async () => {
               心情日记
             </li>
             <li
+              :class="{ active: settingsStore.currentView === 'passwords' }"
+              @click="settingsStore.switchView('passwords')"
+            >
+              密码库
+            </li>
+            <li
               :class="{ active: settingsStore.currentView === 'settings' }"
               @click="settingsStore.switchView('settings')"
             >
@@ -199,6 +210,7 @@ const setMasterPassword = async () => {
         <DebtListView v-if="settingsStore.currentView === 'debts'" />
         <WeightView v-if="settingsStore.currentView === 'weight'" />
         <MoodView v-if="settingsStore.currentView === 'mood'" />
+        <PasswordVaultView v-if="settingsStore.currentView === 'passwords'" />
         <SettingsView v-if="settingsStore.currentView === 'settings'" />
       </div>
     </div>
