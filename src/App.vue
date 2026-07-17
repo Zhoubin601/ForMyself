@@ -10,6 +10,9 @@ import { useDebtStore } from './stores/debt'
 import { useWeightStore } from './stores/weight'
 import { usePasswordVaultStore } from './stores/passwordVault'
 import { shouldLockOnBackground, shouldLockOnResume } from './services/autoLockPolicy'
+import { syncReminderNotifications } from './services/notificationService'
+import { getPersonalizedReminderBodies } from './services/reminderSchedule'
+import { refreshPersonalizedReminderContent } from './services/notificationPersonalizer'
 
 import DebtListView from './components/DebtListView.vue'
 import WeightView from './components/WeightView.vue'
@@ -21,9 +24,40 @@ import PasswordVaultView from './components/PasswordVaultView.vue'
 const authStore = useAuthStore()
 const settingsStore = useSettingsStore()
 const vaultStore = usePasswordVaultStore()
+const moodStore = useMoodStore()
+const debtStore = useDebtStore()
+const weightStore = useWeightStore()
 
 const pwdInput = ref('')
 let backgroundedAt = null
+let reminderRefreshTimer = null
+
+const refreshReminderPersonalization = async (force = false) => {
+  const result = await refreshPersonalizedReminderContent({
+    settings: settingsStore.notificationSettings,
+    cache: settingsStore.notificationAiContent,
+    data: {
+      moodRecords: moodStore.moodRecords,
+      weightRecords: weightStore.weightRecords,
+      savedDebts: debtStore.savedDebts
+    },
+    hasApiKey: !!settingsStore.aiApiKey?.trim(),
+    force
+  })
+  settingsStore.notificationAiContent = result.cache
+  await syncReminderNotifications(settingsStore.notificationSettings, {
+    personalizedBodies: result.bodies
+  })
+}
+
+const queueReminderPersonalizationRefresh = () => {
+  clearTimeout(reminderRefreshTimer)
+  reminderRefreshTimer = setTimeout(() => {
+    refreshReminderPersonalization().catch(error => {
+      if (error.code !== 'NOTIFICATION_PERMISSION_DENIED') console.warn('刷新个性化提醒失败', error)
+    })
+  }, 1200)
+}
 
 onMounted(async () => {
   try {
@@ -33,9 +67,6 @@ onMounted(async () => {
     console.warn('浏览器环境中无法设置状态栏')
   }
 
-  const moodStore = useMoodStore()
-  const debtStore = useDebtStore()
-  const weightStore = useWeightStore()
   await Promise.all([
     authStore.loadAuthData(),
     settingsStore.loadSettings(),
@@ -44,6 +75,20 @@ onMounted(async () => {
     moodStore.loadMoodRecords()
   ])
   await vaultStore.loadRecords(authStore.savedMasterPwd)
+
+  try {
+    await syncReminderNotifications(settingsStore.notificationSettings, {
+      personalizedBodies: getPersonalizedReminderBodies(settingsStore.notificationAiContent)
+    })
+  } catch (error) {
+    if (error.code !== 'NOTIFICATION_PERMISSION_DENIED') {
+      console.warn('同步通知提醒失败', error)
+    }
+  }
+
+  moodStore.$subscribe(queueReminderPersonalizationRefresh)
+  weightStore.$subscribe(queueReminderPersonalizationRefresh)
+  debtStore.$subscribe(queueReminderPersonalizationRefresh)
 
   try {
     CapacitorApp.addListener('appStateChange', ({ isActive }) => {
@@ -68,6 +113,7 @@ const unlockApp = () => {
   const ok = authStore.unlockWithPassword(pwdInput.value)
   if (ok) {
     pwdInput.value = ''
+    refreshReminderPersonalization().catch(() => {})
   } else {
     alert('密码验证未通过，请重试')
   }
@@ -75,7 +121,10 @@ const unlockApp = () => {
 
 const unlockWithBiometric = async () => {
   const ok = await authStore.unlockWithBiometric()
-  if (ok) pwdInput.value = ''
+  if (ok) {
+    pwdInput.value = ''
+    refreshReminderPersonalization().catch(() => {})
+  }
 }
 
 const setMasterPassword = async () => {
@@ -83,6 +132,7 @@ const setMasterPassword = async () => {
   if (ok) {
     await vaultStore.reencrypt(authStore.savedMasterPwd)
     pwdInput.value = ''
+    refreshReminderPersonalization().catch(() => {})
   } else {
     alert('安全主密码请勿少于 4 位数')
   }

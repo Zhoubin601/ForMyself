@@ -2,6 +2,12 @@ import { defineStore } from 'pinia'
 import { ref, computed, watch } from 'vue'
 import { Preferences } from '@capacitor/preferences'
 import { normalizeAutoLockDelay } from '../services/autoLockPolicy'
+import {
+  DEFAULT_REMINDER_SETTINGS,
+  EMPTY_NOTIFICATION_AI_CACHE,
+  normalizeNotificationAiCache,
+  normalizeReminderSettings
+} from '../services/reminderSchedule'
 
 export const useSettingsStore = defineStore('settings', () => {
   const bannerSettings = ref({ prefix: '你已经省下了', suffix: '元', subtitle: '可喜可贺，继续保持。✨', titleSize: 38 })
@@ -17,6 +23,8 @@ export const useSettingsStore = defineStore('settings', () => {
   const aiApiKey = ref('')
   const aiModel = ref('deepseek-chat')
   const autoLockDelaySeconds = ref(0)
+  const notificationSettings = ref(normalizeReminderSettings(DEFAULT_REMINDER_SETTINGS))
+  const notificationAiContent = ref(normalizeNotificationAiCache(EMPTY_NOTIFICATION_AI_CACHE))
 
   const viewTitle = computed(() => ({ home: '首页总览', debts: '我的省钱计划', weight: '体重记录', mood: '心情日记', passwords: '我的密码库', settings: '通用配置' })[currentView.value])
 
@@ -32,6 +40,14 @@ export const useSettingsStore = defineStore('settings', () => {
       if (securityRes.value) {
         const security = JSON.parse(securityRes.value)
         autoLockDelaySeconds.value = normalizeAutoLockDelay(security.autoLockDelaySeconds)
+      }
+      const notificationRes = await Preferences.get({ key: 'my_notification_settings' })
+      if (notificationRes.value) {
+        notificationSettings.value = normalizeReminderSettings(JSON.parse(notificationRes.value))
+      }
+      const notificationAiRes = await Preferences.get({ key: 'my_notification_ai_content' })
+      if (notificationAiRes.value) {
+        notificationAiContent.value = normalizeNotificationAiCache(JSON.parse(notificationAiRes.value))
       }
 
       const cacheRes = await Preferences.get({ key: 'my_home_cache' })
@@ -63,6 +79,22 @@ export const useSettingsStore = defineStore('settings', () => {
       })
     }
   })
+  watch(notificationSettings, async (value) => {
+    if (isDataLoaded.value) {
+      await Preferences.set({
+        key: 'my_notification_settings',
+        value: JSON.stringify(normalizeReminderSettings(value))
+      })
+    }
+  }, { deep: true })
+  watch(notificationAiContent, async (value) => {
+    if (isDataLoaded.value) {
+      await Preferences.set({
+        key: 'my_notification_ai_content',
+        value: JSON.stringify(normalizeNotificationAiCache(value))
+      })
+    }
+  }, { deep: true })
 
   watch(cachedQuote, () => persistHomeCache(), { deep: true })
   watch(dataFingerprint, () => persistHomeCache())
@@ -72,5 +104,5 @@ export const useSettingsStore = defineStore('settings', () => {
   const updateBanner = async (v) => { bannerSettings.value = v; await Preferences.set({ key: 'my_banner_settings', value: JSON.stringify(v) }) }
   const updateBg = async (b) => { customBg.value = b; if (b) await Preferences.set({ key: 'my_custom_bg', value: b }); else await Preferences.remove({ key: 'my_custom_bg' }) }
 
-  return { bannerSettings, customBg, currentView, isDrawerOpen, isDataLoaded, viewTitle, cachedQuote, dataFingerprint, lastEncouragement, aiProviderUrl, aiApiKey, aiModel, autoLockDelaySeconds, loadSettings, switchView, updateBanner, updateBg }
+  return { bannerSettings, customBg, currentView, isDrawerOpen, isDataLoaded, viewTitle, cachedQuote, dataFingerprint, lastEncouragement, aiProviderUrl, aiApiKey, aiModel, autoLockDelaySeconds, notificationSettings, notificationAiContent, loadSettings, switchView, updateBanner, updateBg }
 })

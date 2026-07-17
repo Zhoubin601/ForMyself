@@ -6,6 +6,8 @@ import { Share } from '@capacitor/share'
 import CryptoJS from 'crypto-js'
 import { NativeBiometric } from '@capgo/capacitor-native-biometric'
 import { askAI } from '../services/aiEngine'
+import { syncReminderNotifications } from '../services/notificationService'
+import { refreshPersonalizedReminderContent } from '../services/notificationPersonalizer'
 
 import { useAuthStore } from '../stores/auth'
 import { useDebtStore } from '../stores/debt'
@@ -186,6 +188,44 @@ const lockApp = () => { authStore.lockApp() }
 
 // --- AI BYOK 配置测试 ---
 const isTestingAI = ref(false)
+const isSavingReminders = ref(false)
+const saveReminderSettings = async () => {
+  isSavingReminders.value = true
+  try {
+    const personalization = await refreshPersonalizedReminderContent({
+      settings: settingsStore.notificationSettings,
+      cache: settingsStore.notificationAiContent,
+      data: {
+        moodRecords: moodStore.moodRecords,
+        weightRecords: weightStore.weightRecords,
+        savedDebts: debtStore.savedDebts
+      },
+      hasApiKey: !!settingsStore.aiApiKey?.trim()
+    })
+    settingsStore.notificationAiContent = personalization.cache
+
+    const result = await syncReminderNotifications(settingsStore.notificationSettings, {
+      requestPermission: true,
+      personalizedBodies: personalization.bodies
+    })
+    if (result.scheduled === 0) alert('所有通知提醒已关闭')
+    else if (personalization.errors.length) {
+      alert(`已安排 ${result.scheduled} 项每日提醒。部分 AI 文案生成失败，已使用默认关怀文案；请检查 API Key 和网络。`)
+    } else if (personalization.generated > 0) {
+      alert(`已安排 ${result.scheduled} 项每日提醒，并生成 ${personalization.generated} 条 AI 个性化关怀文案`)
+    } else {
+      alert(`已保存并安排 ${result.scheduled} 项每日提醒`)
+    }
+  } catch (error) {
+    if (error.code === 'NOTIFICATION_PERMISSION_DENIED') {
+      alert('通知权限未开启，请在系统设置中允许 ForMyself 发送通知')
+    } else {
+      alert('通知提醒设置失败：' + error.message)
+    }
+  } finally {
+    isSavingReminders.value = false
+  }
+}
 const testAIConnection = async () => {
   if (!settingsStore.aiApiKey) return alert('请先填写 API Key')
   isTestingAI.value = true
@@ -264,6 +304,64 @@ const testAIConnection = async () => {
     </div>
 
     <div class="setting-section">
+      <h3 class="caption body-muted section-title">通知提醒</h3>
+      <div class="store-utility-card reminder-card">
+        <div class="reminder-row">
+          <div class="reminder-copy">
+            <span class="body-strong">心情日记</span>
+            <span class="caption body-muted">提醒记录当天的感受</span>
+            <label class="ai-reminder-option">
+              <input v-model="settingsStore.notificationSettings.mood.useAI" type="checkbox" :disabled="!settingsStore.notificationSettings.mood.enabled" />
+              AI 根据最近心情与日记生成关怀文案
+            </label>
+          </div>
+          <input v-model="settingsStore.notificationSettings.mood.time" type="time" class="reminder-time" :disabled="!settingsStore.notificationSettings.mood.enabled" />
+          <label class="switch-control">
+            <input v-model="settingsStore.notificationSettings.mood.enabled" type="checkbox" />
+            <span></span>
+          </label>
+        </div>
+
+        <div class="reminder-row">
+          <div class="reminder-copy">
+            <span class="body-strong">体重记录</span>
+            <span class="caption body-muted">提醒在固定时间记录体重</span>
+            <label class="ai-reminder-option">
+              <input v-model="settingsStore.notificationSettings.weight.useAI" type="checkbox" :disabled="!settingsStore.notificationSettings.weight.enabled" />
+              AI 根据最近体重记录生成关怀文案
+            </label>
+          </div>
+          <input v-model="settingsStore.notificationSettings.weight.time" type="time" class="reminder-time" :disabled="!settingsStore.notificationSettings.weight.enabled" />
+          <label class="switch-control">
+            <input v-model="settingsStore.notificationSettings.weight.enabled" type="checkbox" />
+            <span></span>
+          </label>
+        </div>
+
+        <div class="reminder-row">
+          <div class="reminder-copy">
+            <span class="body-strong">省钱计划</span>
+            <span class="caption body-muted">提醒查看目标和记录存款</span>
+            <label class="ai-reminder-option">
+              <input v-model="settingsStore.notificationSettings.savings.useAI" type="checkbox" :disabled="!settingsStore.notificationSettings.savings.enabled" />
+              AI 根据最近省钱计划生成鼓励文案
+            </label>
+          </div>
+          <input v-model="settingsStore.notificationSettings.savings.time" type="time" class="reminder-time" :disabled="!settingsStore.notificationSettings.savings.enabled" />
+          <label class="switch-control">
+            <input v-model="settingsStore.notificationSettings.savings.enabled" type="checkbox" />
+            <span></span>
+          </label>
+        </div>
+
+        <button class="button-primary full-width reminder-save" :disabled="isSavingReminders" @click="saveReminderSettings">
+          {{ isSavingReminders ? '正在安排提醒…' : '保存通知提醒' }}
+        </button>
+        <p class="caption body-muted reminder-note">普通提醒完全在设备本地调度。开启 AI 后，仅对应模块的最近记录会发送给你配置的 AI 服务；文案按数据变化缓存，不会重复调用。</p>
+      </div>
+    </div>
+
+    <div class="setting-section">
       <h3 class="caption body-muted section-title">数据备份</h3>
 
       <div class="store-utility-card" style="margin-top: 8px;">
@@ -329,4 +427,24 @@ const testAIConnection = async () => {
 .store-utility-card { background: var(--canvas); border: 1px solid var(--hairline); border-radius: 18px; padding: 24px; margin-top: 8px; }
 
 .backup-type-select { appearance: auto; cursor: pointer; }
+.reminder-card { padding: 0; overflow: hidden; }
+.reminder-row { display: flex; align-items: center; gap: 12px; min-height: 92px; padding: 14px 16px; border-bottom: 1px solid var(--divider-soft); }
+.reminder-copy { display: flex; flex: 1; min-width: 0; flex-direction: column; gap: 4px; }
+.reminder-time { width: 92px; padding: 8px; border: 1px solid var(--hairline); border-radius: 10px; background: var(--surface-pearl); color: var(--ink); font: inherit; }
+.reminder-time:disabled { opacity: .45; }
+.ai-reminder-option { display: flex; align-items: flex-start; gap: 6px; margin-top: 3px; color: var(--primary); font-size: 12px; line-height: 1.35; }
+.ai-reminder-option input { width: 14px; height: 14px; margin: 1px 0 0; accent-color: var(--primary); flex-shrink: 0; }
+.ai-reminder-option:has(input:disabled) { opacity: .45; }
+.switch-control { position: relative; width: 48px; height: 28px; flex-shrink: 0; }
+.switch-control input { position: absolute; opacity: 0; pointer-events: none; }
+.switch-control span { position: absolute; inset: 0; border-radius: 999px; background: #d1d1d6; transition: background .2s; cursor: pointer; }
+.switch-control span::after { content: ''; position: absolute; width: 24px; height: 24px; top: 2px; left: 2px; border-radius: 50%; background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,.2); transition: transform .2s; }
+.switch-control input:checked + span { background: var(--primary); }
+.switch-control input:checked + span::after { transform: translateX(20px); }
+.reminder-save { margin: 16px; width: calc(100% - 32px); }
+.reminder-note { margin: 0; padding: 0 16px 16px; text-align: center; }
+@media (max-width: 480px) {
+  .reminder-row { gap: 8px; }
+  .reminder-time { width: 82px; font-size: 14px; }
+}
 </style>
