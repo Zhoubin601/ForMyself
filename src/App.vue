@@ -222,6 +222,7 @@ const setMasterPassword = async () => {
 *::before,
 *::after {
   box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
 }
 
 html,
@@ -252,11 +253,19 @@ body {
 }
 
 input,
-button,
 textarea {
   -webkit-user-select: auto;
   user-select: auto;
   font-family: inherit;
+}
+
+button,
+[role='button'],
+.drawer-menu li {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  outline: none;
 }
 
 .app-wrapper {
