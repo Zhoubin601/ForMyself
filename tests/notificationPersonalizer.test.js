@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { refreshPersonalizedReminderContent } from '../src/services/notificationPersonalizer.js'
+import { refreshPersonalizedReminderContentCore as refreshPersonalizedReminderContent } from '../src/services/notificationPersonalizerCore.js'
 
 const moodSettings = {
   mood: { enabled: true, time: '21:00', useAI: true },

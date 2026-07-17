@@ -20,6 +20,7 @@ import MoodView from './components/MoodView.vue'
 import HomeView from './components/HomeView.vue'
 import SettingsView from './components/SettingsView.vue'
 import PasswordVaultView from './components/PasswordVaultView.vue'
+import MonthlyReportView from './components/MonthlyReportView.vue'
 
 const authStore = useAuthStore()
 const settingsStore = useSettingsStore()
@@ -232,6 +233,12 @@ const setMasterPassword = async () => {
               首页总览
             </li>
             <li
+              :class="{ active: settingsStore.currentView === 'reports' }"
+              @click="settingsStore.switchView('reports')"
+            >
+              月度报告
+            </li>
+            <li
               :class="{ active: settingsStore.currentView === 'debts' }"
               @click="settingsStore.switchView('debts')"
             >
@@ -267,6 +274,7 @@ const setMasterPassword = async () => {
 
       <div class="content-area">
         <HomeView v-if="settingsStore.currentView === 'home'" />
+        <MonthlyReportView v-if="settingsStore.currentView === 'reports'" />
         <DebtListView v-if="settingsStore.currentView === 'debts'" />
         <WeightView v-if="settingsStore.currentView === 'weight'" />
         <MoodView v-if="settingsStore.currentView === 'mood'" />
