@@ -5,17 +5,37 @@ import { Preferences } from '@capacitor/preferences'
 export const useMoodStore = defineStore('mood', () => {
   const moodRecords = ref([])
   const isDataLoaded = ref(false)
+  const trackingStartDate = ref('')
 
   const STORAGE_KEY = 'my_mood_records_data'
+  const START_DATE_KEY = 'my_mood_tracking_start_date'
+
+  const formatLocalDate = (date) => {
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
+  }
 
   const loadMoodRecords = async () => {
     try {
-      const { value } = await Preferences.get({ key: STORAGE_KEY })
+      const [{ value }, startResult] = await Promise.all([
+        Preferences.get({ key: STORAGE_KEY }),
+        Preferences.get({ key: START_DATE_KEY })
+      ])
       if (value) {
         moodRecords.value = JSON.parse(value)
       }
+
+      if (startResult.value) {
+        trackingStartDate.value = startResult.value
+      } else {
+        const existingDates = moodRecords.value.map(record => record.date).filter(Boolean).sort()
+        trackingStartDate.value = existingDates[0] || formatLocalDate(new Date())
+        await Preferences.set({ key: START_DATE_KEY, value: trackingStartDate.value })
+      }
       // 数据加载完成后立即检查补齐缺失日期
-      autoFillMissingDays()
+      await autoFillMissingDays()
     } catch (e) {
       console.error('读取心情数据失败', e)
     } finally {
@@ -37,13 +57,8 @@ export const useMoodStore = defineStore('mood', () => {
   )
 
   // --- 自动补齐缺失日期的逻辑 ---
-  const autoFillMissingDays = () => {
-    if (moodRecords.value.length === 0) return
-
-    // 找到所有记录中最后的日期
-    const dates = moodRecords.value.map(r => r.date).sort()
-    const lastRecordDateStr = dates[dates.length - 1]
-    const lastDate = new Date(lastRecordDateStr)
+  const autoFillMissingDays = async () => {
+    if (!trackingStartDate.value) return
 
     // 计算"昨天"的日期（今天留给用户自己填）
     const today = new Date()
@@ -51,31 +66,36 @@ export const useMoodStore = defineStore('mood', () => {
     const yesterday = new Date(today)
     yesterday.setDate(yesterday.getDate() - 1)
 
-    // 从最后记录日期的第二天开始，一直检查到昨天
-    const checkDate = new Date(lastDate)
-    checkDate.setDate(checkDate.getDate() + 1)
+    // 从开始使用心情追踪的日期起，逐日检查到昨天
+    const checkDate = new Date(`${trackingStartDate.value}T00:00:00`)
+    if (Number.isNaN(checkDate.getTime())) return
 
     let needSave = false
+    const existingDates = new Set(moodRecords.value.map(record => record.date))
 
     while (checkDate <= yesterday) {
-      const year = checkDate.getFullYear()
-      const month = String(checkDate.getMonth() + 1).padStart(2, '0')
-      const day = String(checkDate.getDate()).padStart(2, '0')
-      const dateStr = `${year}-${month}-${day}`
+      const dateStr = formatLocalDate(checkDate)
 
-      if (!moodRecords.value.find(r => r.date === dateStr)) {
+      if (!existingDates.has(dateStr)) {
         moodRecords.value.push({
           id: `${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
           date: dateStr,
           mood: 'normal',
           note: ''
         })
+        existingDates.add(dateStr)
         needSave = true
       }
       checkDate.setDate(checkDate.getDate() + 1)
     }
 
-    // 由 watch 自动持久化
+    // 首次加载时 watch 尚未开放写入，显式保存以确保补记不会丢失
+    if (needSave) {
+      await Preferences.set({
+        key: STORAGE_KEY,
+        value: JSON.stringify(moodRecords.value)
+      })
+    }
   }
 
   const addRecord = (date, mood = 'normal', note = '') => {
