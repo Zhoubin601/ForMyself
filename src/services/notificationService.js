@@ -1,5 +1,6 @@
 import { LocalNotifications } from '@capacitor/local-notifications'
 import { buildReminderNotifications, getReminderIds } from './reminderSchedule'
+import { buildWeightChangeNotification } from './weightInsights.js'
 
 export async function syncReminderNotifications(settings, { requestPermission = false, personalizedBodies = {} } = {}) {
   const notifications = buildReminderNotifications(settings, personalizedBodies)
@@ -25,4 +26,14 @@ export async function getPendingReminderNotifications() {
   const pending = await LocalNotifications.getPending()
   const reminderIds = new Set(getReminderIds().map(item => item.id))
   return pending.notifications.filter(item => reminderIds.has(item.id))
+}
+
+export async function notifyWeightChange(notice) {
+  const notification = buildWeightChangeNotification(notice)
+  if (!notification) return { scheduled: false, reason: 'empty' }
+  const permission = await LocalNotifications.checkPermissions()
+  if (permission.display !== 'granted') return { scheduled: false, reason: 'permission' }
+  await LocalNotifications.cancel({ notifications: [{ id: notification.id }] })
+  await LocalNotifications.schedule({ notifications: [notification] })
+  return { scheduled: true, reason: 'scheduled' }
 }

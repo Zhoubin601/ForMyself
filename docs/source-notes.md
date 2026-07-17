@@ -44,3 +44,22 @@
 - 已确认原密码备份记录结构为 `{ appName, account, password, extraFields }`，不含分类和收藏字段。
 - 原生插件提供 `isAvailable({ useFallback: false })` 和 `verifyIdentity()`，可在访问明文前执行独立生物识别。
 - `Test_data/密码.json` 是 CryptoJS AES 密文，但无法使用用户此前提供的测试主密码解密，因此未读取其中的明文内容，也未尝试猜测密码。
+
+补充验证：
+
+- 用户随后说明密码库备份使用独立主密码；该密码仅注入一次性测试进程和 Android 测试会话，未写入项目文件或文档。
+- 修正后真实密码备份成功解密出 37 条旧结构记录，字段仍为 `appName/account/password/extraFields`；Android 导入及分类/收藏默认迁移均通过。
+
+## 2026-07-18 体重目标、BMI、变化提醒与周平均
+
+来源文件：
+
+- 当前项目的 `src/stores/weight.js`、`src/stores/settings.js`、`src/components/WeightView.vue`
+- 当前项目的 `src/services/notificationService.js`、`src/services/monthlyReport.js`
+- `Test_data` 中的体重加密备份
+
+关键事实：
+
+- 真实体重备份成功解密出 14 条记录，字段为 `id/date/weight/note`，不含身高、目标体重或提醒设置。
+- 14 条记录覆盖 4 个自然周；旧体重备份继续保持数组输入格式，不因新增健康设置而改变。
+- 身高、目标体重和变化提醒属于设备健康设置，独立保存在 `my_health_settings`。

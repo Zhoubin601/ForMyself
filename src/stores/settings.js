@@ -8,6 +8,7 @@ import {
   normalizeNotificationAiCache,
   normalizeReminderSettings
 } from '../services/reminderSchedule'
+import { normalizeHealthSettings } from '../services/weightInsights.js'
 
 export const useSettingsStore = defineStore('settings', () => {
   const bannerSettings = ref({ prefix: '你已经省下了', suffix: '元', subtitle: '可喜可贺，继续保持。✨', titleSize: 38 })
@@ -26,6 +27,9 @@ export const useSettingsStore = defineStore('settings', () => {
   const notificationSettings = ref(normalizeReminderSettings(DEFAULT_REMINDER_SETTINGS))
   const notificationAiContent = ref(normalizeNotificationAiCache(EMPTY_NOTIFICATION_AI_CACHE))
   const targetWeight = ref(null)
+  const heightCm = ref(null)
+  const weightChangeReminderEnabled = ref(true)
+  const weightChangeThreshold = ref(1)
 
   const viewTitle = computed(() => ({ home: '首页总览', reports: '月度报告', debts: '我的省钱计划', weight: '体重记录', mood: '心情日记', passwords: '我的密码库', settings: '通用配置' })[currentView.value])
 
@@ -52,11 +56,11 @@ export const useSettingsStore = defineStore('settings', () => {
       }
       const healthRes = await Preferences.get({ key: 'my_health_settings' })
       if (healthRes.value) {
-        const health = JSON.parse(healthRes.value)
-        const parsedTarget = Number(health.targetWeight)
-        targetWeight.value = Number.isFinite(parsedTarget) && parsedTarget >= 20 && parsedTarget <= 300
-          ? parsedTarget
-          : null
+        const health = normalizeHealthSettings(JSON.parse(healthRes.value))
+        targetWeight.value = health.targetWeight
+        heightCm.value = health.heightCm
+        weightChangeReminderEnabled.value = health.weightChangeReminderEnabled
+        weightChangeThreshold.value = health.weightChangeThreshold
       }
 
       const cacheRes = await Preferences.get({ key: 'my_home_cache' })
@@ -104,17 +108,19 @@ export const useSettingsStore = defineStore('settings', () => {
       })
     }
   }, { deep: true })
-  watch(targetWeight, async (value) => {
+  watch(() => ({
+    targetWeight: targetWeight.value,
+    heightCm: heightCm.value,
+    weightChangeReminderEnabled: weightChangeReminderEnabled.value,
+    weightChangeThreshold: weightChangeThreshold.value
+  }), async (value) => {
     if (isDataLoaded.value) {
-      const parsed = Number(value)
       await Preferences.set({
         key: 'my_health_settings',
-        value: JSON.stringify({
-          targetWeight: Number.isFinite(parsed) && parsed >= 20 && parsed <= 300 ? parsed : null
-        })
+        value: JSON.stringify(normalizeHealthSettings(value))
       })
     }
-  })
+  }, { deep: true })
 
   watch(cachedQuote, () => persistHomeCache(), { deep: true })
   watch(dataFingerprint, () => persistHomeCache())
@@ -123,6 +129,13 @@ export const useSettingsStore = defineStore('settings', () => {
   const switchView = (view) => { currentView.value = view; isDrawerOpen.value = false }
   const updateBanner = async (v) => { bannerSettings.value = v; await Preferences.set({ key: 'my_banner_settings', value: JSON.stringify(v) }) }
   const updateBg = async (b) => { customBg.value = b; if (b) await Preferences.set({ key: 'my_custom_bg', value: b }); else await Preferences.remove({ key: 'my_custom_bg' }) }
+  const updateHealthSettings = (value) => {
+    const health = normalizeHealthSettings(value)
+    targetWeight.value = health.targetWeight
+    heightCm.value = health.heightCm
+    weightChangeReminderEnabled.value = health.weightChangeReminderEnabled
+    weightChangeThreshold.value = health.weightChangeThreshold
+  }
 
-  return { bannerSettings, customBg, currentView, isDrawerOpen, isDataLoaded, viewTitle, cachedQuote, dataFingerprint, lastEncouragement, aiProviderUrl, aiApiKey, aiModel, autoLockDelaySeconds, notificationSettings, notificationAiContent, targetWeight, loadSettings, switchView, updateBanner, updateBg }
+  return { bannerSettings, customBg, currentView, isDrawerOpen, isDataLoaded, viewTitle, cachedQuote, dataFingerprint, lastEncouragement, aiProviderUrl, aiApiKey, aiModel, autoLockDelaySeconds, notificationSettings, notificationAiContent, targetWeight, heightCm, weightChangeReminderEnabled, weightChangeThreshold, loadSettings, switchView, updateBanner, updateBg, updateHealthSettings }
 })
