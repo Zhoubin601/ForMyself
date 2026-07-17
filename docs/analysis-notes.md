@@ -83,3 +83,22 @@
 - 恢复前的一次性测试主密码仍可解锁；强制重启应用后密码库记录仍存在，验证了显式持久化。
 - 完整导出成功生成 `ForMyself_Full_Backup_日期.json` 并打开 Android 系统分享面板。
 - 测试完成后已删除模拟器下载目录中的虚构备份、清空测试应用数据并关闭模拟器；本地临时截图和生成脚本也已删除。
+
+## 2026-07-18 应用图标更新与 v1.0 APK
+
+实施方向：
+
+1. 将 `newicon.png` 原图同步为 `assets/icon.png` 和 Android 项目图标源，不重新绘制或改变主体比例。
+2. 生成 mdpi、hdpi、xhdpi、xxhdpi、xxxhdpi 五档普通、圆形、自适应前景和背景图标。
+3. 自适应图标背景使用原图背景色 `#444E71`，移除旧的额外 inset，避免圆形裁切出现白边或主体过小。
+4. 同步更新 PWA WebP 图标、网页 PNG favicon 入口和 manifest MIME 类型。
+5. 提供 `scripts/generate-app-icons.mjs`，以后替换根目录 `newicon.png` 后可重复生成全部图标。
+6. 保持 Android `versionName 1.0`；由于未配置生产密钥，交付 APK 使用 Android Debug 证书签名并在文件名中明确标记。
+
+验证结果：
+
+- Node 自动化测试 53/53 通过，Vite 生产构建和 Capacitor Android 同步通过。
+- Android `clean assembleDebug` 构建通过（315 个任务）。
+- APK 包名 `com.yubin.formyself`、版本 `1.0 (1)`、最低 API 24、目标 API 36 校验通过。
+- APK Signature Scheme v2 验证通过；SHA-256 为 `32C99431BA194F5ABCB8905F56F702F6D7A0CDAD45200470B8339C97EB579F7B`。
+- 模拟器卸载旧版本后全新安装最终 APK，Pixel Launcher 正确显示猫咪圆形图标，无白边且主体完整。

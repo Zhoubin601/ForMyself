@@ -78,3 +78,19 @@
 - 所有备份文件均使用当前主密码通过 CryptoJS AES 加密。
 - 主密码只存在于认证 Store 的运行时状态中，设备生物识别凭据由系统及原生插件管理，不属于可导出的应用数据。
 - 完整备份需要覆盖四类业务数据、心情追踪元数据和应用设置；单项备份格式继续保持不变。
+
+## 2026-07-18 应用图标更新与 v1.0 APK
+
+来源文件：
+
+- `newicon.png`
+- 当前项目的 `android/app/src/main/AndroidManifest.xml`
+- 当前项目的 `android/app/src/main/res/mipmap-*` 图标资源
+- 当前项目的 `public/manifest.webmanifest` 与 `icons/` 图标资源
+
+关键事实：
+
+- 用户提供的图标原图是 1259×1259 PNG，满足 Android 图标源至少 1024×1024 的尺寸要求。
+- 原图左上角及主体背景色为 RGB `(68, 78, 113)`，即 `#444E71`。
+- Android Manifest 使用 `@mipmap/ic_launcher` 和 `@mipmap/ic_launcher_round` 作为应用图标入口。
+- 项目版本保持 `versionCode 1`、`versionName 1.0`；项目未配置生产发布密钥。
