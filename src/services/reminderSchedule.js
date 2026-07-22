@@ -16,6 +16,16 @@ export const REMINDER_DEFINITIONS = {
   }
 }
 
+export const REMINDER_CHANNEL_ID = 'formyself-daily-reminders-v1'
+export const REMINDER_SETUP_NOTIFICATION_ID = 2198
+export const REMINDER_TEST_NOTIFICATION_ID = 2199
+
+const REMINDER_LABELS = {
+  mood: '心情',
+  weight: '体重',
+  savings: '省钱'
+}
+
 export const DEFAULT_REMINDER_SETTINGS = {
   mood: { enabled: false, time: '21:00', useAI: false },
   weight: { enabled: false, time: '08:00', useAI: false },
@@ -76,6 +86,8 @@ export function buildReminderNotifications(settings, personalizedBodies = {}) {
         body: item.useAI && personalizedBodies[key]
           ? String(personalizedBodies[key]).trim().slice(0, 100)
           : definition.body,
+        channelId: REMINDER_CHANNEL_ID,
+        autoCancel: true,
         schedule: {
           on: { hour, minute },
           allowWhileIdle: true
@@ -83,6 +95,31 @@ export function buildReminderNotifications(settings, personalizedBodies = {}) {
         extra: { reminderType: key }
       }
     })
+}
+
+export function buildReminderTestNotification() {
+  return {
+    id: REMINDER_TEST_NOTIFICATION_ID,
+    title: 'ForMyself 通知测试',
+    body: '如果你看到这条消息，说明本机通知权限和通知渠道工作正常。',
+    channelId: REMINDER_CHANNEL_ID,
+    autoCancel: true,
+    extra: { reminderType: 'test' }
+  }
+}
+
+export function buildReminderSetupNotification(settings) {
+  const normalized = normalizeReminderSettings(settings)
+  const enabled = Object.entries(normalized).filter(([, item]) => item.enabled)
+  const summary = enabled.map(([key, item]) => `${REMINDER_LABELS[key]} ${item.time}`).join('、')
+  return {
+    id: REMINDER_SETUP_NOTIFICATION_ID,
+    title: '每日提醒已设置',
+    body: summary ? `已开启 ${enabled.length} 项提醒：${summary}` : '当前没有开启每日提醒。',
+    channelId: REMINDER_CHANNEL_ID,
+    autoCancel: true,
+    extra: { reminderType: 'setup-confirmation' }
+  }
 }
 
 export function getReminderIds() {

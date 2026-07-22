@@ -2,9 +2,14 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import {
   buildReminderNotifications,
+  buildReminderSetupNotification,
+  buildReminderTestNotification,
   getReminderIds,
   normalizeReminderSettings,
-  normalizeReminderTime
+  normalizeReminderTime,
+  REMINDER_CHANNEL_ID,
+  REMINDER_SETUP_NOTIFICATION_ID,
+  REMINDER_TEST_NOTIFICATION_ID
 } from '../src/services/reminderSchedule.js'
 
 test('提醒时间只接受有效的 24 小时时间', () => {
@@ -36,6 +41,8 @@ test('只为已启用的类型生成每日本地通知', () => {
   assert.deepEqual(notifications[0].schedule.on, { hour: 21, minute: 30 })
   assert.deepEqual(notifications[1].schedule.on, { hour: 19, minute: 45 })
   assert.equal(notifications.every(item => item.schedule.allowWhileIdle), true)
+  assert.equal(notifications.every(item => item.channelId === REMINDER_CHANNEL_ID), true)
+  assert.equal(notifications.every(item => item.autoCancel === true), true)
 })
 
 test('全部关闭时不生成通知', () => {
@@ -58,4 +65,24 @@ test('只在对应 AI 开关开启且有缓存时使用个性化正文', () => {
   })
   assert.equal(notifications[0].body, '看见你最近有些疲惫，今晚也记得照顾自己的感受。')
   assert.equal(notifications[1].body, '保持相同时间记录，趋势会更有参考价值。')
+})
+
+test('测试通知使用独立 ID、通知渠道并立即投递', () => {
+  const notification = buildReminderTestNotification()
+  assert.equal(notification.id, REMINDER_TEST_NOTIFICATION_ID)
+  assert.equal(notification.channelId, REMINDER_CHANNEL_ID)
+  assert.equal(notification.schedule, undefined)
+  assert.equal(notification.extra.reminderType, 'test')
+})
+
+test('保存成功通知会列出已开启的提醒和时间', () => {
+  const notification = buildReminderSetupNotification({
+    mood: { enabled: true, time: '21:15' },
+    savings: { enabled: true, time: '20:30' }
+  })
+  assert.equal(notification.id, REMINDER_SETUP_NOTIFICATION_ID)
+  assert.equal(notification.channelId, REMINDER_CHANNEL_ID)
+  assert.match(notification.body, /心情 21:15/)
+  assert.match(notification.body, /省钱 20:30/)
+  assert.equal(notification.schedule, undefined)
 })

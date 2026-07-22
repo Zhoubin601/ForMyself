@@ -94,3 +94,27 @@
 - 原图左上角及主体背景色为 RGB `(68, 78, 113)`，即 `#444E71`。
 - Android Manifest 使用 `@mipmap/ic_launcher` 和 `@mipmap/ic_launcher_round` 作为应用图标入口。
 - 项目版本保持 `versionCode 1`、`versionName 1.0`；项目未配置生产发布密钥。
+## 2026-07-22 每日通知可靠性修复
+
+来源文件：
+
+- 当前项目的 `src/services/reminderSchedule.js`
+- 当前项目的 `src/services/notificationService.js`
+- 当前项目的 `src/components/SettingsView.vue`
+- 当前项目的 `tests/reminderSchedule.test.js`
+- `node_modules/@capacitor/local-notifications` 8.2.1 的本地类型定义与 Android 实现
+
+关键事实：
+
+- 插件的 `schedule.on` 属于日历式循环调度，只设置 `hour/minute` 时会在触发后计算下一天，无需额外设置 `repeats`。
+- Android 8 及以上使用通知渠道；原实现没有为每日提醒创建和绑定明确渠道。
+- 原实现仅相信 `schedule()` 返回值，没有通过 `getPending()` 验证每日任务是否真正保留在系统待处理列表。
+- Android 13 及以上的 `POST_NOTIFICATIONS` 权限已由 Local Notifications 插件 Manifest 合并提供，但仍需在运行时请求用户授权。
+- 用户确认：保存每日通知设置成功后，需要立即收到一条设置成功通知。
+
+模拟器验证来源：
+
+- Android Studio AVD `Pixel_6_Pro`（Android 模拟器，设备 ID `emulator-5554`）。
+- `adb dumpsys notification --noredact`：确认设置成功通知 ID `2198`、立即测试通知 ID `2199` 和每日心情提醒 ID `2101` 均使用高重要性渠道 `formyself-daily-reminders-v1`。
+- `adb dumpsys alarm`：每日心情提醒在应用退到后台后由 `TimedNotificationPublisher` 触发，并自动安排到次日。
+- 模拟器未授予精确闹钟特殊权限；15:45 的测试提醒实际于 15:47 左右送达，说明非精确闹钟模式可工作，但 Android 可能延迟投递。

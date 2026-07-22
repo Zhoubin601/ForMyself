@@ -1,12 +1,17 @@
 <script setup>
 import { Capacitor } from '@capacitor/core'
-import { ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { Filesystem, Directory, Encoding } from '@capacitor/filesystem'
 import { Share } from '@capacitor/share'
 import CryptoJS from 'crypto-js'
 import { NativeBiometric } from '@capgo/capacitor-native-biometric'
 import { askAI } from '../services/aiEngine'
-import { syncReminderNotifications } from '../services/notificationService'
+import {
+  getReminderNotificationStatus,
+  sendReminderSetupConfirmation,
+  sendReminderTestNotification,
+  syncReminderNotifications
+} from '../services/notificationService'
 import { refreshPersonalizedReminderContent } from '../services/notificationPersonalizer'
 import { getPersonalizedReminderBodies } from '../services/reminderSchedule'
 import {
@@ -260,8 +265,33 @@ const lockApp = () => { authStore.lockApp() }
 // --- AI BYOK 配置测试 ---
 const isTestingAI = ref(false)
 const isSavingReminders = ref(false)
+const isTestingNotification = ref(false)
+const reminderStatus = ref({ permission: 'unknown', pending: [], exactAlarm: 'unknown' })
+const reminderFeedback = ref('')
+
+const reminderStatusText = computed(() => {
+  if (reminderStatus.value.permission === 'denied') return '通知权限已被拒绝，请到系统设置中开启。'
+  if (reminderStatus.value.permission !== 'granted') return '尚未取得通知权限。'
+  const count = reminderStatus.value.pending.length
+  if (!count) return '通知权限正常，当前没有已排入系统的每日提醒。'
+  const delayHint = reminderStatus.value.exactAlarm === 'denied' ? '；系统可能允许少量时间延迟' : ''
+  return `通知权限正常，系统已保留 ${count} 项每日提醒${delayHint}。`
+})
+
+const refreshReminderStatus = async () => {
+  try {
+    reminderStatus.value = await getReminderNotificationStatus()
+  } catch (error) {
+    reminderStatus.value = { permission: 'unknown', pending: [], exactAlarm: 'unknown' }
+    reminderFeedback.value = `无法读取系统通知状态：${error.message}`
+  }
+}
+
+onMounted(refreshReminderStatus)
+
 const saveReminderSettings = async () => {
   isSavingReminders.value = true
+  reminderFeedback.value = ''
   try {
     const personalization = await refreshPersonalizedReminderContent({
       settings: settingsStore.notificationSettings,
@@ -279,13 +309,17 @@ const saveReminderSettings = async () => {
       requestPermission: true,
       personalizedBodies: personalization.bodies
     })
+    if (result.scheduled > 0) {
+      await sendReminderSetupConfirmation(settingsStore.notificationSettings)
+    }
+    await refreshReminderStatus()
     if (result.scheduled === 0) alert('所有通知提醒已关闭')
     else if (personalization.errors.length) {
       alert(`已安排 ${result.scheduled} 项每日提醒。部分 AI 文案生成失败，已使用默认关怀文案；请检查 API Key 和网络。`)
     } else if (personalization.generated > 0) {
       alert(`已安排 ${result.scheduled} 项每日提醒，并生成 ${personalization.generated} 条 AI 个性化关怀文案`)
     } else {
-      alert(`已保存并安排 ${result.scheduled} 项每日提醒`)
+      alert(`已保存并安排 ${result.scheduled} 项每日提醒，系统待处理列表已校验通过`)
     }
   } catch (error) {
     if (error.code === 'NOTIFICATION_PERMISSION_DENIED') {
@@ -293,8 +327,25 @@ const saveReminderSettings = async () => {
     } else {
       alert('通知提醒设置失败：' + error.message)
     }
+    await refreshReminderStatus()
   } finally {
     isSavingReminders.value = false
+  }
+}
+
+const testNotification = async () => {
+  isTestingNotification.value = true
+  reminderFeedback.value = ''
+  try {
+    await sendReminderTestNotification({ requestPermission: true })
+    reminderFeedback.value = '测试通知已发送，请下拉通知栏确认“ForMyself 通知测试”。'
+    await refreshReminderStatus()
+  } catch (error) {
+    reminderFeedback.value = error.code === 'NOTIFICATION_PERMISSION_DENIED'
+      ? '测试失败：通知权限未开启，请到系统设置中允许通知。'
+      : `测试通知发送失败：${error.message}`
+  } finally {
+    isTestingNotification.value = false
   }
 }
 const testAIConnection = async () => {
@@ -428,6 +479,14 @@ const testAIConnection = async () => {
         <button class="button-primary full-width reminder-save" :disabled="isSavingReminders" @click="saveReminderSettings">
           {{ isSavingReminders ? '正在安排提醒…' : '保存通知提醒' }}
         </button>
+        <button class="button-secondary-pill full-width reminder-test" :disabled="isTestingNotification" @click="testNotification">
+          {{ isTestingNotification ? '正在发送测试通知…' : '发送一条测试通知' }}
+        </button>
+        <div class="reminder-status" :class="{ warning: reminderStatus.permission === 'denied' }">
+          <strong>系统状态</strong>
+          <span>{{ reminderStatusText }}</span>
+          <span v-if="reminderFeedback">{{ reminderFeedback }}</span>
+        </div>
         <p class="caption body-muted reminder-note">普通提醒完全在设备本地调度。开启 AI 后，仅对应模块的最近记录会发送给你配置的 AI 服务；文案按数据变化缓存，不会重复调用。</p>
       </div>
     </div>
@@ -514,6 +573,9 @@ const testAIConnection = async () => {
 .switch-control input:checked + span { background: var(--primary); }
 .switch-control input:checked + span::after { transform: translateX(20px); }
 .reminder-save { margin: 16px; width: calc(100% - 32px); }
+.reminder-test { margin: 0 16px 12px; width: calc(100% - 32px); }
+.reminder-status { display: flex; flex-direction: column; gap: 4px; margin: 0 16px 12px; padding: 12px; border-radius: 12px; background: var(--surface-pearl); color: var(--ink); font-size: 13px; line-height: 1.45; }
+.reminder-status.warning { color: #b42318; background: #fff1f0; }
 .reminder-note { margin: 0; padding: 0 16px 16px; text-align: center; }
 @media (max-width: 480px) {
   .reminder-row { gap: 8px; }
