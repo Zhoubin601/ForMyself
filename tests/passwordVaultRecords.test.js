@@ -4,8 +4,11 @@ import { createPinia, setActivePinia } from 'pinia'
 import {
   DEFAULT_VAULT_CATEGORY,
   compareVaultRecords,
+  getVaultCategories,
+  isVaultCategoryInUse,
   normalizePasswordVaultRecord,
-  normalizePasswordVaultRecords
+  normalizePasswordVaultRecords,
+  normalizeVaultCategoryList
 } from '../src/services/passwordVaultRecords.js'
 import { usePasswordVaultStore } from '../src/stores/passwordVault.js'
 
@@ -70,4 +73,28 @@ test('Store 追加原备份并支持收藏切换', () => {
   assert.equal(store.records[0].favorite, false)
   store.toggleFavorite('old-id')
   assert.equal(store.records[0].favorite, true)
+})
+
+test('保存过的分类列表可删除未使用内置项，并自动补入记录实际使用的分类', () => {
+  assert.deepEqual(normalizeVaultCategoryList([' 个人 ', '个人']), ['个人', DEFAULT_VAULT_CATEGORY])
+  assert.deepEqual(
+    getVaultCategories([{ category: '工作' }], ['个人', DEFAULT_VAULT_CATEGORY]),
+    ['个人', '工作', DEFAULT_VAULT_CATEGORY]
+  )
+  assert.equal(isVaultCategoryInUse([{ category: '工作' }], '工作'), true)
+  assert.equal(isVaultCategoryInUse([{ category: '工作' }], '个人'), false)
+})
+
+test('密码分类支持添加和删除，但占用中分类与未分类不可删除', () => {
+  setActivePinia(createPinia())
+  const store = usePasswordVaultStore()
+
+  assert.equal(store.addCategory('个人').ok, true)
+  assert.equal(store.addCategory('个人').reason, 'EXISTS')
+  assert.equal(store.deleteCategory('个人').ok, true)
+
+  store.addCategory('工作账号')
+  store.addRecord({ id: 'used', appName: '公司邮箱', category: '工作账号' })
+  assert.equal(store.deleteCategory('工作账号').reason, 'IN_USE')
+  assert.equal(store.deleteCategory(DEFAULT_VAULT_CATEGORY).reason, 'PROTECTED')
 })

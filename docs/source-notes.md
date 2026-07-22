@@ -143,3 +143,23 @@
 - Android 的“强制停止”会将包标记为 `stopped=true` 并取消 AlarmManager 任务；这是平台规则，任何本地通知都必须等用户再次打开应用后才能恢复。
 - `@capacitor/local-notifications` 8.2.1 的 `TimedNotificationPublisher.rescheduleNotificationIfNeeded()` 未读取原任务的 `allowWhileIdle`，触发后把次日任务从 `RTC_WAKEUP` 降级为普通 `RTC`。
 - 普通 `RTC` 不负责唤醒休眠设备；应用下次打开时会重新同步为 `RTC_WAKEUP`，因此会表现成“只有打开应用才有通知”。
+
+## 2026-07-23 心情标签与密码分类管理 v2
+
+来源文件：
+
+- 当前项目的 `src/components/SettingsView.vue`
+- 当前项目的 `src/components/PasswordVaultView.vue`
+- 当前项目的 `src/stores/mood.js`
+- 当前项目的 `src/stores/passwordVault.js`
+- 当前项目的 `src/services/passwordVaultRecords.js`
+- 当前项目的 `src/services/fullBackup.js`
+- 当前项目的 `tests/moodRecords.test.js`、`tests/passwordVaultRecords.test.js`、`tests/fullBackup.test.js`
+- 用户当前反馈：心情日记自定义标签需要在通用配置删除；密码库分类需要在通用配置增删；只有未被密码记录使用的分类才允许删除；编辑密码时分类下拉框失效。
+
+关键事实：
+
+- 原密码编辑器使用 `input + datalist`，Android WebView 对该组合的交互支持不稳定。
+- 密码分类此前主要从记录动态推导，没有独立的加密分类配置，因此无法可靠保存“尚未使用的新增分类”或“已删除的默认分类”。
+- 心情自定义标签已经独立保存，但此前没有从配置页删除并同步清理历史记录的入口。
+- 本次实现及测试未使用 `raw/` 原始资料，也未使用外部网络资料。

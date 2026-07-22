@@ -1,7 +1,11 @@
 import { normalizeAutoLockDelay } from './autoLockPolicy.js'
 import { normalizeHealthSettings } from './weightInsights.js'
 import { normalizeMoodRecords } from './moodRecords.js'
-import { normalizePasswordVaultRecords } from './passwordVaultRecords.js'
+import {
+  BUILT_IN_VAULT_CATEGORIES,
+  normalizePasswordVaultRecords,
+  normalizeVaultCategoryList
+} from './passwordVaultRecords.js'
 import {
   normalizeNotificationAiCache,
   normalizeReminderSettings
@@ -59,9 +63,11 @@ export function buildFullBackupSnapshot({
   mood = [],
   passwords = [],
   moodMetadata = {},
+  vaultMetadata = {},
   settings = {}
 }, createdAt = new Date().toISOString()) {
   const safeMoodMetadata = moodMetadata && typeof moodMetadata === 'object' ? moodMetadata : {}
+  const safeVaultMetadata = vaultMetadata && typeof vaultMetadata === 'object' ? vaultMetadata : {}
   return {
     type: FULL_BACKUP_TYPE,
     version: FULL_BACKUP_VERSION,
@@ -78,6 +84,11 @@ export function buildFullBackupSnapshot({
         customTags: Array.isArray(safeMoodMetadata.customTags)
           ? [...new Set(safeMoodMetadata.customTags.map(tag => cleanText(tag, 20).trim()).filter(Boolean))]
           : []
+      },
+      vault: {
+        categories: Array.isArray(safeVaultMetadata.categories)
+          ? normalizeVaultCategoryList(safeVaultMetadata.categories)
+          : [...BUILT_IN_VAULT_CATEGORIES]
       }
     },
     settings: normalizeFullBackupSettings(settings)
@@ -97,6 +108,7 @@ export function normalizeFullBackupSnapshot(value) {
     mood: normalizeMoodRecords(requireArray(value.data.mood, 'mood')),
     passwords: normalizePasswordVaultRecords(requireArray(value.data.passwords, 'passwords')),
     moodMetadata: value.metadata?.mood,
+    vaultMetadata: value.metadata?.vault,
     settings: value.settings
   }, value.createdAt)
 

@@ -1,13 +1,11 @@
 <script setup>
-import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { Capacitor } from '@capacitor/core'
 import { NativeBiometric } from '@capgo/capacitor-native-biometric'
 import { usePasswordVaultStore } from '../stores/passwordVault'
 import {
-  BUILT_IN_VAULT_CATEGORIES,
   DEFAULT_VAULT_CATEGORY,
-  compareVaultRecords,
-  getVaultCategories
+  compareVaultRecords
 } from '../services/passwordVaultRecords.js'
 import { VAULT_ACCESS_RESULT, verifyVaultSecretAccess } from '../services/vaultAccessGuard.js'
 
@@ -22,7 +20,11 @@ const editingId = ref(null)
 const form = ref({ appName: '', account: '', password: '', category: DEFAULT_VAULT_CATEGORY, favorite: false, extraFields: [] })
 const visibilityTimers = new Map()
 
-const availableCategories = computed(() => getVaultCategories(vaultStore.records))
+const availableCategories = computed(() => vaultStore.categories)
+
+watch(availableCategories, categories => {
+  if (categoryFilter.value !== 'all' && !categories.includes(categoryFilter.value)) categoryFilter.value = 'all'
+})
 
 const filteredRecords = computed(() => {
   const keyword = searchQuery.value.trim().toLowerCase()
@@ -229,10 +231,9 @@ onUnmounted(() => {
             <label>登录密码</label>
             <input v-model="form.password" class="apple-input" type="password" placeholder="输入密码" />
             <label>分类</label>
-            <input v-model="form.category" class="apple-input" list="vault-category-options" maxlength="20" placeholder="选择或输入分类" />
-            <datalist id="vault-category-options">
-              <option v-for="category in BUILT_IN_VAULT_CATEGORIES" :key="category" :value="category"></option>
-            </datalist>
+            <select v-model="form.category" class="apple-input category-editor-select">
+              <option v-for="category in availableCategories" :key="category" :value="category">{{ category }}</option>
+            </select>
             <label class="favorite-editor-option">
               <input v-model="form.favorite" type="checkbox" />
               收藏这条记录
@@ -261,6 +262,7 @@ onUnmounted(() => {
 .add-password-btn { flex-shrink: 0; }
 .vault-filters { display: flex; gap: 10px; margin: -8px 0 20px; }
 .category-filter { flex: 1; appearance: auto; }
+.category-editor-select { appearance: auto; cursor: pointer; }
 .favorite-filter { flex-shrink: 0; padding: 10px 14px; border: 1px solid var(--hairline); border-radius: 12px; background: var(--canvas); color: var(--body-muted); cursor: pointer; }
 .favorite-filter.active { border-color: #f5b800; background: #fff8dc; color: #8a6200; font-weight: 600; }
 .vault-warning { padding: 14px 16px; margin-bottom: 16px; border-radius: 12px; color: #b42318; background: #fef3f2; }

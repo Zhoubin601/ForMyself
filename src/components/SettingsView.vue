@@ -45,6 +45,7 @@ const fileInputRef = ref(null)
 const bgInputRef = ref(null)
 
 const exportDataType = ref('full')
+const newVaultCategory = ref('')
 
 // --- 看板设置 ---
 const localBanner = ref({ ...settingsStore.bannerSettings })
@@ -56,6 +57,35 @@ watch(() => settingsStore.bannerSettings, (newVal) => {
 const saveBannerSettings = () => {
   settingsStore.updateBanner({ ...localBanner.value })
   alert('看板配置已保存生效！')
+}
+
+const deleteMoodTag = (tag) => {
+  if (!confirm(`确认删除心情标签“${tag}”？该标签也会从历史心情记录中移除。`)) return
+  if (moodStore.removeCustomTag(tag)) alert(`已删除心情标签“${tag}”`)
+}
+
+const addVaultCategory = () => {
+  const result = vaultStore.addCategory(newVaultCategory.value)
+  if (!result.ok) {
+    if (result.reason === 'EMPTY') return alert('请输入分类名称')
+    if (result.reason === 'EXISTS') return alert('该分类已经存在')
+    return
+  }
+  newVaultCategory.value = ''
+  alert(`已添加密码分类“${result.category}”`)
+}
+
+const vaultCategoryUsageCount = category => vaultStore.records.filter(record => record.category === category).length
+
+const deleteVaultCategory = (category) => {
+  const usageCount = vaultCategoryUsageCount(category)
+  if (usageCount > 0) return alert(`分类“${category}”仍有 ${usageCount} 条密码记录，不能删除`)
+  if (!confirm(`确认删除密码分类“${category}”？`)) return
+  const result = vaultStore.deleteCategory(category)
+  if (!result.ok) {
+    if (result.reason === 'PROTECTED') alert('“未分类”是系统兜底分类，不能删除')
+    else if (result.reason === 'IN_USE') alert(`分类“${category}”仍有密码记录，不能删除`)
+  }
 }
 
 // --- 安全 ---
@@ -120,6 +150,9 @@ const createFullBackupSnapshot = () => buildFullBackupSnapshot({
     trackingStartDate: moodStore.trackingStartDate,
     customTags: moodStore.customTags
   },
+  vaultMetadata: {
+    categories: vaultStore.categories
+  },
   settings: settingsStore.getBackupSnapshot()
 })
 
@@ -128,7 +161,7 @@ const applyFullBackupSnapshot = async (snapshot) => {
     debtStore.restoreDebts(snapshot.data.savings),
     weightStore.restoreWeightRecords(snapshot.data.weight),
     moodStore.restoreMoodBackup(snapshot.data.mood, snapshot.metadata.mood),
-    vaultStore.restoreRecords(snapshot.data.passwords),
+    vaultStore.restoreRecords(snapshot.data.passwords, snapshot.metadata.vault),
     settingsStore.restoreBackupSnapshot(snapshot.settings)
   ])
   const failure = results.find(result => result.status === 'rejected')
@@ -458,6 +491,51 @@ const testAIConnection = async () => {
     </div>
 
     <div class="setting-section">
+      <h3 class="caption body-muted section-title">内容标签与分类</h3>
+
+      <div class="store-utility-card taxonomy-card">
+        <h4 class="body-strong taxonomy-title">心情日记自定义标签</h4>
+        <p class="caption body-muted taxonomy-description">删除标签时会同时从历史心情记录中移除；内置标签“工作、学习、家庭、睡眠”固定保留。</p>
+        <div v-if="moodStore.customTags.length" class="taxonomy-list">
+          <div v-for="tag in moodStore.customTags" :key="tag" class="taxonomy-row">
+            <span>{{ tag }}</span>
+            <button class="text-link danger-text taxonomy-action" @click="deleteMoodTag(tag)">删除</button>
+          </div>
+        </div>
+        <p v-else class="caption body-muted taxonomy-empty">暂无自定义心情标签</p>
+      </div>
+
+      <div class="store-utility-card taxonomy-card">
+        <h4 class="body-strong taxonomy-title">密码库分类</h4>
+        <p class="caption body-muted taxonomy-description">可在这里统一添加和删除分类。仍被密码记录使用的分类不能删除，“未分类”固定保留。</p>
+        <div class="taxonomy-add-row">
+          <input
+            v-model="newVaultCategory"
+            class="apple-input"
+            maxlength="20"
+            placeholder="输入新分类名称"
+            @keyup.enter="addVaultCategory"
+          />
+          <button class="button-primary taxonomy-add-button" @click="addVaultCategory">添加</button>
+        </div>
+        <div class="taxonomy-list">
+          <div v-for="category in vaultStore.categories" :key="category" class="taxonomy-row">
+            <span>{{ category }}</span>
+            <span class="taxonomy-row-meta">
+              <span v-if="vaultCategoryUsageCount(category)" class="caption body-muted">已使用 {{ vaultCategoryUsageCount(category) }} 条</span>
+              <span v-else-if="category === '未分类'" class="caption body-muted">系统保留</span>
+              <button
+                v-else
+                class="text-link danger-text taxonomy-action"
+                @click="deleteVaultCategory(category)"
+              >删除</button>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="setting-section">
       <h3 class="caption body-muted section-title">通知提醒</h3>
       <div class="store-utility-card reminder-card">
         <div class="reminder-row">
@@ -594,8 +672,21 @@ const testAIConnection = async () => {
 .list-item:active { background: var(--surface-pearl); }
 
 .text-link.destructive { color: #ff3b30; }
+.danger-text { color: #d92d20; }
 .input-group { margin-bottom: 12px; }
 .store-utility-card { background: var(--canvas); border: 1px solid var(--hairline); border-radius: 18px; padding: 24px; margin-top: 8px; }
+.taxonomy-card + .taxonomy-card { margin-top: 12px; }
+.taxonomy-title { margin: 0; }
+.taxonomy-description { margin: 8px 0 16px; line-height: 1.55; }
+.taxonomy-empty { margin: 0; padding: 12px 0 2px; }
+.taxonomy-add-row { display: flex; gap: 10px; margin-bottom: 14px; }
+.taxonomy-add-row .apple-input { flex: 1; min-width: 0; }
+.taxonomy-add-button { flex-shrink: 0; padding-inline: 18px; }
+.taxonomy-list { overflow: hidden; border: 1px solid var(--hairline); border-radius: 12px; }
+.taxonomy-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 48px; padding: 10px 14px; border-bottom: 1px solid var(--divider-soft); }
+.taxonomy-row:last-child { border-bottom: 0; }
+.taxonomy-row-meta { display: flex; align-items: center; gap: 10px; text-align: right; }
+.taxonomy-action { flex-shrink: 0; }
 
 .backup-type-select { appearance: auto; cursor: pointer; }
 .reminder-card { padding: 0; overflow: hidden; }

@@ -78,3 +78,18 @@ test('用户补写真实事件时替换自动补记占位而不重复计数', ()
   assert.equal(sameDay[0].autoFilled, false)
   assert.equal(sameDay[0].note, '后来补写')
 })
+
+test('删除自定义标签时会同步清理历史记录并为无标签记录回退到学习', () => {
+  setActivePinia(createPinia())
+  const store = useMoodStore()
+  store.updateMoodRecords([
+    { id: 'a', date: '2026-07-18', mood: 'good', tags: ['旅行', '工作'] },
+    { id: 'b', date: '2026-07-19', mood: 'normal', tags: ['旅行'] }
+  ])
+
+  assert.equal(store.removeCustomTag('旅行'), true)
+  assert.deepEqual(store.moodRecords[0].tags, ['工作'])
+  assert.deepEqual(store.moodRecords[1].tags, [DEFAULT_MOOD_TAG])
+  assert.equal(store.customTags.includes('旅行'), false)
+  assert.equal(store.removeCustomTag('学习'), false)
+})

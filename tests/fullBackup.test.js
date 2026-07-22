@@ -15,6 +15,7 @@ const buildFixture = () => buildFullBackupSnapshot({
   mood: [{ id: 'mood-1', date: '2026-07-18', mood: 'good', note: '完成测试' }],
   passwords: [{ id: 'vault-1', appName: '示例账户', account: 'demo', password: 'demo-password' }],
   moodMetadata: { trackingStartDate: '2026-07-01', customTags: ['运动', '运动'] },
+  vaultMetadata: { categories: ['工作', '个人', '未分类'] },
   settings: {
     banner: { prefix: '累计省下', suffix: '元', subtitle: '继续保持', titleSize: 42 },
     ai: { url: 'https://example.invalid', key: 'encrypted-api-key', model: 'demo-model' },
@@ -48,6 +49,7 @@ test('完整备份可用当前主密码加密并完整解密', () => {
   assert.equal(restored.data.passwords[0].category, '未分类')
   assert.equal(restored.settings.health.heightCm, 170)
   assert.deepEqual(restored.metadata.mood.customTags, ['运动'])
+  assert.deepEqual(restored.metadata.vault.categories, ['工作', '个人', '未分类'])
 })
 
 test('完整恢复在写入前拒绝错误类型、版本、日期和缺失数据集', () => {

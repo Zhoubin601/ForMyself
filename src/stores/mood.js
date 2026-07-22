@@ -200,6 +200,18 @@ export const useMoodStore = defineStore('mood', () => {
     return tag
   }
 
+  const removeCustomTag = (value) => {
+    const tag = normalizeMoodTag(value)
+    if (!tag || BUILT_IN_MOOD_TAGS.includes(tag) || !customTags.value.includes(tag)) return false
+
+    moodRecords.value = moodRecords.value.map(record => ({
+      ...record,
+      tags: normalizeMoodTags(record.tags.filter(item => item !== tag))
+    }))
+    customTags.value = customTags.value.filter(item => item !== tag)
+    return true
+  }
+
   function syncCustomTagsFromRecords() {
     customTags.value = getCustomMoodTags(moodRecords.value, customTags.value)
   }
@@ -231,6 +243,7 @@ export const useMoodStore = defineStore('mood', () => {
     getRecordByDate,
     getMonthStats,
     addCustomTag,
+    removeCustomTag,
     normalizeTags: normalizeMoodTags
   }
 })
