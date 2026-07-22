@@ -2,6 +2,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import {
   getReminderNotificationStatus,
+  requestExactReminderPermission,
   sendReminderSetupConfirmation,
   sendReminderTestNotification,
   syncReminderNotifications
@@ -12,8 +13,9 @@ import {
   REMINDER_TEST_NOTIFICATION_ID
 } from '../src/services/reminderSchedule.js'
 
-function createNotificationPlugin({ permission = 'granted' } = {}) {
+function createNotificationPlugin({ permission = 'granted', exactAlarm = 'denied' } = {}) {
   let displayPermission = permission
+  let exactAlarmPermission = exactAlarm
   let pending = []
   const calls = []
   return {
@@ -34,7 +36,12 @@ function createNotificationPlugin({ permission = 'granted' } = {}) {
       pending = pending.filter(item => !ids.has(item.id))
     },
     async getPending() { calls.push('getPending'); return { notifications: pending } },
-    async checkExactNotificationSetting() { return { exact_alarm: 'denied' } }
+    async checkExactNotificationSetting() { calls.push('checkExactNotificationSetting'); return { exact_alarm: exactAlarmPermission } },
+    async changeExactNotificationSetting() {
+      calls.push('changeExactNotificationSetting')
+      exactAlarmPermission = 'granted'
+      return { exact_alarm: exactAlarmPermission }
+    }
   }
 }
 
@@ -98,4 +105,20 @@ test('通知状态返回权限、系统待处理任务和精确闹钟状态', as
   assert.equal(status.permission, 'granted')
   assert.equal(status.pending.length, 1)
   assert.equal(status.exactAlarm, 'denied')
+})
+
+test('Android 精确闹钟未开启时会进入系统设置并返回授权结果', async () => {
+  const plugin = createNotificationPlugin({ exactAlarm: 'denied' })
+  const result = await requestExactReminderPermission({ notificationPlugin: plugin, platform: 'android' })
+  assert.deepEqual(result, { exactAlarm: 'granted', settingsOpened: true })
+  assert.ok(plugin.calls.includes('changeExactNotificationSetting'))
+})
+
+test('精确闹钟已开启或非 Android 平台时不会重复打开设置', async () => {
+  const plugin = createNotificationPlugin({ exactAlarm: 'granted' })
+  const androidResult = await requestExactReminderPermission({ notificationPlugin: plugin, platform: 'android' })
+  const webResult = await requestExactReminderPermission({ notificationPlugin: plugin, platform: 'web' })
+  assert.deepEqual(androidResult, { exactAlarm: 'granted', settingsOpened: false })
+  assert.deepEqual(webResult, { exactAlarm: 'not_applicable', settingsOpened: false })
+  assert.equal(plugin.calls.includes('changeExactNotificationSetting'), false)
 })

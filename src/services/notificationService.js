@@ -44,6 +44,17 @@ async function ensureReminderChannel(notificationPlugin, platform) {
   await notificationPlugin.createChannel(REMINDER_CHANNEL)
 }
 
+async function readExactAlarmSetting(notificationPlugin, platform) {
+  if (platform !== 'android' || typeof notificationPlugin.checkExactNotificationSetting !== 'function') {
+    return 'not_applicable'
+  }
+  try {
+    return (await notificationPlugin.checkExactNotificationSetting()).exact_alarm
+  } catch {
+    return 'unknown'
+  }
+}
+
 const getReminderPendingFrom = async notificationPlugin => {
   const pending = await notificationPlugin.getPending()
   const reminderIds = new Set(getReminderIds().map(item => item.id))
@@ -92,15 +103,23 @@ export async function getReminderNotificationStatus({
 } = {}) {
   const permission = await notificationPlugin.checkPermissions()
   const pending = await getReminderPendingFrom(notificationPlugin)
-  let exactAlarm = 'not_applicable'
-  if (platform === 'android' && typeof notificationPlugin.checkExactNotificationSetting === 'function') {
-    try {
-      exactAlarm = (await notificationPlugin.checkExactNotificationSetting()).exact_alarm
-    } catch {
-      exactAlarm = 'unknown'
-    }
-  }
+  const exactAlarm = await readExactAlarmSetting(notificationPlugin, platform)
   return { permission: permission.display, pending, exactAlarm }
+}
+
+export async function requestExactReminderPermission({
+  notificationPlugin = LocalNotifications,
+  platform = Capacitor.getPlatform()
+} = {}) {
+  const current = await readExactAlarmSetting(notificationPlugin, platform)
+  if (current !== 'denied') return { exactAlarm: current, settingsOpened: false }
+  if (typeof notificationPlugin.changeExactNotificationSetting !== 'function') {
+    return { exactAlarm: current, settingsOpened: false }
+  }
+
+  const result = await notificationPlugin.changeExactNotificationSetting()
+  const exactAlarm = result?.exact_alarm || await readExactAlarmSetting(notificationPlugin, platform)
+  return { exactAlarm, settingsOpened: true }
 }
 
 export async function sendReminderTestNotification({

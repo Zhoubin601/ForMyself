@@ -123,3 +123,44 @@
 - 点击“发送一条测试通知”后，通知栏显示“ForMyself 通知测试”；系统记录 ID `2199`、渠道重要性 4。
 - 将心情提醒改为 15:45 并把应用退到后台，Android 系统在非精确闹钟窗口内于约 15:47 发出“记录今天的心情”，系统记录 ID `2101`；随后自动生成次日 15:45 的调度项。
 - 实测截图保存在 `output/20260722-notification-daily-trigger-emulator-v1.png`。模拟器未授予精确闹钟特殊权限，因此实际投递存在约 2 分钟延迟；不同手机的省电策略仍可能带来额外延迟。
+
+## 2026-07-23 Android 精确每日提醒修复
+
+实施方向：
+
+1. 在 Android Manifest 声明 `SCHEDULE_EXACT_ALARM`，允许 Android 12+ 用户为 ForMyself 开启“闹钟和提醒”特殊权限。
+2. 保存每日提醒后若未授权，明确提示可能延迟数分钟到一小时，并引导进入系统权限页面；设置页同时提供“开启准时提醒权限”按钮。
+3. 用户拒绝特殊权限时保留原有非精确提醒作为降级方案，不把未授权误报为准时可用。
+4. 从系统权限页返回后延迟 500ms 重新调度，解决权限刚生效但旧非精确任务尚未替换的时序问题。
+5. 精确权限开启后重新校验系统待处理列表，继续发送“每日提醒已设置”确认通知。
+
+验证结果：
+
+- Node 自动化测试 62/62 通过，新增 2 项覆盖精确权限授权和无需重复打开设置的分支。
+- Vite 生产构建、Capacitor Android 同步及 Android `assembleDebug` 构建均通过。
+- 合并 Manifest 已包含 `android.permission.SCHEDULE_EXACT_ALARM`、`POST_NOTIFICATIONS` 和本地通知的定时/开机恢复接收器。
+- `Pixel_6_Pro` 模拟器真实完成通知权限授权、进入“Alarms & reminders”系统页并开启特殊权限。
+- 16:20:22 的心情提醒在应用退到后台后准点触发；AlarmManager 记录为 `window=0`、`exactAllowReason=permission`。
+- 触发后自动安排的次日 16:20:22 任务仍为 `window=0` 精确闹钟，修复了首次触发后次日任务退化为一小时窗口的问题。
+- 实测截图：`output/20260723-notification-exact-trigger-emulator-v2.png`。
+- 交付 APK：`output/20260723-ForMyself-notification-exact-fix-v2-debug.apk`；SHA-256 为 `0F3A334573E7B231733A4990F1BFD9713DA8AE0FB82A8585ADBB219911308B9B`。
+
+## 2026-07-23 应用关闭后的每日唤醒修复
+
+实施方向：
+
+1. 修补 Capacitor Local Notifications 8.2.1 的原生每日重排逻辑：从持久化通知读取 `allowWhileIdle`。
+2. 精确权限可用时，次日继续使用 `setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, ...)`；无精确权限时保留 `setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, ...)` 降级路径。
+3. 新增幂等的 `postinstall` 脚本 `scripts/patch-capacitor-local-notifications.mjs`，确保重新安装依赖后原生修补不会丢失；插件源码版本不匹配时构建前明确失败，避免静默回归。
+4. 设置页说明划掉最近任务、进程被系统回收、手机重启、系统“强制停止”之间的差异，并提醒部分品牌手机允许自启动和后台运行。
+
+验证结果：
+
+- Node 自动化测试 63/63 通过；新增原生源码回归测试，要求重排路径同时包含 `RTC_WAKEUP`、`setExactAndAllowWhileIdle` 和 `setAndAllowWhileIdle`。
+- Vite 生产构建、Capacitor Android 同步和 Android `assembleDebug` 均通过。
+- 进程结束验证：16:55:21 前 ForMyself 进程不存在，系统仍准点发出 ID `2101` 的“记录今天的心情”通知。
+- 重排验证：触发后的次日 16:55:21 任务保持 `RTC_WAKEUP`、`window=0`、`exactAllowReason=permission`，不再退化为普通 `RTC`。
+- 重启验证：模拟器重启后不启动 ForMyself，开机接收器恢复精确闹钟并准点发送通知。
+- 强制停止验证：Android 将包标为 `stopped=true` 并删除闹钟；此平台限制无法由本地代码绕过，重新打开应用后现有启动同步逻辑会恢复提醒。
+- 交付 APK：`output/20260723-ForMyself-notification-background-fix-v3-debug.apk`，SHA-256 为 `7885BB0FF076C07DA44A18FFC3BFAA4ECD7B3EE71DA59A3A2B21C007E05D292A`。
+- 实测截图：`output/20260723-notification-closed-app-trigger-emulator-v3.png`。

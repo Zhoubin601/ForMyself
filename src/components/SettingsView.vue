@@ -8,6 +8,7 @@ import { NativeBiometric } from '@capgo/capacitor-native-biometric'
 import { askAI } from '../services/aiEngine'
 import {
   getReminderNotificationStatus,
+  requestExactReminderPermission,
   sendReminderSetupConfirmation,
   sendReminderTestNotification,
   syncReminderNotifications
@@ -266,6 +267,7 @@ const lockApp = () => { authStore.lockApp() }
 const isTestingAI = ref(false)
 const isSavingReminders = ref(false)
 const isTestingNotification = ref(false)
+const isRequestingExactAlarm = ref(false)
 const reminderStatus = ref({ permission: 'unknown', pending: [], exactAlarm: 'unknown' })
 const reminderFeedback = ref('')
 
@@ -274,7 +276,9 @@ const reminderStatusText = computed(() => {
   if (reminderStatus.value.permission !== 'granted') return '尚未取得通知权限。'
   const count = reminderStatus.value.pending.length
   if (!count) return '通知权限正常，当前没有已排入系统的每日提醒。'
-  const delayHint = reminderStatus.value.exactAlarm === 'denied' ? '；系统可能允许少量时间延迟' : ''
+  const delayHint = reminderStatus.value.exactAlarm === 'denied'
+    ? '；“准时提醒”权限未开启，Android 可能延迟数分钟到一小时'
+    : ''
   return `通知权限正常，系统已保留 ${count} 项每日提醒${delayHint}。`
 })
 
@@ -288,6 +292,29 @@ const refreshReminderStatus = async () => {
 }
 
 onMounted(refreshReminderStatus)
+
+const enableExactReminders = async () => {
+  isRequestingExactAlarm.value = true
+  reminderFeedback.value = ''
+  try {
+    const permission = await requestExactReminderPermission()
+    if (permission.exactAlarm !== 'granted') {
+      reminderFeedback.value = '准时提醒权限尚未开启；提醒仍会保留，但 Android 可能延迟投递。'
+      return false
+    }
+    await syncReminderNotifications(settingsStore.notificationSettings, {
+      personalizedBodies: getPersonalizedReminderBodies(settingsStore.notificationAiContent)
+    })
+    reminderFeedback.value = '准时提醒权限已开启，所有每日提醒已按当前时间重新安排。'
+    return true
+  } catch (error) {
+    reminderFeedback.value = `准时提醒权限设置失败：${error.message}`
+    return false
+  } finally {
+    await refreshReminderStatus()
+    isRequestingExactAlarm.value = false
+  }
+}
 
 const saveReminderSettings = async () => {
   isSavingReminders.value = true
@@ -313,6 +340,11 @@ const saveReminderSettings = async () => {
       await sendReminderSetupConfirmation(settingsStore.notificationSettings)
     }
     await refreshReminderStatus()
+    if (result.scheduled > 0 && reminderStatus.value.exactAlarm === 'denied') {
+      const shouldEnableExactAlarm = confirm('每日提醒已保存，但 Android 尚未允许 ForMyself 使用准时闹钟，到点通知可能延迟数分钟到一小时。\n\n是否现在前往系统设置开启“闹钟和提醒”权限？')
+      if (shouldEnableExactAlarm) await enableExactReminders()
+    }
+
     if (result.scheduled === 0) alert('所有通知提醒已关闭')
     else if (personalization.errors.length) {
       alert(`已安排 ${result.scheduled} 项每日提醒。部分 AI 文案生成失败，已使用默认关怀文案；请检查 API Key 和网络。`)
@@ -482,12 +514,20 @@ const testAIConnection = async () => {
         <button class="button-secondary-pill full-width reminder-test" :disabled="isTestingNotification" @click="testNotification">
           {{ isTestingNotification ? '正在发送测试通知…' : '发送一条测试通知' }}
         </button>
-        <div class="reminder-status" :class="{ warning: reminderStatus.permission === 'denied' }">
+        <button
+          v-if="reminderStatus.permission === 'granted' && reminderStatus.exactAlarm === 'denied' && reminderStatus.pending.length"
+          class="button-secondary-pill full-width reminder-exact"
+          :disabled="isRequestingExactAlarm"
+          @click="enableExactReminders"
+        >
+          {{ isRequestingExactAlarm ? '正在打开系统设置…' : '开启准时提醒权限' }}
+        </button>
+        <div class="reminder-status" :class="{ warning: reminderStatus.permission === 'denied' || reminderStatus.exactAlarm === 'denied' }">
           <strong>系统状态</strong>
           <span>{{ reminderStatusText }}</span>
           <span v-if="reminderFeedback">{{ reminderFeedback }}</span>
         </div>
-        <p class="caption body-muted reminder-note">普通提醒完全在设备本地调度。开启 AI 后，仅对应模块的最近记录会发送给你配置的 AI 服务；文案按数据变化缓存，不会重复调用。</p>
+        <p class="caption body-muted reminder-note">普通提醒完全在设备本地调度。划掉最近任务或重启手机后仍可提醒；但在系统设置中“强制停止”应用会让 Android 删除全部闹钟，需重新打开 ForMyself 恢复。部分品牌手机还需允许自启动和后台运行。开启 AI 后，仅对应模块的最近记录会发送给你配置的 AI 服务。</p>
       </div>
     </div>
 
@@ -574,6 +614,7 @@ const testAIConnection = async () => {
 .switch-control input:checked + span::after { transform: translateX(20px); }
 .reminder-save { margin: 16px; width: calc(100% - 32px); }
 .reminder-test { margin: 0 16px 12px; width: calc(100% - 32px); }
+.reminder-exact { margin: 0 16px 12px; width: calc(100% - 32px); }
 .reminder-status { display: flex; flex-direction: column; gap: 4px; margin: 0 16px 12px; padding: 12px; border-radius: 12px; background: var(--surface-pearl); color: var(--ink); font-size: 13px; line-height: 1.45; }
 .reminder-status.warning { color: #b42318; background: #fff1f0; }
 .reminder-note { margin: 0; padding: 0 16px 16px; text-align: center; }

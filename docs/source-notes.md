@@ -118,3 +118,28 @@
 - `adb dumpsys notification --noredact`：确认设置成功通知 ID `2198`、立即测试通知 ID `2199` 和每日心情提醒 ID `2101` 均使用高重要性渠道 `formyself-daily-reminders-v1`。
 - `adb dumpsys alarm`：每日心情提醒在应用退到后台后由 `TimedNotificationPublisher` 触发，并自动安排到次日。
 - 模拟器未授予精确闹钟特殊权限；15:45 的测试提醒实际于 15:47 左右送达，说明非精确闹钟模式可工作，但 Android 可能延迟投递。
+
+## 2026-07-23 Android 到点提醒延迟诊断
+
+来源文件：
+
+- 用户反馈：提醒设置成功，但到设定时间没有收到通知。
+- 当前项目的 `android/app/src/main/AndroidManifest.xml`
+- 当前项目的 `src/App.vue`、`src/services/notificationService.js` 和 `src/components/SettingsView.vue`
+- `node_modules/@capacitor/local-notifications` 8.2.1 的 README 与 Android 原生实现
+
+关键事实：
+
+- 修复前 Manifest 未声明 `android.permission.SCHEDULE_EXACT_ALARM`，Android 12+ 因而只能建立非精确闹钟。
+- 插件首次非精确调度使用 `setAndAllowWhileIdle`；每日任务触发后的自动重排使用普通 `AlarmManager.set`，系统可给次日任务约一小时的投递窗口。
+- 模拟器实测修复前 15:45 提醒约 15:47 才送达，次日任务的系统窗口为一小时，能够解释“到点没有通知”。
+- 使用 `SCHEDULE_EXACT_ALARM` 需要用户在 Android 的“闹钟和提醒”特殊权限页手动允许；没有采用受应用商店政策严格限制的 `USE_EXACT_ALARM`。
+- Android 从特殊权限页返回时权限状态传播存在短暂时序差，应用需要在恢复前台后延迟重新同步提醒，不能要求用户重启应用。
+
+补充诊断（应用关闭与系统休眠）：
+
+- 模拟器中使用 `am kill com.yubin.formyself` 完全结束应用进程后，首条 `RTC_WAKEUP` 提醒仍能准点启动原生接收器并显示通知。
+- 模拟器重启后不打开 ForMyself，`BOOT_COMPLETED` 接收器约在系统完成启动 20 秒后恢复提醒，随后通知正常触发。
+- Android 的“强制停止”会将包标记为 `stopped=true` 并取消 AlarmManager 任务；这是平台规则，任何本地通知都必须等用户再次打开应用后才能恢复。
+- `@capacitor/local-notifications` 8.2.1 的 `TimedNotificationPublisher.rescheduleNotificationIfNeeded()` 未读取原任务的 `allowWhileIdle`，触发后把次日任务从 `RTC_WAKEUP` 降级为普通 `RTC`。
+- 普通 `RTC` 不负责唤醒休眠设备；应用下次打开时会重新同步为 `RTC_WAKEUP`，因此会表现成“只有打开应用才有通知”。

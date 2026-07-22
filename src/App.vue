@@ -32,6 +32,11 @@ const weightStore = useWeightStore()
 const pwdInput = ref('')
 let backgroundedAt = null
 let reminderRefreshTimer = null
+let reminderResumeTimer = null
+
+const resyncStoredReminders = () => syncReminderNotifications(settingsStore.notificationSettings, {
+  personalizedBodies: getPersonalizedReminderBodies(settingsStore.notificationAiContent)
+})
 
 const refreshReminderPersonalization = async (force = false) => {
   const result = await refreshPersonalizedReminderContent({
@@ -46,9 +51,7 @@ const refreshReminderPersonalization = async (force = false) => {
     force
   })
   settingsStore.notificationAiContent = result.cache
-  await syncReminderNotifications(settingsStore.notificationSettings, {
-    personalizedBodies: result.bodies
-  })
+  await syncReminderNotifications(settingsStore.notificationSettings, { personalizedBodies: result.bodies })
 }
 
 const queueReminderPersonalizationRefresh = () => {
@@ -78,9 +81,7 @@ onMounted(async () => {
   await vaultStore.loadRecords(authStore.savedMasterPwd)
 
   try {
-    await syncReminderNotifications(settingsStore.notificationSettings, {
-      personalizedBodies: getPersonalizedReminderBodies(settingsStore.notificationAiContent)
-    })
+    await resyncStoredReminders()
   } catch (error) {
     if (error.code !== 'NOTIFICATION_PERMISSION_DENIED') {
       console.warn('同步通知提醒失败', error)
@@ -104,6 +105,15 @@ onMounted(async () => {
       }
       backgroundedAt = null
       if (moodStore.isDataLoaded) moodStore.autoFillMissingDays()
+
+      // Android 从“闹钟和提醒”权限页返回时，权限状态传播可能稍晚于 Activity 恢复。
+      // 延迟重新调度，确保旧的非精确任务被 exact alarm 替换，无需用户重启应用。
+      clearTimeout(reminderResumeTimer)
+      reminderResumeTimer = setTimeout(() => {
+        resyncStoredReminders().catch(error => {
+          if (error.code !== 'NOTIFICATION_PERMISSION_DENIED') console.warn('恢复应用后同步通知提醒失败', error)
+        })
+      }, 500)
     })
   } catch (e) {
     console.warn('浏览器环境中无法监听 App 状态', e)
