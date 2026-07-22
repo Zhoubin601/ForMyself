@@ -17,10 +17,17 @@ const visibleIds = ref(new Set())
 const verifyingId = ref(null)
 const showEditor = ref(false)
 const editingId = ref(null)
+const filterMenuOpen = ref(false)
+const editorCategoryMenuOpen = ref(false)
 const form = ref({ appName: '', account: '', password: '', category: DEFAULT_VAULT_CATEGORY, favorite: false, extraFields: [] })
 const visibilityTimers = new Map()
 
 const availableCategories = computed(() => vaultStore.categories)
+const categoryFilterLabel = computed(() => categoryFilter.value === 'all' ? '全部分类' : categoryFilter.value)
+const editorCategoryOptions = computed(() => [
+  form.value.category,
+  ...availableCategories.value.filter(category => category !== form.value.category)
+])
 
 watch(availableCategories, categories => {
   if (categoryFilter.value !== 'all' && !categories.includes(categoryFilter.value)) categoryFilter.value = 'all'
@@ -42,20 +49,37 @@ const filteredRecords = computed(() => {
 const openAdd = () => {
   editingId.value = null
   form.value = { appName: '', account: '', password: '', category: DEFAULT_VAULT_CATEGORY, favorite: false, extraFields: [] }
+  editorCategoryMenuOpen.value = false
   showEditor.value = true
 }
 
 const openEdit = (record) => {
   editingId.value = record.id
   form.value = JSON.parse(JSON.stringify(record))
+  editorCategoryMenuOpen.value = false
   showEditor.value = true
+}
+
+const closeEditor = () => {
+  editorCategoryMenuOpen.value = false
+  showEditor.value = false
+}
+
+const selectFilterCategory = (category) => {
+  categoryFilter.value = category
+  filterMenuOpen.value = false
+}
+
+const selectEditorCategory = (category) => {
+  form.value.category = category
+  editorCategoryMenuOpen.value = false
 }
 
 const saveRecord = () => {
   if (!form.value.appName.trim()) return alert('请填写软件或网站名称')
   if (editingId.value) vaultStore.updateRecord(editingId.value, form.value)
   else vaultStore.addRecord(form.value)
-  showEditor.value = false
+  closeEditor()
 }
 
 const deleteRecord = (record) => {
@@ -141,9 +165,20 @@ const handleVisibilityChange = () => {
   if (document.hidden) hideAllSecrets()
 }
 
-onMounted(() => document.addEventListener('visibilitychange', handleVisibilityChange))
+const handleOutsidePointer = (event) => {
+  if (!(event.target instanceof Element) || !event.target.closest('.vault-select')) {
+    filterMenuOpen.value = false
+    editorCategoryMenuOpen.value = false
+  }
+}
+
+onMounted(() => {
+  document.addEventListener('visibilitychange', handleVisibilityChange)
+  document.addEventListener('pointerdown', handleOutsidePointer)
+})
 onUnmounted(() => {
   document.removeEventListener('visibilitychange', handleVisibilityChange)
+  document.removeEventListener('pointerdown', handleOutsidePointer)
   hideAllSecrets()
 })
 </script>
@@ -156,10 +191,52 @@ onUnmounted(() => {
     </div>
 
     <div class="vault-filters">
-      <select v-model="categoryFilter" class="apple-input category-filter">
-        <option value="all">全部分类</option>
-        <option v-for="category in availableCategories" :key="category" :value="category">{{ category }}</option>
-      </select>
+      <div class="vault-select category-filter" :class="{ open: filterMenuOpen }">
+        <button
+          type="button"
+          class="custom-select-trigger"
+          aria-haspopup="listbox"
+          :aria-expanded="filterMenuOpen"
+          @click="filterMenuOpen = !filterMenuOpen"
+        >
+          <span class="select-leading select-leading-filter">▦</span>
+          <span class="select-copy">
+            <small>分类筛选</small>
+            <strong>{{ categoryFilterLabel }}</strong>
+          </span>
+          <svg class="select-chevron" viewBox="0 0 20 20" aria-hidden="true">
+            <path d="m5 7.5 5 5 5-5" />
+          </svg>
+        </button>
+        <div v-if="filterMenuOpen" class="custom-select-menu" role="listbox">
+          <button
+            type="button"
+            class="custom-select-option"
+            :class="{ selected: categoryFilter === 'all' }"
+            role="option"
+            :aria-selected="categoryFilter === 'all'"
+            @click="selectFilterCategory('all')"
+          >
+            <span class="option-icon">▦</span>
+            <span>全部分类</span>
+            <span class="option-check">✓</span>
+          </button>
+          <button
+            v-for="category in availableCategories"
+            :key="category"
+            type="button"
+            class="custom-select-option"
+            :class="{ selected: categoryFilter === category }"
+            role="option"
+            :aria-selected="categoryFilter === category"
+            @click="selectFilterCategory(category)"
+          >
+            <span class="option-icon option-initial">{{ category.slice(0, 1) }}</span>
+            <span>{{ category }}</span>
+            <span class="option-check">✓</span>
+          </button>
+        </div>
+      </div>
       <button class="favorite-filter" :class="{ active: favoritesOnly }" @click="favoritesOnly = !favoritesOnly">
         {{ favoritesOnly ? '★ 仅看收藏' : '☆ 仅看收藏' }}
       </button>
@@ -220,7 +297,7 @@ onUnmounted(() => {
     </div>
 
     <Teleport to="body">
-      <div v-if="showEditor" class="modal-overlay" @click.self="showEditor = false">
+      <div v-if="showEditor" class="modal-overlay" @click.self="closeEditor">
         <div class="vault-editor glass-card">
           <h3 class="tagline">{{ editingId ? '编辑密码记录' : '添加密码记录' }}</h3>
           <div class="vault-form">
@@ -231,9 +308,40 @@ onUnmounted(() => {
             <label>登录密码</label>
             <input v-model="form.password" class="apple-input" type="password" placeholder="输入密码" />
             <label>分类</label>
-            <select v-model="form.category" class="apple-input category-editor-select">
-              <option v-for="category in availableCategories" :key="category" :value="category">{{ category }}</option>
-            </select>
+            <div class="vault-select editor-category-select" :class="{ open: editorCategoryMenuOpen }">
+              <button
+                type="button"
+                class="custom-select-trigger editor-select-trigger"
+                aria-haspopup="listbox"
+                :aria-expanded="editorCategoryMenuOpen"
+                @click="editorCategoryMenuOpen = !editorCategoryMenuOpen"
+              >
+                <span class="select-leading option-initial">{{ form.category.slice(0, 1) }}</span>
+                <span class="select-copy">
+                  <small>保存到分类</small>
+                  <strong>{{ form.category }}</strong>
+                </span>
+                <svg class="select-chevron" viewBox="0 0 20 20" aria-hidden="true">
+                  <path d="m5 7.5 5 5 5-5" />
+                </svg>
+              </button>
+              <div v-if="editorCategoryMenuOpen" class="custom-select-menu editor-select-menu" role="listbox">
+                <button
+                  v-for="category in editorCategoryOptions"
+                  :key="category"
+                  type="button"
+                  class="custom-select-option"
+                  :class="{ selected: form.category === category }"
+                  role="option"
+                  :aria-selected="form.category === category"
+                  @click="selectEditorCategory(category)"
+                >
+                  <span class="option-icon option-initial">{{ category.slice(0, 1) }}</span>
+                  <span>{{ category }}</span>
+                  <span class="option-check">✓</span>
+                </button>
+              </div>
+            </div>
             <label class="favorite-editor-option">
               <input v-model="form.favorite" type="checkbox" />
               收藏这条记录
@@ -247,7 +355,7 @@ onUnmounted(() => {
           </div>
           <button class="text-link add-field-link" @click="addExtraField">＋ 添加附加字段</button>
           <div class="editor-actions">
-            <button class="button-secondary-pill" @click="showEditor = false">取消</button>
+            <button class="button-secondary-pill" @click="closeEditor">取消</button>
             <button class="button-primary" @click="saveRecord">保存记录</button>
           </div>
         </div>
@@ -261,9 +369,29 @@ onUnmounted(() => {
 .vault-toolbar .apple-input { flex: 1; }
 .add-password-btn { flex-shrink: 0; }
 .vault-filters { display: flex; gap: 10px; margin: -8px 0 20px; }
-.category-filter { flex: 1; appearance: auto; }
-.category-editor-select { appearance: auto; cursor: pointer; }
-.favorite-filter { flex-shrink: 0; padding: 10px 14px; border: 1px solid var(--hairline); border-radius: 12px; background: var(--canvas); color: var(--body-muted); cursor: pointer; }
+.category-filter { flex: 1; min-width: 0; }
+.vault-select { position: relative; }
+.custom-select-trigger { display: grid; grid-template-columns: 38px minmax(0, 1fr) 20px; gap: 11px; align-items: center; width: 100%; min-height: 58px; padding: 9px 13px 9px 10px; text-align: left; color: var(--ink); border: 1px solid #dfe3ea; border-radius: 16px; background: rgba(255,255,255,.9); box-shadow: 0 6px 18px rgba(36,50,70,.055); cursor: pointer; transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease; }
+.custom-select-trigger:active { transform: scale(.985); }
+.vault-select.open .custom-select-trigger { border-color: rgba(0,102,204,.62); box-shadow: 0 0 0 4px rgba(0,102,204,.1), 0 9px 24px rgba(36,50,70,.08); }
+.select-leading { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 13px; background: linear-gradient(145deg, #eaf4ff, #dcecff); color: var(--primary); font-size: 17px; font-weight: 700; }
+.select-leading-filter { font-size: 19px; }
+.select-copy { display: flex; min-width: 0; flex-direction: column; gap: 2px; }
+.select-copy small { color: var(--body-muted); font-size: 10px; line-height: 1.2; }
+.select-copy strong { overflow: hidden; color: var(--ink); font-size: 14px; font-weight: 650; line-height: 1.25; text-overflow: ellipsis; white-space: nowrap; }
+.select-chevron { width: 20px; height: 20px; fill: none; stroke: #7c8492; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; transition: transform .2s ease; }
+.vault-select.open .select-chevron { transform: rotate(180deg); }
+.custom-select-menu { position: absolute; top: calc(100% + 8px); left: 0; right: 0; z-index: 80; max-height: 270px; overflow-y: auto; padding: 7px; border: 1px solid rgba(215,220,229,.92); border-radius: 18px; background: rgba(255,255,255,.995); box-shadow: 0 20px 50px rgba(25,36,54,.18); backdrop-filter: blur(24px) saturate(170%); -webkit-backdrop-filter: blur(24px) saturate(170%); animation: selectMenuIn .18s ease-out; }
+.custom-select-option { display: grid; grid-template-columns: 32px minmax(0, 1fr) 20px; gap: 10px; align-items: center; width: 100%; min-height: 44px; padding: 6px 9px; text-align: left; color: var(--ink); border: 0; border-radius: 12px; background: transparent; font-size: 14px; cursor: pointer; }
+.custom-select-option + .custom-select-option { margin-top: 2px; }
+.custom-select-option:active { background: #f2f4f7; }
+.custom-select-option.selected { background: #edf6ff; color: var(--primary); font-weight: 650; }
+.option-icon { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 10px; background: #f1f4f8; color: #667085; font-size: 15px; font-weight: 700; }
+.custom-select-option.selected .option-icon { background: #dceeff; color: var(--primary); }
+.option-initial { font-size: 13px; }
+.option-check { color: transparent; font-size: 15px; font-weight: 750; }
+.custom-select-option.selected .option-check { color: var(--primary); }
+.favorite-filter { flex-shrink: 0; min-height: 58px; padding: 10px 15px; border: 1px solid #dfe3ea; border-radius: 16px; background: rgba(255,255,255,.9); color: var(--body-muted); box-shadow: 0 6px 18px rgba(36,50,70,.04); cursor: pointer; }
 .favorite-filter.active { border-color: #f5b800; background: #fff8dc; color: #8a6200; font-weight: 600; }
 .vault-warning { padding: 14px 16px; margin-bottom: 16px; border-radius: 12px; color: #b42318; background: #fef3f2; }
 .glass-card { background: rgba(255,255,255,.88); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,.75); box-shadow: 0 8px 28px rgba(0,0,0,.06); }
@@ -296,11 +424,14 @@ onUnmounted(() => {
 .vault-editor { width: min(520px, 100%); max-height: 85dvh; overflow-y: auto; padding: 24px; border-radius: 22px; }
 .vault-form { display: grid; gap: 9px; margin-top: 22px; }
 .vault-form label { margin-top: 7px; font-size: 14px; font-weight: 600; }
+.editor-select-trigger { min-height: 64px; border-radius: 15px; }
+.editor-select-menu { position: static; max-height: 228px; margin-top: 8px; box-shadow: 0 12px 30px rgba(25,36,54,.13); }
 .vault-form .favorite-editor-option { display: flex; align-items: center; gap: 9px; font-weight: 500; }
 .extra-field-editor { display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; margin-top: 8px; }
 .remove-field-btn { border: 0; background: transparent; color: #d92d20; cursor: pointer; }
 .add-field-link { margin-top: 16px; }
 .editor-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px; }
+@keyframes selectMenuIn { from { opacity: 0; transform: translateY(-6px) scale(.985); } to { opacity: 1; transform: none; } }
 @media (max-width: 520px) {
   .vault-filters { align-items: stretch; }
   .password-card-header { flex-direction: column; }

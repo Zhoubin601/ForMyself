@@ -202,3 +202,18 @@
 - Node 自动化测试 66/66 通过，Vite 生产构建、Capacitor Android 同步和 Android `assembleDebug` 均通过。
 - Pixel 6 Pro Android 模拟器完成顶部、下半页、滚动密度和月报入口跳转检查；未发现文字溢出或点击区域异常。
 - 效果图：`output/20260723-home-dashboard-redesign-v1-top.png`、`output/20260723-home-dashboard-redesign-v1-bottom.png`。
+
+## 2026-07-23 密码库分类下拉框视觉优化
+
+实施结果：
+1. 分类筛选器改为应用内自绘卡片：增加分类图标、双层文字、旋转箭头、选中高亮和勾选反馈。
+2. 密码新增/编辑弹窗的分类字段使用同一套视觉语言，并将当前分类置顶，打开后可立即确认当前选择。
+3. 编辑弹窗内的选项面板改为随表单自然展开，避免绝对定位菜单被弹窗滚动区域裁切或压住底部操作按钮。
+4. 点击选项、点击组件外部、关闭弹窗时都会正确收起菜单；原有分类筛选与保存行为保持不变。
+
+验证结果：
+- Node 自动化测试 66/66 通过，Vite 生产构建通过，`git diff --check` 通过。
+- Capacitor Android 同步和 Android `assembleDebug` 构建通过。
+- 自定义选择器初版已在 Pixel 6 Pro 模拟器检查关闭态、筛选展开态和编辑展开态；根据截图发现编辑菜单底部拥挤后又完成了布局修正。
+- 最终布局修正版因当前执行环境无法再次调用电脑上的 Android SDK，尚未重新安装到模拟器复测；该状态已明确记录，未视为已完成的真机/模拟器验证。
+- 预览图：`output/20260723-password-vault-dropdown-redesign-v1-filter.png`、`output/20260723-password-vault-dropdown-redesign-v1-editor.png`。
