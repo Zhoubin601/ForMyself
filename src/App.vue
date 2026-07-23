@@ -13,6 +13,8 @@ import { shouldLockOnBackground, shouldLockOnResume } from './services/autoLockP
 import { syncReminderNotifications } from './services/notificationService'
 import { getPersonalizedReminderBodies } from './services/reminderSchedule'
 import { refreshPersonalizedReminderContent } from './services/notificationPersonalizer'
+import { getViewFromAppUrl } from './services/appDeepLink'
+import { refreshHomeWidget } from './services/homeWidget'
 
 import DebtListView from './components/DebtListView.vue'
 import WeightView from './components/WeightView.vue'
@@ -33,6 +35,7 @@ const pwdInput = ref('')
 let backgroundedAt = null
 let reminderRefreshTimer = null
 let reminderResumeTimer = null
+let widgetRefreshTimer = null
 
 const resyncStoredReminders = () => syncReminderNotifications(settingsStore.notificationSettings, {
   personalizedBodies: getPersonalizedReminderBodies(settingsStore.notificationAiContent)
@@ -63,7 +66,27 @@ const queueReminderPersonalizationRefresh = () => {
   }, 1200)
 }
 
+const queueHomeWidgetRefresh = () => {
+  clearTimeout(widgetRefreshTimer)
+  widgetRefreshTimer = setTimeout(() => {
+    refreshHomeWidget().catch(error => console.warn('刷新桌面小组件失败', error))
+  }, 350)
+}
+
+const openAppUrl = (url) => {
+  const targetView = getViewFromAppUrl(url)
+  if (targetView) settingsStore.switchView(targetView)
+}
+
 onMounted(async () => {
+  try {
+    CapacitorApp.addListener('appUrlOpen', ({ url }) => openAppUrl(url))
+    const launchUrl = await CapacitorApp.getLaunchUrl()
+    openAppUrl(launchUrl?.url)
+  } catch (error) {
+    console.warn('无法处理应用快捷入口', error)
+  }
+
   try {
     await StatusBar.show()
     await StatusBar.setOverlaysWebView({ overlay: true })
@@ -79,6 +102,7 @@ onMounted(async () => {
     moodStore.loadMoodRecords()
   ])
   await vaultStore.loadRecords(authStore.savedMasterPwd)
+  await refreshHomeWidget().catch(error => console.warn('初始化桌面小组件失败', error))
 
   try {
     await resyncStoredReminders()
@@ -91,6 +115,9 @@ onMounted(async () => {
   moodStore.$subscribe(queueReminderPersonalizationRefresh)
   weightStore.$subscribe(queueReminderPersonalizationRefresh)
   debtStore.$subscribe(queueReminderPersonalizationRefresh)
+  moodStore.$subscribe(queueHomeWidgetRefresh)
+  weightStore.$subscribe(queueHomeWidgetRefresh)
+  debtStore.$subscribe(queueHomeWidgetRefresh)
 
   try {
     CapacitorApp.addListener('appStateChange', ({ isActive }) => {

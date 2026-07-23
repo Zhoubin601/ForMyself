@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/widget_background"
+    android:elevation="2dp"
+    android:gravity="center_vertical"
+    android:orientation="vertical"
+    android:padding="8dp">
+
+    <LinearLayout
+        android:id="@+id/widget_summary"
+        android:layout_width="match_parent"
+        android:layout_height="22dp"
+        android:clickable="true"
+        android:contentDescription="@string/widget_summary_description"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:layout_width="18dp"
+            android:layout_height="18dp"
+            android:contentDescription="@null"
+            android:scaleType="centerCrop"
+            android:src="@drawable/widget_app_icon" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="5dp"
+            android:layout_weight="1"
+            android:ellipsize="end"
+            android:fontFamily="sans-serif-medium"
+            android:includeFontPadding="false"
+            android:maxLines="1"
+            android:text="@string/app_name"
+            android:textColor="#FFFFFFFF"
+            android:textSize="11sp" />
+
+        <TextView
+            android:id="@+id/widget_summary_value"
+            android:layout_width="wrap_content"
+            android:layout_height="18dp"
+            android:background="@drawable/widget_count_badge"
+            android:fontFamily="sans-serif-medium"
+            android:gravity="center"
+            android:includeFontPadding="false"
+            android:minWidth="32dp"
+            android:paddingStart="6dp"
+            android:paddingEnd="6dp"
+            android:text="0/3"
+            android:textColor="#E9ECF7"
+            android:textSize="8sp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/widget_mood"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="4dp"
+        android:layout_weight="1"
+        android:background="@drawable/widget_info_row"
+        android:clickable="true"
+        android:contentDescription="@string/widget_mood_description"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="7dp"
+        android:paddingEnd="7dp">
+
+        <ImageView
+            android:layout_width="15dp"
+            android:layout_height="15dp"
+            android:layout_marginEnd="5dp"
+            android:contentDescription="@null"
+            android:src="@drawable/ic_widget_mood" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:fontFamily="sans-serif"
+            android:includeFontPadding="false"
+            android:text="@string/widget_mood"
+            android:textColor="#BFC6D9"
+            android:textSize="9sp" />
+
+        <TextView
+            android:id="@+id/widget_mood_value"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:fontFamily="sans-serif-medium"
+            android:includeFontPadding="false"
+            android:maxLines="1"
+            android:text="@string/widget_no_record"
+            android:textColor="#FFFFFFFF"
+            android:textSize="10sp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/widget_weight"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="3dp"
+        android:layout_weight="1"
+        android:background="@drawable/widget_info_row"
+        android:clickable="true"
+        android:contentDescription="@string/widget_weight_description"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="7dp"
+        android:paddingEnd="7dp">
+
+        <ImageView
+            android:layout_width="15dp"
+            android:layout_height="15dp"
+            android:layout_marginEnd="5dp"
+            android:contentDescription="@null"
+            android:src="@drawable/ic_widget_weight" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:fontFamily="sans-serif"
+            android:includeFontPadding="false"
+            android:text="@string/widget_weight"
+            android:textColor="#BFC6D9"
+            android:textSize="9sp" />
+
+        <TextView
+            android:id="@+id/widget_weight_value"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:fontFamily="sans-serif-medium"
+            android:includeFontPadding="false"
+            android:maxLines="1"
+            android:text="@string/widget_no_data"
+            android:textColor="#FFFFFFFF"
+            android:textSize="10sp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/widget_savings"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="3dp"
+        android:layout_weight="1"
+        android:background="@drawable/widget_info_row"
+        android:clickable="true"
+        android:contentDescription="@string/widget_savings_description"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="7dp"
+        android:paddingEnd="7dp">
+
+        <ImageView
+            android:layout_width="15dp"
+            android:layout_height="15dp"
+            android:layout_marginEnd="5dp"
+            android:contentDescription="@null"
+            android:src="@drawable/ic_widget_savings" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:fontFamily="sans-serif"
+            android:includeFontPadding="false"
+            android:text="@string/widget_savings_title"
+            android:textColor="#BFC6D9"
+            android:textSize="9sp" />
+
+        <TextView
+            android:id="@+id/widget_savings_value"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:fontFamily="sans-serif-medium"
+            android:includeFontPadding="false"
+            android:maxLines="1"
+            android:text="@string/widget_no_data"
+            android:textColor="#FFFFFFFF"
+            android:textSize="10sp" />
+    </LinearLayout>
+</LinearLayout>

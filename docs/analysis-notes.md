@@ -1,5 +1,31 @@
 # 分析与实施记录
 
+## 2026-07-24 Android 2×2 桌面信息卡
+
+实施方向：
+
+1. 使用 Android 原生 `AppWidgetProvider` 实现桌面占用 2×2 的信息卡小组件，保持 Capacitor Web 应用主体不变。
+2. 信息卡展示今日心情、最新体重、省钱主目标进度和今日三项记录完成度；不在桌面展示密码库内容。
+3. 三项信息行和顶部摘要使用独立显式 `PendingIntent` 和 `formyself://open/<模块>` 深链。
+4. Vue 端同时监听热启动 `appUrlOpen` 和冷启动 `getLaunchUrl()`，统一切换现有 Pinia 页面状态。
+5. 应用有主密码锁时只预选目标页面，仍需按原安全策略解锁后才能查看数据。
+6. 原生 Provider 只读 Capacitor Preferences 中的心情、体重和省钱数据，解析失败时显示安全空状态；不读取密码库或 AI Key。
+7. 通过轻量 Capacitor 插件在三类数据变化后主动刷新小组件，避免信息长期停留在旧值。
+8. vivo 桌面会根据 `minWidth/minHeight` 推算占用格数；初版 140dp 被分配为 3×3，已调整为标准 110dp，以确保按 2×2 展示。
+9. 根据用户进一步确认，2×2 指桌面占用面积而非内部四宫格；最终布局改为一体化信息卡。
+10. 视觉采用 Android RemoteViews 可实现的“液态玻璃感”模拟：半透明品牌渐变、白色高光描边和透明胶囊；平台不支持桌面壁纸实时模糊或折射。
+
+验证结果：
+
+- Node 自动化测试 70/70 通过，覆盖 2×2 尺寸、信息字段、RemoteViews 安全布局和深链映射。
+- Vite 生产构建、Capacitor Android 同步和 Android `assembleDebug` 均通过。
+- Debug APK 已覆盖安装到 USB 真机 vivo V2403A，原有应用数据保留。
+- vivo 桌面确认小组件实际占用 2×2，并展示今日完成度、今日心情、最新体重和省钱进度。
+- 真机数据读取验证：截图时显示完成度 1/3、心情“一般”、体重 74.5 kg、省钱进度 8%。
+- 三类数据变化后由 Capacitor 插件主动刷新；三行信息与顶部摘要分别可进入对应应用页面。
+- 最终视觉为半透明玻璃卡片，含完整 ForMyself 标题、圆形应用图标、笑脸/体重秤/钱包图标和完成度胶囊。
+- 最终效果图：`docs/phone-widget-round-icon.png`。
+
 ## 2026-07-18 密码库功能合并
 
 实施方向：
@@ -217,3 +243,4 @@
 - 自定义选择器初版已在 Pixel 6 Pro 模拟器检查关闭态、筛选展开态和编辑展开态；根据截图发现编辑菜单底部拥挤后又完成了布局修正。
 - 最终布局修正版因当前执行环境无法再次调用电脑上的 Android SDK，尚未重新安装到模拟器复测；该状态已明确记录，未视为已完成的真机/模拟器验证。
 - 预览图：`output/20260723-password-vault-dropdown-redesign-v1-filter.png`、`output/20260723-password-vault-dropdown-redesign-v1-editor.png`。
+- 交付 APK：`output/20260723-ForMyself-password-dropdown-redesign-v1-debug.apk`，大小 9,951,995 字节，SHA-256 为 `65B3B721ADD5691D0166BEEE608E068905C6C1FD436AF702F36B5563B8CA1277`。

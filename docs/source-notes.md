@@ -189,3 +189,24 @@
 - 原界面使用系统原生 `select`，在 Android WebView 中会呈现系统默认弹层，圆角、间距、颜色和应用现有卡片体系不一致。
 - 分类筛选和密码编辑使用同一套自定义选择器视觉，但继续沿用现有分类数据、筛选值和保存逻辑。
 - 本次实现及测试未使用 `raw/` 原始资料，也未使用外部网络资料。
+# 资料来源与关键事实
+
+## 2026-07-24 Android 2×2 桌面信息卡
+
+来源文件：
+
+- 当前项目的 `android/app/src/main/AndroidManifest.xml`
+- 当前项目的 `android/app/src/main/java/com/yubin/formyself/MainActivity.java`
+- 当前项目的 `src/App.vue`
+- 当前项目的 `src/stores/settings.js`
+- 用户当前要求：新增桌面占用 2×2 的信息型小组件，并在当前 USB 调试手机上实现
+
+关键事实：
+
+- 应用包名为 `com.yubin.formyself`，Android 最低版本 API 24、目标版本 API 36。
+- 现有应用使用单 Activity 的 Capacitor 架构，页面由 `settingsStore.currentView` 控制。
+- 当前主要非敏感功能包括心情、体重、省钱和月度报告；密码库属于敏感内容，不适合在桌面小组件展示。
+- 用户确认内部不要求四宫格，改为一体化信息卡，并希望使用透明液态玻璃风格、功能图标和圆形应用图标。
+- Android RemoteViews 不支持桌面壁纸实时模糊或折射，本次使用半透明渐变、高光描边和透明胶囊模拟玻璃质感。
+- USB 真机为 vivo V2403A；系统 AppWidget 状态确认 Provider 最小尺寸为 110dp × 110dp，桌面实例可见。
+- 本次实现未使用 `raw/` 原始资料，也未使用外部网络资料。

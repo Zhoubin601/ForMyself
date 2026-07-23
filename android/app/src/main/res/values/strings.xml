@@ -4,4 +4,19 @@
     <string name="title_activity_main">ForMyself</string>
     <string name="package_name">com.yubin.formyself</string>
     <string name="custom_url_scheme">com.yubin.formyself</string>
+    <string name="widget_name">ForMyself 今日信息</string>
+    <string name="widget_description">在桌面查看今日心情、最新体重、省钱进度和记录完成度</string>
+    <string name="widget_mood">心情</string>
+    <string name="widget_weight">体重</string>
+    <string name="widget_savings">省钱</string>
+    <string name="widget_mood_title">今日心情</string>
+    <string name="widget_weight_title">最新体重</string>
+    <string name="widget_savings_title">省钱进度</string>
+    <string name="widget_summary_title">今日记录</string>
+    <string name="widget_no_record">未记录</string>
+    <string name="widget_no_data">暂无</string>
+    <string name="widget_mood_description">打开心情日记</string>
+    <string name="widget_weight_description">打开体重记录</string>
+    <string name="widget_savings_description">打开省钱计划</string>
+    <string name="widget_summary_description">打开首页总览</string>
 </resources>
