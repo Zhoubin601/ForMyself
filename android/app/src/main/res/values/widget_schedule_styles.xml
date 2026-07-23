@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="ScheduleWidgetRow">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">0dp</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:layout_marginTop">3dp</item>
+        <item name="android:background">@drawable/widget_info_row</item>
+        <item name="android:clickable">true</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:orientation">horizontal</item>
+        <item name="android:paddingStart">6dp</item>
+        <item name="android:paddingEnd">7dp</item>
+    </style>
+    <style name="ScheduleWidgetIcon">
+        <item name="android:layout_width">15dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginEnd">3dp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:gravity">center</item>
+        <item name="android:includeFontPadding">false</item>
+        <item name="android:text">●</item>
+        <item name="android:textColor">#FFFF5D65</item>
+        <item name="android:textSize">9sp</item>
+    </style>
+    <style name="ScheduleWidgetTime">
+        <item name="android:layout_width">33dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:includeFontPadding">false</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:text">全天</item>
+        <item name="android:textColor">#FFFF6A72</item>
+        <item name="android:textSize">8sp</item>
+    </style>
+    <style name="ScheduleWidgetTitle">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:ellipsize">end</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:includeFontPadding">false</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:textColor">#FFFFFFFF</item>
+        <item name="android:textSize">9sp</item>
+    </style>
+</resources>
+

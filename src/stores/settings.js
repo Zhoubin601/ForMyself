@@ -15,6 +15,7 @@ export const useSettingsStore = defineStore('settings', () => {
   const bannerSettings = ref({ prefix: '你已经省下了', suffix: '元', subtitle: '可喜可贺，继续保持。✨', titleSize: 38 })
   const customBg = ref('')
   const currentView = ref('home')
+  const scheduleTarget = ref({ item: '', occurrence: '' })
   const isDrawerOpen = ref(false)
   const isDataLoaded = ref(false)
 
@@ -32,7 +33,7 @@ export const useSettingsStore = defineStore('settings', () => {
   const weightChangeReminderEnabled = ref(true)
   const weightChangeThreshold = ref(1)
 
-  const viewTitle = computed(() => ({ home: '首页总览', reports: '月度报告', debts: '我的省钱计划', weight: '体重记录', mood: '心情日记', passwords: '我的密码库', settings: '通用配置' })[currentView.value])
+  const viewTitle = computed(() => ({ home: '首页总览', reports: '月度报告', debts: '我的省钱计划', weight: '体重记录', mood: '心情日记', schedule: '日程提醒', passwords: '我的密码库', settings: '通用配置' })[currentView.value])
 
   const loadSettings = async () => {
     try {
@@ -128,6 +129,13 @@ export const useSettingsStore = defineStore('settings', () => {
   watch(lastEncouragement, () => persistHomeCache())
 
   const switchView = (view) => { currentView.value = view; isDrawerOpen.value = false }
+  const openScheduleTarget = (target = {}) => {
+    scheduleTarget.value = {
+      item: String(target.item || ''),
+      occurrence: String(target.occurrence || '')
+    }
+    switchView('schedule')
+  }
   const updateBanner = async (v) => { bannerSettings.value = v; await Preferences.set({ key: 'my_banner_settings', value: JSON.stringify(v) }) }
   const updateBg = async (b) => { customBg.value = b; if (b) await Preferences.set({ key: 'my_custom_bg', value: b }); else await Preferences.remove({ key: 'my_custom_bg' }) }
   const updateHealthSettings = (value) => {
@@ -198,5 +206,5 @@ export const useSettingsStore = defineStore('settings', () => {
     return backup
   }
 
-  return { bannerSettings, customBg, currentView, isDrawerOpen, isDataLoaded, viewTitle, cachedQuote, dataFingerprint, lastEncouragement, aiProviderUrl, aiApiKey, aiModel, autoLockDelaySeconds, notificationSettings, notificationAiContent, targetWeight, heightCm, weightChangeReminderEnabled, weightChangeThreshold, loadSettings, switchView, updateBanner, updateBg, updateHealthSettings, getBackupSnapshot, restoreBackupSnapshot }
+  return { bannerSettings, customBg, currentView, scheduleTarget, isDrawerOpen, isDataLoaded, viewTitle, cachedQuote, dataFingerprint, lastEncouragement, aiProviderUrl, aiApiKey, aiModel, autoLockDelaySeconds, notificationSettings, notificationAiContent, targetWeight, heightCm, weightChangeReminderEnabled, weightChangeThreshold, loadSettings, switchView, openScheduleTarget, updateBanner, updateBg, updateHealthSettings, getBackupSnapshot, restoreBackupSnapshot }
 })

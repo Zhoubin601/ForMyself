@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { StatusBar } from '@capacitor/status-bar'
+import { LocalNotifications } from '@capacitor/local-notifications'
 
 import { useAuthStore } from './stores/auth'
 import { App as CapacitorApp } from '@capacitor/app'
@@ -9,12 +10,14 @@ import { useMoodStore } from './stores/mood'
 import { useDebtStore } from './stores/debt'
 import { useWeightStore } from './stores/weight'
 import { usePasswordVaultStore } from './stores/passwordVault'
+import { useScheduleStore } from './stores/schedule'
 import { shouldLockOnBackground, shouldLockOnResume } from './services/autoLockPolicy'
 import { syncReminderNotifications } from './services/notificationService'
 import { getPersonalizedReminderBodies } from './services/reminderSchedule'
 import { refreshPersonalizedReminderContent } from './services/notificationPersonalizer'
-import { getViewFromAppUrl } from './services/appDeepLink'
+import { getRouteFromAppUrl } from './services/appDeepLink'
 import { refreshHomeWidget } from './services/homeWidget'
+import { syncScheduleNotifications } from './services/scheduleNotificationService'
 
 import DebtListView from './components/DebtListView.vue'
 import WeightView from './components/WeightView.vue'
@@ -23,6 +26,7 @@ import HomeView from './components/HomeView.vue'
 import SettingsView from './components/SettingsView.vue'
 import PasswordVaultView from './components/PasswordVaultView.vue'
 import MonthlyReportView from './components/MonthlyReportView.vue'
+import ScheduleView from './components/ScheduleView.vue'
 
 const authStore = useAuthStore()
 const settingsStore = useSettingsStore()
@@ -30,12 +34,14 @@ const vaultStore = usePasswordVaultStore()
 const moodStore = useMoodStore()
 const debtStore = useDebtStore()
 const weightStore = useWeightStore()
+const scheduleStore = useScheduleStore()
 
 const pwdInput = ref('')
 let backgroundedAt = null
 let reminderRefreshTimer = null
 let reminderResumeTimer = null
 let widgetRefreshTimer = null
+let scheduleSyncTimer = null
 
 const resyncStoredReminders = () => syncReminderNotifications(settingsStore.notificationSettings, {
   personalizedBodies: getPersonalizedReminderBodies(settingsStore.notificationAiContent)
@@ -74,8 +80,23 @@ const queueHomeWidgetRefresh = () => {
 }
 
 const openAppUrl = (url) => {
-  const targetView = getViewFromAppUrl(url)
-  if (targetView) settingsStore.switchView(targetView)
+  const route = getRouteFromAppUrl(url)
+  if (!route) return
+  if (route.view === 'schedule') settingsStore.openScheduleTarget(route)
+  else settingsStore.switchView(route.view)
+}
+
+const queueScheduleRefresh = () => {
+  clearTimeout(scheduleSyncTimer)
+  scheduleSyncTimer = setTimeout(() => {
+    Promise.all([
+      scheduleStore.persist(),
+      syncScheduleNotifications(scheduleStore.snapshot),
+      refreshHomeWidget()
+    ]).catch(error => {
+      if (error.code !== 'NOTIFICATION_PERMISSION_DENIED') console.warn('刷新日程服务失败', error)
+    })
+  }, 350)
 }
 
 onMounted(async () => {
@@ -99,10 +120,14 @@ onMounted(async () => {
     settingsStore.loadSettings(),
     debtStore.loadDebts(),
     weightStore.loadWeightRecords(),
-    moodStore.loadMoodRecords()
+    moodStore.loadMoodRecords(),
+    scheduleStore.loadSchedules()
   ])
   await vaultStore.loadRecords(authStore.savedMasterPwd)
   await refreshHomeWidget().catch(error => console.warn('初始化桌面小组件失败', error))
+  await syncScheduleNotifications(scheduleStore.snapshot).catch(error => {
+    if (error.code !== 'NOTIFICATION_PERMISSION_DENIED') console.warn('初始化日程提醒失败', error)
+  })
 
   try {
     await resyncStoredReminders()
@@ -118,6 +143,16 @@ onMounted(async () => {
   moodStore.$subscribe(queueHomeWidgetRefresh)
   weightStore.$subscribe(queueHomeWidgetRefresh)
   debtStore.$subscribe(queueHomeWidgetRefresh)
+  scheduleStore.$subscribe(queueScheduleRefresh)
+
+  try {
+    LocalNotifications.addListener('localNotificationActionPerformed', ({ notification }) => {
+      const url = notification?.extra?.url
+      if (url) openAppUrl(url)
+    })
+  } catch (error) {
+    console.warn('无法监听日程通知点击', error)
+  }
 
   try {
     CapacitorApp.addListener('appStateChange', ({ isActive }) => {
@@ -132,6 +167,7 @@ onMounted(async () => {
       }
       backgroundedAt = null
       if (moodStore.isDataLoaded) moodStore.autoFillMissingDays()
+      queueScheduleRefresh()
 
       // Android 从“闹钟和提醒”权限页返回时，权限状态传播可能稍晚于 Activity 恢复。
       // 延迟重新调度，确保旧的非精确任务被 exact alarm 替换，无需用户重启应用。
@@ -180,6 +216,7 @@ const setMasterPassword = async () => {
 <template>
   <div
     class="app-wrapper"
+    :class="{ 'schedule-active': !authStore.isLocked && settingsStore.currentView === 'schedule' }"
     :style="
       settingsStore.customBg
         ? {
@@ -233,7 +270,7 @@ const setMasterPassword = async () => {
     </div>
 
     <div v-else class="main-app fade-in">
-      <div class="top-nav sub-nav-frosted">
+      <div v-if="settingsStore.currentView !== 'schedule'" class="top-nav sub-nav-frosted">
         <button class="nav-link-btn" @click="settingsStore.isDrawerOpen = true">
           <svg
             viewBox="0 0 24 24"
@@ -294,6 +331,12 @@ const setMasterPassword = async () => {
               心情日记
             </li>
             <li
+              :class="{ active: settingsStore.currentView === 'schedule' }"
+              @click="settingsStore.switchView('schedule')"
+            >
+              日程提醒
+            </li>
+            <li
               :class="{ active: settingsStore.currentView === 'passwords' }"
               @click="settingsStore.switchView('passwords')"
             >
@@ -309,12 +352,13 @@ const setMasterPassword = async () => {
         </div>
       </Teleport>
 
-      <div class="content-area">
+      <div class="content-area" :class="{ 'schedule-content-area': settingsStore.currentView === 'schedule' }">
         <HomeView v-if="settingsStore.currentView === 'home'" />
         <MonthlyReportView v-if="settingsStore.currentView === 'reports'" />
         <DebtListView v-if="settingsStore.currentView === 'debts'" />
         <WeightView v-if="settingsStore.currentView === 'weight'" />
         <MoodView v-if="settingsStore.currentView === 'mood'" />
+        <ScheduleView v-if="settingsStore.currentView === 'schedule'" />
         <PasswordVaultView v-if="settingsStore.currentView === 'passwords'" />
         <SettingsView v-if="settingsStore.currentView === 'settings'" />
       </div>
@@ -394,6 +438,17 @@ button,
   overflow-y: auto;
   overflow-x: hidden;
   background-color: var(--canvas-parchment);
+}
+
+.app-wrapper.schedule-active {
+  overflow: hidden;
+}
+
+.app-wrapper.schedule-active .main-app,
+.app-wrapper.schedule-active .schedule-content-area {
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .bg-blur-layer {
@@ -529,6 +584,13 @@ button,
   max-width: 800px;
   margin: 0 auto;
   padding-bottom: 64px;
+}
+
+.content-area.schedule-content-area {
+  max-width: none;
+  padding: 0;
+  margin: 0;
+  min-height: 0;
 }
 
 .sub-nav-frosted {

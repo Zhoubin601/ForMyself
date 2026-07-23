@@ -19,4 +19,10 @@
     <string name="widget_weight_description">打开体重记录</string>
     <string name="widget_savings_description">打开省钱计划</string>
     <string name="widget_summary_description">打开首页总览</string>
+    <string name="schedule_widget_name">ForMyself 临近日程</string>
+    <string name="schedule_widget_title">临近日程</string>
+    <string name="schedule_widget_description">在桌面查看今天和未来7天内的三条临近日程</string>
+    <string name="schedule_widget_open">打开日程提醒</string>
+    <string name="schedule_widget_empty">未来7天暂无安排</string>
+    <string name="schedule_widget_untitled">未命名日程</string>
 </resources>

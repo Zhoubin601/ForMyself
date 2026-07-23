@@ -7,10 +7,11 @@ const VIEW_ALIASES = Object.freeze({
   weight: 'weight',
   savings: 'debts',
   debts: 'debts',
-  reports: 'reports'
+  reports: 'reports',
+  schedule: 'schedule'
 })
 
-export const getViewFromAppUrl = (url) => {
+export const getRouteFromAppUrl = (url) => {
   if (typeof url !== 'string' || !url.trim()) return null
 
   try {
@@ -20,8 +21,16 @@ export const getViewFromAppUrl = (url) => {
     }
 
     const target = parsedUrl.pathname.replace(/^\/+|\/+$/g, '').toLowerCase()
-    return VIEW_ALIASES[target] || null
+    const view = VIEW_ALIASES[target]
+    if (!view) return null
+    return {
+      view,
+      item: parsedUrl.searchParams.get('item') || '',
+      occurrence: parsedUrl.searchParams.get('occurrence') || ''
+    }
   } catch {
     return null
   }
 }
+
+export const getViewFromAppUrl = url => getRouteFromAppUrl(url)?.view || null

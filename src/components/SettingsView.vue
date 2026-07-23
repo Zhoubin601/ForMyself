@@ -27,6 +27,9 @@ import { useWeightStore } from '../stores/weight'
 import { useMoodStore } from '../stores/mood'
 import { useSettingsStore } from '../stores/settings'
 import { usePasswordVaultStore } from '../stores/passwordVault'
+import { useScheduleStore } from '../stores/schedule'
+import { syncScheduleNotifications } from '../services/scheduleNotificationService'
+import { normalizeScheduleData } from '../services/scheduleCore'
 
 const authStore = useAuthStore()
 const debtStore = useDebtStore()
@@ -34,6 +37,7 @@ const weightStore = useWeightStore()
 const moodStore = useMoodStore()
 const settingsStore = useSettingsStore()
 const vaultStore = usePasswordVaultStore()
+const scheduleStore = useScheduleStore()
 
 const isChangingPwd = ref(false)
 const isChangingPwdBio = ref(false)
@@ -45,7 +49,121 @@ const fileInputRef = ref(null)
 const bgInputRef = ref(null)
 
 const exportDataType = ref('full')
+const backupPickerOpen = ref(false)
+const backupTypeOptions = [
+  { value: 'full', label: '完整数据（全部数据与设置）' },
+  { value: 'savings', label: '省钱数据' },
+  { value: 'weight', label: '体重数据' },
+  { value: 'mood', label: '心情数据' },
+  { value: 'passwords', label: '密码库数据' },
+  { value: 'schedules', label: '日程数据' }
+]
 const newVaultCategory = ref('')
+const newScheduleCategory = ref('')
+const newScheduleCategoryColor = ref('#4fd5d7')
+const scheduleColorHue = ref(181)
+const scheduleColorSaturation = ref(64)
+const scheduleColorValue = ref(84)
+const scheduleColorBoardRef = ref(null)
+
+const clampColorValue = (value, min = 0, max = 100) =>
+  Math.min(max, Math.max(min, Number(value) || 0))
+
+const hsvToHex = (hue, saturation, value) => {
+  const h = ((Number(hue) % 360) + 360) % 360
+  const s = clampColorValue(saturation) / 100
+  const v = clampColorValue(value) / 100
+  const chroma = v * s
+  const section = h / 60
+  const intermediate = chroma * (1 - Math.abs((section % 2) - 1))
+  const offset = v - chroma
+  let red = 0
+  let green = 0
+  let blue = 0
+
+  if (section < 1) [red, green, blue] = [chroma, intermediate, 0]
+  else if (section < 2) [red, green, blue] = [intermediate, chroma, 0]
+  else if (section < 3) [red, green, blue] = [0, chroma, intermediate]
+  else if (section < 4) [red, green, blue] = [0, intermediate, chroma]
+  else if (section < 5) [red, green, blue] = [intermediate, 0, chroma]
+  else [red, green, blue] = [chroma, 0, intermediate]
+
+  const toHex = channel => Math.round((channel + offset) * 255)
+    .toString(16)
+    .padStart(2, '0')
+  return `#${toHex(red)}${toHex(green)}${toHex(blue)}`
+}
+
+const hexToHsv = hex => {
+  if (!/^#[0-9a-f]{6}$/i.test(hex)) return null
+  const red = parseInt(hex.slice(1, 3), 16) / 255
+  const green = parseInt(hex.slice(3, 5), 16) / 255
+  const blue = parseInt(hex.slice(5, 7), 16) / 255
+  const max = Math.max(red, green, blue)
+  const min = Math.min(red, green, blue)
+  const delta = max - min
+  let hue = 0
+
+  if (delta) {
+    if (max === red) hue = 60 * (((green - blue) / delta) % 6)
+    else if (max === green) hue = 60 * ((blue - red) / delta + 2)
+    else hue = 60 * ((red - green) / delta + 4)
+  }
+
+  return {
+    hue: Math.round((hue + 360) % 360),
+    saturation: Math.round(max ? (delta / max) * 100 : 0),
+    value: Math.round(max * 100)
+  }
+}
+
+const applySchedulePickerColor = () => {
+  newScheduleCategoryColor.value = hsvToHex(
+    scheduleColorHue.value,
+    scheduleColorSaturation.value,
+    scheduleColorValue.value
+  )
+}
+
+const updateScheduleColorFromBoard = event => {
+  const board = scheduleColorBoardRef.value
+  if (!board) return
+  const rect = board.getBoundingClientRect()
+  scheduleColorSaturation.value = Math.round(clampColorValue(
+    ((event.clientX - rect.left) / rect.width) * 100
+  ))
+  scheduleColorValue.value = Math.round(clampColorValue(
+    100 - ((event.clientY - rect.top) / rect.height) * 100
+  ))
+  if (event.type === 'pointerdown') board.setPointerCapture?.(event.pointerId)
+  applySchedulePickerColor()
+}
+
+const updateScheduleColorFromHex = () => {
+  const normalized = String(newScheduleCategoryColor.value || '').trim()
+  const color = hexToHsv(normalized)
+  if (!color) {
+    applySchedulePickerColor()
+    return
+  }
+  newScheduleCategoryColor.value = normalized.toLowerCase()
+  scheduleColorHue.value = color.hue
+  scheduleColorSaturation.value = color.saturation
+  scheduleColorValue.value = color.value
+}
+
+const scheduleColorBoardStyle = computed(() => ({
+  background: [
+    'linear-gradient(to top, #000, transparent)',
+    `linear-gradient(to right, #fff, hsl(${scheduleColorHue.value} 100% 50%))`
+  ].join(', ')
+}))
+
+const scheduleColorCursorStyle = computed(() => ({
+  left: `${scheduleColorSaturation.value}%`,
+  top: `${100 - scheduleColorValue.value}%`,
+  background: newScheduleCategoryColor.value
+}))
 
 // --- 看板设置 ---
 const localBanner = ref({ ...settingsStore.bannerSettings })
@@ -88,6 +206,29 @@ const deleteVaultCategory = (category) => {
   }
 }
 
+const addScheduleCategory = () => {
+  const category = scheduleStore.addCategory({
+    name: newScheduleCategory.value,
+    color: newScheduleCategoryColor.value
+  })
+  if (!category) return alert(newScheduleCategory.value.trim() ? '该日程标签已经存在' : '请输入日程标签名称')
+  newScheduleCategory.value = ''
+}
+
+const deleteScheduleCategory = category => {
+  if (category.builtIn) return
+  const usageCount = scheduleStore.categoryUsageCount(category.id)
+  if (usageCount > 0) {
+    return alert(`标签“${category.name}”仍有 ${usageCount} 条日程内容，不能删除`)
+  }
+  if (!confirm(`确认删除日程标签“${category.name}”？`)) return
+  const result = scheduleStore.deleteCategory(category.id)
+  if (!result.ok) {
+    if (result.reason === 'PROTECTED') alert('“学习”是系统保留标签，不能删除')
+    else if (result.reason === 'IN_USE') alert(`标签“${category.name}”仍有日程内容，不能删除`)
+  }
+}
+
 // --- 安全 ---
 const changeMasterPassword = async () => {
   const err = await authStore.updatePassword(oldPwdInput.value, newPwdInput.value, confirmNewPwdInput.value)
@@ -114,17 +255,18 @@ const changeMasterPasswordBio = async () => {
 
 // --- 数据导出/导入 ---
 const getDataTypeLabel = () => {
-  return { full: '完整数据', savings: '省钱', weight: '体重', mood: '心情', passwords: '密码库' }[exportDataType.value]
+  return backupTypeOptions.find(item => item.value === exportDataType.value)?.label.replace('数据（全部数据与设置）', '数据') || '数据'
 }
 
 const getDataArray = () => {
   if (exportDataType.value === 'savings') return debtStore.savedDebts
   if (exportDataType.value === 'weight') return weightStore.weightRecords
   if (exportDataType.value === 'passwords') return vaultStore.records
+  if (exportDataType.value === 'schedules') return scheduleStore.snapshot
   return moodStore.moodRecords
 }
 
-const setDataArray = (data, overwrite) => {
+const setDataArray = async (data, overwrite) => {
   if (exportDataType.value === 'savings') {
     debtStore.updateDebts(overwrite ? data : [...debtStore.savedDebts, ...data])
   } else if (exportDataType.value === 'weight') {
@@ -132,13 +274,21 @@ const setDataArray = (data, overwrite) => {
   } else if (exportDataType.value === 'passwords') {
     if (overwrite) vaultStore.replaceRecords(data)
     else vaultStore.appendRecords(data)
+  } else if (exportDataType.value === 'schedules') {
+    const imported = normalizeScheduleData(data)
+    const merged = overwrite ? imported : normalizeScheduleData({
+      series: [...scheduleStore.series, ...imported.series],
+      occurrences: [...scheduleStore.occurrences, ...imported.occurrences],
+      categories: [...scheduleStore.categories, ...imported.categories]
+    })
+    await scheduleStore.restoreScheduleData(merged)
   } else {
     moodStore.updateMoodRecords(overwrite ? data : [...moodStore.moodRecords, ...data])
   }
 }
 
 const getFilePrefix = () => {
-  return { full: 'Full', savings: 'Savings', weight: 'Weight', mood: 'Mood', passwords: 'Passwords' }[exportDataType.value]
+  return { full: 'Full', savings: 'Savings', weight: 'Weight', mood: 'Mood', passwords: 'Passwords', schedules: 'Schedules' }[exportDataType.value]
 }
 
 const createFullBackupSnapshot = () => buildFullBackupSnapshot({
@@ -146,6 +296,7 @@ const createFullBackupSnapshot = () => buildFullBackupSnapshot({
   weight: weightStore.weightRecords,
   mood: moodStore.moodRecords,
   passwords: vaultStore.records,
+  schedules: scheduleStore.snapshot,
   moodMetadata: {
     trackingStartDate: moodStore.trackingStartDate,
     customTags: moodStore.customTags
@@ -162,6 +313,7 @@ const applyFullBackupSnapshot = async (snapshot) => {
     weightStore.restoreWeightRecords(snapshot.data.weight),
     moodStore.restoreMoodBackup(snapshot.data.mood, snapshot.metadata.mood),
     vaultStore.restoreRecords(snapshot.data.passwords, snapshot.metadata.vault),
+    scheduleStore.restoreScheduleData(snapshot.data.schedules),
     settingsStore.restoreBackupSnapshot(snapshot.settings)
   ])
   const failure = results.find(result => result.status === 'rejected')
@@ -185,6 +337,7 @@ const restoreFullBackup = async (snapshot) => {
     await syncReminderNotifications(settingsStore.notificationSettings, {
       personalizedBodies: getPersonalizedReminderBodies(settingsStore.notificationAiContent)
     })
+    await syncScheduleNotifications(scheduleStore.snapshot)
   } catch (error) {
     console.warn('恢复完整备份后刷新通知失败', error)
   }
@@ -207,7 +360,10 @@ const exportJSON = async () => {
   const isFullBackup = exportDataType.value === 'full'
   const data = isFullBackup ? createFullBackupSnapshot() : getDataArray()
 
-  if (!isFullBackup && data.length === 0) return alert(`没有检测到可导出的${label}数据`)
+  const isEmpty = exportDataType.value === 'schedules'
+    ? !data.series.length
+    : Array.isArray(data) && data.length === 0
+  if (!isFullBackup && isEmpty) return alert(`没有检测到可导出的${label}`)
 
   try {
     const rawData = JSON.stringify(data)
@@ -255,7 +411,7 @@ const handleFileUpload = (event) => {
         const snapshot = normalizeFullBackupSnapshot(importedData)
         const counts = getFullBackupCounts(snapshot)
         const confirmed = confirm(
-          `完整备份包含：\n省钱 ${counts.savings} 项、体重 ${counts.weight} 条、心情 ${counts.mood} 条、密码 ${counts.passwords} 项。\n\n继续将覆盖以上全部数据和应用设置。主密码与设备生物识别凭据不会改变。`
+          `完整备份包含：\n省钱 ${counts.savings} 项、体重 ${counts.weight} 条、心情 ${counts.mood} 条、密码 ${counts.passwords} 项、日程 ${counts.schedules} 项。\n\n继续将覆盖以上全部数据和应用设置。主密码与设备生物识别凭据不会改变。`
         )
         if (!confirmed) return
         await restoreFullBackup(snapshot)
@@ -263,12 +419,23 @@ const handleFileUpload = (event) => {
         return
       }
 
+      if (exportDataType.value === 'schedules') {
+        const normalized = normalizeScheduleData(importedData)
+        const overwrite = confirm(
+          `成功解密出 ${normalized.series.length} 条日程。\n确认要覆盖当前日程和标签吗？取消则执行合并。`
+        )
+        await setDataArray(normalized, overwrite)
+        await syncScheduleNotifications(scheduleStore.snapshot)
+        alert('日程数据恢复成功')
+        return
+      }
+
       if (!Array.isArray(importedData)) throw new Error('格式错误')
 
       if (confirm(`成功解密出 ${importedData.length} 条${label}项目。\n确认要覆盖当前${label}数据吗？取消则执行追加。`)) {
-        setDataArray(importedData, true)
+        await setDataArray(importedData, true)
       } else {
-        setDataArray(importedData, false)
+        await setDataArray(importedData, false)
       }
       alert(`${label}数据恢复成功`)
     } catch (err) {
@@ -293,6 +460,12 @@ const handleBgUpload = (event) => {
   reader.readAsDataURL(file)
 }
 const clearBg = () => { if (confirm('确认恢复系统默认背景色？')) settingsStore.updateBg('') }
+
+const requestWidgetPin = type => {
+  if (!Capacitor.isNativePlatform()) return alert('桌面小组件仅在 Android 手机上可用')
+  const suffix = type === 'schedule' ? '?type=schedule' : ''
+  window.location.href = `formyself://widget/add${suffix}`
+}
 
 const lockApp = () => { authStore.lockApp() }
 
@@ -459,6 +632,19 @@ const testAIConnection = async () => {
     </div>
 
     <div class="setting-section">
+      <h3 class="caption body-muted section-title">桌面小组件</h3>
+      <div class="ios-list">
+        <button class="list-item text-link" style="text-align: left;" @click="requestWidgetPin('info')">
+          添加 2×2 今日信息组件
+        </button>
+        <button class="list-item text-link" style="text-align: left;" @click="requestWidgetPin('schedule')">
+          添加 2×2 临近日程组件
+        </button>
+      </div>
+      <p class="caption body-muted" style="padding: 10px 16px 0; margin: 0;">若桌面不支持应用内添加，可长按桌面并从“小组件”列表选择 ForMyself。</p>
+    </div>
+
+    <div class="setting-section">
       <h3 class="caption body-muted section-title">安全管理</h3>
       <div class="ios-list" v-if="!isChangingPwd && !isChangingPwdBio">
         <button v-if="authStore.hasBiometric" class="list-item text-link" style="text-align: left;" @click="triggerBioChangePwd">指纹生物识别修改密码</button>
@@ -492,6 +678,75 @@ const testAIConnection = async () => {
 
     <div class="setting-section">
       <h3 class="caption body-muted section-title">内容标签与分类</h3>
+
+      <div class="store-utility-card taxonomy-card">
+        <h4 class="body-strong taxonomy-title">日程标签</h4>
+        <p class="caption body-muted taxonomy-description">仅保留系统标签“学习”。输入名称并从调色盘选择颜色即可；与密码库分类一致，只有没有日程内容的标签才可删除。</p>
+        <div class="taxonomy-add-row">
+          <input
+            v-model="newScheduleCategory"
+            class="apple-input"
+            maxlength="12"
+            placeholder="输入日程标签名称"
+            @keyup.enter="addScheduleCategory"
+          />
+          <button class="button-primary taxonomy-add-button" @click="addScheduleCategory">添加</button>
+        </div>
+        <div class="schedule-color-picker">
+          <div class="schedule-color-picker-heading">
+            <span class="body-strong">标签颜色</span>
+            <span class="schedule-color-preview" :style="{ background: newScheduleCategoryColor }"></span>
+          </div>
+          <div
+            ref="scheduleColorBoardRef"
+            class="schedule-color-board"
+            :style="scheduleColorBoardStyle"
+            role="slider"
+            aria-label="选择标签颜色的饱和度与亮度"
+            :aria-valuetext="newScheduleCategoryColor"
+            tabindex="0"
+            @pointerdown="updateScheduleColorFromBoard"
+            @pointermove="event => event.buttons && updateScheduleColorFromBoard(event)"
+          >
+            <span class="schedule-color-cursor" :style="scheduleColorCursorStyle"></span>
+          </div>
+          <input
+            v-model.number="scheduleColorHue"
+            class="schedule-hue-slider"
+            :style="{ '--schedule-hue': scheduleColorHue }"
+            type="range"
+            min="0"
+            max="359"
+            aria-label="选择标签颜色的色相"
+            @input="applySchedulePickerColor"
+          />
+          <label class="schedule-color-code">
+            <span class="caption body-muted">HEX</span>
+            <input
+              v-model="newScheduleCategoryColor"
+              class="apple-input"
+              maxlength="7"
+              inputmode="text"
+              aria-label="标签颜色十六进制值"
+              @change="updateScheduleColorFromHex"
+              @blur="updateScheduleColorFromHex"
+            />
+          </label>
+        </div>
+        <div class="taxonomy-list">
+          <div v-for="category in scheduleStore.categories" :key="category.id" class="taxonomy-row">
+            <span class="schedule-category-name">
+              <i :style="{ background: category.color }"></i>
+              {{ category.name }}
+            </span>
+            <span class="taxonomy-row-meta">
+              <span v-if="scheduleStore.categoryUsageCount(category.id)" class="caption body-muted">已使用 {{ scheduleStore.categoryUsageCount(category.id) }} 条</span>
+              <span v-else-if="category.builtIn" class="caption body-muted">系统保留</span>
+              <button v-else class="text-link danger-text taxonomy-action" @click="deleteScheduleCategory(category)">删除</button>
+            </span>
+          </div>
+        </div>
+      </div>
 
       <div class="store-utility-card taxonomy-card">
         <h4 class="body-strong taxonomy-title">心情日记自定义标签</h4>
@@ -614,13 +869,10 @@ const testAIConnection = async () => {
 
       <div class="store-utility-card" style="margin-top: 8px;">
         <label class="caption" style="display: block; margin-bottom: 10px;">选择要操作的数据类型</label>
-        <select v-model="exportDataType" class="apple-input backup-type-select">
-          <option value="full">完整数据（全部数据与设置）</option>
-          <option value="savings">省钱数据</option>
-          <option value="weight">体重数据</option>
-          <option value="mood">心情数据</option>
-          <option value="passwords">密码库数据</option>
-        </select>
+        <button class="backup-type-button" @click="backupPickerOpen = true">
+          <span>{{ backupTypeOptions.find(item => item.value === exportDataType)?.label }}</span>
+          <b>›</b>
+        </button>
       </div>
 
       <div class="ios-list" style="margin-top: 8px;">
@@ -632,7 +884,7 @@ const testAIConnection = async () => {
         </button>
         <input type="file" accept=".json" ref="fileInputRef" style="display: none" @change="handleFileUpload" />
       </div>
-      <p class="caption body-muted" style="padding: 12px 16px; margin: 0;">完整备份包含四类数据、应用设置和 API Key，并由当前主密码进行 AES 加密；不会包含主密码或设备生物识别凭据。仍可选择单项备份并保持原有格式。</p>
+      <p class="caption body-muted" style="padding: 12px 16px; margin: 0;">完整备份包含省钱、体重、心情、密码库、日程及应用设置和 API Key，并由当前主密码进行 AES 加密；不会包含主密码或设备生物识别凭据。仍可选择单项备份并保持原有格式。</p>
     </div>
 
     <!-- AI 情绪陪伴引擎 -->
@@ -657,6 +909,26 @@ const testAIConnection = async () => {
         </button>
       </div>
     </div>
+
+    <Teleport to="body">
+      <div v-if="backupPickerOpen" class="settings-picker-mask" @click="backupPickerOpen = false">
+        <div class="settings-picker" @click.stop>
+          <div class="settings-picker-handle"></div>
+          <header>
+            <strong>选择备份数据</strong>
+            <button @click="backupPickerOpen = false">取消</button>
+          </header>
+          <button
+            v-for="option in backupTypeOptions"
+            :key="option.value"
+            :class="{ selected: exportDataType === option.value }"
+            @click="exportDataType = option.value; backupPickerOpen = false"
+          >
+            <span>{{ option.label }}</span><b>✓</b>
+          </button>
+        </div>
+      </div>
+    </Teleport>
 
   </div>
 </template>
@@ -687,8 +959,75 @@ const testAIConnection = async () => {
 .taxonomy-row:last-child { border-bottom: 0; }
 .taxonomy-row-meta { display: flex; align-items: center; gap: 10px; text-align: right; }
 .taxonomy-action { flex-shrink: 0; }
+.schedule-color-picker {
+  margin: 0 0 16px;
+  padding: 16px;
+  border: 1px solid var(--hairline);
+  border-radius: 16px;
+  background: linear-gradient(145deg, rgba(255,255,255,.88), rgba(245,247,250,.72));
+}
+.schedule-color-picker-heading { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.schedule-color-preview {
+  width: 34px; height: 34px; border: 4px solid white; border-radius: 50%;
+  box-shadow: 0 0 0 1px rgba(22,22,24,.12), 0 5px 15px rgba(22,22,24,.16);
+}
+.schedule-color-board {
+  position: relative; width: 100%; height: 150px; overflow: hidden;
+  border: 1px solid rgba(20,20,23,.12); border-radius: 14px;
+  touch-action: none; cursor: crosshair;
+}
+.schedule-color-cursor {
+  position: absolute; width: 22px; height: 22px; border: 3px solid white; border-radius: 50%;
+  box-shadow: 0 1px 7px rgba(0,0,0,.4); transform: translate(-50%, -50%); pointer-events: none;
+}
+.schedule-hue-slider {
+  width: 100%; height: 22px; margin: 14px 0 10px; padding: 0;
+  border: 0; border-radius: 999px; outline: none;
+  background: linear-gradient(to right, #f33, #ff0, #3f3, #3ff, #33f, #f3f, #f33);
+  appearance: none; -webkit-appearance: none;
+}
+.schedule-hue-slider::-webkit-slider-thumb {
+  width: 24px; height: 24px; border: 4px solid white; border-radius: 50%;
+  background: hsl(var(--schedule-hue, 0) 100% 50%);
+  box-shadow: 0 1px 7px rgba(0,0,0,.35); appearance: none; -webkit-appearance: none;
+}
+.schedule-hue-slider::-moz-range-thumb {
+  width: 18px; height: 18px; border: 4px solid white; border-radius: 50%;
+  box-shadow: 0 1px 7px rgba(0,0,0,.35);
+}
+.schedule-color-code { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 12px; }
+.schedule-color-code .apple-input { min-height: 44px; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; text-transform: uppercase; }
+.schedule-category-name { display: flex; align-items: center; gap: 9px; }
+.schedule-category-name i {
+  width: 14px; height: 14px; display: block; border: 3px solid white; border-radius: 50%;
+  box-shadow: 0 0 0 1px rgba(20,20,23,.14);
+}
 
-.backup-type-select { appearance: auto; cursor: pointer; }
+.backup-type-button {
+  width: 100%; display: flex; justify-content: space-between; align-items: center; min-height: 52px;
+  border: 1px solid var(--hairline); border-radius: 14px; padding: 0 16px;
+  background: var(--surface-pearl); color: var(--ink); font: inherit; text-align: left;
+}
+.backup-type-button b { color: var(--body-muted); font-size: 22px; font-weight: 400; }
+.settings-picker-mask {
+  position: fixed; inset: 0; z-index: 1000; display: flex; align-items: flex-end;
+  background: rgba(18,18,22,.28); backdrop-filter: blur(4px);
+}
+.settings-picker {
+  width: 100%; max-height: 72vh; overflow-y: auto; padding: 8px 18px calc(20px + env(safe-area-inset-bottom));
+  border-radius: 28px 28px 0 0; background: rgba(250,250,252,.98); box-shadow: 0 -12px 40px rgba(0,0,0,.12);
+}
+.settings-picker-handle { width: 42px; height: 5px; margin: 2px auto 13px; border-radius: 3px; background: #d1d1d5; }
+.settings-picker header { display: flex; justify-content: space-between; align-items: center; padding: 5px 4px 12px; }
+.settings-picker header strong { font-size: 20px; }
+.settings-picker header button { border: 0; background: none; color: var(--primary); font-size: 16px; }
+.settings-picker > button {
+  width: 100%; display: flex; justify-content: space-between; align-items: center; min-height: 58px;
+  border: 0; border-top: 1px solid var(--divider-soft); background: transparent; color: var(--ink); font-size: 17px; text-align: left;
+}
+.settings-picker > button b { color: transparent; }
+.settings-picker > button.selected { color: var(--primary); font-weight: 650; }
+.settings-picker > button.selected b { color: var(--primary); }
 .reminder-card { padding: 0; overflow: hidden; }
 .reminder-row { display: flex; align-items: center; gap: 12px; min-height: 92px; padding: 14px 16px; border-bottom: 1px solid var(--divider-soft); }
 .reminder-copy { display: flex; flex: 1; min-width: 0; flex-direction: column; gap: 4px; }

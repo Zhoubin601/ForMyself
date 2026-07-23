@@ -10,6 +10,7 @@ public class ForMyselfWidgetPlugin extends Plugin {
     @PluginMethod
     public void refresh(PluginCall call) {
         ForMyselfWidgetProvider.updateAll(getContext());
+        ScheduleWidgetProvider.updateAll(getContext());
         call.resolve();
     }
 }

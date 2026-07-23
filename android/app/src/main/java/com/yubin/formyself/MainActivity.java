@@ -39,7 +39,11 @@ public class MainActivity extends BridgeActivity {
             AppWidgetManager manager = AppWidgetManager.getInstance(this);
             if (!manager.isRequestPinAppWidgetSupported()) return;
 
-            ComponentName provider = new ComponentName(this, ForMyselfWidgetProvider.class);
+            boolean scheduleWidget = "schedule".equals(uri.getQueryParameter("type"));
+            ComponentName provider = new ComponentName(
+                this,
+                scheduleWidget ? ScheduleWidgetProvider.class : ForMyselfWidgetProvider.class
+            );
             manager.requestPinAppWidget(provider, null, null);
         });
     }

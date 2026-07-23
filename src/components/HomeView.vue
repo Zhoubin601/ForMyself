@@ -4,6 +4,7 @@ import { useSettingsStore } from '../stores/settings'
 import { useMoodStore } from '../stores/mood'
 import { useWeightStore } from '../stores/weight'
 import { useDebtStore } from '../stores/debt'
+import { useScheduleStore } from '../stores/schedule'
 import { askAI } from '../services/aiEngine'
 import { compareMoodRecordsNewestFirst } from '../services/moodRecords'
 
@@ -11,6 +12,7 @@ const settingsStore = useSettingsStore()
 const moodStore = useMoodStore()
 const weightStore = useWeightStore()
 const debtStore = useDebtStore()
+const scheduleStore = useScheduleStore()
 const currentTime = ref(new Date())
 
 const formatLocalDate = (date) => {
@@ -116,6 +118,16 @@ const todayRecordCount = computed(() => [
   isWeightLoggedToday.value,
   isSavingsLoggedToday.value
 ].filter(Boolean).length)
+
+const todaySchedules = computed(() => scheduleStore.todayUpcoming)
+const nextSchedule = computed(() => todaySchedules.value[0] || scheduleStore.upcoming[0] || null)
+const nextScheduleDateLabel = computed(() => {
+  const item = nextSchedule.value
+  if (!item) return '今天可以留一点空白'
+  if (item.occurrenceDate === todayStr.value) return item.allDay ? '今天 · 全天' : `今天 · ${item.startTime}`
+  const date = new Date(`${item.occurrenceDate}T00:00:00`)
+  return `${date.getMonth() + 1}月${date.getDate()}日 · ${item.allDay ? '全天' : item.startTime}`
+})
 
 const companionText = computed(() => {
   const cachedText = settingsStore.cachedQuote?.text?.trim()
@@ -317,6 +329,22 @@ onMounted(() => {
         </button>
       </div>
     </section>
+
+    <button class="schedule-home-card dashboard-card" @click="switchView('schedule')">
+      <div class="schedule-date-tile">
+        <strong>{{ currentTime.getDate() }}</strong>
+        <span>{{ ['周日', '周一', '周二', '周三', '周四', '周五', '周六'][currentTime.getDay()] }}</span>
+      </div>
+      <div class="schedule-home-copy">
+        <span class="section-kicker">TODAY SCHEDULE</span>
+        <h2>{{ nextSchedule ? nextSchedule.title : '今日暂无日程' }}</h2>
+        <p>{{ nextScheduleDateLabel }}</p>
+      </div>
+      <div class="schedule-count">
+        <strong>{{ todaySchedules.length }}</strong>
+        <span>剩余</span>
+      </div>
+    </button>
 
     <button class="goal-card dashboard-card" @click="switchView('debts')">
       <div class="goal-topline">
@@ -623,6 +651,51 @@ button {
   background: rgba(255, 255, 255, 0.86);
   box-shadow: 0 12px 32px rgba(44, 55, 75, 0.065);
 }
+
+.schedule-home-card {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 62px minmax(0, 1fr) 50px;
+  align-items: center;
+  gap: 15px;
+  padding: 18px;
+  border: 1px solid rgba(255, 109, 116, 0.18);
+  text-align: left;
+  color: var(--home-ink);
+  cursor: pointer;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(255, 79, 88, 0.1), transparent 34%),
+    rgba(255, 255, 255, 0.9);
+}
+
+.schedule-date-tile {
+  width: 58px;
+  height: 62px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 18px;
+  color: white;
+  background: linear-gradient(145deg, #ff5a63, #ff3440);
+  box-shadow: 0 8px 18px rgba(255, 52, 64, 0.24);
+}
+
+.schedule-date-tile strong { font-size: 24px; line-height: 1; }
+.schedule-date-tile span { margin-top: 5px; font-size: 10px; opacity: 0.9; }
+.schedule-home-copy { min-width: 0; }
+.schedule-home-copy h2 {
+  margin: 0;
+  overflow: hidden;
+  color: var(--home-ink);
+  font-size: 19px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.schedule-home-copy p { margin: 6px 0 0; color: var(--home-muted); font-size: 12px; }
+.schedule-count { display: flex; flex-direction: column; align-items: center; color: #ff3e49; }
+.schedule-count strong { font-size: 27px; line-height: 1; }
+.schedule-count span { margin-top: 5px; color: var(--home-muted); font-size: 10px; }
 
 .goal-card {
   width: 100%;
