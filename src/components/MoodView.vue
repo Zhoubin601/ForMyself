@@ -4,6 +4,8 @@ import { useMoodStore } from '../stores/mood'
 import { useSettingsStore } from '../stores/settings'
 import { askAI } from '../services/aiEngine'
 import { compareMoodRecordsNewestFirst } from '../services/moodRecords'
+import { appAlert, appConfirm } from '../services/uiFeedback'
+import AppDateField from './AppDateField.vue'
 
 const moodStore = useMoodStore()
 const settingsStore = useSettingsStore()
@@ -144,7 +146,7 @@ const activeEcho = ref(null)
 const isEchoThinking = ref(false)
 
 const saveRecord = async () => {
-  if (!editDate.value) return alert('请选择日期')
+  if (!editDate.value) return appAlert('请选择日期')
   if (!editTags.value.length) editTags.value = ['学习']
   if (editingId.value) {
     moodStore.updateRecord(editingId.value, { date: editDate.value, mood: editMood.value, note: editNote.value, tags: editTags.value })
@@ -169,8 +171,11 @@ const saveRecord = async () => {
   }
 }
 
-const deleteRecord = (record) => {
-  if (!confirm(`确认删除 ${record.date} 的心情记录？`)) return
+const deleteRecord = async (record) => {
+  if (!await appConfirm(`将删除 ${record.date} 的这条心情记录。`, {
+    title: '删除心情记录？',
+    destructive: true
+  })) return
   moodStore.deleteRecord(record.id)
 }
 
@@ -183,7 +188,7 @@ const toggleTag = (tag) => {
 
 const createCustomTag = () => {
   const tag = moodStore.addCustomTag(customTagInput.value)
-  if (!tag) return alert('请输入有效的标签名称')
+  if (!tag) return appAlert('请输入有效的标签名称')
   if (!editTags.value.includes(tag)) editTags.value = [...editTags.value, tag]
   customTagInput.value = ''
 }
@@ -288,7 +293,7 @@ const isToday = (day) => {
 
         <div class="input-group">
           <label class="caption">日期</label>
-          <input v-model="editDate" type="date" class="apple-input" />
+          <AppDateField v-model="editDate" class="apple-input" aria-label="选择心情记录日期" />
         </div>
 
         <div class="input-group">

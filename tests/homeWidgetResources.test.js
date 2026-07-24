@@ -22,6 +22,10 @@ const scheduleWidgetLayoutUrl = new URL(
   '../android/app/src/main/res/layout/widget_schedule.xml',
   import.meta.url
 )
+const scheduleWidgetStylesUrl = new URL(
+  '../android/app/src/main/res/values/widget_schedule_styles.xml',
+  import.meta.url
+)
 const scheduleWidgetProviderUrl = new URL(
   '../android/app/src/main/java/com/yubin/formyself/ScheduleWidgetProvider.java',
   import.meta.url
@@ -36,19 +40,27 @@ test('桌面信息卡固定使用 2x2 的最小尺寸', async () => {
 })
 
 test('临近日程组件为独立 2x2 Provider 并最多展示三条事项', async () => {
-  const [info, layout, provider] = await Promise.all([
+  const [info, layout, styles, provider] = await Promise.all([
     readFile(scheduleWidgetInfoUrl, 'utf8'),
     readFile(scheduleWidgetLayoutUrl, 'utf8'),
+    readFile(scheduleWidgetStylesUrl, 'utf8'),
     readFile(scheduleWidgetProviderUrl, 'utf8')
   ])
   assert.match(info, /android:targetCellWidth="2"/)
   assert.match(info, /android:targetCellHeight="2"/)
+  assert.match(layout, /android:textSize="13sp"/)
+  assert.match(styles, /<style name="ScheduleWidgetTime">[\s\S]*android:textSize">10sp</)
+  assert.match(styles, /<style name="ScheduleWidgetTitle">[\s\S]*android:textSize">11sp</)
   assert.match(info, /android:minWidth="110dp"/)
   assert.match(info, /android:minHeight="110dp"/)
   for (const index of [1, 2, 3]) {
     assert.match(layout, new RegExp(`@\\+id/schedule_row_${index}`))
     assert.match(provider, new RegExp(`R\\.id\\.schedule_row_${index}`))
   }
+  assert.match(layout, /@\+id\/schedule_widget_empty/)
+  assert.match(layout, /android:maxLines="2"/)
+  assert.match(provider, /setViewVisibility\(R\.id\.schedule_widget_empty, View\.VISIBLE\)/)
+  assert.match(provider, /setViewVisibility\(R\.id\.schedule_widget_empty, View\.GONE\)/)
   assert.match(provider, /my_schedule_widget_snapshot/)
   assert.match(provider, /SEVEN_DAYS_MS/)
 })

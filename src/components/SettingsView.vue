@@ -30,6 +30,8 @@ import { usePasswordVaultStore } from '../stores/passwordVault'
 import { useScheduleStore } from '../stores/schedule'
 import { syncScheduleNotifications } from '../services/scheduleNotificationService'
 import { normalizeScheduleData } from '../services/scheduleCore'
+import { appAlert, appConfirm, appToast } from '../services/uiFeedback'
+import AppTimeField from './AppTimeField.vue'
 
 const authStore = useAuthStore()
 const debtStore = useDebtStore()
@@ -38,6 +40,14 @@ const moodStore = useMoodStore()
 const settingsStore = useSettingsStore()
 const vaultStore = usePasswordVaultStore()
 const scheduleStore = useScheduleStore()
+const settingsScope = computed(() => settingsStore.settingsScope || 'general')
+const scopeMeta = computed(() => ({
+  debts: { icon: '◎', title: '省钱计划设置', description: '管理省钱看板文案、目标回顾提醒与个性化鼓励。' },
+  weight: { icon: '◇', title: '体重记录设置', description: '管理健康参数、变化提醒与每日记录提醒。' },
+  mood: { icon: '♡', title: '心情日记设置', description: '管理自定义标签与每日关怀提醒。' },
+  schedule: { icon: '□', title: '日程提醒设置', description: '管理日程标签、颜色和分类规则。' },
+  passwords: { icon: '⌑', title: '密码库设置', description: '管理密码分类；主密码仍在通用配置中管理。' }
+})[settingsScope.value] || null)
 
 const isChangingPwd = ref(false)
 const isChangingPwdBio = ref(false)
@@ -50,6 +60,7 @@ const bgInputRef = ref(null)
 
 const exportDataType = ref('full')
 const backupPickerOpen = ref(false)
+const autoLockPickerOpen = ref(false)
 const backupTypeOptions = [
   { value: 'full', label: '完整数据（全部数据与设置）' },
   { value: 'savings', label: '省钱数据' },
@@ -58,13 +69,57 @@ const backupTypeOptions = [
   { value: 'passwords', label: '密码库数据' },
   { value: 'schedules', label: '日程数据' }
 ]
+const autoLockOptions = [
+  { value: 0, label: '立即锁定' },
+  { value: 60, label: '1 分钟后' },
+  { value: 300, label: '5 分钟后' },
+  { value: 600, label: '10 分钟后' },
+  { value: -1, label: '关闭自动锁定' }
+]
+const autoLockLabel = computed(() =>
+  autoLockOptions.find(option => option.value === settingsStore.autoLockDelaySeconds)?.label || '立即锁定'
+)
 const newVaultCategory = ref('')
 const newScheduleCategory = ref('')
 const newScheduleCategoryColor = ref('#4fd5d7')
+const moduleHealthForm = ref({
+  heightCm: settingsStore.heightCm ?? '',
+  targetWeight: settingsStore.targetWeight ?? '',
+  weightChangeReminderEnabled: settingsStore.weightChangeReminderEnabled,
+  weightChangeThreshold: settingsStore.weightChangeThreshold
+})
 const scheduleColorHue = ref(181)
 const scheduleColorSaturation = ref(64)
 const scheduleColorValue = ref(84)
 const scheduleColorBoardRef = ref(null)
+
+watch(() => [
+  settingsStore.heightCm,
+  settingsStore.targetWeight,
+  settingsStore.weightChangeReminderEnabled,
+  settingsStore.weightChangeThreshold,
+  settingsScope.value
+], () => {
+  if (settingsScope.value !== 'weight') return
+  moduleHealthForm.value = {
+    heightCm: settingsStore.heightCm ?? '',
+    targetWeight: settingsStore.targetWeight ?? '',
+    weightChangeReminderEnabled: settingsStore.weightChangeReminderEnabled,
+    weightChangeThreshold: settingsStore.weightChangeThreshold
+  }
+}, { immediate: true })
+
+const saveModuleHealthSettings = () => {
+  const raw = moduleHealthForm.value
+  const height = Number(raw.heightCm)
+  const target = Number(raw.targetWeight)
+  const threshold = Number(raw.weightChangeThreshold)
+  if (raw.heightCm !== '' && (!Number.isFinite(height) || height < 80 || height > 250)) return appAlert('身高请输入 80—250 cm')
+  if (raw.targetWeight !== '' && (!Number.isFinite(target) || target < 20 || target > 300)) return appAlert('目标体重请输入 20—300 kg')
+  if (raw.weightChangeReminderEnabled && (!Number.isFinite(threshold) || threshold < 0.1 || threshold > 20)) return appAlert('变化提醒阈值请输入 0.1—20 kg')
+  settingsStore.updateHealthSettings(raw)
+  appToast('体重记录设置已保存', { tone: 'success' })
+}
 
 const clampColorValue = (value, min = 0, max = 100) =>
   Math.min(max, Math.max(min, Number(value) || 0))
@@ -174,35 +229,41 @@ watch(() => settingsStore.bannerSettings, (newVal) => {
 
 const saveBannerSettings = () => {
   settingsStore.updateBanner({ ...localBanner.value })
-  alert('看板配置已保存生效！')
+  appToast('看板配置已保存生效', { tone: 'success' })
 }
 
-const deleteMoodTag = (tag) => {
-  if (!confirm(`确认删除心情标签“${tag}”？该标签也会从历史心情记录中移除。`)) return
-  if (moodStore.removeCustomTag(tag)) alert(`已删除心情标签“${tag}”`)
+const deleteMoodTag = async (tag) => {
+  if (!await appConfirm(`“${tag}”也会从历史心情记录中移除。`, {
+    title: '删除心情标签？',
+    destructive: true
+  })) return
+  if (moodStore.removeCustomTag(tag)) appToast(`已删除心情标签“${tag}”`, { tone: 'success' })
 }
 
 const addVaultCategory = () => {
   const result = vaultStore.addCategory(newVaultCategory.value)
   if (!result.ok) {
-    if (result.reason === 'EMPTY') return alert('请输入分类名称')
-    if (result.reason === 'EXISTS') return alert('该分类已经存在')
+    if (result.reason === 'EMPTY') return appAlert('请输入分类名称')
+    if (result.reason === 'EXISTS') return appAlert('该分类已经存在')
     return
   }
   newVaultCategory.value = ''
-  alert(`已添加密码分类“${result.category}”`)
+  appToast(`已添加密码分类“${result.category}”`, { tone: 'success' })
 }
 
 const vaultCategoryUsageCount = category => vaultStore.records.filter(record => record.category === category).length
 
-const deleteVaultCategory = (category) => {
+const deleteVaultCategory = async (category) => {
   const usageCount = vaultCategoryUsageCount(category)
-  if (usageCount > 0) return alert(`分类“${category}”仍有 ${usageCount} 条密码记录，不能删除`)
-  if (!confirm(`确认删除密码分类“${category}”？`)) return
+  if (usageCount > 0) return appAlert(`分类“${category}”仍有 ${usageCount} 条密码记录，不能删除`)
+  if (!await appConfirm(`将移除密码分类“${category}”。`, {
+    title: '删除密码分类？',
+    destructive: true
+  })) return
   const result = vaultStore.deleteCategory(category)
   if (!result.ok) {
-    if (result.reason === 'PROTECTED') alert('“未分类”是系统兜底分类，不能删除')
-    else if (result.reason === 'IN_USE') alert(`分类“${category}”仍有密码记录，不能删除`)
+    if (result.reason === 'PROTECTED') appAlert('“未分类”是系统兜底分类，不能删除')
+    else if (result.reason === 'IN_USE') appAlert(`分类“${category}”仍有密码记录，不能删除`)
   }
 }
 
@@ -211,46 +272,49 @@ const addScheduleCategory = () => {
     name: newScheduleCategory.value,
     color: newScheduleCategoryColor.value
   })
-  if (!category) return alert(newScheduleCategory.value.trim() ? '该日程标签已经存在' : '请输入日程标签名称')
+  if (!category) return appAlert(newScheduleCategory.value.trim() ? '该日程标签已经存在' : '请输入日程标签名称')
   newScheduleCategory.value = ''
 }
 
-const deleteScheduleCategory = category => {
+const deleteScheduleCategory = async category => {
   if (category.builtIn) return
   const usageCount = scheduleStore.categoryUsageCount(category.id)
   if (usageCount > 0) {
-    return alert(`标签“${category.name}”仍有 ${usageCount} 条日程内容，不能删除`)
+    return appAlert(`标签“${category.name}”仍有 ${usageCount} 条日程内容，不能删除`)
   }
-  if (!confirm(`确认删除日程标签“${category.name}”？`)) return
+  if (!await appConfirm(`将移除日程标签“${category.name}”。`, {
+    title: '删除日程标签？',
+    destructive: true
+  })) return
   const result = scheduleStore.deleteCategory(category.id)
   if (!result.ok) {
-    if (result.reason === 'PROTECTED') alert('“学习”是系统保留标签，不能删除')
-    else if (result.reason === 'IN_USE') alert(`标签“${category.name}”仍有日程内容，不能删除`)
+    if (result.reason === 'PROTECTED') appAlert('“学习”是系统保留标签，不能删除')
+    else if (result.reason === 'IN_USE') appAlert(`标签“${category.name}”仍有日程内容，不能删除`)
   }
 }
 
 // --- 安全 ---
 const changeMasterPassword = async () => {
   const err = await authStore.updatePassword(oldPwdInput.value, newPwdInput.value, confirmNewPwdInput.value)
-  if (err) return alert(err)
+  if (err) return appAlert(err)
   await vaultStore.reencrypt(newPwdInput.value)
   oldPwdInput.value = ''; newPwdInput.value = ''; confirmNewPwdInput.value = ''; isChangingPwd.value = false
-  alert('主密码已重设')
+  appToast('主密码已重设', { tone: 'success' })
 }
 
 const triggerBioChangePwd = async () => {
   try {
     await NativeBiometric.verifyIdentity({ reason: '验证指纹以重设主密码', title: '安全认证' })
     isChangingPwd.value = false; isChangingPwdBio.value = true; newPwdInput.value = ''; confirmNewPwdInput.value = ''
-  } catch (err) { alert('身份验证已取消') }
+  } catch (err) { appAlert('身份验证已取消') }
 }
 
 const changeMasterPasswordBio = async () => {
   const err = await authStore.updatePassword(null, newPwdInput.value, confirmNewPwdInput.value)
-  if (err) return alert(err)
+  if (err) return appAlert(err)
   await vaultStore.reencrypt(newPwdInput.value)
   newPwdInput.value = ''; confirmNewPwdInput.value = ''; isChangingPwdBio.value = false
-  alert('主密码已重设')
+  appToast('主密码已重设', { tone: 'success' })
 }
 
 // --- 数据导出/导入 ---
@@ -363,7 +427,7 @@ const exportJSON = async () => {
   const isEmpty = exportDataType.value === 'schedules'
     ? !data.series.length
     : Array.isArray(data) && data.length === 0
-  if (!isFullBackup && isEmpty) return alert(`没有检测到可导出的${label}`)
+  if (!isFullBackup && isEmpty) return appAlert(`没有检测到可导出的${label}`)
 
   try {
     const rawData = JSON.stringify(data)
@@ -382,13 +446,13 @@ const exportJSON = async () => {
         })
         await Share.share({ title: `导出${label}加密备份`, url: writeResult.uri })
       } catch (e) {
-        alert('导出失败：' + e.message)
+        appAlert('导出失败：' + e.message)
       }
     } else {
       downloadAsFile(encryptedData, filename)
     }
   } catch (error) {
-    alert('导出错误：' + error.message)
+    appAlert('导出错误：' + error.message)
   }
 }
 
@@ -410,39 +474,45 @@ const handleFileUpload = (event) => {
       if (exportDataType.value === 'full') {
         const snapshot = normalizeFullBackupSnapshot(importedData)
         const counts = getFullBackupCounts(snapshot)
-        const confirmed = confirm(
-          `完整备份包含：\n省钱 ${counts.savings} 项、体重 ${counts.weight} 条、心情 ${counts.mood} 条、密码 ${counts.passwords} 项、日程 ${counts.schedules} 项。\n\n继续将覆盖以上全部数据和应用设置。主密码与设备生物识别凭据不会改变。`
+        const confirmed = await appConfirm(
+          `完整备份包含：\n省钱 ${counts.savings} 项、体重 ${counts.weight} 条、心情 ${counts.mood} 条、密码 ${counts.passwords} 项、日程 ${counts.schedules} 项。\n\n继续将覆盖以上全部数据和应用设置。主密码与设备生物识别凭据不会改变。`,
+          { title: '恢复完整备份？', confirmText: '覆盖并恢复', destructive: true }
         )
         if (!confirmed) return
         await restoreFullBackup(snapshot)
-        alert('完整数据恢复成功，主密码与设备生物识别凭据未改变')
+        appToast('完整数据恢复成功', { tone: 'success', duration: 3200 })
         return
       }
 
       if (exportDataType.value === 'schedules') {
         const normalized = normalizeScheduleData(importedData)
-        const overwrite = confirm(
-          `成功解密出 ${normalized.series.length} 条日程。\n确认要覆盖当前日程和标签吗？取消则执行合并。`
+        const overwrite = await appConfirm(
+          `成功解密出 ${normalized.series.length} 条日程。\n选择“覆盖”会替换当前日程和标签；取消则执行合并。`,
+          { title: '选择恢复方式', confirmText: '覆盖当前数据', cancelText: '合并数据' }
         )
         await setDataArray(normalized, overwrite)
         await syncScheduleNotifications(scheduleStore.snapshot)
-        alert('日程数据恢复成功')
+        appToast('日程数据恢复成功', { tone: 'success' })
         return
       }
 
       if (!Array.isArray(importedData)) throw new Error('格式错误')
 
-      if (confirm(`成功解密出 ${importedData.length} 条${label}项目。\n确认要覆盖当前${label}数据吗？取消则执行追加。`)) {
+      if (await appConfirm(`成功解密出 ${importedData.length} 条${label}项目。\n选择“覆盖”会替换当前数据；取消则执行追加。`, {
+        title: '选择恢复方式',
+        confirmText: '覆盖当前数据',
+        cancelText: '追加数据'
+      })) {
         await setDataArray(importedData, true)
       } else {
         await setDataArray(importedData, false)
       }
-      alert(`${label}数据恢复成功`)
+      appToast(`${label}数据恢复成功`, { tone: 'success' })
     } catch (err) {
       if (exportDataType.value === 'full') {
-        alert('完整备份恢复失败：文件损坏、版本不兼容或主密码不匹配')
+        appAlert('完整备份恢复失败：文件损坏、版本不兼容或主密码不匹配')
       } else {
-        alert('解密失败：主密码与当前备份包不匹配')
+        appAlert('解密失败：主密码与当前备份包不匹配')
       }
     } finally {
       event.target.value = ''
@@ -454,15 +524,22 @@ const handleFileUpload = (event) => {
 const triggerBgUpload = () => bgInputRef.value.click()
 const handleBgUpload = (event) => {
   const file = event.target.files[0]; if (!file) return;
-  if (file.size > 5 * 1024 * 1024) return alert('请使用 5MB 以内的图像文件')
+  if (file.size > 5 * 1024 * 1024) return appAlert('请使用 5MB 以内的图像文件')
   const reader = new FileReader()
-  reader.onload = (e) => { settingsStore.updateBg(e.target.result); alert('背景墙纸已部署') }
+  reader.onload = (e) => {
+    settingsStore.updateBg(e.target.result)
+    appToast('背景墙纸已部署', { tone: 'success' })
+  }
   reader.readAsDataURL(file)
 }
-const clearBg = () => { if (confirm('确认恢复系统默认背景色？')) settingsStore.updateBg('') }
+const clearBg = async () => {
+  if (await appConfirm('当前自定义壁纸将被移除。', { title: '恢复默认背景？' })) {
+    settingsStore.updateBg('')
+  }
+}
 
 const requestWidgetPin = type => {
-  if (!Capacitor.isNativePlatform()) return alert('桌面小组件仅在 Android 手机上可用')
+  if (!Capacitor.isNativePlatform()) return appAlert('桌面小组件仅在 Android 手机上可用')
   const suffix = type === 'schedule' ? '?type=schedule' : ''
   window.location.href = `formyself://widget/add${suffix}`
 }
@@ -547,23 +624,26 @@ const saveReminderSettings = async () => {
     }
     await refreshReminderStatus()
     if (result.scheduled > 0 && reminderStatus.value.exactAlarm === 'denied') {
-      const shouldEnableExactAlarm = confirm('每日提醒已保存，但 Android 尚未允许 ForMyself 使用准时闹钟，到点通知可能延迟数分钟到一小时。\n\n是否现在前往系统设置开启“闹钟和提醒”权限？')
+      const shouldEnableExactAlarm = await appConfirm(
+        '每日提醒已保存，但 Android 尚未允许 ForMyself 使用准时闹钟，到点通知可能延迟数分钟到一小时。',
+        { title: '开启准时提醒？', confirmText: '前往系统设置' }
+      )
       if (shouldEnableExactAlarm) await enableExactReminders()
     }
 
-    if (result.scheduled === 0) alert('所有通知提醒已关闭')
+    if (result.scheduled === 0) appToast('所有通知提醒已关闭')
     else if (personalization.errors.length) {
-      alert(`已安排 ${result.scheduled} 项每日提醒。部分 AI 文案生成失败，已使用默认关怀文案；请检查 API Key 和网络。`)
+      appAlert(`已安排 ${result.scheduled} 项每日提醒。部分 AI 文案生成失败，已使用默认关怀文案；请检查 API Key 和网络。`)
     } else if (personalization.generated > 0) {
-      alert(`已安排 ${result.scheduled} 项每日提醒，并生成 ${personalization.generated} 条 AI 个性化关怀文案`)
+      appToast(`已安排 ${result.scheduled} 项提醒，生成 ${personalization.generated} 条 AI 文案`, { tone: 'success', duration: 3200 })
     } else {
-      alert(`已保存并安排 ${result.scheduled} 项每日提醒，系统待处理列表已校验通过`)
+      appToast(`已保存并安排 ${result.scheduled} 项每日提醒`, { tone: 'success' })
     }
   } catch (error) {
     if (error.code === 'NOTIFICATION_PERMISSION_DENIED') {
-      alert('通知权限未开启，请在系统设置中允许 ForMyself 发送通知')
+      appAlert('通知权限未开启，请在系统设置中允许 ForMyself 发送通知')
     } else {
-      alert('通知提醒设置失败：' + error.message)
+      appAlert('通知提醒设置失败：' + error.message)
     }
     await refreshReminderStatus()
   } finally {
@@ -587,13 +667,13 @@ const testNotification = async () => {
   }
 }
 const testAIConnection = async () => {
-  if (!settingsStore.aiApiKey) return alert('请先填写 API Key')
+  if (!settingsStore.aiApiKey) return appAlert('请先填写 API Key')
   isTestingAI.value = true
   try {
     const res = await askAI('请回复"连接成功！"这四个字，不要其他内容。')
-    alert('✅ AI 握手成功！\n\n' + res)
+    appAlert(res, { title: 'AI 握手成功', tone: 'success' })
   } catch (e) {
-    alert('❌ 连接失败：' + e.message)
+    appAlert('连接失败：' + e.message)
   } finally {
     isTestingAI.value = false
   }
@@ -603,8 +683,16 @@ const testAIConnection = async () => {
 <template>
   <div class="fade-in settings-container">
 
-    <div class="setting-section">
-      <h3 class="caption body-muted section-title">主页看板文案设置</h3>
+    <div v-if="scopeMeta" class="module-settings-intro">
+      <span>{{ scopeMeta.icon }}</span>
+      <div>
+        <strong>{{ scopeMeta.title }}</strong>
+        <p>{{ scopeMeta.description }}</p>
+      </div>
+    </div>
+
+    <div v-if="settingsScope === 'debts'" class="setting-section">
+      <h3 class="caption body-muted section-title">省钱看板文案</h3>
       <div class="store-utility-card" style="margin-top: 8px;">
         <div class="input-group">
           <label class="caption">主标题前缀</label>
@@ -622,7 +710,7 @@ const testAIConnection = async () => {
       </div>
     </div>
 
-    <div class="setting-section">
+    <div v-if="settingsScope === 'general'" class="setting-section">
       <h3 class="caption body-muted section-title">界面视觉</h3>
       <div class="ios-list">
         <button class="list-item text-link" style="text-align: left;" @click="triggerBgUpload">更换环境背景图片</button>
@@ -631,7 +719,7 @@ const testAIConnection = async () => {
       </div>
     </div>
 
-    <div class="setting-section">
+    <div v-if="settingsScope === 'general'" class="setting-section">
       <h3 class="caption body-muted section-title">桌面小组件</h3>
       <div class="ios-list">
         <button class="list-item text-link" style="text-align: left;" @click="requestWidgetPin('info')">
@@ -644,7 +732,7 @@ const testAIConnection = async () => {
       <p class="caption body-muted" style="padding: 10px 16px 0; margin: 0;">若桌面不支持应用内添加，可长按桌面并从“小组件”列表选择 ForMyself。</p>
     </div>
 
-    <div class="setting-section">
+    <div v-if="settingsScope === 'general'" class="setting-section">
       <h3 class="caption body-muted section-title">安全管理</h3>
       <div class="ios-list" v-if="!isChangingPwd && !isChangingPwdBio">
         <button v-if="authStore.hasBiometric" class="list-item text-link" style="text-align: left;" @click="triggerBioChangePwd">指纹生物识别修改密码</button>
@@ -654,13 +742,10 @@ const testAIConnection = async () => {
 
       <div class="store-utility-card" style="margin-top: 12px;">
         <label class="caption" style="display: block; margin-bottom: 10px;">进入后台后自动锁定</label>
-        <select v-model.number="settingsStore.autoLockDelaySeconds" class="apple-input backup-type-select">
-          <option :value="0">立即锁定</option>
-          <option :value="60">1 分钟后</option>
-          <option :value="300">5 分钟后</option>
-          <option :value="600">10 分钟后</option>
-          <option :value="-1">关闭自动锁定</option>
-        </select>
+        <button class="backup-type-button" @click="autoLockPickerOpen = true">
+          <span>{{ autoLockLabel }}</span>
+          <b>›</b>
+        </button>
         <p class="caption body-muted" style="margin: 10px 0 0;">超过设定时间返回应用时，需要重新输入主密码或验证指纹。</p>
       </div>
 
@@ -676,10 +761,10 @@ const testAIConnection = async () => {
       </div>
     </div>
 
-    <div class="setting-section">
+    <div v-if="['schedule', 'mood', 'passwords'].includes(settingsScope)" class="setting-section">
       <h3 class="caption body-muted section-title">内容标签与分类</h3>
 
-      <div class="store-utility-card taxonomy-card">
+      <div v-if="settingsScope === 'schedule'" class="store-utility-card taxonomy-card">
         <h4 class="body-strong taxonomy-title">日程标签</h4>
         <p class="caption body-muted taxonomy-description">仅保留系统标签“学习”。输入名称并从调色盘选择颜色即可；与密码库分类一致，只有没有日程内容的标签才可删除。</p>
         <div class="taxonomy-add-row">
@@ -748,7 +833,7 @@ const testAIConnection = async () => {
         </div>
       </div>
 
-      <div class="store-utility-card taxonomy-card">
+      <div v-if="settingsScope === 'mood'" class="store-utility-card taxonomy-card">
         <h4 class="body-strong taxonomy-title">心情日记自定义标签</h4>
         <p class="caption body-muted taxonomy-description">删除标签时会同时从历史心情记录中移除；内置标签“工作、学习、家庭、睡眠”固定保留。</p>
         <div v-if="moodStore.customTags.length" class="taxonomy-list">
@@ -760,7 +845,7 @@ const testAIConnection = async () => {
         <p v-else class="caption body-muted taxonomy-empty">暂无自定义心情标签</p>
       </div>
 
-      <div class="store-utility-card taxonomy-card">
+      <div v-if="settingsScope === 'passwords'" class="store-utility-card taxonomy-card">
         <h4 class="body-strong taxonomy-title">密码库分类</h4>
         <p class="caption body-muted taxonomy-description">可在这里统一添加和删除分类。仍被密码记录使用的分类不能删除，“未分类”固定保留。</p>
         <div class="taxonomy-add-row">
@@ -790,10 +875,41 @@ const testAIConnection = async () => {
       </div>
     </div>
 
-    <div class="setting-section">
+    <div v-if="settingsScope === 'weight'" class="setting-section">
+      <h3 class="caption body-muted section-title">健康与趋势</h3>
+      <div class="store-utility-card health-settings-card">
+        <div class="health-setting-grid">
+          <label class="input-group">
+            <span class="caption">身高（cm）</span>
+            <input v-model="moduleHealthForm.heightCm" type="number" min="80" max="250" class="apple-input" placeholder="例如 170" />
+          </label>
+          <label class="input-group">
+            <span class="caption">目标体重（kg）</span>
+            <input v-model="moduleHealthForm.targetWeight" type="number" min="20" max="300" step="0.1" class="apple-input" placeholder="例如 65" />
+          </label>
+        </div>
+        <label class="health-reminder-toggle">
+          <span>
+            <strong>体重变化提醒</strong>
+            <small>与上一条记录变化达到阈值时提醒</small>
+          </span>
+          <span class="switch-control">
+            <input v-model="moduleHealthForm.weightChangeReminderEnabled" type="checkbox" />
+            <i></i>
+          </span>
+        </label>
+        <label v-if="moduleHealthForm.weightChangeReminderEnabled" class="input-group threshold-field">
+          <span class="caption">变化阈值（kg）</span>
+          <input v-model="moduleHealthForm.weightChangeThreshold" type="number" min="0.1" max="20" step="0.1" class="apple-input" />
+        </label>
+        <button class="button-primary full-width" @click="saveModuleHealthSettings">保存健康设置</button>
+      </div>
+    </div>
+
+    <div v-if="['mood', 'weight', 'debts'].includes(settingsScope)" class="setting-section">
       <h3 class="caption body-muted section-title">通知提醒</h3>
       <div class="store-utility-card reminder-card">
-        <div class="reminder-row">
+        <div v-if="settingsScope === 'mood'" class="reminder-row">
           <div class="reminder-copy">
             <span class="body-strong">心情日记</span>
             <span class="caption body-muted">提醒记录当天的感受</span>
@@ -802,14 +918,14 @@ const testAIConnection = async () => {
               AI 根据最近心情与日记生成关怀文案
             </label>
           </div>
-          <input v-model="settingsStore.notificationSettings.mood.time" type="time" class="reminder-time" :disabled="!settingsStore.notificationSettings.mood.enabled" />
+          <AppTimeField v-model="settingsStore.notificationSettings.mood.time" class="reminder-time" :disabled="!settingsStore.notificationSettings.mood.enabled" aria-label="选择心情提醒时间" />
           <label class="switch-control">
             <input v-model="settingsStore.notificationSettings.mood.enabled" type="checkbox" />
             <span></span>
           </label>
         </div>
 
-        <div class="reminder-row">
+        <div v-if="settingsScope === 'weight'" class="reminder-row">
           <div class="reminder-copy">
             <span class="body-strong">体重记录</span>
             <span class="caption body-muted">提醒在固定时间记录体重</span>
@@ -818,14 +934,14 @@ const testAIConnection = async () => {
               AI 根据最近体重记录生成关怀文案
             </label>
           </div>
-          <input v-model="settingsStore.notificationSettings.weight.time" type="time" class="reminder-time" :disabled="!settingsStore.notificationSettings.weight.enabled" />
+          <AppTimeField v-model="settingsStore.notificationSettings.weight.time" class="reminder-time" :disabled="!settingsStore.notificationSettings.weight.enabled" aria-label="选择体重提醒时间" />
           <label class="switch-control">
             <input v-model="settingsStore.notificationSettings.weight.enabled" type="checkbox" />
             <span></span>
           </label>
         </div>
 
-        <div class="reminder-row">
+        <div v-if="settingsScope === 'debts'" class="reminder-row">
           <div class="reminder-copy">
             <span class="body-strong">省钱计划</span>
             <span class="caption body-muted">提醒查看目标和记录存款</span>
@@ -834,7 +950,7 @@ const testAIConnection = async () => {
               AI 根据最近省钱计划生成鼓励文案
             </label>
           </div>
-          <input v-model="settingsStore.notificationSettings.savings.time" type="time" class="reminder-time" :disabled="!settingsStore.notificationSettings.savings.enabled" />
+          <AppTimeField v-model="settingsStore.notificationSettings.savings.time" class="reminder-time" :disabled="!settingsStore.notificationSettings.savings.enabled" aria-label="选择省钱提醒时间" />
           <label class="switch-control">
             <input v-model="settingsStore.notificationSettings.savings.enabled" type="checkbox" />
             <span></span>
@@ -864,7 +980,7 @@ const testAIConnection = async () => {
       </div>
     </div>
 
-    <div class="setting-section">
+    <div v-if="settingsScope === 'general'" class="setting-section">
       <h3 class="caption body-muted section-title">数据备份</h3>
 
       <div class="store-utility-card" style="margin-top: 8px;">
@@ -888,7 +1004,7 @@ const testAIConnection = async () => {
     </div>
 
     <!-- AI 情绪陪伴引擎 -->
-    <div class="setting-section">
+    <div v-if="settingsScope === 'general'" class="setting-section">
       <h3 class="caption body-muted section-title">🤖 AI 情绪陪伴 (BYOK)</h3>
       <div class="store-utility-card" style="margin-top: 8px;">
         <p class="caption body-muted" style="margin: 0 0 16px 0;">自备 Key 接入，数据仅限本机流转，绝对隐私。兼容 DeepSeek / OpenAI / 通义千问等标准 API。</p>
@@ -911,6 +1027,23 @@ const testAIConnection = async () => {
     </div>
 
     <Teleport to="body">
+      <div v-if="autoLockPickerOpen" class="settings-picker-mask" @click="autoLockPickerOpen = false">
+        <div class="settings-picker" @click.stop>
+          <div class="settings-picker-handle"></div>
+          <header>
+            <strong>进入后台后自动锁定</strong>
+            <button @click="autoLockPickerOpen = false">取消</button>
+          </header>
+          <button
+            v-for="option in autoLockOptions"
+            :key="option.value"
+            :class="{ selected: settingsStore.autoLockDelaySeconds === option.value }"
+            @click="settingsStore.autoLockDelaySeconds = option.value; autoLockPickerOpen = false"
+          >
+            <span>{{ option.label }}</span><b>✓</b>
+          </button>
+        </div>
+      </div>
       <div v-if="backupPickerOpen" class="settings-picker-mask" @click="backupPickerOpen = false">
         <div class="settings-picker" @click.stop>
           <div class="settings-picker-handle"></div>
@@ -937,6 +1070,19 @@ const testAIConnection = async () => {
 .settings-container { display: flex; flex-direction: column; gap: 32px; }
 .setting-section { display: flex; flex-direction: column; }
 .section-title { padding: 0 16px; margin-bottom: 8px; text-transform: uppercase; }
+.module-settings-intro {
+  display: flex; align-items: center; gap: 14px; padding: 18px;
+  border: 1px solid rgba(255,255,255,.82); border-radius: 22px;
+  background: linear-gradient(145deg, rgba(236,246,255,.94), rgba(255,255,255,.88));
+  box-shadow: 0 10px 30px rgba(35,68,104,.08);
+}
+.module-settings-intro > span {
+  display: grid; place-items: center; width: 48px; height: 48px; flex: 0 0 auto;
+  border-radius: 16px; background: linear-gradient(145deg, #2588ee, #0861bc);
+  color: #fff; font-size: 24px; box-shadow: 0 8px 18px rgba(0,102,204,.2);
+}
+.module-settings-intro strong { display: block; color: var(--ink); font-size: 18px; }
+.module-settings-intro p { margin: 5px 0 0; color: var(--body-muted); font-size: 13px; line-height: 1.45; }
 
 .ios-list { background: var(--canvas); border-radius: 12px; border: 1px solid var(--hairline); overflow: hidden; display: flex; flex-direction: column;}
 .list-item { padding: 16px; background: transparent; border: none; border-bottom: 1px solid var(--divider-soft); font-size: 17px; cursor: pointer; color: var(--ink); width: 100%;}
@@ -947,6 +1093,17 @@ const testAIConnection = async () => {
 .danger-text { color: #d92d20; }
 .input-group { margin-bottom: 12px; }
 .store-utility-card { background: var(--canvas); border: 1px solid var(--hairline); border-radius: 18px; padding: 24px; margin-top: 8px; }
+.health-setting-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px; }
+.health-setting-grid .input-group span, .threshold-field span { display: block; margin-bottom: 8px; }
+.health-reminder-toggle { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin: 4px 0 16px; padding: 15px; border-radius: 15px; background: var(--surface-pearl); }
+.health-reminder-toggle strong, .health-reminder-toggle small { display: block; }
+.health-reminder-toggle strong { font-size: 15px; }
+.health-reminder-toggle small { margin-top: 4px; color: var(--body-muted); font-size: 11px; line-height: 1.4; }
+.health-reminder-toggle .switch-control i { position: absolute; inset: 0; border-radius: 999px; background: #d1d1d6; transition: background .2s; }
+.health-reminder-toggle .switch-control i::after { content: ''; position: absolute; width: 24px; height: 24px; top: 2px; left: 2px; border-radius: 50%; background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,.2); transition: transform .2s; }
+.health-reminder-toggle .switch-control input:checked + i { background: var(--primary); }
+.health-reminder-toggle .switch-control input:checked + i::after { transform: translateX(20px); }
+.threshold-field { display: block; margin-bottom: 18px; }
 .taxonomy-card + .taxonomy-card { margin-top: 12px; }
 .taxonomy-title { margin: 0; }
 .taxonomy-description { margin: 8px 0 16px; line-height: 1.55; }
@@ -1051,5 +1208,6 @@ const testAIConnection = async () => {
 @media (max-width: 480px) {
   .reminder-row { gap: 8px; }
   .reminder-time { width: 82px; font-size: 14px; }
+  .health-setting-grid { grid-template-columns: 1fr; gap: 0; }
 }
 </style>

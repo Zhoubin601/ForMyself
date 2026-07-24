@@ -35,7 +35,7 @@
             android:maxLines="1"
             android:text="@string/schedule_widget_title"
             android:textColor="#FFFFFFFF"
-            android:textSize="11sp" />
+            android:textSize="13sp" />
 
         <TextView
             android:id="@+id/schedule_widget_count"
@@ -50,8 +50,28 @@
             android:paddingEnd="6dp"
             android:text="0 今日"
             android:textColor="#FFFFFFFF"
-            android:textSize="8sp" />
+            android:textSize="9sp" />
     </LinearLayout>
+
+    <TextView
+        android:id="@+id/schedule_widget_empty"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="3dp"
+        android:layout_weight="1"
+        android:background="@drawable/widget_info_row"
+        android:clickable="true"
+        android:contentDescription="@string/schedule_widget_open"
+        android:fontFamily="sans-serif-medium"
+        android:gravity="center"
+        android:includeFontPadding="false"
+        android:maxLines="2"
+        android:paddingStart="10dp"
+        android:paddingEnd="10dp"
+        android:text="@string/schedule_widget_empty"
+        android:textColor="#CCFFFFFF"
+        android:textSize="11sp"
+        android:visibility="gone" />
 
     <LinearLayout
         android:id="@+id/schedule_row_1"
@@ -98,4 +118,3 @@
             style="@style/ScheduleWidgetTitle" />
     </LinearLayout>
 </LinearLayout>
-

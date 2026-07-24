@@ -3,6 +3,8 @@ import { ref, computed, watch, onMounted } from 'vue'
 import { useDebtStore } from '../stores/debt'
 import { useSettingsStore } from '../stores/settings'
 import { askAI } from '../services/aiEngine'
+import { appAlert, appConfirm } from '../services/uiFeedback'
+import AppDateField from './AppDateField.vue'
 
 const debtStore = useDebtStore()
 const settingsStore = useSettingsStore()
@@ -45,14 +47,19 @@ const addForm = ref({ name: '', totalAmount: '', startDate: getTodayStr() })
 
 const startAdd = () => { isAdding.value = true }
 const submitAdd = () => {
-  if (!addForm.value.name || !addForm.value.totalAmount) return alert('名称和目标金额不能为空哦')
+  if (!addForm.value.name || !addForm.value.totalAmount) return appAlert('名称和目标金额不能为空哦')
   const amount = parseFloat(addForm.value.totalAmount)
   debtStore.addDebt({ id: Date.now().toString(), name: addForm.value.name, totalAmount: amount, remainingAmount: amount, startDate: addForm.value.startDate, records: [], isCleared: false })
   isAdding.value = false
   addForm.value = { name: '', totalAmount: '', startDate: getTodayStr() }
 }
 
-const deleteDebt = (id) => { if (confirm('确定要删除这个省钱计划吗？')) debtStore.deleteDebt(id) }
+const deleteDebt = async (id) => {
+  if (await appConfirm('删除后，这个计划及其存入记录将无法恢复。', {
+    title: '删除省钱计划？',
+    destructive: true
+  })) debtStore.deleteDebt(id)
+}
 
 const currentDebtId = ref(null)
 const isEditing = ref(false)
@@ -61,7 +68,7 @@ const editForm = ref({ name: '', totalAmount: '', startDate: '' })
 const startEdit = (debt) => { currentDebtId.value = debt.id; isEditing.value = true; editForm.value = { name: debt.name, totalAmount: debt.totalAmount, startDate: debt.startDate } }
 
 const saveEdit = () => {
-  if (!editForm.value.name) return alert('名称不能为空')
+  if (!editForm.value.name) return appAlert('名称不能为空')
   const newData = [...debtStore.savedDebts]
   const idx = newData.findIndex(d => d.id === currentDebtId.value)
   if (idx !== -1) {
@@ -83,7 +90,7 @@ const repayForm = ref({ date: '', amount: '', note: '' })
 const startRepay = (debt) => { currentDebtId.value = debt.id; isRepaying.value = true; repayForm.value = { date: getTodayStr(), amount: '', note: '' } }
 
 const submitRepay = () => {
-  if (!repayForm.value.amount) return alert('请输入存入金额')
+  if (!repayForm.value.amount) return appAlert('请输入存入金额')
   const repayAmount = parseFloat(repayForm.value.amount)
   const newData = [...debtStore.savedDebts]
   const idx = newData.findIndex(d => d.id === currentDebtId.value)
@@ -93,7 +100,11 @@ const submitRepay = () => {
     const oldProgress = debt.totalAmount > 0 ? (oldSaved / debt.totalAmount) * 100 : 0
     debt.records.push({ id: Date.now().toString(), date: repayForm.value.date, amount: repayAmount, note: repayForm.value.note })
     debt.remainingAmount -= repayAmount
-    if (debt.remainingAmount <= 0) { debt.remainingAmount = 0; debt.isCleared = true; alert('太棒了！该目标已顺利达成！🎉') }
+    if (debt.remainingAmount <= 0) {
+      debt.remainingAmount = 0
+      debt.isCleared = true
+      appAlert('太棒了！该目标已顺利达成！🎉', { title: '目标达成', tone: 'success' })
+    }
     debtStore.updateDebts(newData)
     fetchAIEncouragement(true)
     const newSaved = oldSaved + repayAmount
@@ -216,17 +227,17 @@ onMounted(() => { fetchAIEncouragement() })
           <div v-if="isAdding" class="form-stack">
             <div class="input-group"><label class="caption">计划名称</label><input v-model="addForm.name" placeholder="例如：换新电脑" class="apple-input" /></div>
             <div class="input-group"><label class="caption">目标金额 (¥)</label><input type="number" v-model="addForm.totalAmount" class="apple-input" /></div>
-            <div class="input-group"><label class="caption">开始日期</label><input type="date" v-model="addForm.startDate" class="apple-input" /></div>
+            <div class="input-group"><label class="caption">开始日期</label><AppDateField v-model="addForm.startDate" class="apple-input" aria-label="选择计划开始日期" /></div>
             <div class="modal-buttons"><button class="button-primary full-width" @click="submitAdd">确立计划</button><button class="text-link full-width" @click="isAdding = false">取消</button></div>
           </div>
           <div v-if="isEditing" class="form-stack">
             <div class="input-group"><label class="caption">计划名称</label><input v-model="editForm.name" class="apple-input" /></div>
             <div class="input-group"><label class="caption">目标金额 (¥)</label><input type="number" v-model="editForm.totalAmount" class="apple-input" /></div>
-            <div class="input-group"><label class="caption">开始日期</label><input type="date" v-model="editForm.startDate" class="apple-input" /></div>
+            <div class="input-group"><label class="caption">开始日期</label><AppDateField v-model="editForm.startDate" class="apple-input" aria-label="选择计划开始日期" /></div>
             <div class="modal-buttons"><button class="button-primary full-width" @click="saveEdit">保存修改</button><button class="text-link full-width" @click="isEditing = false">取消</button></div>
           </div>
           <div v-if="isRepaying" class="form-stack">
-            <div class="input-group"><label class="caption">存入日期</label><input type="date" v-model="repayForm.date" class="apple-input" /></div>
+            <div class="input-group"><label class="caption">存入日期</label><AppDateField v-model="repayForm.date" class="apple-input" aria-label="选择存入日期" /></div>
             <div class="input-group"><label class="caption">存入金额 (¥)</label><input type="number" v-model="repayForm.amount" class="apple-input" /></div>
             <div class="input-group"><label class="caption">备注</label><input v-model="repayForm.note" placeholder="少喝了一杯咖啡" class="apple-input" /></div>
             <div class="modal-buttons"><button class="button-primary full-width" @click="submitRepay">确认存入</button><button class="text-link full-width" @click="isRepaying = false">取消</button></div>

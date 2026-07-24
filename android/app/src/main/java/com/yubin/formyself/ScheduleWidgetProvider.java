@@ -52,15 +52,11 @@ public class ScheduleWidgetProvider extends AppWidgetProvider {
         int[] titles = { R.id.schedule_title_1, R.id.schedule_title_2, R.id.schedule_title_3 };
 
         if (items.isEmpty()) {
-            views.setViewVisibility(rows[0], View.VISIBLE);
-            views.setViewVisibility(icons[0], View.VISIBLE);
-            views.setTextViewText(icons[0], "○");
-            views.setTextViewText(times[0], "7天");
-            views.setTextViewText(titles[0], context.getString(R.string.schedule_widget_empty));
-            bindOpenSchedule(context, views, rows[0], 520);
-            views.setViewVisibility(rows[1], View.GONE);
-            views.setViewVisibility(rows[2], View.GONE);
+            views.setViewVisibility(R.id.schedule_widget_empty, View.VISIBLE);
+            bindOpenSchedule(context, views, R.id.schedule_widget_empty, 520);
+            for (int row : rows) views.setViewVisibility(row, View.GONE);
         } else {
+            views.setViewVisibility(R.id.schedule_widget_empty, View.GONE);
             for (int index = 0; index < rows.length; index++) {
                 if (index >= items.size()) {
                     views.setViewVisibility(rows[index], View.GONE);

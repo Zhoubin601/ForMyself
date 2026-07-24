@@ -9,6 +9,9 @@ import {
   parseLocalDate
 } from '../services/scheduleCore.js'
 import { syncScheduleNotifications } from '../services/scheduleNotificationService.js'
+import { appAlert, appChoose, appConfirm } from '../services/uiFeedback'
+import AppDateField from './AppDateField.vue'
+import AppTimeField from './AppTimeField.vue'
 
 const scheduleStore = useScheduleStore()
 const settingsStore = useSettingsStore()
@@ -113,15 +116,18 @@ const closeEditor = () => {
   editingOccurrence.value = null
 }
 
-const chooseSeriesScope = action => {
+const chooseSeriesScope = async action => {
   const occurrence = editingOccurrence.value
   if (!occurrence || occurrence.recurrence.type === 'none') return 'all'
-  const answer = prompt(
-    `${action}重复日程：\n1 仅本次\n2 本次及以后\n3 整个系列`,
-    '1'
-  )
-  if (answer === null) return ''
-  return ({ 1: 'single', 2: 'future', 3: 'all' })[String(answer).trim()] || 'single'
+  return await appChoose({
+    title: `${action}重复日程`,
+    message: '请选择此次操作影响的日程范围。',
+    options: [
+      { value: 'single', icon: '1', label: '仅本次', description: '只影响当前这一天' },
+      { value: 'future', icon: '→', label: '本次及以后', description: '保留当前日期之前的日程' },
+      { value: 'all', icon: '∞', label: '整个系列', description: '影响这个重复日程的全部日期' }
+    ]
+  })
 }
 
 const normalizeFormPayload = () => ({
@@ -138,13 +144,13 @@ const normalizeFormPayload = () => ({
 })
 
 const saveEditor = async () => {
-  if (!form.title.trim()) return alert('请输入日程标题')
-  if (form.endDate < form.startDate) return alert('结束日期不能早于开始日期')
+  if (!form.title.trim()) return appAlert('请输入日程标题')
+  if (form.endDate < form.startDate) return appAlert('结束日期不能早于开始日期')
   const payload = normalizeFormPayload()
   if (!editingOccurrence.value) {
     scheduleStore.addSeries(payload)
   } else {
-    const scope = chooseSeriesScope('修改')
+    const scope = await chooseSeriesScope('修改')
     if (!scope) return
     scheduleStore.updateSeries(
       editingOccurrence.value.seriesId,
@@ -160,19 +166,22 @@ const saveEditor = async () => {
   } catch (error) {
     console.error('保存日程提醒失败', error)
     if (error.code === 'NOTIFICATION_PERMISSION_DENIED') {
-      alert('日程已保存，但通知权限未开启。请在系统设置中允许 ForMyself 通知。')
+      appAlert('日程已保存，但通知权限未开启。请在系统设置中允许 ForMyself 通知。')
     } else if (error.code === 'SCHEDULE_NOTIFICATION_VERIFY_FAILED') {
-      alert('日程已保存，但系统没有保留提醒任务。请确认已允许“闹钟和提醒”权限后重试。')
+      appAlert('日程已保存，但系统没有保留提醒任务。请确认已允许“闹钟和提醒”权限后重试。')
     } else {
-      alert('日程已保存，但提醒设置失败，请稍后重试。')
+      appAlert('日程已保存，但提醒设置失败，请稍后重试。')
     }
   }
 }
 
-const deleteEditor = () => {
+const deleteEditor = async () => {
   if (!editingOccurrence.value) return
-  const scope = chooseSeriesScope('删除')
-  if (!scope || !confirm('确认删除所选日程？')) return
+  const scope = await chooseSeriesScope('删除')
+  if (!scope || !await appConfirm('删除后无法恢复，请确认是否继续。', {
+    title: '删除所选日程？',
+    destructive: true
+  })) return
   scheduleStore.deleteSeries(
     editingOccurrence.value.seriesId,
     scope,
@@ -325,7 +334,12 @@ onMounted(() => scrollAgendaToLatest())
       <div class="year-mark">
         <span>{{ new Date().getFullYear().toString().slice(0, 2) }}</span><b>{{ new Date().getFullYear().toString().slice(2) }}</b>
       </div>
-      <button class="plain-icon search-trigger" aria-label="搜索" @click="$refs.searchInput?.focus()">⌕</button>
+      <button class="plain-icon schedule-settings-trigger" aria-label="打开日程设置" @click="settingsStore.openModuleSettings('schedule')">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 3.5 14 5l2.5-.2.8 2.4 2 1.5-1 2.3.5 2.5-2.3 1.1-1.2 2.2-2.5-.4-2.1 1.4-1.8-1.7-2.5-.1-.5-2.5-1.8-1.7 1.3-2.2-.2-2.5 2.4-.9L9 4.6l2.5.6L12 3.5Z"></path>
+          <circle cx="12" cy="11" r="2.6"></circle>
+        </svg>
+      </button>
     </header>
 
     <div class="view-tabs">
@@ -491,15 +505,15 @@ onMounted(() => scrollAgendaToLatest())
               <div class="form-row date-row">
                 <strong>开始</strong>
                 <div>
-                  <input v-model="form.startDate" type="date" />
-                  <input v-if="!form.allDay" v-model="form.startTime" type="time" />
+                  <AppDateField v-model="form.startDate" class="schedule-date-field" aria-label="选择开始日期" />
+                  <AppTimeField v-if="!form.allDay" v-model="form.startTime" class="schedule-time-field" aria-label="选择开始时间" />
                 </div>
               </div>
               <div class="form-row date-row">
                 <strong>结束</strong>
                 <div>
-                  <input v-model="form.endDate" type="date" />
-                  <input v-if="!form.allDay" v-model="form.endTime" type="time" />
+                  <AppDateField v-model="form.endDate" class="schedule-date-field" aria-label="选择结束日期" />
+                  <AppTimeField v-if="!form.allDay" v-model="form.endTime" class="schedule-time-field" aria-label="选择结束时间" />
                 </div>
               </div>
             </section>
@@ -588,8 +602,8 @@ onMounted(() => scrollAgendaToLatest())
   animation: schedule-page-in .34s cubic-bezier(.22, .8, .28, 1) both;
 }
 .schedule-header {
-  display: grid;
-  grid-template-columns: 36px 1fr 36px;
+    display: grid;
+    grid-template-columns: 36px 1fr 36px;
   align-items: center;
   padding: calc(7px + env(safe-area-inset-top)) 16px 6px;
   background: rgba(250, 250, 252, .82);
@@ -600,7 +614,8 @@ onMounted(() => scrollAgendaToLatest())
 .menu-trigger span { width: 19px; height: 2px; border-radius: 3px; background: currentColor; }
 .year-mark { text-align: center; font-size: 28px; font-weight: 700; letter-spacing: .5px; }
 .year-mark b { color: #ff3f48; }
-.search-trigger { font-size: 26px; transform: rotate(-18deg); }
+.schedule-settings-trigger { display: grid; place-items: center; padding: 8px; color: #1684df; }
+.schedule-settings-trigger svg { width: 21px; height: 21px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .view-tabs {
   width: calc(100% - 40px);
   max-width: 520px;
@@ -733,7 +748,10 @@ onMounted(() => scrollAgendaToLatest())
 .choice-row span { flex: 1; color: #8c8c91; text-align: right; font-size: 15px; }
 .choice-row b { color: #aaa; font-size: 22px; font-weight: 400; }
 .date-row > div { flex: 1; display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 5px; }
-.date-row input { border: 0; background: none; color: #1684df; font-size: 14px; outline: none; }
+  .date-row .schedule-date-field, .date-row .schedule-time-field {
+    min-height: 36px; padding: 5px 8px; border: 0; border-radius: 10px;
+    background: #eef7ff; color: #1684df; font-size: 13px; outline: none;
+  }
 .vivo-switch {
   appearance: none; width: 48px; height: 28px; border-radius: 15px; background: #dedee1; position: relative; transition: .2s; flex: 0 0 auto;
 }

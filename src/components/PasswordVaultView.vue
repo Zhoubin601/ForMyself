@@ -8,6 +8,7 @@ import {
   compareVaultRecords
 } from '../services/passwordVaultRecords.js'
 import { VAULT_ACCESS_RESULT, verifyVaultSecretAccess } from '../services/vaultAccessGuard.js'
+import { appAlert, appConfirm, appToast } from '../services/uiFeedback'
 
 const vaultStore = usePasswordVaultStore()
 const searchQuery = ref('')
@@ -76,14 +77,17 @@ const selectEditorCategory = (category) => {
 }
 
 const saveRecord = () => {
-  if (!form.value.appName.trim()) return alert('请填写软件或网站名称')
+  if (!form.value.appName.trim()) return appAlert('请填写软件或网站名称')
   if (editingId.value) vaultStore.updateRecord(editingId.value, form.value)
   else vaultStore.addRecord(form.value)
   closeEditor()
 }
 
-const deleteRecord = (record) => {
-  if (confirm(`确认删除“${record.appName}”的密码记录？`)) {
+const deleteRecord = async (record) => {
+  if (await appConfirm(`“${record.appName}”的账号、密码和附加字段都会被移除。`, {
+    title: '删除密码记录？',
+    destructive: true
+  })) {
     hideSecret(record.id)
     vaultStore.deleteRecord(record.id)
   }
@@ -125,9 +129,9 @@ const requestBiometricAccess = async (record, action) => {
 
   if (result.granted) return true
   if (result.code === VAULT_ACCESS_RESULT.BIOMETRIC_UNAVAILABLE) {
-    alert('设备尚未启用可用的生物识别，请先在系统设置中录入指纹或面容。')
+    appAlert('设备尚未启用可用的生物识别，请先在系统设置中录入指纹或面容。')
   } else {
-    alert('生物识别未通过，密码仍保持隐藏。')
+    appAlert('生物识别未通过，密码仍保持隐藏。')
   }
   return false
 }
@@ -145,9 +149,9 @@ const toggleVisibility = async (record) => {
 const copyText = async (text, label) => {
   try {
     await navigator.clipboard.writeText(text || '')
-    alert(`${label}已复制`)
+    appToast(`${label}已复制`, { tone: 'success' })
   } catch (error) {
-    alert('复制失败，请长按内容手动复制')
+    appAlert('复制失败，请长按内容手动复制')
   }
 }
 

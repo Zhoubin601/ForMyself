@@ -9,6 +9,8 @@ import {
   normalizeHealthSettings
 } from '../services/weightInsights.js'
 import { notifyWeightChange } from '../services/notificationService.js'
+import { appAlert, appConfirm } from '../services/uiFeedback'
+import AppDateField from './AppDateField.vue'
 
 const weightStore = useWeightStore()
 const settingsStore = useSettingsStore()
@@ -184,17 +186,17 @@ const saveHealthSettings = () => {
   const height = Number(raw.heightCm)
   const target = Number(raw.targetWeight)
   const threshold = Number(raw.weightChangeThreshold)
-  if (raw.heightCm !== '' && (!Number.isFinite(height) || height < 80 || height > 250)) return alert('身高请输入 80—250 cm')
-  if (raw.targetWeight !== '' && (!Number.isFinite(target) || target < 20 || target > 300)) return alert('目标体重请输入 20—300 kg')
-  if (raw.weightChangeReminderEnabled && (!Number.isFinite(threshold) || threshold < 0.1 || threshold > 20)) return alert('变化提醒阈值请输入 0.1—20 kg')
+  if (raw.heightCm !== '' && (!Number.isFinite(height) || height < 80 || height > 250)) return appAlert('身高请输入 80—250 cm')
+  if (raw.targetWeight !== '' && (!Number.isFinite(target) || target < 20 || target > 300)) return appAlert('目标体重请输入 20—300 kg')
+  if (raw.weightChangeReminderEnabled && (!Number.isFinite(threshold) || threshold < 0.1 || threshold > 20)) return appAlert('变化提醒阈值请输入 0.1—20 kg')
   settingsStore.updateHealthSettings(normalizeHealthSettings(raw))
   showHealthModal.value = false
 }
 
 const saveRecord = async () => {
-  if (!editDate.value) return alert('请选择日期')
-  if (editWeight.value === null || editWeight.value === '' || isNaN(editWeight.value)) return alert('请填写有效体重')
-  if (editWeight.value < 20 || editWeight.value > 300) return alert('体重数值似乎不合理（20-300 kg）')
+  if (!editDate.value) return appAlert('请选择日期')
+  if (editWeight.value === null || editWeight.value === '' || isNaN(editWeight.value)) return appAlert('请填写有效体重')
+  if (editWeight.value < 20 || editWeight.value > 300) return appAlert('体重数值似乎不合理（20-300 kg）')
   const record = { id: Date.now().toString(), date: editDate.value, weight: Number(editWeight.value), note: editNote.value || '' }
   const notice = settingsStore.weightChangeReminderEnabled
     ? calculateWeightChangeNotice(weightStore.weightRecords, record, settingsStore.weightChangeThreshold)
@@ -213,7 +215,13 @@ const saveRecord = async () => {
   }
 }
 
-const deleteRecord = (record) => { if (!confirm(`确认删除 ${record.date} 的体重记录（${record.weight} kg）？`)) return; weightStore.deleteRecord(record.id) }
+const deleteRecord = async (record) => {
+  if (!await appConfirm(`将删除 ${record.date} 的 ${record.weight} kg 记录。`, {
+    title: '删除体重记录？',
+    destructive: true
+  })) return
+  weightStore.deleteRecord(record.id)
+}
 
 const formatDate = (dateStr) => {
   const d = new Date(dateStr + 'T00:00:00')
@@ -240,7 +248,7 @@ const getTrend = (record) => {
     <div class="stat-card"><span class="stat-label">最近记录周均重</span><span class="stat-value">{{ latestWeeklyAverage ? latestWeeklyAverage.average + ' kg' : '--' }}</span><span class="stat-detail">{{ latestWeeklyAverage ? formatWeekRange(latestWeeklyAverage) + ' · ' + weeklyChangeText : weeklyChangeText }}</span></div>
   </div>
 
-  <button class="health-settings-button" @click="openHealthModal">
+  <button class="health-settings-button" @click="settingsStore.openModuleSettings('weight')">
     <span><strong>健康与趋势设置</strong><small>身高、目标体重、变化提醒阈值</small></span>
     <span class="health-settings-chevron">›</span>
   </button>
@@ -313,7 +321,7 @@ const getTrend = (record) => {
     <div class="modal-overlay" v-if="showAddModal" @click="showAddModal = false"></div>
     <div class="modal-panel" v-if="showAddModal">
       <h3 class="body-strong" style="margin: 0 0 20px 0;">记录体重</h3>
-      <div class="input-group"><label class="caption">日期</label><input type="date" v-model="editDate" class="apple-input" /></div>
+      <div class="input-group"><label class="caption">日期</label><AppDateField v-model="editDate" class="apple-input" aria-label="选择体重记录日期" /></div>
       <div class="input-group"><label class="caption">体重 (kg)</label><input type="number" step="0.1" v-model="editWeight" class="apple-input" placeholder="例如：65.5" @keyup.enter="saveRecord" /></div>
       <div class="input-group"><label class="caption">备注（可选）</label><input v-model="editNote" class="apple-input" placeholder="例如：晨起空腹" /></div>
       <div style="display: flex; gap: 12px; margin-top: 24px;"><button class="button-primary" style="flex:1" @click="saveRecord">保存</button><button class="button-secondary-pill" style="flex:1" @click="showAddModal = false">取消</button></div>

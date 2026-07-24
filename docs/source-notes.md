@@ -1,5 +1,55 @@
 # 资料来源记录
 
+## 2026-07-24 时间转盘与临近日程小组件字号
+
+来源：
+
+- 用户 2026-07-24 当前需求
+- 当前项目 `src/components/AppTimeField.vue`
+- 当前项目 `android/app/src/main/res/layout/widget_schedule.xml`
+- 当前项目 `android/app/src/main/res/values/widget_schedule_styles.xml`
+
+关键事实：
+
+- 现有应用内时间面板只列出 5 分钟间隔，不能直接选择全部 00–59 分钟。
+- 用户希望恢复时钟转盘交互，同时继续保持与应用一致的自绘视觉。
+- 临近日程 2×2 桌面小组件的标题、时间和事项文字偏小，需要在不改变组件尺寸的前提下放大。
+
+## 2026-07-24 应用内反馈组件与侧边栏统一
+
+来源文件：
+
+- 用户截图 `C:\Users\a3185\AppData\Local\Temp\codex-clipboard-b47e3c16-6c8b-4654-8ada-63f54fb5b00b.png`
+- 用户截图 `C:\Users\a3185\AppData\Local\Temp\codex-clipboard-a39ea673-fe38-4abe-ba8b-1f01608bb401.png`
+- 当前项目 `src/App.vue`
+- 当前项目 `src/components/*.vue`
+
+关键事实：
+
+- 主密码验证错误使用 WebView/Android 默认 `alert`，白色矩形、系统默认按钮和现有圆角玻璃风格不一致。
+- 全项目共发现 77 处 `alert`、`confirm` 或 `prompt` 调用，分布在省钱、月报、心情、密码库、日程、设置、体重和应用锁屏。
+- 设置页还保留一个原生 `select`，多个业务页使用原生日期/时间输入，会继续触发 WebView 的 Android 选择弹窗。
+- 原侧边栏只有纯文字列表，缺少图标、分组、关闭按钮、品牌层级和设备内隐私说明。
+
+## 2026-07-24 模块设置入口与锁屏视觉
+
+来源文件：
+
+- 用户截图 `C:\Users\a3185\AppData\Local\Temp\codex-clipboard-85281322-ee49-4d9f-a035-cecaf05845dc.png`
+- 用户截图 `C:\Users\a3185\AppData\Local\Temp\codex-clipboard-39aa1c2a-6994-4c61-8328-a4faa0739411.png`
+- 用户截图 `C:\Users\a3185\AppData\Local\Temp\codex-clipboard-fea5b4cc-70c9-44fc-a5e7-fce728e4ae23.png`
+- 用户截图 `C:\Users\a3185\AppData\Local\Temp\codex-clipboard-6f77fd85-4e4b-4f00-9866-20133510cc7e.png`
+- 用户截图 `C:\Users\a3185\AppData\Local\Temp\codex-clipboard-1eb4292d-a1fd-4bcb-8fa5-0d4f97ced1d5.png`
+- 当前项目 `public/icon.png`、`src/App.vue`、`src/stores/settings.js`、`src/components/SettingsView.vue`
+
+关键事实：
+
+- 侧边栏顶部需要使用真实 App 图标，不能继续使用临时字母“F”。
+- 只有存在独立配置的模块需要显示标题栏齿轮；用户明确首页不需要齿轮。
+- 省钱、体重、心情、日程和密码库存在独立配置；省钱看板文案属于省钱计划；API、备份、主密码、背景和桌面组件属于通用配置。
+- 日程页已经有常驻搜索框，标题栏搜索按钮功能重复，应移除。
+- 原锁屏只有文字、单一输入框和按钮，视觉层级、品牌识别、安全说明和密码可见性操作不足。
+
 ## 2026-07-18 密码库功能合并
 
 来源文件：

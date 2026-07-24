@@ -6,6 +6,7 @@ import { useDebtStore } from '../stores/debt'
 import { useSettingsStore } from '../stores/settings'
 import { askAI } from '../services/aiEngine'
 import { buildMonthlyReport, buildMonthlySummaryPrompt } from '../services/monthlyReport'
+import { appAlert } from '../services/uiFeedback'
 
 const moodStore = useMoodStore()
 const weightStore = useWeightStore()
@@ -63,12 +64,12 @@ const targetGapText = computed(() => {
 })
 
 const generateMonthlySummary = async () => {
-  if (!settingsStore.aiApiKey?.trim()) return alert('请先在通用配置中填写 AI API Key')
+  if (!settingsStore.aiApiKey?.trim()) return appAlert('请先在通用配置中填写 AI API Key')
   isGeneratingSummary.value = true
   try {
     aiSummary.value = await askAI(buildMonthlySummaryPrompt(report.value))
   } catch (error) {
-    alert('月度总结生成失败：' + error.message)
+    appAlert('月度总结生成失败：' + error.message)
   } finally {
     isGeneratingSummary.value = false
   }

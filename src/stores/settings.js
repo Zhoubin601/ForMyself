@@ -15,6 +15,8 @@ export const useSettingsStore = defineStore('settings', () => {
   const bannerSettings = ref({ prefix: '你已经省下了', suffix: '元', subtitle: '可喜可贺，继续保持。✨', titleSize: 38 })
   const customBg = ref('')
   const currentView = ref('home')
+  const settingsScope = ref('general')
+  const settingsReturnView = ref('home')
   const scheduleTarget = ref({ item: '', occurrence: '' })
   const isDrawerOpen = ref(false)
   const isDataLoaded = ref(false)
@@ -33,7 +35,22 @@ export const useSettingsStore = defineStore('settings', () => {
   const weightChangeReminderEnabled = ref(true)
   const weightChangeThreshold = ref(1)
 
-  const viewTitle = computed(() => ({ home: '首页总览', reports: '月度报告', debts: '我的省钱计划', weight: '体重记录', mood: '心情日记', schedule: '日程提醒', passwords: '我的密码库', settings: '通用配置' })[currentView.value])
+  const viewLabels = {
+    home: '首页总览',
+    reports: '月度报告',
+    debts: '我的省钱计划',
+    weight: '体重记录',
+    mood: '心情日记',
+    schedule: '日程提醒',
+    passwords: '我的密码库',
+    settings: '通用配置'
+  }
+  const viewTitle = computed(() => {
+    if (currentView.value === 'settings' && settingsScope.value !== 'general') {
+      return `${viewLabels[settingsScope.value] || '模块'}设置`
+    }
+    return viewLabels[currentView.value]
+  })
 
   const loadSettings = async () => {
     try {
@@ -128,7 +145,23 @@ export const useSettingsStore = defineStore('settings', () => {
   watch(dataFingerprint, () => persistHomeCache())
   watch(lastEncouragement, () => persistHomeCache())
 
-  const switchView = (view) => { currentView.value = view; isDrawerOpen.value = false }
+  const switchView = (view) => {
+    if (view === 'settings') settingsScope.value = 'general'
+    currentView.value = view
+    isDrawerOpen.value = false
+  }
+  const openModuleSettings = scope => {
+    if (!['debts', 'weight', 'mood', 'schedule', 'passwords'].includes(scope)) return
+    settingsReturnView.value = currentView.value
+    settingsScope.value = scope
+    currentView.value = 'settings'
+    isDrawerOpen.value = false
+  }
+  const closeModuleSettings = () => {
+    const target = settingsReturnView.value || settingsScope.value || 'home'
+    settingsScope.value = 'general'
+    currentView.value = target === 'settings' ? 'home' : target
+  }
   const openScheduleTarget = (target = {}) => {
     scheduleTarget.value = {
       item: String(target.item || ''),
@@ -206,5 +239,5 @@ export const useSettingsStore = defineStore('settings', () => {
     return backup
   }
 
-  return { bannerSettings, customBg, currentView, scheduleTarget, isDrawerOpen, isDataLoaded, viewTitle, cachedQuote, dataFingerprint, lastEncouragement, aiProviderUrl, aiApiKey, aiModel, autoLockDelaySeconds, notificationSettings, notificationAiContent, targetWeight, heightCm, weightChangeReminderEnabled, weightChangeThreshold, loadSettings, switchView, openScheduleTarget, updateBanner, updateBg, updateHealthSettings, getBackupSnapshot, restoreBackupSnapshot }
+  return { bannerSettings, customBg, currentView, settingsScope, settingsReturnView, scheduleTarget, isDrawerOpen, isDataLoaded, viewTitle, cachedQuote, dataFingerprint, lastEncouragement, aiProviderUrl, aiApiKey, aiModel, autoLockDelaySeconds, notificationSettings, notificationAiContent, targetWeight, heightCm, weightChangeReminderEnabled, weightChangeThreshold, loadSettings, switchView, openModuleSettings, closeModuleSettings, openScheduleTarget, updateBanner, updateBg, updateHealthSettings, getBackupSnapshot, restoreBackupSnapshot }
 })
