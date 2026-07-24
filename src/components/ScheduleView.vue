@@ -85,6 +85,12 @@ const createDefaultForm = () => {
 
 const form = reactive(createDefaultForm())
 
+const scheduleTitleStyle = title => {
+  const length = Array.from(String(title || '')).length
+  const size = length > 36 ? 14 : length > 20 ? 16 : 18
+  return { '--schedule-title-size': `${size}px` }
+}
+
 const resetForm = value => {
   Object.assign(form, createDefaultForm(), value || {})
   form.recurrence = {
@@ -93,6 +99,20 @@ const resetForm = value => {
     intervalDays: Number(value?.recurrence?.intervalDays) || 2
   }
   form.reminderOffset = value?.reminderOffset ?? ''
+}
+
+const updateStartDate = value => {
+  if (!parseLocalDate(value)) return
+  const previousStart = parseLocalDate(form.startDate)
+  const previousEnd = parseLocalDate(form.endDate)
+  const durationDays = previousStart && previousEnd
+    ? Math.max(0, Math.round((
+      Date.UTC(previousEnd.getFullYear(), previousEnd.getMonth(), previousEnd.getDate()) -
+      Date.UTC(previousStart.getFullYear(), previousStart.getMonth(), previousStart.getDate())
+    ) / (24 * 60 * 60 * 1000)))
+    : 0
+  form.startDate = value
+  form.endDate = addDays(value, durationDays)
 }
 
 const openNewEditor = date => {
@@ -380,7 +400,12 @@ onMounted(() => scrollAgendaToLatest())
             v-for="item in group.items"
             :key="item.key"
             class="agenda-item"
-            :class="{ completed: item.completed, expired: item.expired }"
+            :class="{
+              completed: item.completed,
+              expired: item.expired,
+              task: item.type === 'task',
+              event: item.type === 'event'
+            }"
             @click="openOccurrence(item)"
           >
             <button
@@ -397,14 +422,13 @@ onMounted(() => scrollAgendaToLatest())
               :style="{ background: categoryById(item.categoryId)?.color }"
             ></span>
             <div class="item-copy">
-              <strong>{{ item.title }}</strong>
+              <strong :style="scheduleTitleStyle(item.title)">{{ item.title }}</strong>
               <small>
                 {{ item.allDay ? '全天' : `${item.startTime} - ${item.endTime}` }}
                 <template v-if="item.location"> · {{ item.location }}</template>
               </small>
             </div>
-            <span v-if="item.expired" class="state-label">未完成</span>
-            <span v-else-if="item.recurrence.type !== 'none'" class="repeat-label">↻</span>
+            <span v-if="item.recurrence.type !== 'none'" class="repeat-label">↻</span>
           </article>
         </div>
       </section>
@@ -451,7 +475,10 @@ onMounted(() => scrollAgendaToLatest())
         </div>
         <article v-for="item in selectedDayItems" :key="item.key" @click="openOccurrence(item)">
           <i :style="{ background: categoryById(item.categoryId)?.color }"></i>
-          <div><strong>{{ item.title }}</strong><small>{{ item.allDay ? '全天' : item.startTime }}</small></div>
+          <div>
+            <strong :style="scheduleTitleStyle(item.title)">{{ item.title }}</strong>
+            <small>{{ item.allDay ? '全天' : item.startTime }}</small>
+          </div>
         </article>
         <p v-if="!selectedDayItems.length">这一天暂无日程</p>
       </section>
@@ -505,7 +532,12 @@ onMounted(() => scrollAgendaToLatest())
               <div class="form-row date-row">
                 <strong>开始</strong>
                 <div>
-                  <AppDateField v-model="form.startDate" class="schedule-date-field" aria-label="选择开始日期" />
+                  <AppDateField
+                    :model-value="form.startDate"
+                    class="schedule-date-field"
+                    aria-label="选择开始日期"
+                    @update:model-value="updateStartDate"
+                  />
                   <AppTimeField v-if="!form.allDay" v-model="form.startTime" class="schedule-time-field" aria-label="选择开始时间" />
                 </div>
               </div>
@@ -660,23 +692,27 @@ onMounted(() => scrollAgendaToLatest())
   overflow: hidden;
 }
 .agenda-day-empty { margin: 0; padding: 22px 20px; color: #8e8e93; font-size: 15px; }
-.agenda-item { min-height: 76px; padding: 15px 17px; display: flex; align-items: center; gap: 13px; border-bottom: 1px solid #eeeeef; }
+.agenda-item { min-height: 76px; padding: 15px 17px; display: flex; align-items: flex-start; gap: 13px; border-bottom: 1px solid #eeeeef; }
 .agenda-item:last-child { border-bottom: 0; }
-.category-dot { width: 12px; height: 12px; border-radius: 50%; flex: 0 0 auto; }
+.category-dot { width: 12px; height: 12px; margin-top: 6px; border-radius: 50%; flex: 0 0 auto; }
 .task-check {
-  width: 23px; height: 23px; border-radius: 50%; border: 2px solid var(--category-color); color: transparent; background: transparent; padding: 0;
+  width: 23px; height: 23px; margin-top: 1px; border-radius: 50%; border: 2px solid var(--category-color); color: transparent; background: transparent; padding: 0;
 }
 .task-check.checked { background: var(--category-color); color: white; }
 .item-copy { min-width: 0; flex: 1; display: flex; flex-direction: column; gap: 5px; }
-.item-copy strong { font-size: 18px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.item-copy small { color: #aaaab0; font-size: 13px; }
+.item-copy strong {
+  font-size: var(--schedule-title-size, 18px);
+  line-height: 1.38;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+.item-copy small { color: #aaaab0; font-size: 13px; line-height: 1.45; overflow-wrap: anywhere; }
 .agenda-item.completed .item-copy { opacity: .5; text-decoration: line-through; }
 .agenda-item.expired { color: #a5a5aa; }
-.agenda-item.expired .item-copy { opacity: .58; text-decoration: line-through; }
+.agenda-item.expired .item-copy { opacity: .58; }
 .agenda-item.expired .category-dot { filter: grayscale(1); opacity: .48; }
 .agenda-item.expired .task-check { border-color: #b8b8bc; }
-.state-label { color: #a7a7ab; font-size: 12px; }
-.repeat-label { color: #99999e; font-size: 18px; }
+.repeat-label { margin-top: 1px; color: #99999e; font-size: 18px; flex: 0 0 auto; }
 .empty-agenda { padding: 80px 20px; display: flex; flex-direction: column; align-items: center; gap: 9px; color: #a1a1a6; }
 .empty-agenda span { font-size: 42px; }
 .empty-agenda strong { color: #77777d; font-size: 18px; }
@@ -706,7 +742,13 @@ onMounted(() => scrollAgendaToLatest())
 .selected-day-title button { border: 0; background: #ff414b; color: white; border-radius: 15px; padding: 7px 13px; }
 .selected-day-card article { display: flex; gap: 10px; align-items: center; padding: 12px 0; border-top: 1px solid #eee; }
 .selected-day-card article i { width: 10px; height: 10px; border-radius: 50%; }
-.selected-day-card article div { display: flex; flex-direction: column; gap: 3px; }
+.selected-day-card article div { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.selected-day-card article strong {
+  font-size: var(--schedule-title-size, 18px);
+  line-height: 1.38;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
 .selected-day-card article small, .selected-day-card p { color: #aaa; }
 .schedule-editor-overlay { position: fixed; inset: 0; z-index: 500; background: #f5f5f7; }
 .schedule-editor { height: 100%; display: flex; flex-direction: column; color: #161618; }

@@ -65,6 +65,14 @@ test('临近日程组件为独立 2x2 Provider 并最多展示三条事项', asy
   assert.match(provider, /SEVEN_DAYS_MS/)
 })
 
+test('临近日程组件标题支持两行与动态字号', async () => {
+  const styles = await readFile(scheduleWidgetStylesUrl, 'utf8')
+  assert.match(styles, /<item name="android:maxLines">2<\/item>/)
+  assert.match(styles, /<item name="android:autoSizeTextType">uniform<\/item>/)
+  assert.match(styles, /<item name="android:autoSizeMinTextSize">8sp<\/item>/)
+  assert.doesNotMatch(styles, /<item name="android:ellipsize">end<\/item>/)
+})
+
 test('桌面信息卡展示三类基本信息和今日完成度', async () => {
   const [layout, provider] = await Promise.all([
     readFile(widgetLayoutUrl, 'utf8'),

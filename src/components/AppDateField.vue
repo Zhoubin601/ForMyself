@@ -14,6 +14,7 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue'])
 const open = ref(false)
 const cursor = ref('')
+const draftValue = ref('')
 
 const localToday = () => {
   const now = new Date()
@@ -41,9 +42,12 @@ const calendarDays = computed(() => {
     result.push({
       day,
       value,
-      selected: value === props.modelValue,
+      selected: value === draftValue.value,
       today: value === localToday(),
-      disabled: (props.min && value < props.min) || (props.max && value > props.max)
+      disabled: Boolean(
+        (props.min && value < props.min) ||
+        (props.max && value > props.max)
+      )
     })
   }
   return result
@@ -51,6 +55,7 @@ const calendarDays = computed(() => {
 
 const showPicker = () => {
   if (props.disabled) return
+  draftValue.value = normalizedValue.value
   cursor.value = normalizedValue.value.slice(0, 7)
   open.value = true
 }
@@ -61,12 +66,19 @@ const moveMonth = offset => {
 }
 const choose = item => {
   if (!item || item.disabled) return
-  emit('update:modelValue', item.value)
+  draftValue.value = item.value
+}
+const confirm = () => {
+  if (!draftValue.value) return
+  emit('update:modelValue', draftValue.value)
   open.value = false
 }
 
 watch(() => props.modelValue, value => {
-  if (open.value && value) cursor.value = value.slice(0, 7)
+  if (open.value && value) {
+    draftValue.value = value
+    cursor.value = value.slice(0, 7)
+  }
 })
 </script>
 
@@ -93,7 +105,7 @@ watch(() => props.modelValue, value => {
               <small>选择日期</small>
               <strong>{{ monthLabel }}</strong>
             </div>
-            <button type="button" aria-label="关闭日期选择" @click="open = false">完成</button>
+            <button type="button" aria-label="确认日期选择" @click="confirm">确定</button>
           </header>
           <div class="month-navigation">
             <button type="button" aria-label="上个月" @click="moveMonth(-1)">‹</button>
@@ -110,6 +122,7 @@ watch(() => props.modelValue, value => {
                 type="button"
                 :disabled="item.disabled"
                 :class="{ selected: item.selected, today: item.today }"
+                :aria-pressed="item.selected"
                 @click="choose(item)"
               >
                 {{ item.day }}

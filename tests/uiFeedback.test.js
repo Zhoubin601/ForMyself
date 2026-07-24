@@ -33,6 +33,16 @@ test('日期、时间与下拉选择不再触发 WebView 原生选择弹窗', ()
   assert.match(combinedSource, /AppTimeField/)
 })
 
+test('应用内日期面板先选中日期，再由确定按钮提交选择', () => {
+  const dateFieldSource = readFileSync(join(sourceRoot, 'components', 'AppDateField.vue'), 'utf8')
+  assert.match(dateFieldSource, /const draftValue = ref\(''\)/)
+  assert.match(dateFieldSource, /draftValue\.value = item\.value/)
+  assert.match(dateFieldSource, /emit\('update:modelValue', draftValue\.value\)/)
+  assert.match(dateFieldSource, /@click="confirm">确定<\/button>/)
+  assert.match(dateFieldSource, /:aria-pressed="item\.selected"/)
+  assert.match(dateFieldSource, /disabled:\s*Boolean\(/)
+})
+
 test('应用内时间转盘支持每一分钟精确选择', () => {
   const timeFieldSource = readFileSync(join(sourceRoot, 'components', 'AppTimeField.vue'), 'utf8')
   assert.match(timeFieldSource, /length: 60/)
