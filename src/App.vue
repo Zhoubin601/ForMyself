@@ -243,6 +243,10 @@ const setMasterPassword = async () => {
     "
   >
     <div v-if="settingsStore.customBg" class="bg-blur-layer"></div>
+    <div v-else class="ambient-canvas" aria-hidden="true">
+      <span class="ambient-orb ambient-orb-blue"></span>
+      <span class="ambient-orb ambient-orb-mint"></span>
+    </div>
 
     <div v-if="authStore.isLocked" class="lock-screen fade-in">
       <div class="lock-glow lock-glow-one"></div>
@@ -507,6 +511,51 @@ button,
   pointer-events: none;
 }
 
+.ambient-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 8% 5%, rgba(109, 179, 248, .09), transparent 32%),
+    radial-gradient(circle at 94% 74%, rgba(95, 210, 166, .07), transparent 30%);
+  contain: strict;
+}
+
+.ambient-orb {
+  position: absolute;
+  width: min(92vw, 620px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  opacity: .5;
+  will-change: transform, opacity;
+}
+
+.ambient-orb-blue {
+  top: -23%;
+  right: -37%;
+  background: radial-gradient(circle, rgba(83, 157, 239, .18) 0%, rgba(129, 179, 244, .08) 42%, transparent 70%);
+  animation: ambientBlueDrift 22s ease-in-out infinite alternate;
+}
+
+.ambient-orb-mint {
+  bottom: -27%;
+  left: -42%;
+  background: radial-gradient(circle, rgba(74, 197, 157, .14) 0%, rgba(109, 207, 191, .06) 44%, transparent 70%);
+  animation: ambientMintDrift 26s ease-in-out infinite alternate;
+}
+
+@keyframes ambientBlueDrift {
+  from { transform: translate3d(-5%, -2%, 0) scale(.94); opacity: .4; }
+  to { transform: translate3d(9%, 12%, 0) scale(1.08); opacity: .62; }
+}
+
+@keyframes ambientMintDrift {
+  from { transform: translate3d(2%, 8%, 0) scale(1.04); opacity: .34; }
+  to { transform: translate3d(14%, -10%, 0) scale(.92); opacity: .56; }
+}
+
 .display-lg {
   font-family: 'SF Pro Display', -apple-system, sans-serif;
   font-size: 40px;
@@ -553,7 +602,11 @@ button,
 }
 
 .button-primary {
-  background-color: var(--primary);
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  background: linear-gradient(120deg, #075fb7 0%, #0878df 48%, #47a3ef 100%);
+  background-size: 220% 220%;
   color: #ffffff;
   font-size: 17px;
   font-weight: 400;
@@ -561,13 +614,46 @@ button,
   padding: 11px 22px;
   border: none;
   cursor: pointer;
-  transition: transform 0.2s, background-color 0.2s;
+  box-shadow: 0 8px 20px rgba(0, 102, 204, .16);
+  transition: transform .2s, box-shadow .2s, filter .2s;
   text-align: center;
+  animation: galaxyButtonGradient 9s ease infinite;
+}
+
+/* Motion language adapted from Uiverse Galaxy button snippets (MIT). */
+.button-primary::before {
+  content: '';
+  position: absolute;
+  inset: -60% -35%;
+  z-index: -1;
+  background: linear-gradient(105deg, transparent 37%, rgba(255,255,255,.34) 50%, transparent 63%);
+  transform: translate3d(-72%, 0, 0) rotate(5deg);
+  pointer-events: none;
+}
+
+.button-primary > * {
+  position: relative;
+  z-index: 1;
+}
+
+@keyframes galaxyButtonGradient {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+@keyframes galaxyButtonShine {
+  from { transform: translate3d(-72%, 0, 0) rotate(5deg); }
+  to { transform: translate3d(72%, 0, 0) rotate(5deg); }
 }
 
 .button-primary:active {
   transform: scale(0.95);
-  background-color: var(--primary-focus);
+  filter: saturate(1.08) brightness(.98);
+  box-shadow: 0 4px 12px rgba(0, 102, 204, .2);
+}
+
+.button-primary:active::before {
+  animation: galaxyButtonShine .52s ease-out;
 }
 
 .button-secondary-pill {
@@ -903,9 +989,17 @@ button,
 .unlock-actions .button-secondary-pill svg { width: 21px; fill: none; stroke: currentColor; stroke-width: 1.65; stroke-linecap: round; stroke-linejoin: round; }
 .lock-privacy-note { display: flex; align-items: center; justify-content: center; gap: 7px; margin-top: 17px; color: #8a929f; font-size: 11px; }
 .lock-privacy-note svg { width: 16px; height: 16px; fill: none; stroke: #438c69; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
-.lock-glow { position: absolute; z-index: 0; border-radius: 50%; filter: blur(12px); pointer-events: none; }
-.lock-glow-one { top: -12%; right: -18%; width: 310px; height: 310px; background: rgba(65,153,238,.16); }
-.lock-glow-two { bottom: -13%; left: -20%; width: 330px; height: 330px; background: rgba(102,210,170,.12); }
+.lock-glow { position: absolute; z-index: 0; border-radius: 50%; filter: blur(12px); pointer-events: none; will-change: transform, opacity; }
+.lock-glow-one { top: -12%; right: -18%; width: 310px; height: 310px; background: rgba(65,153,238,.16); animation: lockGlowOne 15s ease-in-out infinite alternate; }
+.lock-glow-two { bottom: -13%; left: -20%; width: 330px; height: 330px; background: rgba(102,210,170,.12); animation: lockGlowTwo 18s ease-in-out infinite alternate; }
+@keyframes lockGlowOne {
+  from { transform: translate3d(0, 0, 0) scale(.94); opacity: .72; }
+  to { transform: translate3d(-13%, 12%, 0) scale(1.08); opacity: 1; }
+}
+@keyframes lockGlowTwo {
+  from { transform: translate3d(0, 0, 0) scale(1.06); opacity: .65; }
+  to { transform: translate3d(15%, -11%, 0) scale(.92); opacity: .94; }
+}
 @media (max-height: 690px) {
   .lock-card { padding-top: 24px; padding-bottom: 20px; transform: scale(.94); }
   .lock-brand { width: 60px; height: 60px; margin-bottom: 12px; }
@@ -913,17 +1007,28 @@ button,
 }
 
 .fade-in {
-  animation: fadeIn 0.4s ease forwards;
+  animation: fadeIn .46s cubic-bezier(.2, .78, .28, 1) forwards;
 }
 
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translate3d(0, 12px, 0) scale(.992);
   }
   to {
     opacity: 1;
     transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
   }
 }
 </style>

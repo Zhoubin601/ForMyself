@@ -458,6 +458,21 @@ onMounted(() => {
   padding-bottom: 24px;
 }
 
+.home-dashboard > * {
+  animation: galaxySectionRise .58s cubic-bezier(.2, .78, .28, 1) both;
+}
+
+.home-dashboard > :nth-child(2) { animation-delay: .055s; }
+.home-dashboard > :nth-child(3) { animation-delay: .105s; }
+.home-dashboard > :nth-child(4) { animation-delay: .155s; }
+.home-dashboard > :nth-child(5) { animation-delay: .205s; }
+.home-dashboard > :nth-child(6) { animation-delay: .255s; }
+
+@keyframes galaxySectionRise {
+  from { opacity: 0; transform: translate3d(0, 18px, 0) scale(.987); }
+  to { opacity: 1; transform: none; }
+}
+
 button {
   font: inherit;
 }
@@ -491,6 +506,7 @@ button {
   right: -72px;
   top: -62px;
   background: radial-gradient(circle at 35% 35%, rgba(255, 255, 255, 0.98), rgba(85, 153, 255, 0.2) 68%, transparent 70%);
+  animation: heroOrbOne 13s ease-in-out infinite alternate;
 }
 
 .hero-orb-two {
@@ -499,6 +515,17 @@ button {
   left: -74px;
   bottom: -92px;
   background: rgba(255, 255, 255, 0.5);
+  animation: heroOrbTwo 16s ease-in-out infinite alternate;
+}
+
+@keyframes heroOrbOne {
+  from { transform: translate3d(0, 0, 0) scale(.94); opacity: .54; }
+  to { transform: translate3d(-18px, 22px, 0) scale(1.08); opacity: .78; }
+}
+
+@keyframes heroOrbTwo {
+  from { transform: translate3d(-8px, 7px, 0) scale(1.06); opacity: .42; }
+  to { transform: translate3d(20px, -16px, 0) scale(.92); opacity: .66; }
 }
 
 .hero-content { position: relative; z-index: 1; }
@@ -537,6 +564,12 @@ button {
   border-radius: 50%;
   background: #2f9e72;
   box-shadow: 0 0 0 5px rgba(47, 158, 114, 0.12);
+  animation: statusBreathe 2.8s ease-in-out infinite;
+}
+
+@keyframes statusBreathe {
+  0%, 100% { box-shadow: 0 0 0 4px rgba(47, 158, 114, .11); transform: scale(.94); }
+  50% { box-shadow: 0 0 0 7px rgba(47, 158, 114, .04); transform: scale(1.08); }
 }
 
 .companion-note {
@@ -610,6 +643,8 @@ button {
 
 .today-action {
   position: relative;
+  overflow: hidden;
+  isolation: isolate;
   min-width: 0;
   padding: 15px 13px 13px;
   text-align: left;
@@ -622,7 +657,32 @@ button {
   transition: transform 0.2s ease, border-color 0.2s ease;
 }
 
+.today-action::before,
+.dashboard-card::before {
+  content: '';
+  position: absolute;
+  width: 170px;
+  height: 170px;
+  top: -108px;
+  right: -106px;
+  z-index: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(92, 166, 240, .18), rgba(92, 166, 240, .06) 43%, transparent 70%);
+  opacity: 0;
+  transform: scale(.72);
+  transition: opacity .28s ease, transform .38s cubic-bezier(.2, .8, .2, 1);
+  pointer-events: none;
+}
+
+.today-action > *,
+.dashboard-card > * {
+  position: relative;
+  z-index: 1;
+}
+
 .today-action:active { transform: scale(0.97); }
+.today-action:active::before,
+.dashboard-card:active::before { opacity: 1; transform: scale(1.12); }
 .today-action.completed { border-color: rgba(76, 161, 122, 0.28); background: rgba(247, 255, 251, 0.9); }
 
 .today-icon {
@@ -646,10 +706,14 @@ button {
 .today-state b, .card-link b { font-size: 15px; line-height: 0; }
 
 .dashboard-card {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
   border: 1px solid rgba(220, 224, 232, 0.82);
   border-radius: 25px;
   background: rgba(255, 255, 255, 0.86);
   box-shadow: 0 12px 32px rgba(44, 55, 75, 0.065);
+  transition: transform .22s ease, box-shadow .28s ease, border-color .28s ease;
 }
 
 .schedule-home-card {
@@ -679,6 +743,12 @@ button {
   color: white;
   background: linear-gradient(145deg, #ff5a63, #ff3440);
   box-shadow: 0 8px 18px rgba(255, 52, 64, 0.24);
+  animation: dateTileGlow 5s ease-in-out infinite;
+}
+
+@keyframes dateTileGlow {
+  0%, 100% { box-shadow: 0 8px 18px rgba(255, 52, 64, .22); }
+  50% { box-shadow: 0 10px 25px rgba(255, 52, 64, .32); }
 }
 
 .schedule-date-tile strong { font-size: 24px; line-height: 1; }
@@ -721,12 +791,31 @@ button {
 }
 
 .progress-value {
+  position: relative;
   display: block;
   height: 100%;
   min-width: 8px;
   border-radius: inherit;
   background: linear-gradient(90deg, #58a5ef, #0a6fd6);
   box-shadow: 0 3px 8px rgba(10, 111, 214, 0.24);
+  overflow: hidden;
+  transition: width .72s cubic-bezier(.2, .78, .28, 1);
+}
+
+.progress-value::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  width: 42%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.56), transparent);
+  transform: translate3d(-180%, 0, 0);
+  animation: progressGleam 4.8s ease-in-out infinite;
+}
+
+@keyframes progressGleam {
+  0%, 48% { transform: translate3d(-180%, 0, 0); opacity: 0; }
+  58% { opacity: 1; }
+  82%, 100% { transform: translate3d(330%, 0, 0); opacity: 0; }
 }
 
 .goal-amounts {
@@ -835,6 +924,9 @@ button {
 .activity-empty p { max-width: 330px; margin: 9px auto 0; font-size: 12px; line-height: 1.55; }
 
 .report-banner {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
   display: grid;
   grid-template-columns: 48px minmax(0, 1fr) auto;
   gap: 14px;
@@ -846,8 +938,34 @@ button {
   border: 0;
   border-radius: 24px;
   background: linear-gradient(135deg, #172b4d 0%, #244b78 58%, #356c9f 100%);
+  background-size: 180% 180%;
   box-shadow: 0 16px 34px rgba(28, 59, 94, 0.18);
   cursor: pointer;
+  animation: reportGradientDrift 11s ease infinite;
+}
+
+.report-banner::before {
+  content: '';
+  position: absolute;
+  inset: -80% -38%;
+  z-index: 0;
+  background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,.14) 50%, transparent 60%);
+  transform: translate3d(-70%, 0, 0) rotate(5deg);
+  animation: reportBannerShine 7.5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.report-banner > * { position: relative; z-index: 1; }
+
+@keyframes reportGradientDrift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+@keyframes reportBannerShine {
+  0%, 55% { transform: translate3d(-70%, 0, 0) rotate(5deg); opacity: 0; }
+  63% { opacity: 1; }
+  82%, 100% { transform: translate3d(70%, 0, 0) rotate(5deg); opacity: 0; }
 }
 
 .report-mark { display: grid; place-items: center; width: 48px; height: 48px; border-radius: 17px; background: rgba(255, 255, 255, 0.13); font-size: 20px; font-weight: 700; }
@@ -866,6 +984,17 @@ button {
   .insight-card { padding: 22px; }
 }
 
+@media (hover: hover) and (pointer: fine) {
+  .today-action:hover,
+  .dashboard-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(77, 145, 214, .22);
+    box-shadow: 0 16px 38px rgba(44, 75, 115, .11);
+  }
+  .today-action:hover::before,
+  .dashboard-card:hover::before { opacity: .72; transform: scale(1); }
+}
+
 @media (max-width: 380px) {
   .home-hero { padding: 23px; border-radius: 26px; }
   .today-grid { gap: 7px; }
@@ -878,6 +1007,13 @@ button {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .home-dashboard > *,
+  .hero-orb,
+  .hero-status-dot,
+  .schedule-date-tile,
+  .progress-value::after,
+  .report-banner,
+  .report-banner::before { animation: none; }
   .today-action,
   .goal-card,
   .insight-card,

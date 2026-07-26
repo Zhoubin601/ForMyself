@@ -185,13 +185,35 @@ const generateMonthlySummary = async () => {
 
 <style scoped>
 .report-view { display: flex; flex-direction: column; gap: 18px; }
+.report-view > * { animation: reportCardRise .52s cubic-bezier(.2,.78,.28,1) both; }
+.report-view > :nth-child(2) { animation-delay: .055s; }
+.report-view > :nth-child(3) { animation-delay: .105s; }
+.report-view > :nth-child(4) { animation-delay: .155s; }
+.report-view > :nth-child(5) { animation-delay: .205s; }
+@keyframes reportCardRise {
+  from { opacity: 0; transform: translate3d(0, 16px, 0) scale(.99); }
+  to { opacity: 1; transform: none; }
+}
 .month-switcher { display: grid; grid-template-columns: 44px 1fr 44px; align-items: center; text-align: center; padding: 6px 0 10px; }
 .month-switcher div { display: flex; flex-direction: column; gap: 3px; }
 .month-switcher strong { font-size: 22px; }
 .month-switcher span { color: var(--body-muted); font-size: 13px; }
 .month-nav { width: 40px; height: 40px; border: 0; border-radius: 50%; background: var(--canvas); color: var(--primary); font-size: 28px; cursor: pointer; }
 .month-nav:disabled { opacity: .3; }
-.report-card { padding: 20px; border-radius: 20px; background: rgba(255,255,255,.92); border: 1px solid rgba(255,255,255,.8); box-shadow: 0 8px 28px rgba(0,0,0,.055); }
+.report-card { position: relative; overflow: hidden; isolation: isolate; padding: 20px; border-radius: 20px; background: rgba(255,255,255,.92); border: 1px solid rgba(255,255,255,.8); box-shadow: 0 8px 28px rgba(0,0,0,.055); }
+.report-card::before {
+  content: '';
+  position: absolute;
+  z-index: 0;
+  width: 190px;
+  height: 190px;
+  top: -130px;
+  right: -118px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(64,145,224,.12), rgba(64,145,224,.035) 48%, transparent 72%);
+  pointer-events: none;
+}
+.report-card > * { position: relative; z-index: 1; }
 .report-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 20px; }
 .report-kicker { color: var(--primary); font-size: 13px; font-weight: 600; }
 .report-heading h3 { margin: 4px 0 0; font-size: 20px; }
@@ -203,7 +225,11 @@ const generateMonthlySummary = async () => {
 .mood-name, .mood-count { font-size: 13px; }
 .mood-count { text-align: right; color: var(--body-muted); }
 .mood-bar-track { height: 9px; overflow: hidden; border-radius: 999px; background: var(--divider-soft); }
-.mood-bar-fill { height: 100%; min-width: 0; border-radius: inherit; transition: width .4s ease; }
+.mood-bar-fill { height: 100%; min-width: 0; border-radius: inherit; transform-origin: left center; animation: reportBarGrow .78s .22s cubic-bezier(.2,.78,.28,1) both; transition: width .4s ease; }
+@keyframes reportBarGrow {
+  from { transform: scaleX(0); opacity: .45; }
+  to { transform: scaleX(1); opacity: 1; }
+}
 .metric-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
 .metric-box { display: flex; flex-direction: column; gap: 7px; padding: 15px; border-radius: 14px; background: var(--surface-pearl); }
 .metric-box span { color: var(--body-muted); font-size: 13px; }
@@ -222,11 +248,20 @@ const generateMonthlySummary = async () => {
 .report-footnote { margin: 14px 0 0; color: var(--body-muted); font-size: 12px; }
 .empty-copy { margin: 0 0 18px; color: var(--body-muted); font-size: 14px; line-height: 1.6; }
 .ai-report { background: linear-gradient(145deg, rgba(237,246,255,.96), rgba(255,250,240,.96)); }
-.ai-spark { font-size: 28px; }
+.ai-spark { display: inline-block; font-size: 28px; animation: aiSparkFloat 3.6s ease-in-out infinite; }
+@keyframes aiSparkFloat {
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(-3deg); }
+  50% { transform: translate3d(0, -5px, 0) rotate(4deg); }
+}
 .ai-summary-text { margin: 0 0 20px; font-size: 15px; line-height: 1.75; white-space: pre-wrap; }
 .full-width { width: 100%; }
 @media (max-width: 480px) {
   .insight-line { flex-direction: column; gap: 5px; }
   .report-card { padding: 18px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .report-view > *,
+  .mood-bar-fill,
+  .ai-spark { animation: none; }
 }
 </style>

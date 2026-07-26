@@ -720,6 +720,13 @@ onMounted(() => scrollAgendaToLatest())
   position: fixed; right: 24px; bottom: calc(24px + env(safe-area-inset-bottom)); width: 64px; height: 64px;
   border-radius: 50%; border: 0; color: white; background: linear-gradient(145deg, #ff5660, #ff303a);
   box-shadow: 0 12px 24px rgba(255, 48, 58, .35); font-size: 38px; line-height: 1; z-index: 30;
+  transition: transform .2s cubic-bezier(.2,.78,.28,1), box-shadow .2s ease;
+  animation: scheduleFabBreathe 4.6s ease-in-out infinite;
+}
+.floating-add:active { transform: scale(.91) rotate(12deg); box-shadow: 0 7px 16px rgba(255,48,58,.3); }
+@keyframes scheduleFabBreathe {
+  0%, 100% { box-shadow: 0 12px 24px rgba(255,48,58,.3), 0 0 0 0 rgba(255,72,82,.12); }
+  50% { box-shadow: 0 15px 30px rgba(255,48,58,.4), 0 0 0 9px rgba(255,72,82,0); }
 }
 .month-view { padding-top: 8px; }
 .month-toolbar { display: grid; grid-template-columns: 42px 1fr 42px; align-items: center; text-align: center; margin-bottom: 10px; }

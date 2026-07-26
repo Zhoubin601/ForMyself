@@ -331,3 +331,24 @@
 - 最终布局修正版因当前执行环境无法再次调用电脑上的 Android SDK，尚未重新安装到模拟器复测；该状态已明确记录，未视为已完成的真机/模拟器验证。
 - 预览图：`output/20260723-password-vault-dropdown-redesign-v1-filter.png`、`output/20260723-password-vault-dropdown-redesign-v1-editor.png`。
 - 交付 APK：`output/20260723-ForMyself-password-dropdown-redesign-v1-debug.apk`，大小 9,951,995 字节，SHA-256 为 `65B3B721ADD5691D0166BEEE608E068905C6C1FD436AF702F36B5563B8CA1277`。
+
+## 2026-07-26 Galaxy 微动效视觉增强
+
+实施方向：
+
+1. 保持现有蓝色、白色和液态玻璃视觉，不直接复制 Galaxy 的深色霓虹配色。
+2. 全局增加两层低透明度径向柔光，以 `transform` 和 `opacity` 做慢速漂移；自定义壁纸启用时不叠加。
+3. 主按钮吸收 Galaxy 移动渐变与扫光思路，降低饱和度、速度和阴影强度，保证文字对比度。
+4. 首页增加一次性的分层入场、主卡柔光漂移、状态点呼吸、卡片触控扫光和月报横幅渐变。
+5. 月报卡片使用错峰入场，统计条由左向右展开；日程新增按钮只做轻微呼吸与按压旋转。
+6. 所有持续动画保持低频，并通过 `prefers-reduced-motion` 全局禁用，避免眩晕和不必要耗电。
+7. 不增加第三方运行时依赖，不修改业务数据、备份结构或 Android 原生代码。
+
+验证结果：
+
+- 新增 3 项动效静态回归测试，完整 Node 测试 93/93 通过。
+- Vite 生产构建通过，Capacitor Android 同步通过，Android `assembleDebug` 构建通过。
+- `git diff --check` 通过；未发现空白错误。
+- 生成 Debug APK `output/20260726-ForMyself-galaxy-motion-v1-debug.apk`，大小 11,113,079 字节。
+- APK SHA-256 为 `762EED511A1EA7F940020C2E33A05F7CABEDC96A33705345A318389D90A5A687`。
+- 当前环境没有可用浏览器或已连接的 ADB 设备，因此尚未做真机动态观感与帧率复核；该项需要用户安装后确认。

@@ -298,3 +298,22 @@
 - Pixel 6 Pro 模拟器覆盖安装时保留已导入数据；解锁后确认首页数据、今日日程卡、历史日程和自定义标签仍存在。
 - 模拟器确认日程页默认定位最新日期，旧日程位于上方；列表滑动时年份、视图切换、搜索和分类区域保持固定。
 - 未记录或保存用户密码；未使用 `raw/` 资料和外部网络资料。
+
+## 2026-07-26 Galaxy 微动效视觉增强
+
+来源：
+
+- 用户指定的开源仓库 `https://github.com/uiverse-io/galaxy`
+- Galaxy `README.md` 与 `LICENSE`
+- Galaxy `Buttons/StealthWorm_spotty-horse-48.html`
+- Galaxy `Cards/KhaledMatalkah_slippery-stingray-30.html`
+- 当前项目 `src/App.vue`、`src/components/HomeView.vue`
+- 当前项目 `src/components/MonthlyReportView.vue`、`src/components/ScheduleView.vue`
+
+关键事实：
+
+- Galaxy 是 Uiverse.io 社区 UI 片段的 HTML/CSS/Tailwind 集合，不是需要整体安装的 Vue 组件运行时。
+- Galaxy 仓库与其中 UI 元素使用 MIT License，允许使用、修改与分发；仓库建议但不强制标注 Uiverse.io 与原作者。
+- 参考按钮片段使用移动渐变、柔光和按压反馈；参考卡片片段使用缓慢变化的阴影与径向光晕。
+- 当前项目已经有毛玻璃、渐变卡片和基础页面淡入，适合吸收动效思路，不适合直接复制深色霓虹、强 3D 或依赖鼠标 hover 的成品样式。
+- 本次外部资料仅用于视觉实现与许可证核对，不涉及业务数据、市场结论或用户隐私。
