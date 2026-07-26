@@ -23,6 +23,7 @@ const buildFixture = () => buildFullBackupSnapshot({
   vaultMetadata: { categories: ['工作', '个人', '未分类'] },
   settings: {
     banner: { prefix: '累计省下', suffix: '元', subtitle: '继续保持', titleSize: 42 },
+    theme: { mode: 'custom', presetId: 'peach', customPrimary: '#F1A25B' },
     ai: { url: 'https://example.invalid', key: 'encrypted-api-key', model: 'demo-model' },
     autoLockDelaySeconds: 60,
     health: { targetWeight: 60, heightCm: 170, weightChangeReminderEnabled: true, weightChangeThreshold: 0.8 }
@@ -37,6 +38,7 @@ test('完整备份包含五类数据和设置，但不包含主密码或生物�
   assert.equal(snapshot.version, FULL_BACKUP_VERSION)
   assert.deepEqual(getFullBackupCounts(snapshot), { savings: 1, weight: 1, mood: 1, passwords: 1, schedules: 1 })
   assert.equal(snapshot.settings.ai.key, 'encrypted-api-key')
+  assert.deepEqual(snapshot.settings.theme, { mode: 'custom', presetId: 'peach', customPrimary: '#F1A25B' })
   assert.equal(serialized.includes('masterPassword'), false)
   assert.equal(serialized.includes('savedMasterPwd'), false)
   assert.equal(serialized.includes('biometric'), false)
@@ -53,6 +55,7 @@ test('完整备份可用当前主密码加密并完整解密', () => {
   assert.equal(restored.data.mood[0].tags[0], '学习')
   assert.equal(restored.data.passwords[0].category, '未分类')
   assert.equal(restored.settings.health.heightCm, 170)
+  assert.equal(restored.settings.theme.customPrimary, '#F1A25B')
   assert.equal(restored.data.schedules.series[0].title, '课程提醒')
   assert.deepEqual(restored.metadata.mood.customTags, ['运动'])
   assert.deepEqual(restored.metadata.vault.categories, ['工作', '个人', '未分类'])
@@ -85,4 +88,16 @@ test('v1 完整备份可导入并自动补为空日程', () => {
   const restored = normalizeFullBackupSnapshot(legacy)
   assert.equal(restored.version, 2)
   assert.deepEqual(restored.data.schedules.series, [])
+})
+
+test('旧完整备份缺少主题字段时回退云朵蓝', () => {
+  const snapshot = buildFixture()
+  const legacySettings = { ...snapshot.settings }
+  delete legacySettings.theme
+  const restored = normalizeFullBackupSnapshot({ ...snapshot, settings: legacySettings })
+  assert.deepEqual(restored.settings.theme, {
+    mode: 'preset',
+    presetId: 'cloud',
+    customPrimary: '#4A8FD8'
+  })
 })

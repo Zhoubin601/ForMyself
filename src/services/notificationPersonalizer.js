@@ -7,6 +7,7 @@ export async function refreshPersonalizedReminderContent({
   data,
   hasApiKey,
   force = false,
+  referenceDate = new Date(),
   ask = null
 }) {
   return refreshPersonalizedReminderContentCore({
@@ -15,6 +16,7 @@ export async function refreshPersonalizedReminderContent({
     data,
     hasApiKey,
     force,
+    referenceDate,
     ask: ask || askAI
   })
 }

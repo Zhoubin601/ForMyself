@@ -267,10 +267,10 @@ const getTrend = (record) => {
       <svg viewBox="0 0 300 160" class="weight-chart">
         <line x1="44" :y1="CHART_PADDING.top" x2="44" :y2="CHART_PADDING.top+plotH" stroke="#e0e0e0" stroke-width="1" />
         <line :x1="CHART_PADDING.left" :y1="CHART_PADDING.top+plotH" :x2="CHART_PADDING.left+plotW" :y2="CHART_PADDING.top+plotH" stroke="#e0e0e0" stroke-width="1" />
-        <defs><linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#0066cc" stop-opacity="0.15" /><stop offset="100%" stop-color="#0066cc" stop-opacity="0.02" /></linearGradient></defs>
+              <defs><linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="var(--primary)" stop-opacity="0.15" /><stop offset="100%" stop-color="var(--primary)" stop-opacity="0.02" /></linearGradient></defs>
         <path :d="chartAreaPath" fill="url(#areaGrad)" />
-        <path :d="chartLinePath" fill="none" stroke="#0066cc" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-        <circle v-for="p in chartPoints.points" :key="p.date" :cx="p.x" :cy="p.y" r="3.5" fill="#0066cc" stroke="#fff" stroke-width="1.5" />
+              <path :d="chartLinePath" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+              <circle v-for="p in chartPoints.points" :key="p.date" :cx="p.x" :cy="p.y" r="3.5" fill="var(--primary)" stroke="#fff" stroke-width="1.5" />
         <text :x="chartPoints.points[0].x" :y="CHART_PADDING.top+plotH+16" text-anchor="start" class="chart-label">{{ formatDateShort(chartPoints.firstDate) }}</text>
         <text :x="chartPoints.points[chartPoints.points.length-1].x" :y="CHART_PADDING.top+plotH+16" text-anchor="end" class="chart-label">{{ formatDateShort(chartPoints.lastDate) }}</text>
         <template v-for="p in chartPoints.points" :key="'lb-'+p.date">
@@ -382,7 +382,7 @@ const getTrend = (record) => {
 .chart-note { margin: 8px 0 0; color: var(--body-muted); font-size: 11px; line-height: 1.5; }
 .weight-chart { width: 100%; height: auto; display: block; }
 .chart-label { font-size: 10px; fill: #86868b; font-family: "SF Pro Text",-apple-system,sans-serif; }
-.chart-weight-label { font-size: 10px; fill: #0066cc; font-weight: 600; font-family: "SF Pro Text",-apple-system,sans-serif; }
+.chart-weight-label { font-size: 10px; fill: var(--primary); font-weight: 600; font-family: "SF Pro Text",-apple-system,sans-serif; }
 .record-list { display: flex; flex-direction: column; gap: 8px; }
 .record-item { background: var(--canvas); border: 1px solid var(--hairline); border-radius: 14px; padding: 14px 16px; }
 .record-main { display: flex; justify-content: space-between; align-items: flex-start; }

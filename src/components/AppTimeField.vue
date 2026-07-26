@@ -236,22 +236,22 @@ header { display: flex; align-items: center; justify-content: space-between; pad
 header small { display: block; margin-bottom: 5px; color: #8b929e; font-size: 11px; }
 .time-display { display: flex; align-items: center; gap: 4px; color: #98a0ad; font-size: 27px; font-weight: 700; }
 .time-display button { min-width: 52px; padding: 4px 7px; border: 0; border-radius: 11px; background: transparent; color: #7f8794; font: inherit; }
-.time-display button.active { background: #e8f3ff; color: var(--primary, #0066cc); }
-.confirm-button { padding: 10px 15px; border: 0; border-radius: 13px; background: linear-gradient(145deg, #2387ec, #0762c3); box-shadow: 0 7px 16px rgba(0,102,204,.2); color: #fff; font-size: 14px; font-weight: 700; }
+.time-display button.active { background: var(--theme-soft); color: var(--primary); }
+.confirm-button { padding: 10px 15px; border: 0; border-radius: 13px; background: var(--theme-gradient); box-shadow: 0 7px 16px rgba(var(--theme-primary-rgb), .2); color: var(--theme-on-primary); font-size: 14px; font-weight: 700; }
 .clock-dial { position: relative; width: min(76vw, 310px); aspect-ratio: 1; margin: 2px auto 7px; border: 1px solid rgba(205,214,226,.78); border-radius: 50%; background: radial-gradient(circle at 50% 46%, #fff 0 23%, #f5f8fc 24% 64%, #edf2f8 100%); box-shadow: inset 0 1px 1px rgba(255,255,255,.9), 0 14px 35px rgba(45,61,82,.11); touch-action: none; user-select: none; }
 .clock-dial.minute-mode { cursor: crosshair; }
 .dial-number { position: absolute; z-index: 4; display: grid; place-items: center; width: 36px; height: 36px; padding: 0; border: 0; border-radius: 50%; background: transparent; color: #2f3744; font-size: 13px; font-weight: 650; transform: translate(-50%, -50%); }
 .dial-number.inner { width: 31px; height: 31px; color: #8490a0; font-size: 11px; }
-.dial-number.selected { background: linear-gradient(145deg, #2789ed, #0860ba); box-shadow: 0 5px 13px rgba(0,102,204,.25); color: #fff; }
+.dial-number.selected { background: var(--theme-gradient); box-shadow: 0 5px 13px rgba(var(--theme-primary-rgb), .25); color: var(--theme-on-primary); }
 .minute-number { width: 37px; height: 37px; font-size: 12px; }
 .minute-tick { position: absolute; z-index: 1; width: 3px; height: 3px; border-radius: 50%; background: #c5ceda; transform: translate(-50%, -50%); }
 .minute-tick.major { width: 5px; height: 5px; background: #a8b3c1; }
-.minute-tick.selected { width: 8px; height: 8px; background: var(--primary, #0066cc); box-shadow: 0 0 0 4px rgba(0,102,204,.12); }
-.dial-hand { position: absolute; z-index: 2; top: 16%; left: 50%; width: 2px; height: 34%; border-radius: 999px; background: linear-gradient(to top, var(--primary, #0066cc), #49a7ff); transform-origin: 50% 100%; pointer-events: none; }
-.dial-hand i { position: absolute; top: -6px; left: 50%; width: 14px; height: 14px; border: 3px solid #fff; border-radius: 50%; background: var(--primary, #0066cc); box-shadow: 0 3px 9px rgba(0,102,204,.32); transform: translateX(-50%); }
-.dial-center { position: absolute; z-index: 3; top: 50%; left: 50%; width: 11px; height: 11px; border: 3px solid #fff; border-radius: 50%; background: var(--primary, #0066cc); box-shadow: 0 2px 7px rgba(0,102,204,.26); transform: translate(-50%, -50%); pointer-events: none; }
+.minute-tick.selected { width: 8px; height: 8px; background: var(--primary); box-shadow: 0 0 0 4px rgba(var(--theme-primary-rgb), .12); }
+.dial-hand { position: absolute; z-index: 2; top: 16%; left: 50%; width: 2px; height: 34%; border-radius: 999px; background: var(--theme-gradient); transform-origin: 50% 100%; pointer-events: none; }
+.dial-hand i { position: absolute; top: -6px; left: 50%; width: 14px; height: 14px; border: 3px solid #fff; border-radius: 50%; background: var(--primary); box-shadow: 0 3px 9px rgba(var(--theme-primary-rgb), .32); transform: translateX(-50%); }
+.dial-center { position: absolute; z-index: 3; top: 50%; left: 50%; width: 11px; height: 11px; border: 3px solid #fff; border-radius: 50%; background: var(--primary); box-shadow: 0 2px 7px rgba(var(--theme-primary-rgb), .26); transform: translate(-50%, -50%); pointer-events: none; }
 .minute-stepper { display: flex; align-items: center; justify-content: center; gap: 16px; margin-top: 3px; }
-.minute-stepper button { display: grid; place-items: center; width: 42px; height: 38px; border: 1px solid #e1e7ef; border-radius: 13px; background: #f3f7fb; color: var(--primary, #0066cc); font-size: 22px; font-weight: 600; }
+.minute-stepper button { display: grid; place-items: center; width: 42px; height: 38px; border: 1px solid var(--theme-border); border-radius: 13px; background: var(--theme-soft); color: var(--primary); font-size: 22px; font-weight: 600; }
 .minute-stepper div { display: flex; align-items: baseline; justify-content: center; gap: 5px; min-width: 84px; }
 .minute-stepper strong { color: #202936; font-size: 21px; }
 .minute-stepper small { color: #9299a5; font-size: 11px; }

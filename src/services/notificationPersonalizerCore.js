@@ -3,6 +3,7 @@ import {
   buildReminderPrompt,
   getReminderContextFingerprint
 } from './reminderContext.js'
+import { normalizeCompanionReply } from './companionPrompts.js'
 import {
   getPersonalizedReminderBodies,
   normalizeNotificationAiCache,
@@ -15,10 +16,11 @@ export async function refreshPersonalizedReminderContentCore({
   data,
   hasApiKey,
   force = false,
+  referenceDate = new Date(),
   ask
 }) {
   const normalizedSettings = normalizeReminderSettings(settings)
-  const contexts = buildReminderContexts(data)
+  const contexts = buildReminderContexts(data, referenceDate)
   const nextCache = normalizeNotificationAiCache(cache)
   const errors = []
   let generated = 0
@@ -36,7 +38,7 @@ export async function refreshPersonalizedReminderContentCore({
 
     try {
       const answer = await ask(buildReminderPrompt(type, contexts[type]))
-      const body = String(answer).replace(/[“”"\n\r]/g, '').trim().slice(0, 100)
+      const body = normalizeCompanionReply(answer, 35)
       if (!body) throw new Error('EMPTY_RESPONSE')
       nextCache[type] = {
         body,

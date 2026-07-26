@@ -4,6 +4,11 @@ import { useMoodStore } from '../stores/mood'
 import { useSettingsStore } from '../stores/settings'
 import { askAI } from '../services/aiEngine'
 import { compareMoodRecordsNewestFirst } from '../services/moodRecords'
+import {
+  buildMoodEchoContext,
+  buildMoodEchoPrompt,
+  normalizeCompanionReply
+} from '../services/companionPrompts'
 import { appAlert, appConfirm } from '../services/uiFeedback'
 import AppDateField from './AppDateField.vue'
 
@@ -148,21 +153,23 @@ const isEchoThinking = ref(false)
 const saveRecord = async () => {
   if (!editDate.value) return appAlert('请选择日期')
   if (!editTags.value.length) editTags.value = ['学习']
+  let savedRecord = null
   if (editingId.value) {
     moodStore.updateRecord(editingId.value, { date: editDate.value, mood: editMood.value, note: editNote.value, tags: editTags.value })
+    savedRecord = moodStore.moodRecords.find(record => record.id === editingId.value) || null
   } else {
-    moodStore.addRecord(editDate.value, editMood.value, editNote.value, editTags.value)
+    savedRecord = moodStore.addRecord(editDate.value, editMood.value, editNote.value, editTags.value)
   }
   showModal.value = false
 
-  // 触发 AI 回音壁（仅有关键词且有笔记时）
-  if (settingsStore.aiApiKey && (editNote.value || editMood.value !== 'normal')) {
+  // 有可回应的真实内容时，使用本次记录和近 30 天历史生成专属陪伴。
+  if (settingsStore.aiApiKey && savedRecord && (savedRecord.note || savedRecord.mood !== 'normal')) {
     activeEcho.value = 'thinking'
     isEchoThinking.value = true
     try {
-      const prompt = `用户这次事件的心情评级为 [${editMood.value}]，标签为 [${editTags.value.join('、')}]，并写下了日记内容："${editNote.value || '（无文字记录）'}"。\n请站在温柔闺蜜/挚友的角度，写一句 30 字以内的贴心回音，给予充分的共情。`
-      const echoText = await askAI(prompt)
-      activeEcho.value = echoText
+      const context = buildMoodEchoContext(moodStore.moodRecords, savedRecord)
+      const echoText = await askAI(buildMoodEchoPrompt(context))
+      activeEcho.value = normalizeCompanionReply(echoText, 200)
     } catch (e) {
       activeEcho.value = null
     } finally {
@@ -349,8 +356,8 @@ const isToday = (day) => {
         <div v-if="activeEcho" class="echo-bubble">
           <div class="echo-avatar">✨</div>
           <div class="echo-content">
-            <div class="echo-title">来自心底的回音...</div>
-            <p v-if="isEchoThinking" class="echo-thinking">闺蜜正在感知你的心情...</p>
+            <div class="echo-title">只写给你的悄悄话...</div>
+            <p v-if="isEchoThinking" class="echo-thinking">你的专属女孩正在认真听...</p>
             <p v-else>{{ activeEcho }}</p>
           </div>
           <button class="echo-close" @click="activeEcho = null">×</button>
@@ -464,11 +471,11 @@ const isToday = (day) => {
 }
 .echo-avatar {
   width: 36px; height: 36px; border-radius: 50%;
-  background: linear-gradient(135deg, #0066cc, #34c759);
+  background: linear-gradient(135deg, var(--primary), #34c759);
   display: flex; align-items: center; justify-content: center;
   font-size: 18px; flex-shrink: 0;
 }
-.echo-content { flex: 1; min-width: 0; }
+.echo-content { flex: 1; min-width: 0; max-height: min(42vh, 320px); overflow-y: auto; }
 .echo-title { font-size: 13px; font-weight: 600; color: var(--primary); margin-bottom: 4px; }
 .echo-content p { margin: 0; font-size: 15px; line-height: 1.5; color: var(--ink); }
 .echo-thinking { animation: shimmer 1.4s infinite; height: 20px; border-radius: 4px; }

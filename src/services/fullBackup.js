@@ -11,6 +11,7 @@ import {
   normalizeReminderSettings
 } from './reminderSchedule.js'
 import { normalizeScheduleData } from './scheduleCore.js'
+import { normalizeThemeSettings } from './themeSystem.js'
 
 export const FULL_BACKUP_TYPE = 'formyself-full-backup'
 export const FULL_BACKUP_VERSION = 2
@@ -33,6 +34,7 @@ export function normalizeFullBackupSettings(value = {}) {
       titleSize: Number.isFinite(titleSize) && titleSize >= 20 && titleSize <= 80 ? titleSize : 38
     },
     customBg: String(value.customBg || ''),
+    theme: normalizeThemeSettings(value.theme),
     ai: {
       url: cleanText(ai.url, 500) || 'https://api.deepseek.com',
       key: cleanText(ai.key, 2000),

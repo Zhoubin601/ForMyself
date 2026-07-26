@@ -10,10 +10,16 @@ import {
 } from '../services/reminderSchedule'
 import { normalizeHealthSettings } from '../services/weightInsights.js'
 import { normalizeFullBackupSettings } from '../services/fullBackup.js'
+import {
+  buildThemeCssVariables,
+  normalizeThemeSettings
+} from '../services/themeSystem.js'
 
 export const useSettingsStore = defineStore('settings', () => {
   const bannerSettings = ref({ prefix: '你已经省下了', suffix: '元', subtitle: '可喜可贺，继续保持。✨', titleSize: 38 })
   const customBg = ref('')
+  const themeSettings = ref(normalizeThemeSettings())
+  const themeCssVariables = computed(() => buildThemeCssVariables(themeSettings.value))
   const currentView = ref('home')
   const settingsScope = ref('general')
   const settingsReturnView = ref('home')
@@ -56,6 +62,8 @@ export const useSettingsStore = defineStore('settings', () => {
     try {
       const bgRes = await Preferences.get({ key: 'my_custom_bg' })
       if (bgRes.value) customBg.value = bgRes.value
+      const themeRes = await Preferences.get({ key: 'my_theme_settings' })
+      if (themeRes.value) themeSettings.value = normalizeThemeSettings(JSON.parse(themeRes.value))
       const bannerRes = await Preferences.get({ key: 'my_banner_settings' })
       if (bannerRes.value) bannerSettings.value = JSON.parse(bannerRes.value)
       const aiRes = await Preferences.get({ key: 'my_ai_settings' })
@@ -102,6 +110,14 @@ export const useSettingsStore = defineStore('settings', () => {
   }
 
   watch(bannerSettings, async (v) => { if (isDataLoaded.value) await Preferences.set({ key: 'my_banner_settings', value: JSON.stringify(v) }) }, { deep: true })
+  watch(themeSettings, async (value) => {
+    if (isDataLoaded.value) {
+      await Preferences.set({
+        key: 'my_theme_settings',
+        value: JSON.stringify(normalizeThemeSettings(value))
+      })
+    }
+  }, { deep: true })
   watch(() => ({ url: aiProviderUrl.value, key: aiApiKey.value, model: aiModel.value }), async (v) => { if (isDataLoaded.value) await Preferences.set({ key: 'my_ai_settings', value: JSON.stringify(v) }) }, { deep: true })
   watch(autoLockDelaySeconds, async (value) => {
     if (isDataLoaded.value) {
@@ -171,6 +187,10 @@ export const useSettingsStore = defineStore('settings', () => {
   }
   const updateBanner = async (v) => { bannerSettings.value = v; await Preferences.set({ key: 'my_banner_settings', value: JSON.stringify(v) }) }
   const updateBg = async (b) => { customBg.value = b; if (b) await Preferences.set({ key: 'my_custom_bg', value: b }); else await Preferences.remove({ key: 'my_custom_bg' }) }
+  const updateThemeSettings = async value => {
+    themeSettings.value = normalizeThemeSettings(value)
+    await Preferences.set({ key: 'my_theme_settings', value: JSON.stringify(themeSettings.value) })
+  }
   const updateHealthSettings = (value) => {
     const health = normalizeHealthSettings(value)
     targetWeight.value = health.targetWeight
@@ -182,6 +202,7 @@ export const useSettingsStore = defineStore('settings', () => {
   const getBackupSnapshot = () => ({
     banner: { ...bannerSettings.value },
     customBg: customBg.value,
+    theme: { ...themeSettings.value },
     ai: {
       url: aiProviderUrl.value,
       key: aiApiKey.value,
@@ -207,6 +228,7 @@ export const useSettingsStore = defineStore('settings', () => {
     const backup = normalizeFullBackupSettings(value)
     bannerSettings.value = backup.banner
     customBg.value = backup.customBg
+    themeSettings.value = backup.theme
     aiProviderUrl.value = backup.ai.url
     aiApiKey.value = backup.ai.key
     aiModel.value = backup.ai.model
@@ -220,6 +242,7 @@ export const useSettingsStore = defineStore('settings', () => {
 
     const writes = [
       Preferences.set({ key: 'my_banner_settings', value: JSON.stringify(backup.banner) }),
+      Preferences.set({ key: 'my_theme_settings', value: JSON.stringify(backup.theme) }),
       Preferences.set({ key: 'my_ai_settings', value: JSON.stringify(backup.ai) }),
       Preferences.set({
         key: 'my_security_settings',
@@ -239,5 +262,5 @@ export const useSettingsStore = defineStore('settings', () => {
     return backup
   }
 
-  return { bannerSettings, customBg, currentView, settingsScope, settingsReturnView, scheduleTarget, isDrawerOpen, isDataLoaded, viewTitle, cachedQuote, dataFingerprint, lastEncouragement, aiProviderUrl, aiApiKey, aiModel, autoLockDelaySeconds, notificationSettings, notificationAiContent, targetWeight, heightCm, weightChangeReminderEnabled, weightChangeThreshold, loadSettings, switchView, openModuleSettings, closeModuleSettings, openScheduleTarget, updateBanner, updateBg, updateHealthSettings, getBackupSnapshot, restoreBackupSnapshot }
+  return { bannerSettings, customBg, themeSettings, themeCssVariables, currentView, settingsScope, settingsReturnView, scheduleTarget, isDrawerOpen, isDataLoaded, viewTitle, cachedQuote, dataFingerprint, lastEncouragement, aiProviderUrl, aiApiKey, aiModel, autoLockDelaySeconds, notificationSettings, notificationAiContent, targetWeight, heightCm, weightChangeReminderEnabled, weightChangeThreshold, loadSettings, switchView, openModuleSettings, closeModuleSettings, openScheduleTarget, updateBanner, updateBg, updateThemeSettings, updateHealthSettings, getBackupSnapshot, restoreBackupSnapshot }
 })

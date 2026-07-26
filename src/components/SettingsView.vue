@@ -31,6 +31,11 @@ import { useScheduleStore } from '../stores/schedule'
 import { syncScheduleNotifications } from '../services/scheduleNotificationService'
 import { normalizeScheduleData } from '../services/scheduleCore'
 import { appAlert, appConfirm, appToast } from '../services/uiFeedback'
+import {
+  THEME_PRESETS,
+  getThemePrimary,
+  normalizeHexColor
+} from '../services/themeSystem'
 import AppTimeField from './AppTimeField.vue'
 
 const authStore = useAuthStore()
@@ -92,6 +97,11 @@ const scheduleColorHue = ref(181)
 const scheduleColorSaturation = ref(64)
 const scheduleColorValue = ref(84)
 const scheduleColorBoardRef = ref(null)
+const themePresets = Object.values(THEME_PRESETS)
+const themeColorHue = ref(210)
+const themeColorSaturation = ref(66)
+const themeColorValue = ref(85)
+const themeColorBoardRef = ref(null)
 
 watch(() => [
   settingsStore.heightCm,
@@ -218,6 +228,96 @@ const scheduleColorCursorStyle = computed(() => ({
   left: `${scheduleColorSaturation.value}%`,
   top: `${100 - scheduleColorValue.value}%`,
   background: newScheduleCategoryColor.value
+}))
+
+const syncThemePickerFromSettings = () => {
+  const color = hexToHsv(getThemePrimary(settingsStore.themeSettings))
+  if (!color) return
+  themeColorHue.value = color.hue
+  themeColorSaturation.value = color.saturation
+  themeColorValue.value = color.value
+}
+
+watch(() => settingsStore.themeSettings, syncThemePickerFromSettings, {
+  deep: true,
+  immediate: true
+})
+
+const selectThemePreset = presetId => {
+  settingsStore.updateThemeSettings({
+    ...settingsStore.themeSettings,
+    mode: 'preset',
+    presetId
+  })
+  appToast(`已切换为${THEME_PRESETS[presetId].name}主题`, { tone: 'success' })
+}
+
+const activateCustomTheme = () => {
+  const currentPrimary = getThemePrimary(settingsStore.themeSettings)
+  const color = hexToHsv(currentPrimary)
+  if (color) {
+    themeColorHue.value = color.hue
+    themeColorSaturation.value = color.saturation
+    themeColorValue.value = color.value
+  }
+  settingsStore.updateThemeSettings({
+    ...settingsStore.themeSettings,
+    mode: 'custom',
+    customPrimary: currentPrimary
+  })
+}
+
+const applyThemePickerColor = () => {
+  settingsStore.themeSettings = {
+    ...settingsStore.themeSettings,
+    mode: 'custom',
+    customPrimary: hsvToHex(
+      themeColorHue.value,
+      themeColorSaturation.value,
+      themeColorValue.value
+    )
+  }
+}
+
+const updateThemeColorFromBoard = event => {
+  const board = themeColorBoardRef.value
+  if (!board) return
+  const rect = board.getBoundingClientRect()
+  themeColorSaturation.value = Math.round(clampColorValue(
+    ((event.clientX - rect.left) / rect.width) * 100
+  ))
+  themeColorValue.value = Math.round(clampColorValue(
+    100 - ((event.clientY - rect.top) / rect.height) * 100
+  ))
+  if (event.type === 'pointerdown') board.setPointerCapture?.(event.pointerId)
+  applyThemePickerColor()
+}
+
+const updateThemeColorFromHex = event => {
+  const normalized = normalizeHexColor(event.target.value, getThemePrimary(settingsStore.themeSettings))
+  const color = hexToHsv(normalized)
+  if (!color) return
+  themeColorHue.value = color.hue
+  themeColorSaturation.value = color.saturation
+  themeColorValue.value = color.value
+  settingsStore.themeSettings = {
+    ...settingsStore.themeSettings,
+    mode: 'custom',
+    customPrimary: normalized
+  }
+}
+
+const themeColorBoardStyle = computed(() => ({
+  background: [
+    'linear-gradient(to top, #000, transparent)',
+    `linear-gradient(to right, #fff, hsl(${themeColorHue.value} 100% 50%))`
+  ].join(', ')
+}))
+
+const themeColorCursorStyle = computed(() => ({
+  left: `${themeColorSaturation.value}%`,
+  top: `${100 - themeColorValue.value}%`,
+  background: getThemePrimary(settingsStore.themeSettings)
 }))
 
 // --- 看板设置 ---
@@ -711,7 +811,72 @@ const testAIConnection = async () => {
     </div>
 
     <div v-if="settingsScope === 'general'" class="setting-section">
-      <h3 class="caption body-muted section-title">界面视觉</h3>
+      <h3 class="caption body-muted section-title">外观与主题</h3>
+      <div class="store-utility-card theme-settings-card">
+        <div class="theme-heading">
+          <div>
+            <strong class="body-strong">治愈主题色</strong>
+            <p class="caption body-muted">主题会同步应用到按钮、卡片、柔光和强调信息。</p>
+          </div>
+          <span class="theme-live-swatch" aria-hidden="true"></span>
+        </div>
+
+        <div class="theme-preset-grid" aria-label="选择主题预设">
+          <button
+            v-for="preset in themePresets"
+            :key="preset.id"
+            class="theme-preset"
+            :class="{ active: settingsStore.themeSettings.mode === 'preset' && settingsStore.themeSettings.presetId === preset.id }"
+            @click="selectThemePreset(preset.id)"
+          >
+            <span class="theme-preset-color" :style="{ background: preset.primary }"></span>
+            <span>{{ preset.name }}</span>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7.5 12.5 3 3 6-7" /></svg>
+          </button>
+          <button
+            class="theme-preset theme-custom-trigger"
+            :class="{ active: settingsStore.themeSettings.mode === 'custom' }"
+            @click="activateCustomTheme"
+          >
+            <span class="theme-preset-color custom-color-preview"></span>
+            <span>自定义</span>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7.5 12.5 3 3 6-7" /></svg>
+          </button>
+        </div>
+
+        <div v-if="settingsStore.themeSettings.mode === 'custom'" class="theme-color-picker">
+          <div
+            ref="themeColorBoardRef"
+            class="theme-color-board"
+            :style="themeColorBoardStyle"
+            @pointerdown="updateThemeColorFromBoard"
+            @pointermove.prevent="event => event.buttons && updateThemeColorFromBoard(event)"
+          >
+            <span class="theme-color-cursor" :style="themeColorCursorStyle"></span>
+          </div>
+          <input
+            v-model.number="themeColorHue"
+            class="theme-hue-slider"
+            type="range"
+            min="0"
+            max="359"
+            aria-label="主题颜色色相"
+            @input="applyThemePickerColor"
+          />
+          <label class="theme-hex-field">
+            <span>HEX</span>
+            <input
+              :value="settingsStore.themeSettings.customPrimary"
+              maxlength="7"
+              spellcheck="false"
+              autocomplete="off"
+              @change="updateThemeColorFromHex"
+            />
+          </label>
+        </div>
+      </div>
+
+      <h3 class="caption body-muted section-title theme-background-title">环境背景</h3>
       <div class="ios-list">
         <button class="list-item text-link" style="text-align: left;" @click="triggerBgUpload">更换环境背景图片</button>
         <input type="file" accept="image/*" ref="bgInputRef" style="display: none" @change="handleBgUpload" />
@@ -1067,9 +1232,9 @@ const testAIConnection = async () => {
 </template>
 
 <style scoped>
-.settings-container { display: flex; flex-direction: column; gap: 32px; }
+.settings-container { display: flex; flex-direction: column; gap: 24px; }
 .setting-section { display: flex; flex-direction: column; }
-.section-title { padding: 0 16px; margin-bottom: 8px; text-transform: uppercase; }
+.section-title { padding: 0 12px; margin-bottom: 8px; font-weight: 650; letter-spacing: .02em; }
 .module-settings-intro {
   display: flex; align-items: center; gap: 14px; padding: 18px;
   border: 1px solid rgba(255,255,255,.82); border-radius: 22px;
@@ -1078,13 +1243,54 @@ const testAIConnection = async () => {
 }
 .module-settings-intro > span {
   display: grid; place-items: center; width: 48px; height: 48px; flex: 0 0 auto;
-  border-radius: 16px; background: linear-gradient(145deg, #2588ee, #0861bc);
-  color: #fff; font-size: 24px; box-shadow: 0 8px 18px rgba(0,102,204,.2);
+  border-radius: 16px; background: linear-gradient(145deg, var(--theme-gradient-start), var(--theme-gradient-end));
+  color: var(--theme-on-primary); font-size: 24px; box-shadow: 0 8px 18px rgba(var(--theme-primary-strong-rgb),.18);
 }
 .module-settings-intro strong { display: block; color: var(--ink); font-size: 18px; }
 .module-settings-intro p { margin: 5px 0 0; color: var(--body-muted); font-size: 13px; line-height: 1.45; }
 
-.ios-list { background: var(--canvas); border-radius: 12px; border: 1px solid var(--hairline); overflow: hidden; display: flex; flex-direction: column;}
+.theme-settings-card { padding: 18px; border-color: var(--theme-border); background: linear-gradient(145deg, var(--theme-surface-tint), rgba(255,255,255,.94)); }
+.theme-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.theme-heading p { margin: 5px 0 0; line-height: 1.5; }
+.theme-live-swatch {
+  width: 42px; height: 42px; flex: 0 0 auto; border: 5px solid rgba(255,255,255,.9); border-radius: 15px;
+  background: var(--theme-primary); box-shadow: 0 7px 18px rgba(var(--theme-primary-rgb),.25);
+}
+.theme-preset-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 9px; margin-top: 17px; }
+.theme-preset {
+  display: grid; grid-template-columns: 27px minmax(0,1fr) 17px; align-items: center; gap: 9px;
+  min-height: 48px; padding: 8px 10px; border: 1px solid #e5e8ee; border-radius: 15px;
+  background: rgba(255,255,255,.76); color: #535b68; text-align: left; font-size: 13px; font-weight: 620;
+}
+.theme-preset.active { border-color: var(--theme-primary); background: var(--theme-primary-soft); color: var(--primary); box-shadow: 0 7px 18px rgba(var(--theme-primary-rgb),.1); }
+.theme-preset-color { width: 27px; height: 27px; border: 3px solid rgba(255,255,255,.9); border-radius: 10px; box-shadow: 0 3px 9px rgba(35,49,70,.14); }
+.custom-color-preview { background: conic-gradient(from 25deg, #ff8d9d, #ffc46d, #75cba8, #65a7e7, #9a7bd1, #ff8d9d); }
+.theme-custom-trigger.active .custom-color-preview { background: var(--theme-primary); }
+.theme-preset svg { width: 17px; fill: none; stroke: transparent; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.theme-preset.active svg { stroke: var(--primary); }
+.theme-color-picker { display: grid; gap: 12px; margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(var(--theme-primary-rgb),.12); }
+.theme-color-board { position: relative; height: 128px; border-radius: 16px; box-shadow: inset 0 0 0 1px rgba(22,32,51,.08); touch-action: none; }
+.theme-color-cursor {
+  position: absolute; width: 21px; height: 21px; border: 3px solid #fff; border-radius: 50%;
+  transform: translate(-50%,-50%); box-shadow: 0 2px 8px rgba(0,0,0,.28); pointer-events: none;
+}
+.theme-hue-slider {
+  width: 100%; height: 13px; margin: 0; border: 0; border-radius: 999px; appearance: none;
+  background: linear-gradient(to right, #f33, #ff0, #3f3, #3ff, #33f, #f3f, #f33);
+}
+.theme-hue-slider::-webkit-slider-thumb {
+  width: 24px; height: 24px; appearance: none; border: 3px solid #fff; border-radius: 50%;
+  background: #fff; box-shadow: 0 2px 9px rgba(0,0,0,.25);
+}
+.theme-hex-field {
+  display: grid; grid-template-columns: 44px 1fr; align-items: center; overflow: hidden;
+  border: 1px solid #e1e5ec; border-radius: 14px; background: rgba(255,255,255,.85);
+}
+.theme-hex-field span { padding-left: 13px; color: #8b929e; font-size: 11px; font-weight: 750; letter-spacing: .08em; }
+.theme-hex-field input { min-width: 0; padding: 11px 13px; border: 0; outline: 0; background: transparent; color: var(--ink); font: 650 14px/1.2 ui-monospace, SFMono-Regular, monospace; text-transform: uppercase; }
+.theme-background-title { margin-top: 19px; }
+
+.ios-list { background: var(--canvas); border-radius: var(--radius-card); border: 1px solid var(--hairline); overflow: hidden; display: flex; flex-direction: column;}
 .list-item { padding: 16px; background: transparent; border: none; border-bottom: 1px solid var(--divider-soft); font-size: 17px; cursor: pointer; color: var(--ink); width: 100%;}
 .list-item:last-child { border-bottom: none; }
 .list-item:active { background: var(--surface-pearl); }
