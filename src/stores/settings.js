@@ -1,13 +1,13 @@
 import { defineStore } from 'pinia'
 import { ref, computed, watch } from 'vue'
 import { Preferences } from '@capacitor/preferences'
-import { normalizeAutoLockDelay } from '../services/autoLockPolicy'
+import { normalizeAutoLockDelay } from '../services/autoLockPolicy.js'
 import {
   DEFAULT_REMINDER_SETTINGS,
   EMPTY_NOTIFICATION_AI_CACHE,
   normalizeNotificationAiCache,
   normalizeReminderSettings
-} from '../services/reminderSchedule'
+} from '../services/reminderSchedule.js'
 import { normalizeHealthSettings } from '../services/weightInsights.js'
 import { normalizeFullBackupSettings } from '../services/fullBackup.js'
 import {
@@ -47,6 +47,7 @@ export const useSettingsStore = defineStore('settings', () => {
     debts: '我的省钱计划',
     weight: '体重记录',
     mood: '心情日记',
+    chat: '温馨小家',
     schedule: '日程提醒',
     passwords: '我的密码库',
     settings: '通用配置'
@@ -167,7 +168,7 @@ export const useSettingsStore = defineStore('settings', () => {
     isDrawerOpen.value = false
   }
   const openModuleSettings = scope => {
-    if (!['debts', 'weight', 'mood', 'schedule', 'passwords'].includes(scope)) return
+    if (!['debts', 'weight', 'mood', 'schedule', 'passwords', 'chat'].includes(scope)) return
     settingsReturnView.value = currentView.value
     settingsScope.value = scope
     currentView.value = 'settings'

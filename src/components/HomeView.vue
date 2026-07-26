@@ -308,10 +308,11 @@ onMounted(() => {
           <span class="hero-status-dot"></span>
           今天已留下 {{ todayRecordCount }} 项记录
         </div>
-        <div class="companion-note">
+        <button type="button" class="companion-note" @click="switchView('chat')">
           <span class="companion-icon">✦</span>
           <p>{{ companionText }}</p>
-        </div>
+          <b aria-hidden="true">›</b>
+        </button>
       </div>
     </section>
 
@@ -605,6 +606,11 @@ button {
   background: rgba(255, 255, 255, 0.54);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
+  width: 100%;
+  color: inherit;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
 }
 
 .companion-icon {
@@ -625,6 +631,7 @@ button {
   line-height: 1.55;
   color: rgba(23, 32, 51, 0.76);
 }
+.companion-note b { margin-left: auto; color: var(--home-blue); font-size: 21px; font-weight: 500; }
 
 .dashboard-section { display: flex; flex-direction: column; gap: 12px; }
 

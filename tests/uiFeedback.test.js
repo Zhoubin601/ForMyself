@@ -64,10 +64,11 @@ test('只有存在独立配置的模块显示设置入口', () => {
   const appSource = readFileSync(join(sourceRoot, 'App.vue'), 'utf8')
   const settingsStoreSource = readFileSync(join(sourceRoot, 'stores', 'settings.js'), 'utf8')
   const settingsViewSource = readFileSync(join(sourceRoot, 'components', 'SettingsView.vue'), 'utf8')
-  assert.match(appSource, /moduleSettingsViews = new Set\(\['debts', 'weight', 'mood', 'passwords'\]\)/)
+  assert.match(appSource, /moduleSettingsViews = new Set\(\['debts', 'weight', 'mood', 'passwords', 'chat'\]\)/)
   assert.doesNotMatch(appSource, /moduleSettingsViews = new Set\([^)]*'home'/)
   assert.match(settingsStoreSource, /openModuleSettings/)
   assert.match(settingsViewSource, /settingsScope === 'passwords'/)
+  assert.match(settingsViewSource, /settingsScope === 'chat'/)
   assert.match(settingsViewSource, /settingsScope === 'general'/)
   assert.match(
     settingsViewSource,

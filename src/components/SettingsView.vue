@@ -20,6 +20,12 @@ import {
   getFullBackupCounts,
   normalizeFullBackupSnapshot
 } from '../services/fullBackup'
+import {
+  buildChatBackupSnapshot,
+  CHAT_MEMORY_CATEGORIES,
+  normalizeChatBackupSnapshot
+} from '../services/chatRecords'
+import { prepareCompanionAvatar } from '../services/chatAvatar'
 
 import { useAuthStore } from '../stores/auth'
 import { useDebtStore } from '../stores/debt'
@@ -28,9 +34,10 @@ import { useMoodStore } from '../stores/mood'
 import { useSettingsStore } from '../stores/settings'
 import { usePasswordVaultStore } from '../stores/passwordVault'
 import { useScheduleStore } from '../stores/schedule'
+import { useChatStore } from '../stores/chat'
 import { syncScheduleNotifications } from '../services/scheduleNotificationService'
 import { normalizeScheduleData } from '../services/scheduleCore'
-import { appAlert, appConfirm, appToast } from '../services/uiFeedback'
+import { appAlert, appConfirm, appPrompt, appToast } from '../services/uiFeedback'
 import {
   THEME_PRESETS,
   getThemePrimary,
@@ -45,13 +52,15 @@ const moodStore = useMoodStore()
 const settingsStore = useSettingsStore()
 const vaultStore = usePasswordVaultStore()
 const scheduleStore = useScheduleStore()
+const chatStore = useChatStore()
 const settingsScope = computed(() => settingsStore.settingsScope || 'general')
 const scopeMeta = computed(() => ({
   debts: { icon: '◎', title: '省钱计划设置', description: '管理省钱看板文案、目标回顾提醒与个性化鼓励。' },
   weight: { icon: '◇', title: '体重记录设置', description: '管理健康参数、变化提醒与每日记录提醒。' },
   mood: { icon: '♡', title: '心情日记设置', description: '管理自定义标签与每日关怀提醒。' },
   schedule: { icon: '□', title: '日程提醒设置', description: '管理日程标签、颜色和分类规则。' },
-  passwords: { icon: '⌑', title: '密码库设置', description: '管理密码分类；主密码仍在通用配置中管理。' }
+  passwords: { icon: '⌑', title: '密码库设置', description: '管理密码分类；主密码仍在通用配置中管理。' },
+  chat: { icon: '⌂', title: '温馨小家设置', description: '管理女朋友名字、记忆和聊天数据。' }
 })[settingsScope.value] || null)
 
 const isChangingPwd = ref(false)
@@ -62,6 +71,7 @@ const newPwdInput = ref('')
 const confirmNewPwdInput = ref('')
 const fileInputRef = ref(null)
 const bgInputRef = ref(null)
+const companionAvatarInputRef = ref(null)
 
 const exportDataType = ref('full')
 const backupPickerOpen = ref(false)
@@ -72,7 +82,8 @@ const backupTypeOptions = [
   { value: 'weight', label: '体重数据' },
   { value: 'mood', label: '心情数据' },
   { value: 'passwords', label: '密码库数据' },
-  { value: 'schedules', label: '日程数据' }
+  { value: 'schedules', label: '日程数据' },
+  { value: 'chat', label: '温馨小家数据' }
 ]
 const autoLockOptions = [
   { value: 0, label: '立即锁定' },
@@ -86,6 +97,23 @@ const autoLockLabel = computed(() =>
 )
 const newVaultCategory = ref('')
 const newScheduleCategory = ref('')
+const companionNameInput = ref(chatStore.profile.companionName)
+const newMemoryContent = ref('')
+const newMemoryCategory = ref('偏好')
+const memoryPage = ref(1)
+const isProcessingCompanionAvatar = ref(false)
+const MEMORY_PAGE_SIZE = 3
+const memoryPageCount = computed(() => Math.max(1, Math.ceil(chatStore.memories.length / MEMORY_PAGE_SIZE)))
+const pagedChatMemories = computed(() => {
+  const start = (memoryPage.value - 1) * MEMORY_PAGE_SIZE
+  return chatStore.memories.slice(start, start + MEMORY_PAGE_SIZE)
+})
+const memoryRangeLabel = computed(() => {
+  if (!chatStore.memories.length) return ''
+  const start = (memoryPage.value - 1) * MEMORY_PAGE_SIZE + 1
+  const end = Math.min(start + MEMORY_PAGE_SIZE - 1, chatStore.memories.length)
+  return `${start}–${end} / ${chatStore.memories.length}`
+})
 const newScheduleCategoryColor = ref('#4fd5d7')
 const moduleHealthForm = ref({
   heightCm: settingsStore.heightCm ?? '',
@@ -393,11 +421,137 @@ const deleteScheduleCategory = async category => {
   }
 }
 
+watch(() => chatStore.profile.companionName, value => {
+  if (settingsScope.value === 'chat') companionNameInput.value = value
+}, { immediate: true })
+
+watch(memoryPageCount, count => {
+  if (memoryPage.value > count) memoryPage.value = count
+})
+
+const triggerCompanionAvatarUpload = () => companionAvatarInputRef.value?.click()
+
+const handleCompanionAvatarUpload = async event => {
+  const input = event.target
+  const file = input?.files?.[0]
+  if (!file) return
+  isProcessingCompanionAvatar.value = true
+  try {
+    const avatar = await prepareCompanionAvatar(file)
+    chatStore.setCompanionAvatar(avatar)
+    appToast('女朋友头像已经换好啦', { tone: 'success' })
+  } catch (error) {
+    if (error?.message === 'AVATAR_FILE_TOO_LARGE') {
+      appAlert('图片不能超过 5MB，请换一张小一点的图片')
+    } else if (error?.message === 'AVATAR_INVALID_TYPE') {
+      appAlert('请选择 JPG、PNG 或 WebP 图片')
+    } else {
+      appAlert('这张图片暂时无法读取，请换一张再试')
+    }
+  } finally {
+    isProcessingCompanionAvatar.value = false
+    if (input) input.value = ''
+  }
+}
+
+const clearCompanionAvatar = async () => {
+  if (!chatStore.profile.companionAvatar) return
+  if (!await appConfirm('将恢复为温馨小家的默认爱心头像。', {
+    title: '移除自定义头像？',
+    destructive: true
+  })) return
+  chatStore.setCompanionAvatar('')
+  appToast('已经恢复默认头像')
+}
+
+const saveCompanionName = () => {
+  const name = String(companionNameInput.value || '').trim()
+  if (!name) return appAlert('请输入女朋友的名字')
+  if (name.length > 20) return appAlert('名字请控制在 20 个字以内')
+  chatStore.setCompanionName(name)
+  companionNameInput.value = chatStore.profile.companionName
+  appToast(`以后就叫她“${chatStore.profile.companionName}”啦`, { tone: 'success' })
+}
+
+const addChatMemory = () => {
+  const content = String(newMemoryContent.value || '').trim()
+  if (!content) return appAlert('请先写下想让她记住的内容')
+  const memory = chatStore.addMemory({
+    category: newMemoryCategory.value,
+    key: `${newMemoryCategory.value}:${content}`,
+    content
+  })
+  if (!memory) return appAlert('这条内容可能包含账号、密码或密钥，不能保存为长期记忆')
+  newMemoryContent.value = ''
+  memoryPage.value = 1
+  appToast('长期记忆已添加', { tone: 'success' })
+}
+
+const editChatMemory = async memory => {
+  const content = await appPrompt('修改这条长期记忆：', memory.content, {
+    title: '编辑长期记忆',
+    placeholder: '她以后需要记住的事情'
+  })
+  if (content === null) return
+  const updated = chatStore.updateMemory(memory.id, {
+    key: `${memory.category}:${String(content).trim()}`,
+    content
+  })
+  if (!updated) return appAlert('记忆不能为空，也不能包含账号、密码或密钥')
+  appToast('长期记忆已更新', { tone: 'success' })
+}
+
+const deleteChatMemory = async memory => {
+  if (!await appConfirm(`将删除这条记忆：\n${memory.content}`, {
+    title: '删除长期记忆？',
+    destructive: true
+  })) return
+  chatStore.deleteMemory(memory.id)
+  memoryPage.value = Math.min(memoryPage.value, memoryPageCount.value)
+  appToast('长期记忆已删除')
+}
+
+const clearChatMessages = async () => {
+  if (!await appConfirm('将永久删除全部聊天消息，但保留女朋友名字、头像和长期记忆。', {
+    title: '清空聊天记录？',
+    confirmText: '清空聊天',
+    destructive: true
+  })) return
+  chatStore.clearMessages()
+  appToast('聊天记录已清空')
+}
+
+const clearChatMemories = async () => {
+  if (!await appConfirm('将永久删除全部长期记忆，但保留聊天记录。', {
+    title: '清空长期记忆？',
+    confirmText: '清空记忆',
+    destructive: true
+  })) return
+  chatStore.clearMemories()
+  memoryPage.value = 1
+  appToast('长期记忆已清空')
+}
+
+const resetChatHome = async () => {
+  if (!await appConfirm('将永久删除温馨小家的名字、头像、全部聊天和长期记忆，无法撤销。', {
+    title: '重置温馨小家？',
+    confirmText: '全部重置',
+    destructive: true
+  })) return
+  chatStore.resetAll()
+  companionNameInput.value = chatStore.profile.companionName
+  memoryPage.value = 1
+  appToast('温馨小家已重置')
+}
+
 // --- 安全 ---
 const changeMasterPassword = async () => {
   const err = await authStore.updatePassword(oldPwdInput.value, newPwdInput.value, confirmNewPwdInput.value)
   if (err) return appAlert(err)
-  await vaultStore.reencrypt(newPwdInput.value)
+  await Promise.all([
+    vaultStore.reencrypt(newPwdInput.value),
+    chatStore.reencrypt(newPwdInput.value)
+  ])
   oldPwdInput.value = ''; newPwdInput.value = ''; confirmNewPwdInput.value = ''; isChangingPwd.value = false
   appToast('主密码已重设', { tone: 'success' })
 }
@@ -412,7 +566,10 @@ const triggerBioChangePwd = async () => {
 const changeMasterPasswordBio = async () => {
   const err = await authStore.updatePassword(null, newPwdInput.value, confirmNewPwdInput.value)
   if (err) return appAlert(err)
-  await vaultStore.reencrypt(newPwdInput.value)
+  await Promise.all([
+    vaultStore.reencrypt(newPwdInput.value),
+    chatStore.reencrypt(newPwdInput.value)
+  ])
   newPwdInput.value = ''; confirmNewPwdInput.value = ''; isChangingPwdBio.value = false
   appToast('主密码已重设', { tone: 'success' })
 }
@@ -427,6 +584,7 @@ const getDataArray = () => {
   if (exportDataType.value === 'weight') return weightStore.weightRecords
   if (exportDataType.value === 'passwords') return vaultStore.records
   if (exportDataType.value === 'schedules') return scheduleStore.snapshot
+  if (exportDataType.value === 'chat') return buildChatBackupSnapshot(chatStore.snapshot)
   return moodStore.moodRecords
 }
 
@@ -446,13 +604,16 @@ const setDataArray = async (data, overwrite) => {
       categories: [...scheduleStore.categories, ...imported.categories]
     })
     await scheduleStore.restoreScheduleData(merged)
+  } else if (exportDataType.value === 'chat') {
+    if (overwrite) await chatStore.replaceChatData(data)
+    else await chatStore.mergeChatSnapshot(data)
   } else {
     moodStore.updateMoodRecords(overwrite ? data : [...moodStore.moodRecords, ...data])
   }
 }
 
 const getFilePrefix = () => {
-  return { full: 'Full', savings: 'Savings', weight: 'Weight', mood: 'Mood', passwords: 'Passwords', schedules: 'Schedules' }[exportDataType.value]
+  return { full: 'Full', savings: 'Savings', weight: 'Weight', mood: 'Mood', passwords: 'Passwords', schedules: 'Schedules', chat: 'WarmHome' }[exportDataType.value]
 }
 
 const createFullBackupSnapshot = () => buildFullBackupSnapshot({
@@ -461,6 +622,7 @@ const createFullBackupSnapshot = () => buildFullBackupSnapshot({
   mood: moodStore.moodRecords,
   passwords: vaultStore.records,
   schedules: scheduleStore.snapshot,
+  chat: chatStore.snapshot,
   moodMetadata: {
     trackingStartDate: moodStore.trackingStartDate,
     customTags: moodStore.customTags
@@ -478,6 +640,7 @@ const applyFullBackupSnapshot = async (snapshot) => {
     moodStore.restoreMoodBackup(snapshot.data.mood, snapshot.metadata.mood),
     vaultStore.restoreRecords(snapshot.data.passwords, snapshot.metadata.vault),
     scheduleStore.restoreScheduleData(snapshot.data.schedules),
+    chatStore.restoreChatData(snapshot.data.chat),
     settingsStore.restoreBackupSnapshot(snapshot.settings)
   ])
   const failure = results.find(result => result.status === 'rejected')
@@ -526,6 +689,8 @@ const exportJSON = async () => {
 
   const isEmpty = exportDataType.value === 'schedules'
     ? !data.series.length
+    : exportDataType.value === 'chat'
+      ? !data.data.messages.length && !data.data.memories.length
     : Array.isArray(data) && data.length === 0
   if (!isFullBackup && isEmpty) return appAlert(`没有检测到可导出的${label}`)
 
@@ -575,7 +740,7 @@ const handleFileUpload = (event) => {
         const snapshot = normalizeFullBackupSnapshot(importedData)
         const counts = getFullBackupCounts(snapshot)
         const confirmed = await appConfirm(
-          `完整备份包含：\n省钱 ${counts.savings} 项、体重 ${counts.weight} 条、心情 ${counts.mood} 条、密码 ${counts.passwords} 项、日程 ${counts.schedules} 项。\n\n继续将覆盖以上全部数据和应用设置。主密码与设备生物识别凭据不会改变。`,
+      `完整备份包含：\n省钱 ${counts.savings} 项、体重 ${counts.weight} 条、心情 ${counts.mood} 条、密码 ${counts.passwords} 项、日程 ${counts.schedules} 项、聊天 ${counts.chatMessages} 条、长期记忆 ${counts.chatMemories} 条，以及女朋友头像。\n\n继续将覆盖以上全部数据和应用设置。主密码与设备生物识别凭据不会改变。`,
           { title: '恢复完整备份？', confirmText: '覆盖并恢复', destructive: true }
         )
         if (!confirmed) return
@@ -593,6 +758,17 @@ const handleFileUpload = (event) => {
         await setDataArray(normalized, overwrite)
         await syncScheduleNotifications(scheduleStore.snapshot)
         appToast('日程数据恢复成功', { tone: 'success' })
+        return
+      }
+
+      if (exportDataType.value === 'chat') {
+        const snapshot = normalizeChatBackupSnapshot(importedData)
+        const overwrite = await appConfirm(
+      `成功解密出 ${snapshot.data.messages.length} 条聊天和 ${snapshot.data.memories.length} 条长期记忆。\n选择“覆盖”会替换名字、头像、聊天和记忆；取消则合并数据并保留当前名字与头像。`,
+          { title: '恢复温馨小家', confirmText: '覆盖当前数据', cancelText: '合并数据' }
+        )
+        await setDataArray(snapshot.data, overwrite)
+        appToast('温馨小家数据恢复成功', { tone: 'success' })
         return
       }
 
@@ -788,6 +964,123 @@ const testAIConnection = async () => {
       <div>
         <strong>{{ scopeMeta.title }}</strong>
         <p>{{ scopeMeta.description }}</p>
+      </div>
+    </div>
+
+    <div v-if="settingsScope === 'chat'" class="setting-section chat-settings-section">
+      <h3 class="caption body-muted section-title">陪伴档案</h3>
+      <div class="store-utility-card chat-profile-card">
+        <div class="chat-stat-row">
+          <div><strong>{{ chatStore.messages.length }}</strong><span>聊天消息</span></div>
+          <div><strong>{{ chatStore.memories.length }}</strong><span>长期记忆</span></div>
+        </div>
+        <div class="companion-avatar-setting">
+          <div class="companion-avatar-preview" aria-hidden="true">
+            <img
+              v-if="chatStore.profile.companionAvatar"
+              :src="chatStore.profile.companionAvatar"
+              alt=""
+            />
+            <span v-else>♡</span>
+          </div>
+          <div class="companion-avatar-copy">
+            <strong>女朋友头像</strong>
+            <span>选择图片后会自动居中裁剪，聊天与备份都会保留。</span>
+          </div>
+          <button
+            class="avatar-upload-button"
+            type="button"
+            :disabled="isProcessingCompanionAvatar"
+            @click="triggerCompanionAvatarUpload"
+          >{{ isProcessingCompanionAvatar ? '处理中…' : '上传' }}</button>
+          <button
+            v-if="chatStore.profile.companionAvatar"
+            class="avatar-clear-button"
+            type="button"
+            aria-label="恢复默认头像"
+            @click="clearCompanionAvatar"
+          >恢复默认</button>
+          <input
+            ref="companionAvatarInputRef"
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            style="display: none"
+            @change="handleCompanionAvatarUpload"
+          />
+        </div>
+        <label class="input-group chat-name-field">
+          <span class="caption">女朋友名字</span>
+          <input
+            v-model="companionNameInput"
+            class="apple-input"
+            maxlength="20"
+            placeholder="例如：小暖"
+            @keyup.enter="saveCompanionName"
+          />
+        </label>
+        <button class="button-primary full-width" @click="saveCompanionName">保存名字</button>
+      </div>
+    </div>
+
+    <div v-if="settingsScope === 'chat'" class="setting-section">
+      <h3 class="caption body-muted section-title">长期记忆</h3>
+      <div class="store-utility-card chat-memory-card">
+        <p class="caption body-muted chat-memory-note">可手动补充她要记住的事情。账号、密码、密钥和验证码不会保存。</p>
+        <div class="memory-category-grid" aria-label="长期记忆分类">
+          <button
+            v-for="category in CHAT_MEMORY_CATEGORIES"
+            :key="category"
+            :class="{ active: newMemoryCategory === category }"
+            @click="newMemoryCategory = category"
+          >{{ category }}</button>
+        </div>
+        <div class="taxonomy-add-row">
+          <input
+            v-model="newMemoryContent"
+            class="apple-input"
+            maxlength="500"
+            placeholder="例如：哥哥不喜欢太甜的咖啡"
+            @keyup.enter="addChatMemory"
+          />
+          <button class="button-primary taxonomy-add-button" @click="addChatMemory">添加</button>
+        </div>
+        <div v-if="chatStore.memories.length" class="chat-memory-list">
+          <article v-for="memory in pagedChatMemories" :key="memory.id" class="chat-memory-row">
+            <div>
+              <span class="memory-category">{{ memory.category }}</span>
+              <p>{{ memory.content }}</p>
+            </div>
+            <div class="chat-memory-actions">
+              <button class="text-link" @click="editChatMemory(memory)">编辑</button>
+              <button class="text-link danger-text" @click="deleteChatMemory(memory)">删除</button>
+            </div>
+          </article>
+          <nav v-if="memoryPageCount > 1" class="chat-memory-pagination" aria-label="长期记忆分页">
+            <button
+              type="button"
+              :disabled="memoryPage <= 1"
+              aria-label="上一页"
+              @click="memoryPage -= 1"
+            >‹</button>
+            <span>第 {{ memoryPage }} / {{ memoryPageCount }} 页 · {{ memoryRangeLabel }}</span>
+            <button
+              type="button"
+              :disabled="memoryPage >= memoryPageCount"
+              aria-label="下一页"
+              @click="memoryPage += 1"
+            >›</button>
+          </nav>
+        </div>
+        <p v-else class="caption body-muted taxonomy-empty">还没有长期记忆。完整对话结束后，她也会自动提取真正值得长期记住的信息。</p>
+      </div>
+    </div>
+
+    <div v-if="settingsScope === 'chat'" class="setting-section">
+      <h3 class="caption body-muted section-title">数据清理</h3>
+      <div class="ios-list">
+        <button class="list-item text-link destructive" style="text-align: left;" @click="clearChatMessages">清空聊天记录</button>
+        <button class="list-item text-link destructive" style="text-align: left;" @click="clearChatMemories">清空长期记忆</button>
+        <button class="list-item text-link destructive" style="text-align: left;" @click="resetChatHome">全部重置温馨小家</button>
       </div>
     </div>
 
@@ -1165,14 +1458,14 @@ const testAIConnection = async () => {
         </button>
         <input type="file" accept=".json" ref="fileInputRef" style="display: none" @change="handleFileUpload" />
       </div>
-      <p class="caption body-muted" style="padding: 12px 16px; margin: 0;">完整备份包含省钱、体重、心情、密码库、日程及应用设置和 API Key，并由当前主密码进行 AES 加密；不会包含主密码或设备生物识别凭据。仍可选择单项备份并保持原有格式。</p>
+          <p class="caption body-muted" style="padding: 12px 16px; margin: 0;">完整备份包含省钱、体重、心情、密码库、日程、温馨小家的头像、全部聊天与长期记忆，以及应用设置和 API Key，并由当前主密码进行 AES 加密；不会包含主密码或设备生物识别凭据。仍可选择单项备份。</p>
     </div>
 
     <!-- AI 情绪陪伴引擎 -->
     <div v-if="settingsScope === 'general'" class="setting-section">
       <h3 class="caption body-muted section-title">🤖 AI 情绪陪伴 (BYOK)</h3>
       <div class="store-utility-card" style="margin-top: 8px;">
-        <p class="caption body-muted" style="margin: 0 0 16px 0;">自备 Key 接入，数据仅限本机流转，绝对隐私。兼容 DeepSeek / OpenAI / 通义千问等标准 API。</p>
+        <p class="caption body-muted" style="margin: 0 0 16px 0;">自备 Key 接入，兼容 DeepSeek / OpenAI / 通义千问等标准 API。使用 AI 时，所选聊天与生活上下文会发送给这里配置的服务商；密码库、主密码、API Key 和其他安全凭据绝不会作为聊天上下文发送。</p>
         <div class="input-group">
           <label class="caption">API 接口地址</label>
           <input v-model="settingsStore.aiProviderUrl" type="text" class="apple-input" placeholder="https://api.deepseek.com" autocomplete="off" spellcheck="false" />
@@ -1232,7 +1525,7 @@ const testAIConnection = async () => {
 </template>
 
 <style scoped>
-.settings-container { display: flex; flex-direction: column; gap: 24px; }
+.settings-container { display: flex; min-width: 0; flex-direction: column; gap: 24px; }
 .setting-section { display: flex; flex-direction: column; }
 .section-title { padding: 0 12px; margin-bottom: 8px; font-weight: 650; letter-spacing: .02em; }
 .module-settings-intro {
@@ -1246,8 +1539,12 @@ const testAIConnection = async () => {
   border-radius: 16px; background: linear-gradient(145deg, var(--theme-gradient-start), var(--theme-gradient-end));
   color: var(--theme-on-primary); font-size: 24px; box-shadow: 0 8px 18px rgba(var(--theme-primary-strong-rgb),.18);
 }
+.module-settings-intro > div { flex: 1; min-width: 0; }
 .module-settings-intro strong { display: block; color: var(--ink); font-size: 18px; }
-.module-settings-intro p { margin: 5px 0 0; color: var(--body-muted); font-size: 13px; line-height: 1.45; }
+.module-settings-intro p {
+  margin: 5px 0 0; color: var(--body-muted); font-size: 13px; line-height: 1.45;
+  word-break: normal; overflow-wrap: break-word; text-wrap: pretty;
+}
 
 .theme-settings-card { padding: 18px; border-color: var(--theme-border); background: linear-gradient(145deg, var(--theme-surface-tint), rgba(255,255,255,.94)); }
 .theme-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
@@ -1299,6 +1596,99 @@ const testAIConnection = async () => {
 .danger-text { color: #d92d20; }
 .input-group { margin-bottom: 12px; }
 .store-utility-card { background: var(--canvas); border: 1px solid var(--hairline); border-radius: 18px; padding: 24px; margin-top: 8px; }
+.chat-profile-card, .chat-memory-card { background: linear-gradient(145deg, var(--theme-surface-tint), var(--canvas)); }
+.chat-stat-row {
+  display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; margin-bottom: 20px;
+}
+.chat-stat-row > div { padding: 15px; border-radius: 16px; background: rgba(255,255,255,.72); text-align: center; }
+.chat-stat-row strong { display: block; color: var(--primary); font-size: 24px; line-height: 1.1; }
+.chat-stat-row span { display: block; margin-top: 5px; color: var(--body-muted); font-size: 12px; }
+.companion-avatar-setting {
+  display: grid;
+  grid-template-columns: 54px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 11px;
+  margin-bottom: 20px;
+  padding: 12px;
+  border: 1px solid var(--hairline);
+  border-radius: 16px;
+  background: rgba(255,255,255,.72);
+}
+.companion-avatar-preview {
+  display: grid;
+  place-items: center;
+  width: 54px;
+  height: 54px;
+  overflow: hidden;
+  border-radius: 18px;
+  color: white;
+  background: var(--theme-gradient);
+  box-shadow: 0 7px 18px rgba(var(--theme-primary-rgb), .2);
+  font-size: 28px;
+}
+.companion-avatar-preview img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.companion-avatar-copy { min-width: 0; }
+.companion-avatar-copy strong, .companion-avatar-copy span { display: block; }
+.companion-avatar-copy strong { color: var(--ink); font-size: 14px; }
+.companion-avatar-copy span { margin-top: 4px; color: var(--body-muted); font-size: 11px; line-height: 1.45; }
+.avatar-upload-button, .avatar-clear-button {
+  border: 1px solid var(--theme-border);
+  border-radius: 999px;
+  color: var(--primary);
+  background: var(--theme-soft);
+  font: inherit;
+  font-size: 12px;
+  white-space: nowrap;
+}
+.avatar-upload-button { min-height: 36px; padding: 0 13px; font-weight: 650; }
+.avatar-upload-button:disabled { opacity: .5; }
+.avatar-clear-button {
+  grid-column: 2 / 4;
+  justify-self: start;
+  padding: 5px 10px;
+  border-color: transparent;
+  background: transparent;
+}
+.chat-name-field { display: block; margin-bottom: 18px; }
+.chat-name-field span { display: block; margin-bottom: 8px; }
+.chat-settings-section .full-width { width: 100%; }
+.chat-memory-note { margin: 0 0 14px; line-height: 1.55; }
+.memory-category-grid { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 13px; }
+.memory-category-grid button {
+  min-height: 34px; padding: 0 13px; border: 1px solid var(--hairline); border-radius: 999px;
+  background: rgba(255,255,255,.78); color: var(--body-muted); font: inherit; font-size: 13px;
+}
+.memory-category-grid button.active { border-color: var(--theme-primary); background: var(--theme-primary-soft); color: var(--primary); font-weight: 650; }
+.chat-memory-list { display: grid; gap: 9px; margin-top: 12px; }
+.chat-memory-row {
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
+  padding: 13px; border: 1px solid var(--hairline); border-radius: 14px; background: rgba(255,255,255,.72);
+}
+.chat-memory-row > div:first-child { min-width: 0; }
+.chat-memory-row p { margin: 6px 0 0; color: var(--ink); font-size: 14px; line-height: 1.55; overflow-wrap: anywhere; }
+.memory-category { color: var(--primary); font-size: 11px; font-weight: 720; }
+.chat-memory-actions { display: flex; flex: 0 0 auto; gap: 9px; }
+.chat-memory-actions button { padding: 2px; border: 0; background: transparent; }
+.chat-memory-pagination {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr) 38px;
+  align-items: center;
+  gap: 8px;
+  margin-top: 3px;
+}
+.chat-memory-pagination button {
+  width: 38px;
+  height: 36px;
+  border: 1px solid var(--theme-border);
+  border-radius: 12px;
+  color: var(--primary);
+  background: var(--theme-soft);
+  font: inherit;
+  font-size: 24px;
+  line-height: 1;
+}
+.chat-memory-pagination button:disabled { opacity: .35; }
+.chat-memory-pagination span { color: var(--body-muted); font-size: 11px; text-align: center; }
 .health-setting-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px; }
 .health-setting-grid .input-group span, .threshold-field span { display: block; margin-bottom: 8px; }
 .health-reminder-toggle { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin: 4px 0 16px; padding: 15px; border-radius: 15px; background: var(--surface-pearl); }
@@ -1412,8 +1802,22 @@ const testAIConnection = async () => {
 .reminder-status.warning { color: #b42318; background: #fff1f0; }
 .reminder-note { margin: 0; padding: 0 16px 16px; text-align: center; }
 @media (max-width: 480px) {
+  .settings-container { gap: 18px; }
+  .module-settings-intro { gap: 11px; padding: 15px; border-radius: 19px; }
+  .module-settings-intro > span { width: 44px; height: 44px; border-radius: 14px; font-size: 21px; }
+  .module-settings-intro strong { font-size: 17px; }
+  .module-settings-intro p { margin-top: 3px; font-size: 12px; line-height: 1.45; }
+  .chat-settings-section .store-utility-card,
+  .chat-memory-card { padding: 18px; }
+  .chat-stat-row { margin-bottom: 16px; }
+  .chat-memory-note { font-size: 12px; line-height: 1.5; }
+  .memory-category-grid button { min-height: 32px; padding-inline: 12px; font-size: 12px; }
+  .chat-memory-card .taxonomy-add-row { display: grid; grid-template-columns: 1fr; gap: 9px; }
+  .chat-memory-card .taxonomy-add-button { width: 100%; min-height: 44px; }
   .reminder-row { gap: 8px; }
   .reminder-time { width: 82px; font-size: 14px; }
   .health-setting-grid { grid-template-columns: 1fr; gap: 0; }
+  .chat-memory-row { flex-direction: column; }
+  .chat-memory-actions { align-self: flex-end; }
 }
 </style>
