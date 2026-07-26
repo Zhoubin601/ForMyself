@@ -23,9 +23,19 @@ import {
 import {
   buildChatBackupSnapshot,
   CHAT_MEMORY_CATEGORIES,
+  CHAT_MEMORY_SCOPES,
   normalizeChatBackupSnapshot
 } from '../services/chatRecords'
 import { prepareCompanionAvatar } from '../services/chatAvatar'
+import {
+  generateDailyCompanionState,
+  localDailyCompanionState
+} from '../services/chatRelationship'
+import {
+  buildProactiveSlots,
+  generateProactiveOutbox,
+  syncChatProactiveNotifications
+} from '../services/chatProactive'
 
 import { useAuthStore } from '../stores/auth'
 import { useDebtStore } from '../stores/debt'
@@ -76,6 +86,7 @@ const companionAvatarInputRef = ref(null)
 const exportDataType = ref('full')
 const backupPickerOpen = ref(false)
 const autoLockPickerOpen = ref(false)
+const proactiveMaxPickerOpen = ref(false)
 const backupTypeOptions = [
   { value: 'full', label: '完整数据（全部数据与设置）' },
   { value: 'savings', label: '省钱数据' },
@@ -100,19 +111,38 @@ const newScheduleCategory = ref('')
 const companionNameInput = ref(chatStore.profile.companionName)
 const newMemoryContent = ref('')
 const newMemoryCategory = ref('偏好')
+const newMemoryScope = ref('user')
+const memoryScopeFilter = ref('user')
 const memoryPage = ref(1)
 const isProcessingCompanionAvatar = ref(false)
+const isRegeneratingCompanionState = ref(false)
+const isSavingChatProactive = ref(false)
+const proactiveForm = ref({
+  enabled: chatStore.proactiveSettings.enabled,
+  dailyMax: chatStore.proactiveSettings.dailyMax,
+  activeStart: chatStore.proactiveSettings.activeStart,
+  activeEnd: chatStore.proactiveSettings.activeEnd
+})
 const MEMORY_PAGE_SIZE = 3
-const memoryPageCount = computed(() => Math.max(1, Math.ceil(chatStore.memories.length / MEMORY_PAGE_SIZE)))
+const memoryScopeMeta = {
+  user: { label: '哥哥', description: '哥哥的信息' },
+  companion: { label: '她', description: '她的虚拟设定' },
+  relationship: { label: '我们', description: '两人的共同经历' }
+}
+const memoryScopeOptions = CHAT_MEMORY_SCOPES.map(value => ({ value, ...memoryScopeMeta[value] }))
+const scopedChatMemories = computed(() => (
+  chatStore.memories.filter(memory => memory.scope === memoryScopeFilter.value)
+))
+const memoryPageCount = computed(() => Math.max(1, Math.ceil(scopedChatMemories.value.length / MEMORY_PAGE_SIZE)))
 const pagedChatMemories = computed(() => {
   const start = (memoryPage.value - 1) * MEMORY_PAGE_SIZE
-  return chatStore.memories.slice(start, start + MEMORY_PAGE_SIZE)
+  return scopedChatMemories.value.slice(start, start + MEMORY_PAGE_SIZE)
 })
 const memoryRangeLabel = computed(() => {
-  if (!chatStore.memories.length) return ''
+  if (!scopedChatMemories.value.length) return ''
   const start = (memoryPage.value - 1) * MEMORY_PAGE_SIZE + 1
-  const end = Math.min(start + MEMORY_PAGE_SIZE - 1, chatStore.memories.length)
-  return `${start}–${end} / ${chatStore.memories.length}`
+  const end = Math.min(start + MEMORY_PAGE_SIZE - 1, scopedChatMemories.value.length)
+  return `${start}–${end} / ${scopedChatMemories.value.length}`
 })
 const newScheduleCategoryColor = ref('#4fd5d7')
 const moduleHealthForm = ref({
@@ -429,6 +459,15 @@ watch(memoryPageCount, count => {
   if (memoryPage.value > count) memoryPage.value = count
 })
 
+watch(memoryScopeFilter, scope => {
+  memoryPage.value = 1
+  newMemoryScope.value = scope
+})
+
+watch(() => chatStore.proactiveSettings, value => {
+  proactiveForm.value = { ...value }
+}, { deep: true, immediate: true })
+
 const triggerCompanionAvatarUpload = () => companionAvatarInputRef.value?.click()
 
 const handleCompanionAvatarUpload = async event => {
@@ -477,12 +516,14 @@ const addChatMemory = () => {
   const content = String(newMemoryContent.value || '').trim()
   if (!content) return appAlert('请先写下想让她记住的内容')
   const memory = chatStore.addMemory({
+    scope: newMemoryScope.value,
     category: newMemoryCategory.value,
-    key: `${newMemoryCategory.value}:${content}`,
+    key: `${newMemoryScope.value}:${newMemoryCategory.value}:${content}`,
     content
   })
   if (!memory) return appAlert('这条内容可能包含账号、密码或密钥，不能保存为长期记忆')
   newMemoryContent.value = ''
+  memoryScopeFilter.value = newMemoryScope.value
   memoryPage.value = 1
   appToast('长期记忆已添加', { tone: 'success' })
 }
@@ -494,7 +535,7 @@ const editChatMemory = async memory => {
   })
   if (content === null) return
   const updated = chatStore.updateMemory(memory.id, {
-    key: `${memory.category}:${String(content).trim()}`,
+    key: `${memory.scope}:${memory.category}:${String(content).trim()}`,
     content
   })
   if (!updated) return appAlert('记忆不能为空，也不能包含账号、密码或密钥')
@@ -511,6 +552,85 @@ const deleteChatMemory = async memory => {
   appToast('长期记忆已删除')
 }
 
+const regenerateCompanionState = async () => {
+  isRegeneratingCompanionState.value = true
+  try {
+    let state
+    try {
+      state = await generateDailyCompanionState({
+        companionName: chatStore.profile.companionName,
+        now: new Date(),
+        previousState: chatStore.companionState,
+        memories: chatStore.memories,
+        openLoops: chatStore.openLoops,
+        recentMessages: chatStore.messages.slice(-30)
+      })
+    } catch (error) {
+      console.warn('重新生成女朋友状态失败，已使用本地状态', error)
+      state = localDailyCompanionState()
+    }
+    chatStore.setCompanionState(state)
+    appToast('她今天的状态已经更新', { tone: 'success' })
+  } finally {
+    isRegeneratingCompanionState.value = false
+  }
+}
+
+const saveChatProactiveSettings = async () => {
+  isSavingChatProactive.value = true
+  try {
+    const settings = chatStore.setProactiveSettings(proactiveForm.value)
+    const now = new Date()
+    const slots = buildProactiveSlots({
+      settings,
+      messages: chatStore.messages,
+      openLoops: chatStore.openLoops,
+      existingOutbox: [],
+      now,
+      days: 7
+    })
+    const outbox = await generateProactiveOutbox({
+      slots,
+      companionName: chatStore.profile.companionName,
+      state: chatStore.companionState,
+      memories: chatStore.memories,
+      openLoops: chatStore.openLoops,
+      recentMessages: chatStore.messages.slice(-30),
+      now
+    })
+    chatStore.setProactiveOutbox(outbox)
+    const result = await syncChatProactiveNotifications(outbox, settings, {
+      requestPermission: settings.enabled,
+      now
+    })
+    if (settings.enabled && result.permission !== 'granted') {
+      appToast('主动联系已保存，但系统还没有通知权限', { tone: 'warning', duration: 3500 })
+    } else {
+      appToast(settings.enabled ? '主动联系时间已经安排好啦' : '主动联系已关闭', { tone: 'success' })
+    }
+  } catch (error) {
+    if (error?.code === 'NOTIFICATION_PERMISSION_DENIED') {
+      appToast('设置已保存；允许系统通知后，她才能在应用外来找你', {
+        tone: 'warning',
+        duration: 3800
+      })
+      return
+    }
+    console.error('保存温馨小家主动联系设置失败', error)
+    appAlert('主动联系设置暂时没有保存成功，请稍后再试')
+  } finally {
+    isSavingChatProactive.value = false
+  }
+}
+
+const cancelStoredChatProactive = async () => {
+  chatStore.setProactiveOutbox([])
+  await syncChatProactiveNotifications([], { ...chatStore.proactiveSettings, enabled: false }, {
+    requestPermission: false,
+    now: new Date()
+  }).catch(error => console.warn('清理温馨小家主动通知失败', error))
+}
+
 const clearChatMessages = async () => {
   if (!await appConfirm('将永久删除全部聊天消息，但保留女朋友名字、头像和长期记忆。', {
     title: '清空聊天记录？',
@@ -518,6 +638,8 @@ const clearChatMessages = async () => {
     destructive: true
   })) return
   chatStore.clearMessages()
+  chatStore.replaceOpenLoops([])
+  await cancelStoredChatProactive()
   appToast('聊天记录已清空')
 }
 
@@ -528,6 +650,7 @@ const clearChatMemories = async () => {
     destructive: true
   })) return
   chatStore.clearMemories()
+  await cancelStoredChatProactive()
   memoryPage.value = 1
   appToast('长期记忆已清空')
 }
@@ -539,6 +662,7 @@ const resetChatHome = async () => {
     destructive: true
   })) return
   chatStore.resetAll()
+  await cancelStoredChatProactive()
   companionNameInput.value = chatStore.profile.companionName
   memoryPage.value = 1
   appToast('温馨小家已重置')
@@ -607,6 +731,12 @@ const setDataArray = async (data, overwrite) => {
   } else if (exportDataType.value === 'chat') {
     if (overwrite) await chatStore.replaceChatData(data)
     else await chatStore.mergeChatSnapshot(data)
+    chatStore.materializeDueProactive(Date.now())
+    await syncChatProactiveNotifications(
+      chatStore.proactiveOutbox,
+      chatStore.proactiveSettings,
+      { requestPermission: false, now: new Date() }
+    ).catch(error => console.warn('导入温馨小家后刷新主动联系失败', error))
   } else {
     moodStore.updateMoodRecords(overwrite ? data : [...moodStore.moodRecords, ...data])
   }
@@ -665,6 +795,12 @@ const restoreFullBackup = async (snapshot) => {
       personalizedBodies: getPersonalizedReminderBodies(settingsStore.notificationAiContent)
     })
     await syncScheduleNotifications(scheduleStore.snapshot)
+    chatStore.materializeDueProactive(Date.now())
+    await syncChatProactiveNotifications(
+      chatStore.proactiveOutbox,
+      chatStore.proactiveSettings,
+      { requestPermission: false, now: new Date() }
+    )
   } catch (error) {
     console.warn('恢复完整备份后刷新通知失败', error)
   }
@@ -1023,9 +1159,99 @@ const testAIConnection = async () => {
     </div>
 
     <div v-if="settingsScope === 'chat'" class="setting-section">
+      <h3 class="caption body-muted section-title">她今天的状态</h3>
+      <div class="store-utility-card companion-state-card">
+        <div class="companion-state-heading">
+          <div>
+            <span>{{ chatStore.companionState.mood || '安静' }}</span>
+            <strong>{{ chatStore.companionState.statusText || '陪着你' }}</strong>
+          </div>
+          <em>精力 {{ chatStore.companionState.energy || '平稳' }}</em>
+        </div>
+        <p>{{ chatStore.companionState.currentThought || '想等哥哥来温馨小家说说话。' }}</p>
+        <p class="companion-virtual-moment">{{ chatStore.companionState.virtualMoment || '在温馨小家里安静待着。' }}</p>
+        <div v-if="chatStore.openLoops.length" class="open-loop-summary">
+          <strong>还惦记着</strong>
+          <span v-for="loop in chatStore.openLoops.slice(0, 3)" :key="loop.id">{{ loop.content }}</span>
+        </div>
+        <button
+          class="button-secondary-pill full-width"
+          type="button"
+          :disabled="isRegeneratingCompanionState"
+          @click="regenerateCompanionState"
+        >{{ isRegeneratingCompanionState ? '正在换个心情…' : '重新生成今天状态' }}</button>
+      </div>
+    </div>
+
+    <div v-if="settingsScope === 'chat'" class="setting-section">
+      <h3 class="caption body-muted section-title">主动联系</h3>
+      <div class="store-utility-card chat-proactive-card">
+        <div class="proactive-toggle-row">
+          <div>
+            <strong>让她偶尔主动来找你</strong>
+            <span>没有回应时当天不会追问，也不会在刚聊完后打扰。</span>
+          </div>
+          <label class="switch-control">
+            <input v-model="proactiveForm.enabled" type="checkbox" />
+            <span></span>
+          </label>
+        </div>
+        <label class="input-group">
+          <span class="caption">每天最多</span>
+          <button
+            class="backup-type-button"
+            type="button"
+            :disabled="!proactiveForm.enabled"
+            @click="proactiveMaxPickerOpen = true"
+          >
+            <span>{{ proactiveForm.dailyMax }} 条</span>
+            <b>›</b>
+          </button>
+        </label>
+        <div class="proactive-time-grid">
+          <label>
+            <span class="caption">开始时间</span>
+            <AppTimeField
+              v-model="proactiveForm.activeStart"
+              class="proactive-time-field"
+              :disabled="!proactiveForm.enabled"
+            />
+          </label>
+          <label>
+            <span class="caption">结束时间</span>
+            <AppTimeField
+              v-model="proactiveForm.activeEnd"
+              class="proactive-time-field"
+              :disabled="!proactiveForm.enabled"
+            />
+          </label>
+        </div>
+        <button
+          class="button-primary full-width"
+          type="button"
+          :disabled="isSavingChatProactive"
+          @click="saveChatProactiveSettings"
+        >{{ isSavingChatProactive ? '正在安排…' : '保存主动联系设置' }}</button>
+        <p class="caption body-muted virtual-role-note">小暖是“温馨小家”中的虚拟女朋友角色。她可以有连续的小情绪和想法，但不会冒充现实真人。</p>
+      </div>
+    </div>
+
+    <div v-if="settingsScope === 'chat'" class="setting-section">
       <h3 class="caption body-muted section-title">长期记忆</h3>
       <div class="store-utility-card chat-memory-card">
         <p class="caption body-muted chat-memory-note">可手动补充她要记住的事情。账号、密码、密钥和验证码不会保存。</p>
+        <div class="memory-scope-tabs" aria-label="长期记忆归属">
+          <button
+            v-for="scope in memoryScopeOptions"
+            :key="scope.value"
+            type="button"
+            :class="{ active: memoryScopeFilter === scope.value }"
+            @click="memoryScopeFilter = scope.value"
+          >
+            <strong>{{ scope.label }}</strong>
+            <span>{{ scope.description }}</span>
+          </button>
+        </div>
         <div class="memory-category-grid" aria-label="长期记忆分类">
           <button
             v-for="category in CHAT_MEMORY_CATEGORIES"
@@ -1044,7 +1270,7 @@ const testAIConnection = async () => {
           />
           <button class="button-primary taxonomy-add-button" @click="addChatMemory">添加</button>
         </div>
-        <div v-if="chatStore.memories.length" class="chat-memory-list">
+        <div v-if="scopedChatMemories.length" class="chat-memory-list">
           <article v-for="memory in pagedChatMemories" :key="memory.id" class="chat-memory-row">
             <div>
               <span class="memory-category">{{ memory.category }}</span>
@@ -1071,7 +1297,7 @@ const testAIConnection = async () => {
             >›</button>
           </nav>
         </div>
-        <p v-else class="caption body-muted taxonomy-empty">还没有长期记忆。完整对话结束后，她也会自动提取真正值得长期记住的信息。</p>
+        <p v-else class="caption body-muted taxonomy-empty">这一栏还没有长期记忆。完整对话结束后，她会把真正值得记住的内容放到合适的归属中。</p>
       </div>
     </div>
 
@@ -1519,6 +1745,23 @@ const testAIConnection = async () => {
           </button>
         </div>
       </div>
+      <div v-if="proactiveMaxPickerOpen" class="settings-picker-mask" @click="proactiveMaxPickerOpen = false">
+        <div class="settings-picker" @click.stop>
+          <div class="settings-picker-handle"></div>
+          <header>
+            <strong>每天最多主动联系</strong>
+            <button @click="proactiveMaxPickerOpen = false">取消</button>
+          </header>
+          <button
+            v-for="amount in [1, 2]"
+            :key="amount"
+            :class="{ selected: proactiveForm.dailyMax === amount }"
+            @click="proactiveForm.dailyMax = amount; proactiveMaxPickerOpen = false"
+          >
+            <span>{{ amount }} 条</span><b>✓</b>
+          </button>
+        </div>
+      </div>
     </Teleport>
 
   </div>
@@ -1596,7 +1839,9 @@ const testAIConnection = async () => {
 .danger-text { color: #d92d20; }
 .input-group { margin-bottom: 12px; }
 .store-utility-card { background: var(--canvas); border: 1px solid var(--hairline); border-radius: 18px; padding: 24px; margin-top: 8px; }
-.chat-profile-card, .chat-memory-card { background: linear-gradient(145deg, var(--theme-surface-tint), var(--canvas)); }
+.chat-profile-card, .chat-memory-card, .companion-state-card, .chat-proactive-card {
+  background: linear-gradient(145deg, var(--theme-surface-tint), var(--canvas));
+}
 .chat-stat-row {
   display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; margin-bottom: 20px;
 }
@@ -1652,7 +1897,58 @@ const testAIConnection = async () => {
 .chat-name-field { display: block; margin-bottom: 18px; }
 .chat-name-field span { display: block; margin-bottom: 8px; }
 .chat-settings-section .full-width { width: 100%; }
+.companion-state-heading {
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 13px;
+}
+.companion-state-heading div { min-width: 0; }
+.companion-state-heading span {
+  display: inline-block; margin-bottom: 5px; padding: 4px 8px; border-radius: 999px;
+  color: var(--primary); background: var(--theme-primary-soft); font-size: 11px; font-weight: 700;
+}
+.companion-state-heading strong { display: block; font-size: 18px; }
+.companion-state-heading em { flex: 0 0 auto; color: var(--body-muted); font-size: 11px; font-style: normal; }
+.companion-state-card > p { margin: 0 0 9px; color: var(--ink); font-size: 14px; line-height: 1.6; }
+.companion-state-card > p.companion-virtual-moment { color: var(--body-muted); font-size: 12px; }
+.open-loop-summary {
+  display: grid; gap: 6px; margin: 14px 0; padding: 12px; border-radius: 14px;
+  color: var(--body-muted); background: rgba(255,255,255,.7);
+}
+.open-loop-summary strong { color: var(--primary); font-size: 11px; }
+.open-loop-summary span { font-size: 12px; line-height: 1.45; }
+.companion-state-card .full-width, .chat-proactive-card .full-width { width: 100%; margin-top: 13px; }
+.proactive-toggle-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 14px;
+  margin-bottom: 16px; padding: 13px; border-radius: 15px; background: rgba(255,255,255,.72);
+}
+.proactive-toggle-row > div { min-width: 0; }
+.proactive-toggle-row strong, .proactive-toggle-row span { display: block; }
+.proactive-toggle-row strong { font-size: 14px; }
+.proactive-toggle-row span { margin-top: 4px; color: var(--body-muted); font-size: 11px; line-height: 1.45; }
+.chat-proactive-card .input-group > span, .proactive-time-grid label > span {
+  display: block; margin-bottom: 7px;
+}
+.chat-proactive-card select { width: 100%; appearance: auto; }
+.proactive-time-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.proactive-time-grid label { min-width: 0; }
+:global(.proactive-time-field) {
+  width: 100%; padding: 10px 12px; border: 1px solid var(--hairline); border-radius: 14px;
+  color: var(--ink); background: rgba(255,255,255,.82); box-sizing: border-box;
+}
+.virtual-role-note { margin: 13px 0 0; line-height: 1.55; }
 .chat-memory-note { margin: 0 0 14px; line-height: 1.55; }
+.memory-scope-tabs {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; margin-bottom: 14px;
+}
+.memory-scope-tabs button {
+  min-width: 0; padding: 9px 5px; border: 1px solid var(--hairline); border-radius: 13px;
+  color: var(--body-muted); background: rgba(255,255,255,.72); font: inherit;
+}
+.memory-scope-tabs strong, .memory-scope-tabs span { display: block; }
+.memory-scope-tabs strong { font-size: 13px; }
+.memory-scope-tabs span { margin-top: 3px; overflow: hidden; font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
+.memory-scope-tabs button.active {
+  border-color: var(--theme-primary); color: var(--primary); background: var(--theme-primary-soft);
+}
 .memory-category-grid { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 13px; }
 .memory-category-grid button {
   min-height: 34px; padding: 0 13px; border: 1px solid var(--hairline); border-radius: 999px;
@@ -1808,7 +2104,9 @@ const testAIConnection = async () => {
   .module-settings-intro strong { font-size: 17px; }
   .module-settings-intro p { margin-top: 3px; font-size: 12px; line-height: 1.45; }
   .chat-settings-section .store-utility-card,
-  .chat-memory-card { padding: 18px; }
+  .chat-memory-card,
+  .companion-state-card,
+  .chat-proactive-card { padding: 18px; }
   .chat-stat-row { margin-bottom: 16px; }
   .chat-memory-note { font-size: 12px; line-height: 1.5; }
   .memory-category-grid button { min-height: 32px; padding-inline: 12px; font-size: 12px; }

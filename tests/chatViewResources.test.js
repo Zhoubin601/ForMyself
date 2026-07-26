@@ -34,11 +34,44 @@ test('聊天界面包含全高布局、100 条分批加载、流式停止、重�
   assert.match(view, /retryLastReply/)
   assert.match(view, /copyMessage\(item\)/)
   assert.match(view, /deleteMessage\(item\)/)
-  assert.match(view, /startMessageLongPress\(item, \$event\)/)
+  assert.match(view, /startMessageGesture\(item, \$event\)/)
+  assert.match(view, /swipeOffset\.value >= 56/)
   assert.match(view, /quoteMessage\(actionMessage\)/)
   assert.match(view, /class="composer-quote"/)
   assert.match(view, /item\.replyTo/)
   assert.match(view, /env\(safe-area-inset-bottom/)
+})
+
+test('聊天支持双向微信式互动、拍一拍和未读定位', () => {
+  const view = read('components/ChatView.vue')
+  const app = read('App.vue')
+  const home = read('components/HomeView.vue')
+
+  assert.match(view, /planCompanionInteraction/)
+  assert.match(view, /interaction\.action === 'quote'/)
+  assert.match(view, /setMessageReaction\(targetMessage\.id, 'assistant'/)
+  assert.match(view, /CHAT_REACTION_EMOJIS/)
+  assert.match(view, /selectMessageReaction/)
+  assert.match(view, /handleCompanionAvatarTap/)
+  assert.match(view, /now - lastPokeAt < 3000/)
+  assert.match(view, /class="unread-divider"/)
+  assert.match(view, /class="new-message-jump"/)
+  assert.match(app, /drawer-unread-badge/)
+  assert.match(home, /companion-unread/)
+})
+
+test('消息表情使用独立轻量表情条，不以负边距穿插相邻气泡', () => {
+  const view = read('components/ChatView.vue')
+  const reactionBlock = view.match(/\.message-reactions \{([\s\S]*?)\n\}/)?.[1] || ''
+  const reactionItemBlock = view.match(/\.message-reactions span \{([\s\S]*?)\n\}/)?.[1] || ''
+
+  assert.match(reactionBlock, /display:\s*inline-flex/)
+  assert.match(reactionBlock, /margin:\s*4px 11px 2px/)
+  assert.doesNotMatch(reactionBlock, /margin:\s*-/)
+  assert.match(reactionBlock, /border:\s*0/)
+  assert.match(reactionBlock, /box-shadow:\s*none/)
+  assert.match(reactionItemBlock, /background:\s*transparent/)
+  assert.doesNotMatch(reactionItemBlock, /border:\s*2px/)
 })
 
 test('聊天每次进入和内容更新后强制定位最底部', () => {
@@ -46,7 +79,7 @@ test('聊天每次进入和内容更新后强制定位最底部', () => {
 
   assert.match(view, /timeline\.scrollTop = timeline\.scrollHeight/)
   assert.match(view, /requestAnimationFrame/)
-  assert.match(view, /onMounted\(async \(\) => \{\s*await scrollToBottom\(true\)/)
+  assert.match(view, /onMounted\(async \(\) => \{[\s\S]*chatStore\.materializeDueProactive\(Date\.now\(\)\)[\s\S]*await scrollToBottom\(true\)/)
   assert.match(view, /timelineReady\.value = true/)
   assert.match(view, /:class="\{ 'timeline-ready': timelineReady \}"/)
   assert.match(view, /scroll-behavior: auto/)
@@ -55,14 +88,15 @@ test('聊天每次进入和内容更新后强制定位最底部', () => {
   assert.match(view, /ref="timelineBottomRef" class="chat-bottom-anchor"/)
 })
 
-test('流式回复会拆成连续气泡并在完整一轮后只触发一次记忆提取', () => {
+test('流式回复会按节奏拆成连续气泡并在完整一轮后只更新一次关系状态', () => {
   const view = read('components/ChatView.vue')
 
-  assert.match(view, /const parts = splitCompanionReply\(streamingText\.value\)/)
-  assert.match(view, /id: `streaming-reply-\$\{index\}`/)
-  assert.match(view, /const assistantMessages = appendAssistantReply\(answer\)/)
-  assert.match(view, /rememberExchange\(userMessage, assistantMessages\)/)
-  assert.match(view, /assistantMessages\.map\(item => item\.content\)\.join\('\\n'\)/)
+  assert.match(view, /const parts = splitCompanionReply\(content\)/)
+  assert.match(view, /Math\.min\(900, Math\.max\(350,/)
+  assert.match(view, /const assistantMessages = await appendAssistantReply\(answer, 'complete', \{[\s\S]*runId,[\s\S]*replyTo:/)
+  assert.match(view, /updateRelationship\(batch, assistantMessages\)/)
+  assert.match(view, /extractRelationshipUpdateForExchange/)
+  assert.match(view, /chatStore\.upsertOpenLoops/)
 })
 
 test('温馨小家设置页在窄屏使用紧凑字号和完整宽度输入布局', () => {
@@ -75,19 +109,18 @@ test('温馨小家设置页在窄屏使用紧凑字号和完整宽度输入布�
   assert.match(settings, /@media \(max-width: 480px\)[\s\S]*\.module-settings-intro p \{[\s\S]*font-size: 12px/)
 })
 
-test('每次进入会生成临时欢迎语，退出会中止迟到请求且欢迎语不写入 Store', () => {
+test('进入页面使用六小时智能主动消息并持久化，反复进出不再固定欢迎', () => {
   const view = read('components/ChatView.vue')
-  const generateWelcomeBlock = view.slice(
-    view.indexOf('const generateWelcome'),
-    view.indexOf('const appendAssistantReply')
-  )
 
   assert.match(view, /onMounted\(async \(\) =>/)
-  assert.match(view, /generateWelcome\(\)/)
+  assert.match(view, /initializeCompanionContinuity\(\)/)
+  assert.match(view, /shouldCreateSmartEntry/)
+  assert.match(view, /generateSmartEntryMessage/)
+  assert.match(view, /origin: 'entry'/)
   assert.match(view, /componentActive = false/)
-  assert.match(view, /welcomeController\?\.abort\(\)/)
-  assert.doesNotMatch(generateWelcomeBlock, /chatStore\.appendMessage/)
-  assert.match(view, /sessionWelcome: sessionWelcome\.value/)
+  assert.match(view, /replyController\?\.abort\('unmount'\)/)
+  assert.doesNotMatch(view, /generateWelcome/)
+  assert.doesNotMatch(view, /sessionWelcome/)
 })
 
 test('设置页提供名字、长期记忆、三种清理行为与独立备份入口', () => {

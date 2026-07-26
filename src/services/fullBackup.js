@@ -15,7 +15,7 @@ import { normalizeThemeSettings } from './themeSystem.js'
 import { normalizeChatData } from './chatRecords.js'
 
 export const FULL_BACKUP_TYPE = 'formyself-full-backup'
-export const FULL_BACKUP_VERSION = 3
+export const FULL_BACKUP_VERSION = 5
 
 const cloneJson = value => JSON.parse(JSON.stringify(value))
 const cleanText = (value, maxLength = 500) => String(value || '').slice(0, maxLength)
@@ -106,7 +106,7 @@ export function buildFullBackupSnapshot({
 export function normalizeFullBackupSnapshot(value) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error('INVALID_FULL_BACKUP')
   if (value.type !== FULL_BACKUP_TYPE) throw new Error('INVALID_FULL_BACKUP_TYPE')
-  if (![1, 2, FULL_BACKUP_VERSION].includes(value.version)) throw new Error('UNSUPPORTED_FULL_BACKUP_VERSION')
+  if (![1, 2, 3, 4, FULL_BACKUP_VERSION].includes(value.version)) throw new Error('UNSUPPORTED_FULL_BACKUP_VERSION')
   if (!value.data || typeof value.data !== 'object') throw new Error('INVALID_FULL_BACKUP_DATA')
   if (!value.settings || typeof value.settings !== 'object') throw new Error('INVALID_FULL_BACKUP_SETTINGS')
   if (value.version >= 3 && (!value.data.chat || typeof value.data.chat !== 'object' || Array.isArray(value.data.chat))) {

@@ -226,7 +226,12 @@ const save = () => {
 </template>
 
 <style scoped>
-.app-time-field { display: flex; align-items: center; justify-content: space-between; gap: 7px; min-height: 40px; color: inherit; font: inherit; text-align: left; }
+.app-time-field {
+  display: flex; align-items: center; justify-content: space-between; gap: 7px;
+  min-height: 40px; padding: 8px 10px; border: 1px solid var(--hairline);
+  border-radius: 10px; color: inherit; background: var(--canvas);
+  box-sizing: border-box; font: inherit; text-align: left;
+}
 .app-time-field svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; opacity: .72; }
 .app-time-field:disabled { opacity: .45; }
 .time-picker-mask { position: fixed; inset: 0; z-index: 18000; display: flex; align-items: flex-end; background: rgba(15,20,31,.34); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }

@@ -3,6 +3,7 @@ import test from 'node:test'
 import { createPinia, setActivePinia } from 'pinia'
 import { streamAIChat } from '../src/services/aiEngine.js'
 import {
+  buildChatLifeContext,
   buildChatSystemPrompt,
   buildWelcomeRequest,
   collapseConsecutiveChatMessages,
@@ -189,6 +190,92 @@ test('聊天窗口先尝试完整历史，超限后逐步移除最早消息', as
   assert.deepEqual(calls, [40, 20, 12])
 })
 
+test('聊天生活上下文保留近期完整记录并将久远数据压缩为月度概览', () => {
+  const context = buildChatLifeContext({
+    moodRecords: [
+      {
+        id: 'recent-mood',
+        date: '2026-07-20',
+        mood: 'good',
+        tags: ['学习'],
+        note: '最近完整心情正文',
+        autoFilled: false
+      },
+      {
+        id: 'old-mood',
+        date: '2026-05-12',
+        mood: 'bad',
+        tags: ['工作'],
+        note: '久远心情只进入月度重点',
+        autoFilled: false
+      },
+      {
+        id: 'old-placeholder',
+        date: '2026-05-13',
+        mood: 'normal',
+        note: '',
+        autoFilled: true
+      }
+    ],
+    weightRecords: [
+      { date: '2026-07-18', weight: 70, note: '近期体重备注' },
+      { date: '2026-05-01', weight: 72, note: '月初' },
+      { date: '2026-05-30', weight: 71, note: '月底' }
+    ],
+    scheduleOccurrences: [{
+      title: '近期考试',
+      type: 'event',
+      categoryId: 'study',
+      occurrenceDate: '2026-08-01',
+      occurrenceEndDate: '2026-08-01',
+      startTime: '09:00',
+      endTime: '11:00',
+      location: '教学楼',
+      note: '带准考证',
+      startAt: new Date('2026-08-01T09:00:00+08:00').getTime()
+    }],
+    scheduleSeries: [
+      {
+        id: 'weekly-study',
+        title: '每周复习',
+        type: 'task',
+        categoryId: 'study',
+        startDate: '2026-01-01',
+        endDate: '2026-01-01',
+        startTime: '20:00',
+        endTime: '21:00',
+        recurrence: { type: 'weekly', weekdays: [6] },
+        note: '整理错题'
+      },
+      {
+        id: 'old-event',
+        title: '旧日旅行计划',
+        type: 'event',
+        categoryId: 'study',
+        startDate: '2026-03-03',
+        endDate: '2026-03-03',
+        recurrence: { type: 'none' }
+      }
+    ],
+    scheduleOccurrenceStates: [{
+      key: 'old-event@2026-03-03',
+      status: 'completed'
+    }],
+    scheduleCategories: [{ id: 'study', name: '学习' }]
+  }, '2026-07-27')
+
+  assert.equal(context.recent30Days.moodDays.length, 1)
+  assert.equal(context.recent30Days.moodDays[0].events[0].note, '最近完整心情正文')
+  assert.equal(context.recent30Days.weightRecords.length, 1)
+  assert.equal(context.schedulesWithin30Days[0].category, '学习')
+  assert.equal(context.schedulesWithin30Days[0].note, '带准考证')
+  assert.equal(context.longTermOverviewBefore30Days.moodByMonth[0].month, '2026-05')
+  assert.equal(context.longTermOverviewBefore30Days.moodByMonth[0].total, 1)
+  assert.equal(context.longTermOverviewBefore30Days.weightByMonth[0].change, -1)
+  assert.equal(context.longTermOverviewBefore30Days.schedules.recurringRules[0].title, '每周复习')
+  assert.equal(context.longTermOverviewBefore30Days.schedules.distantOneOffByMonth[0].completed, 1)
+})
+
 test('聊天人格包含动态名字、宝宝哥哥规则、生活上下文和安全边界且无回复字数上限', () => {
   const prompt = buildChatSystemPrompt({
     companionName: '小月',
@@ -203,6 +290,7 @@ test('聊天人格包含动态名字、宝宝哥哥规则、生活上下文和�
   assert.match(prompt, /考试/)
   assert.match(prompt, /不得索取、复述或记忆密码/)
   assert.match(prompt, /没有应用层字数限制/)
+  assert.match(prompt, /近期30天是完整记录/)
 })
 
 test('聊天专属规则优先要求真人私聊节奏并禁止模板化 AI 情绪链', () => {
@@ -221,6 +309,9 @@ test('聊天专属规则优先要求真人私聊节奏并禁止模板化 AI 情�
   assert.match(prompt, /不要复述哥哥整句话/)
   assert.match(prompt, /一轮最多自然呼应一件旧事/)
   assert.match(prompt, /不编造自己真实吃饭、上班、出门/)
+  assert.match(prompt, /话多或拆成连续气泡时整轮可以分散使用三至四个/)
+  assert.match(prompt, /普通一轮通常零至一个，话多时最多两个/)
+  assert.match(prompt, /明显低落、严肃求助或讨论安全风险时减少 emoji 和颜文字/)
 })
 
 test('欢迎语像上线私聊且禁止数据总结和客服式套话', () => {

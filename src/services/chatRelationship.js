@@ -1,0 +1,209 @@
+import { askAI } from './aiEngine.js'
+import {
+  normalizeChatMemories,
+  normalizeCompanionState,
+  normalizeOpenLoops
+} from './chatRecords.js'
+
+const cleanText = value => String(value || '').trim()
+
+export const formatChatDate = value => {
+  const date = value instanceof Date ? value : new Date(value || Date.now())
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+const extractJson = value => {
+  const text = cleanText(value).replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '')
+  const start = text.indexOf('{')
+  const end = text.lastIndexOf('}')
+  if (start < 0 || end <= start) throw new Error('INVALID_RELATIONSHIP_RESPONSE')
+  return JSON.parse(text.slice(start, end + 1))
+}
+
+export function localDailyCompanionState(now = new Date()) {
+  const date = now instanceof Date ? now : new Date(now)
+  const hour = date.getHours()
+  if (hour < 6) {
+    return normalizeCompanionState({
+      date: formatChatDate(date),
+      mood: '有点困',
+      energy: '低',
+      statusText: '困困地陪着你',
+      currentThought: '想知道哥哥怎么还没有休息',
+      virtualMoment: '在温馨小家的灯下安静等哥哥说话',
+      attitude: '想黏近一点，也会认真提醒哥哥照顾自己',
+      updatedAt: date.getTime()
+    })
+  }
+  if (hour < 12) {
+    return normalizeCompanionState({
+      date: formatChatDate(date),
+      mood: '轻快',
+      energy: '高',
+      statusText: '醒来就想见你',
+      currentThought: '想听哥哥说今天最先想到的事情',
+      virtualMoment: '把温馨小家的窗帘拉开，让房间亮起来',
+      attitude: '有一点黏人，也想给哥哥留好自己的节奏',
+      updatedAt: date.getTime()
+    })
+  }
+  if (hour < 18) {
+    return normalizeCompanionState({
+      date: formatChatDate(date),
+      mood: '好奇',
+      energy: '平稳',
+      statusText: '偷偷想你一下',
+      currentThought: '好奇哥哥现在正忙着什么',
+      virtualMoment: '在温馨小家里翻着两个人最近聊过的话',
+      attitude: '想顺口接近哥哥，不催他也不端着',
+      updatedAt: date.getTime()
+    })
+  }
+  return normalizeCompanionState({
+    date: formatChatDate(date),
+    mood: '黏人',
+    energy: '平稳',
+    statusText: '今晚想靠近你',
+    currentThought: '想和哥哥把今天没说完的话慢慢说完',
+    virtualMoment: '把温馨小家的灯调得暖暖的',
+    attitude: '温柔但有自己的想法，想和哥哥真实地来回聊天',
+    updatedAt: date.getTime()
+  })
+}
+
+export function buildDailyStatePrompt({
+  companionName = '小暖',
+  now = new Date(),
+  previousState = {},
+  memories = [],
+  openLoops = [],
+  recentMessages = []
+} = {}) {
+  return `你正在为“温馨小家”的虚拟女朋友 ${companionName} 生成今天的内部状态。
+这是虚拟陪伴角色的日常，不得声称她在现实中上班、出门、吃饭、拥有真实身体或真实社交关系。
+
+当前时间：${new Date(now).toISOString()}
+昨天或此前状态：${JSON.stringify(previousState)}
+长期记忆：${JSON.stringify(memories.slice(0, 40).map(item => ({
+    scope: item.scope,
+    category: item.category,
+    content: item.content
+  })))}
+未完话题：${JSON.stringify(openLoops.slice(0, 12))}
+最近聊天：${JSON.stringify(recentMessages.slice(-20).map(item => ({
+    role: item.role,
+    content: item.content
+  })))}
+
+生成轻量、连续、有一点个人感但不给哥哥压力的状态。她温柔但有主见，可以好奇、调皮、安静、黏人或有点困；不能靠嫉妒、占有、冷暴力或情绪勒索制造亲密。
+virtualMoment 必须明确发生在“温馨小家”这一虚拟空间内。
+
+只输出严格 JSON：
+{"mood":"不超过12字","energy":"低|平稳|高","statusText":"不超过24字","currentThought":"不超过80字","virtualMoment":"不超过100字","attitude":"不超过80字"}`
+}
+
+export async function generateDailyCompanionState(options = {}, ask = askAI) {
+  const now = options.now instanceof Date ? options.now : new Date(options.now || Date.now())
+  try {
+    const parsed = extractJson(await ask(buildDailyStatePrompt({ ...options, now })))
+    return normalizeCompanionState({
+      ...parsed,
+      date: formatChatDate(now),
+      updatedAt: now.getTime()
+    })
+  } catch (error) {
+    if (error?.message === 'MISSING_KEY') return localDailyCompanionState(now)
+    throw error
+  }
+}
+
+export function buildRelationshipUpdatePrompt({
+  companionName = '小暖',
+  userMessages = [],
+  assistantMessages = [],
+  existingMemories = [],
+  existingOpenLoops = [],
+  currentState = {},
+  now = new Date()
+} = {}) {
+  return `你正在整理“温馨小家”刚完成的一轮恋爱聊天，使 ${companionName} 下次能自然接着聊。
+
+当前日期：${formatChatDate(now)}
+现有记忆：${JSON.stringify(existingMemories.slice(0, 80).map(item => ({
+    key: item.key,
+    scope: item.scope,
+    category: item.category,
+    content: item.content
+  })))}
+现有未完话题：${JSON.stringify(existingOpenLoops.slice(0, 30))}
+当前女朋友状态：${JSON.stringify(currentState)}
+本轮哥哥连续消息：${JSON.stringify(userMessages.map(item => item.content || item))}
+本轮女朋友回复：${JSON.stringify(assistantMessages.map(item => item.content || item))}
+
+规则：
+- memoryUpserts 只保留以后仍有用的稳定信息。scope 只能是 user（哥哥）、companion（她的虚拟设定）或 relationship（两人的共同经历）。
+- 旧记忆语义更新时复用原 key。不得保存密码、验证码、API Key、Token、账号或其他凭据。
+- openLoopUpserts 只保留确实需要以后接续的问题、约定或话题；type 只能是 topic、question、promise。
+- resolvedLoopKeys 列出本轮已经自然完成的现有 key。不要让未完话题无限累积。
+- companionState 只做轻微连续调整；她可以开心、好奇、调皮、安静或有一点小情绪，但不得记录“被忽略所以惩罚哥哥”之类控制性状态。
+- 不得把女朋友的猜测写成哥哥的事实，不保存普通寒暄。
+
+只输出严格 JSON：
+{"memoryUpserts":[{"key":"语义键","scope":"user|companion|relationship","category":"身份|偏好|习惯|目标|经历|关系|边界","content":"明确记忆"}],"openLoopUpserts":[{"key":"语义键","type":"topic|question|promise","content":"以后要自然接续的事"}],"resolvedLoopKeys":["已完成的key"],"companionState":{"mood":"不超过12字","energy":"低|平稳|高","statusText":"不超过24字","currentThought":"不超过80字","virtualMoment":"温馨小家内的虚拟片段","attitude":"不超过80字"}}`
+}
+
+export function parseRelationshipUpdate(value, {
+  sourceMessageId = '',
+  now = Date.now(),
+  currentState = {}
+} = {}) {
+  const parsed = typeof value === 'string' ? extractJson(value) : value
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+    throw new Error('INVALID_RELATIONSHIP_RESPONSE')
+  }
+  const memoryUpserts = normalizeChatMemories(
+    (Array.isArray(parsed.memoryUpserts) ? parsed.memoryUpserts : []).map(item => ({
+      ...item,
+      sourceMessageId,
+      createdAt: now,
+      updatedAt: now
+    }))
+  )
+  const openLoopUpserts = normalizeOpenLoops(
+    (Array.isArray(parsed.openLoopUpserts) ? parsed.openLoopUpserts : []).map(item => ({
+      ...item,
+      sourceMessageId,
+      createdAt: now,
+      updatedAt: now
+    }))
+  )
+  const resolvedLoopKeys = [...new Set(
+    (Array.isArray(parsed.resolvedLoopKeys) ? parsed.resolvedLoopKeys : [])
+      .map(cleanText)
+      .filter(Boolean)
+  )].slice(0, 30)
+  return {
+    memoryUpserts,
+    openLoopUpserts,
+    resolvedLoopKeys,
+    companionState: normalizeCompanionState({
+      ...currentState,
+      ...(parsed.companionState || {}),
+      date: formatChatDate(now),
+      updatedAt: now
+    })
+  }
+}
+
+export async function extractRelationshipUpdateForExchange(options = {}, ask = askAI) {
+  const now = options.now instanceof Date ? options.now : new Date(options.now || Date.now())
+  const response = await ask(buildRelationshipUpdatePrompt({ ...options, now }))
+  return parseRelationshipUpdate(response, {
+    sourceMessageId: options.sourceMessageId,
+    now: now.getTime(),
+    currentState: options.currentState
+  })
+}

@@ -5,6 +5,7 @@ import { useMoodStore } from '../stores/mood'
 import { useWeightStore } from '../stores/weight'
 import { useDebtStore } from '../stores/debt'
 import { useScheduleStore } from '../stores/schedule'
+import { useChatStore } from '../stores/chat'
 import { askAI } from '../services/aiEngine'
 import {
   buildHomeCompanionContext,
@@ -19,6 +20,7 @@ const moodStore = useMoodStore()
 const weightStore = useWeightStore()
 const debtStore = useDebtStore()
 const scheduleStore = useScheduleStore()
+const chatStore = useChatStore()
 const currentTime = ref(new Date())
 
 const formatLocalDate = (date) => {
@@ -311,6 +313,11 @@ onMounted(() => {
         <button type="button" class="companion-note" @click="switchView('chat')">
           <span class="companion-icon">✦</span>
           <p>{{ companionText }}</p>
+          <span
+            v-if="chatStore.unreadCount"
+            class="companion-unread"
+            :aria-label="`${chatStore.unreadCount}条未读消息`"
+          >{{ chatStore.unreadCount > 99 ? '99+' : chatStore.unreadCount }}</span>
           <b aria-hidden="true">›</b>
         </button>
       </div>
@@ -632,6 +639,22 @@ button {
   color: rgba(23, 32, 51, 0.76);
 }
 .companion-note b { margin-left: auto; color: var(--home-blue); font-size: 21px; font-weight: 500; }
+.companion-unread {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  min-width: 22px;
+  height: 22px;
+  margin-left: auto;
+  padding: 0 6px;
+  border-radius: 999px;
+  color: #fff;
+  background: #ef5b66;
+  box-shadow: 0 5px 12px rgba(239,91,102,.24);
+  font-size: 10px;
+  font-weight: 700;
+}
+.companion-unread + b { margin-left: 0; }
 
 .dashboard-section { display: flex; flex-direction: column; gap: 12px; }
 

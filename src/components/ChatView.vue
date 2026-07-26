@@ -1,5 +1,5 @@
 <script setup>
-import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useChatStore } from '../stores/chat'
 import { useSettingsStore } from '../stores/settings'
 import { useMoodStore } from '../stores/mood'
@@ -10,13 +10,28 @@ import { addDays, formatLocalDate } from '../services/scheduleCore'
 import {
   buildChatLifeContext,
   buildChatSystemPrompt,
-  buildWelcomeRequest,
-  extractMemoriesForExchange,
-  localWelcome,
   splitCompanionReply,
   streamCompanionReply
 } from '../services/chatCompanion'
-import { streamAIChat } from '../services/aiEngine'
+import {
+  extractRelationshipUpdateForExchange,
+  formatChatDate,
+  generateDailyCompanionState,
+  localDailyCompanionState
+} from '../services/chatRelationship'
+import {
+  buildProactiveSlots,
+  generateProactiveOutbox,
+  generateSmartEntryMessage,
+  shouldCreateSmartEntry,
+  syncChatProactiveNotifications
+} from '../services/chatProactive'
+import {
+  planCompanionInteraction,
+  planPokeFollowup,
+  planReactionFollowup
+} from '../services/chatInteraction'
+import { CHAT_REACTION_EMOJIS } from '../services/chatRecords'
 import { appAlert, appConfirm, appToast } from '../services/uiFeedback'
 
 const chatStore = useChatStore()
@@ -28,10 +43,8 @@ const scheduleStore = useScheduleStore()
 
 const draft = ref('')
 const visibleCount = ref(100)
-const sessionWelcome = ref('')
-const isWelcoming = ref(false)
 const isGenerating = ref(false)
-const streamingText = ref('')
+const isWaitingToReply = ref(false)
 const streamingStartedAt = ref(0)
 const retryMessageId = ref('')
 const timelineRef = ref(null)
@@ -41,63 +54,56 @@ const composerRef = ref(null)
 const replyTarget = ref(null)
 const actionMessage = ref(null)
 const highlightedMessageId = ref('')
-const sessionStartedAt = Date.now()
-let welcomeController = null
+const firstUnreadMessageId = ref('')
+const newMessageCount = ref(0)
+const userNearBottom = ref(true)
+const swipingMessageId = ref('')
+const swipeOffset = ref(0)
 let replyController = null
 let componentActive = true
 let replyAbortReason = ''
+let isStreamingRequest = false
+let latestGeneratedText = ''
+let replyDebounceTimer = null
+let proactiveRefreshTimer = null
+let generationRun = 0
+let relationshipUpdateChain = Promise.resolve()
+let lightInteractionRun = 0
+const pendingReplyMessageIds = new Set()
 let longPressTimer = null
 let longPressOrigin = null
+let messageGesture = null
 let highlightTimer = null
+let lastAvatarTapAt = 0
+let lastPokeAt = 0
 
 const companionName = computed(() => chatStore.profile.companionName)
 const companionAvatar = computed(() => chatStore.profile.companionAvatar)
 const hasApiKey = computed(() => !!settingsStore.aiApiKey?.trim())
 const visibleMessages = computed(() => chatStore.messages.slice(-visibleCount.value))
 const hasOlderMessages = computed(() => visibleCount.value < chatStore.messages.length)
+const hasNewMessageJump = computed(() => newMessageCount.value > 0)
+const companionPresence = computed(() => {
+  if (isGenerating.value) return '正在回你'
+  if (isWaitingToReply.value) return '正看着你说'
+  return chatStore.companionState.statusText || '陪着你'
+})
 
 const timelineItems = computed(() => {
   const items = visibleMessages.value.map(message => ({ ...message, kind: 'message' }))
-  if (sessionWelcome.value || isWelcoming.value) {
+  if (isGenerating.value) {
     items.push({
-      id: 'session-welcome',
+      id: 'streaming-reply',
       role: 'assistant',
-      content: sessionWelcome.value,
-      createdAt: sessionStartedAt,
+      content: '',
+      createdAt: streamingStartedAt.value || Date.now(),
       status: 'complete',
-      kind: 'welcome',
-      loading: isWelcoming.value && !sessionWelcome.value
+      kind: 'streaming',
+      loading: true,
+      streamingTail: true
     })
   }
-  if (streamingText.value || isGenerating.value) {
-    const parts = splitCompanionReply(streamingText.value)
-    if (!parts.length) {
-      items.push({
-        id: 'streaming-reply',
-        role: 'assistant',
-        content: '',
-        createdAt: streamingStartedAt.value || Date.now(),
-        status: 'complete',
-        kind: 'streaming',
-        loading: true,
-        streamingTail: true
-      })
-    } else {
-      parts.forEach((content, index) => items.push({
-        id: `streaming-reply-${index}`,
-        role: 'assistant',
-        content,
-        createdAt: (streamingStartedAt.value || Date.now()) + index,
-        status: 'complete',
-        kind: 'streaming',
-        loading: false,
-        streamingTail: index === parts.length - 1
-      }))
-    }
-  }
-  return items.sort((a, b) => a.createdAt - b.createdAt || (
-    a.kind === 'welcome' ? 1 : b.kind === 'welcome' ? -1 : a.id.localeCompare(b.id)
-  ))
+  return items.sort((a, b) => a.createdAt - b.createdAt || a.id.localeCompare(b.id))
 })
 
 const isNewDay = index => {
@@ -105,6 +111,22 @@ const isNewDay = index => {
   const current = new Date(timelineItems.value[index].createdAt)
   const previous = new Date(timelineItems.value[index - 1].createdAt)
   return current.toDateString() !== previous.toDateString()
+}
+
+const isGroupStart = index => {
+  if (index === 0 || isNewDay(index)) return true
+  if (timelineItems.value[index]?.type === 'poke' || timelineItems.value[index - 1]?.type === 'poke') return true
+  return timelineItems.value[index - 1]?.role !== timelineItems.value[index]?.role
+}
+
+const isGroupEnd = index => {
+  const current = timelineItems.value[index]
+  const next = timelineItems.value[index + 1]
+  if (!next) return true
+  if (current.type === 'poke' || next.type === 'poke') return true
+  const currentDate = new Date(current.createdAt).toDateString()
+  const nextDate = new Date(next.createdAt).toDateString()
+  return current.role !== next.role || currentDate !== nextDate
 }
 
 const formatDay = timestamp => new Intl.DateTimeFormat('zh-CN', {
@@ -121,6 +143,13 @@ const formatTime = timestamp => new Intl.DateTimeFormat('zh-CN', {
 const quotedSpeaker = reply => (
   reply?.role === 'assistant' ? companionName.value : '我'
 )
+const toReplySnapshot = message => message
+  ? {
+      messageId: message.id,
+      role: message.role,
+      content: message.content
+    }
+  : null
 
 const buildLifeContext = () => {
   const today = formatLocalDate()
@@ -128,13 +157,18 @@ const buildLifeContext = () => {
     moodRecords: moodStore.moodRecords,
     weightRecords: weightStore.weightRecords,
     savedDebts: debtStore.savedDebts,
-    scheduleOccurrences: scheduleStore.getOccurrences(addDays(today, -30), addDays(today, 30))
+    scheduleOccurrences: scheduleStore.getOccurrences(addDays(today, -30), addDays(today, 30)),
+    scheduleSeries: scheduleStore.series,
+    scheduleOccurrenceStates: scheduleStore.occurrences,
+    scheduleCategories: scheduleStore.categories
   }, today)
 }
 
 const currentSystemPrompt = () => buildChatSystemPrompt({
   companionName: companionName.value,
   memories: chatStore.memories,
+  companionState: chatStore.companionState,
+  openLoops: chatStore.openLoops,
   lifeContext: buildLifeContext()
 })
 
@@ -155,119 +189,306 @@ const scrollToBottom = async (force = false) => {
   if (timelineRef.value) timelineRef.value.scrollTop = timelineRef.value.scrollHeight
 }
 
-const generateWelcome = async () => {
-  welcomeController?.abort()
-  welcomeController = new AbortController()
-  sessionWelcome.value = ''
-  if (!hasApiKey.value) {
-    sessionWelcome.value = localWelcome(companionName.value)
-    scrollToBottom(true)
-    return
-  }
-  isWelcoming.value = true
-  try {
-    const prompt = buildWelcomeRequest({
-      companionName: companionName.value,
-      now: new Date(),
-      recentMessages: chatStore.messages.slice(-10)
-    })
-    const answer = await streamAIChat({
-      messages: [{ role: 'user', content: prompt }],
-      systemPrompt: currentSystemPrompt(),
-      signal: welcomeController.signal,
-      temperature: 0.94,
-      onDelta: (_delta, full) => {
-        if (!componentActive) return
-        sessionWelcome.value = full
-        scrollToBottom()
-      }
-    })
-    if (componentActive) sessionWelcome.value = answer
-  } catch (error) {
-    if (componentActive && error.code !== 'ABORTED') {
-      sessionWelcome.value = localWelcome(companionName.value)
-    }
-  } finally {
-    if (componentActive) {
-      isWelcoming.value = false
-      scrollToBottom(true)
-    }
+const markVisibleMessagesRead = () => {
+  const latestAssistantAt = chatStore.messages
+    .filter(item => item.role === 'assistant')
+    .reduce((latest, item) => Math.max(latest, item.createdAt), 0)
+  if (latestAssistantAt) chatStore.markRead(latestAssistantAt)
+}
+
+const handleTimelineScroll = () => {
+  userNearBottom.value = isNearBottom()
+  if (userNearBottom.value) {
+    newMessageCount.value = 0
+    markVisibleMessagesRead()
   }
 }
 
-const appendAssistantReply = (content, status = 'complete') => {
+const jumpToNewMessages = async () => {
+  await scrollToBottom(true)
+  userNearBottom.value = true
+  newMessageCount.value = 0
+  markVisibleMessagesRead()
+}
+
+const wait = milliseconds => new Promise(resolve => setTimeout(resolve, milliseconds))
+
+const appendPokeEvent = async role => {
+  const content = role === 'assistant'
+    ? `${companionName.value}拍了拍哥哥`
+    : `哥哥拍了拍${companionName.value}`
+  const message = chatStore.appendMessage(role, content, {
+    type: 'poke',
+    createdAt: Date.now()
+  })
+  await scrollToBottom()
+  return message
+}
+
+const appendAssistantReply = async (
+  content,
+  status = 'complete',
+  { runId = null, origin = 'chat', proactiveId = '', replyTo = null } = {}
+) => {
   const parts = splitCompanionReply(content)
   const baseTime = Date.now()
-  return parts
-    .map((part, index) => chatStore.appendMessage('assistant', part, {
+  const messages = []
+  for (let index = 0; index < parts.length; index += 1) {
+    if (!componentActive || (runId !== null && runId !== generationRun)) break
+    const message = chatStore.appendMessage('assistant', parts[index], {
       createdAt: baseTime + index,
-      status
-    }))
-    .filter(Boolean)
+      status,
+      replyTo: index === 0 ? replyTo : null,
+      origin,
+      proactiveId
+    })
+    if (message) messages.push(message)
+    await scrollToBottom()
+    if (index < parts.length - 1) {
+      const delay = Math.min(900, Math.max(350, 320 + Array.from(parts[index]).length * 7))
+      await wait(delay)
+    }
+  }
+  return messages
 }
 
-const rememberExchange = async (userMessage, assistantMessages) => {
+const queueProactiveRefresh = (delay = 500) => {
+  if (proactiveRefreshTimer) clearTimeout(proactiveRefreshTimer)
+  proactiveRefreshTimer = setTimeout(() => refreshProactivePlan(), delay)
+}
+
+const cancelProactivePlan = () => {
+  if (proactiveRefreshTimer) clearTimeout(proactiveRefreshTimer)
+  proactiveRefreshTimer = null
+  chatStore.setProactiveOutbox([])
+  syncChatProactiveNotifications([], chatStore.proactiveSettings, {
+    requestPermission: false,
+    now: new Date()
+  }).catch(error => console.warn('取消旧的主动联系计划失败', error))
+}
+
+const updateRelationshipNow = async (userMessages, assistantMessages) => {
   const sourceMessage = assistantMessages.at(-1)
   if (!sourceMessage) return
   try {
-    const memories = await extractMemoriesForExchange({
-      userMessage: userMessage.content,
-      assistantMessage: assistantMessages.map(item => item.content).join('\n'),
-      assistantMessageId: sourceMessage.id,
-      existingMemories: chatStore.memories
+    const update = await extractRelationshipUpdateForExchange({
+      companionName: companionName.value,
+      userMessages,
+      assistantMessages,
+      sourceMessageId: sourceMessage.id,
+      existingMemories: chatStore.memories,
+      existingOpenLoops: chatStore.openLoops,
+      currentState: chatStore.companionState,
+      now: new Date()
     })
-    if (memories.length) chatStore.upsertMemories(memories)
+    if (update.memoryUpserts.length) chatStore.upsertMemories(update.memoryUpserts)
+    if (update.resolvedLoopKeys.length) chatStore.resolveOpenLoops(update.resolvedLoopKeys)
+    if (update.openLoopUpserts.length) chatStore.upsertOpenLoops(update.openLoopUpserts)
+    chatStore.setCompanionState(update.companionState)
+    if (componentActive) queueProactiveRefresh()
   } catch (error) {
-    console.warn('本轮长期记忆整理失败', error)
+    console.warn('本轮关系状态整理失败', error)
   }
 }
 
-const requestReply = async userMessage => {
-  replyController?.abort()
-  replyController = new AbortController()
+const updateRelationship = (userMessages, assistantMessages) => {
+  relationshipUpdateChain = relationshipUpdateChain
+    .catch(() => {})
+    .then(() => updateRelationshipNow(userMessages, assistantMessages))
+  return relationshipUpdateChain
+}
+
+const ensureTodayState = async () => {
+  const today = formatChatDate()
+  if (chatStore.companionState.date === today) return chatStore.companionState
+  let state
+  try {
+    state = await generateDailyCompanionState({
+      companionName: companionName.value,
+      now: new Date(),
+      previousState: chatStore.companionState,
+      memories: chatStore.memories,
+      openLoops: chatStore.openLoops,
+      recentMessages: chatStore.messages.slice(-30)
+    })
+  } catch (error) {
+    console.warn('今日女朋友状态生成失败，已使用本地状态', error)
+    state = localDailyCompanionState()
+  }
+  if (componentActive) chatStore.setCompanionState(state)
+  return state
+}
+
+const refreshProactivePlan = async () => {
+  if (!componentActive || !chatStore.isDataLoaded) return
+  try {
+    const now = new Date()
+    chatStore.materializeDueProactive(now.getTime())
+    const slots = buildProactiveSlots({
+      settings: chatStore.proactiveSettings,
+      messages: chatStore.messages,
+      openLoops: chatStore.openLoops,
+      existingOutbox: [],
+      now,
+      days: 7
+    })
+    const outbox = await generateProactiveOutbox({
+      slots,
+      companionName: companionName.value,
+      state: chatStore.companionState,
+      memories: chatStore.memories,
+      openLoops: chatStore.openLoops,
+      recentMessages: chatStore.messages.slice(-30),
+      now
+    })
+    if (!componentActive) return
+    chatStore.setProactiveOutbox(outbox)
+    await syncChatProactiveNotifications(outbox, chatStore.proactiveSettings, {
+      requestPermission: false,
+      now
+    })
+  } catch (error) {
+    console.warn('温馨小家主动联系计划更新失败', error)
+  }
+}
+
+const initializeCompanionContinuity = async () => {
+  chatStore.materializeDueProactive(Date.now())
+  await scrollToBottom(true)
+  const state = await ensureTodayState()
+  if (!componentActive) return
+  if (shouldCreateSmartEntry({
+    messages: chatStore.messages,
+    outbox: chatStore.proactiveOutbox,
+    now: new Date()
+  })) {
+    try {
+      const content = await generateSmartEntryMessage({
+        companionName: companionName.value,
+        state,
+        memories: chatStore.memories,
+        openLoops: chatStore.openLoops,
+        recentMessages: chatStore.messages.slice(-24),
+        now: new Date()
+      })
+      if (componentActive && content) {
+        await appendAssistantReply(content, 'complete', { origin: 'entry' })
+      }
+    } catch (error) {
+      console.warn('温馨小家智能主动消息生成失败', error)
+    }
+  }
+  queueProactiveRefresh(0)
+}
+
+const requestReply = async userMessages => {
+  const batch = (Array.isArray(userMessages) ? userMessages : [userMessages]).filter(Boolean)
+  if (!batch.length) return
+  replyController?.abort('superseded')
+  const controller = new AbortController()
+  replyController = controller
   replyAbortReason = ''
+  const runId = ++generationRun
   isGenerating.value = true
+  isStreamingRequest = true
+  isWaitingToReply.value = false
   retryMessageId.value = ''
-  streamingText.value = ''
+  latestGeneratedText = ''
   streamingStartedAt.value = Date.now()
   await scrollToBottom(true)
   try {
+    const recentMessages = chatStore.messages.slice(-20)
+    const interactionPlanPromise = planCompanionInteraction({
+      companionName: companionName.value,
+      recentMessages,
+      pendingUserMessages: batch,
+      companionState: chatStore.companionState
+    })
     const answer = await streamCompanionReply({
       messages: chatStore.messages,
       systemPrompt: currentSystemPrompt(),
-      sessionWelcome: sessionWelcome.value,
-      signal: replyController.signal,
+      signal: controller.signal,
       onDelta: (_delta, full) => {
-        if (!componentActive) return
-        streamingText.value = full
+        if (!componentActive || runId !== generationRun) return
+        latestGeneratedText = full
         scrollToBottom()
       }
     })
-    if (!componentActive) return
-    const assistantMessages = appendAssistantReply(answer)
-    streamingText.value = ''
-    if (assistantMessages.length) rememberExchange(userMessage, assistantMessages)
+    isStreamingRequest = false
+    if (!componentActive || runId !== generationRun) return
+    latestGeneratedText = answer
+    const interaction = await interactionPlanPromise
+    if (!componentActive || runId !== generationRun) return
+    const targetMessage = chatStore.messages.find(item => item.id === interaction.targetMessageId)
+    if (interaction.action === 'react' && targetMessage) {
+      chatStore.setMessageReaction(targetMessage.id, 'assistant', interaction.emoji)
+    } else if (interaction.action === 'poke') {
+      await appendPokeEvent('assistant')
+    }
+    const assistantMessages = await appendAssistantReply(answer, 'complete', {
+      runId,
+      replyTo: interaction.action === 'quote' ? toReplySnapshot(targetMessage) : null
+    })
+    latestGeneratedText = ''
+    if (assistantMessages.length && runId === generationRun) {
+      updateRelationship(batch, assistantMessages)
+    }
   } catch (error) {
+    isStreamingRequest = false
     if (error.code === 'ABORTED') {
-      if (replyAbortReason === 'user' && streamingText.value.trim()) {
-        appendAssistantReply(streamingText.value, 'stopped')
+      if (
+        runId === generationRun &&
+        replyAbortReason === 'user' &&
+        latestGeneratedText.trim()
+      ) {
+        await appendAssistantReply(latestGeneratedText, 'stopped', { runId })
       }
-    } else if (componentActive) {
-      retryMessageId.value = userMessage.id
+    } else if (componentActive && runId === generationRun) {
+      retryMessageId.value = batch.at(-1).id
       appToast('回复暂时没有送达，可以点重试', { tone: 'warning', duration: 3200 })
     }
-    streamingText.value = ''
-    streamingStartedAt.value = 0
   } finally {
-    isGenerating.value = false
-    replyController = null
-    scrollToBottom(true)
+    if (runId === generationRun) {
+      isGenerating.value = false
+      latestGeneratedText = ''
+      streamingStartedAt.value = 0
+      if (replyController === controller) replyController = null
+      await scrollToBottom(true)
+      if (pendingReplyMessageIds.size) scheduleReply()
+    }
   }
+}
+
+const scheduleReply = (delay = 900) => {
+  if (replyDebounceTimer) clearTimeout(replyDebounceTimer)
+  isWaitingToReply.value = pendingReplyMessageIds.size > 0
+  replyDebounceTimer = setTimeout(() => {
+    replyDebounceTimer = null
+    const ids = [...pendingReplyMessageIds]
+    pendingReplyMessageIds.clear()
+    const messages = ids
+      .map(id => chatStore.messages.find(item => item.id === id))
+      .filter(item => item?.role === 'user')
+    isWaitingToReply.value = false
+    requestReply(messages)
+  }, delay)
+}
+
+const supersedeCurrentReply = () => {
+  if (!isGenerating.value) return
+  generationRun += 1
+  replyAbortReason = 'superseded'
+  replyController?.abort('superseded')
+  replyController = null
+  isGenerating.value = false
+  isStreamingRequest = false
+  latestGeneratedText = ''
+  streamingStartedAt.value = 0
 }
 
 const sendMessage = async () => {
   const content = draft.value.trim()
-  if (!content || isGenerating.value) return
+  if (!content) return
   if (!hasApiKey.value) {
     return appAlert(`请先在通用配置中填写 AI API Key，再回来和${companionName.value}聊天。`, {
       title: '还差一把钥匙',
@@ -285,20 +506,38 @@ const sendMessage = async () => {
       : null
   })
   if (!userMessage) return
+  lightInteractionRun += 1
   draft.value = ''
   replyTarget.value = null
   if (composerRef.value) composerRef.value.style.height = ''
-  await requestReply(userMessage)
+  pendingReplyMessageIds.add(userMessage.id)
+  supersedeCurrentReply()
+  cancelProactivePlan()
+  await scrollToBottom(true)
+  scheduleReply()
 }
 
 const retryLastReply = async () => {
   const message = chatStore.messages.find(item => item.id === retryMessageId.value)
-  if (message && message.role === 'user' && !isGenerating.value) await requestReply(message)
+  if (!message || message.role !== 'user') return
+  retryMessageId.value = ''
+  pendingReplyMessageIds.add(message.id)
+  supersedeCurrentReply()
+  scheduleReply(0)
 }
 
 const stopReply = () => {
   replyAbortReason = 'user'
-  replyController?.abort()
+  if (isStreamingRequest) {
+    replyController?.abort('user')
+    return
+  }
+  generationRun += 1
+  replyController?.abort('user')
+  replyController = null
+  isGenerating.value = false
+  latestGeneratedText = ''
+  streamingStartedAt.value = 0
 }
 
 const resizeComposer = event => {
@@ -327,49 +566,162 @@ const deleteMessage = async message => {
   if (replyTarget.value?.messageId === message.id) replyTarget.value = null
 }
 
-const cancelMessageLongPress = () => {
+const clearMessageLongPressTimer = () => {
   if (longPressTimer) clearTimeout(longPressTimer)
   longPressTimer = null
   longPressOrigin = null
 }
 
 const openMessageActions = item => {
-  if (item?.kind !== 'message') return
-  cancelMessageLongPress()
+  if (item?.kind !== 'message' || item.type === 'poke') return
+  clearMessageLongPressTimer()
+  messageGesture = null
+  swipingMessageId.value = ''
+  swipeOffset.value = 0
   actionMessage.value = item
 }
 
-const startMessageLongPress = (item, event) => {
-  if (item?.kind !== 'message') return
-  cancelMessageLongPress()
+const startMessageGesture = (item, event) => {
+  if (item?.kind !== 'message' || item.type === 'poke') return
+  clearMessageLongPressTimer()
   longPressOrigin = { x: event.clientX, y: event.clientY }
+  messageGesture = {
+    messageId: item.id,
+    startX: event.clientX,
+    startY: event.clientY
+  }
   longPressTimer = setTimeout(() => {
     navigator.vibrate?.(12)
     actionMessage.value = item
     longPressTimer = null
+    messageGesture = null
+    swipingMessageId.value = ''
+    swipeOffset.value = 0
   }, 520)
 }
 
-const moveMessageLongPress = event => {
-  if (!longPressTimer || !longPressOrigin) return
-  if (
-    Math.abs(event.clientX - longPressOrigin.x) > 10 ||
-    Math.abs(event.clientY - longPressOrigin.y) > 10
-  ) cancelMessageLongPress()
+const moveMessageGesture = (item, event) => {
+  if (!messageGesture || messageGesture.messageId !== item.id) return
+  const deltaX = event.clientX - messageGesture.startX
+  const deltaY = event.clientY - messageGesture.startY
+  if (Math.abs(deltaY) > 10 && Math.abs(deltaY) >= Math.abs(deltaX)) {
+    clearMessageLongPressTimer()
+    messageGesture = null
+    swipingMessageId.value = ''
+    swipeOffset.value = 0
+    return
+  }
+  if (deltaX > 10 && deltaX > Math.abs(deltaY) * 1.2) {
+    clearMessageLongPressTimer()
+    swipingMessageId.value = item.id
+    swipeOffset.value = Math.min(76, deltaX)
+    if (event.cancelable) event.preventDefault()
+  } else if (deltaX < -10) {
+    clearMessageLongPressTimer()
+    swipingMessageId.value = ''
+    swipeOffset.value = 0
+  }
+}
+
+const finishMessageGesture = item => {
+  const shouldQuote = messageGesture?.messageId === item.id && swipeOffset.value >= 56
+  clearMessageLongPressTimer()
+  messageGesture = null
+  swipingMessageId.value = ''
+  swipeOffset.value = 0
+  if (shouldQuote) {
+    navigator.vibrate?.(16)
+    quoteMessage(item)
+  }
+}
+
+const cancelMessageGesture = () => {
+  clearMessageLongPressTimer()
+  messageGesture = null
+  swipingMessageId.value = ''
+  swipeOffset.value = 0
 }
 
 const quoteMessage = message => {
-  if (!message) return
-  replyTarget.value = {
-    messageId: message.id,
-    role: message.role,
-    content: message.content
-  }
+  if (!message || message.type === 'poke') return
+  replyTarget.value = toReplySnapshot(message)
   actionMessage.value = null
   nextTick(() => composerRef.value?.focus())
 }
 
-const scrollToQuotedMessage = async messageId => {
+const selectMessageReaction = async (message, emoji) => {
+  if (!message || message.role !== 'assistant' || message.type === 'poke') return
+  const previous = (message.reactions || []).find(item => item.actor === 'user')
+  const isRemoving = previous?.emoji === emoji
+  chatStore.toggleMessageReaction(message.id, 'user', emoji)
+  actionMessage.value = null
+  navigator.vibrate?.(10)
+  cancelProactivePlan()
+  if (isRemoving || !hasApiKey.value || isGenerating.value || isWaitingToReply.value) {
+    queueProactiveRefresh()
+    return
+  }
+
+  const runId = ++lightInteractionRun
+  isWaitingToReply.value = true
+  const result = await planReactionFollowup({
+    companionName: companionName.value,
+    targetMessage: message,
+    emoji,
+    recentMessages: chatStore.messages.slice(-16),
+    companionState: chatStore.companionState
+  })
+  if (componentActive && runId === lightInteractionRun && result.reply) {
+    await appendAssistantReply(result.content)
+  }
+  if (componentActive && runId === lightInteractionRun) {
+    isWaitingToReply.value = false
+    queueProactiveRefresh()
+  }
+}
+
+const triggerPoke = async () => {
+  const now = Date.now()
+  if (now - lastPokeAt < 3000) return
+  lastPokeAt = now
+  navigator.vibrate?.(16)
+  await appendPokeEvent('user')
+  cancelProactivePlan()
+  if (!hasApiKey.value || isGenerating.value || isWaitingToReply.value) {
+    queueProactiveRefresh()
+    return
+  }
+
+  const runId = ++lightInteractionRun
+  isWaitingToReply.value = true
+  const response = await planPokeFollowup({
+    companionName: companionName.value,
+    recentMessages: chatStore.messages.slice(-16),
+    companionState: chatStore.companionState
+  })
+  if (!componentActive || runId !== lightInteractionRun) return
+  if (response.action === 'poke') {
+    await appendPokeEvent('assistant')
+  } else if (response.action === 'message') {
+    await appendAssistantReply(response.content)
+  }
+  if (componentActive && runId === lightInteractionRun) {
+    isWaitingToReply.value = false
+    queueProactiveRefresh()
+  }
+}
+
+const handleCompanionAvatarTap = () => {
+  const now = Date.now()
+  if (now - lastAvatarTapAt <= 380) {
+    lastAvatarTapAt = 0
+    triggerPoke()
+  } else {
+    lastAvatarTapAt = now
+  }
+}
+
+const scrollToQuotedMessage = async (messageId, { behavior = 'smooth' } = {}) => {
   if (!messageId) return
   const messageIndex = chatStore.messages.findIndex(item => item.id === messageId)
   if (messageIndex >= 0) {
@@ -385,7 +737,7 @@ const scrollToQuotedMessage = async messageId => {
     appToast('原消息已经被删除了', { duration: 2200 })
     return
   }
-  target.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  target.scrollIntoView({ behavior, block: 'center' })
   highlightedMessageId.value = messageId
   if (highlightTimer) clearTimeout(highlightTimer)
   highlightTimer = setTimeout(() => {
@@ -396,32 +748,67 @@ const scrollToQuotedMessage = async messageId => {
 const openAiSettings = () => settingsStore.switchView('settings')
 const openChatSettings = () => settingsStore.openModuleSettings('chat')
 
+watch(() => chatStore.messages.length, async (size, previousSize) => {
+  if (!timelineReady.value || size <= previousSize) return
+  const appended = chatStore.messages.slice(previousSize)
+  const newAssistantMessages = appended.filter(item => item.role === 'assistant')
+  if (!newAssistantMessages.length) return
+  if (userNearBottom.value) {
+    await scrollToBottom(true)
+    markVisibleMessagesRead()
+  } else {
+    if (!firstUnreadMessageId.value) firstUnreadMessageId.value = newAssistantMessages[0].id
+    newMessageCount.value += newAssistantMessages.length
+  }
+})
+
+watch(() => chatStore.pendingFocusProactiveId, async proactiveId => {
+  if (!proactiveId || !componentActive) return
+  await nextTick()
+  const messageId = chatStore.consumePendingFocusMessageId()
+  if (messageId) await scrollToQuotedMessage(messageId, { behavior: 'auto' })
+})
+
 onMounted(async () => {
+  chatStore.materializeDueProactive(Date.now())
+  firstUnreadMessageId.value = chatStore.unreadMessages[0]?.id || ''
   await scrollToBottom(true)
   timelineReady.value = true
-  generateWelcome()
+  userNearBottom.value = true
+  markVisibleMessagesRead()
+  const focusMessageId = chatStore.consumePendingFocusMessageId()
+  if (focusMessageId) await scrollToQuotedMessage(focusMessageId, { behavior: 'auto' })
+  initializeCompanionContinuity()
 })
 
 onBeforeUnmount(() => {
   componentActive = false
-  cancelMessageLongPress()
+  generationRun += 1
+  lightInteractionRun += 1
+  cancelMessageGesture()
   if (highlightTimer) clearTimeout(highlightTimer)
-  welcomeController?.abort()
+  if (replyDebounceTimer) clearTimeout(replyDebounceTimer)
+  if (proactiveRefreshTimer) clearTimeout(proactiveRefreshTimer)
   replyAbortReason = 'unmount'
-  replyController?.abort()
+  replyController?.abort('unmount')
 })
 </script>
 
 <template>
   <div class="warm-home">
     <header class="companion-header">
-      <div class="companion-avatar" aria-hidden="true">
+      <button
+        class="companion-avatar"
+        type="button"
+        :aria-label="`双击拍一拍${companionName}`"
+        @click="handleCompanionAvatarTap"
+      >
         <img v-if="companionAvatar" :src="companionAvatar" alt="" />
         <span v-else>♡</span>
-      </div>
+      </button>
       <div class="companion-identity">
         <strong>{{ companionName }}</strong>
-        <span><i></i> 陪着你</span>
+        <span><i></i> {{ companionPresence }}</span>
       </div>
       <button class="memory-button" type="button" aria-label="查看长期记忆" @click="openChatSettings">
         <span>{{ chatStore.memories.length }}</span>
@@ -439,6 +826,7 @@ onBeforeUnmount(() => {
       class="chat-timeline"
       :class="{ 'timeline-ready': timelineReady }"
       aria-live="polite"
+      @scroll.passive="handleTimelineScroll"
     >
       <button v-if="hasOlderMessages" class="load-older" type="button" @click="visibleCount += 100">
         加载更早的聊天
@@ -446,28 +834,55 @@ onBeforeUnmount(() => {
 
       <template v-for="(item, index) in timelineItems" :key="item.id">
         <div v-if="isNewDay(index)" class="day-divider"><span>{{ formatDay(item.createdAt) }}</span></div>
+        <div v-if="item.id === firstUnreadMessageId" class="unread-divider">
+          <span>以下是新消息</span>
+        </div>
+        <div v-if="item.type === 'poke'" class="poke-event" :data-message-id="item.id">
+          <span>{{ item.content }}</span>
+        </div>
         <article
+          v-else
           class="message-row"
           :class="[
             `message-${item.role}`,
             {
               stopped: item.status === 'stopped',
+              'group-start': isGroupStart(index),
+              'group-end': isGroupEnd(index),
               'message-highlighted': highlightedMessageId === item.id
             }
           ]"
           :data-message-id="item.kind === 'message' ? item.id : undefined"
         >
-          <div v-if="item.role === 'assistant'" class="message-avatar" aria-hidden="true">
+          <button
+            v-if="item.role === 'assistant' && isGroupStart(index)"
+            class="message-avatar"
+            type="button"
+            :aria-label="`双击拍一拍${companionName}`"
+            @click="handleCompanionAvatarTap"
+          >
             <img v-if="companionAvatar" :src="companionAvatar" alt="" />
             <span v-else>♡</span>
-          </div>
+          </button>
+          <div
+            v-else-if="item.role === 'assistant'"
+            class="message-avatar-placeholder"
+            aria-hidden="true"
+          ></div>
           <div class="message-column">
+            <span
+              v-if="swipingMessageId === item.id"
+              class="swipe-quote-indicator"
+              :class="{ ready: swipeOffset >= 56 }"
+              aria-hidden="true"
+            >↩</span>
             <div
               class="message-bubble"
-              @pointerdown="startMessageLongPress(item, $event)"
-              @pointermove="moveMessageLongPress"
-              @pointerup="cancelMessageLongPress"
-              @pointercancel="cancelMessageLongPress"
+              :style="swipingMessageId === item.id ? { transform: `translateX(${swipeOffset}px)` } : undefined"
+              @pointerdown="startMessageGesture(item, $event)"
+              @pointermove="moveMessageGesture(item, $event)"
+              @pointerup="finishMessageGesture(item)"
+              @pointercancel="cancelMessageGesture"
               @contextmenu.prevent="openMessageActions(item)"
             >
               <button
@@ -483,7 +898,14 @@ onBeforeUnmount(() => {
               <span v-else class="message-text">{{ item.content }}</span>
               <i v-if="item.kind === 'streaming' && item.content && item.streamingTail" class="stream-cursor"></i>
             </div>
-            <div v-if="item.kind === 'message'" class="message-meta">
+            <div v-if="item.kind === 'message' && item.reactions?.length" class="message-reactions">
+              <span
+                v-for="reaction in item.reactions"
+                :key="`${item.id}-${reaction.actor}`"
+                :title="reaction.actor === 'assistant' ? `${companionName}的回应` : '我的回应'"
+              >{{ reaction.emoji }}</span>
+            </div>
+            <div v-if="item.kind === 'message' && isGroupEnd(index)" class="message-meta">
               <span>{{ formatTime(item.createdAt) }}{{ item.status === 'stopped' ? ' · 已停止' : '' }}</span>
               <button type="button" @click="copyMessage(item)">复制</button>
               <button type="button" @click="deleteMessage(item)">删除</button>
@@ -498,6 +920,16 @@ onBeforeUnmount(() => {
       </div>
       <div ref="timelineBottomRef" class="chat-bottom-anchor" aria-hidden="true"></div>
     </main>
+
+    <button
+      v-if="hasNewMessageJump"
+      class="new-message-jump"
+      type="button"
+      @click="jumpToNewMessages"
+    >
+      {{ newMessageCount }} 条新消息
+      <span aria-hidden="true">↓</span>
+    </button>
 
     <footer class="chat-composer">
       <div v-if="!hasApiKey" class="api-reminder">
@@ -517,28 +949,28 @@ onBeforeUnmount(() => {
           v-model="draft"
           rows="1"
           maxlength="12000"
-          :disabled="isGenerating"
           placeholder="想和她说点什么…"
           @input="resizeComposer"
           @keydown.enter.exact.prevent="sendMessage"
         ></textarea>
-        <button
-          v-if="isGenerating"
-          class="send-button stop"
-          type="button"
-          aria-label="停止生成"
-          @click="stopReply"
-        ><i></i></button>
-        <button
-          v-else
-          class="send-button"
-          type="button"
-          aria-label="发送消息"
-          :disabled="!draft.trim() || !hasApiKey"
-          @click="sendMessage"
-        >
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 14-7-4.5 14-3-5.5L5 12Zm6.5 1.5L19 5"/></svg>
-        </button>
+        <div class="composer-actions">
+          <button
+            v-if="isGenerating"
+            class="send-button stop"
+            type="button"
+            aria-label="停止生成"
+            @click="stopReply"
+          ><i></i></button>
+          <button
+            class="send-button"
+            type="button"
+            aria-label="发送消息"
+            :disabled="!draft.trim() || !hasApiKey"
+            @click="sendMessage"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 14-7-4.5 14-3-5.5L5 12Zm6.5 1.5L19 5"/></svg>
+          </button>
+        </div>
       </div>
       <p>聊天与选中的生活记录会发送给你配置的 AI 服务商</p>
     </footer>
@@ -550,6 +982,19 @@ onBeforeUnmount(() => {
         <div class="message-action-preview">
           <strong>{{ actionMessage.role === 'assistant' ? companionName : '我' }}</strong>
           <span>{{ actionMessage.content }}</span>
+        </div>
+        <div v-if="actionMessage.role === 'assistant'" class="message-reaction-picker" aria-label="表情回应">
+          <button
+            v-for="emoji in CHAT_REACTION_EMOJIS"
+            :key="emoji"
+            type="button"
+            :class="{
+              selected: actionMessage.reactions?.some(
+                reaction => reaction.actor === 'user' && reaction.emoji === emoji
+              )
+            }"
+            @click="selectMessageReaction(actionMessage, emoji)"
+          >{{ emoji }}</button>
         </div>
         <div class="message-action-grid">
           <button type="button" @click="quoteMessage(actionMessage)">
@@ -573,6 +1018,7 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .warm-home {
+  position: relative;
   flex: 1 1 0;
   width: 100%;
   height: auto;
@@ -601,10 +1047,14 @@ onBeforeUnmount(() => {
   display: grid;
   place-items: center;
   flex-shrink: 0;
+  padding: 0;
   overflow: hidden;
+  border: 0;
   color: white;
   background: var(--theme-gradient);
   box-shadow: 0 7px 18px rgba(var(--theme-primary-rgb), .22);
+  font: inherit;
+  cursor: pointer;
 }
 .companion-avatar img, .message-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .companion-avatar { width: 43px; height: 43px; border-radius: 16px; font-size: 24px; }
@@ -644,10 +1094,35 @@ onBeforeUnmount(() => {
 }
 .day-divider { display: flex; justify-content: center; margin: 8px 0 14px; }
 .day-divider span { padding: 5px 10px; border-radius: 999px; color: var(--body-muted); background: rgba(255,255,255,.72); font-size: 10px; }
-.message-row { display: flex; align-items: flex-start; gap: 8px; margin: 0 0 16px; }
+.unread-divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 8px 0 14px;
+  color: var(--primary);
+  font-size: 10px;
+}
+.unread-divider::before, .unread-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(var(--theme-primary-rgb), .28);
+}
+.unread-divider span { flex-shrink: 0; }
+.poke-event { display: flex; justify-content: center; margin: 9px 0 14px; }
+.poke-event span {
+  padding: 6px 11px;
+  border-radius: 999px;
+  color: var(--body-muted);
+  background: rgba(255,255,255,.72);
+  font-size: 10px;
+}
+.message-row { display: flex; align-items: flex-start; gap: 8px; margin: 0 0 5px; }
+.message-row.group-end { margin-bottom: 16px; }
 .message-row.message-user { justify-content: flex-end; }
 .message-avatar { width: 29px; height: 29px; margin-top: 2px; border-radius: 11px; font-size: 15px; }
-.message-column { max-width: min(82%, 580px); min-width: 0; }
+.message-avatar-placeholder { flex: 0 0 29px; width: 29px; }
+.message-column { position: relative; max-width: min(82%, 580px); min-width: 0; }
 .message-user .message-column { display: flex; flex-direction: column; align-items: flex-end; }
 .message-bubble {
   position: relative; display: inline-block; max-width: 100%; padding: 11px 13px;
@@ -656,6 +1131,29 @@ onBeforeUnmount(() => {
   touch-action: pan-y;
   -webkit-touch-callout: none;
   user-select: none;
+  transition: transform .16s ease;
+}
+.swipe-quote-indicator {
+  position: absolute;
+  top: 12px;
+  left: -28px;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  color: var(--body-muted);
+  background: rgba(255,255,255,.84);
+  box-shadow: var(--shadow-soft);
+  opacity: .72;
+  transform: scale(.88);
+  transition: .16s ease;
+}
+.swipe-quote-indicator.ready {
+  color: var(--theme-on-primary);
+  background: var(--theme-primary-strong);
+  opacity: 1;
+  transform: scale(1);
 }
 .message-user .message-bubble {
   border: 0; border-radius: 18px 7px 18px 18px; color: var(--theme-on-primary);
@@ -698,6 +1196,35 @@ onBeforeUnmount(() => {
 }
 .message-user .message-quote strong { color: inherit; }
 .message-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 15px; line-height: 1.62; }
+.message-reactions {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  max-width: calc(100% - 20px);
+  gap: 4px;
+  margin: 4px 11px 2px;
+  padding: 2px 6px 3px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(var(--theme-primary-rgb), .07);
+  box-shadow: none;
+  line-height: 1;
+}
+.message-user .message-reactions {
+  align-self: flex-end;
+  justify-content: flex-end;
+  margin-right: 10px;
+}
+.message-reactions span {
+  display: block;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  font-size: 11px;
+  line-height: 1;
+}
 .message-meta { display: flex; align-items: center; gap: 8px; margin-top: 5px; padding: 0 3px; color: var(--body-muted); font-size: 9px; }
 .message-meta button { padding: 0; border: 0; color: inherit; background: transparent; font: inherit; cursor: pointer; }
 .typing-dots { display: flex; align-items: center; gap: 4px; min-width: 40px; height: 20px; }
@@ -712,6 +1239,25 @@ onBeforeUnmount(() => {
   max-width: 420px; padding: 10px 12px; border: 1px solid #f1dba5; border-radius: 13px; color: #875d16; background: #fff7df; font-size: 12px;
 }
 .retry-card button { border: 0; color: #875d16; background: transparent; font: inherit; font-weight: 700; }
+.new-message-jump {
+  position: absolute;
+  z-index: 7;
+  right: 16px;
+  bottom: calc(88px + env(safe-area-inset-bottom, 0px));
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid var(--theme-border);
+  border-radius: 999px;
+  color: var(--primary);
+  background: rgba(255,255,255,.94);
+  box-shadow: 0 8px 22px rgba(25,35,52,.14);
+  font: inherit;
+  font-size: 11px;
+}
+.new-message-jump span { font-size: 15px; }
 
 .chat-composer {
   position: relative;
@@ -764,6 +1310,7 @@ onBeforeUnmount(() => {
   border: 1px solid var(--theme-border); border-radius: 20px; background: var(--canvas);
   box-shadow: 0 8px 24px rgba(29,39,58,.08);
 }
+.composer-actions { display: flex; flex-shrink: 0; align-items: center; gap: 5px; }
 .composer-shell textarea {
   flex: 1; min-width: 0; max-height: 132px; padding: 7px 0; border: 0; outline: 0; resize: none;
   color: var(--ink); background: transparent; font: inherit; font-size: 15px; line-height: 1.45;
@@ -815,6 +1362,29 @@ onBeforeUnmount(() => {
   font-size: 11px;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+.message-reaction-picker {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.message-reaction-picker button {
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  height: 43px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 13px;
+  background: var(--surface-pearl);
+  font: inherit;
+  font-size: 21px;
+}
+.message-reaction-picker button.selected {
+  border-color: var(--theme-primary);
+  background: var(--theme-soft);
+  box-shadow: inset 0 0 0 1px rgba(var(--theme-primary-rgb), .16);
 }
 .message-action-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
 .message-action-grid button {

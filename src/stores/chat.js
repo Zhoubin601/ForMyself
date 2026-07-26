@@ -4,8 +4,13 @@ import {
   createChatMemory,
   createChatMessage,
   mergeChatData,
+  normalizeChatProactiveSettings,
+  normalizeCompanionState,
   normalizeChatData,
-  normalizeChatMemories
+  normalizeChatMemories,
+  normalizeChatReadState,
+  normalizeOpenLoops,
+  normalizeProactiveOutbox
 } from '../services/chatRecords.js'
 import { createChatStorage } from '../services/chatStorage.js'
 
@@ -13,19 +18,34 @@ export const useChatStore = defineStore('chat', () => {
   const profile = ref(normalizeChatData().profile)
   const messages = ref([])
   const memories = ref([])
+  const companionState = ref(normalizeCompanionState())
+  const openLoops = ref([])
+  const proactiveOutbox = ref([])
+  const proactiveSettings = ref(normalizeChatProactiveSettings())
+  const readState = ref(normalizeChatReadState())
   const isDataLoaded = ref(false)
   const loadError = ref('')
   const recoveredFromBackup = ref(false)
   const encryptionPassword = ref('')
   const canPersist = ref(false)
   const storage = createChatStorage()
+  const pendingFocusProactiveId = ref('')
   let persistChain = Promise.resolve()
 
   const snapshot = computed(() => normalizeChatData({
     profile: profile.value,
     messages: messages.value,
-    memories: memories.value
+    memories: memories.value,
+    companionState: companionState.value,
+    openLoops: openLoops.value,
+    proactiveOutbox: proactiveOutbox.value,
+    proactiveSettings: proactiveSettings.value,
+    readState: readState.value
   }))
+  const unreadMessages = computed(() => messages.value.filter(item => (
+    item.role === 'assistant' && item.createdAt > readState.value.lastReadAt
+  )))
+  const unreadCount = computed(() => unreadMessages.value.length)
 
   const queuePersist = () => {
     if (!isDataLoaded.value || !canPersist.value || !encryptionPassword.value) return Promise.resolve()
@@ -49,6 +69,11 @@ export const useChatStore = defineStore('chat', () => {
       profile.value = result.data.profile
       messages.value = result.data.messages
       memories.value = result.data.memories
+      companionState.value = result.data.companionState
+      openLoops.value = result.data.openLoops
+      proactiveOutbox.value = result.data.proactiveOutbox
+      proactiveSettings.value = result.data.proactiveSettings
+      readState.value = result.data.readState
       recoveredFromBackup.value = result.recovered
       canPersist.value = true
     } catch (error) {
@@ -57,6 +82,11 @@ export const useChatStore = defineStore('chat', () => {
       profile.value = normalizeChatData().profile
       messages.value = []
       memories.value = []
+      companionState.value = normalizeCompanionState()
+      openLoops.value = []
+      proactiveOutbox.value = []
+      proactiveSettings.value = normalizeChatProactiveSettings()
+      readState.value = normalizeChatReadState()
       canPersist.value = false
     } finally {
       isDataLoaded.value = true
@@ -81,7 +111,11 @@ export const useChatStore = defineStore('chat', () => {
         id,
         createdAt: messages.value[index].createdAt,
         status: changes.status || messages.value[index].status,
-        replyTo: changes.replyTo ?? messages.value[index].replyTo
+        type: changes.type || messages.value[index].type,
+        replyTo: changes.replyTo ?? messages.value[index].replyTo,
+        reactions: changes.reactions ?? messages.value[index].reactions,
+        origin: changes.origin || messages.value[index].origin,
+        proactiveId: changes.proactiveId ?? messages.value[index].proactiveId
       }
     )
     if (next) messages.value[index] = next
@@ -92,6 +126,23 @@ export const useChatStore = defineStore('chat', () => {
     const size = messages.value.length
     messages.value = messages.value.filter(item => item.id !== id)
     return messages.value.length !== size
+  }
+
+  const setMessageReaction = (id, actor, emoji, createdAt = Date.now()) => {
+    const message = messages.value.find(item => item.id === id)
+    if (!message) return null
+    const reactions = [
+      ...(message.reactions || []).filter(item => item.actor !== actor),
+      ...(emoji ? [{ actor, emoji, createdAt }] : [])
+    ]
+    return updateMessage(id, { reactions })
+  }
+
+  const toggleMessageReaction = (id, actor, emoji, createdAt = Date.now()) => {
+    const message = messages.value.find(item => item.id === id)
+    if (!message) return null
+    const current = (message.reactions || []).find(item => item.actor === actor)
+    return setMessageReaction(id, actor, current?.emoji === emoji ? '' : emoji, createdAt)
   }
 
   const upsertMemories = values => {
@@ -150,13 +201,94 @@ export const useChatStore = defineStore('chat', () => {
     return profile.value.companionAvatar
   }
 
-  const clearMessages = () => { messages.value = [] }
+  const setCompanionState = value => {
+    companionState.value = normalizeCompanionState({
+      ...companionState.value,
+      ...value
+    })
+    return companionState.value
+  }
+
+  const upsertOpenLoops = values => {
+    openLoops.value = normalizeOpenLoops([...openLoops.value, ...(Array.isArray(values) ? values : [])])
+    return openLoops.value
+  }
+
+  const resolveOpenLoops = keys => {
+    const resolved = new Set((Array.isArray(keys) ? keys : []).map(value => String(value || '').trim()))
+    if (!resolved.size) return openLoops.value
+    openLoops.value = openLoops.value.filter(item => !resolved.has(item.key))
+    return openLoops.value
+  }
+
+  const replaceOpenLoops = values => {
+    openLoops.value = normalizeOpenLoops(values)
+    return openLoops.value
+  }
+
+  const setProactiveOutbox = values => {
+    proactiveOutbox.value = normalizeProactiveOutbox(values)
+    return proactiveOutbox.value
+  }
+
+  const setProactiveSettings = value => {
+    proactiveSettings.value = normalizeChatProactiveSettings({
+      ...proactiveSettings.value,
+      ...value
+    })
+    return proactiveSettings.value
+  }
+
+  const markRead = (upTo = Date.now()) => {
+    const next = Math.max(readState.value.lastReadAt, Number(upTo) || 0)
+    if (next <= readState.value.lastReadAt) return readState.value.lastReadAt
+    readState.value = normalizeChatReadState({ lastReadAt: next })
+    return readState.value.lastReadAt
+  }
+
+  const setPendingFocusProactiveId = value => {
+    pendingFocusProactiveId.value = String(value || '').trim()
+  }
+
+  const consumePendingFocusMessageId = () => {
+    const proactiveId = pendingFocusProactiveId.value
+    pendingFocusProactiveId.value = ''
+    if (!proactiveId) return ''
+    return messages.value.find(item => item.proactiveId === proactiveId)?.id || ''
+  }
+
+  const materializeDueProactive = (now = Date.now()) => {
+    const due = proactiveOutbox.value.filter(item => item.scheduledAt <= now)
+    if (!due.length) return []
+    const existing = new Set(messages.value.map(item => item.proactiveId).filter(Boolean))
+    const materialized = due
+      .filter(item => !existing.has(item.id))
+      .map(item => appendMessage('assistant', item.content, {
+        createdAt: item.scheduledAt,
+        origin: item.reason === 'entry' ? 'entry' : 'proactive',
+        proactiveId: item.id
+      }))
+      .filter(Boolean)
+    const dueIds = new Set(due.map(item => item.id))
+    proactiveOutbox.value = proactiveOutbox.value.filter(item => !dueIds.has(item.id))
+    return materialized
+  }
+
+  const clearMessages = () => {
+    messages.value = []
+    readState.value = normalizeChatReadState()
+  }
   const clearMemories = () => { memories.value = [] }
   const resetAll = () => {
     const empty = normalizeChatData()
     profile.value = empty.profile
     messages.value = []
     memories.value = []
+    companionState.value = empty.companionState
+    openLoops.value = []
+    proactiveOutbox.value = []
+    proactiveSettings.value = empty.proactiveSettings
+    readState.value = empty.readState
   }
 
   const replaceChatData = async value => {
@@ -166,6 +298,11 @@ export const useChatStore = defineStore('chat', () => {
     profile.value = data.profile
     messages.value = data.messages
     memories.value = data.memories
+    companionState.value = data.companionState
+    openLoops.value = data.openLoops
+    proactiveOutbox.value = data.proactiveOutbox
+    proactiveSettings.value = data.proactiveSettings
+    readState.value = data.readState
     await queuePersist()
     return data
   }
@@ -175,6 +312,11 @@ export const useChatStore = defineStore('chat', () => {
     profile.value = data.profile
     messages.value = data.messages
     memories.value = data.memories
+    companionState.value = data.companionState
+    openLoops.value = data.openLoops
+    proactiveOutbox.value = data.proactiveOutbox
+    proactiveSettings.value = data.proactiveSettings
+    readState.value = data.readState
     await queuePersist()
     return data
   }
@@ -197,6 +339,14 @@ export const useChatStore = defineStore('chat', () => {
     profile,
     messages,
     memories,
+    companionState,
+    openLoops,
+    proactiveOutbox,
+    proactiveSettings,
+    readState,
+    unreadMessages,
+    unreadCount,
+    pendingFocusProactiveId,
     snapshot,
     isDataLoaded,
     loadError,
@@ -205,12 +355,24 @@ export const useChatStore = defineStore('chat', () => {
     appendMessage,
     updateMessage,
     deleteMessage,
+    setMessageReaction,
+    toggleMessageReaction,
     upsertMemories,
     addMemory,
     updateMemory,
     deleteMemory,
     setCompanionName,
     setCompanionAvatar,
+    setCompanionState,
+    upsertOpenLoops,
+    resolveOpenLoops,
+    replaceOpenLoops,
+    setProactiveOutbox,
+    setProactiveSettings,
+    markRead,
+    setPendingFocusProactiveId,
+    consumePendingFocusMessageId,
+    materializeDueProactive,
     clearMessages,
     clearMemories,
     resetAll,

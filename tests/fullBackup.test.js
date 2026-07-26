@@ -25,7 +25,14 @@ const buildFixture = () => buildFullBackupSnapshot({
       companionAvatar: 'data:image/jpeg;base64,aGVsbG8='
     },
     messages: [
-      { id: 'msg-1', role: 'user', content: '今天有点累', createdAt: 1752825600000, status: 'complete' },
+      {
+        id: 'msg-1',
+        role: 'user',
+        content: '今天有点累',
+        createdAt: 1752825600000,
+        status: 'complete',
+        reactions: [{ actor: 'assistant', emoji: '🥺', createdAt: 1752825610000 }]
+      },
       {
         id: 'msg-2',
         role: 'assistant',
@@ -36,8 +43,27 @@ const buildFixture = () => buildFullBackupSnapshot({
       }
     ],
     memories: [
-      { id: 'memory-1', key: '偏好:咖啡', category: '偏好', content: '哥哥喜欢无糖咖啡', createdAt: 1752825660000, updatedAt: 1752825660000 }
-    ]
+      { id: 'memory-1', key: '偏好:咖啡', scope: 'user', category: '偏好', content: '哥哥喜欢无糖咖啡', createdAt: 1752825660000, updatedAt: 1752825660000 },
+      { id: 'memory-2', key: '周末约定', scope: 'relationship', category: '关系', content: '两人约好周末看电影', createdAt: 1752825660000, updatedAt: 1752825660000 }
+    ],
+    companionState: {
+      date: '2026-07-18',
+      mood: '期待',
+      energy: '高',
+      statusText: '等周末约会',
+      virtualMoment: '在温馨小家里整理片单',
+      updatedAt: 1752825660000
+    },
+    openLoops: [{
+      id: 'loop-1',
+      key: '周末电影',
+      type: 'promise',
+      content: '周末看完电影继续聊',
+      createdAt: 1752825660000,
+      updatedAt: 1752825660000
+    }],
+    proactiveSettings: { enabled: true, dailyMax: 2, activeStart: '09:00', activeEnd: '23:00' },
+    readState: { lastReadAt: 1752825600000 }
   },
   moodMetadata: { trackingStartDate: '2026-07-01', customTags: ['运动', '运动'] },
   vaultMetadata: { categories: ['工作', '个人', '未分类'] },
@@ -50,7 +76,7 @@ const buildFixture = () => buildFullBackupSnapshot({
   }
 }, '2026-07-18T08:00:00.000Z')
 
-test('完整备份 v3 包含聊天、记忆、五类生活数据和设置，但不包含主密码或生物识别凭据', () => {
+test('完整备份 v5 包含互动聊天、连续关系、五类生活数据和设置，但不包含安全凭据', () => {
   const snapshot = buildFixture()
   const serialized = JSON.stringify(snapshot)
 
@@ -63,7 +89,7 @@ test('完整备份 v3 包含聊天、记忆、五类生活数据和设置，但�
     passwords: 1,
     schedules: 1,
     chatMessages: 2,
-    chatMemories: 1
+    chatMemories: 2
   })
   assert.equal(snapshot.settings.ai.key, 'encrypted-api-key')
   assert.deepEqual(snapshot.settings.theme, { mode: 'custom', presetId: 'peach', customPrimary: '#F1A25B' })
@@ -88,8 +114,14 @@ test('完整备份可用当前主密码加密并完整解密', () => {
   assert.equal(restored.data.chat.profile.companionName, '小暖')
   assert.equal(restored.data.chat.profile.companionAvatar, 'data:image/jpeg;base64,aGVsbG8=')
   assert.equal(restored.data.chat.messages.length, 2)
+  assert.equal(restored.data.chat.messages[0].reactions[0].emoji, '🥺')
   assert.equal(restored.data.chat.messages[1].replyTo.messageId, 'msg-1')
-  assert.equal(restored.data.chat.memories.length, 1)
+  assert.equal(restored.data.chat.readState.lastReadAt, 1752825600000)
+  assert.equal(restored.data.chat.memories.length, 2)
+  assert.equal(restored.data.chat.memories.find(item => item.id === 'memory-1').scope, 'user')
+  assert.equal(restored.data.chat.companionState.mood, '期待')
+  assert.equal(restored.data.chat.openLoops[0].type, 'promise')
+  assert.equal(restored.data.chat.proactiveSettings.dailyMax, 2)
   assert.deepEqual(restored.metadata.mood.customTags, ['运动'])
   assert.deepEqual(restored.metadata.vault.categories, ['工作', '个人', '未分类'])
 })
@@ -146,6 +178,41 @@ test('v2 完整备份可导入并自动补为空聊天', () => {
   assert.equal(restored.version, FULL_BACKUP_VERSION)
   assert.equal(restored.data.schedules.series.length, 1)
   assert.deepEqual(restored.data.chat.messages, [])
+})
+
+test('v3 完整备份聊天自动迁移为哥哥记忆并补齐关系状态', () => {
+  const snapshot = buildFixture()
+  const legacyChat = {
+    profile: snapshot.data.chat.profile,
+    messages: snapshot.data.chat.messages,
+    memories: snapshot.data.chat.memories.map(({ scope, ...memory }) => memory)
+  }
+  const restored = normalizeFullBackupSnapshot({
+    ...snapshot,
+    version: 3,
+    data: { ...snapshot.data, chat: legacyChat }
+  })
+
+  assert.equal(restored.data.chat.memories.every(item => item.scope === 'user'), true)
+  assert.deepEqual(restored.data.chat.openLoops, [])
+  assert.equal(restored.data.chat.proactiveSettings.activeEnd, '23:00')
+})
+
+test('v4 完整备份继续兼容并把旧聊天全部标记为已读', () => {
+  const snapshot = buildFixture()
+  const legacyChat = { ...snapshot.data.chat }
+  delete legacyChat.readState
+  legacyChat.messages = legacyChat.messages.map(({ reactions, type, ...message }) => message)
+  const restored = normalizeFullBackupSnapshot({
+    ...snapshot,
+    version: 4,
+    data: { ...snapshot.data, chat: legacyChat }
+  })
+
+  assert.equal(restored.version, FULL_BACKUP_VERSION)
+  assert.equal(restored.data.chat.messages.every(item => item.type === 'text'), true)
+  assert.equal(restored.data.chat.messages.every(item => item.reactions.length === 0), true)
+  assert.equal(restored.data.chat.readState.lastReadAt, 1752825660000)
 })
 
 test('旧完整备份缺少主题字段时回退云朵蓝', () => {

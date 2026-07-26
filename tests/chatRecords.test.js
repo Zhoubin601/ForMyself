@@ -1,7 +1,10 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import {
+  CHAT_BACKUP_VERSION,
   CHAT_BACKUP_TYPE,
+  CHAT_DATA_VERSION,
+  CHAT_REACTION_EMOJIS,
   buildChatBackupSnapshot,
   mergeChatData,
   normalizeChatBackupSnapshot,
@@ -89,7 +92,7 @@ test('长期记忆提取容忍 JSON 围栏、过滤敏感凭据并按 key 去重
   assert.equal(result[0].sourceMessageId, 'assistant-1')
 })
 
-test('独立聊天备份 v1 往返保留名字、消息和记忆并拒绝错误类型', () => {
+test('独立聊天备份 v3 往返保留名字、互动消息、已读状态和关系状态', () => {
   const avatar = 'data:image/webp;base64,aGVsbG8='
   const snapshot = buildChatBackupSnapshot({
     profile: { companionName: '小暖', companionAvatar: avatar },
@@ -98,19 +101,154 @@ test('独立聊天备份 v1 往返保留名字、消息和记忆并拒绝错误�
       role: 'user',
       content: '你好',
       createdAt: 10,
+      type: 'text',
+      reactions: [{ actor: 'assistant', emoji: '❤️', createdAt: 12 }],
       replyTo: { messageId: 'm0', role: 'assistant', content: '在吗' }
     }],
-    memories: [{ id: 'r1', key: '关系:称呼', category: '关系', content: '喜欢被叫哥哥', createdAt: 10, updatedAt: 10 }]
+    memories: [{ id: 'r1', key: '关系:称呼', scope: 'relationship', category: '关系', content: '喜欢被叫哥哥', createdAt: 10, updatedAt: 10 }],
+    companionState: {
+      date: '2026-07-26',
+      mood: '开心',
+      statusText: '等哥哥回来',
+      updatedAt: 20
+    },
+    openLoops: [{
+      id: 'loop-1',
+      key: '周末游戏',
+      type: 'promise',
+      content: '周末一起玩游戏',
+      createdAt: 20,
+      updatedAt: 20
+    }],
+    proactiveSettings: { enabled: true, dailyMax: 1, activeStart: '10:00', activeEnd: '22:00' },
+    readState: { lastReadAt: 9 }
   }, '2026-07-26T08:00:00.000Z')
   const restored = normalizeChatBackupSnapshot(JSON.parse(JSON.stringify(snapshot)))
 
   assert.equal(restored.type, CHAT_BACKUP_TYPE)
+  assert.equal(restored.version, CHAT_BACKUP_VERSION)
+  assert.equal(restored.data.version, CHAT_DATA_VERSION)
   assert.equal(restored.data.profile.companionAvatar, avatar)
   assert.equal(restored.data.messages.length, 1)
   assert.equal(restored.data.messages[0].replyTo.messageId, 'm0')
+  assert.equal(restored.data.messages[0].reactions[0].emoji, '❤️')
+  assert.equal(restored.data.readState.lastReadAt, 9)
   assert.equal(restored.data.memories.length, 1)
+  assert.equal(restored.data.memories[0].scope, 'relationship')
+  assert.equal(restored.data.companionState.mood, '开心')
+  assert.equal(restored.data.openLoops[0].type, 'promise')
+  assert.equal(restored.data.proactiveSettings.dailyMax, 1)
   assert.throws(() => normalizeChatBackupSnapshot({ ...snapshot, type: 'other' }), /INVALID_CHAT_BACKUP_TYPE/)
   assert.throws(() => normalizeChatBackupSnapshot({ ...snapshot, data: undefined }), /INVALID_CHAT_BACKUP_DATA/)
+})
+
+test('旧聊天数据自动迁移为哥哥记忆并补齐新关系字段', () => {
+  const legacy = {
+    type: CHAT_BACKUP_TYPE,
+    version: 1,
+    createdAt: '2026-07-23T08:00:00.000Z',
+    data: {
+      profile: { companionName: '小暖' },
+      messages: [{ id: 'm1', role: 'user', content: '旧消息', createdAt: 10 }],
+      memories: [{
+        id: 'old-memory',
+        key: '偏好:咖啡',
+        category: '偏好',
+        content: '哥哥喜欢咖啡',
+        createdAt: 10,
+        updatedAt: 10
+      }]
+    }
+  }
+  const restored = normalizeChatBackupSnapshot(legacy)
+
+  assert.equal(restored.version, CHAT_BACKUP_VERSION)
+  assert.equal(restored.data.memories[0].scope, 'user')
+  assert.deepEqual(restored.data.openLoops, [])
+  assert.deepEqual(restored.data.proactiveOutbox, [])
+  assert.equal(restored.data.proactiveSettings.activeStart, '09:00')
+  assert.equal(restored.data.readState.lastReadAt, 10)
+
+  const restoredV2 = normalizeChatBackupSnapshot({ ...legacy, version: 2 })
+  assert.equal(restoredV2.data.messages[0].type, 'text')
+  assert.deepEqual(restoredV2.data.messages[0].reactions, [])
+  assert.equal(restoredV2.data.readState.lastReadAt, 10)
+})
+
+test('消息互动只接受固定表情和类型，同一方只保留最新回应', () => {
+  const normalized = normalizeChatData({
+    messages: [{
+      id: 'm1',
+      role: 'assistant',
+      type: 'poke',
+      content: '小暖拍了拍哥哥',
+      createdAt: 10,
+      reactions: [
+        { actor: 'user', emoji: '❤️', createdAt: 11 },
+        { actor: 'user', emoji: '😂', createdAt: 12 },
+        { actor: 'assistant', emoji: '🧨', createdAt: 13 },
+        { actor: 'other', emoji: '👍', createdAt: 14 }
+      ]
+    }]
+  })
+
+  assert.deepEqual(CHAT_REACTION_EMOJIS, ['❤️', '😂', '🥺', '😤', '👍', '👀'])
+  assert.equal(normalized.messages[0].type, 'poke')
+  assert.deepEqual(normalized.messages[0].reactions.map(item => ({
+    actor: item.actor,
+    emoji: item.emoji
+  })), [{ actor: 'user', emoji: '😂' }])
+})
+
+test('旧聊天没有 readState 时全部视为已读，新快照保留真实未读边界', () => {
+  const legacy = normalizeChatData({
+    messages: [
+      { id: 'm1', role: 'assistant', content: '一', createdAt: 10 },
+      { id: 'm2', role: 'assistant', content: '二', createdAt: 20 }
+    ]
+  })
+  const current = normalizeChatData({
+    messages: legacy.messages,
+    readState: { lastReadAt: 10 }
+  })
+
+  assert.equal(legacy.readState.lastReadAt, 20)
+  assert.equal(current.readState.lastReadAt, 10)
+})
+
+test('合并相同消息时优先保留带更新表情的版本', () => {
+  const merged = mergeChatData({
+    messages: [{
+      id: 'same-reaction',
+      role: 'assistant',
+      content: '抱一下',
+      createdAt: 10,
+      reactions: [{ actor: 'user', emoji: '🥺', createdAt: 30 }]
+    }]
+  }, {
+    messages: [{
+      id: 'same-reaction',
+      role: 'assistant',
+      content: '抱一下',
+      createdAt: 10,
+      reactions: []
+    }]
+  })
+
+  assert.equal(merged.messages[0].reactions[0].emoji, '🥺')
+})
+
+test('相同语义键按哥哥、她和我们三个归属分别保留', () => {
+  const data = normalizeChatData({
+    memories: [
+      { id: 'u', key: '喜欢咖啡', scope: 'user', category: '偏好', content: '哥哥喜欢咖啡', createdAt: 1, updatedAt: 1 },
+      { id: 'c', key: '喜欢咖啡', scope: 'companion', category: '偏好', content: '她喜欢听哥哥聊咖啡', createdAt: 1, updatedAt: 1 },
+      { id: 'r', key: '喜欢咖啡', scope: 'relationship', category: '关系', content: '两人约好一起研究咖啡', createdAt: 1, updatedAt: 1 }
+    ]
+  })
+
+  assert.equal(data.memories.length, 3)
+  assert.deepEqual(data.memories.map(item => item.scope).sort(), ['companion', 'relationship', 'user'])
 })
 
 test('头像只接受安全的栅格 data URL，引用缺少正文时会被丢弃', () => {

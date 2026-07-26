@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, watchEffect } from 'vue'
+import { computed, ref, onMounted, watchEffect } from 'vue'
 import { StatusBar } from '@capacitor/status-bar'
 import { LocalNotifications } from '@capacitor/local-notifications'
 
@@ -19,6 +19,7 @@ import { refreshPersonalizedReminderContent } from './services/notificationPerso
 import { getRouteFromAppUrl } from './services/appDeepLink'
 import { refreshHomeWidget } from './services/homeWidget'
 import { syncScheduleNotifications } from './services/scheduleNotificationService'
+import { syncChatProactiveNotifications } from './services/chatProactive'
 
 import DebtListView from './components/DebtListView.vue'
 import WeightView from './components/WeightView.vue'
@@ -40,6 +41,9 @@ const debtStore = useDebtStore()
 const weightStore = useWeightStore()
 const scheduleStore = useScheduleStore()
 const chatStore = useChatStore()
+const chatUnreadLabel = computed(() => (
+  chatStore.unreadCount > 99 ? '99+' : String(chatStore.unreadCount || '')
+))
 
 watchEffect(() => {
   if (typeof document === 'undefined') return
@@ -108,7 +112,22 @@ const openAppUrl = (url) => {
   const route = getRouteFromAppUrl(url)
   if (!route) return
   if (route.view === 'schedule') settingsStore.openScheduleTarget(route)
-  else settingsStore.switchView(route.view)
+  else {
+    if (route.view === 'chat') {
+      chatStore.materializeDueProactive(Date.now())
+      chatStore.setPendingFocusProactiveId(route.proactive)
+    }
+    settingsStore.switchView(route.view)
+  }
+}
+
+const resyncChatProactive = async () => {
+  chatStore.materializeDueProactive(Date.now())
+  await syncChatProactiveNotifications(
+    chatStore.proactiveOutbox,
+    chatStore.proactiveSettings,
+    { requestPermission: false, now: new Date() }
+  )
 }
 
 const queueScheduleRefresh = () => {
@@ -152,6 +171,7 @@ onMounted(async () => {
     vaultStore.loadRecords(authStore.savedMasterPwd),
     chatStore.loadChatData(authStore.savedMasterPwd)
   ])
+  await resyncChatProactive().catch(error => console.warn('初始化温馨小家主动联系失败', error))
   await refreshHomeWidget().catch(error => console.warn('初始化桌面小组件失败', error))
   await syncScheduleNotifications(scheduleStore.snapshot).catch(error => {
     if (error.code !== 'NOTIFICATION_PERMISSION_DENIED') console.warn('初始化日程提醒失败', error)
@@ -178,8 +198,11 @@ onMounted(async () => {
       const url = notification?.extra?.url
       if (url) openAppUrl(url)
     })
+    LocalNotifications.addListener('localNotificationReceived', ({ extra }) => {
+      if (extra?.proactiveId) chatStore.materializeDueProactive(Date.now())
+    })
   } catch (error) {
-    console.warn('无法监听日程通知点击', error)
+    console.warn('无法监听通知点击或接收', error)
   }
 
   try {
@@ -197,6 +220,7 @@ onMounted(async () => {
       backgroundedAt = null
       if (moodStore.isDataLoaded) moodStore.autoFillMissingDays()
       queueScheduleRefresh()
+      resyncChatProactive().catch(error => console.warn('恢复应用后同步温馨小家主动联系失败', error))
 
       // Android 从“闹钟和提醒”权限页返回时，权限状态传播可能稍晚于 Activity 恢复。
       // 延迟重新调度，确保旧的非精确任务被 exact alarm 替换，无需用户重启应用。
@@ -411,7 +435,12 @@ const setMasterPassword = async () => {
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path :d="item.icon" /></svg>
               </span>
               <span class="drawer-item-label">{{ item.label }}</span>
-              <span class="drawer-item-meta">{{ item.meta }}</span>
+              <span
+                v-if="item.id === 'chat' && chatStore.unreadCount"
+                class="drawer-unread-badge"
+                :aria-label="`${chatStore.unreadCount}条温馨小家未读消息`"
+              >{{ chatUnreadLabel }}</span>
+              <span v-else class="drawer-item-meta">{{ item.meta }}</span>
             </li>
           </ul>
           <div class="drawer-footer">
@@ -961,6 +990,19 @@ button,
 .drawer-item-icon svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
 .drawer-item-label { overflow: hidden; font-size: 15px; font-weight: 580; text-overflow: ellipsis; white-space: nowrap; }
 .drawer-item-meta { color: #a0a6af; font-size: 10px; letter-spacing: .04em; }
+.drawer-unread-badge {
+  display: grid;
+  place-items: center;
+  min-width: 21px;
+  height: 21px;
+  padding: 0 6px;
+  border-radius: 999px;
+  color: #fff;
+  background: #ef5b66;
+  box-shadow: 0 5px 12px rgba(239,91,102,.24);
+  font-size: 10px;
+  font-weight: 700;
+}
 
 .drawer-menu li.active {
   border-color: rgba(var(--theme-primary-rgb), .18);
