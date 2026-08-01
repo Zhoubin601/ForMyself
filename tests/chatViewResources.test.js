@@ -12,7 +12,7 @@ test('侧栏与首页陪伴卡都可以进入温馨小家', () => {
   const settings = read('stores/settings.js')
 
   assert.match(app, /\{ id: 'chat', label: '温馨小家', meta: '陪伴'/)
-  assert.match(app, /<ChatView v-if="settingsStore\.currentView === 'chat'"/)
+  assert.match(app, /<KeepAlive>[\s\S]*<ChatView[\s\S]*v-if="settingsStore\.currentView === 'chat'"/)
   assert.match(home, /@click="switchView\('chat'\)"/)
   assert.match(settings, /chat: '温馨小家'/)
 })
@@ -91,12 +91,41 @@ test('聊天每次进入和内容更新后强制定位最底部', () => {
 test('流式回复会按节奏拆成连续气泡并在完整一轮后只更新一次关系状态', () => {
   const view = read('components/ChatView.vue')
 
-  assert.match(view, /const parts = splitCompanionReply\(content\)/)
+  assert.match(view, /sanitizeCompanionReply\(content/)
+  assert.match(view, /const parts = splitCompanionReply\(normalizedContent/)
+  assert.match(view, /buildCompanionTurnContext/)
+  assert.match(view, /maxTokens: turnContext\.replyPolicy\.maxTokens/)
   assert.match(view, /Math\.min\(900, Math\.max\(350,/)
   assert.match(view, /const assistantMessages = await appendAssistantReply\(answer, 'complete', \{[\s\S]*runId,[\s\S]*replyTo:/)
   assert.match(view, /updateRelationship\(batch, assistantMessages\)/)
   assert.match(view, /extractRelationshipUpdateForExchange/)
   assert.match(view, /chatStore\.upsertOpenLoops/)
+})
+
+test('用户发送新消息后会使尚未落地的智能开场失效', () => {
+  const view = read('components/ChatView.vue')
+
+  assert.match(view, /let smartEntryRun = 0/)
+  assert.match(view, /const entryRun = \+\+smartEntryRun/)
+  assert.match(view, /entryRun === smartEntryRun/)
+  assert.match(view, /chatStore\.messages\.length === entryMessageCount/)
+  assert.match(view, /pendingReplyMessageIds\.size === 0/)
+  assert.match(view, /smartEntryRun \+= 1/)
+})
+
+test('切换应用页面或进入锁屏时保留聊天生成任务，并在进程重建后恢复未回复消息', () => {
+  const app = read('App.vue')
+  const view = read('components/ChatView.vue')
+
+  assert.match(app, /v-if="hasEnteredApp" v-show="!authStore\.isLocked" class="main-app/)
+  assert.match(app, /<KeepAlive>[\s\S]*<ChatView/)
+  assert.match(app, /:is-visible="!authStore\.isLocked && settingsStore\.currentView === 'chat'"/)
+  assert.match(view, /const findRecentUnansweredUserMessages/)
+  assert.match(view, /24 \* 60 \* 60 \* 1000/)
+  assert.match(view, /if \(!resumeInterruptedReply\(\)\) initializeCompanionContinuity\(\)/)
+  assert.match(view, /onActivated\(async \(\) =>/)
+  assert.match(view, /onDeactivated\(\(\) =>/)
+  assert.match(view, /viewActive\.value && userNearBottom\.value/)
 })
 
 test('温馨小家设置页在窄屏使用紧凑字号和完整宽度输入布局', () => {

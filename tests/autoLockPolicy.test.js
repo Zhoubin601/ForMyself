@@ -5,6 +5,12 @@ import {
   shouldLockOnBackground,
   shouldLockOnResume
 } from '../src/services/autoLockPolicy.js'
+import {
+  beginNativeActivityGuard,
+  consumeNativeActivityGuard,
+  isNativeActivityGuardActive,
+  resetNativeActivityGuard
+} from '../src/services/nativeActivityGuard.js'
 
 test('只接受受支持的自动锁定时间', () => {
   assert.equal(normalizeAutoLockDelay(-1), -1)
@@ -36,4 +42,15 @@ test('无效时间戳和系统时间倒退不会误锁', () => {
   assert.equal(shouldLockOnResume(60, null, 61000), false)
   assert.equal(shouldLockOnResume(60, Number.NaN, 61000), false)
   assert.equal(shouldLockOnResume(60, 70000, 60000), false)
+})
+
+test('系统文件选择活动只豁免当前一次后台切换并会在恢复时消费', () => {
+  resetNativeActivityGuard()
+  beginNativeActivityGuard(1000, 5000)
+  assert.equal(isNativeActivityGuardActive(2000), true)
+  assert.equal(consumeNativeActivityGuard(2000), true)
+  assert.equal(isNativeActivityGuardActive(2001), false)
+
+  beginNativeActivityGuard(1000, 5000)
+  assert.equal(consumeNativeActivityGuard(7000), false)
 })

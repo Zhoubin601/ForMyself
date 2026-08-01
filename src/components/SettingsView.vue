@@ -15,6 +15,7 @@ import {
 } from '../services/notificationService'
 import { refreshPersonalizedReminderContent } from '../services/notificationPersonalizer'
 import { getPersonalizedReminderBodies } from '../services/reminderSchedule'
+import { beginNativeActivityGuard } from '../services/nativeActivityGuard'
 import {
   buildFullBackupSnapshot,
   getFullBackupCounts,
@@ -845,6 +846,7 @@ const exportJSON = async () => {
           directory: Directory.Cache,
           encoding: Encoding.UTF8
         })
+        beginNativeActivityGuard()
         await Share.share({ title: `导出${label}加密备份`, url: writeResult.uri })
       } catch (e) {
         appAlert('导出失败：' + e.message)
@@ -857,7 +859,11 @@ const exportJSON = async () => {
   }
 }
 
-const triggerImport = () => fileInputRef.value.click()
+const triggerImport = () => {
+  if (!fileInputRef.value) return
+  beginNativeActivityGuard()
+  fileInputRef.value.click()
+}
 
 const handleFileUpload = (event) => {
   const file = event.target.files[0]

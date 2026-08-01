@@ -215,9 +215,35 @@ export function normalizeOpenLoops(values = [], idFactory) {
     const previous = byKey.get(normalized.key)
     if (!previous || normalized.updatedAt >= previous.updatedAt) byKey.set(normalized.key, normalized)
   })
-  return [...byKey.values()]
+  const byContent = new Map()
+  ;[...byKey.values()].forEach(normalized => {
+    const fingerprint = cleanText(normalized.content)
+      .toLocaleLowerCase('zh-CN')
+      .replace(/[^\p{Script=Han}a-z0-9]+/gu, '')
+      .slice(0, 240)
+    const previous = byContent.get(fingerprint)
+    if (!previous || normalized.updatedAt >= previous.updatedAt) {
+      byContent.set(fingerprint, normalized)
+    }
+  })
+  return [...byContent.values()]
     .sort((a, b) => b.updatedAt - a.updatedAt || a.key.localeCompare(b.key))
     .slice(0, 30)
+}
+
+export function pruneStaleOpenLoops(values = [], messages = []) {
+  const normalized = normalizeOpenLoops(values)
+  const messageList = Array.isArray(messages) ? messages : []
+  const messageIndexes = new Map(messageList.map((item, index) => [String(item?.id || ''), index]))
+  const thresholds = { question: 3, topic: 6, promise: 8 }
+  return normalized.filter(item => {
+    const sourceIndex = messageIndexes.get(String(item.sourceMessageId || ''))
+    if (!Number.isInteger(sourceIndex)) return true
+    const newerUserMessages = messageList
+      .slice(sourceIndex + 1)
+      .filter(message => message?.role === 'user').length
+    return newerUserMessages < (thresholds[item.type] || thresholds.topic)
+  })
 }
 
 export function normalizeChatProactiveSettings(value = {}) {
@@ -288,7 +314,7 @@ export function normalizeChatData(value = {}) {
     messages,
     memories: normalizeChatMemories(value?.memories),
     companionState: normalizeCompanionState(value?.companionState),
-    openLoops: normalizeOpenLoops(value?.openLoops),
+    openLoops: pruneStaleOpenLoops(value?.openLoops, messages),
     proactiveOutbox: normalizeProactiveOutbox(value?.proactiveOutbox),
     proactiveSettings: normalizeChatProactiveSettings(value?.proactiveSettings),
     readState: normalizeChatReadState(value?.readState, messages)

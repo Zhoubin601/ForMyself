@@ -144,9 +144,11 @@ export function buildRelationshipUpdatePrompt({
 本轮女朋友回复：${JSON.stringify(assistantMessages.map(item => item.content || item))}
 
 规则：
-- memoryUpserts 只保留以后仍有用的稳定信息。scope 只能是 user（哥哥）、companion（她的虚拟设定）或 relationship（两人的共同经历）。
+- memoryUpserts 每轮最多两条，只保留哥哥亲口说出、以后仍有用的稳定信息。scope 只能是 user（哥哥）、companion（她的虚拟设定）或 relationship（两人的共同经历）。
+- 不得把女朋友回复里的感动、比喻、动作、承诺、自我描述或对哥哥的猜测保存成记忆；普通“我爱你”、晚安、亲亲和当轮情绪也不保存。
 - 旧记忆语义更新时复用原 key。不得保存密码、验证码、API Key、Token、账号或其他凭据。
-- openLoopUpserts 只保留确实需要以后接续的问题、约定或话题；type 只能是 topic、question、promise。
+- openLoopUpserts 每轮最多两条，只保留哥哥明确说“以后再聊”、约定稍后完成，或确实被中断的重要话题；女朋友随口提出但哥哥没有回答的问题不算未完话题。
+- type 只能是 topic、question、promise；不得重复已有未完话题，语义相同时复用原 key。
 - resolvedLoopKeys 列出本轮已经自然完成的现有 key。不要让未完话题无限累积。
 - companionState 只做轻微连续调整；她可以开心、好奇、调皮、安静或有一点小情绪，但不得记录“被忽略所以惩罚哥哥”之类控制性状态。
 - 不得把女朋友的猜测写成哥哥的事实，不保存普通寒暄。
@@ -171,7 +173,7 @@ export function parseRelationshipUpdate(value, {
       createdAt: now,
       updatedAt: now
     }))
-  )
+  ).slice(0, 2)
   const openLoopUpserts = normalizeOpenLoops(
     (Array.isArray(parsed.openLoopUpserts) ? parsed.openLoopUpserts : []).map(item => ({
       ...item,
@@ -179,7 +181,7 @@ export function parseRelationshipUpdate(value, {
       createdAt: now,
       updatedAt: now
     }))
-  )
+  ).slice(0, 2)
   const resolvedLoopKeys = [...new Set(
     (Array.isArray(parsed.resolvedLoopKeys) ? parsed.resolvedLoopKeys : [])
       .map(cleanText)

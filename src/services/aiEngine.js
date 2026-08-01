@@ -93,6 +93,28 @@ const extractMessageContent = data => {
   return content
 }
 
+const finishReasonOf = choice => String(
+  choice?.finish_reason ||
+  choice?.stop_reason ||
+  choice?.finish_details?.type ||
+  ''
+).trim().toLowerCase()
+
+const isOutputLimitReason = reason => [
+  'length',
+  'max_tokens',
+  'max_output_tokens',
+  'token_limit'
+].includes(String(reason || '').toLowerCase())
+
+const outputTruncatedError = (content = '', finishReason = 'length') => {
+  const error = new Error('OUTPUT_TRUNCATED')
+  error.code = 'OUTPUT_TRUNCATED'
+  error.finishReason = finishReason
+  error.partialContent = String(content || '').trim()
+  return error
+}
+
 const requestNonStreaming = async ({ runtime, messages, systemPrompt, temperature, maxTokens, signal, injectSystemFallback = true }) => {
   const payload = {
     model: runtime.model,
@@ -110,6 +132,9 @@ const requestNonStreaming = async ({ runtime, messages, systemPrompt, temperatur
   const data = await response.json().catch(() => {
     throw new Error('INVALID_RESPONSE')
   })
+  const finishReason = finishReasonOf(data?.choices?.[0])
+  const directContent = String(data?.choices?.[0]?.message?.content || '').trim()
+  if (isOutputLimitReason(finishReason)) throw outputTruncatedError(directContent, finishReason)
   return extractMessageContent(data)
 }
 
@@ -119,6 +144,7 @@ const consumeSse = async (response, onDelta, signal) => {
   const decoder = new TextDecoder()
   let buffer = ''
   let content = ''
+  let finishReason = ''
 
   const consumeEvent = eventText => {
     const dataLines = eventText
@@ -133,7 +159,10 @@ const consumeSse = async (response, onDelta, signal) => {
       } catch {
         continue
       }
-      const delta = String(event?.choices?.[0]?.delta?.content || '')
+      const choice = event?.choices?.[0]
+      const eventFinishReason = finishReasonOf(choice)
+      if (eventFinishReason) finishReason = eventFinishReason
+      const delta = String(choice?.delta?.content || '')
       if (!delta) continue
       content += delta
       onDelta?.(delta, content)
@@ -155,6 +184,7 @@ const consumeSse = async (response, onDelta, signal) => {
     if (done) break
   }
   if (buffer.trim()) consumeEvent(buffer)
+  if (isOutputLimitReason(finishReason)) throw outputTruncatedError(content, finishReason)
   if (!content.trim()) throw new Error('EMPTY_RESPONSE')
   return content.trim()
 }
@@ -164,7 +194,8 @@ export async function streamAIChat({
   systemPrompt = '',
   signal,
   onDelta,
-  temperature = 0.82
+  temperature = 0.82,
+  maxTokens
 } = {}) {
   const runtime = resolveRuntime()
   const payload = {
@@ -173,6 +204,7 @@ export async function streamAIChat({
     temperature,
     stream: true
   }
+  if (Number.isFinite(maxTokens)) payload.max_tokens = maxTokens
   let emitted = ''
   try {
     const response = await fetchCompletion({
@@ -196,12 +228,17 @@ export async function streamAIChat({
       onDelta?.(delta, full)
     }, signal)
   } catch (error) {
-    if (error.code === 'ABORTED' || error.code === 'CONTEXT_LENGTH_EXCEEDED') throw error
+    if (
+      error.code === 'ABORTED' ||
+      error.code === 'CONTEXT_LENGTH_EXCEEDED' ||
+      error.code === 'OUTPUT_TRUNCATED'
+    ) throw error
     const content = await requestNonStreaming({
       runtime,
       messages,
       systemPrompt,
       temperature,
+      maxTokens,
       signal,
       injectSystemFallback: true
     })

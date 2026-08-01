@@ -1,5 +1,14 @@
 <script setup>
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import {
+  computed,
+  nextTick,
+  onActivated,
+  onBeforeUnmount,
+  onDeactivated,
+  onMounted,
+  ref,
+  watch
+} from 'vue'
 import { useChatStore } from '../stores/chat'
 import { useSettingsStore } from '../stores/settings'
 import { useMoodStore } from '../stores/mood'
@@ -8,8 +17,10 @@ import { useDebtStore } from '../stores/debt'
 import { useScheduleStore } from '../stores/schedule'
 import { addDays, formatLocalDate } from '../services/scheduleCore'
 import {
+  buildCompanionTurnContext,
   buildChatLifeContext,
   buildChatSystemPrompt,
+  sanitizeCompanionReply,
   splitCompanionReply,
   streamCompanionReply
 } from '../services/chatCompanion'
@@ -34,6 +45,13 @@ import {
 import { CHAT_REACTION_EMOJIS } from '../services/chatRecords'
 import { appAlert, appConfirm, appToast } from '../services/uiFeedback'
 
+const props = defineProps({
+  isVisible: {
+    type: Boolean,
+    default: true
+  }
+})
+
 const chatStore = useChatStore()
 const settingsStore = useSettingsStore()
 const moodStore = useMoodStore()
@@ -57,6 +75,7 @@ const highlightedMessageId = ref('')
 const firstUnreadMessageId = ref('')
 const newMessageCount = ref(0)
 const userNearBottom = ref(true)
+const viewActive = ref(props.isVisible)
 const swipingMessageId = ref('')
 const swipeOffset = ref(0)
 let replyController = null
@@ -67,6 +86,7 @@ let latestGeneratedText = ''
 let replyDebounceTimer = null
 let proactiveRefreshTimer = null
 let generationRun = 0
+let smartEntryRun = 0
 let relationshipUpdateChain = Promise.resolve()
 let lightInteractionRun = 0
 const pendingReplyMessageIds = new Set()
@@ -164,12 +184,14 @@ const buildLifeContext = () => {
   }, today)
 }
 
-const currentSystemPrompt = () => buildChatSystemPrompt({
+const currentSystemPrompt = turnContext => buildChatSystemPrompt({
   companionName: companionName.value,
-  memories: chatStore.memories,
+  memories: turnContext.memories,
   companionState: chatStore.companionState,
-  openLoops: chatStore.openLoops,
-  lifeContext: buildLifeContext()
+  openLoops: turnContext.openLoops,
+  lifeContext: turnContext.lifeContext,
+  styleState: turnContext.styleState,
+  replyMode: turnContext.replyMode
 })
 
 const isNearBottom = () => {
@@ -228,9 +250,28 @@ const appendPokeEvent = async role => {
 const appendAssistantReply = async (
   content,
   status = 'complete',
-  { runId = null, origin = 'chat', proactiveId = '', replyTo = null } = {}
+  {
+    runId = null,
+    origin = 'chat',
+    proactiveId = '',
+    replyTo = null,
+    replyPolicy = null,
+    recentMessages = []
+  } = {}
 ) => {
-  const parts = splitCompanionReply(content)
+  const normalizedContent = replyPolicy
+    ? sanitizeCompanionReply(content, {
+        mode: replyPolicy.mode,
+        recentMessages
+      })
+    : String(content || '').trim()
+  const parts = splitCompanionReply(normalizedContent, replyPolicy
+    ? {
+        targetLength: replyPolicy.targetLength,
+        hardLength: replyPolicy.hardLength,
+        maxParts: replyPolicy.maxBubbles
+      }
+    : undefined)
   const baseTime = Date.now()
   const messages = []
   for (let index = 0; index < parts.length; index += 1) {
@@ -363,6 +404,10 @@ const initializeCompanionContinuity = async () => {
     now: new Date()
   })) {
     try {
+      const entryRun = ++smartEntryRun
+      const entryMessageCount = chatStore.messages.length
+      const entryLastMessage = chatStore.messages.at(-1)
+      const entryGenerationRun = generationRun
       const content = await generateSmartEntryMessage({
         companionName: companionName.value,
         state,
@@ -371,7 +416,18 @@ const initializeCompanionContinuity = async () => {
         recentMessages: chatStore.messages.slice(-24),
         now: new Date()
       })
-      if (componentActive && content) {
+      const currentLastMessage = chatStore.messages.at(-1)
+      const entryStillCurrent = (
+        componentActive &&
+        entryRun === smartEntryRun &&
+        entryGenerationRun === generationRun &&
+        chatStore.messages.length === entryMessageCount &&
+        currentLastMessage?.id === entryLastMessage?.id &&
+        pendingReplyMessageIds.size === 0 &&
+        !isWaitingToReply.value &&
+        !isGenerating.value
+      )
+      if (entryStillCurrent && content) {
         await appendAssistantReply(content, 'complete', { origin: 'entry' })
       }
     } catch (error) {
@@ -396,6 +452,13 @@ const requestReply = async userMessages => {
   latestGeneratedText = ''
   streamingStartedAt.value = Date.now()
   await scrollToBottom(true)
+  const turnContext = buildCompanionTurnContext({
+    messages: chatStore.messages,
+    userMessages: batch,
+    memories: chatStore.memories,
+    openLoops: chatStore.openLoops,
+    lifeContext: buildLifeContext()
+  })
   try {
     const recentMessages = chatStore.messages.slice(-20)
     const interactionPlanPromise = planCompanionInteraction({
@@ -405,9 +468,10 @@ const requestReply = async userMessages => {
       companionState: chatStore.companionState
     })
     const answer = await streamCompanionReply({
-      messages: chatStore.messages,
-      systemPrompt: currentSystemPrompt(),
+      messages: turnContext.history,
+      systemPrompt: currentSystemPrompt(turnContext),
       signal: controller.signal,
+      maxTokens: turnContext.replyPolicy.maxTokens,
       onDelta: (_delta, full) => {
         if (!componentActive || runId !== generationRun) return
         latestGeneratedText = full
@@ -427,7 +491,9 @@ const requestReply = async userMessages => {
     }
     const assistantMessages = await appendAssistantReply(answer, 'complete', {
       runId,
-      replyTo: interaction.action === 'quote' ? toReplySnapshot(targetMessage) : null
+      replyTo: interaction.action === 'quote' ? toReplySnapshot(targetMessage) : null,
+      replyPolicy: turnContext.replyPolicy,
+      recentMessages: chatStore.messages
     })
     latestGeneratedText = ''
     if (assistantMessages.length && runId === generationRun) {
@@ -441,7 +507,11 @@ const requestReply = async userMessages => {
         replyAbortReason === 'user' &&
         latestGeneratedText.trim()
       ) {
-        await appendAssistantReply(latestGeneratedText, 'stopped', { runId })
+        await appendAssistantReply(latestGeneratedText, 'stopped', {
+          runId,
+          replyPolicy: turnContext.replyPolicy,
+          recentMessages: chatStore.messages
+        })
       }
     } else if (componentActive && runId === generationRun) {
       retryMessageId.value = batch.at(-1).id
@@ -472,6 +542,25 @@ const scheduleReply = (delay = 900) => {
     isWaitingToReply.value = false
     requestReply(messages)
   }, delay)
+}
+
+const findRecentUnansweredUserMessages = (now = Date.now()) => {
+  const lastAssistantIndex = chatStore.messages.findLastIndex(item => item.role === 'assistant')
+  const trailingUsers = chatStore.messages
+    .slice(lastAssistantIndex + 1)
+    .filter(item => item.role === 'user' && item.type === 'text')
+  const latest = trailingUsers.at(-1)
+  if (!latest || now - latest.createdAt > 24 * 60 * 60 * 1000) return []
+  return trailingUsers
+}
+
+const resumeInterruptedReply = () => {
+  if (!hasApiKey.value || isGenerating.value || pendingReplyMessageIds.size) return false
+  const messages = findRecentUnansweredUserMessages()
+  if (!messages.length) return false
+  messages.forEach(message => pendingReplyMessageIds.add(message.id))
+  scheduleReply(350)
+  return true
 }
 
 const supersedeCurrentReply = () => {
@@ -506,6 +595,7 @@ const sendMessage = async () => {
       : null
   })
   if (!userMessage) return
+  smartEntryRun += 1
   lightInteractionRun += 1
   draft.value = ''
   replyTarget.value = null
@@ -753,13 +843,35 @@ watch(() => chatStore.messages.length, async (size, previousSize) => {
   const appended = chatStore.messages.slice(previousSize)
   const newAssistantMessages = appended.filter(item => item.role === 'assistant')
   if (!newAssistantMessages.length) return
-  if (userNearBottom.value) {
+  if (viewActive.value && userNearBottom.value) {
     await scrollToBottom(true)
     markVisibleMessagesRead()
   } else {
     if (!firstUnreadMessageId.value) firstUnreadMessageId.value = newAssistantMessages[0].id
     newMessageCount.value += newAssistantMessages.length
   }
+})
+
+const restoreVisibleChat = async () => {
+  await nextTick()
+  await scrollToBottom(true)
+  userNearBottom.value = true
+  newMessageCount.value = 0
+  markVisibleMessagesRead()
+}
+
+watch(() => props.isVisible, async isVisible => {
+  viewActive.value = isVisible
+  if (isVisible) await restoreVisibleChat()
+})
+
+onActivated(async () => {
+  viewActive.value = props.isVisible
+  if (viewActive.value) await restoreVisibleChat()
+})
+
+onDeactivated(() => {
+  viewActive.value = false
 })
 
 watch(() => chatStore.pendingFocusProactiveId, async proactiveId => {
@@ -778,7 +890,7 @@ onMounted(async () => {
   markVisibleMessagesRead()
   const focusMessageId = chatStore.consumePendingFocusMessageId()
   if (focusMessageId) await scrollToQuotedMessage(focusMessageId, { behavior: 'auto' })
-  initializeCompanionContinuity()
+  if (!resumeInterruptedReply()) initializeCompanionContinuity()
 })
 
 onBeforeUnmount(() => {

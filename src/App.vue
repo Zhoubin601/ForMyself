@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref, onMounted, watchEffect } from 'vue'
+import { computed, ref, onMounted, watch, watchEffect } from 'vue'
 import { StatusBar } from '@capacitor/status-bar'
 import { LocalNotifications } from '@capacitor/local-notifications'
 
@@ -13,6 +13,10 @@ import { usePasswordVaultStore } from './stores/passwordVault'
 import { useScheduleStore } from './stores/schedule'
 import { useChatStore } from './stores/chat'
 import { shouldLockOnBackground, shouldLockOnResume } from './services/autoLockPolicy'
+import {
+  consumeNativeActivityGuard,
+  isNativeActivityGuardActive
+} from './services/nativeActivityGuard'
 import { syncReminderNotifications } from './services/notificationService'
 import { getPersonalizedReminderBodies } from './services/reminderSchedule'
 import { refreshPersonalizedReminderContent } from './services/notificationPersonalizer'
@@ -44,6 +48,11 @@ const chatStore = useChatStore()
 const chatUnreadLabel = computed(() => (
   chatStore.unreadCount > 99 ? '99+' : String(chatStore.unreadCount || '')
 ))
+const hasEnteredApp = ref(false)
+
+watch(() => authStore.isLocked, isLocked => {
+  if (!isLocked) hasEnteredApp.value = true
+}, { immediate: true })
 
 watchEffect(() => {
   if (typeof document === 'undefined') return
@@ -208,13 +217,20 @@ onMounted(async () => {
   try {
     CapacitorApp.addListener('appStateChange', ({ isActive }) => {
       if (!isActive) {
-        backgroundedAt = Date.now()
+        const nativeActivityGuarded = isNativeActivityGuardActive()
+        backgroundedAt = nativeActivityGuarded ? null : Date.now()
         chatStore.flush().catch(error => console.warn('进入后台时保存聊天失败', error))
-        if (shouldLockOnBackground(settingsStore.autoLockDelaySeconds)) authStore.lockApp()
+        if (!nativeActivityGuarded && shouldLockOnBackground(settingsStore.autoLockDelaySeconds)) {
+          authStore.lockApp()
+        }
         return
       }
 
-      if (shouldLockOnResume(settingsStore.autoLockDelaySeconds, backgroundedAt, Date.now())) {
+      const nativeActivityGuarded = consumeNativeActivityGuard()
+      if (
+        !nativeActivityGuarded &&
+        shouldLockOnResume(settingsStore.autoLockDelaySeconds, backgroundedAt, Date.now())
+      ) {
         authStore.lockApp()
       }
       backgroundedAt = null
@@ -359,7 +375,7 @@ const setMasterPassword = async () => {
       </div>
     </div>
 
-    <div v-else class="main-app fade-in">
+    <div v-if="hasEnteredApp" v-show="!authStore.isLocked" class="main-app fade-in">
       <div v-if="settingsStore.currentView !== 'schedule'" class="top-nav sub-nav-frosted">
         <button
           v-if="settingsStore.currentView === 'settings' && settingsStore.settingsScope !== 'general'"
@@ -402,11 +418,16 @@ const setMasterPassword = async () => {
       <Teleport to="body">
         <div
           class="drawer-overlay"
-          v-if="settingsStore.isDrawerOpen"
+          v-if="!authStore.isLocked && settingsStore.isDrawerOpen"
           @click="settingsStore.isDrawerOpen = false"
         ></div>
 
-        <aside class="drawer" :class="{ open: settingsStore.isDrawerOpen }" aria-label="主导航">
+        <aside
+          v-show="!authStore.isLocked"
+          class="drawer"
+          :class="{ open: settingsStore.isDrawerOpen }"
+          aria-label="主导航"
+        >
           <div class="drawer-header">
             <div class="drawer-brand">
               <img class="drawer-brand-mark" src="/icon.png" alt="" aria-hidden="true" />
@@ -465,7 +486,12 @@ const setMasterPassword = async () => {
         <WeightView v-if="settingsStore.currentView === 'weight'" />
         <MoodView v-if="settingsStore.currentView === 'mood'" />
         <ScheduleView v-if="settingsStore.currentView === 'schedule'" />
-        <ChatView v-if="settingsStore.currentView === 'chat'" />
+        <KeepAlive>
+          <ChatView
+            v-if="settingsStore.currentView === 'chat'"
+            :is-visible="!authStore.isLocked && settingsStore.currentView === 'chat'"
+          />
+        </KeepAlive>
         <PasswordVaultView v-if="settingsStore.currentView === 'passwords'" />
         <SettingsView v-if="settingsStore.currentView === 'settings'" />
       </div>

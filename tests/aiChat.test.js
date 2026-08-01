@@ -3,11 +3,16 @@ import test from 'node:test'
 import { createPinia, setActivePinia } from 'pinia'
 import { streamAIChat } from '../src/services/aiEngine.js'
 import {
+  buildCompanionTurnContext,
   buildChatLifeContext,
   buildChatSystemPrompt,
   buildWelcomeRequest,
+  classifyCompanionReplyMode,
   collapseConsecutiveChatMessages,
   getContextWindowSizes,
+  isCompanionReplyComplete,
+  sanitizeCompanionReply,
+  selectTurnLifeContext,
   splitCompanionReply,
   streamCompanionReply
 } from '../src/services/chatCompanion.js'
@@ -51,22 +56,45 @@ test('SSE 支持跨 chunk JSON、连续分片和 [DONE]', async t => {
   assert.deepEqual(deltas, [['宝宝', '宝宝'], ['，我在', '宝宝，我在']])
 })
 
+test('SSE 明确因 token 上限结束时拒绝保存半截回复', async t => {
+  configureAi('deepseek-v4-flash')
+  const originalFetch = globalThis.fetch
+  t.after(() => { globalThis.fetch = originalFetch })
+  globalThis.fetch = async () => sseResponse([
+    'data: {"choices":[{"delta":{"reasoning_content":"思考中"},"finish_reason":null}]}\n\n',
+    'data: {"choices":[{"delta":{"content":"【抬手"},"finish_reason":null}]}\n\n',
+    'data: {"choices":[{"delta":{},"finish_reason":"length"}]}\n\n',
+    'data: [DONE]\n\n'
+  ])
+
+  await assert.rejects(
+    streamAIChat({ messages: [{ role: 'user', content: '继续' }], maxTokens: 160 }),
+    error => error.code === 'OUTPUT_TRUNCATED' && error.partialContent === '【抬手'
+  )
+})
+
 test('流式网络失败时自动回退一次非流式完整回复', async t => {
   configureAi()
   const originalFetch = globalThis.fetch
   t.after(() => { globalThis.fetch = originalFetch })
   let calls = 0
-  globalThis.fetch = async () => {
+  const payloads = []
+  globalThis.fetch = async (_url, options) => {
     calls += 1
+    payloads.push(JSON.parse(options.body))
     if (calls === 1) throw new TypeError('offline once')
     return new Response(JSON.stringify({
       choices: [{ message: { content: '哥哥，我回来啦。' } }]
     }), { headers: { 'content-type': 'application/json' } })
   }
 
-  const answer = await streamAIChat({ messages: [{ role: 'user', content: '回来了吗' }] })
+  const answer = await streamAIChat({
+    messages: [{ role: 'user', content: '回来了吗' }],
+    maxTokens: 160
+  })
   assert.equal(calls, 2)
   assert.equal(answer, '哥哥，我回来啦。')
+  assert.ok(payloads.every(payload => payload.max_tokens === 160))
 })
 
 test('SSE 已收到部分文字后中断仍会回退为完整回复', async t => {
@@ -165,9 +193,9 @@ test('R1/GLM 类模型把完整人格作为首条上下文注入', async t => {
   assert.equal(payload.messages[1].content, '记住我')
 })
 
-test('聊天窗口先尝试完整历史，超限后逐步移除最早消息', async () => {
+test('聊天窗口只发送最近24条历史，超限后缩至12条', async () => {
   const sizes = getContextWindowSizes(40)
-  assert.deepEqual(sizes, [40, 20, 12])
+  assert.deepEqual(sizes, [24, 12])
   const calls = []
   const answer = await streamCompanionReply({
     messages: Array.from({ length: 40 }, (_, index) => ({
@@ -177,7 +205,7 @@ test('聊天窗口先尝试完整历史，超限后逐步移除最早消息', as
     systemPrompt: '保留人格和记忆',
     stream: async ({ messages }) => {
       calls.push(messages.length)
-      if (calls.length < 3) {
+      if (calls.length < 2) {
         const error = new Error('too long')
         error.code = 'CONTEXT_LENGTH_EXCEEDED'
         throw error
@@ -187,7 +215,7 @@ test('聊天窗口先尝试完整历史，超限后逐步移除最早消息', as
   })
 
   assert.equal(answer, '成功')
-  assert.deepEqual(calls, [40, 20, 12])
+  assert.deepEqual(calls, [24, 12])
 })
 
 test('聊天生活上下文保留近期完整记录并将久远数据压缩为月度概览', () => {
@@ -276,7 +304,7 @@ test('聊天生活上下文保留近期完整记录并将久远数据压缩为�
   assert.equal(context.longTermOverviewBefore30Days.schedules.distantOneOffByMonth[0].completed, 1)
 })
 
-test('聊天人格包含动态名字、宝宝哥哥规则、生活上下文和安全边界且无回复字数上限', () => {
+test('聊天人格包含动态名字、相关上下文、安全边界和本轮硬上限', () => {
   const prompt = buildChatSystemPrompt({
     companionName: '小月',
     memories: [{ category: '偏好', content: '哥哥喜欢无糖咖啡' }],
@@ -289,29 +317,26 @@ test('聊天人格包含动态名字、宝宝哥哥规则、生活上下文和�
   assert.match(prompt, /哥哥喜欢无糖咖啡/)
   assert.match(prompt, /考试/)
   assert.match(prompt, /不得索取、复述或记忆密码/)
-  assert.match(prompt, /没有应用层字数限制/)
-  assert.match(prompt, /近期30天是完整记录/)
+  assert.match(prompt, /最多约 120 个中文字符、3 个短气泡/)
+  assert.match(prompt, /与本轮直接相关的生活背景/)
 })
 
-test('聊天专属规则优先要求真人私聊节奏并禁止模板化 AI 情绪链', () => {
+test('聊天专属规则使用独立真人私聊节奏并禁止模板化 AI 情绪链', () => {
   const prompt = buildChatSystemPrompt({
     companionName: '小暖',
     memories: [{ category: '经历', content: '哥哥最近在赶项目' }],
     lifeContext: { recent30Days: { moodDays: [{ date: '2026-07-25' }] } }
   })
 
-  assert.match(prompt, /覆盖前面“每次都走完整情绪回应链”的要求/)
-  assert.match(prompt, /短消息就短回/)
-  assert.match(prompt, /不要每轮都提问/)
-  assert.match(prompt, /不要每条都叫“宝宝”或“哥哥”/)
-  assert.match(prompt, /默认不要提/)
-  assert.match(prompt, /必须避开的 AI 腔/)
-  assert.match(prompt, /不要复述哥哥整句话/)
-  assert.match(prompt, /一轮最多自然呼应一件旧事/)
-  assert.match(prompt, /不编造自己真实吃饭、上班、出门/)
-  assert.match(prompt, /话多或拆成连续气泡时整轮可以分散使用三至四个/)
-  assert.match(prompt, /普通一轮通常零至一个，话多时最多两个/)
-  assert.match(prompt, /明显低落、严肃求助或讨论安全风险时减少 emoji 和颜文字/)
+  assert.match(prompt, /你的任务只是顺着哥哥刚发来的话自然接一句/)
+  assert.match(prompt, /一句能接住就停/)
+  assert.match(prompt, /不要每轮提问/)
+  assert.match(prompt, /隔几轮才自然出现一次/)
+  assert.match(prompt, /不要模仿其中的长篇、诗化、动作旁白/)
+  assert.match(prompt, /不复述原话/)
+  assert.match(prompt, /不编造现实身体、手机、房间/)
+  assert.match(prompt, /普通回复最多一个 emoji/)
+  assert.doesNotMatch(prompt, /完整的情绪回应/)
 })
 
 test('欢迎语像上线私聊且禁止数据总结和客服式套话', () => {
@@ -339,7 +364,46 @@ test('聊天流默认使用更自然的温度参数', async () => {
   })
 
   assert.equal(answer, '在呀')
-  assert.equal(capturedTemperature, 0.92)
+  assert.equal(capturedTemperature, 0.78)
+})
+
+test('聊天流对长度截断自动提高生成预算并重试完整回复', async () => {
+  const budgets = []
+  const answers = ['【抬手', '【抬手轻轻敲了敲你的气泡】哼，才不许躲。']
+  const answer = await streamCompanionReply({
+    messages: [{ role: 'user', content: '你是坏人' }],
+    maxTokens: 160,
+    stream: async ({ maxTokens }) => {
+      budgets.push(maxTokens)
+      const next = answers.shift()
+      if (next === '【抬手') {
+        const error = new Error('OUTPUT_TRUNCATED')
+        error.code = 'OUTPUT_TRUNCATED'
+        error.partialContent = next
+        throw error
+      }
+      return next
+    }
+  })
+
+  assert.equal(answer, '【抬手轻轻敲了敲你的气泡】哼，才不许躲。')
+  assert.deepEqual(budgets, [256, 1024])
+})
+
+test('服务端未给 finish_reason 时也会拦截结构残缺的回复', async () => {
+  let calls = 0
+  const answer = await streamCompanionReply({
+    messages: [{ role: 'user', content: '在吗' }],
+    stream: async () => {
+      calls += 1
+      return calls === 1 ? '【抬手' : '在呀，刚刚正想找你。'
+    }
+  })
+
+  assert.equal(calls, 2)
+  assert.equal(answer, '在呀，刚刚正想找你。')
+  assert.equal(isCompanionReplyComplete('【抬手'), false)
+  assert.equal(isCompanionReplyComplete('在呀，刚刚正想找你。'), true)
 })
 
 test('AI 回复按自然段拆成连续小气泡且不保留空行', () => {
@@ -391,13 +455,12 @@ test('引用回复会作为明确上下文发送给模型但不改变原消息',
   assert.match(messages[1].content, /就这个吧/)
 })
 
-test('聊天人格要求分开发小消息并把动作旁白留在对应气泡', () => {
+test('聊天人格要求短气泡并将动作旁白降为极少数点缀', () => {
   const prompt = buildChatSystemPrompt({ companionName: '小乖' })
 
-  assert.match(prompt, /可以偶尔用简短的括号动作或小说旁白/)
-  assert.match(prompt, /动作必须和紧接着说的话留在同一条消息里/)
-  assert.match(prompt, /每条通常一到两句/)
-  assert.match(prompt, /条与条之间只用一个空行分隔/)
+  assert.match(prompt, /括号动作是极少数点缀/)
+  assert.match(prompt, /本轮不要再写括号动作|确实自然时才允许一个很短的动作/)
+  assert.match(prompt, /最多约 120 个中文字符、3 个短气泡/)
 })
 
 test('单独成行的动作旁白会与下一段对白合并成同一气泡', () => {
@@ -411,4 +474,94 @@ test('单独成行的动作旁白会与下一段对白合并成同一气泡', ()
     '（听见哥哥说想我，悄悄靠近一点） 我也想你啦，刚刚还在等你。',
     '今晚分我一点时间嘛。'
   ])
+})
+
+test('本轮上下文限制历史、记忆和生活数据并按话题选择', () => {
+  const messages = Array.from({ length: 60 }, (_, index) => ({
+    id: `m-${index}`,
+    role: index % 2 ? 'assistant' : 'user',
+    content: `历史消息${index}`,
+    createdAt: index + 1
+  }))
+  const memories = Array.from({ length: 15 }, (_, index) => ({
+    id: `memory-${index}`,
+    key: `key-${index}`,
+    scope: 'user',
+    category: index < 3 ? '偏好' : '经历',
+    content: index === 8 ? '哥哥最近在记录体重' : `长期记忆${index}`,
+    updatedAt: index + 1
+  }))
+  const context = buildCompanionTurnContext({
+    messages,
+    userMessages: [{ content: '我今天称体重了' }],
+    memories,
+    lifeContext: {
+      recent30Days: {
+        moodDays: [{ date: '2026-07-29' }],
+        weightRecords: Array.from({ length: 12 }, (_, index) => ({ weight: 70 + index })),
+        savingsPlans: [{ name: '旅行' }]
+      },
+      schedulesWithin30Days: [{ title: '考试' }]
+    }
+  })
+
+  assert.equal(context.history.length, 24)
+  assert.equal(context.memories.length, 8)
+  assert.equal(context.lifeContext.recent30Days.weightRecords.length, 8)
+  assert.equal(context.lifeContext.recent30Days.moodDays, undefined)
+  assert.equal(context.lifeContext.schedulesWithin30Days, undefined)
+})
+
+test('普通回复清理重复动作、称呼和 emoji 并限制为三个气泡', () => {
+  const recentMessages = [
+    { role: 'assistant', content: '（轻轻抱住你） 哥哥，我在。' },
+    { role: 'user', content: '我也想你' },
+    { role: 'assistant', content: '宝宝，刚刚也在想你。' },
+    { role: 'user', content: '亲亲' }
+  ]
+  const cleaned = sanitizeCompanionReply(
+    '（心跳一下子漏了一拍） 哥哥，我也想你，真的特别特别想。🥺💕❤️\n\n你一出现整个世界都亮了。\n\n我会一直一直陪着你。\n\n还想再抱一会儿。',
+    { mode: 'normal', recentMessages }
+  )
+  const parts = splitCompanionReply(cleaned, { maxParts: 3 })
+
+  assert.doesNotMatch(cleaned, /^（/)
+  assert.doesNotMatch(cleaned, /^哥哥/)
+  assert.ok((cleaned.match(/\p{Extended_Pictographic}/gu) || []).length <= 1)
+  assert.ok(Array.from(cleaned).length <= 120)
+  assert.ok(parts.length <= 3)
+})
+
+test('已有完整句时移除模型意外中止留下的悬空尾句', () => {
+  assert.equal(
+    sanitizeCompanionReply('亲亲收好啦！亲亲也飞回', { mode: 'normal' }),
+    '亲亲收好啦！'
+  )
+  assert.equal(
+    sanitizeCompanionReply('好呀！我等你回来', { mode: 'normal' }),
+    '好呀！我等你回来'
+  )
+})
+
+test('字符收束只在完整句边界停止，不再制造带省略号的半句话', () => {
+  const cleaned = sanitizeCompanionReply(
+    `${'这是一句完整但稍长的话'.repeat(6)}。后面这句话不应该被从中间切开，而应该整体省略。`,
+    { mode: 'normal' }
+  )
+
+  assert.match(cleaned, /。$/)
+  assert.doesNotMatch(cleaned, /…$/)
+  assert.equal(isCompanionReplyComplete(cleaned), true)
+})
+
+test('回复模式区分普通、复杂问题和明确安全风险', () => {
+  assert.equal(classifyCompanionReplyMode([{ content: '我也想你' }]), 'normal')
+  assert.equal(classifyCompanionReplyMode([{ content: '这件事我想了很久，你觉得我该不该继续？' }]), 'complex')
+  assert.equal(classifyCompanionReplyMode([{
+    content: '这阵子我一直有点低落，脑子里事情很多，睡得也不太好。我知道自己该慢慢来，但有时候还是会突然觉得很累，不知道怎么跟身边的人解释。'
+  }]), 'complex')
+  assert.equal(classifyCompanionReplyMode([{ content: '我真的不想活了' }]), 'safety')
+  assert.deepEqual(selectTurnLifeContext({
+    recent30Days: { moodDays: [{ date: '2026-07-29' }], weightRecords: [{ weight: 70 }] }
+  }, [{ content: '亲亲' }]), {})
 })

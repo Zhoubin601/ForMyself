@@ -43,6 +43,20 @@ const primaryReasonForDay = dayKey => {
   return phase < 3 ? 'missing-you' : 'warm-share'
 }
 
+export function buildSpecificOpenLoopFollowup(openLoop = {}) {
+  let subject = cleanText(openLoop?.content)
+    .replace(/^(?:哥哥还没回答|我还想知道|我们还没聊完|关于)/, '')
+    .replace(/(?:下次|以后).{0,30}$/, '')
+    .replace(/(?:可以|自然地)?(?:延续|接着聊)(?:这个)?话题[。.]?$/, '')
+    .trim()
+  if (
+    subject.length < 4 ||
+    /^(?:那件事|那个事|那个问题|之前的事|以后再说|下次再聊)[。.]?$/.test(subject)
+  ) return ''
+  subject = characterSlice(subject.replace(/[。！？!?]+$/, ''), 26)
+  return `刚想起“${subject}”——还想接着说吗？`
+}
+
 const sameDay = (timestamp, date) => (
   timestamp > 0 && formatChatDate(timestamp) === formatChatDate(date)
 )
@@ -158,8 +172,7 @@ const localProactiveMessage = ({
   reason = 'missing-you',
   dayKey = formatChatDate()
 }) => {
-  const loop = openLoops[0]?.content
-  if (sequence === 2 && loop) return `刚刚又想起你说的那件事了……后来怎么样啦？`
+  if (sequence === 2) return buildSpecificOpenLoopFollowup(openLoops[0])
   const missingYouPool = [
     `没什么事，就是有点想哥哥了🥺`,
     `刚刚发了会儿呆，回过神才发现又在想你💕`,
@@ -250,19 +263,25 @@ export async function generateProactiveOutbox({
   } catch (error) {
     console.warn('主动联系文案生成失败，已使用本地文案', error)
   }
-  return normalizeProactiveOutbox(slots.map(slot => ({
-    ...slot,
-    id: `proactive-${slot.dayKey}-${slot.sequence}`,
-    content: bySlot.get(slot.slotKey) || localProactiveMessage({
-      companionName,
-      state,
-      openLoops,
-      sequence: slot.sequence,
-      reason: slot.reason,
-      dayKey: slot.dayKey
-    }),
-    createdAt: now.getTime()
-  })))
+  return normalizeProactiveOutbox(slots.map(slot => {
+    const content = slot.sequence === 2
+      ? buildSpecificOpenLoopFollowup(openLoops[0])
+      : bySlot.get(slot.slotKey) || localProactiveMessage({
+          companionName,
+          state,
+          openLoops,
+          sequence: slot.sequence,
+          reason: slot.reason,
+          dayKey: slot.dayKey
+        })
+    if (!content) return null
+    return {
+      ...slot,
+      id: `proactive-${slot.dayKey}-${slot.sequence}`,
+      content,
+      createdAt: now.getTime()
+    }
+  }).filter(Boolean))
 }
 
 export function buildSmartEntryPrompt({

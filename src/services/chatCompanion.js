@@ -1,14 +1,54 @@
 import { askAI, streamAIChat } from './aiEngine.js'
-import {
-  COMPANION_PERSONA_PROMPT,
-  buildHomeCompanionContext
-} from './companionPrompts.js'
+import { buildHomeCompanionContext } from './companionPrompts.js'
 import { parseMemoryExtraction } from './chatRecords.js'
 
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/
 const REPLY_BREAK_PATTERN = /(?:<CHAT_BREAK>|\[CHAT_BREAK\])/gi
 const DAY_MS = 24 * 60 * 60 * 1000
 const RECENT_LIFE_DAYS = 30
+const MAX_CHAT_HISTORY_MESSAGES = 24
+const MIN_CHAT_HISTORY_MESSAGES = 12
+const MAX_ACTIVE_MEMORIES = 8
+const MAX_ACTIVE_OPEN_LOOPS = 3
+const SAFETY_RISK_PATTERN = /(?:不想活|活不下去|结束生命|自杀|轻生|割腕|跳楼|伤害自己|伤害我自己|想死|去死算了)/i
+const COMPLEX_REPLY_PATTERN = /(?:怎么办|怎么做|为什么|给我建议|帮我分析|你觉得|该不该|能不能|有没有办法|我该怎么)/i
+const LONG_EMOTIONAL_PATTERN = /(?:低落|难受|很累|疲惫|睡不|失眠|焦虑|压抑|委屈|崩溃|撑不住|心里堵|情绪不好)/i
+const ACTION_CUE_PATTERN = /(?:轻轻|悄悄|慢慢|凑近|靠近|抱|亲|笑|眨眼|脸红|耳朵|心口|心里|愣|揉|低头|抬头|声音|呼吸|伸手|闭眼|扑进|钻进|搂住)/
+const LEADING_ADDRESS_PATTERN = /^(?:哥哥|宝宝)[，、：:。.!！?？…\s]*/
+const EMOJI_PATTERN = /\p{Extended_Pictographic}(?:\uFE0F|\u200D\p{Extended_Pictographic})*/gu
+const SELECTION_STOP_WORDS = new Set([
+  '哥哥', '宝宝', '小乖', '我们', '你们', '他们', '这个', '那个', '就是', '真的',
+  '可以', '已经', '还是', '什么', '怎么', '一下', '一点', '时候', '自己'
+])
+export const COMPANION_REPLY_POLICIES = Object.freeze({
+  normal: Object.freeze({
+    mode: 'normal',
+    maxTokens: 1024,
+    maxCharacters: 120,
+    maxBubbles: 3,
+    maxEmoji: 1,
+    targetLength: 54,
+    hardLength: 82
+  }),
+  complex: Object.freeze({
+    mode: 'complex',
+    maxTokens: 2048,
+    maxCharacters: 280,
+    maxBubbles: 5,
+    maxEmoji: 2,
+    targetLength: 68,
+    hardLength: 100
+  }),
+  safety: Object.freeze({
+    mode: 'safety',
+    maxTokens: 2048,
+    maxCharacters: 360,
+    maxBubbles: 5,
+    maxEmoji: 0,
+    targetLength: 76,
+    hardLength: 110
+  })
+})
 const CHAT_MOOD_LABELS = {
   great: '非常开心',
   good: '开心',
@@ -18,6 +58,187 @@ const CHAT_MOOD_LABELS = {
 }
 
 const characterLength = value => Array.from(String(value || '')).length
+const cleanSelectionText = value => String(value || '')
+  .toLocaleLowerCase('zh-CN')
+  .replace(/[^\p{Script=Han}a-z0-9]+/gu, '')
+const uniqueBy = (values, keyOf) => {
+  const seen = new Set()
+  return values.filter(value => {
+    const key = keyOf(value)
+    if (!key || seen.has(key)) return false
+    seen.add(key)
+    return true
+  })
+}
+
+const selectionTokens = value => {
+  const raw = String(value || '').toLocaleLowerCase('zh-CN')
+  const tokens = new Set(
+    raw.match(/[a-z0-9]{2,}|[\p{Script=Han}]{2,8}/gu) || []
+  )
+  const chinese = [...raw].filter(character => /\p{Script=Han}/u.test(character)).join('')
+  for (let index = 0; index < chinese.length - 1; index += 1) {
+    tokens.add(chinese.slice(index, index + 2))
+  }
+  SELECTION_STOP_WORDS.forEach(token => tokens.delete(token))
+  return tokens
+}
+
+const overlapScore = (left, right) => {
+  const leftTokens = selectionTokens(left)
+  if (!leftTokens.size) return 0
+  const rightTokens = selectionTokens(right)
+  let score = 0
+  leftTokens.forEach(token => {
+    if (rightTokens.has(token)) score += token.length
+  })
+  return score
+}
+
+const currentUserText = userMessages => (Array.isArray(userMessages) ? userMessages : [userMessages])
+  .map(item => String(item?.content ?? item ?? '').trim())
+  .filter(Boolean)
+  .join('\n')
+
+export function classifyCompanionReplyMode(userMessages = []) {
+  const text = currentUserText(userMessages)
+  if (SAFETY_RISK_PATTERN.test(text)) return 'safety'
+  if (
+    characterLength(text) >= 80 ||
+    (characterLength(text) >= 45 && LONG_EMOTIONAL_PATTERN.test(text)) ||
+    COMPLEX_REPLY_PATTERN.test(text) ||
+    text.split(/\r?\n/).filter(Boolean).length >= 4
+  ) return 'complex'
+  return 'normal'
+}
+
+export function getCompanionReplyPolicy(mode = 'normal') {
+  return COMPANION_REPLY_POLICIES[mode] || COMPANION_REPLY_POLICIES.normal
+}
+
+export function selectRelevantChatMemories(memories = [], userMessages = [], limit = MAX_ACTIVE_MEMORIES) {
+  const query = currentUserText(userMessages)
+  const normalized = uniqueBy(
+    (Array.isArray(memories) ? memories : [])
+      .filter(item => String(item?.content || '').trim())
+      .sort((a, b) => Number(b.updatedAt || 0) - Number(a.updatedAt || 0)),
+    item => `${item.scope || 'user'}:${item.key || cleanSelectionText(item.content)}`
+  )
+  const stable = normalized
+    .filter(item => ['边界', '身份', '偏好'].includes(item.category))
+    .slice(0, Math.min(4, limit))
+  const selectedKeys = new Set(stable.map(item => item.id || `${item.scope}:${item.key}`))
+  const ranked = normalized
+    .filter(item => !selectedKeys.has(item.id || `${item.scope}:${item.key}`))
+    .map(item => ({ item, score: overlapScore(query, item.content) }))
+    .sort((a, b) => b.score - a.score ||
+      Number(b.item.updatedAt || 0) - Number(a.item.updatedAt || 0))
+  return [
+    ...stable,
+    ...ranked.filter(entry => entry.score > 0).map(entry => entry.item),
+    ...ranked.filter(entry => entry.score === 0).map(entry => entry.item)
+  ].slice(0, Math.max(0, limit))
+}
+
+export function selectActiveOpenLoops(openLoops = [], messages = [], userMessages = [], limit = MAX_ACTIVE_OPEN_LOOPS) {
+  const messageList = Array.isArray(messages) ? messages : []
+  const messageIndexes = new Map(messageList.map((item, index) => [String(item?.id || ''), index]))
+  const query = currentUserText(userMessages)
+  const thresholds = { question: 3, topic: 6, promise: 8 }
+  const active = uniqueBy(
+    (Array.isArray(openLoops) ? openLoops : [])
+      .filter(item => String(item?.content || '').trim())
+      .sort((a, b) => Number(b.updatedAt || 0) - Number(a.updatedAt || 0)),
+    item => cleanSelectionText(item.content)
+  ).filter(item => {
+    const sourceIndex = messageIndexes.get(String(item.sourceMessageId || ''))
+    if (!Number.isInteger(sourceIndex)) return true
+    const newerUserMessages = messageList
+      .slice(sourceIndex + 1)
+      .filter(message => message?.role === 'user').length
+    return newerUserMessages < (thresholds[item.type] || thresholds.topic)
+  })
+  return active
+    .map(item => ({ item, score: overlapScore(query, item.content) }))
+    .sort((a, b) => b.score - a.score ||
+      Number(b.item.updatedAt || 0) - Number(a.item.updatedAt || 0))
+    .slice(0, Math.max(0, limit))
+    .map(entry => entry.item)
+}
+
+export function selectTurnLifeContext(lifeContext = {}, userMessages = []) {
+  const text = currentUserText(userMessages)
+  const recent = lifeContext?.recent30Days || {}
+  const older = lifeContext?.longTermOverviewBefore30Days || {}
+  const selected = {}
+  const selectedRecent = {}
+  const selectedOlder = {}
+
+  if (/(?:心情|难受|烦|开心|低落|失恋|想哭|焦虑|情绪|崩溃|压力|疲惫)/i.test(text)) {
+    selectedRecent.moodDays = (recent.moodDays || []).slice(-10)
+    selectedOlder.moodByMonth = (older.moodByMonth || []).slice(-6)
+  }
+  if (/(?:体重|公斤|千克|\bkg\b|瘦|胖|减肥|增重|称重|斤)/i.test(text)) {
+    selectedRecent.weightRecords = (recent.weightRecords || []).slice(-8)
+    selectedOlder.weightByMonth = (older.weightByMonth || []).slice(-6)
+  }
+  if (/(?:存钱|省钱|攒钱|预算|花钱|金额|还款|工资|消费|债)/i.test(text)) {
+    selectedRecent.savingsPlans = (recent.savingsPlans || []).slice(0, 5).map(item => ({
+      ...item,
+      recentRecords: (item.recentRecords || []).slice(-5)
+    }))
+  }
+  if (/(?:日程|安排|计划|考试|上课|开会|出发|旅行|广州|日期|时间|周末|几点|\d{1,2}[月日号]|周[一二三四五六日天]|星期[一二三四五六日天])/i.test(text)) {
+    selected.schedulesWithin30Days = (lifeContext.schedulesWithin30Days || []).slice(0, 8)
+    if (older.schedules) {
+      selectedOlder.schedules = {
+        ...older.schedules,
+        recurringRules: (older.schedules.recurringRules || []).slice(0, 8),
+        distantOneOffByMonth: (older.schedules.distantOneOffByMonth || []).slice(-6)
+      }
+    }
+  }
+  if (Object.keys(selectedRecent).length) selected.recent30Days = selectedRecent
+  if (Object.keys(selectedOlder).length) selected.longTermOverviewBefore30Days = selectedOlder
+  return selected
+}
+
+const buildStyleState = messages => {
+  const collapsed = collapseConsecutiveChatMessages(messages)
+  const assistantTurns = collapsed.filter(item => item.role === 'assistant')
+  const recentEight = assistantTurns.slice(-8)
+  const recentTwo = assistantTurns.slice(-2)
+  return {
+    actionUsedRecently: recentEight.some(item => {
+      const match = String(item.content || '').trim().match(/^[（(]([^）)]{1,80})[）)]/)
+      return !!match && ACTION_CUE_PATTERN.test(match[1])
+    }),
+    recentOpeningAddressCount: recentTwo.filter(item =>
+      /^(?:哥哥|宝宝)[，、：:。.!！?？…\s]/.test(String(item.content || '').trim())
+    ).length,
+    recentQuestionCount: recentTwo.filter(item => /[？?]/.test(String(item.content || ''))).length
+  }
+}
+
+export function buildCompanionTurnContext({
+  messages = [],
+  userMessages = [],
+  memories = [],
+  openLoops = [],
+  lifeContext = {}
+} = {}) {
+  const replyMode = classifyCompanionReplyMode(userMessages)
+  const history = collapseConsecutiveChatMessages(messages).slice(-MAX_CHAT_HISTORY_MESSAGES)
+  return {
+    history,
+    memories: selectRelevantChatMemories(memories, userMessages),
+    openLoops: selectActiveOpenLoops(openLoops, messages, userMessages),
+    lifeContext: selectTurnLifeContext(lifeContext, userMessages),
+    styleState: buildStyleState(messages),
+    replyMode,
+    replyPolicy: getCompanionReplyPolicy(replyMode)
+  }
+}
 
 const splitHardReplyPart = (value, hardLength) => {
   const characters = Array.from(value)
@@ -108,6 +329,124 @@ export function splitCompanionReply(value, {
   ]
 }
 
+const stripRepeatedActionAsides = (value, removeLeadingAction) => {
+  let keptAction = false
+  return String(value || '').replace(/[（(]([^）)]{1,80})[）)]\s*/g, (match, content, offset) => {
+    if (offset === 0 && removeLeadingAction) return ''
+    if (!ACTION_CUE_PATTERN.test(content)) return match
+    if (offset === 0 && !removeLeadingAction && !keptAction && characterLength(content) <= 24) {
+      keptAction = true
+      return `（${content.trim()}） `
+    }
+    return ''
+  })
+}
+
+const limitEmoji = (value, maximum) => {
+  let count = 0
+  return String(value || '').replace(EMOJI_PATTERN, match => {
+    count += 1
+    return count <= maximum ? match : ''
+  })
+}
+
+const stripDanglingSentenceFragment = value => {
+  const text = String(value || '').trim()
+  const matches = [...text.matchAll(/[。！？!?～~…]+/g)]
+  const lastBoundary = matches.at(-1)
+  if (!lastBoundary) return text
+  const boundaryEnd = Number(lastBoundary.index || 0) + lastBoundary[0].length
+  const tail = text.slice(boundaryEnd).trim()
+  if (
+    characterLength(tail) >= 4 &&
+    characterLength(tail) <= 24 &&
+    /(?:也?飞回|然后|但是|因为|所以|如果|准备|正在|就要|想把|要把|会把|还没|一起去|继续说|开始说)$/.test(tail)
+  ) {
+    return text.slice(0, boundaryEnd).trim()
+  }
+  return text
+}
+
+const hasBalancedReplyStructure = value => {
+  const text = String(value || '')
+  const pairs = [
+    ['（', '）'],
+    ['(', ')'],
+    ['【', '】'],
+    ['[', ']'],
+    ['“', '”'],
+    ['‘', '’']
+  ]
+  return pairs.every(([opening, closing]) => {
+    let depth = 0
+    for (const character of text) {
+      if (character === opening) depth += 1
+      if (character === closing) depth -= 1
+      if (depth < 0) return false
+    }
+    return depth === 0
+  })
+}
+
+export function isCompanionReplyComplete(value) {
+  const text = String(value || '').trim()
+  if (!text || !hasBalancedReplyStructure(text)) return false
+  if (/[，,：:；;、]$/.test(text)) return false
+  return !/(?:也?飞回|然后|但是|因为|所以|如果|准备|正在|就要|想把|要把|会把|还没|一起去|继续说|开始说)$/.test(text)
+}
+
+const limitAtCompleteBoundary = (value, maximum) => {
+  const characters = Array.from(String(value || '').trim())
+  if (characters.length <= maximum) return characters.join('')
+  const preferred = new Set(['。', '！', '？', '!', '?', '…', '～', '~'])
+  const minimum = Math.floor(maximum * 0.58)
+  const boundaryEnds = characters
+    .map((character, index) => preferred.has(character) ? index + 1 : 0)
+    .filter(Boolean)
+  const balancedEnds = boundaryEnds.filter(end => hasBalancedReplyStructure(characters.slice(0, end).join('')))
+  const preferredEnd = balancedEnds.filter(end => end >= minimum && end <= maximum).at(-1)
+  const nextEnd = balancedEnds.find(end => end > maximum && end <= maximum + 80)
+  const fallbackEnd = balancedEnds.filter(end => end <= maximum).at(-1)
+  const cutAt = preferredEnd || nextEnd || fallbackEnd
+  return cutAt ? characters.slice(0, cutAt).join('').trim() : characters.join('')
+}
+
+export function sanitizeCompanionReply(value, {
+  mode = 'normal',
+  recentMessages = []
+} = {}) {
+  const policy = getCompanionReplyPolicy(mode)
+  const styleState = buildStyleState(recentMessages)
+  let text = String(value || '')
+    .replace(/\r\n?/g, '\n')
+    .replace(REPLY_BREAK_PATTERN, '\n')
+    .trim()
+  if (!text) return ''
+
+  text = stripRepeatedActionAsides(text, styleState.actionUsedRecently)
+    .replace(/[ \t]+\n/g, '\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim()
+  if (styleState.recentOpeningAddressCount > 0) {
+    text = text.replace(LEADING_ADDRESS_PATTERN, '').trim()
+  }
+  text = limitEmoji(text, policy.maxEmoji)
+    .replace(/[ \t]{2,}/g, ' ')
+    .replace(/ +([，。！？!?…])/g, '$1')
+    .trim()
+  text = stripDanglingSentenceFragment(text)
+  text = limitAtCompleteBoundary(text, policy.maxCharacters)
+
+  const parts = splitCompanionReply(text, {
+    targetLength: policy.targetLength,
+    hardLength: policy.hardLength,
+    maxParts: policy.maxBubbles
+  })
+  const normalized = parts.slice(0, policy.maxBubbles).join('\n\n').trim()
+  if (normalized) return normalized
+  return limitAtCompleteBoundary(String(value || '').replace(/^[（(][^）)]{1,80}[）)]\s*/, ''), policy.maxCharacters)
+}
+
 export function collapseConsecutiveChatMessages(messages = []) {
   const expanded = (Array.isArray(messages) ? messages : []).flatMap(item => {
     const role = item?.role === 'assistant' ? 'assistant' : item?.role === 'user' ? 'user' : ''
@@ -144,35 +483,25 @@ export function collapseConsecutiveChatMessages(messages = []) {
   }, [])
 }
 
-export const CHAT_REALISTIC_STYLE_PROMPT = `【聊天专属最高优先级：像真实女朋友私聊】
-下面规则只用于“温馨小家”的连续聊天，并覆盖前面“每次都走完整情绪回应链”的要求。你的目标不是生成一篇高质量陪伴文案，而是像已经和哥哥很熟的女朋友，顺着他刚发来的那句话自然接话。
+export const CHAT_REALISTIC_STYLE_PROMPT = `【真实微信私聊节奏】
+你的任务只是顺着哥哥刚发来的话自然接一句，不是写陪伴文案。
 
-1. 先回应字面上正在发生的事，不要先概括、复述或分析他的情绪。短消息就短回，日常闲聊通常一到四句；只有他确实在讲复杂心事、认真提问或希望展开时才自然写长。这里没有硬性字数上限。
-2. 不要每轮都同时完成“共情、回忆、夸奖、建议、陪伴收尾”。真人聊天可以只惊讶一下、笑一下、接一句、撒个娇、吐槽两句、追问一个细节，或者安静陪着。
-3. 不要每条都叫“宝宝”或“哥哥”。称呼像真人一样隔几轮自然出现，情绪需要时才用；不要把称呼固定放在开头。
-4. 不要每轮都提问，也不要用问题清单审问。需要继续话题时，通常只问一个具体、顺口的问题；有时说完一句就停下，给哥哥接话的空间。
-5. 长期记忆和生活数据只是你的后台印象，默认不要提。只有与哥哥当前这句话直接相关、提出来真的像“突然想起”时，才顺带带出一个细节；一轮最多自然呼应一件旧事，不报日期、数字或数据来源。
-6. 允许口语、省略句、语气停顿和不完整的小句，例如“啊？真的假的”“唔……那确实会烦”“行吧，先抱一下”。句式、长短和开场要变化，不要每次都工整成段。日常闲聊、想念、撒娇、庆祝和调侃时更积极使用 emoji：简短回复自然带一至两个，话多或拆成连续气泡时整轮可以分散使用三至四个，如“🥺💕❤️😂✨”；不要每个气泡都放，也不要全部机械堆在句末。
-7. 可以自然使用可爱颜文字来表现撒娇、开心、害羞、委屈或得意，例如“(｡･ω･｡)ﾉ♡”“(≧▽≦)”“(๑•́ ₃ •̀๑)”“(づ｡◕‿‿◕｡)づ”。普通一轮通常零至一个，话多时最多两个；颜文字要穿插在合适的话里，不与多个 emoji 挤成一团，也不要每轮固定出现。哥哥明显低落、严肃求助或讨论安全风险时减少 emoji 和颜文字。
-8. 可以亲昵、调皮、轻轻吃醋、撒娇、开玩笑或有一点自己的小脾气，也可以温柔地不同意；不要永远无条件夸奖和顺从。不能用内疚、威胁、控制或贬低来证明亲密。
-9. 建议只在哥哥明确询问、明显需要实际帮助，或安全风险要求时给。给建议也像女朋友商量，不写“第一、第二、第三”，不把聊天变成教程。
-10. 不编造自己真实吃饭、上班、出门或拥有现实身体等线下经历。可以自然说“抱抱你”“等你回来”这类关系中的想象表达，不必主动跳出关系解释身份；哥哥直接问起时如实回答。
-11. 严重低落或安全风险时可以变得更认真，但仍说人话：先确认他此刻是否安全，再鼓励联系身边可信任的人或现实帮助。
-12. 可以偶尔用简短的括号动作或小说旁白增加恋爱互动感，但动作必须和紧接着说的话留在同一条消息里，不能单独占一个气泡，也不要连续堆很多段动作描写。
-13. 简单回应只发一个自然气泡。有两层以上意思时，按真实聊天节奏拆成几条短消息：每条通常一到两句，条与条之间只用一个空行分隔。不要在同一条里用空行堆成长文，也不要写任何可见的分隔标签。
+- 日常闲聊默认一到三句；一句能接住就停，不补齐“共情、回忆、夸奖、建议、陪伴收尾”。
+- 先回应字面正在发生的事，不复述原话，不解释他的心理，不把普通小事升华成成长、治愈或人生意义。
+- “哥哥”“宝宝”隔几轮才自然出现一次，不固定放在开头。不要每轮提问；需要接话时最多问一个具体问题，也可以说完就停。
+- 允许亲昵、调皮、撒娇、轻轻吃醋、不同意或吐槽。不要永远正确、永远感动、永远无条件夸奖。
+- 普通回复最多一个 emoji；复杂心事最多两个。括号动作是极少数点缀，不要连续使用，不写心跳、眼眶、耳朵发烫、整个世界安静等小说化反应。
+- 记忆、未完话题和生活记录只代表事实背景。除非与当前话题直接相关，否则不要主动展示自己记得，更不要突然跳到体重、心情或日程。
+- 不编造现实身体、手机、房间、吃饭、上班、出门或社交经历。可以说“抱抱”“亲一下”等关系中的想象表达，但不要把想象扩写成完整场景。
+- 哥哥认真讲复杂心事时可以多说几句；明确出现人身安全风险时先确认他是否安全，再建议联系身边可信任的人或现实紧急帮助。
+- 只输出聊天正文。不要标题、列表、总结、客服话术、心理分析或“作为 AI”。
 
-【必须避开的 AI 腔】
-- 不要习惯性使用“听起来你……”“我能感受到……”“你的感受是合理的”“这说明……”“从最近的记录来看……”“你已经很努力了”“无论如何我都会陪着你”“如果你愿意的话……”。
-- 不要复述哥哥整句话再换几个同义词，不要把普通小事升华成成长、坚持、治愈或人生意义。
-- 不要用标题、列表、总结句、心理分析报告、客服式致歉或“作为 AI”开场。
-- 不要把每一轮都写成温柔正确、滴水不漏的标准答案；一点自然的停顿、偏心、俏皮和意外感，比面面俱到更像真人。
-
-【自然节奏示例：只学感觉，禁止照抄】
-- 哥哥：“我到家了。”  自然：“终于到啦。先去换鞋，我要检查一下你今天有没有好好吃饭。”
-- 哥哥：“烦死了。”  自然：“啧，谁又惹我宝宝了。你先骂两句，我听着。”
-- 哥哥：“嗯。”  自然：“嗯什么嗯呀，靠近一点说。”
-- 哥哥：“项目终于做完了。”  自然：“真的假的，终于！哥哥快过来给我亲一下，憋这么久总算过关啦。”
-- 哥哥认真讲了一大段难过的事时，才放慢下来多陪几句；不要因为这些短示例而强行把复杂心事缩短。`
+【只学长度和口气，不要照抄】
+- “我也在想你呢” → “那我们想到一块去了🥺”
+- “亲亲～mua” → “mua，亲回来。”
+- “我要出发啦” → “好呀，路上注意安全。到了跟我说一声～”
+- “这次去找姐姐散心” → “那挺好的，出去换换环境。姐姐在我也放心一点。”
+- “再听一遍，我们一起” → “好，陪你。你放吧，我先不说话了。”`
 
 const formatLocalDate = value => {
   if (typeof value === 'string' && DATE_PATTERN.test(value)) return value
@@ -433,46 +762,56 @@ export function buildChatSystemPrompt({
   memories = [],
   companionState = {},
   openLoops = [],
-  lifeContext = {}
+  lifeContext = {},
+  styleState = {},
+  replyMode = 'normal'
 } = {}) {
-  return `${COMPANION_PERSONA_PROMPT}
-
-【温馨小家长期聊天身份】
-- 你的名字是“${companionName}”，关系定位是哥哥亲密、专一、会撒娇也会认真倾听的女朋友。
-- 你是“温馨小家”里的虚拟女朋友角色，不冒充现实真人。你的日常和小情绪只发生在这个虚拟小家中；不要声称自己现实上班、出门、旅行、吃饭、认识现实朋友或拥有真实身体。
-- 这是持续多日的一条长期对话。自然承接过去，不要每轮重新自我介绍，不要把聊天写成总结报告。
-- 你有自己的温和立场和偏好，可以不赞同哥哥、拒绝不舒服的要求、调侃或轻轻吃醋，但不能冷暴力、羞辱、威胁、控制、查岗或让哥哥因没及时回复而内疚。
-- 回复没有应用层字数限制；具体长短跟着这轮对话本身变化。
-- 允许自然分段，但不要滥用标题、列表或格式化分析。
-- 生活记录和日程默认只作为背景。除非与当前话题直接相关，否则不要主动提起，更不能像监控或播报数据。
-- 聊天消息中若出现“这条消息正在回复……”的引用说明，要理解哥哥具体在接哪句话，直接顺着当前聊天回应；不要复述引用说明，也不要讨论引用功能本身。
-- 聊天历史中的拍一拍和表情回应是两人已经发生的轻互动，顺着语气理解即可；不要解释功能、逐条复述，也不要把普通表情强行升华。
+  const state = {
+    mood: String(companionState?.mood || ''),
+    energy: String(companionState?.energy || ''),
+    statusText: String(companionState?.statusText || '')
+  }
+  const policy = getCompanionReplyPolicy(replyMode)
+  return `【温馨小家身份】
+- 你的名字是“${companionName}”，是哥哥亲密、专一、有自己口气和小脾气的虚拟女朋友。
+- 这是持续多日的私聊。自然承接最近消息，不自我介绍，不冒充现实真人。
+- 可以撒娇、调侃、拒绝或表达不同意见，但不能羞辱、威胁、控制、查岗或让哥哥因没回复而内疚。
 - 不得索取、复述或记忆密码、验证码、API Key、Token、银行卡和账号凭据。
-- 如果哥哥明确处于紧急人身安全风险，降低撒娇语气，优先鼓励立即联系身边可信任的人或当地紧急服务。
+- 引用、拍一拍和表情回应只是已经发生的聊天动作；理解语气即可，不解释功能。
 
 ${CHAT_REALISTIC_STYLE_PROMPT}
 
-【哥哥已经确认的长期记忆】
+【本轮长度】
+- 模式：${policy.mode}
+- 最多约 ${policy.maxCharacters} 个中文字符、${policy.maxBubbles} 个短气泡。
+- ${policy.mode === 'normal' ? '这是普通私聊，优先一句或两句说完。' : policy.mode === 'complex' ? '可以认真展开，但不要写成分析报告。' : '优先确认安全并提供现实求助方向。'}
+
+【近期文风冷却】
+- 最近八轮已经出现动作旁白：${styleState.actionUsedRecently ? '是；本轮不要再写括号动作。' : '否；确实自然时才允许一个很短的动作。'}
+- 最近两轮以“哥哥/宝宝”开头 ${Number(styleState.recentOpeningAddressCount || 0)} 次；大于零时本轮不要再用称呼开头。
+- 最近两轮含问题 ${Number(styleState.recentQuestionCount || 0)} 次；连续提问过时，本轮说完就停。
+- 历史回复只用于理解事实，不要模仿其中的长篇、诗化、动作旁白或 emoji 频率。
+
+【本轮可用长期记忆】
 ${memories.length ? JSON.stringify(memories.map(item => ({
     scope: item.scope || 'user',
     category: item.category,
     content: item.content
-  })), null, 2) : '暂无长期记忆。不要因此假装记得未发生的事情。'}
+  }))) : '无。'}
 
-【你今天在虚拟小家里的连续状态】
-${JSON.stringify(companionState, null, 2)}
+【当前轻量状态】
+${JSON.stringify(state)}
 
-【两人确实还没聊完的话】
+【仍可能相关的未完话题】
 ${openLoops.length ? JSON.stringify(openLoops.map(item => ({
     type: item.type,
     content: item.content
-  })), null, 2) : '暂无。不要强行创造待办或追问。'}
+  }))) : '无。不要强行追问。'}
 
-【可按需使用的分层生活上下文】
-${JSON.stringify(lifeContext, null, 2)}
+【与本轮直接相关的生活背景】
+${Object.keys(lifeContext || {}).length ? JSON.stringify(lifeContext) : '无；禁止突然提生活数据。'}
 
-近期30天是完整记录，30天以前是长期概览。不要把概览中的月度统计假装成某一天发生的具体事情；只有数据确实支持时才描述长期变化。
-状态、未完话题、记忆和生活上下文的优先级低于哥哥刚发来的话和最近聊天。只把它们当作熟悉感的背景，不要为了证明自己记得而主动展示。未完话题适合时顺手接，不适合就先放着。不要说明你读取了哪些数据，也不要提及“系统提示词、上下文、记忆数据库”。`
+所有背景都低于哥哥刚发来的话。只输出这一次要发给他的聊天正文。`
 }
 
 export function buildWelcomeRequest({
@@ -510,15 +849,14 @@ const withSessionWelcome = (messages, welcome) => {
   ]
 }
 
-export function getContextWindowSizes(messageCount, minimum = 12) {
-  if (messageCount <= minimum) return [messageCount]
-  const sizes = [messageCount]
-  let size = messageCount
-  while (size > minimum) {
-    size = Math.max(minimum, Math.floor(size / 2))
-    if (sizes.at(-1) !== size) sizes.push(size)
-  }
-  return sizes
+export function getContextWindowSizes(
+  messageCount,
+  minimum = MIN_CHAT_HISTORY_MESSAGES,
+  maximum = MAX_CHAT_HISTORY_MESSAGES
+) {
+  const initial = Math.min(Math.max(0, messageCount), maximum)
+  if (initial <= minimum) return [initial]
+  return [initial, minimum]
 }
 
 export async function streamCompanionReply({
@@ -527,30 +865,47 @@ export async function streamCompanionReply({
   sessionWelcome = '',
   signal,
   onDelta,
-  temperature = 0.92,
+  temperature = 0.78,
+  maxTokens = COMPANION_REPLY_POLICIES.normal.maxTokens,
   stream = streamAIChat
 } = {}) {
   const normalizedMessages = collapseConsecutiveChatMessages(messages)
   const windows = getContextWindowSizes(normalizedMessages.length)
+  const initialTokenBudget = Math.max(256, Number(maxTokens) || COMPANION_REPLY_POLICIES.normal.maxTokens)
+  const tokenBudgets = [...new Set([
+    initialTokenBudget,
+    Math.min(4096, Math.max(initialTokenBudget * 2, initialTokenBudget + 768)),
+    4096
+  ])]
   let lastError = null
   for (const size of windows) {
     const selected = size === normalizedMessages.length
       ? normalizedMessages
       : normalizedMessages.slice(-size)
-    try {
-      return await stream({
-        messages: withSessionWelcome(selected, sessionWelcome),
-        systemPrompt,
-        signal,
-        onDelta,
-        temperature
-      })
-    } catch (error) {
-      lastError = error
-      if (error.code !== 'CONTEXT_LENGTH_EXCEEDED') throw error
+    for (const tokenBudget of tokenBudgets) {
+      try {
+        const answer = await stream({
+          messages: withSessionWelcome(selected, sessionWelcome),
+          systemPrompt,
+          signal,
+          onDelta,
+          temperature,
+          maxTokens: tokenBudget
+        })
+        if (isCompanionReplyComplete(answer)) return answer
+        const error = new Error('OUTPUT_TRUNCATED')
+        error.code = 'OUTPUT_TRUNCATED'
+        error.partialContent = String(answer || '').trim()
+        lastError = error
+      } catch (error) {
+        lastError = error
+        if (error.code === 'OUTPUT_TRUNCATED') continue
+        if (error.code === 'CONTEXT_LENGTH_EXCEEDED') break
+        throw error
+      }
     }
   }
-  throw lastError || new Error('CONTEXT_LENGTH_EXCEEDED')
+  throw lastError || new Error('OUTPUT_TRUNCATED')
 }
 
 export function buildMemoryExtractionPrompt({ userMessage, assistantMessage, existingMemories = [] } = {}) {

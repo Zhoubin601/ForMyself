@@ -9,6 +9,7 @@ import {
   mergeChatData,
   normalizeChatBackupSnapshot,
   normalizeChatData,
+  normalizeOpenLoops,
   parseMemoryExtraction
 } from '../src/services/chatRecords.js'
 
@@ -274,4 +275,34 @@ test('合并时同 ID 的较旧导入消息不会覆盖本机较新消息', () =
     messages: [{ id: 'same', role: 'user', content: '备份较旧', createdAt: 10 }]
   })
   assert.equal(merged.messages[0].content, '本机较新')
+})
+
+test('未完话题按内容去重并清理已经被多轮对话越过的旧问题', () => {
+  const duplicateLoops = normalizeOpenLoops([
+    { id: 'l1', key: '旧键一', type: 'question', content: '哥哥喜欢我主动一点吗？', createdAt: 10, updatedAt: 10 },
+    { id: 'l2', key: '旧键二', type: 'question', content: '哥哥喜欢我主动一点吗？', createdAt: 20, updatedAt: 20 }
+  ])
+  assert.equal(duplicateLoops.length, 1)
+  assert.equal(duplicateLoops[0].id, 'l2')
+
+  const data = normalizeChatData({
+    messages: [
+      { id: 'source', role: 'assistant', content: '喜欢我主动一点吗？', createdAt: 10 },
+      { id: 'u1', role: 'user', content: '先聊别的', createdAt: 20 },
+      { id: 'u2', role: 'user', content: '第二件事', createdAt: 30 },
+      { id: 'u3', role: 'user', content: '第三件事', createdAt: 40 }
+    ],
+    openLoops: [{
+      id: 'stale',
+      key: '主动偏好',
+      type: 'question',
+      content: '哥哥喜欢我主动一点吗？',
+      sourceMessageId: 'source',
+      createdAt: 10,
+      updatedAt: 10
+    }]
+  })
+
+  assert.equal(data.openLoops.length, 0)
+  assert.equal(data.messages.length, 4)
 })

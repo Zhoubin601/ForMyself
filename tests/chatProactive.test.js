@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import {
+  buildSpecificOpenLoopFollowup,
   buildProactivePrompt,
   buildProactiveSlots,
   generateProactiveOutbox,
@@ -158,4 +159,28 @@ test('主动文案生成失败会使用本地短消息，且通知正文限制�
   assert.equal(result.scheduled, 1)
   assert.ok(Array.from(scheduled[0].body).length <= 35)
   assert.match(scheduled[0].extra.url, /formyself:\/\/open\/chat/)
+})
+
+test('第二条主动消息必须点明未完话题，模糊话题直接跳过', async () => {
+  assert.equal(buildSpecificOpenLoopFollowup({ content: '那件事' }), '')
+  assert.match(
+    buildSpecificOpenLoopFollowup({ content: '哥哥还没回答周末要不要一起看电影。' }),
+    /周末要不要一起看电影/
+  )
+
+  const outbox = await generateProactiveOutbox({
+    slots: [{
+      slotKey: '2026-07-29:2',
+      dayKey: '2026-07-29',
+      sequence: 2,
+      reason: 'follow-up',
+      scheduledAt: at('2026-07-29T20:00:00+08:00'),
+      notificationId: 820000202
+    }],
+    openLoops: [{ content: '那件事' }],
+    ask: async () => ({ messages: [] }),
+    now: new Date('2026-07-29T12:00:00+08:00')
+  })
+
+  assert.deepEqual(outbox, [])
 })
