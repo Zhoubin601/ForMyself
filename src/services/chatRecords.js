@@ -1,11 +1,11 @@
 export const CHAT_BACKUP_TYPE = 'formyself-chat-backup'
-export const CHAT_BACKUP_VERSION = 3
-export const CHAT_DATA_VERSION = 3
+export const CHAT_BACKUP_VERSION = 4
+export const CHAT_DATA_VERSION = 4
 export const DEFAULT_COMPANION_NAME = '小暖'
 export const MAX_COMPANION_AVATAR_LENGTH = 1_500_000
 export const CHAT_MEMORY_SCOPES = Object.freeze(['user', 'companion', 'relationship'])
 export const CHAT_OPEN_LOOP_TYPES = Object.freeze(['topic', 'question', 'promise'])
-export const CHAT_PROACTIVE_ORIGINS = Object.freeze(['chat', 'entry', 'proactive'])
+export const CHAT_PROACTIVE_ORIGINS = Object.freeze(['chat', 'entry', 'proactive', 'followup'])
 export const CHAT_MESSAGE_TYPES = Object.freeze(['text', 'poke'])
 export const CHAT_REACTION_ACTORS = Object.freeze(['user', 'assistant'])
 export const CHAT_REACTION_EMOJIS = Object.freeze(['❤️', '😂', '🥺', '😤', '👍', '👀'])
@@ -18,12 +18,35 @@ export const DEFAULT_COMPANION_STATE = Object.freeze({
   currentThought: '',
   virtualMoment: '',
   attitude: '想和哥哥自然地说说话',
+  emotionArc: Object.freeze({
+    kind: 'none',
+    intensity: 0,
+    reason: '',
+    turns: 0,
+    repairDue: false
+  }),
   updatedAt: 0
+})
+
+export const DEFAULT_COMPANION_SELF_PROFILE = Object.freeze({
+  summary: '',
+  interests: Object.freeze([]),
+  dislikes: Object.freeze([]),
+  opinions: Object.freeze([]),
+  habits: Object.freeze([]),
+  updatedAt: 0
+})
+
+export const DEFAULT_CHAT_REALISM_SETTINGS = Object.freeze({
+  followupEnabled: true,
+  followupFrequency: 'occasional',
+  pacing: 'balanced'
 })
 
 export const DEFAULT_CHAT_PROACTIVE_SETTINGS = Object.freeze({
   enabled: true,
-  dailyMax: 2,
+  dailyMin: 0,
+  dailyMax: 3,
   activeStart: '09:00',
   activeEnd: '23:00'
 })
@@ -46,6 +69,8 @@ const VALID_REACTION_ACTORS = new Set(CHAT_REACTION_ACTORS)
 const VALID_REACTION_EMOJIS = new Set(CHAT_REACTION_EMOJIS)
 const VALID_MEMORY_SCOPES = new Set(CHAT_MEMORY_SCOPES)
 const VALID_OPEN_LOOP_TYPES = new Set(CHAT_OPEN_LOOP_TYPES)
+const VALID_EMOTION_ARCS = new Set(['none', 'tease', 'disagree', 'jealous'])
+const VALID_SELF_FIELDS = new Set(['interests', 'dislikes', 'opinions', 'habits'])
 const SENSITIVE_MEMORY_PATTERN = /(?:密码|口令|验证码|api[\s_-]*key|access[\s_-]*token|secret|银行卡|信用卡|账号凭据|私钥)/i
 const SAFE_AVATAR_PATTERN = /^data:image\/(?:png|jpeg|webp);base64,[a-z0-9+/=]+$/i
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/
@@ -53,6 +78,7 @@ const TIME_PATTERN = /^(?:[01]\d|2[0-3]):[0-5]\d$/
 
 const makeId = prefix => `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 9)}`
 const cleanText = value => String(value || '').trim()
+export const containsSensitiveChatText = value => SENSITIVE_MEMORY_PATTERN.test(cleanText(value))
 const normalizeCompanionAvatar = value => {
   const avatar = cleanText(value)
   return (
@@ -174,6 +200,224 @@ export function normalizeChatMemories(values = [], idFactory) {
   return [...byKey.values()].sort((a, b) => b.updatedAt - a.updatedAt || a.key.localeCompare(b.key))
 }
 
+const normalizeStringValues = (values, { limit = 12, itemLength = 80 } = {}) => {
+  if (!Array.isArray(values)) return []
+  const seen = new Set()
+  return values.map(value => cleanLimitedText(value, itemLength))
+    .filter(value => value && !SENSITIVE_MEMORY_PATTERN.test(value))
+    .filter(value => {
+      const key = value.toLocaleLowerCase('zh-CN').replace(/\s+/g, '')
+      if (!key || seen.has(key)) return false
+      seen.add(key)
+      return true
+    })
+    .slice(0, limit)
+}
+
+export function normalizeCompanionSelfProfile(value = {}) {
+  const profile = value && typeof value === 'object' && !Array.isArray(value) ? value : {}
+  return {
+    summary: cleanLimitedText(profile.summary, 300),
+    interests: normalizeStringValues(profile.interests),
+    dislikes: normalizeStringValues(profile.dislikes),
+    opinions: normalizeStringValues(profile.opinions),
+    habits: normalizeStringValues(profile.habits),
+    updatedAt: optionalTimestamp(profile.updatedAt)
+  }
+}
+
+export function normalizeSocialCharacter(value = {}, idFactory = () => makeId('cast')) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null
+  const name = cleanLimitedText(value.name, 30)
+  const relationship = cleanLimitedText(value.relationship, 50)
+  if (!name || !relationship || SENSITIVE_MEMORY_PATTERN.test(`${name}${relationship}${value.notes || ''}`)) return null
+  const createdAt = safeTimestamp(value.createdAt)
+  return {
+    id: cleanText(value.id) || idFactory(),
+    name,
+    relationship,
+    traits: normalizeStringValues(value.traits, { limit: 6, itemLength: 40 }),
+    notes: cleanLimitedText(value.notes, 200),
+    createdAt,
+    updatedAt: safeTimestamp(value.updatedAt, createdAt)
+  }
+}
+
+export function normalizeSocialCast(values = [], idFactory) {
+  if (!Array.isArray(values)) return []
+  const byName = new Map()
+  values.forEach(value => {
+    const normalized = normalizeSocialCharacter(value, idFactory)
+    if (!normalized) return
+    const key = normalized.name.toLocaleLowerCase('zh-CN')
+    const previous = byName.get(key)
+    if (!previous || normalized.updatedAt >= previous.updatedAt) byName.set(key, normalized)
+  })
+  return [...byName.values()].sort((a, b) => b.updatedAt - a.updatedAt).slice(0, 3)
+}
+
+export function normalizeVirtualEvent(value = {}, idFactory = () => makeId('event')) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null
+  const title = cleanLimitedText(value.title, 80)
+  const detail = cleanLimitedText(value.detail, 300)
+  if (!title || !detail || SENSITIVE_MEMORY_PATTERN.test(`${title}${detail}`)) return null
+  const createdAt = safeTimestamp(value.createdAt)
+  const rawDate = cleanText(value.date)
+  return {
+    id: cleanText(value.id) || idFactory(),
+    date: DATE_PATTERN.test(rawDate) ? rawDate : new Date(createdAt).toISOString().slice(0, 10),
+    title,
+    detail,
+    characterIds: normalizeStringValues(value.characterIds, { limit: 3, itemLength: 100 }),
+    status: value.status === 'resolved' ? 'resolved' : 'active',
+    createdAt,
+    updatedAt: safeTimestamp(value.updatedAt, createdAt)
+  }
+}
+
+export function normalizeVirtualEvents(values = [], idFactory) {
+  if (!Array.isArray(values)) return []
+  const byId = new Map()
+  let previousArchive = null
+  values.forEach(value => {
+    const normalized = normalizeVirtualEvent(value, idFactory)
+    if (!normalized) return
+    if (normalized.id === 'event-archive') {
+      previousArchive = normalized
+      return
+    }
+    const key = normalized.id || `${normalized.date}:${normalized.title}`
+    const previous = byId.get(key)
+    if (!previous || normalized.updatedAt >= previous.updatedAt) byId.set(key, normalized)
+  })
+  const byDate = new Map()
+  ;[...byId.values()].forEach(event => {
+    const previous = byDate.get(event.date)
+    if (!previous || event.updatedAt >= previous.updatedAt) byDate.set(event.date, event)
+  })
+  const detailed = [...byDate.values()]
+    .sort((a, b) => b.date.localeCompare(a.date) || b.updatedAt - a.updatedAt)
+  if (!detailed.length) return previousArchive ? [previousArchive] : []
+  const newestAt = new Date(`${detailed[0].date}T00:00:00Z`).getTime()
+  const cutoffAt = newestAt - 29 * 24 * 60 * 60 * 1000
+  const recent = detailed.filter(event => new Date(`${event.date}T00:00:00Z`).getTime() >= cutoffAt)
+  const older = detailed.filter(event => new Date(`${event.date}T00:00:00Z`).getTime() < cutoffAt)
+  if (!older.length && !previousArchive) return recent
+  const archiveTitles = normalizeStringValues([
+    ...(previousArchive ? [previousArchive.detail.replace(/^更早发生过：/, '')] : []),
+    ...older.map(event => event.title)
+  ], { limit: 20, itemLength: 80 })
+  const oldest = older.at(-1) || previousArchive
+  const archive = normalizeVirtualEvent({
+    id: 'event-archive',
+    date: oldest.date,
+    title: '更早的虚拟生活概览',
+    detail: `更早发生过：${archiveTitles.join('、')}`,
+    characterIds: [],
+    status: 'resolved',
+    createdAt: oldest.createdAt,
+    updatedAt: Math.max(previousArchive?.updatedAt || 0, ...older.map(event => event.updatedAt))
+  })
+  return archive ? [...recent, archive] : recent
+}
+
+export function normalizeEvolutionEntry(value = {}, idFactory = () => makeId('evolution')) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null
+  const field = VALID_SELF_FIELDS.has(value.field) ? value.field : ''
+  const nextValue = cleanLimitedText(value.nextValue, 100)
+  if (!field || !nextValue || SENSITIVE_MEMORY_PATTERN.test(nextValue)) return null
+  return {
+    id: cleanText(value.id) || idFactory(),
+    field,
+    previousValue: cleanLimitedText(value.previousValue, 100),
+    nextValue,
+    reason: cleanLimitedText(value.reason, 200),
+    sourceMessageIds: normalizeStringValues(value.sourceMessageIds, { limit: 12, itemLength: 100 }),
+    createdAt: safeTimestamp(value.createdAt),
+    revertedAt: optionalTimestamp(value.revertedAt)
+  }
+}
+
+export function normalizeEvolutionLog(values = [], idFactory) {
+  if (!Array.isArray(values)) return []
+  return values.map(value => normalizeEvolutionEntry(value, idFactory))
+    .filter(Boolean)
+    .sort((a, b) => b.createdAt - a.createdAt)
+    .slice(0, 100)
+}
+
+export function normalizeEvolutionCandidate(value = {}, idFactory = () => makeId('candidate')) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null
+  const field = VALID_SELF_FIELDS.has(value.field) ? value.field : ''
+  const candidateValue = cleanLimitedText(value.value, 100)
+  if (!field || !candidateValue || SENSITIVE_MEMORY_PATTERN.test(candidateValue)) return null
+  return {
+    id: cleanText(value.id) || idFactory(),
+    field,
+    value: candidateValue,
+    reason: cleanLimitedText(value.reason, 200),
+    evidenceDates: normalizeStringValues(value.evidenceDates, { limit: 10, itemLength: 10 })
+      .filter(item => DATE_PATTERN.test(item)),
+    sourceMessageIds: normalizeStringValues(value.sourceMessageIds, { limit: 12, itemLength: 100 }),
+    updatedAt: optionalTimestamp(value.updatedAt)
+  }
+}
+
+export function normalizeEvolutionCandidates(values = [], idFactory) {
+  if (!Array.isArray(values)) return []
+  const byKey = new Map()
+  values.forEach(value => {
+    const normalized = normalizeEvolutionCandidate(value, idFactory)
+    if (!normalized) return
+    const key = `${normalized.field}:${normalized.value.toLocaleLowerCase('zh-CN').replace(/\s+/g, '')}`
+    const previous = byKey.get(key)
+    if (!previous || normalized.updatedAt >= previous.updatedAt) byKey.set(key, normalized)
+  })
+  return [...byKey.values()].sort((a, b) => b.updatedAt - a.updatedAt).slice(0, 30)
+}
+
+export function normalizeChatRealismSettings(value = {}) {
+  const settings = value && typeof value === 'object' && !Array.isArray(value) ? value : {}
+  return {
+    followupEnabled: settings.followupEnabled !== false,
+    followupFrequency: ['occasional'].includes(cleanText(settings.followupFrequency))
+      ? cleanText(settings.followupFrequency)
+      : DEFAULT_CHAT_REALISM_SETTINGS.followupFrequency,
+    pacing: ['balanced'].includes(cleanText(settings.pacing))
+      ? cleanText(settings.pacing)
+      : DEFAULT_CHAT_REALISM_SETTINGS.pacing
+  }
+}
+
+export function normalizeFollowupItem(value = {}, idFactory = () => makeId('followup')) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null
+  const content = cleanLimitedText(value.content, 300)
+  const scheduledAt = optionalTimestamp(value.scheduledAt)
+  if (!content || !scheduledAt || SENSITIVE_MEMORY_PATTERN.test(content)) return null
+  const createdAt = safeTimestamp(value.createdAt)
+  const notificationId = Number(value.notificationId)
+  return {
+    id: cleanText(value.id) || idFactory(),
+    sourceMessageId: cleanLimitedText(value.sourceMessageId, 100),
+    content,
+    intentBrief: cleanLimitedText(value.intentBrief, 160),
+    scheduledAt,
+    notificationId: Number.isInteger(notificationId) ? notificationId : 0,
+    createdAt
+  }
+}
+
+export function normalizeFollowupOutbox(values = [], idFactory) {
+  if (!Array.isArray(values)) return []
+  const byId = new Map()
+  values.forEach(value => {
+    const normalized = normalizeFollowupItem(value, idFactory)
+    if (!normalized) return
+    byId.set(normalized.id, normalized)
+  })
+  return [...byId.values()].sort((a, b) => a.scheduledAt - b.scheduledAt).slice(0, 12)
+}
+
 export function normalizeCompanionState(value = {}) {
   const state = value && typeof value === 'object' && !Array.isArray(value) ? value : {}
   return {
@@ -186,6 +430,15 @@ export function normalizeCompanionState(value = {}) {
     currentThought: cleanLimitedText(state.currentThought, 160),
     virtualMoment: cleanLimitedText(state.virtualMoment, 200),
     attitude: cleanLimitedText(state.attitude, 160) || DEFAULT_COMPANION_STATE.attitude,
+    emotionArc: {
+      kind: VALID_EMOTION_ARCS.has(cleanText(state.emotionArc?.kind))
+        ? cleanText(state.emotionArc.kind)
+        : DEFAULT_COMPANION_STATE.emotionArc.kind,
+      intensity: Math.max(0, Math.min(2, Math.round(Number(state.emotionArc?.intensity) || 0))),
+      reason: cleanLimitedText(state.emotionArc?.reason, 120),
+      turns: Math.max(0, Math.min(3, Math.round(Number(state.emotionArc?.turns) || 0))),
+      repairDue: state.emotionArc?.repairDue === true
+    },
     updatedAt: optionalTimestamp(state.updatedAt)
   }
 }
@@ -248,10 +501,18 @@ export function pruneStaleOpenLoops(values = [], messages = []) {
 
 export function normalizeChatProactiveSettings(value = {}) {
   const settings = value && typeof value === 'object' && !Array.isArray(value) ? value : {}
-  const dailyMax = Number(settings.dailyMax)
+  const rawMax = Number(settings.dailyMax)
+  const dailyMax = Number.isInteger(rawMax)
+    ? Math.max(0, Math.min(5, rawMax))
+    : DEFAULT_CHAT_PROACTIVE_SETTINGS.dailyMax
+  const rawMin = Number(settings.dailyMin)
+  const dailyMin = Number.isInteger(rawMin)
+    ? Math.max(0, Math.min(dailyMax, rawMin))
+    : DEFAULT_CHAT_PROACTIVE_SETTINGS.dailyMin
   return {
     enabled: settings.enabled !== false,
-    dailyMax: dailyMax === 1 || dailyMax === 2 ? dailyMax : DEFAULT_CHAT_PROACTIVE_SETTINGS.dailyMax,
+    dailyMin,
+    dailyMax,
     activeStart: TIME_PATTERN.test(cleanText(settings.activeStart))
       ? cleanText(settings.activeStart)
       : DEFAULT_CHAT_PROACTIVE_SETTINGS.activeStart,
@@ -305,6 +566,12 @@ export function normalizeChatReadState(value = {}, messages = []) {
 
 export function normalizeChatData(value = {}) {
   const messages = normalizeChatMessages(value?.messages)
+  const socialCast = normalizeSocialCast(value?.socialCast)
+  const allowedCharacterIds = new Set(socialCast.map(item => item.id))
+  const virtualEvents = normalizeVirtualEvents(value?.virtualEvents).map(event => ({
+    ...event,
+    characterIds: event.characterIds.filter(id => allowedCharacterIds.has(id))
+  }))
   return {
     version: CHAT_DATA_VERSION,
     profile: {
@@ -313,27 +580,39 @@ export function normalizeChatData(value = {}) {
     },
     messages,
     memories: normalizeChatMemories(value?.memories),
+    selfProfile: normalizeCompanionSelfProfile(value?.selfProfile),
+    socialCast,
+    virtualEvents,
+    evolutionLog: normalizeEvolutionLog(value?.evolutionLog),
+    evolutionCandidates: normalizeEvolutionCandidates(value?.evolutionCandidates),
     companionState: normalizeCompanionState(value?.companionState),
     openLoops: pruneStaleOpenLoops(value?.openLoops, messages),
     proactiveOutbox: normalizeProactiveOutbox(value?.proactiveOutbox),
+    followupOutbox: normalizeFollowupOutbox(value?.followupOutbox),
     proactiveSettings: normalizeChatProactiveSettings(value?.proactiveSettings),
+    realismSettings: normalizeChatRealismSettings(value?.realismSettings),
     readState: normalizeChatReadState(value?.readState, messages)
   }
 }
 
 export function buildChatBackupSnapshot(value = {}, createdAt = new Date().toISOString()) {
+  const data = normalizeChatData(value)
   return {
     type: CHAT_BACKUP_TYPE,
     version: CHAT_BACKUP_VERSION,
     createdAt: String(createdAt),
-    data: normalizeChatData(value)
+    data: {
+      ...data,
+      proactiveOutbox: [],
+      followupOutbox: []
+    }
   }
 }
 
 export function normalizeChatBackupSnapshot(value = {}) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error('INVALID_CHAT_BACKUP')
   if (value.type !== CHAT_BACKUP_TYPE) throw new Error('INVALID_CHAT_BACKUP_TYPE')
-  if (![1, 2, CHAT_BACKUP_VERSION].includes(value.version)) throw new Error('UNSUPPORTED_CHAT_BACKUP_VERSION')
+  if (![1, 2, 3, CHAT_BACKUP_VERSION].includes(value.version)) throw new Error('UNSUPPORTED_CHAT_BACKUP_VERSION')
   if (!value.createdAt || Number.isNaN(Date.parse(value.createdAt))) throw new Error('INVALID_CHAT_BACKUP_DATE')
   if (!value.data || typeof value.data !== 'object' || Array.isArray(value.data)) throw new Error('INVALID_CHAT_BACKUP_DATA')
   return buildChatBackupSnapshot(value.data, value.createdAt)
@@ -353,12 +632,24 @@ export function mergeChatData(current = {}, incoming = {}, { preserveCompanionNa
     },
     messages: [...local.messages, ...imported.messages],
     memories: [...local.memories, ...imported.memories],
+    selfProfile: imported.selfProfile.updatedAt > local.selfProfile.updatedAt
+      ? imported.selfProfile
+      : local.selfProfile,
+    socialCast: normalizeSocialCast([...local.socialCast, ...imported.socialCast]),
+    virtualEvents: normalizeVirtualEvents([...local.virtualEvents, ...imported.virtualEvents]),
+    evolutionLog: normalizeEvolutionLog([...local.evolutionLog, ...imported.evolutionLog]),
+    evolutionCandidates: normalizeEvolutionCandidates([
+      ...local.evolutionCandidates,
+      ...imported.evolutionCandidates
+    ]),
     companionState: imported.companionState.updatedAt > local.companionState.updatedAt
       ? imported.companionState
       : local.companionState,
     openLoops: [...local.openLoops, ...imported.openLoops],
     proactiveOutbox: local.proactiveOutbox,
+    followupOutbox: local.followupOutbox,
     proactiveSettings: local.proactiveSettings,
+    realismSettings: local.realismSettings,
     readState: {
       lastReadAt: Math.max(local.readState.lastReadAt, imported.readState.lastReadAt)
     }

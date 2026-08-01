@@ -20,15 +20,28 @@ import {
   buildCompanionTurnContext,
   buildChatLifeContext,
   buildChatSystemPrompt,
+  isCompanionReplyComplete,
   sanitizeCompanionReply,
   splitCompanionReply,
   streamCompanionReply
 } from '../services/chatCompanion'
 import {
+  applySelfEvolutionProposals,
+  naturalPacingTarget,
+  bubblePacingDelay,
+  parsePlannedReplyOutput,
+  planChatBehavior,
+  shouldKeepDelayedFollowup
+} from '../services/chatRealism'
+import {
+  createDelayedFollowup,
+  syncChatFollowupNotifications
+} from '../services/chatFollowup'
+import {
   extractRelationshipUpdateForExchange,
   formatChatDate,
-  generateDailyCompanionState,
-  localDailyCompanionState
+  generateDailyCompanionWorld,
+  localDailyCompanionWorld
 } from '../services/chatRelationship'
 import {
   buildProactiveSlots,
@@ -85,6 +98,7 @@ let isStreamingRequest = false
 let latestGeneratedText = ''
 let replyDebounceTimer = null
 let proactiveRefreshTimer = null
+let followupTimer = null
 let generationRun = 0
 let smartEntryRun = 0
 let relationshipUpdateChain = Promise.resolve()
@@ -96,6 +110,7 @@ let messageGesture = null
 let highlightTimer = null
 let lastAvatarTapAt = 0
 let lastPokeAt = 0
+let deferredFollowupBrief = ''
 
 const companionName = computed(() => chatStore.profile.companionName)
 const companionAvatar = computed(() => chatStore.profile.companionAvatar)
@@ -184,14 +199,18 @@ const buildLifeContext = () => {
   }, today)
 }
 
-const currentSystemPrompt = turnContext => buildChatSystemPrompt({
+const currentSystemPrompt = (turnContext, behaviorPlan = null) => buildChatSystemPrompt({
   companionName: companionName.value,
   memories: turnContext.memories,
+  selfProfile: chatStore.selfProfile,
+  socialCast: chatStore.socialCast,
+  virtualEvents: chatStore.virtualEvents,
   companionState: chatStore.companionState,
   openLoops: turnContext.openLoops,
   lifeContext: turnContext.lifeContext,
   styleState: turnContext.styleState,
-  replyMode: turnContext.replyMode
+  replyMode: turnContext.replyMode,
+  behaviorPlan
 })
 
 const isNearBottom = () => {
@@ -286,8 +305,7 @@ const appendAssistantReply = async (
     if (message) messages.push(message)
     await scrollToBottom()
     if (index < parts.length - 1) {
-      const delay = Math.min(900, Math.max(350, 320 + Array.from(parts[index]).length * 7))
-      await wait(delay)
+      await wait(bubblePacingDelay(parts[index]))
     }
   }
   return messages
@@ -308,6 +326,39 @@ const cancelProactivePlan = () => {
   }).catch(error => console.warn('取消旧的主动联系计划失败', error))
 }
 
+const syncFollowupPlan = async ({ requestPermission = false } = {}) => {
+  await syncChatFollowupNotifications(chatStore.followupOutbox, chatStore.realismSettings, {
+    requestPermission,
+    now: new Date()
+  }).catch(error => console.warn('同步延迟补话通知失败', error))
+}
+
+const scheduleFollowupMaterialization = () => {
+  if (followupTimer) clearTimeout(followupTimer)
+  followupTimer = null
+  const next = chatStore.followupOutbox[0]
+  if (!next) return
+  const delay = Math.max(0, Math.min(2_147_000_000, next.scheduledAt - Date.now()))
+  followupTimer = setTimeout(async () => {
+    followupTimer = null
+    const materialized = chatStore.materializeDueFollowups(Date.now())
+    if (materialized.length) await scrollToBottom()
+    await syncFollowupPlan()
+    scheduleFollowupMaterialization()
+  }, delay)
+}
+
+const cancelPendingFollowups = () => {
+  const brief = chatStore.followupOutbox.map(item => item.intentBrief).filter(Boolean).join('；')
+  if (followupTimer) clearTimeout(followupTimer)
+  followupTimer = null
+  if (chatStore.followupOutbox.length) {
+    chatStore.setFollowupOutbox([])
+    syncFollowupPlan().catch(() => {})
+  }
+  return brief
+}
+
 const updateRelationshipNow = async (userMessages, assistantMessages) => {
   const sourceMessage = assistantMessages.at(-1)
   if (!sourceMessage) return
@@ -319,6 +370,9 @@ const updateRelationshipNow = async (userMessages, assistantMessages) => {
       sourceMessageId: sourceMessage.id,
       existingMemories: chatStore.memories,
       existingOpenLoops: chatStore.openLoops,
+      selfProfile: chatStore.selfProfile,
+      socialCast: chatStore.socialCast,
+      virtualEvents: chatStore.virtualEvents,
       currentState: chatStore.companionState,
       now: new Date()
     })
@@ -326,6 +380,17 @@ const updateRelationshipNow = async (userMessages, assistantMessages) => {
     if (update.resolvedLoopKeys.length) chatStore.resolveOpenLoops(update.resolvedLoopKeys)
     if (update.openLoopUpserts.length) chatStore.upsertOpenLoops(update.openLoopUpserts)
     chatStore.setCompanionState(update.companionState)
+    if (update.selfEvolutionProposals.length) {
+      chatStore.setEvolutionState(applySelfEvolutionProposals({
+        profile: chatStore.selfProfile,
+        candidates: chatStore.evolutionCandidates,
+        log: chatStore.evolutionLog,
+        proposals: update.selfEvolutionProposals,
+        sourceMessageId: sourceMessage.id,
+        date: formatChatDate(),
+        now: Date.now()
+      }))
+    }
     if (componentActive) queueProactiveRefresh()
   } catch (error) {
     console.warn('本轮关系状态整理失败', error)
@@ -342,22 +407,30 @@ const updateRelationship = (userMessages, assistantMessages) => {
 const ensureTodayState = async () => {
   const today = formatChatDate()
   if (chatStore.companionState.date === today) return chatStore.companionState
-  let state
+  let world
   try {
-    state = await generateDailyCompanionState({
+    world = await generateDailyCompanionWorld({
       companionName: companionName.value,
       now: new Date(),
       previousState: chatStore.companionState,
       memories: chatStore.memories,
       openLoops: chatStore.openLoops,
+      selfProfile: chatStore.selfProfile,
+      socialCast: chatStore.socialCast,
+      recentVirtualEvents: chatStore.virtualEvents,
       recentMessages: chatStore.messages.slice(-30)
     })
   } catch (error) {
     console.warn('今日女朋友状态生成失败，已使用本地状态', error)
-    state = localDailyCompanionState()
+    world = localDailyCompanionWorld()
   }
-  if (componentActive) chatStore.setCompanionState(state)
-  return state
+  if (componentActive) {
+    chatStore.setCompanionState(world.state)
+    if (world.virtualEvent && !chatStore.virtualEvents.some(item => item.date === today)) {
+      chatStore.addVirtualEvent(world.virtualEvent)
+    }
+  }
+  return world.state
 }
 
 const refreshProactivePlan = async () => {
@@ -379,6 +452,9 @@ const refreshProactivePlan = async () => {
       state: chatStore.companionState,
       memories: chatStore.memories,
       openLoops: chatStore.openLoops,
+      selfProfile: chatStore.selfProfile,
+      socialCast: chatStore.socialCast,
+      virtualEvents: chatStore.virtualEvents,
       recentMessages: chatStore.messages.slice(-30),
       now
     })
@@ -395,6 +471,9 @@ const refreshProactivePlan = async () => {
 
 const initializeCompanionContinuity = async () => {
   chatStore.materializeDueProactive(Date.now())
+  chatStore.materializeDueFollowups(Date.now())
+  await syncFollowupPlan()
+  scheduleFollowupMaterialization()
   await scrollToBottom(true)
   const state = await ensureTodayState()
   if (!componentActive) return
@@ -413,6 +492,9 @@ const initializeCompanionContinuity = async () => {
         state,
         memories: chatStore.memories,
         openLoops: chatStore.openLoops,
+        selfProfile: chatStore.selfProfile,
+        socialCast: chatStore.socialCast,
+        virtualEvents: chatStore.virtualEvents,
         recentMessages: chatStore.messages.slice(-24),
         now: new Date()
       })
@@ -459,8 +541,33 @@ const requestReply = async userMessages => {
     openLoops: chatStore.openLoops,
     lifeContext: buildLifeContext()
   })
+  const sourceMessageId = batch.at(-1)?.id || ''
+  const requestStartedAt = Date.now()
   try {
     const recentMessages = chatStore.messages.slice(-20)
+    let behaviorPlan = await planChatBehavior({
+      companionName: companionName.value,
+      replyMode: turnContext.replyMode,
+      pendingUserMessages: batch,
+      recentMessages,
+      memories: turnContext.memories,
+      selfProfile: chatStore.selfProfile,
+      socialCast: chatStore.socialCast,
+      virtualEvents: chatStore.virtualEvents,
+      companionState: chatStore.companionState,
+      deferredFollowupBrief
+    })
+    deferredFollowupBrief = ''
+    if (!shouldKeepDelayedFollowup({
+      sourceMessageId,
+      plan: behaviorPlan,
+      settings: chatStore.realismSettings
+    })) {
+      behaviorPlan = {
+        ...behaviorPlan,
+        followup: { ...behaviorPlan.followup, enabled: false }
+      }
+    }
     const interactionPlanPromise = planCompanionInteraction({
       companionName: companionName.value,
       recentMessages,
@@ -469,7 +576,7 @@ const requestReply = async userMessages => {
     })
     const answer = await streamCompanionReply({
       messages: turnContext.history,
-      systemPrompt: currentSystemPrompt(turnContext),
+      systemPrompt: currentSystemPrompt(turnContext, behaviorPlan),
       signal: controller.signal,
       maxTokens: turnContext.replyPolicy.maxTokens,
       onDelta: (_delta, full) => {
@@ -481,6 +588,8 @@ const requestReply = async userMessages => {
     isStreamingRequest = false
     if (!componentActive || runId !== generationRun) return
     latestGeneratedText = answer
+    const plannedReply = parsePlannedReplyOutput(answer)
+    if (!plannedReply.main) throw new Error('EMPTY_RESPONSE')
     const interaction = await interactionPlanPromise
     if (!componentActive || runId !== generationRun) return
     const targetMessage = chatStore.messages.find(item => item.id === interaction.targetMessageId)
@@ -489,7 +598,9 @@ const requestReply = async userMessages => {
     } else if (interaction.action === 'poke') {
       await appendPokeEvent('assistant')
     }
-    const assistantMessages = await appendAssistantReply(answer, 'complete', {
+    const remainingPacingDelay = naturalPacingTarget(sourceMessageId) - (Date.now() - requestStartedAt)
+    if (remainingPacingDelay > 0) await wait(remainingPacingDelay)
+    const assistantMessages = await appendAssistantReply(plannedReply.main, 'complete', {
       runId,
       replyTo: interaction.action === 'quote' ? toReplySnapshot(targetMessage) : null,
       replyPolicy: turnContext.replyPolicy,
@@ -497,6 +608,19 @@ const requestReply = async userMessages => {
     })
     latestGeneratedText = ''
     if (assistantMessages.length && runId === generationRun) {
+      if (behaviorPlan.followup.enabled && plannedReply.followup) {
+        const followup = createDelayedFollowup({
+          sourceMessageId,
+          content: plannedReply.followup,
+          intentBrief: behaviorPlan.followup.brief,
+          delaySeconds: behaviorPlan.followup.delaySeconds
+        })
+        if (followup) {
+          chatStore.setFollowupOutbox([...chatStore.followupOutbox, followup])
+          await syncFollowupPlan()
+          scheduleFollowupMaterialization()
+        }
+      }
       updateRelationship(batch, assistantMessages)
     }
   } catch (error) {
@@ -505,17 +629,26 @@ const requestReply = async userMessages => {
       if (
         runId === generationRun &&
         replyAbortReason === 'user' &&
-        latestGeneratedText.trim()
+        latestGeneratedText.trim() &&
+        isCompanionReplyComplete(parsePlannedReplyOutput(latestGeneratedText).main)
       ) {
-        await appendAssistantReply(latestGeneratedText, 'stopped', {
+        await appendAssistantReply(parsePlannedReplyOutput(latestGeneratedText).main, 'stopped', {
           runId,
           replyPolicy: turnContext.replyPolicy,
           recentMessages: chatStore.messages
         })
       }
     } else if (componentActive && runId === generationRun) {
-      retryMessageId.value = batch.at(-1).id
-      appToast('回复暂时没有送达，可以点重试', { tone: 'warning', duration: 3200 })
+      const fallbackText = turnContext.replyMode === 'safety'
+        ? '我在听。刚才回复没有完整送到，你现在安全吗？如果有立即危险，先联系身边可信任的人或当地紧急帮助。'
+        : '刚才那句没有完整送到，但我没有不理你。你再说一遍，我接着听。'
+      const fallbackMessages = await appendAssistantReply(fallbackText, 'complete', {
+        runId,
+        replyPolicy: turnContext.replyPolicy,
+        recentMessages: chatStore.messages
+      })
+      if (fallbackMessages.length) updateRelationship(batch, fallbackMessages)
+      appToast('原回复没有完整送达，已改用本地安全回复', { tone: 'warning', duration: 3200 })
     }
   } finally {
     if (runId === generationRun) {
@@ -584,6 +717,7 @@ const sendMessage = async () => {
       confirmText: '知道了'
     })
   }
+  deferredFollowupBrief = cancelPendingFollowups() || deferredFollowupBrief
   const quotedMessage = replyTarget.value
   const userMessage = chatStore.appendMessage('user', content, {
     replyTo: quotedMessage
@@ -652,6 +786,14 @@ const deleteMessage = async message => {
     title: '删除这条消息？',
     destructive: true
   })) return
+  const remainingFollowups = chatStore.followupOutbox.filter(item => (
+    item.sourceMessageId !== message.id && item.id !== message.proactiveId
+  ))
+  if (remainingFollowups.length !== chatStore.followupOutbox.length) {
+    chatStore.setFollowupOutbox(remainingFollowups)
+    await syncFollowupPlan()
+    scheduleFollowupMaterialization()
+  }
   chatStore.deleteMessage(message.id)
   if (replyTarget.value?.messageId === message.id) replyTarget.value = null
 }
@@ -883,6 +1025,9 @@ watch(() => chatStore.pendingFocusProactiveId, async proactiveId => {
 
 onMounted(async () => {
   chatStore.materializeDueProactive(Date.now())
+  chatStore.materializeDueFollowups(Date.now())
+  await syncFollowupPlan()
+  scheduleFollowupMaterialization()
   firstUnreadMessageId.value = chatStore.unreadMessages[0]?.id || ''
   await scrollToBottom(true)
   timelineReady.value = true
@@ -901,6 +1046,7 @@ onBeforeUnmount(() => {
   if (highlightTimer) clearTimeout(highlightTimer)
   if (replyDebounceTimer) clearTimeout(replyDebounceTimer)
   if (proactiveRefreshTimer) clearTimeout(proactiveRefreshTimer)
+  if (followupTimer) clearTimeout(followupTimer)
   replyAbortReason = 'unmount'
   replyController?.abort('unmount')
 })

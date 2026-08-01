@@ -9,7 +9,7 @@ import { formatChatDate } from './chatRelationship.js'
 
 export const CHAT_PROACTIVE_CHANNEL_ID = 'formyself-warm-home-v1'
 export const CHAT_PROACTIVE_NOTIFICATION_MIN = 820000000
-export const CHAT_PROACTIVE_NOTIFICATION_MAX = 821000000
+export const CHAT_PROACTIVE_NOTIFICATION_MAX = 823000000
 const TWO_HOURS = 2 * 60 * 60 * 1000
 const SIX_HOURS = 6 * 60 * 60 * 1000
 const DAY = 24 * 60 * 60 * 1000
@@ -35,7 +35,7 @@ const dayHash = dayKey => [...dayKey].reduce((result, character) => (
   (result * 31 + character.charCodeAt(0)) % 400000
 ), 17)
 const notificationIdFor = (dayKey, sequence) => (
-  CHAT_PROACTIVE_NOTIFICATION_MIN + dayHash(dayKey) * 2 + (sequence === 2 ? 1 : 0)
+  CHAT_PROACTIVE_NOTIFICATION_MIN + dayHash(dayKey) * 6 + Math.max(0, Math.min(5, sequence - 1))
 )
 const primaryReasonForDay = dayKey => {
   const timestamp = new Date(`${dayKey}T00:00:00`).getTime()
@@ -91,6 +91,12 @@ const primaryMinuteForDay = (dayKey, start, end) => {
   return Math.min(end - 15, Math.round(start + width * ratio))
 }
 
+const targetCountForDay = (dayKey, settings) => {
+  const minimum = Math.max(0, Math.min(5, Number(settings.dailyMin) || 0))
+  const maximum = Math.max(minimum, Math.min(5, Number(settings.dailyMax) || 0))
+  return minimum + (dayHash(`${dayKey}:count`) % (maximum - minimum + 1))
+}
+
 export function buildProactiveSlots({
   settings = {},
   messages = [],
@@ -100,7 +106,7 @@ export function buildProactiveSlots({
   days = 7
 } = {}) {
   const normalizedSettings = normalizeChatProactiveSettings(settings)
-  if (!normalizedSettings.enabled) return []
+  if (!normalizedSettings.enabled || normalizedSettings.dailyMax <= 0) return []
   const start = minuteOfDay(normalizedSettings.activeStart)
   let end = minuteOfDay(normalizedSettings.activeEnd)
   if (end <= start) end = 24 * 60
@@ -116,6 +122,7 @@ export function buildProactiveSlots({
   for (let offset = 0; offset < Math.max(1, Math.min(7, days)); offset += 1) {
     const day = addDays(now, offset)
     const dayKey = formatChatDate(day)
+    if (targetCountForDay(dayKey, normalizedSettings) <= 0) continue
     if (existingKeys.has(`${dayKey}:1`)) continue
     let scheduledAt = atMinute(day, primaryMinuteForDay(dayKey, start, end)).getTime()
     if (offset === 0) {
@@ -134,16 +141,18 @@ export function buildProactiveSlots({
     })
   }
 
-  if (normalizedSettings.dailyMax === 2 && openLoops.length) {
+  {
     const todayKey = formatChatDate(now)
+    const targetCount = targetCountForDay(todayKey, normalizedSettings)
     const proactiveToday = (Array.isArray(messages) ? messages : [])
       .filter(item => item.role === 'assistant' && item.origin === 'proactive' && sameDay(item.createdAt, now))
       .sort((a, b) => a.createdAt - b.createdAt)
     const lastProactive = proactiveToday.at(-1)
     const userResponded = lastProactive && lastUserAt > lastProactive.createdAt
-    const hasSecond = proactiveToday.some(item => String(item.proactiveId || '').endsWith('-2')) ||
-      existingKeys.has(`${todayKey}:2`)
-    if (userResponded && !hasSecond) {
+    const nextSequence = proactiveToday.length + 1
+    const hasNext = proactiveToday.some(item => String(item.proactiveId || '').endsWith(`-${nextSequence}`)) ||
+      existingKeys.has(`${todayKey}:${nextSequence}`)
+    if (userResponded && nextSequence <= targetCount && !hasNext) {
       const secondAt = Math.max(
         nowMs + 30 * 60 * 1000,
         lastUserAt + TWO_HOURS,
@@ -151,12 +160,12 @@ export function buildProactiveSlots({
       )
       if (secondAt <= atMinute(now, end - 10).getTime()) {
         slots.push({
-          slotKey: `${todayKey}:2`,
+          slotKey: `${todayKey}:${nextSequence}`,
           dayKey: todayKey,
-          sequence: 2,
-          reason: 'follow-up',
+          sequence: nextSequence,
+          reason: nextSequence === 2 && openLoops.length ? 'follow-up' : 'warm-share',
           scheduledAt: secondAt,
-          notificationId: notificationIdFor(todayKey, 2)
+          notificationId: notificationIdFor(todayKey, nextSequence)
         })
       }
     }
@@ -172,7 +181,7 @@ const localProactiveMessage = ({
   reason = 'missing-you',
   dayKey = formatChatDate()
 }) => {
-  if (sequence === 2) return buildSpecificOpenLoopFollowup(openLoops[0])
+  if (sequence === 2 && reason === 'follow-up') return buildSpecificOpenLoopFollowup(openLoops[0])
   const missingYouPool = [
     `没什么事，就是有点想哥哥了🥺`,
     `刚刚发了会儿呆，回过神才发现又在想你💕`,
@@ -203,6 +212,9 @@ export function buildProactivePrompt({
   state = {},
   memories = [],
   openLoops = [],
+  selfProfile = {},
+  socialCast = [],
+  virtualEvents = [],
   recentMessages = []
 } = {}) {
   return `你正在为“温馨小家”的虚拟女朋友 ${companionName} 准备未来几天可能主动发给哥哥的短消息。
@@ -215,6 +227,9 @@ export function buildProactivePrompt({
     content: item.content
   })))}
 未完话题：${JSON.stringify(openLoops.slice(0, 12))}
+她的稳定自我：${JSON.stringify(selfProfile)}
+固定虚拟人物：${JSON.stringify(socialCast)}
+近期虚拟事件：${JSON.stringify(virtualEvents.slice(0, 12))}
 最近聊天：${JSON.stringify(recentMessages.slice(-20).map(item => ({
     role: item.role,
     content: item.content
@@ -231,6 +246,7 @@ export function buildProactivePrompt({
 - sequence=2 才可以自然接续当天未完话题；未来日期的 sequence=1 不要引用可能已经解决的具体问题。
 - 不得责怪哥哥没回复，不说“为什么不理我”，不制造内疚、占有、控制或依赖焦虑。
 - 只能描述温馨小家内的虚拟片段，不虚构现实上班、出门、吃饭或真实身体经历。
+- 只能提到固定虚拟人物列表中的人物；有近期虚拟事件时优先自然分享或接续，不要每天只说“想哥哥”。
 - 只输出消息正文，不写日期、标题或解释。
 
 严格输出 JSON：
@@ -243,6 +259,9 @@ export async function generateProactiveOutbox({
   state = {},
   memories = [],
   openLoops = [],
+  selfProfile = {},
+  socialCast = [],
+  virtualEvents = [],
   recentMessages = [],
   ask = askAI,
   now = new Date()
@@ -256,6 +275,9 @@ export async function generateProactiveOutbox({
       state,
       memories,
       openLoops,
+      selfProfile,
+      socialCast,
+      virtualEvents,
       recentMessages
     })))
     bySlot = new Map((Array.isArray(parsed.messages) ? parsed.messages : [])
@@ -264,7 +286,7 @@ export async function generateProactiveOutbox({
     console.warn('主动联系文案生成失败，已使用本地文案', error)
   }
   return normalizeProactiveOutbox(slots.map(slot => {
-    const content = slot.sequence === 2
+    const content = slot.sequence === 2 && slot.reason === 'follow-up'
       ? buildSpecificOpenLoopFollowup(openLoops[0])
       : bySlot.get(slot.slotKey) || localProactiveMessage({
           companionName,
@@ -289,6 +311,9 @@ export function buildSmartEntryPrompt({
   state = {},
   memories = [],
   openLoops = [],
+  selfProfile = {},
+  socialCast = [],
+  virtualEvents = [],
   recentMessages = [],
   now = new Date()
 } = {}) {
@@ -302,6 +327,9 @@ export function buildSmartEntryPrompt({
 女朋友 ${companionName} 的当前状态：${JSON.stringify(state)}
 相关长期记忆：${JSON.stringify(memories.slice(0, 30))}
 未完话题：${JSON.stringify(openLoops.slice(0, 10))}
+她的稳定自我：${JSON.stringify(selfProfile)}
+固定虚拟人物：${JSON.stringify(socialCast)}
+近期虚拟事件：${JSON.stringify(virtualEvents.slice(0, 8))}
 最近聊天：${JSON.stringify(recentMessages.slice(-16))}
 
 请发一条会永久进入聊天记录的主动消息。像偏黏人、已经和哥哥很熟的女朋友自然接近他：有确实值得接续的未完话题时可以顺手接；否则优先因为“刚刚想哥哥了”而主动靠近，不需要编造任务或理由。

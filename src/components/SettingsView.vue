@@ -29,14 +29,16 @@ import {
 } from '../services/chatRecords'
 import { prepareCompanionAvatar } from '../services/chatAvatar'
 import {
-  generateDailyCompanionState,
-  localDailyCompanionState
+  generateDailyCompanionWorld,
+  localDailyCompanionWorld
 } from '../services/chatRelationship'
 import {
   buildProactiveSlots,
   generateProactiveOutbox,
   syncChatProactiveNotifications
 } from '../services/chatProactive'
+import { syncChatFollowupNotifications } from '../services/chatFollowup'
+import { generateCompanionWorldDraft } from '../services/chatRealism'
 
 import { useAuthStore } from '../stores/auth'
 import { useDebtStore } from '../stores/debt'
@@ -87,7 +89,6 @@ const companionAvatarInputRef = ref(null)
 const exportDataType = ref('full')
 const backupPickerOpen = ref(false)
 const autoLockPickerOpen = ref(false)
-const proactiveMaxPickerOpen = ref(false)
 const backupTypeOptions = [
   { value: 'full', label: '完整数据（全部数据与设置）' },
   { value: 'savings', label: '省钱数据' },
@@ -118,8 +119,12 @@ const memoryPage = ref(1)
 const isProcessingCompanionAvatar = ref(false)
 const isRegeneratingCompanionState = ref(false)
 const isSavingChatProactive = ref(false)
+const isWorldExpanded = ref(false)
+const isGeneratingWorldDraft = ref(false)
+const worldDraft = ref(null)
 const proactiveForm = ref({
   enabled: chatStore.proactiveSettings.enabled,
+  dailyMin: chatStore.proactiveSettings.dailyMin,
   dailyMax: chatStore.proactiveSettings.dailyMax,
   activeStart: chatStore.proactiveSettings.activeStart,
   activeEnd: chatStore.proactiveSettings.activeEnd
@@ -553,24 +558,281 @@ const deleteChatMemory = async memory => {
   appToast('长期记忆已删除')
 }
 
+const selfProfileSections = [
+  { field: 'interests', label: '喜欢' },
+  { field: 'dislikes', label: '不喜欢' },
+  { field: 'opinions', label: '自己的看法' },
+  { field: 'habits', label: '习惯' }
+]
+
+const editSelfSummary = async () => {
+  const value = await appPrompt('写一小段她稳定的自我介绍。', chatStore.selfProfile.summary, {
+    title: '编辑她的自我简介',
+    placeholder: '例如：有点黏人，也喜欢认真听哥哥讲烦恼'
+  })
+  if (value === null) return
+  chatStore.setSelfProfile({ summary: value })
+  appToast('她的自我简介已更新', { tone: 'success' })
+}
+
+const editSelfProfileList = async section => {
+  const current = chatStore.selfProfile[section.field] || []
+  const value = await appPrompt('用逗号分隔多项；留空可清空这一栏。', current.join('，'), {
+    title: `编辑${section.label}`,
+    placeholder: '每项尽量具体、简短'
+  })
+  if (value === null) return
+  chatStore.setSelfProfile({
+    [section.field]: String(value).split(/[，,\n]/).map(item => item.trim()).filter(Boolean)
+  })
+  appToast(`“${section.label}”已更新`, { tone: 'success' })
+}
+
+const addSocialCharacter = async () => {
+  if (chatStore.socialCast.length >= 3) return appAlert('固定人物最多保留 3 个')
+  const name = await appPrompt('只添加明确存在于温馨小家虚拟世界中的人物。', '', {
+    title: '添加固定人物',
+    placeholder: '人物名字'
+  })
+  if (name === null || !String(name).trim()) return
+  const relationship = await appPrompt('她和这个人物是什么关系？', '', {
+    title: '设置人物关系',
+    placeholder: '例如：一起做手账的朋友'
+  })
+  if (relationship === null || !String(relationship).trim()) return
+  const before = chatStore.socialCast.length
+  chatStore.setSocialCast([...chatStore.socialCast, { name, relationship, traits: [], notes: '' }])
+  if (chatStore.socialCast.length === before) return appAlert('人物信息不完整或包含不能保存的敏感内容')
+  appToast('固定人物已添加', { tone: 'success' })
+}
+
+const editSocialCharacter = async character => {
+  const relationship = await appPrompt('修改她和这个人物的关系。', character.relationship, {
+    title: `编辑 ${character.name}`,
+    placeholder: '人物关系'
+  })
+  if (relationship === null) return
+  const notes = await appPrompt('可以写性格或需要保持一致的备注。', character.notes, {
+    title: `补充 ${character.name} 的设定`,
+    placeholder: '人物性格与备注'
+  })
+  if (notes === null) return
+  chatStore.setSocialCast(chatStore.socialCast.map(item => (
+    item.id === character.id ? { ...item, relationship, notes, updatedAt: Date.now() } : item
+  )))
+  appToast('人物设定已更新', { tone: 'success' })
+}
+
+const deleteSocialCharacter = async character => {
+  if (!await appConfirm(`删除固定人物“${character.name}”后，之后的聊天不会再引用她。`, {
+    title: '删除固定人物？',
+    destructive: true
+  })) return
+  chatStore.setSocialCast(chatStore.socialCast.filter(item => item.id !== character.id))
+  chatStore.setVirtualEvents(chatStore.virtualEvents.map(event => ({
+    ...event,
+    characterIds: event.characterIds.filter(id => id !== character.id)
+  })))
+  appToast('固定人物已删除')
+}
+
+const deleteVirtualEvent = async event => {
+  if (!await appConfirm(`删除虚拟事件“${event.title}”？`, { title: '删除近期事件？', destructive: true })) return
+  chatStore.setVirtualEvents(chatStore.virtualEvents.filter(item => item.id !== event.id))
+  appToast('近期事件已删除')
+}
+
+const revertEvolution = async entry => {
+  if (!await appConfirm(`撤销她后来形成的“${entry.nextValue}”？`, { title: '撤销这次变化？' })) return
+  if (chatStore.revertEvolution(entry.id)) appToast('这次变化已撤销', { tone: 'success' })
+}
+
+const resetCompanionWorld = async () => {
+  if (!await appConfirm('只重置她的自我档案、固定人物、虚拟事件和变化记录；聊天与长期记忆会保留。', {
+    title: '重置她的世界？',
+    confirmText: '重置世界',
+    destructive: true
+  })) return
+  chatStore.setSelfProfile({ summary: '', interests: [], dislikes: [], opinions: [], habits: [], updatedAt: Date.now() })
+  chatStore.setSocialCast([])
+  chatStore.setVirtualEvents([])
+  chatStore.setEvolutionState({ candidates: [], log: [] })
+  worldDraft.value = null
+  appToast('她的世界已重置')
+}
+
+const buildCompanionWorldFromHistory = async () => {
+  if (!await appConfirm('为建立草案，最近 200 个合并角色消息和现有长期记忆将发送给当前配置的 AI 服务商。不会读取密码库、主密码、API Key 或账号凭据；只有你最终确认后才会保存。', {
+    title: '根据已有聊天建立她的自我？',
+    confirmText: '同意并生成'
+  })) return
+  isGeneratingWorldDraft.value = true
+  worldDraft.value = null
+  try {
+    worldDraft.value = await generateCompanionWorldDraft({
+      companionName: chatStore.profile.companionName,
+      messages: chatStore.messages,
+      memories: chatStore.memories
+    })
+    isWorldExpanded.value = true
+    if (worldDraft.value.generationMeta?.usedLocalFallback) {
+      appToast('部分分析格式异常，已整理为可编辑草案，请确认后再保存', { tone: 'warning', duration: 4200 })
+    } else if (worldDraft.value.generationMeta?.failedChunks) {
+      appToast(`草案已生成；${worldDraft.value.generationMeta.failedChunks} 个分块已自动跳过`, { tone: 'warning', duration: 4200 })
+    } else {
+      appToast('草案生成好了，请确认后再保存', { tone: 'success' })
+    }
+  } catch (error) {
+    console.error('根据历史建立她的世界失败', error)
+    const message = error?.code === 'MISSING_KEY' || error?.message === 'MISSING_KEY'
+      ? '尚未配置可用的 API Key。请先到通用配置完成 AI 设置和连接测试，再回来生成草案。'
+      : '当前 AI 服务没有完成任何可用的历史分析。请检查网络与 AI 连接后重试；现有档案没有被修改。'
+    appAlert(message, { title: '草案生成失败', tone: 'danger' })
+  } finally {
+    isGeneratingWorldDraft.value = false
+  }
+}
+
+const editWorldDraftSummary = async () => {
+  const value = await appPrompt('这是草案，不会在最终确认前写入。', worldDraft.value?.selfProfile?.summary || '', {
+    title: '修改草案简介',
+    placeholder: '她稳定的自我介绍'
+  })
+  if (value === null || !worldDraft.value) return
+  worldDraft.value = {
+    ...worldDraft.value,
+    selfProfile: { ...worldDraft.value.selfProfile, summary: String(value).trim() }
+  }
+}
+
+const editWorldDraftList = async section => {
+  if (!worldDraft.value) return
+  const current = worldDraft.value.selfProfile?.[section.field] || []
+  const value = await appPrompt('用逗号分隔多项；留空可清空这一栏。', current.join('，'), {
+    title: `修改草案·${section.label}`,
+    placeholder: '每项尽量具体、简短'
+  })
+  if (value === null) return
+  worldDraft.value = {
+    ...worldDraft.value,
+    selfProfile: {
+      ...worldDraft.value.selfProfile,
+      [section.field]: String(value).split(/[，,\n]/).map(item => item.trim()).filter(Boolean)
+    }
+  }
+}
+
+const removeWorldDraftCharacter = id => {
+  if (!worldDraft.value) return
+  worldDraft.value = {
+    ...worldDraft.value,
+    socialCast: worldDraft.value.socialCast.filter(item => item.id !== id),
+    virtualEvents: worldDraft.value.virtualEvents.map(event => ({
+      ...event,
+      characterIds: event.characterIds.filter(characterId => characterId !== id)
+    }))
+  }
+}
+
+const editWorldDraftCharacter = async character => {
+  if (!worldDraft.value) return
+  const relationship = await appPrompt('这是草案，确认前不会写入。', character.relationship, {
+    title: `修改 ${character.name} 的关系`,
+    placeholder: '人物关系'
+  })
+  if (relationship === null) return
+  worldDraft.value = {
+    ...worldDraft.value,
+    socialCast: worldDraft.value.socialCast.map(item => (
+      item.id === character.id ? { ...item, relationship: String(relationship).trim() } : item
+    ))
+  }
+}
+
+const removeWorldDraftEvent = id => {
+  if (!worldDraft.value) return
+  worldDraft.value = {
+    ...worldDraft.value,
+    virtualEvents: worldDraft.value.virtualEvents.filter(item => item.id !== id)
+  }
+}
+
+const editWorldDraftEvent = async event => {
+  if (!worldDraft.value) return
+  const detail = await appPrompt('修改这个虚拟生活事件的具体内容。', event.detail, {
+    title: `修改 ${event.title}`,
+    placeholder: '明确发生在温馨小家中的虚拟事件'
+  })
+  if (detail === null) return
+  worldDraft.value = {
+    ...worldDraft.value,
+    virtualEvents: worldDraft.value.virtualEvents.map(item => (
+      item.id === event.id ? { ...item, detail: String(detail).trim() } : item
+    ))
+  }
+}
+
+const confirmWorldDraft = async () => {
+  if (!worldDraft.value) return
+  if (!await appConfirm('确认后将写入她的自我档案、固定人物和初始虚拟事件，并用于之后的聊天。', {
+    title: '启用这份世界草案？',
+    confirmText: '确认启用'
+  })) return
+  chatStore.setSelfProfile(worldDraft.value.selfProfile)
+  chatStore.setSocialCast(worldDraft.value.socialCast)
+  chatStore.setVirtualEvents(worldDraft.value.virtualEvents)
+  worldDraft.value = null
+  appToast('她的世界已经启用', { tone: 'success' })
+}
+
+const setDailyMinimum = value => {
+  proactiveForm.value.dailyMin = Math.max(0, Math.min(5, Number(value)))
+  if (proactiveForm.value.dailyMin > proactiveForm.value.dailyMax) {
+    proactiveForm.value.dailyMax = proactiveForm.value.dailyMin
+  }
+}
+
+const setDailyMaximum = value => {
+  proactiveForm.value.dailyMax = Math.max(0, Math.min(5, Number(value)))
+  if (proactiveForm.value.dailyMax < proactiveForm.value.dailyMin) {
+    proactiveForm.value.dailyMin = proactiveForm.value.dailyMax
+  }
+}
+
+const setFollowupEnabled = async value => {
+  const settings = chatStore.setRealismSettings({ followupEnabled: value })
+  if (!settings.followupEnabled) chatStore.setFollowupOutbox([])
+  await syncChatFollowupNotifications(chatStore.followupOutbox, settings, {
+    requestPermission: false,
+    now: new Date()
+  }).catch(error => console.warn('刷新延迟补话通知失败', error))
+  appToast(settings.followupEnabled ? '延迟补话已开启' : '延迟补话已关闭')
+}
+
 const regenerateCompanionState = async () => {
   isRegeneratingCompanionState.value = true
   try {
-    let state
+    let world
     try {
-      state = await generateDailyCompanionState({
+      world = await generateDailyCompanionWorld({
         companionName: chatStore.profile.companionName,
         now: new Date(),
         previousState: chatStore.companionState,
         memories: chatStore.memories,
         openLoops: chatStore.openLoops,
-        recentMessages: chatStore.messages.slice(-30)
+        recentMessages: chatStore.messages.slice(-30),
+        selfProfile: chatStore.selfProfile,
+        socialCast: chatStore.socialCast,
+        recentVirtualEvents: chatStore.virtualEvents.slice(0, 12)
       })
     } catch (error) {
       console.warn('重新生成女朋友状态失败，已使用本地状态', error)
-      state = localDailyCompanionState()
+      world = localDailyCompanionWorld()
     }
-    chatStore.setCompanionState(state)
+    chatStore.setCompanionState(world.state)
+    if (world.virtualEvent && !chatStore.virtualEvents.some(item => item.date === world.virtualEvent.date)) {
+      chatStore.addVirtualEvent(world.virtualEvent)
+    }
     appToast('她今天的状态已经更新', { tone: 'success' })
   } finally {
     isRegeneratingCompanionState.value = false
@@ -597,6 +859,9 @@ const saveChatProactiveSettings = async () => {
       memories: chatStore.memories,
       openLoops: chatStore.openLoops,
       recentMessages: chatStore.messages.slice(-30),
+      selfProfile: chatStore.selfProfile,
+      socialCast: chatStore.socialCast,
+      virtualEvents: chatStore.virtualEvents.slice(0, 12),
       now
     })
     chatStore.setProactiveOutbox(outbox)
@@ -604,6 +869,11 @@ const saveChatProactiveSettings = async () => {
       requestPermission: settings.enabled,
       now
     })
+    await syncChatFollowupNotifications(
+      chatStore.followupOutbox,
+      chatStore.realismSettings,
+      { requestPermission: false, now }
+    )
     if (settings.enabled && result.permission !== 'granted') {
       appToast('主动联系已保存，但系统还没有通知权限', { tone: 'warning', duration: 3500 })
     } else {
@@ -626,10 +896,15 @@ const saveChatProactiveSettings = async () => {
 
 const cancelStoredChatProactive = async () => {
   chatStore.setProactiveOutbox([])
+  chatStore.setFollowupOutbox([])
   await syncChatProactiveNotifications([], { ...chatStore.proactiveSettings, enabled: false }, {
     requestPermission: false,
     now: new Date()
   }).catch(error => console.warn('清理温馨小家主动通知失败', error))
+  await syncChatFollowupNotifications([], { followupEnabled: false }, {
+    requestPermission: false,
+    now: new Date()
+  }).catch(error => console.warn('清理温馨小家补话通知失败', error))
 }
 
 const clearChatMessages = async () => {
@@ -733,11 +1008,17 @@ const setDataArray = async (data, overwrite) => {
     if (overwrite) await chatStore.replaceChatData(data)
     else await chatStore.mergeChatSnapshot(data)
     chatStore.materializeDueProactive(Date.now())
+    chatStore.materializeDueFollowups(Date.now())
     await syncChatProactiveNotifications(
       chatStore.proactiveOutbox,
       chatStore.proactiveSettings,
       { requestPermission: false, now: new Date() }
     ).catch(error => console.warn('导入温馨小家后刷新主动联系失败', error))
+    await syncChatFollowupNotifications(
+      chatStore.followupOutbox,
+      chatStore.realismSettings,
+      { requestPermission: false, now: new Date() }
+    ).catch(error => console.warn('导入温馨小家后刷新补话失败', error))
   } else {
     moodStore.updateMoodRecords(overwrite ? data : [...moodStore.moodRecords, ...data])
   }
@@ -797,9 +1078,15 @@ const restoreFullBackup = async (snapshot) => {
     })
     await syncScheduleNotifications(scheduleStore.snapshot)
     chatStore.materializeDueProactive(Date.now())
+    chatStore.materializeDueFollowups(Date.now())
     await syncChatProactiveNotifications(
       chatStore.proactiveOutbox,
       chatStore.proactiveSettings,
+      { requestPermission: false, now: new Date() }
+    )
+    await syncChatFollowupNotifications(
+      chatStore.followupOutbox,
+      chatStore.realismSettings,
       { requestPermission: false, now: new Date() }
     )
   } catch (error) {
@@ -1190,6 +1477,88 @@ const testAIConnection = async () => {
     </div>
 
     <div v-if="settingsScope === 'chat'" class="setting-section">
+      <h3 class="caption body-muted section-title">她的世界</h3>
+      <div class="store-utility-card companion-world-card">
+        <button class="world-disclosure-button" type="button" @click="isWorldExpanded = !isWorldExpanded">
+          <span>
+            <strong>{{ chatStore.selfProfile.summary || '还没有建立稳定的自我档案' }}</strong>
+            <small>{{ chatStore.socialCast.length }} 个固定人物 · {{ chatStore.virtualEvents.length }} 个近期事件</small>
+          </span>
+          <b :class="{ expanded: isWorldExpanded }">⌄</b>
+        </button>
+
+        <div v-if="isWorldExpanded" class="world-content">
+          <section class="world-block">
+            <header><strong>自我档案</strong><button class="text-link" type="button" @click="editSelfSummary">编辑简介</button></header>
+            <p class="world-summary">{{ chatStore.selfProfile.summary || '可以手动编辑，也可以根据已有聊天先生成一份草案。' }}</p>
+            <div class="world-profile-grid">
+              <button
+                v-for="section in selfProfileSections"
+                :key="section.field"
+                type="button"
+                @click="editSelfProfileList(section)"
+              >
+                <strong>{{ section.label }}</strong>
+                <span>{{ chatStore.selfProfile[section.field]?.join('、') || '点此补充' }}</span>
+              </button>
+            </div>
+          </section>
+
+          <section class="world-block">
+            <header>
+              <strong>固定虚拟人物（1–3 个）</strong>
+              <button class="text-link" type="button" :disabled="chatStore.socialCast.length >= 3" @click="addSocialCharacter">添加</button>
+            </header>
+            <p v-if="!chatStore.socialCast.length" class="world-empty">尚未启用固定人物；AI 不会临时创造名单外人物。</p>
+            <article v-for="character in chatStore.socialCast" :key="character.id" class="world-list-item">
+              <div><strong>{{ character.name }}</strong><span>{{ character.relationship }}</span><small v-if="character.notes">{{ character.notes }}</small></div>
+              <aside><button class="text-link" type="button" @click="editSocialCharacter(character)">编辑</button><button class="text-link danger-text" type="button" @click="deleteSocialCharacter(character)">删除</button></aside>
+            </article>
+          </section>
+
+          <section class="world-block">
+            <header><strong>近期虚拟事件</strong><small>每天最多 1 个</small></header>
+            <p v-if="!chatStore.virtualEvents.length" class="world-empty">聊天后会逐日形成温馨小家里的生活事件。</p>
+            <article v-for="event in chatStore.virtualEvents.slice(0, 8)" :key="event.id" class="world-list-item">
+              <div><strong>{{ event.title }}</strong><span>{{ event.detail }}</span><small>{{ event.date }}</small></div>
+              <aside><button class="text-link danger-text" type="button" @click="deleteVirtualEvent(event)">删除</button></aside>
+            </article>
+          </section>
+
+          <section class="world-block">
+            <header><strong>自我变化</strong><small>至少 3 轮、跨 2 天才生效</small></header>
+            <p v-if="!chatStore.evolutionLog.length" class="world-empty">还没有达到生效条件的变化。</p>
+            <article v-for="entry in chatStore.evolutionLog.slice(0, 8)" :key="entry.id" class="world-list-item">
+              <div><strong>{{ entry.nextValue }}</strong><span>{{ entry.reason || '来自多轮一致表现' }}</span></div>
+              <aside><span v-if="entry.revertedAt" class="world-reverted">已撤销</span><button v-else class="text-link" type="button" @click="revertEvolution(entry)">撤销</button></aside>
+            </article>
+          </section>
+
+          <div class="proactive-toggle-row followup-toggle-row">
+            <div><strong>允许偶尔延迟补一句</strong><span>合适轮次约占 10–20%；你插话后旧补话会取消并重新判断。</span></div>
+            <label class="switch-control"><input :checked="chatStore.realismSettings.followupEnabled" type="checkbox" @change="setFollowupEnabled($event.target.checked)" /><span></span></label>
+          </div>
+
+          <div class="world-actions">
+            <button class="button-secondary-pill" type="button" :disabled="isGeneratingWorldDraft" @click="buildCompanionWorldFromHistory">{{ isGeneratingWorldDraft ? '正在分块分析…' : '根据已有聊天建立她的自我' }}</button>
+            <button class="text-link danger-text" type="button" @click="resetCompanionWorld">重置她的世界</button>
+          </div>
+        </div>
+      </div>
+
+      <div v-if="worldDraft" class="store-utility-card world-draft-card">
+        <header><div><strong>待确认的世界草案</strong><span>尚未写入聊天数据</span></div><button class="text-link" type="button" @click="worldDraft = null">取消</button></header>
+        <button class="world-draft-summary" type="button" @click="editWorldDraftSummary">{{ worldDraft.selfProfile.summary || '点此补充她的自我简介' }}</button>
+        <div class="world-profile-grid">
+          <button v-for="section in selfProfileSections" :key="section.field" type="button" @click="editWorldDraftList(section)"><strong>{{ section.label }}</strong><span>{{ worldDraft.selfProfile[section.field]?.join('、') || '空' }}</span></button>
+        </div>
+        <div class="draft-chip-list"><span v-for="character in worldDraft.socialCast" :key="character.id">{{ character.name }} · {{ character.relationship }}<button type="button" aria-label="编辑草案人物" @click="editWorldDraftCharacter(character)">编辑</button><button type="button" aria-label="从草案移除人物" @click="removeWorldDraftCharacter(character.id)">×</button></span></div>
+        <div class="draft-event-list"><p v-for="event in worldDraft.virtualEvents" :key="event.id"><span>{{ event.date }} · {{ event.title }}</span><aside><button type="button" @click="editWorldDraftEvent(event)">编辑</button><button type="button" @click="removeWorldDraftEvent(event.id)">移除</button></aside></p></div>
+        <button class="button-primary full-width" type="button" @click="confirmWorldDraft">确认并启用草案</button>
+      </div>
+    </div>
+
+    <div v-if="settingsScope === 'chat'" class="setting-section">
       <h3 class="caption body-muted section-title">主动联系</h3>
       <div class="store-utility-card chat-proactive-card">
         <div class="proactive-toggle-row">
@@ -1202,18 +1571,17 @@ const testAIConnection = async () => {
             <span></span>
           </label>
         </div>
-        <label class="input-group">
-          <span class="caption">每天最多</span>
-          <button
-            class="backup-type-button"
-            type="button"
-            :disabled="!proactiveForm.enabled"
-            @click="proactiveMaxPickerOpen = true"
-          >
-            <span>{{ proactiveForm.dailyMax }} 条</span>
-            <b>›</b>
-          </button>
-        </label>
+        <div class="proactive-range-grid">
+          <label>
+            <span class="caption">每天期望最少 <b>{{ proactiveForm.dailyMin }} 条</b></span>
+            <input :value="proactiveForm.dailyMin" type="range" min="0" max="5" step="1" :disabled="!proactiveForm.enabled" @input="setDailyMinimum($event.target.value)" />
+          </label>
+          <label>
+            <span class="caption">每天期望最多 <b>{{ proactiveForm.dailyMax }} 条</b></span>
+            <input :value="proactiveForm.dailyMax" type="range" min="0" max="5" step="1" :disabled="!proactiveForm.enabled" @input="setDailyMaximum($event.target.value)" />
+          </label>
+        </div>
+        <p class="caption body-muted proactive-expectation-note">这是期望范围；未回复、刚聊完、安全抑制或通知权限不足时，实际次数可能更少。</p>
         <div class="proactive-time-grid">
           <label>
             <span class="caption">开始时间</span>
@@ -1751,23 +2119,6 @@ const testAIConnection = async () => {
           </button>
         </div>
       </div>
-      <div v-if="proactiveMaxPickerOpen" class="settings-picker-mask" @click="proactiveMaxPickerOpen = false">
-        <div class="settings-picker" @click.stop>
-          <div class="settings-picker-handle"></div>
-          <header>
-            <strong>每天最多主动联系</strong>
-            <button @click="proactiveMaxPickerOpen = false">取消</button>
-          </header>
-          <button
-            v-for="amount in [1, 2]"
-            :key="amount"
-            :class="{ selected: proactiveForm.dailyMax === amount }"
-            @click="proactiveForm.dailyMax = amount; proactiveMaxPickerOpen = false"
-          >
-            <span>{{ amount }} 条</span><b>✓</b>
-          </button>
-        </div>
-      </div>
     </Teleport>
 
   </div>
@@ -1845,7 +2196,8 @@ const testAIConnection = async () => {
 .danger-text { color: #d92d20; }
 .input-group { margin-bottom: 12px; }
 .store-utility-card { background: var(--canvas); border: 1px solid var(--hairline); border-radius: 18px; padding: 24px; margin-top: 8px; }
-.chat-profile-card, .chat-memory-card, .companion-state-card, .chat-proactive-card {
+.chat-profile-card, .chat-memory-card, .companion-state-card, .chat-proactive-card,
+.companion-world-card, .world-draft-card {
   background: linear-gradient(145deg, var(--theme-surface-tint), var(--canvas));
 }
 .chat-stat-row {
@@ -1921,19 +2273,87 @@ const testAIConnection = async () => {
 }
 .open-loop-summary strong { color: var(--primary); font-size: 11px; }
 .open-loop-summary span { font-size: 12px; line-height: 1.45; }
+.companion-world-card { padding: 0; overflow: hidden; }
+.world-disclosure-button {
+  display: flex; width: 100%; min-width: 0; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 18px; border: 0; color: var(--ink); background: transparent; font: inherit; text-align: left;
+}
+.world-disclosure-button > span { min-width: 0; }
+.world-disclosure-button strong, .world-disclosure-button small { display: block; overflow-wrap: anywhere; }
+.world-disclosure-button strong { font-size: 15px; line-height: 1.45; }
+.world-disclosure-button small { margin-top: 5px; color: var(--body-muted); font-size: 11px; }
+.world-disclosure-button > b { flex: 0 0 auto; color: var(--primary); font-size: 23px; transition: transform .2s; }
+.world-disclosure-button > b.expanded { transform: rotate(180deg); }
+.world-content { display: grid; gap: 12px; padding: 0 18px 18px; }
+.world-block { min-width: 0; padding: 14px; border: 1px solid var(--hairline); border-radius: 15px; background: rgba(255,255,255,.68); }
+.world-block > header { display: flex; min-width: 0; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+.world-block > header strong { min-width: 0; font-size: 13px; overflow-wrap: anywhere; }
+.world-block > header small { color: var(--body-muted); font-size: 10px; text-align: right; }
+.world-block button, .world-actions button { font: inherit; }
+.world-summary, .world-empty { margin: 0; color: var(--body-muted); font-size: 12px; line-height: 1.55; overflow-wrap: anywhere; }
+.world-profile-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: 11px; }
+.world-profile-grid > button {
+  min-width: 0; min-height: 70px; padding: 10px; border: 1px solid var(--hairline); border-radius: 12px;
+  color: var(--ink); background: rgba(255,255,255,.78); font: inherit; text-align: left;
+}
+.world-profile-grid strong, .world-profile-grid span { display: block; }
+.world-profile-grid strong { color: var(--primary); font-size: 11px; }
+.world-profile-grid span { margin-top: 5px; font-size: 11px; line-height: 1.45; overflow-wrap: anywhere; }
+.world-list-item { display: flex; min-width: 0; align-items: flex-start; justify-content: space-between; gap: 10px; padding: 10px 0; border-top: 1px solid var(--divider-soft); }
+.world-list-item:first-of-type { border-top: 0; }
+.world-list-item > div { min-width: 0; }
+.world-list-item strong, .world-list-item span, .world-list-item small { display: block; overflow-wrap: anywhere; }
+.world-list-item strong { font-size: 12px; }
+.world-list-item span { margin-top: 4px; color: var(--body-muted); font-size: 11px; line-height: 1.45; }
+.world-list-item small { margin-top: 4px; color: var(--body-muted); font-size: 9px; }
+.world-list-item aside { display: flex; flex: 0 0 auto; gap: 7px; }
+.world-list-item aside button { padding: 2px; border: 0; background: transparent; }
+.world-reverted { color: var(--body-muted); font-size: 10px; }
+.followup-toggle-row { margin: 0; border: 1px solid var(--hairline); }
+.world-actions { display: flex; min-width: 0; align-items: center; justify-content: space-between; gap: 10px; }
+.world-actions .button-secondary-pill { min-width: 0; white-space: normal; }
+.world-actions .text-link { flex: 0 0 auto; border: 0; background: transparent; }
+.world-draft-card { margin-top: 10px; }
+.world-draft-card > header { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.world-draft-card > header div { min-width: 0; }
+.world-draft-card > header strong, .world-draft-card > header span { display: block; }
+.world-draft-card > header strong { font-size: 15px; }
+.world-draft-card > header span { margin-top: 4px; color: var(--body-muted); font-size: 10px; }
+.world-draft-summary { width: 100%; margin-top: 13px; padding: 12px; border: 1px solid var(--hairline); border-radius: 13px; color: var(--ink); background: rgba(255,255,255,.75); font: inherit; font-size: 12px; line-height: 1.55; text-align: left; overflow-wrap: anywhere; }
+.draft-chip-list { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 13px; }
+.draft-chip-list > span { display: inline-flex; max-width: 100%; align-items: center; gap: 5px; padding: 6px 9px; border-radius: 999px; color: var(--primary); background: var(--theme-primary-soft); font-size: 10px; overflow-wrap: anywhere; }
+.draft-chip-list button, .draft-event-list button { border: 0; color: inherit; background: transparent; font: inherit; }
+.draft-event-list { margin: 11px 0; }
+.draft-event-list p { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin: 0; padding: 8px 0; border-top: 1px solid var(--divider-soft); font-size: 11px; line-height: 1.4; overflow-wrap: anywhere; }
+.draft-event-list p > span { min-width: 0; overflow-wrap: anywhere; }
+.draft-event-list aside { display: flex; flex: 0 0 auto; gap: 4px; }
+.draft-event-list button { flex: 0 0 auto; color: var(--primary); }
+.draft-event-list button:last-child { color: #d92d20; }
+.world-draft-card .full-width { width: 100%; }
 .companion-state-card .full-width, .chat-proactive-card .full-width { width: 100%; margin-top: 13px; }
 .proactive-toggle-row {
-  display: flex; align-items: center; justify-content: space-between; gap: 14px;
+  display: grid; grid-template-columns: minmax(0, 1fr) 52px; align-items: center; gap: 12px;
   margin-bottom: 16px; padding: 13px; border-radius: 15px; background: rgba(255,255,255,.72);
 }
 .proactive-toggle-row > div { min-width: 0; }
-.proactive-toggle-row strong, .proactive-toggle-row span { display: block; }
-.proactive-toggle-row strong { font-size: 14px; }
-.proactive-toggle-row span { margin-top: 4px; color: var(--body-muted); font-size: 11px; line-height: 1.45; }
+.proactive-toggle-row > .switch-control {
+  justify-self: end;
+  margin-right: -13px;
+}
+.proactive-toggle-row > div strong, .proactive-toggle-row > div span { display: block; }
+.proactive-toggle-row > div strong { font-size: 14px; }
+.proactive-toggle-row > div span { margin-top: 4px; color: var(--body-muted); font-size: 11px; line-height: 1.45; }
 .chat-proactive-card .input-group > span, .proactive-time-grid label > span {
   display: block; margin-bottom: 7px;
 }
 .chat-proactive-card select { width: 100%; appearance: auto; }
+.proactive-range-grid { display: grid; gap: 13px; margin-bottom: 12px; }
+.proactive-range-grid label { min-width: 0; }
+.proactive-range-grid .caption { display: flex; justify-content: space-between; gap: 8px; }
+.proactive-range-grid .caption b { color: var(--primary); font-weight: 700; }
+.proactive-range-grid input { width: 100%; margin: 8px 0 0; accent-color: var(--primary); }
+.proactive-range-grid input:disabled { opacity: .45; }
+.proactive-expectation-note { margin: -2px 0 13px; line-height: 1.5; }
 .proactive-time-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
 .proactive-time-grid label { min-width: 0; }
 :global(.proactive-time-field) {
@@ -1997,7 +2417,7 @@ const testAIConnection = async () => {
 .health-reminder-toggle strong, .health-reminder-toggle small { display: block; }
 .health-reminder-toggle strong { font-size: 15px; }
 .health-reminder-toggle small { margin-top: 4px; color: var(--body-muted); font-size: 11px; line-height: 1.4; }
-.health-reminder-toggle .switch-control i { position: absolute; inset: 0; border-radius: 999px; background: #d1d1d6; transition: background .2s; }
+.health-reminder-toggle .switch-control i { position: absolute; inset: 2px; border-radius: 999px; background: #d1d1d6; transition: background .2s; pointer-events: none; }
 .health-reminder-toggle .switch-control i::after { content: ''; position: absolute; width: 24px; height: 24px; top: 2px; left: 2px; border-radius: 50%; background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,.2); transition: transform .2s; }
 .health-reminder-toggle .switch-control input:checked + i { background: var(--primary); }
 .health-reminder-toggle .switch-control input:checked + i::after { transform: translateX(20px); }
@@ -2091,9 +2511,9 @@ const testAIConnection = async () => {
 .ai-reminder-option { display: flex; align-items: flex-start; gap: 6px; margin-top: 3px; color: var(--primary); font-size: 12px; line-height: 1.35; }
 .ai-reminder-option input { width: 14px; height: 14px; margin: 1px 0 0; accent-color: var(--primary); flex-shrink: 0; }
 .ai-reminder-option:has(input:disabled) { opacity: .45; }
-.switch-control { position: relative; width: 48px; height: 28px; flex-shrink: 0; }
-.switch-control input { position: absolute; opacity: 0; pointer-events: none; }
-.switch-control span { position: absolute; inset: 0; border-radius: 999px; background: #d1d1d6; transition: background .2s; cursor: pointer; }
+.switch-control { position: relative; display: block; width: 52px; height: 32px; margin: 0; align-self: center; justify-self: center; }
+.switch-control input { position: absolute; inset: 0; z-index: 2; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+.switch-control span { position: absolute; inset: 2px; border-radius: 999px; background: #d1d1d6; transition: background .2s; pointer-events: none; }
 .switch-control span::after { content: ''; position: absolute; width: 24px; height: 24px; top: 2px; left: 2px; border-radius: 50%; background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,.2); transition: transform .2s; }
 .switch-control input:checked + span { background: var(--primary); }
 .switch-control input:checked + span::after { transform: translateX(20px); }
@@ -2112,7 +2532,11 @@ const testAIConnection = async () => {
   .chat-settings-section .store-utility-card,
   .chat-memory-card,
   .companion-state-card,
-  .chat-proactive-card { padding: 18px; }
+  .chat-proactive-card,
+  .world-draft-card { padding: 18px; }
+  .companion-world-card { padding: 0; }
+  .world-actions { align-items: stretch; flex-direction: column; }
+  .world-actions .text-link { align-self: center; }
   .chat-stat-row { margin-bottom: 16px; }
   .chat-memory-note { font-size: 12px; line-height: 1.5; }
   .memory-category-grid button { min-height: 32px; padding-inline: 12px; font-size: 12px; }

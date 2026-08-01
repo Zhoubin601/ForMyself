@@ -4,13 +4,20 @@ import {
   createChatMemory,
   createChatMessage,
   mergeChatData,
+  normalizeChatRealismSettings,
   normalizeChatProactiveSettings,
+  normalizeCompanionSelfProfile,
   normalizeCompanionState,
   normalizeChatData,
+  normalizeEvolutionCandidates,
+  normalizeEvolutionLog,
+  normalizeFollowupOutbox,
   normalizeChatMemories,
   normalizeChatReadState,
   normalizeOpenLoops,
-  normalizeProactiveOutbox
+  normalizeProactiveOutbox,
+  normalizeSocialCast,
+  normalizeVirtualEvents
 } from '../services/chatRecords.js'
 import { createChatStorage } from '../services/chatStorage.js'
 
@@ -18,10 +25,17 @@ export const useChatStore = defineStore('chat', () => {
   const profile = ref(normalizeChatData().profile)
   const messages = ref([])
   const memories = ref([])
+  const selfProfile = ref(normalizeCompanionSelfProfile())
+  const socialCast = ref([])
+  const virtualEvents = ref([])
+  const evolutionLog = ref([])
+  const evolutionCandidates = ref([])
   const companionState = ref(normalizeCompanionState())
   const openLoops = ref([])
   const proactiveOutbox = ref([])
+  const followupOutbox = ref([])
   const proactiveSettings = ref(normalizeChatProactiveSettings())
+  const realismSettings = ref(normalizeChatRealismSettings())
   const readState = ref(normalizeChatReadState())
   const isDataLoaded = ref(false)
   const loadError = ref('')
@@ -36,10 +50,17 @@ export const useChatStore = defineStore('chat', () => {
     profile: profile.value,
     messages: messages.value,
     memories: memories.value,
+    selfProfile: selfProfile.value,
+    socialCast: socialCast.value,
+    virtualEvents: virtualEvents.value,
+    evolutionLog: evolutionLog.value,
+    evolutionCandidates: evolutionCandidates.value,
     companionState: companionState.value,
     openLoops: openLoops.value,
     proactiveOutbox: proactiveOutbox.value,
+    followupOutbox: followupOutbox.value,
     proactiveSettings: proactiveSettings.value,
+    realismSettings: realismSettings.value,
     readState: readState.value
   }))
   const unreadMessages = computed(() => messages.value.filter(item => (
@@ -69,10 +90,17 @@ export const useChatStore = defineStore('chat', () => {
       profile.value = result.data.profile
       messages.value = result.data.messages
       memories.value = result.data.memories
+      selfProfile.value = result.data.selfProfile
+      socialCast.value = result.data.socialCast
+      virtualEvents.value = result.data.virtualEvents
+      evolutionLog.value = result.data.evolutionLog
+      evolutionCandidates.value = result.data.evolutionCandidates
       companionState.value = result.data.companionState
       openLoops.value = result.data.openLoops
       proactiveOutbox.value = result.data.proactiveOutbox
+      followupOutbox.value = result.data.followupOutbox
       proactiveSettings.value = result.data.proactiveSettings
+      realismSettings.value = result.data.realismSettings
       readState.value = result.data.readState
       recoveredFromBackup.value = result.recovered
       canPersist.value = true
@@ -82,10 +110,17 @@ export const useChatStore = defineStore('chat', () => {
       profile.value = normalizeChatData().profile
       messages.value = []
       memories.value = []
+      selfProfile.value = normalizeCompanionSelfProfile()
+      socialCast.value = []
+      virtualEvents.value = []
+      evolutionLog.value = []
+      evolutionCandidates.value = []
       companionState.value = normalizeCompanionState()
       openLoops.value = []
       proactiveOutbox.value = []
+      followupOutbox.value = []
       proactiveSettings.value = normalizeChatProactiveSettings()
+      realismSettings.value = normalizeChatRealismSettings()
       readState.value = normalizeChatReadState()
       canPersist.value = false
     } finally {
@@ -181,6 +216,60 @@ export const useChatStore = defineStore('chat', () => {
     return memories.value.length !== size
   }
 
+  const setSelfProfile = value => {
+    selfProfile.value = normalizeCompanionSelfProfile({
+      ...selfProfile.value,
+      ...value,
+      updatedAt: value?.updatedAt || Date.now()
+    })
+    return selfProfile.value
+  }
+
+  const setSocialCast = values => {
+    socialCast.value = normalizeSocialCast(values)
+    return socialCast.value
+  }
+
+  const setVirtualEvents = values => {
+    virtualEvents.value = normalizeVirtualEvents(values)
+    return virtualEvents.value
+  }
+
+  const addVirtualEvent = value => {
+    virtualEvents.value = normalizeVirtualEvents([value, ...virtualEvents.value])
+    return virtualEvents.value[0] || null
+  }
+
+  const setEvolutionState = ({ profile, candidates, log } = {}) => {
+    if (profile) selfProfile.value = normalizeCompanionSelfProfile(profile)
+    if (candidates) evolutionCandidates.value = normalizeEvolutionCandidates(candidates)
+    if (log) evolutionLog.value = normalizeEvolutionLog(log)
+    return {
+      profile: selfProfile.value,
+      candidates: evolutionCandidates.value,
+      log: evolutionLog.value
+    }
+  }
+
+  const revertEvolution = id => {
+    const entry = evolutionLog.value.find(item => item.id === id && !item.revertedAt)
+    if (!entry) return false
+    const values = Array.isArray(selfProfile.value[entry.field])
+      ? [...selfProfile.value[entry.field]]
+      : []
+    const nextValues = values.filter(item => item !== entry.nextValue)
+    if (entry.previousValue && !nextValues.includes(entry.previousValue)) nextValues.push(entry.previousValue)
+    selfProfile.value = normalizeCompanionSelfProfile({
+      ...selfProfile.value,
+      [entry.field]: nextValues,
+      updatedAt: Date.now()
+    })
+    evolutionLog.value = normalizeEvolutionLog(evolutionLog.value.map(item => (
+      item.id === id ? { ...item, revertedAt: Date.now() } : item
+    )))
+    return true
+  }
+
   const setCompanionName = value => {
     profile.value = normalizeChatData({
       profile: {
@@ -231,6 +320,36 @@ export const useChatStore = defineStore('chat', () => {
     return proactiveOutbox.value
   }
 
+  const setFollowupOutbox = values => {
+    followupOutbox.value = normalizeFollowupOutbox(values)
+    return followupOutbox.value
+  }
+
+  const materializeDueFollowups = (now = Date.now()) => {
+    const due = followupOutbox.value.filter(item => item.scheduledAt <= now)
+    if (!due.length) return []
+    const existing = new Set(messages.value.map(item => item.proactiveId).filter(Boolean))
+    const materialized = due
+      .filter(item => !existing.has(item.id))
+      .map(item => appendMessage('assistant', item.content, {
+        createdAt: item.scheduledAt,
+        origin: 'followup',
+        proactiveId: item.id
+      }))
+      .filter(Boolean)
+    const dueIds = new Set(due.map(item => item.id))
+    followupOutbox.value = followupOutbox.value.filter(item => !dueIds.has(item.id))
+    return materialized
+  }
+
+  const setRealismSettings = value => {
+    realismSettings.value = normalizeChatRealismSettings({
+      ...realismSettings.value,
+      ...value
+    })
+    return realismSettings.value
+  }
+
   const setProactiveSettings = value => {
     proactiveSettings.value = normalizeChatProactiveSettings({
       ...proactiveSettings.value,
@@ -276,6 +395,7 @@ export const useChatStore = defineStore('chat', () => {
 
   const clearMessages = () => {
     messages.value = []
+    followupOutbox.value = []
     readState.value = normalizeChatReadState()
   }
   const clearMemories = () => { memories.value = [] }
@@ -284,10 +404,17 @@ export const useChatStore = defineStore('chat', () => {
     profile.value = empty.profile
     messages.value = []
     memories.value = []
+    selfProfile.value = empty.selfProfile
+    socialCast.value = []
+    virtualEvents.value = []
+    evolutionLog.value = []
+    evolutionCandidates.value = []
     companionState.value = empty.companionState
     openLoops.value = []
     proactiveOutbox.value = []
+    followupOutbox.value = []
     proactiveSettings.value = empty.proactiveSettings
+    realismSettings.value = empty.realismSettings
     readState.value = empty.readState
   }
 
@@ -298,10 +425,17 @@ export const useChatStore = defineStore('chat', () => {
     profile.value = data.profile
     messages.value = data.messages
     memories.value = data.memories
+    selfProfile.value = data.selfProfile
+    socialCast.value = data.socialCast
+    virtualEvents.value = data.virtualEvents
+    evolutionLog.value = data.evolutionLog
+    evolutionCandidates.value = data.evolutionCandidates
     companionState.value = data.companionState
     openLoops.value = data.openLoops
-    proactiveOutbox.value = data.proactiveOutbox
+    proactiveOutbox.value = []
+    followupOutbox.value = []
     proactiveSettings.value = data.proactiveSettings
+    realismSettings.value = data.realismSettings
     readState.value = data.readState
     await queuePersist()
     return data
@@ -312,10 +446,17 @@ export const useChatStore = defineStore('chat', () => {
     profile.value = data.profile
     messages.value = data.messages
     memories.value = data.memories
+    selfProfile.value = data.selfProfile
+    socialCast.value = data.socialCast
+    virtualEvents.value = data.virtualEvents
+    evolutionLog.value = data.evolutionLog
+    evolutionCandidates.value = data.evolutionCandidates
     companionState.value = data.companionState
     openLoops.value = data.openLoops
     proactiveOutbox.value = data.proactiveOutbox
+    followupOutbox.value = data.followupOutbox
     proactiveSettings.value = data.proactiveSettings
+    realismSettings.value = data.realismSettings
     readState.value = data.readState
     await queuePersist()
     return data
@@ -339,10 +480,17 @@ export const useChatStore = defineStore('chat', () => {
     profile,
     messages,
     memories,
+    selfProfile,
+    socialCast,
+    virtualEvents,
+    evolutionLog,
+    evolutionCandidates,
     companionState,
     openLoops,
     proactiveOutbox,
+    followupOutbox,
     proactiveSettings,
+    realismSettings,
     readState,
     unreadMessages,
     unreadCount,
@@ -361,6 +509,12 @@ export const useChatStore = defineStore('chat', () => {
     addMemory,
     updateMemory,
     deleteMemory,
+    setSelfProfile,
+    setSocialCast,
+    setVirtualEvents,
+    addVirtualEvent,
+    setEvolutionState,
+    revertEvolution,
     setCompanionName,
     setCompanionAvatar,
     setCompanionState,
@@ -368,11 +522,14 @@ export const useChatStore = defineStore('chat', () => {
     resolveOpenLoops,
     replaceOpenLoops,
     setProactiveOutbox,
+    setFollowupOutbox,
     setProactiveSettings,
+    setRealismSettings,
     markRead,
     setPendingFocusProactiveId,
     consumePendingFocusMessageId,
     materializeDueProactive,
+    materializeDueFollowups,
     clearMessages,
     clearMemories,
     resetAll,

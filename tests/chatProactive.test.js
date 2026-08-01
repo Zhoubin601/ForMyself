@@ -44,7 +44,7 @@ test('第一条未回应时当天不追发，刚聊过两小时内也不安排',
   const now = new Date('2026-07-27T12:00:00+08:00')
   const firstAt = at('2026-07-27T10:00:00+08:00')
   const slots = buildProactiveSlots({
-    settings: { enabled: true, dailyMax: 2, activeStart: '09:00', activeEnd: '23:00' },
+    settings: { enabled: true, dailyMin: 2, dailyMax: 2, activeStart: '09:00', activeEnd: '23:00' },
     messages: [{
       id: 'p1',
       role: 'assistant',
@@ -64,7 +64,7 @@ test('第一条未回应时当天不追发，刚聊过两小时内也不安排',
 
 test('哥哥回应过第一条且仍有未完话题时才允许当天第二条', () => {
   const slots = buildProactiveSlots({
-    settings: { enabled: true, dailyMax: 2, activeStart: '09:00', activeEnd: '23:00' },
+    settings: { enabled: true, dailyMin: 2, dailyMax: 2, activeStart: '09:00', activeEnd: '23:00' },
     messages: [
       {
         id: 'p1',
@@ -86,7 +86,7 @@ test('哥哥回应过第一条且仍有未完话题时才允许当天第二条',
 
 test('未来七天多数第一条主动联系以想哥哥为原因', () => {
   const slots = buildProactiveSlots({
-    settings: { enabled: true, dailyMax: 1, activeStart: '09:00', activeEnd: '23:00' },
+    settings: { enabled: true, dailyMin: 1, dailyMax: 1, activeStart: '09:00', activeEnd: '23:00' },
     now: new Date('2026-07-27T09:00:00+08:00'),
     days: 7
   })

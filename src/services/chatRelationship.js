@@ -1,8 +1,10 @@
 import { askAI } from './aiEngine.js'
 import {
+  containsSensitiveChatText,
   normalizeChatMemories,
   normalizeCompanionState,
-  normalizeOpenLoops
+  normalizeOpenLoops,
+  normalizeVirtualEvent
 } from './chatRecords.js'
 
 const cleanText = value => String(value || '').trim()
@@ -74,13 +76,32 @@ export function localDailyCompanionState(now = new Date()) {
   })
 }
 
+export function localDailyCompanionWorld(now = new Date()) {
+  const state = localDailyCompanionState(now)
+  return {
+    state,
+    virtualEvent: normalizeVirtualEvent({
+      date: formatChatDate(now),
+      title: '温馨小家的一点新念头',
+      detail: state.virtualMoment || '在温馨小家里给今天留下一点安静的心情。',
+      characterIds: [],
+      status: 'active',
+      createdAt: new Date(now).getTime(),
+      updatedAt: new Date(now).getTime()
+    })
+  }
+}
+
 export function buildDailyStatePrompt({
   companionName = '小暖',
   now = new Date(),
   previousState = {},
   memories = [],
   openLoops = [],
-  recentMessages = []
+  recentMessages = [],
+  selfProfile = {},
+  socialCast = [],
+  recentVirtualEvents = []
 } = {}) {
   return `你正在为“温馨小家”的虚拟女朋友 ${companionName} 生成今天的内部状态。
 这是虚拟陪伴角色的日常，不得声称她在现实中上班、出门、吃饭、拥有真实身体或真实社交关系。
@@ -96,28 +117,48 @@ export function buildDailyStatePrompt({
 最近聊天：${JSON.stringify(recentMessages.slice(-20).map(item => ({
     role: item.role,
     content: item.content
-  })))}
+})))}
+她的稳定自我：${JSON.stringify(selfProfile)}
+固定虚拟人物：${JSON.stringify(socialCast)}
+近期虚拟事件：${JSON.stringify(recentVirtualEvents.slice(0, 12))}
 
 生成轻量、连续、有一点个人感但不给哥哥压力的状态。她温柔但有主见，可以好奇、调皮、安静、黏人或有点困；不能靠嫉妒、占有、冷暴力或情绪勒索制造亲密。
 virtualMoment 必须明确发生在“温馨小家”这一虚拟空间内。
+每天最多生成一个新的 virtualEvent；只能引用固定人物列表里的 id，不得创造名单外人物。事件要延续兴趣、小计划或既有事件，不能声称现实上班、外出、吃饭或拥有真实身体。
 
 只输出严格 JSON：
-{"mood":"不超过12字","energy":"低|平稳|高","statusText":"不超过24字","currentThought":"不超过80字","virtualMoment":"不超过100字","attitude":"不超过80字"}`
+{"state":{"mood":"不超过12字","energy":"低|平稳|高","statusText":"不超过24字","currentThought":"不超过80字","virtualMoment":"不超过100字","attitude":"不超过80字"},"virtualEvent":{"title":"不超过40字","detail":"不超过120字","characterIds":[],"status":"active|resolved"}}`
 }
 
-export async function generateDailyCompanionState(options = {}, ask = askAI) {
+export async function generateDailyCompanionWorld(options = {}, ask = askAI) {
   const now = options.now instanceof Date ? options.now : new Date(options.now || Date.now())
   try {
     const parsed = extractJson(await ask(buildDailyStatePrompt({ ...options, now })))
-    return normalizeCompanionState({
-      ...parsed,
-      date: formatChatDate(now),
-      updatedAt: now.getTime()
-    })
+    const rawState = parsed?.state && typeof parsed.state === 'object' ? parsed.state : parsed
+    const allowedCharacterIds = new Set((Array.isArray(options.socialCast) ? options.socialCast : []).map(item => item.id))
+    return {
+      state: normalizeCompanionState({
+        ...rawState,
+        date: formatChatDate(now),
+        updatedAt: now.getTime()
+      }),
+      virtualEvent: normalizeVirtualEvent({
+        ...(parsed?.virtualEvent || {}),
+        date: formatChatDate(now),
+        characterIds: (Array.isArray(parsed?.virtualEvent?.characterIds) ? parsed.virtualEvent.characterIds : [])
+          .filter(id => allowedCharacterIds.has(id)),
+        createdAt: now.getTime(),
+        updatedAt: now.getTime()
+      })
+    }
   } catch (error) {
-    if (error?.message === 'MISSING_KEY') return localDailyCompanionState(now)
+    if (error?.message === 'MISSING_KEY') return localDailyCompanionWorld(now)
     throw error
   }
+}
+
+export async function generateDailyCompanionState(options = {}, ask = askAI) {
+  return (await generateDailyCompanionWorld(options, ask)).state
 }
 
 export function buildRelationshipUpdatePrompt({
@@ -126,6 +167,9 @@ export function buildRelationshipUpdatePrompt({
   assistantMessages = [],
   existingMemories = [],
   existingOpenLoops = [],
+  selfProfile = {},
+  socialCast = [],
+  virtualEvents = [],
   currentState = {},
   now = new Date()
 } = {}) {
@@ -140,6 +184,9 @@ export function buildRelationshipUpdatePrompt({
   })))}
 现有未完话题：${JSON.stringify(existingOpenLoops.slice(0, 30))}
 当前女朋友状态：${JSON.stringify(currentState)}
+当前自我档案：${JSON.stringify(selfProfile)}
+固定虚拟人物：${JSON.stringify(socialCast)}
+近期虚拟事件：${JSON.stringify(virtualEvents.slice(0, 12))}
 本轮哥哥连续消息：${JSON.stringify(userMessages.map(item => item.content || item))}
 本轮女朋友回复：${JSON.stringify(assistantMessages.map(item => item.content || item))}
 
@@ -151,10 +198,12 @@ export function buildRelationshipUpdatePrompt({
 - type 只能是 topic、question、promise；不得重复已有未完话题，语义相同时复用原 key。
 - resolvedLoopKeys 列出本轮已经自然完成的现有 key。不要让未完话题无限累积。
 - companionState 只做轻微连续调整；她可以开心、好奇、调皮、安静或有一点小情绪，但不得记录“被忽略所以惩罚哥哥”之类控制性状态。
+- selfEvolutionProposals 每轮最多两条，只能提出 interests、dislikes、opinions、habits 的缓慢变化候选；必须有本轮明确依据，不得把临时修辞或模型自己的猜测当稳定自我。
+- 轻微不同意、吐槽或小吃醋最多持续三轮；达到三轮或 repairDue=true 时必须把 emotionArc 调回 none，不得冷暴力、查岗、威胁或让哥哥内疚。
 - 不得把女朋友的猜测写成哥哥的事实，不保存普通寒暄。
 
 只输出严格 JSON：
-{"memoryUpserts":[{"key":"语义键","scope":"user|companion|relationship","category":"身份|偏好|习惯|目标|经历|关系|边界","content":"明确记忆"}],"openLoopUpserts":[{"key":"语义键","type":"topic|question|promise","content":"以后要自然接续的事"}],"resolvedLoopKeys":["已完成的key"],"companionState":{"mood":"不超过12字","energy":"低|平稳|高","statusText":"不超过24字","currentThought":"不超过80字","virtualMoment":"温馨小家内的虚拟片段","attitude":"不超过80字"}}`
+{"memoryUpserts":[{"key":"语义键","scope":"user|companion|relationship","category":"身份|偏好|习惯|目标|经历|关系|边界","content":"明确记忆"}],"openLoopUpserts":[{"key":"语义键","type":"topic|question|promise","content":"以后要自然接续的事"}],"resolvedLoopKeys":["已完成的key"],"selfEvolutionProposals":[{"field":"interests|dislikes|opinions|habits","value":"候选变化","reason":"本轮依据"}],"companionState":{"mood":"不超过12字","energy":"低|平稳|高","statusText":"不超过24字","currentThought":"不超过80字","virtualMoment":"温馨小家内的虚拟片段","attitude":"不超过80字","emotionArc":{"kind":"none|tease|disagree|jealous","intensity":0,"reason":"","turns":0,"repairDue":false}}}`
 }
 
 export function parseRelationshipUpdate(value, {
@@ -187,13 +236,43 @@ export function parseRelationshipUpdate(value, {
       .map(cleanText)
       .filter(Boolean)
   )].slice(0, 30)
+  const selfEvolutionProposals = (Array.isArray(parsed.selfEvolutionProposals)
+    ? parsed.selfEvolutionProposals
+    : [])
+    .map(item => ({
+      field: ['interests', 'dislikes', 'opinions', 'habits'].includes(item?.field) ? item.field : '',
+      value: cleanText(item?.value).slice(0, 100),
+      reason: cleanText(item?.reason).slice(0, 200)
+    }))
+    .filter(item => item.field && item.value && !containsSensitiveChatText(item.value))
+    .slice(0, 2)
+  const currentArc = normalizeCompanionState(currentState).emotionArc
+  const requestedState = normalizeCompanionState({
+    ...currentState,
+    ...(parsed.companionState || {})
+  })
+  let emotionArc = requestedState.emotionArc
+  if (currentArc.repairDue || currentArc.turns >= 3) {
+    emotionArc = { kind: 'none', intensity: 0, reason: '', turns: 0, repairDue: false }
+  } else if (emotionArc.kind !== 'none') {
+    const turns = currentArc.kind === emotionArc.kind ? Math.min(3, currentArc.turns + 1) : 1
+    emotionArc = {
+      ...emotionArc,
+      turns,
+      repairDue: turns >= 3
+    }
+  } else {
+    emotionArc = { kind: 'none', intensity: 0, reason: '', turns: 0, repairDue: false }
+  }
   return {
     memoryUpserts,
     openLoopUpserts,
     resolvedLoopKeys,
+    selfEvolutionProposals,
     companionState: normalizeCompanionState({
       ...currentState,
       ...(parsed.companionState || {}),
+      emotionArc,
       date: formatChatDate(now),
       updatedAt: now
     })

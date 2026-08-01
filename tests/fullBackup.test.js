@@ -76,7 +76,7 @@ const buildFixture = () => buildFullBackupSnapshot({
   }
 }, '2026-07-18T08:00:00.000Z')
 
-test('完整备份 v5 包含互动聊天、连续关系、五类生活数据和设置，但不包含安全凭据', () => {
+test('完整备份 v6 包含互动聊天、连续关系、五类生活数据和设置，但不包含安全凭据', () => {
   const snapshot = buildFixture()
   const serialized = JSON.stringify(snapshot)
 
@@ -213,6 +213,28 @@ test('v4 完整备份继续兼容并把旧聊天全部标记为已读', () => {
   assert.equal(restored.data.chat.messages.every(item => item.type === 'text'), true)
   assert.equal(restored.data.chat.messages.every(item => item.reactions.length === 0), true)
   assert.equal(restored.data.chat.readState.lastReadAt, 1752825660000)
+})
+
+test('v5 完整备份迁移到v6并补齐她的世界，运行中队列不恢复', () => {
+  const snapshot = buildFixture()
+  const restored = normalizeFullBackupSnapshot({
+    ...snapshot,
+    version: 5,
+    data: {
+      ...snapshot.data,
+      chat: {
+        ...snapshot.data.chat,
+        proactiveOutbox: [{ id: 'old-proactive', content: '旧主动消息', scheduledAt: 9999999999999 }],
+        followupOutbox: [{ id: 'old-followup', content: '旧补话', scheduledAt: 9999999999999 }]
+      }
+    }
+  })
+
+  assert.equal(restored.version, FULL_BACKUP_VERSION)
+  assert.deepEqual(restored.data.chat.selfProfile.interests, [])
+  assert.deepEqual(restored.data.chat.socialCast, [])
+  assert.deepEqual(restored.data.chat.proactiveOutbox, [])
+  assert.deepEqual(restored.data.chat.followupOutbox, [])
 })
 
 test('旧完整备份缺少主题字段时回退云朵蓝', () => {

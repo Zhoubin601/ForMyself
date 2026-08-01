@@ -24,6 +24,7 @@ import { getRouteFromAppUrl } from './services/appDeepLink'
 import { refreshHomeWidget } from './services/homeWidget'
 import { syncScheduleNotifications } from './services/scheduleNotificationService'
 import { syncChatProactiveNotifications } from './services/chatProactive'
+import { syncChatFollowupNotifications } from './services/chatFollowup'
 
 import DebtListView from './components/DebtListView.vue'
 import WeightView from './components/WeightView.vue'
@@ -124,6 +125,7 @@ const openAppUrl = (url) => {
   else {
     if (route.view === 'chat') {
       chatStore.materializeDueProactive(Date.now())
+      chatStore.materializeDueFollowups(Date.now())
       chatStore.setPendingFocusProactiveId(route.proactive)
     }
     settingsStore.switchView(route.view)
@@ -132,11 +134,19 @@ const openAppUrl = (url) => {
 
 const resyncChatProactive = async () => {
   chatStore.materializeDueProactive(Date.now())
-  await syncChatProactiveNotifications(
-    chatStore.proactiveOutbox,
-    chatStore.proactiveSettings,
-    { requestPermission: false, now: new Date() }
-  )
+  chatStore.materializeDueFollowups(Date.now())
+  await Promise.all([
+    syncChatProactiveNotifications(
+      chatStore.proactiveOutbox,
+      chatStore.proactiveSettings,
+      { requestPermission: false, now: new Date() }
+    ),
+    syncChatFollowupNotifications(
+      chatStore.followupOutbox,
+      chatStore.realismSettings,
+      { requestPermission: false, now: new Date() }
+    )
+  ])
 }
 
 const queueScheduleRefresh = () => {
@@ -208,7 +218,8 @@ onMounted(async () => {
       if (url) openAppUrl(url)
     })
     LocalNotifications.addListener('localNotificationReceived', ({ extra }) => {
-      if (extra?.proactiveId) chatStore.materializeDueProactive(Date.now())
+      if (extra?.followupId) chatStore.materializeDueFollowups(Date.now())
+      else if (extra?.proactiveId) chatStore.materializeDueProactive(Date.now())
     })
   } catch (error) {
     console.warn('无法监听通知点击或接收', error)

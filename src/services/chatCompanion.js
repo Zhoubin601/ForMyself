@@ -1,6 +1,7 @@
 import { askAI, streamAIChat } from './aiEngine.js'
 import { buildHomeCompanionContext } from './companionPrompts.js'
 import { parseMemoryExtraction } from './chatRecords.js'
+import { behaviorPlanPromptFragment } from './chatRealism.js'
 
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/
 const REPLY_BREAK_PATTERN = /(?:<CHAT_BREAK>|\[CHAT_BREAK\])/gi
@@ -760,11 +761,15 @@ export function buildChatLifeContext({
 export function buildChatSystemPrompt({
   companionName = '小暖',
   memories = [],
+  selfProfile = {},
+  socialCast = [],
+  virtualEvents = [],
   companionState = {},
   openLoops = [],
   lifeContext = {},
   styleState = {},
-  replyMode = 'normal'
+  replyMode = 'normal',
+  behaviorPlan = null
 } = {}) {
   const state = {
     mood: String(companionState?.mood || ''),
@@ -780,6 +785,8 @@ export function buildChatSystemPrompt({
 - 引用、拍一拍和表情回应只是已经发生的聊天动作；理解语气即可，不解释功能。
 
 ${CHAT_REALISTIC_STYLE_PROMPT}
+
+${behaviorPlan ? behaviorPlanPromptFragment(behaviorPlan) : ''}
 
 【本轮长度】
 - 模式：${policy.mode}
@@ -798,6 +805,23 @@ ${memories.length ? JSON.stringify(memories.map(item => ({
     category: item.category,
     content: item.content
   }))) : '无。'}
+
+【她稳定拥有的自我】
+${Object.values(selfProfile || {}).some(value => Array.isArray(value) ? value.length : !!value)
+    ? JSON.stringify(selfProfile)
+    : '尚未建立；不要临时编造固定偏好。'}
+
+【固定虚拟人物】
+${socialCast.length ? JSON.stringify(socialCast.map(item => ({
+    id: item.id,
+    name: item.name,
+    relationship: item.relationship,
+    traits: item.traits,
+    notes: item.notes
+  }))) : '无；禁止临时创造朋友或家人。'}
+
+【近期虚拟生活事件】
+${virtualEvents.length ? JSON.stringify(virtualEvents.slice(0, 12)) : '无；不要临时编造已经发生的事件。'}
 
 【当前轻量状态】
 ${JSON.stringify(state)}

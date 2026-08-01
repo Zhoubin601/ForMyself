@@ -9,7 +9,9 @@ import {
   mergeChatData,
   normalizeChatBackupSnapshot,
   normalizeChatData,
+  normalizeChatProactiveSettings,
   normalizeOpenLoops,
+  normalizeVirtualEvents,
   parseMemoryExtraction
 } from '../src/services/chatRecords.js'
 
@@ -93,7 +95,7 @@ test('长期记忆提取容忍 JSON 围栏、过滤敏感凭据并按 key 去重
   assert.equal(result[0].sourceMessageId, 'assistant-1')
 })
 
-test('独立聊天备份 v3 往返保留名字、互动消息、已读状态和关系状态', () => {
+test('独立聊天备份 v4 往返保留名字、互动、她的世界和关系状态', () => {
   const avatar = 'data:image/webp;base64,aGVsbG8='
   const snapshot = buildChatBackupSnapshot({
     profile: { companionName: '小暖', companionAvatar: avatar },
@@ -122,6 +124,12 @@ test('独立聊天备份 v3 往返保留名字、互动消息、已读状态和�
       updatedAt: 20
     }],
     proactiveSettings: { enabled: true, dailyMax: 1, activeStart: '10:00', activeEnd: '22:00' },
+    selfProfile: { summary: '喜欢做手账，也有自己的意见', interests: ['手账'], opinions: ['答应的事要记得'] },
+    socialCast: [{ id: 'cast-1', name: '阿梨', relationship: '虚拟手账搭子', traits: ['爽快'], createdAt: 10, updatedAt: 10 }],
+    virtualEvents: [{ id: 'event-1', date: '2026-07-26', title: '整理手账', detail: '在温馨小家整理了新的贴纸页', characterIds: ['cast-1'], createdAt: 10, updatedAt: 10 }],
+    evolutionLog: [{ id: 'evo-1', field: 'habits', nextValue: '睡前整理一天的心情', reason: '跨日三轮一致表现', sourceMessageIds: ['m1', 'm2', 'm3'], createdAt: 20 }],
+    followupOutbox: [{ id: 'followup-1', sourceMessageId: 'm1', content: '对了，还有一句。', scheduledAt: 9999999999999, notificationId: 823000001, createdAt: 10 }],
+    realismSettings: { followupEnabled: false },
     readState: { lastReadAt: 9 }
   }, '2026-07-26T08:00:00.000Z')
   const restored = normalizeChatBackupSnapshot(JSON.parse(JSON.stringify(snapshot)))
@@ -139,6 +147,13 @@ test('独立聊天备份 v3 往返保留名字、互动消息、已读状态和�
   assert.equal(restored.data.companionState.mood, '开心')
   assert.equal(restored.data.openLoops[0].type, 'promise')
   assert.equal(restored.data.proactiveSettings.dailyMax, 1)
+  assert.equal(restored.data.proactiveSettings.dailyMin, 0)
+  assert.equal(restored.data.selfProfile.interests[0], '手账')
+  assert.equal(restored.data.socialCast[0].name, '阿梨')
+  assert.equal(restored.data.virtualEvents[0].characterIds[0], 'cast-1')
+  assert.equal(restored.data.evolutionLog[0].nextValue, '睡前整理一天的心情')
+  assert.equal(restored.data.realismSettings.followupEnabled, false)
+  assert.deepEqual(restored.data.followupOutbox, [])
   assert.throws(() => normalizeChatBackupSnapshot({ ...snapshot, type: 'other' }), /INVALID_CHAT_BACKUP_TYPE/)
   assert.throws(() => normalizeChatBackupSnapshot({ ...snapshot, data: undefined }), /INVALID_CHAT_BACKUP_DATA/)
 })
@@ -174,6 +189,46 @@ test('旧聊天数据自动迁移为哥哥记忆并补齐新关系字段', () =>
   assert.equal(restoredV2.data.messages[0].type, 'text')
   assert.deepEqual(restoredV2.data.messages[0].reactions, [])
   assert.equal(restoredV2.data.readState.lastReadAt, 10)
+
+  const restoredV3 = normalizeChatBackupSnapshot({ ...legacy, version: 3 })
+  assert.deepEqual(restoredV3.data.socialCast, [])
+  assert.deepEqual(restoredV3.data.virtualEvents, [])
+  assert.equal(restoredV3.data.realismSettings.followupEnabled, true)
+})
+
+test('主动次数限制在0至5，旧设置迁移为最少0且保留原上限', () => {
+  assert.deepEqual(normalizeChatProactiveSettings({ dailyMax: 2, activeStart: '10:00', activeEnd: '22:00' }), {
+    enabled: true,
+    dailyMin: 0,
+    dailyMax: 2,
+    activeStart: '10:00',
+    activeEnd: '22:00'
+  })
+  assert.equal(normalizeChatProactiveSettings({ dailyMin: 9, dailyMax: 9 }).dailyMax, 5)
+  assert.equal(normalizeChatProactiveSettings({ dailyMin: 9, dailyMax: 9 }).dailyMin, 5)
+  assert.equal(normalizeChatProactiveSettings({ dailyMin: 4, dailyMax: 1 }).dailyMin, 1)
+})
+
+test('虚拟事件每天只保留一个，最近30天保留明细且更早内容合并为概览', () => {
+  const base = Date.parse('2026-08-01T12:00:00Z')
+  const events = Array.from({ length: 35 }, (_, index) => {
+    const timestamp = base - index * 24 * 60 * 60 * 1000
+    return {
+      id: `event-${index}`,
+      date: new Date(timestamp).toISOString().slice(0, 10),
+      title: `第${index + 1}天的小事`,
+      detail: `在温馨小家记录第${index + 1}天`,
+      createdAt: timestamp,
+      updatedAt: timestamp
+    }
+  })
+  events.push({ ...events[0], id: 'same-day-newer', title: '当天较新的事件', updatedAt: base + 1000 })
+  const normalized = normalizeVirtualEvents(events)
+
+  assert.equal(normalized.filter(item => item.id !== 'event-archive').length, 30)
+  assert.equal(normalized[0].title, '当天较新的事件')
+  assert.equal(normalized.at(-1).id, 'event-archive')
+  assert.match(normalized.at(-1).detail, /第31天的小事/)
 })
 
 test('消息互动只接受固定表情和类型，同一方只保留最新回应', () => {
