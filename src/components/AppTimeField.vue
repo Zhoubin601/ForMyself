@@ -1,5 +1,6 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, onBeforeUnmount, ref } from 'vue'
+import { registerBackHandler } from '../services/backNavigation'
 
 defineOptions({ inheritAttrs: false })
 
@@ -15,6 +16,12 @@ const phase = ref('hour')
 const hour = ref(8)
 const minute = ref(0)
 const draggingMinute = ref(false)
+const unregisterBackHandler = registerBackHandler(() => {
+  if (!open.value) return false
+  open.value = false
+  return true
+}, { priority: 700, isActive: () => open.value })
+onBeforeUnmount(unregisterBackHandler)
 
 const padTime = value => String(value).padStart(2, '0')
 const isValidTime = value => {

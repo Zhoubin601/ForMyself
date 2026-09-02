@@ -69,7 +69,9 @@ test('只有存在独立配置的模块显示设置入口', () => {
   assert.match(settingsStoreSource, /openModuleSettings/)
   assert.match(settingsViewSource, /settingsScope === 'passwords'/)
   assert.match(settingsViewSource, /settingsScope === 'chat'/)
-  assert.match(settingsViewSource, /settingsScope === 'general'/)
+  assert.match(settingsViewSource, /showGeneralSettingsHome/)
+  assert.match(settingsViewSource, /generalSettingsCategories/)
+  assert.match(settingsViewSource, /isGeneralSection\('appearance'\)/)
   assert.match(
     settingsViewSource,
     /v-if="settingsScope === 'debts'" class="setting-section">\s*<h3[^>]*>省钱看板文案/,

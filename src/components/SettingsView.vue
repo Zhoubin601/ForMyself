@@ -1,6 +1,6 @@
 <script setup>
 import { Capacitor } from '@capacitor/core'
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { Filesystem, Directory, Encoding } from '@capacitor/filesystem'
 import { Share } from '@capacitor/share'
 import CryptoJS from 'crypto-js'
@@ -51,6 +51,7 @@ import { useChatStore } from '../stores/chat'
 import { syncScheduleNotifications } from '../services/scheduleNotificationService'
 import { normalizeScheduleData } from '../services/scheduleCore'
 import { appAlert, appConfirm, appPrompt, appToast } from '../services/uiFeedback'
+import { registerBackHandler } from '../services/backNavigation'
 import {
   THEME_PRESETS,
   getThemePrimary,
@@ -67,6 +68,9 @@ const vaultStore = usePasswordVaultStore()
 const scheduleStore = useScheduleStore()
 const chatStore = useChatStore()
 const settingsScope = computed(() => settingsStore.settingsScope || 'general')
+const settingsSection = computed(() => settingsStore.settingsSection || '')
+const isGeneralSection = section => settingsScope.value === 'general' && settingsSection.value === section
+const showGeneralSettingsHome = computed(() => settingsScope.value === 'general' && !settingsSection.value)
 const scopeMeta = computed(() => ({
   debts: { icon: '◎', title: '省钱计划设置', description: '管理省钱看板文案、目标回顾提醒与个性化鼓励。' },
   weight: { icon: '◇', title: '体重记录设置', description: '管理健康参数、变化提醒与每日记录提醒。' },
@@ -89,6 +93,20 @@ const companionAvatarInputRef = ref(null)
 const exportDataType = ref('full')
 const backupPickerOpen = ref(false)
 const autoLockPickerOpen = ref(false)
+const unregisterBackHandler = registerBackHandler(() => {
+  if (backupPickerOpen.value) { backupPickerOpen.value = false; return true }
+  if (autoLockPickerOpen.value) { autoLockPickerOpen.value = false; return true }
+  if (isChangingPwd.value || isChangingPwdBio.value) {
+    isChangingPwd.value = false
+    isChangingPwdBio.value = false
+    return true
+  }
+  return false
+}, {
+  priority: 600,
+  isActive: () => backupPickerOpen.value || autoLockPickerOpen.value || isChangingPwd.value || isChangingPwdBio.value
+})
+onBeforeUnmount(unregisterBackHandler)
 const backupTypeOptions = [
   { value: 'full', label: '完整数据（全部数据与设置）' },
   { value: 'savings', label: '省钱数据' },
@@ -108,6 +126,36 @@ const autoLockOptions = [
 const autoLockLabel = computed(() =>
   autoLockOptions.find(option => option.value === settingsStore.autoLockDelaySeconds)?.label || '立即锁定'
 )
+const enabledReminderCount = computed(() => ['mood', 'weight', 'savings']
+  .filter(key => settingsStore.notificationSettings[key]?.enabled).length)
+const generalSettingsCategories = computed(() => [
+  {
+    id: 'appearance', icon: '✦', title: '外观与首页',
+    description: settingsStore.themeSettings.mode === 'preset'
+      ? `${THEME_PRESETS[settingsStore.themeSettings.presetId]?.name || '云朵蓝'}主题`
+      : '自定义主题色'
+  },
+  {
+    id: 'notifications', icon: '◷', title: '通知与提醒',
+    description: enabledReminderCount.value ? `已开启 ${enabledReminderCount.value} 项每日提醒` : '当前未开启每日提醒'
+  },
+  { id: 'security', icon: '⌑', title: '安全与解锁', description: `后台后${autoLockLabel.value}` },
+  {
+    id: 'labels', icon: '◇', title: '内容标签',
+    description: `${scheduleStore.categories.length} 个日程标签 · ${vaultStore.categories.length} 个密码分类`
+  },
+  {
+    id: 'health', icon: '♡', title: '健康与趋势',
+    description: settingsStore.targetWeight ? `目标体重 ${settingsStore.targetWeight} kg` : '设置身高、目标体重与变化提醒'
+  },
+  { id: 'data', icon: '⇅', title: '数据与备份', description: '加密导入、导出与完整恢复' },
+  {
+    id: 'ai', icon: '◎', title: 'AI 服务',
+    description: settingsStore.aiApiKey?.trim() ? `已配置 ${settingsStore.aiModel || '模型'}` : '尚未配置 API Key'
+  },
+  { id: 'widgets', icon: '▦', title: '桌面小组件', description: '今日信息与临近日程组件' }
+])
+const openGeneralSettingsCategory = section => settingsStore.openGeneralSettingsSection(section)
 const newVaultCategory = ref('')
 const newScheduleCategory = ref('')
 const companionNameInput = ref(chatStore.profile.companionName)
@@ -174,7 +222,7 @@ watch(() => [
   settingsStore.weightChangeThreshold,
   settingsScope.value
 ], () => {
-  if (settingsScope.value !== 'weight') return
+  if (settingsScope.value !== 'weight' && !isGeneralSection('health')) return
   moduleHealthForm.value = {
     heightCm: settingsStore.heightCm ?? '',
     targetWeight: settingsStore.targetWeight ?? '',
@@ -1396,6 +1444,30 @@ const testAIConnection = async () => {
       </div>
     </div>
 
+    <section v-if="showGeneralSettingsHome" class="general-settings-home">
+      <div class="general-settings-heading">
+        <span>按类别管理</span>
+        <h2>需要调整什么？</h2>
+        <p>设置已按用途整理；进入分类后，返回键会回到这里。</p>
+      </div>
+      <div class="general-settings-grid">
+        <button
+          v-for="category in generalSettingsCategories"
+          :key="category.id"
+          type="button"
+          class="general-settings-card"
+          @click="openGeneralSettingsCategory(category.id)"
+        >
+          <span class="general-settings-icon" aria-hidden="true">{{ category.icon }}</span>
+          <span class="general-settings-copy">
+            <strong>{{ category.title }}</strong>
+            <small>{{ category.description }}</small>
+          </span>
+          <b aria-hidden="true">›</b>
+        </button>
+      </div>
+    </section>
+
     <div v-if="settingsScope === 'chat'" class="setting-section chat-settings-section">
       <h3 class="caption body-muted section-title">陪伴档案</h3>
       <div class="store-utility-card chat-profile-card">
@@ -1703,7 +1775,7 @@ const testAIConnection = async () => {
       </div>
     </div>
 
-    <div v-if="settingsScope === 'general'" class="setting-section">
+    <div v-if="isGeneralSection('appearance')" class="setting-section">
       <h3 class="caption body-muted section-title">外观与主题</h3>
       <div class="store-utility-card theme-settings-card">
         <div class="theme-heading">
@@ -1777,7 +1849,7 @@ const testAIConnection = async () => {
       </div>
     </div>
 
-    <div v-if="settingsScope === 'general'" class="setting-section">
+    <div v-if="isGeneralSection('widgets')" class="setting-section">
       <h3 class="caption body-muted section-title">桌面小组件</h3>
       <div class="ios-list">
         <button class="list-item text-link" style="text-align: left;" @click="requestWidgetPin('info')">
@@ -1790,7 +1862,7 @@ const testAIConnection = async () => {
       <p class="caption body-muted" style="padding: 10px 16px 0; margin: 0;">若桌面不支持应用内添加，可长按桌面并从“小组件”列表选择 ForMyself。</p>
     </div>
 
-    <div v-if="settingsScope === 'general'" class="setting-section">
+    <div v-if="isGeneralSection('security')" class="setting-section">
       <h3 class="caption body-muted section-title">安全管理</h3>
       <div class="ios-list" v-if="!isChangingPwd && !isChangingPwdBio">
         <button v-if="authStore.hasBiometric" class="list-item text-link" style="text-align: left;" @click="triggerBioChangePwd">指纹生物识别修改密码</button>
@@ -1819,10 +1891,10 @@ const testAIConnection = async () => {
       </div>
     </div>
 
-    <div v-if="['schedule', 'mood', 'passwords'].includes(settingsScope)" class="setting-section">
+    <div v-if="['schedule', 'mood', 'passwords'].includes(settingsScope) || isGeneralSection('labels')" class="setting-section">
       <h3 class="caption body-muted section-title">内容标签与分类</h3>
 
-      <div v-if="settingsScope === 'schedule'" class="store-utility-card taxonomy-card">
+      <div v-if="settingsScope === 'schedule' || isGeneralSection('labels')" class="store-utility-card taxonomy-card">
         <h4 class="body-strong taxonomy-title">日程标签</h4>
         <p class="caption body-muted taxonomy-description">仅保留系统标签“学习”。输入名称并从调色盘选择颜色即可；与密码库分类一致，只有没有日程内容的标签才可删除。</p>
         <div class="taxonomy-add-row">
@@ -1891,7 +1963,7 @@ const testAIConnection = async () => {
         </div>
       </div>
 
-      <div v-if="settingsScope === 'mood'" class="store-utility-card taxonomy-card">
+      <div v-if="settingsScope === 'mood' || isGeneralSection('labels')" class="store-utility-card taxonomy-card">
         <h4 class="body-strong taxonomy-title">心情日记自定义标签</h4>
         <p class="caption body-muted taxonomy-description">删除标签时会同时从历史心情记录中移除；内置标签“工作、学习、家庭、睡眠”固定保留。</p>
         <div v-if="moodStore.customTags.length" class="taxonomy-list">
@@ -1903,7 +1975,7 @@ const testAIConnection = async () => {
         <p v-else class="caption body-muted taxonomy-empty">暂无自定义心情标签</p>
       </div>
 
-      <div v-if="settingsScope === 'passwords'" class="store-utility-card taxonomy-card">
+      <div v-if="settingsScope === 'passwords' || isGeneralSection('labels')" class="store-utility-card taxonomy-card">
         <h4 class="body-strong taxonomy-title">密码库分类</h4>
         <p class="caption body-muted taxonomy-description">可在这里统一添加和删除分类。仍被密码记录使用的分类不能删除，“未分类”固定保留。</p>
         <div class="taxonomy-add-row">
@@ -1933,7 +2005,7 @@ const testAIConnection = async () => {
       </div>
     </div>
 
-    <div v-if="settingsScope === 'weight'" class="setting-section">
+    <div v-if="settingsScope === 'weight' || isGeneralSection('health')" class="setting-section">
       <h3 class="caption body-muted section-title">健康与趋势</h3>
       <div class="store-utility-card health-settings-card">
         <div class="health-setting-grid">
@@ -1964,10 +2036,10 @@ const testAIConnection = async () => {
       </div>
     </div>
 
-    <div v-if="['mood', 'weight', 'debts'].includes(settingsScope)" class="setting-section">
+    <div v-if="['mood', 'weight', 'debts'].includes(settingsScope) || isGeneralSection('notifications')" class="setting-section">
       <h3 class="caption body-muted section-title">通知提醒</h3>
       <div class="store-utility-card reminder-card">
-        <div v-if="settingsScope === 'mood'" class="reminder-row">
+        <div v-if="settingsScope === 'mood' || isGeneralSection('notifications')" class="reminder-row">
           <div class="reminder-copy">
             <span class="body-strong">心情日记</span>
             <span class="caption body-muted">提醒记录当天的感受</span>
@@ -1983,7 +2055,7 @@ const testAIConnection = async () => {
           </label>
         </div>
 
-        <div v-if="settingsScope === 'weight'" class="reminder-row">
+        <div v-if="settingsScope === 'weight' || isGeneralSection('notifications')" class="reminder-row">
           <div class="reminder-copy">
             <span class="body-strong">体重记录</span>
             <span class="caption body-muted">提醒在固定时间记录体重</span>
@@ -1999,7 +2071,7 @@ const testAIConnection = async () => {
           </label>
         </div>
 
-        <div v-if="settingsScope === 'debts'" class="reminder-row">
+        <div v-if="settingsScope === 'debts' || isGeneralSection('notifications')" class="reminder-row">
           <div class="reminder-copy">
             <span class="body-strong">省钱计划</span>
             <span class="caption body-muted">提醒查看目标和记录存款</span>
@@ -2038,7 +2110,7 @@ const testAIConnection = async () => {
       </div>
     </div>
 
-    <div v-if="settingsScope === 'general'" class="setting-section">
+    <div v-if="isGeneralSection('data')" class="setting-section">
       <h3 class="caption body-muted section-title">数据备份</h3>
 
       <div class="store-utility-card" style="margin-top: 8px;">
@@ -2062,7 +2134,7 @@ const testAIConnection = async () => {
     </div>
 
     <!-- AI 情绪陪伴引擎 -->
-    <div v-if="settingsScope === 'general'" class="setting-section">
+    <div v-if="isGeneralSection('ai')" class="setting-section">
       <h3 class="caption body-muted section-title">🤖 AI 情绪陪伴 (BYOK)</h3>
       <div class="store-utility-card" style="margin-top: 8px;">
         <p class="caption body-muted" style="margin: 0 0 16px 0;">自备 Key 接入，兼容 DeepSeek / OpenAI / 通义千问等标准 API。使用 AI 时，所选聊天与生活上下文会发送给这里配置的服务商；密码库、主密码、API Key 和其他安全凭据绝不会作为聊天上下文发送。</p>
@@ -2127,6 +2199,30 @@ const testAIConnection = async () => {
 <style scoped>
 .settings-container { display: flex; min-width: 0; flex-direction: column; gap: 24px; }
 .setting-section { display: flex; flex-direction: column; }
+.general-settings-home { display: flex; flex-direction: column; gap: 16px; }
+.general-settings-heading { padding: 4px 7px 0; }
+.general-settings-heading > span {
+  color: var(--primary); font-size: 11px; font-weight: 780; letter-spacing: .12em; text-transform: uppercase;
+}
+.general-settings-heading h2 { margin: 6px 0 0; color: var(--ink); font-size: 25px; letter-spacing: -.55px; }
+.general-settings-heading p { margin: 7px 0 0; color: var(--body-muted); font-size: 13px; line-height: 1.55; }
+.general-settings-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 11px; }
+.general-settings-card {
+  display: grid; grid-template-columns: 42px minmax(0, 1fr) 12px; align-items: center; gap: 11px;
+  min-height: 94px; padding: 14px 12px; border: 1px solid rgba(218,225,234,.92); border-radius: 20px;
+  background: rgba(255,255,255,.9); box-shadow: 0 9px 26px rgba(31,45,66,.065); color: var(--ink); text-align: left;
+  transition: transform .16s ease, border-color .16s ease, background .16s ease;
+}
+.general-settings-card:active { transform: scale(.985); border-color: var(--theme-primary-soft-strong); background: var(--theme-surface-tint); }
+.general-settings-icon {
+  display: grid; place-items: center; width: 42px; height: 42px; border-radius: 14px;
+  color: var(--primary); background: var(--theme-soft); font-size: 20px; font-weight: 700;
+}
+.general-settings-copy { min-width: 0; }
+.general-settings-copy strong, .general-settings-copy small { display: block; }
+.general-settings-copy strong { font-size: 14px; line-height: 1.25; }
+.general-settings-copy small { margin-top: 5px; color: var(--body-muted); font-size: 11px; line-height: 1.4; overflow-wrap: anywhere; }
+.general-settings-card > b { color: var(--body-muted); font-size: 21px; font-weight: 400; }
 .section-title { padding: 0 12px; margin-bottom: 8px; font-weight: 650; letter-spacing: .02em; }
 .module-settings-intro {
   display: flex; align-items: center; gap: 14px; padding: 18px;
@@ -2144,6 +2240,11 @@ const testAIConnection = async () => {
 .module-settings-intro p {
   margin: 5px 0 0; color: var(--body-muted); font-size: 13px; line-height: 1.45;
   word-break: normal; overflow-wrap: break-word; text-wrap: pretty;
+}
+
+@media (max-width: 380px) {
+  .general-settings-grid { grid-template-columns: 1fr; }
+  .general-settings-card { min-height: 78px; }
 }
 
 .theme-settings-card { padding: 18px; border-color: var(--theme-border); background: linear-gradient(145deg, var(--theme-surface-tint), rgba(255,255,255,.94)); }

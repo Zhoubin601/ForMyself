@@ -9,6 +9,7 @@ import {
 } from '../services/passwordVaultRecords.js'
 import { VAULT_ACCESS_RESULT, verifyVaultSecretAccess } from '../services/vaultAccessGuard.js'
 import { appAlert, appConfirm, appToast } from '../services/uiFeedback'
+import { registerBackHandler } from '../services/backNavigation'
 
 const vaultStore = usePasswordVaultStore()
 const searchQuery = ref('')
@@ -22,6 +23,12 @@ const filterMenuOpen = ref(false)
 const editorCategoryMenuOpen = ref(false)
 const form = ref({ appName: '', account: '', password: '', category: DEFAULT_VAULT_CATEGORY, favorite: false, extraFields: [] })
 const visibilityTimers = new Map()
+const unregisterBackHandler = registerBackHandler(() => {
+  if (editorCategoryMenuOpen.value) { editorCategoryMenuOpen.value = false; return true }
+  if (filterMenuOpen.value) { filterMenuOpen.value = false; return true }
+  if (showEditor.value) { showEditor.value = false; return true }
+  return false
+}, { priority: 500, isActive: () => editorCategoryMenuOpen.value || filterMenuOpen.value || showEditor.value })
 
 const availableCategories = computed(() => vaultStore.categories)
 const categoryFilterLabel = computed(() => categoryFilter.value === 'all' ? '全部分类' : categoryFilter.value)
@@ -181,6 +188,7 @@ onMounted(() => {
   document.addEventListener('pointerdown', handleOutsidePointer)
 })
 onUnmounted(() => {
+  unregisterBackHandler()
   document.removeEventListener('visibilitychange', handleVisibilityChange)
   document.removeEventListener('pointerdown', handleOutsidePointer)
   hideAllSecrets()

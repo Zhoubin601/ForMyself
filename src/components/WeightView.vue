@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, onBeforeUnmount, watch } from 'vue'
 import { useWeightStore } from '../stores/weight'
 import { useSettingsStore } from '../stores/settings'
 import {
@@ -10,6 +10,7 @@ import {
 } from '../services/weightInsights.js'
 import { notifyWeightChange } from '../services/notificationService.js'
 import { appAlert, appConfirm } from '../services/uiFeedback'
+import { registerBackHandler } from '../services/backNavigation'
 import AppDateField from './AppDateField.vue'
 
 const weightStore = useWeightStore()
@@ -17,6 +18,12 @@ const settingsStore = useSettingsStore()
 
 const showAddModal = ref(false)
 const showHealthModal = ref(false)
+const unregisterBackHandler = registerBackHandler(() => {
+  if (showHealthModal.value) { showHealthModal.value = false; return true }
+  if (showAddModal.value) { showAddModal.value = false; return true }
+  return false
+}, { priority: 500, isActive: () => showHealthModal.value || showAddModal.value })
+onBeforeUnmount(unregisterBackHandler)
 const editDate = ref('')
 const editWeight = ref(null)
 const editNote = ref('')

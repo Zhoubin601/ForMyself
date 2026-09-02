@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onBeforeUnmount, onMounted, watch } from 'vue'
 import { useMoodStore } from '../stores/mood'
 import { useSettingsStore } from '../stores/settings'
 import { askAI } from '../services/aiEngine'
@@ -10,6 +10,7 @@ import {
   normalizeCompanionReply
 } from '../services/companionPrompts'
 import { appAlert, appConfirm } from '../services/uiFeedback'
+import { registerBackHandler } from '../services/backNavigation'
 import AppDateField from './AppDateField.vue'
 
 const moodStore = useMoodStore()
@@ -99,6 +100,12 @@ watch(totalMoodPages, (n) => {
 
 // --- 弹窗 ---
 const showModal = ref(false)
+const unregisterBackHandler = registerBackHandler(() => {
+  if (activeEcho.value) { activeEcho.value = null; return true }
+  if (showModal.value) { showModal.value = false; return true }
+  return false
+}, { priority: 500, isActive: () => Boolean(activeEcho.value || showModal.value) })
+onBeforeUnmount(unregisterBackHandler)
 const editDate = ref('')
 const editMood = ref(MOOD_DEFAULT)
 const editNote = ref('')

@@ -24,6 +24,7 @@ export const useScheduleStore = defineStore('schedule', () => {
   const occurrences = ref([])
   const categories = ref(BUILT_IN_SCHEDULE_CATEGORIES.map(item => ({ ...item })))
   const isDataLoaded = ref(false)
+  let persistTimer = null
 
   const snapshot = computed(() => ({
     series: series.value,
@@ -32,6 +33,8 @@ export const useScheduleStore = defineStore('schedule', () => {
   }))
 
   const persist = async () => {
+    if (persistTimer) globalThis.clearTimeout(persistTimer)
+    persistTimer = null
     if (!isDataLoaded.value) return
     const data = normalizeScheduleData(snapshot.value)
     await Promise.all([
@@ -41,6 +44,13 @@ export const useScheduleStore = defineStore('schedule', () => {
         value: JSON.stringify(buildScheduleWidgetSnapshot(data))
       })
     ])
+  }
+  const queuePersist = () => {
+    if (!isDataLoaded.value) return
+    if (persistTimer) globalThis.clearTimeout(persistTimer)
+    persistTimer = globalThis.setTimeout(() => {
+      persist().catch(error => console.warn('保存日程数据失败', error))
+    }, 250)
   }
 
   const loadSchedules = async () => {
@@ -58,7 +68,7 @@ export const useScheduleStore = defineStore('schedule', () => {
     }
   }
 
-  watch(snapshot, persist, { deep: true })
+  watch(snapshot, queuePersist, { deep: true, flush: 'sync' })
 
   const getOccurrences = (fromDate, toDate, now = new Date()) =>
     generateOccurrences(snapshot.value, fromDate, toDate, now)

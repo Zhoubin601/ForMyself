@@ -1,5 +1,5 @@
 <script setup>
-import { computed, nextTick, onMounted, reactive, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import { useScheduleStore } from '../stores/schedule'
 import { useSettingsStore } from '../stores/settings'
 import {
@@ -10,6 +10,7 @@ import {
 } from '../services/scheduleCore.js'
 import { syncScheduleNotifications } from '../services/scheduleNotificationService.js'
 import { appAlert, appChoose, appConfirm } from '../services/uiFeedback'
+import { registerBackHandler } from '../services/backNavigation'
 import AppDateField from './AppDateField.vue'
 import AppTimeField from './AppTimeField.vue'
 
@@ -24,6 +25,7 @@ const editorOpen = ref(false)
 const editingOccurrence = ref(null)
 const monthCursor = ref(today.value.slice(0, 7))
 const agendaBottom = ref(null)
+const titleInput = ref(null)
 
 const recurrenceLabels = {
   none: '一次性日程',
@@ -51,6 +53,18 @@ const reminderOptions = [
   { value: 1440, label: '1天前' }
 ]
 const picker = ref(null)
+const unregisterBackHandler = registerBackHandler(() => {
+  if (picker.value) {
+    picker.value = null
+    return true
+  }
+  if (editorOpen.value) {
+    closeEditor()
+    return true
+  }
+  return false
+}, { priority: 600, isActive: () => Boolean(picker.value || editorOpen.value) })
+onBeforeUnmount(unregisterBackHandler)
 
 const openPicker = (title, options, currentValue, onSelect) => {
   picker.value = { title, options, currentValue, onSelect }
@@ -119,6 +133,7 @@ const openNewEditor = date => {
   editingOccurrence.value = null
   resetForm(date ? { startDate: date, endDate: date } : null)
   editorOpen.value = true
+  nextTick(() => titleInput.value?.focus())
 }
 
 const openOccurrence = occurrence => {
@@ -129,6 +144,7 @@ const openOccurrence = occurrence => {
     endDate: occurrence.occurrenceEndDate
   })
   editorOpen.value = true
+  nextTick(() => titleInput.value?.focus())
 }
 
 const closeEditor = () => {
@@ -522,7 +538,7 @@ onMounted(() => scrollAgendaToLatest())
               暂无日程标签，请先到通用配置添加
             </button>
 
-            <input v-model="form.title" class="title-input" placeholder="试着输入“明晚7点聚餐”" maxlength="80" />
+            <input ref="titleInput" v-model="form.title" class="title-input" placeholder="日程标题" maxlength="80" enterkeyhint="next" />
 
             <section class="form-card">
               <label class="form-row">

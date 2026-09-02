@@ -1,5 +1,6 @@
 <script setup>
-import { computed, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import { registerBackHandler } from '../services/backNavigation'
 
 defineOptions({ inheritAttrs: false })
 
@@ -15,6 +16,12 @@ const emit = defineEmits(['update:modelValue'])
 const open = ref(false)
 const cursor = ref('')
 const draftValue = ref('')
+const unregisterBackHandler = registerBackHandler(() => {
+  if (!open.value) return false
+  open.value = false
+  return true
+}, { priority: 700, isActive: () => open.value })
+onBeforeUnmount(unregisterBackHandler)
 
 const localToday = () => {
   const now = new Date()
@@ -165,13 +172,13 @@ header strong { color: #1d2432; font-size: 21px; }
 header button, .month-navigation button { border: 0; background: none; color: var(--primary); font: inherit; }
 header button { padding: 8px; font-size: 15px; font-weight: 650; }
 .month-navigation { display: grid; grid-template-columns: 44px 1fr 44px; align-items: center; margin-bottom: 6px; }
-.month-navigation button { min-height: 40px; font-size: 26px; }
+.month-navigation button { min-height: 44px; font-size: 26px; }
 .month-navigation .today-button { justify-self: center; padding: 5px 13px; border-radius: 999px; background: #edf5ff; font-size: 12px; font-weight: 650; }
 .weekday-row, .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; }
 .weekday-row { padding: 6px 0; color: #9298a3; font-size: 11px; }
 .calendar-grid { row-gap: 4px; }
-.calendar-grid > span { display: grid; place-items: center; min-height: 42px; }
-.calendar-grid button { width: 38px; height: 38px; border: 0; border-radius: 13px; background: transparent; color: #313846; font-size: 14px; }
+.calendar-grid > span { display: grid; place-items: center; min-height: 44px; }
+.calendar-grid button { width: 42px; height: 42px; border: 0; border-radius: 13px; background: transparent; color: #313846; font-size: 14px; }
 .calendar-grid button.today { box-shadow: inset 0 0 0 1px rgba(var(--theme-primary-rgb), .24); color: var(--primary); }
 .calendar-grid button.selected { background: var(--theme-gradient); box-shadow: 0 7px 16px rgba(var(--theme-primary-rgb), .23); color: var(--theme-on-primary); font-weight: 700; }
 .calendar-grid button:disabled { opacity: .24; }

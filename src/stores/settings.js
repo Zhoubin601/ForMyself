@@ -14,6 +14,13 @@ import {
   buildThemeCssVariables,
   normalizeThemeSettings
 } from '../services/themeSystem.js'
+import {
+  appRouteKey,
+  isSameAppRoute,
+  normalizeAppRoute,
+  popAppRoute,
+  pushAppRoute
+} from '../services/navigationHistory.js'
 
 export const useSettingsStore = defineStore('settings', () => {
   const bannerSettings = ref({ prefix: '你已经省下了', suffix: '元', subtitle: '可喜可贺，继续保持。✨', titleSize: 38 })
@@ -22,9 +29,13 @@ export const useSettingsStore = defineStore('settings', () => {
   const themeCssVariables = computed(() => buildThemeCssVariables(themeSettings.value))
   const currentView = ref('home')
   const settingsScope = ref('general')
+  const settingsSection = ref('')
   const settingsReturnView = ref('home')
   const scheduleTarget = ref({ item: '', occurrence: '' })
   const isDrawerOpen = ref(false)
+  const navigationStack = ref([])
+  const navigationRevision = ref(0)
+  const routeScrollTop = ref(0)
   const isDataLoaded = ref(false)
 
   const cachedQuote = ref({ text: '早安！今天又是充满希望的一天，记得记录你的心情哦。', date: '' })
@@ -40,6 +51,30 @@ export const useSettingsStore = defineStore('settings', () => {
   const heightCm = ref(null)
   const weightChangeReminderEnabled = ref(true)
   const weightChangeThreshold = ref(1)
+  const pendingPreferenceWrites = new Map()
+  const pendingPreferenceTimers = new Map()
+
+  const flushPreferenceWrite = async key => {
+    const pending = pendingPreferenceWrites.get(key)
+    if (!pending) return
+    const timer = pendingPreferenceTimers.get(key)
+    if (timer) globalThis.clearTimeout(timer)
+    pendingPreferenceTimers.delete(key)
+    pendingPreferenceWrites.delete(key)
+    await Preferences.set({ key, value: pending })
+  }
+  const queuePreferenceWrite = (key, value, delay = 300) => {
+    if (!isDataLoaded.value) return
+    pendingPreferenceWrites.set(key, value)
+    const previous = pendingPreferenceTimers.get(key)
+    if (previous) globalThis.clearTimeout(previous)
+    pendingPreferenceTimers.set(key, globalThis.setTimeout(() => {
+      flushPreferenceWrite(key).catch(error => console.warn(`保存设置 ${key} 失败`, error))
+    }, delay))
+  }
+  const flushPendingSettingsWrites = async () => {
+    await Promise.all([...pendingPreferenceWrites.keys()].map(flushPreferenceWrite))
+  }
 
   const viewLabels = {
     home: '首页总览',
@@ -52,12 +87,34 @@ export const useSettingsStore = defineStore('settings', () => {
     passwords: '我的密码库',
     settings: '通用配置'
   }
+  const generalSectionLabels = {
+    appearance: '外观与首页',
+    notifications: '通知与提醒',
+    security: '安全与解锁',
+    labels: '内容标签',
+    health: '健康与趋势',
+    data: '数据与备份',
+    ai: 'AI 服务',
+    widgets: '桌面小组件'
+  }
   const viewTitle = computed(() => {
+    if (currentView.value === 'settings' && settingsScope.value === 'general' && settingsSection.value) {
+      return generalSectionLabels[settingsSection.value] || '通用配置'
+    }
     if (currentView.value === 'settings' && settingsScope.value !== 'general') {
       return `${viewLabels[settingsScope.value] || '模块'}设置`
     }
     return viewLabels[currentView.value]
   })
+  const currentRoute = computed(() => normalizeAppRoute({
+    view: currentView.value,
+    settingsScope: settingsScope.value,
+    settingsSection: settingsSection.value,
+    scheduleTarget: scheduleTarget.value,
+    scrollTop: routeScrollTop.value
+  }))
+  const currentRouteKey = computed(() => appRouteKey(currentRoute.value))
+  const canGoBack = computed(() => navigationStack.value.length > 0)
 
   const loadSettings = async () => {
     try {
@@ -103,94 +160,118 @@ export const useSettingsStore = defineStore('settings', () => {
 
   const persistHomeCache = async () => {
     if (isDataLoaded.value) {
-      await Preferences.set({
-        key: 'my_home_cache',
-        value: JSON.stringify({ cachedQuote: cachedQuote.value, dataFingerprint: dataFingerprint.value, lastEncouragement: lastEncouragement.value })
-      })
+      queuePreferenceWrite('my_home_cache', JSON.stringify({ cachedQuote: cachedQuote.value, dataFingerprint: dataFingerprint.value, lastEncouragement: lastEncouragement.value }))
     }
   }
 
-  watch(bannerSettings, async (v) => { if (isDataLoaded.value) await Preferences.set({ key: 'my_banner_settings', value: JSON.stringify(v) }) }, { deep: true })
-  watch(themeSettings, async (value) => {
-    if (isDataLoaded.value) {
-      await Preferences.set({
-        key: 'my_theme_settings',
-        value: JSON.stringify(normalizeThemeSettings(value))
-      })
-    }
+  watch(bannerSettings, v => queuePreferenceWrite('my_banner_settings', JSON.stringify(v)), { deep: true })
+  watch(themeSettings, value => {
+    queuePreferenceWrite('my_theme_settings', JSON.stringify(normalizeThemeSettings(value)))
   }, { deep: true })
-  watch(() => ({ url: aiProviderUrl.value, key: aiApiKey.value, model: aiModel.value }), async (v) => { if (isDataLoaded.value) await Preferences.set({ key: 'my_ai_settings', value: JSON.stringify(v) }) }, { deep: true })
-  watch(autoLockDelaySeconds, async (value) => {
-    if (isDataLoaded.value) {
-      await Preferences.set({
-        key: 'my_security_settings',
-        value: JSON.stringify({ autoLockDelaySeconds: normalizeAutoLockDelay(value) })
-      })
-    }
+  watch(() => ({ url: aiProviderUrl.value, key: aiApiKey.value, model: aiModel.value }), v => queuePreferenceWrite('my_ai_settings', JSON.stringify(v)), { deep: true })
+  watch(autoLockDelaySeconds, value => {
+    queuePreferenceWrite('my_security_settings', JSON.stringify({ autoLockDelaySeconds: normalizeAutoLockDelay(value) }))
   })
-  watch(notificationSettings, async (value) => {
-    if (isDataLoaded.value) {
-      await Preferences.set({
-        key: 'my_notification_settings',
-        value: JSON.stringify(normalizeReminderSettings(value))
-      })
-    }
+  watch(notificationSettings, value => {
+    queuePreferenceWrite('my_notification_settings', JSON.stringify(normalizeReminderSettings(value)))
   }, { deep: true })
-  watch(notificationAiContent, async (value) => {
-    if (isDataLoaded.value) {
-      await Preferences.set({
-        key: 'my_notification_ai_content',
-        value: JSON.stringify(normalizeNotificationAiCache(value))
-      })
-    }
+  watch(notificationAiContent, value => {
+    queuePreferenceWrite('my_notification_ai_content', JSON.stringify(normalizeNotificationAiCache(value)))
   }, { deep: true })
   watch(() => ({
     targetWeight: targetWeight.value,
     heightCm: heightCm.value,
     weightChangeReminderEnabled: weightChangeReminderEnabled.value,
     weightChangeThreshold: weightChangeThreshold.value
-  }), async (value) => {
-    if (isDataLoaded.value) {
-      await Preferences.set({
-        key: 'my_health_settings',
-        value: JSON.stringify(normalizeHealthSettings(value))
-      })
-    }
+  }), value => {
+    queuePreferenceWrite('my_health_settings', JSON.stringify(normalizeHealthSettings(value)))
   }, { deep: true })
 
   watch(cachedQuote, () => persistHomeCache(), { deep: true })
   watch(dataFingerprint, () => persistHomeCache())
   watch(lastEncouragement, () => persistHomeCache())
 
-  const switchView = (view) => {
-    if (view === 'settings') settingsScope.value = 'general'
-    currentView.value = view
+  const applyRoute = value => {
+    const route = normalizeAppRoute(value, currentView.value)
+    currentView.value = route.view
+    settingsScope.value = route.settingsScope
+    settingsSection.value = route.settingsSection
+    scheduleTarget.value = route.scheduleTarget
+    routeScrollTop.value = route.scrollTop
     isDrawerOpen.value = false
+    navigationRevision.value += 1
+    return route
+  }
+  const navigate = (value, options = {}) => {
+    const target = normalizeAppRoute(value, currentView.value)
+    if (isSameAppRoute(currentRoute.value, target)) {
+      isDrawerOpen.value = false
+      return false
+    }
+    if (!options.replace) {
+      navigationStack.value = pushAppRoute(
+        navigationStack.value,
+        {
+          ...currentRoute.value,
+          scrollTop: options.currentScrollTop ?? currentRoute.value.scrollTop
+        },
+        target
+      )
+    }
+    applyRoute(target)
+    return true
+  }
+  const replaceRoute = value => navigate(value, { replace: true })
+  const goBack = () => {
+    const popped = popAppRoute(navigationStack.value)
+    if (!popped.route) return null
+    navigationStack.value = popped.stack
+    return applyRoute(popped.route)
+  }
+  const updateLastHistoryScroll = value => {
+    if (!navigationStack.value.length) return
+    const index = navigationStack.value.length - 1
+    navigationStack.value[index] = {
+      ...navigationStack.value[index],
+      scrollTop: Math.max(0, Number(value) || 0)
+    }
+  }
+  const updateCurrentRouteScroll = value => {
+    routeScrollTop.value = Math.max(0, Number(value) || 0)
+  }
+  const switchView = view => navigate({ view, settingsScope: view === 'settings' ? 'general' : undefined })
+  const openGeneralSettingsSection = section => navigate({
+    view: 'settings',
+    settingsScope: 'general',
+    settingsSection: section
+  })
+  const closeGeneralSettingsSection = () => {
+    if (settingsScope.value !== 'general' || !settingsSection.value) return false
+    if (canGoBack.value) return !!goBack()
+    return replaceRoute({ view: 'settings', settingsScope: 'general' })
   }
   const openModuleSettings = scope => {
     if (!['debts', 'weight', 'mood', 'schedule', 'passwords', 'chat'].includes(scope)) return
     settingsReturnView.value = currentView.value
-    settingsScope.value = scope
-    currentView.value = 'settings'
-    isDrawerOpen.value = false
+    navigate({ view: 'settings', settingsScope: scope })
   }
   const closeModuleSettings = () => {
+    if (canGoBack.value) return goBack()
     const target = settingsReturnView.value || settingsScope.value || 'home'
-    settingsScope.value = 'general'
-    currentView.value = target === 'settings' ? 'home' : target
+    return replaceRoute({ view: target === 'settings' ? 'home' : target })
   }
   const openScheduleTarget = (target = {}) => {
-    scheduleTarget.value = {
+    const nextTarget = {
       item: String(target.item || ''),
       occurrence: String(target.occurrence || '')
     }
-    switchView('schedule')
+    navigate({ view: 'schedule', scheduleTarget: nextTarget })
   }
-  const updateBanner = async (v) => { bannerSettings.value = v; await Preferences.set({ key: 'my_banner_settings', value: JSON.stringify(v) }) }
+  const updateBanner = async (v) => { bannerSettings.value = v; queuePreferenceWrite('my_banner_settings', JSON.stringify(v)) }
   const updateBg = async (b) => { customBg.value = b; if (b) await Preferences.set({ key: 'my_custom_bg', value: b }); else await Preferences.remove({ key: 'my_custom_bg' }) }
   const updateThemeSettings = async value => {
     themeSettings.value = normalizeThemeSettings(value)
-    await Preferences.set({ key: 'my_theme_settings', value: JSON.stringify(themeSettings.value) })
+    queuePreferenceWrite('my_theme_settings', JSON.stringify(themeSettings.value))
   }
   const updateHealthSettings = (value) => {
     const health = normalizeHealthSettings(value)
@@ -263,5 +344,5 @@ export const useSettingsStore = defineStore('settings', () => {
     return backup
   }
 
-  return { bannerSettings, customBg, themeSettings, themeCssVariables, currentView, settingsScope, settingsReturnView, scheduleTarget, isDrawerOpen, isDataLoaded, viewTitle, cachedQuote, dataFingerprint, lastEncouragement, aiProviderUrl, aiApiKey, aiModel, autoLockDelaySeconds, notificationSettings, notificationAiContent, targetWeight, heightCm, weightChangeReminderEnabled, weightChangeThreshold, loadSettings, switchView, openModuleSettings, closeModuleSettings, openScheduleTarget, updateBanner, updateBg, updateThemeSettings, updateHealthSettings, getBackupSnapshot, restoreBackupSnapshot }
+  return { bannerSettings, customBg, themeSettings, themeCssVariables, currentView, settingsScope, settingsSection, settingsReturnView, scheduleTarget, isDrawerOpen, navigationStack, navigationRevision, currentRoute, currentRouteKey, canGoBack, isDataLoaded, viewTitle, cachedQuote, dataFingerprint, lastEncouragement, aiProviderUrl, aiApiKey, aiModel, autoLockDelaySeconds, notificationSettings, notificationAiContent, targetWeight, heightCm, weightChangeReminderEnabled, weightChangeThreshold, loadSettings, flushPendingSettingsWrites, navigate, replaceRoute, goBack, updateLastHistoryScroll, updateCurrentRouteScroll, switchView, openGeneralSettingsSection, closeGeneralSettingsSection, openModuleSettings, closeModuleSettings, openScheduleTarget, updateBanner, updateBg, updateThemeSettings, updateHealthSettings, getBackupSnapshot, restoreBackupSnapshot }
 })

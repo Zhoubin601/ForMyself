@@ -57,6 +57,7 @@ import {
 } from '../services/chatInteraction'
 import { CHAT_REACTION_EMOJIS } from '../services/chatRecords'
 import { appAlert, appConfirm, appToast } from '../services/uiFeedback'
+import { registerBackHandler } from '../services/backNavigation'
 
 const props = defineProps({
   isVisible: {
@@ -84,6 +85,11 @@ const timelineReady = ref(false)
 const composerRef = ref(null)
 const replyTarget = ref(null)
 const actionMessage = ref(null)
+const unregisterBackHandler = registerBackHandler(() => {
+  if (!actionMessage.value) return false
+  actionMessage.value = null
+  return true
+}, { priority: 550, isActive: () => Boolean(actionMessage.value) })
 const highlightedMessageId = ref('')
 const firstUnreadMessageId = ref('')
 const newMessageCount = ref(0)
@@ -1039,6 +1045,7 @@ onMounted(async () => {
 })
 
 onBeforeUnmount(() => {
+  unregisterBackHandler()
   componentActive = false
   generationRun += 1
   lightInteractionRun += 1
@@ -1165,8 +1172,7 @@ onBeforeUnmount(() => {
             </div>
             <div v-if="item.kind === 'message' && isGroupEnd(index)" class="message-meta">
               <span>{{ formatTime(item.createdAt) }}{{ item.status === 'stopped' ? ' · 已停止' : '' }}</span>
-              <button type="button" @click="copyMessage(item)">复制</button>
-              <button type="button" @click="deleteMessage(item)">删除</button>
+              <button type="button" :aria-label="`打开${item.role === 'assistant' ? companionName : '我的'}消息操作`" @click="openMessageActions(item)">•••</button>
             </div>
           </div>
         </article>
@@ -1207,6 +1213,7 @@ onBeforeUnmount(() => {
           v-model="draft"
           rows="1"
           maxlength="12000"
+          enterkeyhint="send"
           placeholder="想和她说点什么…"
           @input="resizeComposer"
           @keydown.enter.exact.prevent="sendMessage"
@@ -1321,7 +1328,7 @@ onBeforeUnmount(() => {
 .companion-identity span { color: var(--body-muted); font-size: 11px; }
 .companion-identity i { display: inline-block; width: 6px; height: 6px; margin-right: 3px; border-radius: 50%; background: #39ad79; }
 .memory-button {
-  display: flex; align-items: center; gap: 6px; min-width: 52px; height: 38px; padding: 0 10px;
+  display: flex; align-items: center; gap: 6px; min-width: 52px; height: 44px; padding: 0 10px;
   border: 1px solid var(--theme-border); border-radius: 13px; color: var(--primary);
   background: var(--theme-soft); font: inherit; cursor: pointer;
 }
@@ -1483,8 +1490,9 @@ onBeforeUnmount(() => {
   font-size: 11px;
   line-height: 1;
 }
-.message-meta { display: flex; align-items: center; gap: 8px; margin-top: 5px; padding: 0 3px; color: var(--body-muted); font-size: 9px; }
-.message-meta button { padding: 0; border: 0; color: inherit; background: transparent; font: inherit; cursor: pointer; }
+.message-meta { display: flex; align-items: center; gap: 4px; min-height: 40px; margin-top: 1px; padding: 0 1px 0 4px; color: var(--body-muted); font-size: 12px; }
+.message-meta button { display: grid; place-items: center; min-width: 44px; height: 40px; padding: 0; border: 0; border-radius: 12px; color: inherit; background: transparent; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; }
+.message-meta button:active { background: var(--theme-soft); color: var(--primary); }
 .typing-dots { display: flex; align-items: center; gap: 4px; min-width: 40px; height: 20px; }
 .typing-dots i { width: 6px; height: 6px; border-radius: 50%; background: var(--primary); animation: dotBounce 1.1s infinite ease-in-out; }
 .typing-dots i:nth-child(2) { animation-delay: .14s; }
@@ -1505,7 +1513,7 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   gap: 6px;
-  min-height: 34px;
+  min-height: 44px;
   padding: 0 12px;
   border: 1px solid var(--theme-border);
   border-radius: 999px;
@@ -1553,8 +1561,8 @@ onBeforeUnmount(() => {
   display: grid;
   place-items: center;
   flex-shrink: 0;
-  width: 28px;
-  height: 28px;
+  width: 40px;
+  height: 40px;
   padding: 0;
   border: 0;
   border-radius: 50%;
@@ -1575,7 +1583,7 @@ onBeforeUnmount(() => {
 }
 .composer-shell textarea::placeholder { color: var(--body-muted); }
 .send-button {
-  display: grid; place-items: center; flex-shrink: 0; width: 38px; height: 38px;
+  display: grid; place-items: center; flex-shrink: 0; width: 44px; height: 44px;
   border: 0; border-radius: 14px; color: var(--theme-on-primary); background: var(--theme-primary-strong); cursor: pointer;
 }
 .send-button:disabled { opacity: .38; cursor: default; }

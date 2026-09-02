@@ -5,6 +5,7 @@ import {
   resolveFeedbackDialog,
   uiFeedbackState
 } from '../services/uiFeedback'
+import { registerBackHandler } from '../services/backNavigation'
 
 const inputRef = ref(null)
 const dialog = computed(() => uiFeedbackState.dialog)
@@ -21,11 +22,24 @@ const cancelDialog = () => resolveFeedbackDialog(
 )
 
 const chooseOption = value => resolveFeedbackDialog(value)
+const unregisterBackHandler = registerBackHandler(() => {
+  if (!dialog.value.open) return false
+  if (hasCancel.value) cancelDialog()
+  else resolveFeedbackDialog(true)
+  return true
+}, { priority: 1000, isActive: () => dialog.value.open })
 
 const handleKeydown = event => {
   if (!dialog.value.open) return
-  if (event.key === 'Escape' && hasCancel.value) cancelDialog()
-  if (event.key === 'Enter' && dialog.value.kind === 'prompt') confirmDialog()
+  if (event.key === 'Escape') {
+    event.stopImmediatePropagation()
+    if (hasCancel.value) cancelDialog()
+    else resolveFeedbackDialog(true)
+  }
+  if (event.key === 'Enter' && dialog.value.kind === 'prompt') {
+    event.stopImmediatePropagation()
+    confirmDialog()
+  }
 }
 
 watch(() => dialog.value.open, async open => {
@@ -37,7 +51,10 @@ watch(() => dialog.value.open, async open => {
 })
 
 onMounted(() => window.addEventListener('keydown', handleKeydown))
-onBeforeUnmount(() => window.removeEventListener('keydown', handleKeydown))
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', handleKeydown)
+  unregisterBackHandler()
+})
 </script>
 
 <template>

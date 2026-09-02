@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref, onMounted, watch, watchEffect } from 'vue'
+import { computed, defineAsyncComponent, nextTick, onBeforeUnmount, ref, onMounted, watch, watchEffect } from 'vue'
 import { StatusBar } from '@capacitor/status-bar'
 import { LocalNotifications } from '@capacitor/local-notifications'
 
@@ -30,13 +30,15 @@ import DebtListView from './components/DebtListView.vue'
 import WeightView from './components/WeightView.vue'
 import MoodView from './components/MoodView.vue'
 import HomeView from './components/HomeView.vue'
-import SettingsView from './components/SettingsView.vue'
-import PasswordVaultView from './components/PasswordVaultView.vue'
-import MonthlyReportView from './components/MonthlyReportView.vue'
 import ScheduleView from './components/ScheduleView.vue'
 import ChatView from './components/ChatView.vue'
 import AppFeedbackHost from './components/AppFeedbackHost.vue'
-import { appAlert } from './services/uiFeedback'
+import { appAlert, appToast } from './services/uiFeedback'
+import { dispatchBackAction } from './services/backNavigation'
+
+const SettingsView = defineAsyncComponent(() => import('./components/SettingsView.vue'))
+const PasswordVaultView = defineAsyncComponent(() => import('./components/PasswordVaultView.vue'))
+const MonthlyReportView = defineAsyncComponent(() => import('./components/MonthlyReportView.vue'))
 
 const authStore = useAuthStore()
 const settingsStore = useSettingsStore()
@@ -50,6 +52,8 @@ const chatUnreadLabel = computed(() => (
   chatStore.unreadCount > 99 ? '99+' : String(chatStore.unreadCount || '')
 ))
 const hasEnteredApp = ref(false)
+const appWrapperRef = ref(null)
+let lastHomeBackAt = 0
 
 watch(() => authStore.isLocked, isLocked => {
   if (!isLocked) hasEnteredApp.value = true
@@ -81,6 +85,7 @@ let reminderRefreshTimer = null
 let reminderResumeTimer = null
 let widgetRefreshTimer = null
 let scheduleSyncTimer = null
+let startupIdleHandle = null
 
 const resyncStoredReminders = () => syncReminderNotifications(settingsStore.notificationSettings, {
   personalizedBodies: getPersonalizedReminderBodies(settingsStore.notificationAiContent)
@@ -132,6 +137,57 @@ const openAppUrl = (url) => {
   }
 }
 
+watch(() => settingsStore.navigationRevision, async () => {
+  await nextTick()
+  if (appWrapperRef.value) appWrapperRef.value.scrollTop = settingsStore.currentRoute.scrollTop || 0
+})
+
+const handleAppScroll = event => {
+  settingsStore.updateCurrentRouteScroll(event.currentTarget?.scrollTop || 0)
+}
+
+const handleAppBack = async () => {
+  if (await dispatchBackAction()) return true
+  if (authStore.isLocked) {
+    try {
+      await CapacitorApp.exitApp()
+    } catch (error) {
+      console.warn('当前环境无法退出应用', error)
+    }
+    return true
+  }
+  if (settingsStore.isDrawerOpen) {
+    settingsStore.isDrawerOpen = false
+    return true
+  }
+  if (settingsStore.goBack()) return true
+  if (settingsStore.currentView !== 'home') {
+    settingsStore.replaceRoute({ view: 'home' })
+    return true
+  }
+
+  const now = Date.now()
+  if (now - lastHomeBackAt <= 2000) {
+    try {
+      await CapacitorApp.exitApp()
+    } catch (error) {
+      console.warn('当前环境无法退出应用', error)
+    }
+    return true
+  }
+  lastHomeBackAt = now
+  appToast('再按一次返回键退出', { duration: 2000 })
+  return true
+}
+
+const handleAppKeydown = async event => {
+  if (event.key !== 'Escape' || authStore.isLocked) return
+  if (await dispatchBackAction()) return
+  if (settingsStore.isDrawerOpen) {
+    settingsStore.isDrawerOpen = false
+  }
+}
+
 const resyncChatProactive = async () => {
   chatStore.materializeDueProactive(Date.now())
   chatStore.materializeDueFollowups(Date.now())
@@ -153,7 +209,6 @@ const queueScheduleRefresh = () => {
   clearTimeout(scheduleSyncTimer)
   scheduleSyncTimer = setTimeout(() => {
     Promise.all([
-      scheduleStore.persist(),
       syncScheduleNotifications(scheduleStore.snapshot),
       refreshHomeWidget()
     ]).catch(error => {
@@ -162,14 +217,45 @@ const queueScheduleRefresh = () => {
   }, 350)
 }
 
+const runStartupSync = async () => {
+  const tasks = [
+    resyncChatProactive(),
+    refreshHomeWidget(),
+    syncScheduleNotifications(scheduleStore.snapshot),
+    resyncStoredReminders()
+  ]
+  const results = await Promise.allSettled(tasks)
+  results.forEach(result => {
+    if (result.status !== 'rejected') return
+    if (result.reason?.code !== 'NOTIFICATION_PERMISSION_DENIED') {
+      console.warn('启动后的后台同步失败', result.reason)
+    }
+  })
+}
+
+const queueStartupSync = () => {
+  const execute = () => {
+    startupIdleHandle = null
+    runStartupSync().catch(error => console.warn('启动后的后台同步失败', error))
+  }
+  if (typeof window.requestIdleCallback === 'function') {
+    startupIdleHandle = window.requestIdleCallback(execute, { timeout: 1200 })
+  } else {
+    startupIdleHandle = window.setTimeout(execute, 80)
+  }
+}
+
 onMounted(async () => {
   try {
+    CapacitorApp.addListener('backButton', handleAppBack)
     CapacitorApp.addListener('appUrlOpen', ({ url }) => openAppUrl(url))
     const launchUrl = await CapacitorApp.getLaunchUrl()
     openAppUrl(launchUrl?.url)
   } catch (error) {
     console.warn('无法处理应用快捷入口', error)
   }
+
+  window.addEventListener('keydown', handleAppKeydown)
 
   try {
     await StatusBar.show()
@@ -190,20 +276,6 @@ onMounted(async () => {
     vaultStore.loadRecords(authStore.savedMasterPwd),
     chatStore.loadChatData(authStore.savedMasterPwd)
   ])
-  await resyncChatProactive().catch(error => console.warn('初始化温馨小家主动联系失败', error))
-  await refreshHomeWidget().catch(error => console.warn('初始化桌面小组件失败', error))
-  await syncScheduleNotifications(scheduleStore.snapshot).catch(error => {
-    if (error.code !== 'NOTIFICATION_PERMISSION_DENIED') console.warn('初始化日程提醒失败', error)
-  })
-
-  try {
-    await resyncStoredReminders()
-  } catch (error) {
-    if (error.code !== 'NOTIFICATION_PERMISSION_DENIED') {
-      console.warn('同步通知提醒失败', error)
-    }
-  }
-
   moodStore.$subscribe(queueReminderPersonalizationRefresh)
   weightStore.$subscribe(queueReminderPersonalizationRefresh)
   debtStore.$subscribe(queueReminderPersonalizationRefresh)
@@ -211,6 +283,7 @@ onMounted(async () => {
   weightStore.$subscribe(queueHomeWidgetRefresh)
   debtStore.$subscribe(queueHomeWidgetRefresh)
   scheduleStore.$subscribe(queueScheduleRefresh)
+  queueStartupSync()
 
   try {
     LocalNotifications.addListener('localNotificationActionPerformed', ({ notification }) => {
@@ -230,7 +303,11 @@ onMounted(async () => {
       if (!isActive) {
         const nativeActivityGuarded = isNativeActivityGuardActive()
         backgroundedAt = nativeActivityGuarded ? null : Date.now()
-        chatStore.flush().catch(error => console.warn('进入后台时保存聊天失败', error))
+        Promise.all([
+          chatStore.flush(),
+          scheduleStore.persist(),
+          settingsStore.flushPendingSettingsWrites()
+        ]).catch(error => console.warn('进入后台时保存数据失败', error))
         if (!nativeActivityGuarded && shouldLockOnBackground(settingsStore.autoLockDelaySeconds)) {
           authStore.lockApp()
         }
@@ -260,6 +337,14 @@ onMounted(async () => {
     })
   } catch (e) {
     console.warn('浏览器环境中无法监听 App 状态', e)
+  }
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', handleAppKeydown)
+  if (startupIdleHandle !== null) {
+    if (typeof window.cancelIdleCallback === 'function') window.cancelIdleCallback(startupIdleHandle)
+    else window.clearTimeout(startupIdleHandle)
   }
 })
 
@@ -298,7 +383,9 @@ const setMasterPassword = async () => {
 
 <template>
   <div
+    ref="appWrapperRef"
     class="app-wrapper"
+    @scroll.passive="handleAppScroll"
     :class="{
       'schedule-active': !authStore.isLocked && settingsStore.currentView === 'schedule',
       'chat-active': !authStore.isLocked && settingsStore.currentView === 'chat'
@@ -389,10 +476,10 @@ const setMasterPassword = async () => {
     <div v-if="hasEnteredApp" v-show="!authStore.isLocked" class="main-app fade-in">
       <div v-if="settingsStore.currentView !== 'schedule'" class="top-nav sub-nav-frosted">
         <button
-          v-if="settingsStore.currentView === 'settings' && settingsStore.settingsScope !== 'general'"
+          v-if="settingsStore.currentView === 'settings' && (settingsStore.settingsScope !== 'general' || settingsStore.settingsSection)"
           class="nav-link-btn"
           aria-label="返回模块"
-          @click="settingsStore.closeModuleSettings()"
+          @click="settingsStore.settingsSection ? settingsStore.closeGeneralSettingsSection() : settingsStore.closeModuleSettings()"
         >
           <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none">
             <path d="m15 5-7 7 7 7"></path>
@@ -461,7 +548,12 @@ const setMasterPassword = async () => {
               v-for="item in drawerItems"
               :key="item.id"
               :class="{ active: settingsStore.currentView === item.id }"
+              role="button"
+              tabindex="0"
+              :aria-current="settingsStore.currentView === item.id ? 'page' : undefined"
               @click="settingsStore.switchView(item.id)"
+              @keydown.enter="settingsStore.switchView(item.id)"
+              @keydown.space.prevent="settingsStore.switchView(item.id)"
             >
               <span class="drawer-item-icon">
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path :d="item.icon" /></svg>
@@ -491,15 +583,15 @@ const setMasterPassword = async () => {
           'chat-content-area': settingsStore.currentView === 'chat'
         }"
       >
-        <HomeView v-if="settingsStore.currentView === 'home'" />
-        <MonthlyReportView v-if="settingsStore.currentView === 'reports'" />
-        <DebtListView v-if="settingsStore.currentView === 'debts'" />
-        <WeightView v-if="settingsStore.currentView === 'weight'" />
-        <MoodView v-if="settingsStore.currentView === 'mood'" />
-        <ScheduleView v-if="settingsStore.currentView === 'schedule'" />
-        <KeepAlive>
+        <KeepAlive :max="7">
+          <HomeView v-if="settingsStore.currentView === 'home'" />
+          <MonthlyReportView v-else-if="settingsStore.currentView === 'reports'" />
+          <DebtListView v-else-if="settingsStore.currentView === 'debts'" />
+          <WeightView v-else-if="settingsStore.currentView === 'weight'" />
+          <MoodView v-else-if="settingsStore.currentView === 'mood'" />
+          <ScheduleView v-else-if="settingsStore.currentView === 'schedule'" />
           <ChatView
-            v-if="settingsStore.currentView === 'chat'"
+            v-else-if="settingsStore.currentView === 'chat'"
             :is-visible="!authStore.isLocked && settingsStore.currentView === 'chat'"
           />
         </KeepAlive>

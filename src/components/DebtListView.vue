@@ -1,9 +1,10 @@
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch, onBeforeUnmount, onMounted } from 'vue'
 import { useDebtStore } from '../stores/debt'
 import { useSettingsStore } from '../stores/settings'
 import { askAI } from '../services/aiEngine'
 import { appAlert, appConfirm } from '../services/uiFeedback'
+import { registerBackHandler } from '../services/backNavigation'
 import AppDateField from './AppDateField.vue'
 
 const debtStore = useDebtStore()
@@ -117,6 +118,14 @@ const submitRepay = () => {
 }
 
 const isViewing = ref(false)
+const unregisterBackHandler = registerBackHandler(() => {
+  if (isViewing.value) { isViewing.value = false; return true }
+  if (isRepaying.value) { isRepaying.value = false; return true }
+  if (isEditing.value) { isEditing.value = false; return true }
+  if (isAdding.value) { isAdding.value = false; return true }
+  return false
+}, { priority: 500, isActive: () => isViewing.value || isRepaying.value || isEditing.value || isAdding.value })
+onBeforeUnmount(unregisterBackHandler)
 const viewRecords = ref([])
 const viewDetails = (debt) => { viewRecords.value = debt.records; isViewing.value = true }
 
