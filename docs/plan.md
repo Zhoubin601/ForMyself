@@ -334,4 +334,8 @@
 - [x] 核对远端默认分支与现有预发布惯例
 - [x] 复跑 212 项测试及生产构建，校验已验收 APK 的 SHA-256 和 Debug 签名
 - [x] 整理独立发布附件及发布说明；本地备份资料笔记不提交至公开仓库
-- [ ] 提交功能源码、创建标签并发布 GitHub 预发布
+- [x] 提交功能源码、创建标签并发布 GitHub 预发布
+
+发布标签：`v2026.09.04-mood-customization`；源码提交：`b4d5855`。
+发布地址：https://github.com/Zhoubin601/ForMyself/releases/tag/v2026.09.04-mood-customization
+已核验 GitHub 附件状态为 uploaded，APK 大小与 SHA-256 和本地验收包一致。
