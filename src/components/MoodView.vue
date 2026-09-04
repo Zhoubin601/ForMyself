@@ -20,16 +20,6 @@ onMounted(() => {
   if (!moodStore.isDataLoaded) moodStore.loadMoodRecords()
 })
 
-const MOOD_OPTIONS = [
-  { key: 'great', emoji: '🤩', label: '超赞' },
-  { key: 'good', emoji: '🙂', label: '开心' },
-  { key: 'normal', emoji: '😐', label: '一般' },
-  { key: 'bad', emoji: '😔', label: '低落' },
-  { key: 'terrible', emoji: '😫', label: '极差' }
-]
-
-const MOOD_DEFAULT = 'normal'
-
 const now = new Date()
 const currentYear = ref(now.getFullYear())
 const currentMonth = ref(now.getMonth() + 1)
@@ -67,7 +57,7 @@ const getRecordsForDay = (day) => {
 const getMoodEmoji = (day) => {
   const record = getRecordsForDay(day)[0]
   if (!record) return null
-  return MOOD_OPTIONS.find(m => m.key === record.mood)?.emoji || null
+  return moodStore.getMoodDefinition(record.mood)?.emoji || null
 }
 
 const getEventCount = day => getRecordsForDay(day).length
@@ -80,6 +70,9 @@ const monthRecords = computed(() => {
 })
 
 const monthStats = computed(() => moodStore.getMonthStats(currentYear.value, currentMonth.value))
+const monthMoodOptions = computed(() => moodStore.moodDefinitions.filter(item => (
+  !item.archived || (monthStats.value[item.id] || 0) > 0
+)))
 
 // --- 分页 ---
 const PAGE_SIZE = 10
@@ -107,18 +100,24 @@ const unregisterBackHandler = registerBackHandler(() => {
 }, { priority: 500, isActive: () => Boolean(activeEcho.value || showModal.value) })
 onBeforeUnmount(unregisterBackHandler)
 const editDate = ref('')
-const editMood = ref(MOOD_DEFAULT)
+const editMood = ref('normal')
 const editNote = ref('')
 const editTags = ref(['学习'])
 const customTagInput = ref('')
 const editingId = ref(null)
 
 const availableTags = computed(() => [...moodStore.builtInTags, ...moodStore.customTags])
+const editorMoodOptions = computed(() => {
+  const options = [...moodStore.activeMoodDefinitions]
+  const selected = moodStore.moodDefinitions.find(item => item.id === editMood.value)
+  if (selected?.archived && !options.some(item => item.id === selected.id)) options.push(selected)
+  return options
+})
 
 const resetEditor = (date) => {
   editingId.value = null
   editDate.value = date
-  editMood.value = MOOD_DEFAULT
+  editMood.value = moodStore.defaultMoodDefinition.id
   editNote.value = ''
   editTags.value = ['学习']
   customTagInput.value = ''
@@ -170,11 +169,11 @@ const saveRecord = async () => {
   showModal.value = false
 
   // 有可回应的真实内容时，使用本次记录和近 30 天历史生成专属陪伴。
-  if (settingsStore.aiApiKey && savedRecord && (savedRecord.note || savedRecord.mood !== 'normal')) {
+  if (settingsStore.aiApiKey && savedRecord && (savedRecord.note || savedRecord.mood !== moodStore.defaultMoodDefinition.id)) {
     activeEcho.value = 'thinking'
     isEchoThinking.value = true
     try {
-      const context = buildMoodEchoContext(moodStore.moodRecords, savedRecord)
+      const context = buildMoodEchoContext(moodStore.moodRecords, savedRecord, moodStore.moodDefinitions)
       const echoText = await askAI(buildMoodEchoPrompt(context))
       activeEcho.value = normalizeCompanionReply(echoText, 200)
     } catch (e) {
@@ -207,7 +206,7 @@ const createCustomTag = () => {
   customTagInput.value = ''
 }
 
-const getMoodInfo = (key) => MOOD_OPTIONS.find(m => m.key === key) || MOOD_OPTIONS[2]
+const getMoodInfo = key => moodStore.getMoodDefinition(key)
 
 const formatDate = (dateStr) => {
   const d = new Date(dateStr + 'T00:00:00')
@@ -249,8 +248,8 @@ const isToday = (day) => {
       </div>
 
       <div class="calendar-stats">
-        <span v-for="opt in MOOD_OPTIONS" :key="opt.key" class="cs-item" :class="{ active: monthStats[opt.key] > 0 }">
-          {{ opt.emoji }} {{ monthStats[opt.key] }}
+        <span v-for="opt in monthMoodOptions" :key="opt.id" class="cs-item" :class="{ active: monthStats[opt.id] > 0 }">
+          {{ opt.emoji }} {{ monthStats[opt.id] || 0 }}
         </span>
       </div>
     </div>
@@ -313,9 +312,9 @@ const isToday = (day) => {
         <div class="input-group">
           <label class="caption">今天的心情</label>
           <div class="mood-selector">
-            <div v-for="opt in MOOD_OPTIONS" :key="opt.key" class="mood-option" :class="{ selected: editMood === opt.key }" @click="selectMood(opt.key)">
+            <div v-for="opt in editorMoodOptions" :key="opt.id" class="mood-option" :class="{ selected: editMood === opt.id }" @click="selectMood(opt.id)">
               <span class="mood-emoji">{{ opt.emoji }}</span>
-              <span class="mood-label">{{ opt.label }}</span>
+              <span class="mood-label">{{ opt.label }}<small v-if="opt.archived">（已归档）</small></span>
             </div>
           </div>
         </div>
@@ -438,12 +437,13 @@ const isToday = (day) => {
 .input-group { margin-bottom: 16px; }
 .input-group label { display: block; margin-bottom: 6px; color: var(--body-muted); }
 
-.mood-selector { display: flex; gap: 8px; justify-content: center; }
+.mood-selector { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
 .mood-option { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 12px 10px; border-radius: 14px; border: 2px solid transparent; background: var(--surface-pearl); cursor: pointer; transition: all 0.2s; min-width: 56px; }
 .mood-option:active { transform: scale(0.95); }
 .mood-option.selected { border-color: var(--primary); background: rgba(0, 102, 204, 0.06); }
 .mood-emoji { font-size: 28px; line-height: 1; }
 .mood-label { font-size: 12px; color: var(--body-muted); }
+.mood-label small { display: block; font-size: 9px; }
 .mood-option.selected .mood-label { color: var(--primary); font-weight: 600; }
 
 .tag-selector { display: flex; flex-wrap: wrap; gap: 8px; }

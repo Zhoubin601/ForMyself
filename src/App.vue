@@ -97,6 +97,7 @@ const refreshReminderPersonalization = async (force = false) => {
     cache: settingsStore.notificationAiContent,
     data: {
       moodRecords: moodStore.moodRecords,
+      moodDefinitions: moodStore.moodDefinitions,
       weightRecords: weightStore.weightRecords,
       savedDebts: debtStore.savedDebts
     },

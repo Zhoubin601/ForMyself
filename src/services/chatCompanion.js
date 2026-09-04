@@ -2,6 +2,7 @@ import { askAI, streamAIChat } from './aiEngine.js'
 import { buildHomeCompanionContext } from './companionPrompts.js'
 import { parseMemoryExtraction } from './chatRecords.js'
 import { behaviorPlanPromptFragment } from './chatRealism.js'
+import { resolveMoodDefinition } from './moodRecords.js'
 
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/
 const REPLY_BREAK_PATTERN = /(?:<CHAT_BREAK>|\[CHAT_BREAK\])/gi
@@ -50,14 +51,6 @@ export const COMPANION_REPLY_POLICIES = Object.freeze({
     hardLength: 110
   })
 })
-const CHAT_MOOD_LABELS = {
-  great: '非常开心',
-  good: '开心',
-  normal: '一般',
-  bad: '低落',
-  terrible: '很糟糕'
-}
-
 const characterLength = value => Array.from(String(value || '')).length
 const cleanSelectionText = value => String(value || '')
   .toLocaleLowerCase('zh-CN')
@@ -535,7 +528,7 @@ const roundTo = (value, digits = 1) => {
 const sortedMonthValues = grouped => [...grouped.values()]
   .sort((a, b) => String(a.month).localeCompare(String(b.month)))
 
-const buildOlderMoodOverview = (records, referenceDate) => {
+const buildOlderMoodOverview = (records, referenceDate, definitions = []) => {
   const grouped = new Map()
   ;(Array.isArray(records) ? records : [])
     .filter(item => (
@@ -557,7 +550,7 @@ const buildOlderMoodOverview = (records, referenceDate) => {
         })
       }
       const summary = grouped.get(month)
-      const mood = CHAT_MOOD_LABELS[item.mood] || '一般'
+      const mood = resolveMoodDefinition(definitions, item.mood).label
       summary.total += 1
       summary.moodCounts[mood] = (summary.moodCounts[mood] || 0) + 1
       ;(Array.isArray(item.tags) ? item.tags : item.tag ? [item.tag] : [])
@@ -709,6 +702,7 @@ const buildScheduleLongTermOverview = (
 
 export function buildChatLifeContext({
   moodRecords = [],
+  moodDefinitions = [],
   weightRecords = [],
   savedDebts = [],
   scheduleOccurrences = [],
@@ -740,13 +734,13 @@ export function buildChatLifeContext({
       location: String(item.location || ''),
       note: String(item.note || '')
     }))
-  const recent = buildHomeCompanionContext({ moodRecords, weightRecords, savedDebts }, date)
+  const recent = buildHomeCompanionContext({ moodRecords, moodDefinitions, weightRecords, savedDebts }, date)
   return {
     ...recent,
     schedulesWithin30Days: schedules,
     longTermOverviewBefore30Days: {
       explanation: '以下是30天以前记录的按月概览；近期30天仍保留完整原始记录。',
-      moodByMonth: buildOlderMoodOverview(moodRecords, date),
+      moodByMonth: buildOlderMoodOverview(moodRecords, date, moodDefinitions),
       weightByMonth: buildOlderWeightOverview(weightRecords, date),
       schedules: buildScheduleLongTermOverview(
         scheduleSeries,

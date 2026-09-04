@@ -4,7 +4,11 @@ import { createPinia, setActivePinia } from 'pinia'
 import {
   BUILT_IN_MOOD_TAGS,
   DEFAULT_MOOD_TAG,
+  buildMoodBackupSnapshot,
   getCustomMoodTags,
+  normalizeMoodBackupSnapshot,
+  normalizeMoodDefinitions,
+  normalizeMoodEmoji,
   normalizeMoodRecord,
   normalizeMoodRecords,
   normalizeMoodTags
@@ -92,4 +96,74 @@ test('删除自定义标签时会同步清理历史记录并为无标签记录�
   assert.deepEqual(store.moodRecords[1].tags, [DEFAULT_MOOD_TAG])
   assert.equal(store.customTags.includes('旅行'), false)
   assert.equal(store.removeCustomTag('学习'), false)
+})
+
+test('心情等级默认迁移保留五个稳定 ID，未知历史 ID 生成归档占位', () => {
+  const definitions = normalizeMoodDefinitions([], [{ date: '2026-09-01', mood: 'custom-history' }])
+  assert.deepEqual(definitions.slice(0, 5).map(item => item.id), ['great', 'good', 'normal', 'bad', 'terrible'])
+  assert.equal(definitions.find(item => item.id === 'normal').isDefault, true)
+  assert.equal(definitions.find(item => item.id === 'custom-history').archived, true)
+})
+
+test('心情 Emoji 只接受单个完整字素并支持组合 Emoji', () => {
+  assert.equal(normalizeMoodEmoji('👨‍👩‍👧‍👦'), '👨‍👩‍👧‍👦')
+  assert.equal(normalizeMoodEmoji('❤️'), '❤️')
+  assert.equal(normalizeMoodEmoji('🙂😔'), '')
+  assert.equal(normalizeMoodEmoji('A'), '')
+})
+
+test('Store 支持等级新增编辑排序、默认保护、归档恢复和安全删除', () => {
+  setActivePinia(createPinia())
+  const store = useMoodStore()
+  const added = store.addMoodDefinition({ label: '期待', emoji: '🥳', color: '#123ABC' })
+  assert.equal(added.ok, true)
+  const id = added.definition.id
+  assert.equal(store.updateMoodDefinition(id, { label: '很期待', emoji: '✨', color: '#654321' }).ok, true)
+  const ids = store.activeMoodDefinitions.map(item => item.id)
+  assert.equal(store.reorderMoodDefinitions([id, ...ids.filter(item => item !== id)]), true)
+  assert.equal(store.activeMoodDefinitions[0].id, id)
+  assert.equal(store.setDefaultMoodDefinition(id), true)
+  assert.equal(store.archiveMoodDefinition(id).reason, 'DEFAULT')
+  assert.equal(store.setDefaultMoodDefinition('normal'), true)
+  assert.equal(store.archiveMoodDefinition(id).ok, true)
+  assert.equal(store.restoreMoodDefinition(id), true)
+  assert.equal(store.deleteMoodDefinition(id).ok, true)
+})
+
+test('已使用心情等级只能归档，归档不会改写历史记录', () => {
+  setActivePinia(createPinia())
+  const store = useMoodStore()
+  const added = store.addMoodDefinition({ label: '平静', emoji: '😌', color: '#55AA88' }).definition
+  store.addRecord('2026-09-02', added.id, '安静的一天')
+  assert.equal(store.deleteMoodDefinition(added.id).reason, 'IN_USE')
+  assert.equal(store.archiveMoodDefinition(added.id).ok, true)
+  assert.equal(store.moodRecords[0].mood, added.id)
+  assert.equal(store.getMoodDefinition(added.id).label, '平静')
+})
+
+test('心情单项备份往返保留等级配置并兼容旧数组', () => {
+  const snapshot = buildMoodBackupSnapshot({
+    records: [{ id: '1', date: '2026-09-02', mood: 'calm' }],
+    trackingStartDate: '2026-09-01',
+    customTags: ['散步'],
+    definitions: [{ id: 'calm', label: '平静', emoji: '😌', color: '#55AA88', isDefault: true }]
+  }, '2026-09-02T00:00:00.000Z')
+  const restored = normalizeMoodBackupSnapshot(snapshot)
+  assert.equal(restored.metadata.definitions[0].label, '平静')
+  assert.equal(restored.data.records[0].mood, 'calm')
+  assert.equal(normalizeMoodBackupSnapshot(snapshot.data.records).data.records.length, 1)
+})
+
+test('旧心情数组的空等级回退到当前默认项，未知非空 ID 继续保留', () => {
+  const currentDefinitions = [
+    { id: 'calm', label: '平静', emoji: '😌', color: '#55AA88', isDefault: true }
+  ]
+  const restored = normalizeMoodBackupSnapshot([
+    { id: '1', date: '2026-09-01', mood: '' },
+    { id: '2', date: '2026-09-02', mood: 'legacy-custom' }
+  ], currentDefinitions)
+
+  assert.equal(restored.data.records[0].mood, 'calm')
+  assert.equal(restored.data.records[1].mood, 'legacy-custom')
+  assert.equal(restored.metadata.definitions.find(item => item.id === 'legacy-custom').archived, true)
 })

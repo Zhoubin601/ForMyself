@@ -21,6 +21,7 @@ const isGeneratingSummary = ref(false)
 
 const report = computed(() => buildMonthlyReport({
   moodRecords: moodStore.moodRecords,
+  moodDefinitions: moodStore.moodDefinitions,
   weightRecords: weightStore.weightRecords,
   savedDebts: debtStore.savedDebts
 }, selectedYear.value, selectedMonth.value, {
@@ -41,13 +42,9 @@ const changeMonth = offset => {
   selectedMonth.value = next.getMonth() + 1
 }
 
-const MOODS = [
-  { key: 'great', emoji: '🤩', label: '很棒', color: '#34c759' },
-  { key: 'good', emoji: '🙂', label: '不错', color: '#75c86b' },
-  { key: 'normal', emoji: '😐', label: '一般', color: '#ffcc00' },
-  { key: 'bad', emoji: '😔', label: '低落', color: '#ff9500' },
-  { key: 'terrible', emoji: '😫', label: '很糟', color: '#ff3b30' }
-]
+const MOODS = computed(() => moodStore.moodDefinitions.filter(item => (
+  !item.archived || (report.value.mood.distribution[item.id] || 0) > 0
+)))
 
 const weightTrendText = computed(() => {
   const stats = report.value.weight
@@ -100,12 +97,12 @@ const generateMonthlySummary = async () => {
       </div>
 
       <div v-if="report.mood.total" class="mood-distribution">
-        <div v-for="mood in MOODS" :key="mood.key" class="mood-stat-row">
+        <div v-for="mood in MOODS" :key="mood.id" class="mood-stat-row">
           <span class="mood-name">{{ mood.emoji }} {{ mood.label }}</span>
           <div class="mood-bar-track">
-            <div class="mood-bar-fill" :style="{ width: `${report.mood.percentages[mood.key]}%`, background: mood.color }"></div>
+            <div class="mood-bar-fill" :style="{ width: `${report.mood.percentages[mood.id] || 0}%`, background: mood.color }"></div>
           </div>
-          <span class="mood-count">{{ report.mood.distribution[mood.key] }}次</span>
+          <span class="mood-count">{{ report.mood.distribution[mood.id] || 0 }}次</span>
         </div>
       </div>
       <p v-else class="empty-copy">本月还没有心情记录。</p>

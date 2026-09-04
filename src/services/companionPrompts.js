@@ -1,12 +1,4 @@
-import { normalizeMoodTags } from './moodRecords.js'
-
-const MOOD_LABELS = {
-  great: '非常开心',
-  good: '开心',
-  normal: '一般',
-  bad: '低落',
-  terrible: '很糟糕'
-}
+import { normalizeMoodDefinitions, normalizeMoodTags, resolveMoodDefinition } from './moodRecords.js'
 
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/
 const HISTORY_DAYS = 30
@@ -80,13 +72,19 @@ const sortByDateAndCreation = (a, b) => {
   return String(a.id || '').localeCompare(String(b.id || ''))
 }
 
-const normalizeMoodEvent = record => ({
-  mood: MOOD_LABELS[record.mood] || '一般',
-  tags: normalizeMoodTags(record.tags ?? record.tag),
-  note: cleanNote(record.note)
-})
+const normalizeMoodEvent = (record, definitions = []) => {
+  const normalizedDefinitions = normalizeMoodDefinitions(definitions, [record])
+  const definition = resolveMoodDefinition(normalizedDefinitions, record.mood)
+  const position = normalizedDefinitions.findIndex(item => item.id === definition.id)
+  return {
+    mood: definition.label,
+    moodScale: `${position + 1}/${normalizedDefinitions.length}（1 最积极，${normalizedDefinitions.length} 最低落）`,
+    tags: normalizeMoodTags(record.tags ?? record.tag),
+    note: cleanNote(record.note)
+  }
+}
 
-export function buildMoodHistory(records = [], referenceDate = new Date(), excludeId = '') {
+export function buildMoodHistory(records = [], referenceDate = new Date(), excludeId = '', definitions = []) {
   const date = formatLocalDate(referenceDate)
   const grouped = new Map()
 
@@ -100,7 +98,7 @@ export function buildMoodHistory(records = [], referenceDate = new Date(), exclu
     .sort(sortByDateAndCreation)
     .forEach(record => {
       if (!grouped.has(record.date)) grouped.set(record.date, [])
-      grouped.get(record.date).push(normalizeMoodEvent(record))
+      grouped.get(record.date).push(normalizeMoodEvent(record, definitions))
     })
 
   return [...grouped.entries()].map(([recordDate, events]) => ({ date: recordDate, events }))
@@ -155,20 +153,21 @@ export function buildSavingsHistory(plans = [], referenceDate = new Date()) {
     })
 }
 
-export function buildMoodEchoContext(records = [], currentRecord = {}) {
+export function buildMoodEchoContext(records = [], currentRecord = {}, definitions = []) {
   const currentDate = formatLocalDate(currentRecord.date)
   return {
     referenceDate: currentDate,
     currentRecord: {
       date: currentDate,
-      ...normalizeMoodEvent(currentRecord)
+      ...normalizeMoodEvent(currentRecord, definitions)
     },
-    recentMoodDays: buildMoodHistory(records, currentDate, currentRecord.id)
+    recentMoodDays: buildMoodHistory(records, currentDate, currentRecord.id, definitions)
   }
 }
 
 export function buildHomeCompanionContext({
   moodRecords = [],
+  moodDefinitions = [],
   weightRecords = [],
   savedDebts = []
 } = {}, referenceDate = new Date()) {
@@ -176,7 +175,7 @@ export function buildHomeCompanionContext({
   return {
     referenceDate: date,
     recent30Days: {
-      moodDays: buildMoodHistory(moodRecords, date),
+      moodDays: buildMoodHistory(moodRecords, date, '', moodDefinitions),
       weightRecords: buildWeightHistory(weightRecords, date),
       savingsPlans: buildSavingsHistory(savedDebts, date)
     }

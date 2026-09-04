@@ -22,6 +22,10 @@ import {
   normalizeFullBackupSnapshot
 } from '../services/fullBackup'
 import {
+  buildMoodBackupSnapshot,
+  normalizeMoodBackupSnapshot
+} from '../services/moodRecords'
+import {
   buildChatBackupSnapshot,
   CHAT_MEMORY_CATEGORIES,
   CHAT_MEMORY_SCOPES,
@@ -74,7 +78,7 @@ const showGeneralSettingsHome = computed(() => settingsScope.value === 'general'
 const scopeMeta = computed(() => ({
   debts: { icon: '◎', title: '省钱计划设置', description: '管理省钱看板文案、目标回顾提醒与个性化鼓励。' },
   weight: { icon: '◇', title: '体重记录设置', description: '管理健康参数、变化提醒与每日记录提醒。' },
-  mood: { icon: '♡', title: '心情日记设置', description: '管理自定义标签与每日关怀提醒。' },
+  mood: { icon: '♡', title: '心情日记设置', description: '管理心情等级、自定义标签与每日关怀提醒。' },
   schedule: { icon: '□', title: '日程提醒设置', description: '管理日程标签、颜色和分类规则。' },
   passwords: { icon: '⌑', title: '密码库设置', description: '管理密码分类；主密码仍在通用配置中管理。' },
   chat: { icon: '⌂', title: '温馨小家设置', description: '管理女朋友名字、记忆和聊天数据。' }
@@ -158,6 +162,14 @@ const generalSettingsCategories = computed(() => [
 const openGeneralSettingsCategory = section => settingsStore.openGeneralSettingsSection(section)
 const newVaultCategory = ref('')
 const newScheduleCategory = ref('')
+const newMoodLabel = ref('')
+const newMoodEmoji = ref('😊')
+const newMoodColor = ref('#FF9F43')
+const editingMoodId = ref('')
+const editMoodLabel = ref('')
+const editMoodEmoji = ref('')
+const editMoodColor = ref('#8E8E93')
+const draggedMoodId = ref('')
 const companionNameInput = ref(chatStore.profile.companionName)
 const newMemoryContent = ref('')
 const newMemoryCategory = ref('偏好')
@@ -451,6 +463,102 @@ const deleteMoodTag = async (tag) => {
   })) return
   if (moodStore.removeCustomTag(tag)) appToast(`已删除心情标签“${tag}”`, { tone: 'success' })
 }
+
+const moodDefinitionError = reason => ({
+  INVALID_LABEL: '请输入 1–12 个字符的心情名称',
+  INVALID_EMOJI: '请输入一个完整的系统 Emoji',
+  INVALID_COLOR: '请输入有效的 HEX 颜色，例如 #FF9F43',
+  DUPLICATE_LABEL: '心情名称不能重复',
+  DEFAULT: '默认心情不能归档或删除，请先指定其他默认项',
+  LAST_ACTIVE: '至少要保留一个可用心情等级',
+  IN_USE: '这个等级仍被历史记录使用，只能归档保留'
+})[reason] || '操作失败，请稍后重试'
+
+const addMoodDefinition = () => {
+  const result = moodStore.addMoodDefinition({
+    label: newMoodLabel.value,
+    emoji: newMoodEmoji.value,
+    color: newMoodColor.value
+  })
+  if (!result.ok) return appAlert(moodDefinitionError(result.reason))
+  newMoodLabel.value = ''
+  newMoodEmoji.value = '😊'
+  newMoodColor.value = '#FF9F43'
+  appToast('已添加心情等级', { tone: 'success' })
+}
+
+const beginEditMoodDefinition = definition => {
+  editingMoodId.value = definition.id
+  editMoodLabel.value = definition.label
+  editMoodEmoji.value = definition.emoji
+  editMoodColor.value = definition.color
+}
+
+const saveMoodDefinition = () => {
+  const result = moodStore.updateMoodDefinition(editingMoodId.value, {
+    label: editMoodLabel.value,
+    emoji: editMoodEmoji.value,
+    color: editMoodColor.value
+  })
+  if (!result.ok) return appAlert(moodDefinitionError(result.reason))
+  editingMoodId.value = ''
+  appToast('心情等级已更新', { tone: 'success' })
+}
+
+const moveMoodDefinition = (id, offset) => {
+  const ids = moodStore.activeMoodDefinitions.map(item => item.id)
+  const index = ids.indexOf(id)
+  const target = index + offset
+  if (index < 0 || target < 0 || target >= ids.length) return
+  ;[ids[index], ids[target]] = [ids[target], ids[index]]
+  moodStore.reorderMoodDefinitions(ids)
+}
+
+const dropMoodDefinition = targetId => {
+  const sourceId = draggedMoodId.value
+  draggedMoodId.value = ''
+  if (!sourceId || sourceId === targetId) return
+  const ids = moodStore.activeMoodDefinitions.map(item => item.id)
+  const sourceIndex = ids.indexOf(sourceId)
+  const targetIndex = ids.indexOf(targetId)
+  if (sourceIndex < 0 || targetIndex < 0) return
+  ids.splice(targetIndex, 0, ids.splice(sourceIndex, 1)[0])
+  moodStore.reorderMoodDefinitions(ids)
+}
+
+const setDefaultMoodDefinition = definition => {
+  if (moodStore.setDefaultMoodDefinition(definition.id)) {
+    appToast(`已将“${definition.label}”设为默认心情`, { tone: 'success' })
+  }
+}
+
+const archiveMoodDefinition = async definition => {
+  if (!await appConfirm(`归档后，“${definition.label}”不会出现在新记录中，历史记录仍会原样保留。`, {
+    title: '归档心情等级？', confirmText: '归档'
+  })) return
+  const result = moodStore.archiveMoodDefinition(definition.id)
+  if (!result.ok) return appAlert(moodDefinitionError(result.reason))
+  if (editingMoodId.value === definition.id) editingMoodId.value = ''
+  appToast(`已归档“${definition.label}”`, { tone: 'success' })
+}
+
+const restoreMoodDefinition = definition => {
+  if (moodStore.restoreMoodDefinition(definition.id)) {
+    appToast(`已恢复“${definition.label}”`, { tone: 'success' })
+  }
+}
+
+const deleteMoodDefinition = async definition => {
+  if (!await appConfirm(`永久删除未使用的心情等级“${definition.label}”。`, {
+    title: '删除心情等级？', confirmText: '永久删除', destructive: true
+  })) return
+  const result = moodStore.deleteMoodDefinition(definition.id)
+  if (!result.ok) return appAlert(moodDefinitionError(result.reason))
+  if (editingMoodId.value === definition.id) editingMoodId.value = ''
+  appToast(`已删除“${definition.label}”`, { tone: 'success' })
+}
+
+const moodDefinitionUsageCount = id => moodStore.moodRecords.filter(record => record.mood === id).length
 
 const addVaultCategory = () => {
   const result = vaultStore.addCategory(newVaultCategory.value)
@@ -1033,7 +1141,12 @@ const getDataArray = () => {
   if (exportDataType.value === 'passwords') return vaultStore.records
   if (exportDataType.value === 'schedules') return scheduleStore.snapshot
   if (exportDataType.value === 'chat') return buildChatBackupSnapshot(chatStore.snapshot)
-  return moodStore.moodRecords
+  return buildMoodBackupSnapshot({
+    records: moodStore.moodRecords,
+    trackingStartDate: moodStore.trackingStartDate,
+    customTags: moodStore.customTags,
+    definitions: moodStore.moodDefinitions
+  })
 }
 
 const setDataArray = async (data, overwrite) => {
@@ -1085,7 +1198,8 @@ const createFullBackupSnapshot = () => buildFullBackupSnapshot({
   chat: chatStore.snapshot,
   moodMetadata: {
     trackingStartDate: moodStore.trackingStartDate,
-    customTags: moodStore.customTags
+    customTags: moodStore.customTags,
+    definitions: moodStore.moodDefinitions
   },
   vaultMetadata: {
     categories: vaultStore.categories
@@ -1163,7 +1277,9 @@ const exportJSON = async () => {
     ? !data.series.length
     : exportDataType.value === 'chat'
       ? !data.data.messages.length && !data.data.memories.length
-    : Array.isArray(data) && data.length === 0
+    : exportDataType.value === 'mood'
+      ? !data.data.records.length
+      : Array.isArray(data) && data.length === 0
   if (!isFullBackup && isEmpty) return appAlert(`没有检测到可导出的${label}`)
 
   try {
@@ -1246,6 +1362,18 @@ const handleFileUpload = (event) => {
         )
         await setDataArray(snapshot.data, overwrite)
         appToast('温馨小家数据恢复成功', { tone: 'success' })
+        return
+      }
+
+      if (exportDataType.value === 'mood') {
+        const snapshot = normalizeMoodBackupSnapshot(importedData, moodStore.moodDefinitions)
+        const overwrite = await appConfirm(
+          `成功解密出 ${snapshot.data.records.length} 条心情记录，并包含标签与心情等级配置。\n选择“覆盖”会替换当前心情数据；取消则合并记录和等级。`,
+          { title: '恢复心情日记', confirmText: '覆盖当前数据', cancelText: '合并数据' }
+        )
+        if (overwrite) await moodStore.restoreMoodBackup(snapshot.data.records, snapshot.metadata)
+        else await moodStore.mergeMoodBackup(snapshot.data.records, snapshot.metadata)
+        appToast('心情日记数据恢复成功', { tone: 'success' })
         return
       }
 
@@ -1361,6 +1489,7 @@ const saveReminderSettings = async () => {
       cache: settingsStore.notificationAiContent,
       data: {
         moodRecords: moodStore.moodRecords,
+        moodDefinitions: moodStore.moodDefinitions,
         weightRecords: weightStore.weightRecords,
         savedDebts: debtStore.savedDebts
       },
@@ -1963,6 +2092,73 @@ const testAIConnection = async () => {
         </div>
       </div>
 
+      <div v-if="settingsScope === 'mood' || isGeneralSection('labels')" class="store-utility-card taxonomy-card mood-definition-card">
+        <h4 class="body-strong taxonomy-title">心情等级</h4>
+        <p class="caption body-muted taxonomy-description">从积极到低落排列。拖动或使用箭头调整顺序；归档不会改写历史记录。</p>
+        <div class="mood-definition-add">
+          <input v-model="newMoodEmoji" class="apple-input mood-emoji-input" maxlength="12" aria-label="新心情 Emoji" />
+          <input v-model="newMoodLabel" class="apple-input" maxlength="12" placeholder="心情名称" @keyup.enter="addMoodDefinition" />
+          <input v-model="newMoodColor" class="apple-input mood-color-text" maxlength="7" aria-label="新心情颜色 HEX" />
+          <button class="button-primary taxonomy-add-button" @click="addMoodDefinition">添加</button>
+        </div>
+
+        <div class="taxonomy-list mood-definition-list">
+          <div
+            v-for="(definition, index) in moodStore.activeMoodDefinitions"
+            :key="definition.id"
+            class="taxonomy-row mood-definition-row"
+            draggable="true"
+            @dragstart="draggedMoodId = definition.id"
+            @dragend="draggedMoodId = ''"
+            @dragover.prevent
+            @drop.prevent="dropMoodDefinition(definition.id)"
+          >
+            <template v-if="editingMoodId === definition.id">
+              <div class="mood-definition-editor">
+                <input v-model="editMoodEmoji" class="apple-input mood-emoji-input" maxlength="12" aria-label="编辑心情 Emoji" />
+                <input v-model="editMoodLabel" class="apple-input" maxlength="12" aria-label="编辑心情名称" />
+                <input v-model="editMoodColor" class="apple-input mood-color-text" maxlength="7" aria-label="编辑心情颜色 HEX" />
+                <button class="text-link" @click="saveMoodDefinition">保存</button>
+                <button class="text-link" @click="editingMoodId = ''">取消</button>
+              </div>
+            </template>
+            <template v-else>
+              <span class="mood-drag-handle" aria-hidden="true">⋮⋮</span>
+              <span class="mood-definition-preview">
+                <b>{{ definition.emoji }}</b>
+                <i :style="{ background: definition.color }"></i>
+                <span>{{ definition.label }}</span>
+                <small v-if="definition.isDefault">默认</small>
+              </span>
+              <span class="mood-definition-actions">
+                <button class="mood-order-button" :disabled="index === 0" aria-label="上移" @click="moveMoodDefinition(definition.id, -1)">↑</button>
+                <button class="mood-order-button" :disabled="index === moodStore.activeMoodDefinitions.length - 1" aria-label="下移" @click="moveMoodDefinition(definition.id, 1)">↓</button>
+                <button v-if="!definition.isDefault" class="text-link" @click="setDefaultMoodDefinition(definition)">设默认</button>
+                <button class="text-link" @click="beginEditMoodDefinition(definition)">编辑</button>
+                <button class="text-link" @click="archiveMoodDefinition(definition)">归档</button>
+                <button v-if="!moodDefinitionUsageCount(definition.id)" class="text-link danger-text" @click="deleteMoodDefinition(definition)">删除</button>
+              </span>
+            </template>
+          </div>
+        </div>
+
+        <div v-if="moodStore.moodDefinitions.some(item => item.archived)" class="mood-archive-section">
+          <p class="caption body-muted">已归档</p>
+          <div class="taxonomy-list">
+            <div v-for="definition in moodStore.moodDefinitions.filter(item => item.archived)" :key="definition.id" class="taxonomy-row">
+              <span class="mood-definition-preview archived">
+                <b>{{ definition.emoji }}</b><i :style="{ background: definition.color }"></i><span>{{ definition.label }}</span>
+                <small>{{ moodDefinitionUsageCount(definition.id) }} 条历史记录</small>
+              </span>
+              <span class="mood-definition-actions">
+                <button class="text-link" @click="restoreMoodDefinition(definition)">恢复</button>
+                <button v-if="!moodDefinitionUsageCount(definition.id)" class="text-link danger-text" @click="deleteMoodDefinition(definition)">删除</button>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div v-if="settingsScope === 'mood' || isGeneralSection('labels')" class="store-utility-card taxonomy-card">
         <h4 class="body-strong taxonomy-title">心情日记自定义标签</h4>
         <p class="caption body-muted taxonomy-description">删除标签时会同时从历史心情记录中移除；内置标签“工作、学习、家庭、睡眠”固定保留。</p>
@@ -2535,6 +2731,23 @@ const testAIConnection = async () => {
 .taxonomy-row:last-child { border-bottom: 0; }
 .taxonomy-row-meta { display: flex; align-items: center; gap: 10px; text-align: right; }
 .taxonomy-action { flex-shrink: 0; }
+.mood-definition-add, .mood-definition-editor { display: grid; grid-template-columns: 56px minmax(110px, 1fr) 44px auto; gap: 8px; align-items: center; margin-bottom: 14px; }
+.mood-definition-editor { width: 100%; grid-template-columns: 56px minmax(100px, 1fr) 44px auto auto; margin: 0; }
+.mood-emoji-input { padding-inline: 8px; text-align: center; font-size: 23px; }
+.mood-color-text { padding-inline: 5px; text-align: center; font-size: 10px; text-transform: uppercase; }
+.mood-definition-row { justify-content: flex-start; }
+.mood-drag-handle { flex: 0 0 auto; color: var(--body-muted); font-size: 17px; cursor: grab; }
+.mood-definition-preview { display: flex; min-width: 0; flex: 1; align-items: center; gap: 8px; }
+.mood-definition-preview b { width: 28px; text-align: center; font-size: 22px; }
+.mood-definition-preview i { width: 10px; height: 10px; flex: 0 0 auto; border-radius: 50%; }
+.mood-definition-preview span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mood-definition-preview small { flex: 0 0 auto; padding: 3px 7px; border-radius: 999px; background: var(--theme-soft); color: var(--primary); font-size: 10px; }
+.mood-definition-preview.archived { opacity: .72; }
+.mood-definition-actions { display: flex; flex: 0 0 auto; align-items: center; gap: 8px; }
+.mood-order-button { display: grid; place-items: center; width: 27px; height: 27px; padding: 0; border: 1px solid var(--hairline); border-radius: 8px; background: var(--canvas); color: var(--body-muted); }
+.mood-order-button:disabled { opacity: .3; }
+.mood-archive-section { margin-top: 16px; }
+.mood-archive-section > p { margin: 0 0 8px; }
 .schedule-color-picker {
   margin: 0 0 16px;
   padding: 16px;
@@ -2643,6 +2856,12 @@ const testAIConnection = async () => {
   .memory-category-grid button { min-height: 32px; padding-inline: 12px; font-size: 12px; }
   .chat-memory-card .taxonomy-add-row { display: grid; grid-template-columns: 1fr; gap: 9px; }
   .chat-memory-card .taxonomy-add-button { width: 100%; min-height: 44px; }
+  .mood-definition-add { grid-template-columns: 54px minmax(0, 1fr) 42px; }
+  .mood-definition-add .taxonomy-add-button { grid-column: 1 / -1; }
+  .mood-definition-editor { grid-template-columns: 54px minmax(0, 1fr) 42px; }
+  .mood-definition-editor .text-link { min-height: 38px; }
+  .mood-definition-row { flex-wrap: wrap; }
+  .mood-definition-actions { width: 100%; justify-content: flex-end; padding-left: 24px; }
   .reminder-row { gap: 8px; }
   .reminder-time { width: 82px; font-size: 14px; }
   .health-setting-grid { grid-template-columns: 1fr; gap: 0; }

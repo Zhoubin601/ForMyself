@@ -20,6 +20,7 @@ import java.util.Locale;
 public class ForMyselfWidgetProvider extends AppWidgetProvider {
     private static final String PREFERENCES_FILE = "CapacitorStorage";
     private static final String MOOD_KEY = "my_mood_records_data";
+    private static final String MOOD_DEFINITIONS_KEY = "my_mood_definitions_v1";
     private static final String WEIGHT_KEY = "my_weight_records_data";
     private static final String SAVINGS_KEY = "my_debt_manager_data";
 
@@ -91,7 +92,11 @@ public class ForMyselfWidgetProvider extends AppWidgetProvider {
             context.getSharedPreferences(PREFERENCES_FILE, Context.MODE_PRIVATE);
         String today = new SimpleDateFormat("yyyy-MM-dd", Locale.US).format(new Date());
 
-        MoodSnapshot mood = readMood(preferences.getString(MOOD_KEY, null), today);
+        MoodSnapshot mood = readMood(
+            preferences.getString(MOOD_KEY, null),
+            preferences.getString(MOOD_DEFINITIONS_KEY, null),
+            today
+        );
         WeightSnapshot weight = readWeight(preferences.getString(WEIGHT_KEY, null), today);
         SavingsSnapshot savings = readSavings(preferences.getString(SAVINGS_KEY, null), today);
 
@@ -108,7 +113,7 @@ public class ForMyselfWidgetProvider extends AppWidgetProvider {
         );
     }
 
-    private static MoodSnapshot readMood(String rawValue, String today) {
+    private static MoodSnapshot readMood(String rawValue, String rawDefinitions, String today) {
         String latestMood = null;
         long latestCreatedAt = Long.MIN_VALUE;
 
@@ -130,10 +135,21 @@ public class ForMyselfWidgetProvider extends AppWidgetProvider {
         }
 
         if (latestMood == null) return new MoodSnapshot("未记录", false);
-        return new MoodSnapshot(moodLabel(latestMood), true);
+        return new MoodSnapshot(moodLabel(latestMood, rawDefinitions), true);
     }
 
-    private static String moodLabel(String mood) {
+    private static String moodLabel(String mood, String rawDefinitions) {
+        try {
+            JSONArray definitions = new JSONArray(rawDefinitions == null ? "[]" : rawDefinitions);
+            for (int index = 0; index < definitions.length(); index++) {
+                JSONObject definition = definitions.optJSONObject(index);
+                if (definition == null || !mood.equals(definition.optString("id"))) continue;
+                String label = definition.optString("label", "").trim();
+                if (!label.isEmpty()) return label;
+            }
+        } catch (Exception ignored) {
+            // Use the legacy labels below when the custom catalog is missing or malformed.
+        }
         switch (mood) {
             case "great": return "超赞";
             case "good": return "开心";

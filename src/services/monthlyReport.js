@@ -1,4 +1,4 @@
-const MOOD_KEYS = ['great', 'good', 'normal', 'bad', 'terrible']
+import { normalizeMoodDefinitions } from './moodRecords.js'
 
 export function getMonthKey(year, month) {
   return `${year}-${String(month).padStart(2, '0')}`
@@ -26,10 +26,12 @@ const longestDateStreak = dates => {
   return longest
 }
 
-export function calculateMoodMonthlyStats(records = [], year, month) {
+export function calculateMoodMonthlyStats(records = [], year, month, definitions = []) {
   const prefix = getMonthKey(year, month)
   const monthRecords = records.filter(item => item?.date?.startsWith(prefix))
-  const distribution = Object.fromEntries(MOOD_KEYS.map(key => [key, 0]))
+  const normalizedDefinitions = normalizeMoodDefinitions(definitions, records)
+  const moodKeys = normalizedDefinitions.map(item => item.id)
+  const distribution = Object.fromEntries(moodKeys.map(key => [key, 0]))
   monthRecords.forEach(item => {
     if (distribution[item.mood] !== undefined) distribution[item.mood]++
   })
@@ -39,8 +41,9 @@ export function calculateMoodMonthlyStats(records = [], year, month) {
     total: totalEvents,
     totalEvents,
     recordedDays,
+    scale: normalizedDefinitions.map(({ id, label, order, archived }) => ({ id, label, order, archived })),
     distribution,
-    percentages: Object.fromEntries(MOOD_KEYS.map(key => [
+    percentages: Object.fromEntries(moodKeys.map(key => [
       key,
       totalEvents ? Math.round((distribution[key] / totalEvents) * 100) : 0
     ])),
@@ -128,10 +131,10 @@ export function calculateSavingsMonthlyStats(plans = [], year, month, now = new 
   }
 }
 
-export function buildMonthlyReport({ moodRecords = [], weightRecords = [], savedDebts = [] }, year, month, options = {}) {
+export function buildMonthlyReport({ moodRecords = [], moodDefinitions = [], weightRecords = [], savedDebts = [] }, year, month, options = {}) {
   return {
     month: getMonthKey(year, month),
-    mood: calculateMoodMonthlyStats(moodRecords, year, month),
+    mood: calculateMoodMonthlyStats(moodRecords, year, month, moodDefinitions),
     weight: calculateWeightMonthlyStats(weightRecords, year, month, options.targetWeight),
     savings: calculateSavingsMonthlyStats(savedDebts, year, month, options.now || new Date())
   }

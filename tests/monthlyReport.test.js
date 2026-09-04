@@ -102,3 +102,16 @@ test('完整月报聚合三类数据且 AI 提示词禁止编造和焦虑表达'
   assert.match(prompt, /不制造财务焦虑/)
   assert.match(prompt, /不编造数据/)
 })
+
+test('心情月报按自定义等级动态统计并保留归档历史项', () => {
+  const stats = calculateMoodMonthlyStats([
+    { date: '2026-09-01', mood: 'calm' },
+    { date: '2026-09-02', mood: 'old-level' }
+  ], 2026, 9, [
+    { id: 'calm', label: '平静', emoji: '😌', color: '#55AA88', order: 0, isDefault: true },
+    { id: 'old-level', label: '旧心情', emoji: '🥲', color: '#999999', order: 1, archived: true }
+  ])
+  assert.equal(stats.distribution.calm, 1)
+  assert.equal(stats.distribution['old-level'], 1)
+  assert.equal(stats.percentages.calm, 50)
+})

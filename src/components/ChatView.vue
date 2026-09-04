@@ -196,6 +196,7 @@ const buildLifeContext = () => {
   const today = formatLocalDate()
   return buildChatLifeContext({
     moodRecords: moodStore.moodRecords,
+    moodDefinitions: moodStore.moodDefinitions,
     weightRecords: weightStore.weightRecords,
     savedDebts: debtStore.savedDebts,
     scheduleOccurrences: scheduleStore.getOccurrences(addDays(today, -30), addDays(today, 30)),

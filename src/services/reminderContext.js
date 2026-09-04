@@ -5,8 +5,8 @@ import {
   buildWeightHistory
 } from './companionPrompts.js'
 
-export function buildMoodReminderContext(records = [], referenceDate = new Date()) {
-  return buildMoodHistory(records, referenceDate)
+export function buildMoodReminderContext(records = [], referenceDate = new Date(), definitions = []) {
+  return buildMoodHistory(records, referenceDate, '', definitions)
 }
 
 export function buildWeightReminderContext(records = [], referenceDate = new Date()) {
@@ -19,11 +19,12 @@ export function buildSavingsReminderContext(plans = [], referenceDate = new Date
 
 export function buildReminderContexts({
   moodRecords = [],
+  moodDefinitions = [],
   weightRecords = [],
   savedDebts = []
 } = {}, referenceDate = new Date()) {
   return {
-    mood: buildMoodReminderContext(moodRecords, referenceDate),
+    mood: buildMoodReminderContext(moodRecords, referenceDate, moodDefinitions),
     weight: buildWeightReminderContext(weightRecords, referenceDate),
     savings: buildSavingsReminderContext(savedDebts, referenceDate)
   }

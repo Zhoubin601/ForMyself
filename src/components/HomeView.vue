@@ -67,10 +67,8 @@ const todayMood = computed(() => moodStore.getRecordByDate(todayStr.value))
 const todayMoodEvents = computed(() => moodStore.getRecordsByDate(todayStr.value))
 const isMoodLogged = computed(() => !!todayMood.value)
 
-const MOOD_EMOJI_MAP = { great: '🤩', good: '🙂', normal: '😐', bad: '😔', terrible: '😫' }
-const MOOD_LABEL_MAP = { great: '超赞', good: '开心', normal: '一般', bad: '低落', terrible: '极差' }
-const getMoodEmoji = (mood) => MOOD_EMOJI_MAP[mood] || '😐'
-const getMoodLabel = (mood) => MOOD_LABEL_MAP[mood] || '一般'
+const getMoodEmoji = mood => moodStore.getMoodDefinition(mood).emoji
+const getMoodLabel = mood => moodStore.getMoodDefinition(mood).label
 const todayMoodEmoji = computed(() => todayMood.value ? getMoodEmoji(todayMood.value.mood) : null)
 
 const sortedWeights = computed(() => [...weightStore.weightRecords]
@@ -183,7 +181,7 @@ const last7Moods = computed(() => {
       day: date.getDate(),
       weekday: ['日', '一', '二', '三', '四', '五', '六'][date.getDay()],
       isEmpty: !record,
-      mood: record?.mood || 'normal',
+      mood: record?.mood || moodStore.defaultMoodDefinition.id,
       date: dateStr
     })
   }
@@ -260,6 +258,7 @@ const fetchAIQuote = async () => {
 
   const context = buildHomeCompanionContext({
     moodRecords: moodStore.moodRecords,
+    moodDefinitions: moodStore.moodDefinitions,
     weightRecords: weightStore.weightRecords,
     savedDebts: debtStore.savedDebts
   }, todayStr.value)

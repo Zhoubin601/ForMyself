@@ -1,6 +1,6 @@
 import { normalizeAutoLockDelay } from './autoLockPolicy.js'
 import { normalizeHealthSettings } from './weightInsights.js'
-import { normalizeMoodRecords } from './moodRecords.js'
+import { normalizeMoodDefinitions, normalizeMoodRecords } from './moodRecords.js'
 import {
   BUILT_IN_VAULT_CATEGORIES,
   normalizePasswordVaultRecords,
@@ -15,7 +15,7 @@ import { normalizeThemeSettings } from './themeSystem.js'
 import { normalizeChatData } from './chatRecords.js'
 
 export const FULL_BACKUP_TYPE = 'formyself-full-backup'
-export const FULL_BACKUP_VERSION = 6
+export const FULL_BACKUP_VERSION = 7
 
 const cloneJson = value => JSON.parse(JSON.stringify(value))
 const cleanText = (value, maxLength = 500) => String(value || '').slice(0, maxLength)
@@ -75,6 +75,9 @@ export function buildFullBackupSnapshot({
   const safeMoodMetadata = moodMetadata && typeof moodMetadata === 'object' ? moodMetadata : {}
   const safeVaultMetadata = vaultMetadata && typeof vaultMetadata === 'object' ? vaultMetadata : {}
   const normalizedChat = normalizeChatData(chat)
+  const baseMoodDefinitions = normalizeMoodDefinitions(safeMoodMetadata.definitions)
+  const defaultMoodId = baseMoodDefinitions.find(item => item.isDefault)?.id || 'normal'
+  const normalizedMoodRecords = normalizeMoodRecords(requireArray(mood, 'mood'), undefined, defaultMoodId)
   return {
     type: FULL_BACKUP_TYPE,
     version: FULL_BACKUP_VERSION,
@@ -82,7 +85,7 @@ export function buildFullBackupSnapshot({
     data: {
       savings: requireArray(savings, 'savings'),
       weight: requireArray(weight, 'weight'),
-      mood: requireArray(mood, 'mood'),
+      mood: normalizedMoodRecords,
       passwords: requireArray(passwords, 'passwords'),
       schedules: normalizeScheduleData(schedules),
       chat: {
@@ -96,7 +99,8 @@ export function buildFullBackupSnapshot({
         trackingStartDate: cleanText(safeMoodMetadata.trackingStartDate, 10),
         customTags: Array.isArray(safeMoodMetadata.customTags)
           ? [...new Set(safeMoodMetadata.customTags.map(tag => cleanText(tag, 20).trim()).filter(Boolean))]
-          : []
+          : [],
+        definitions: normalizeMoodDefinitions(safeMoodMetadata.definitions, normalizedMoodRecords)
       },
       vault: {
         categories: Array.isArray(safeVaultMetadata.categories)
@@ -111,7 +115,7 @@ export function buildFullBackupSnapshot({
 export function normalizeFullBackupSnapshot(value) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error('INVALID_FULL_BACKUP')
   if (value.type !== FULL_BACKUP_TYPE) throw new Error('INVALID_FULL_BACKUP_TYPE')
-  if (![1, 2, 3, 4, 5, FULL_BACKUP_VERSION].includes(value.version)) throw new Error('UNSUPPORTED_FULL_BACKUP_VERSION')
+  if (![1, 2, 3, 4, 5, 6, FULL_BACKUP_VERSION].includes(value.version)) throw new Error('UNSUPPORTED_FULL_BACKUP_VERSION')
   if (!value.data || typeof value.data !== 'object') throw new Error('INVALID_FULL_BACKUP_DATA')
   if (!value.settings || typeof value.settings !== 'object') throw new Error('INVALID_FULL_BACKUP_SETTINGS')
   if (value.version >= 3 && (!value.data.chat || typeof value.data.chat !== 'object' || Array.isArray(value.data.chat))) {
@@ -121,7 +125,7 @@ export function normalizeFullBackupSnapshot(value) {
   const normalized = buildFullBackupSnapshot({
     savings: requireArray(value.data.savings, 'savings'),
     weight: requireArray(value.data.weight, 'weight'),
-    mood: normalizeMoodRecords(requireArray(value.data.mood, 'mood')),
+    mood: requireArray(value.data.mood, 'mood'),
     passwords: normalizePasswordVaultRecords(requireArray(value.data.passwords, 'passwords')),
     schedules: value.version >= 2 ? normalizeScheduleData(value.data.schedules) : normalizeScheduleData(),
     chat: value.version >= 3 ? normalizeChatData(value.data.chat) : normalizeChatData(),

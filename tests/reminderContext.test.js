@@ -22,6 +22,7 @@ test('心情摘要保留近 30 天全部真实记录并按日期分组', () => {
   assert.equal(context[0].date, '2026-07-15')
   assert.deepEqual(context.at(-1).events[0], {
     mood: '低落',
+    moodScale: '4/5（1 最积极，5 最低落）',
     tags: ['学习'],
     note: '今天工作有点累'
   })

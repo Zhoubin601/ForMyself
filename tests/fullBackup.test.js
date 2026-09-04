@@ -248,3 +248,35 @@ test('旧完整备份缺少主题字段时回退云朵蓝', () => {
     customPrimary: '#4A8FD8'
   })
 })
+
+test('完整备份 v7 保留心情等级目录，v6 自动迁移默认五档', () => {
+  const snapshot = buildFixture()
+  snapshot.metadata.mood.definitions = [
+    { id: 'calm', label: '平静', emoji: '😌', color: '#55AA88', order: 0, isDefault: true }
+  ]
+  snapshot.data.mood[0].mood = 'calm'
+  const restored = normalizeFullBackupSnapshot(snapshot)
+  assert.equal(restored.metadata.mood.definitions[0].label, '平静')
+  assert.equal(restored.data.mood[0].mood, 'calm')
+
+  const legacy = normalizeFullBackupSnapshot({
+    ...buildFixture(),
+    version: 6,
+    metadata: {
+      ...buildFixture().metadata,
+      mood: { trackingStartDate: '2026-07-01', customTags: [] }
+    }
+  })
+  assert.deepEqual(legacy.metadata.mood.definitions.slice(0, 5).map(item => item.id), ['great', 'good', 'normal', 'bad', 'terrible'])
+})
+
+test('完整备份中的空心情 ID 回退到备份目录的默认项', () => {
+  const snapshot = buildFixture()
+  snapshot.metadata.mood.definitions = [
+    { id: 'calm', label: '平静', emoji: '😌', color: '#55AA88', order: 0, isDefault: true }
+  ]
+  snapshot.data.mood[0].mood = ''
+
+  const restored = normalizeFullBackupSnapshot(snapshot)
+  assert.equal(restored.data.mood[0].mood, 'calm')
+})
