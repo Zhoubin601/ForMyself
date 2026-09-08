@@ -6,7 +6,7 @@ import {
   formatChatDate,
   localDailyCompanionState,
   parseRelationshipUpdate
-} from '../src/services/chatRelationship.js'
+} from '../src/features/chat/chatRelationship.js'
 
 test('每日状态只发生在虚拟小家且包含连续关系背景', () => {
   const prompt = buildDailyStatePrompt({

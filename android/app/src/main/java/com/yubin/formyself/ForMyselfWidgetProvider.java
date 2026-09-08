@@ -9,20 +9,12 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.widget.RemoteViews;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
-
-import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
 
 public class ForMyselfWidgetProvider extends AppWidgetProvider {
     private static final String PREFERENCES_FILE = "CapacitorStorage";
-    private static final String MOOD_KEY = "my_mood_records_data";
-    private static final String MOOD_DEFINITIONS_KEY = "my_mood_definitions_v1";
-    private static final String WEIGHT_KEY = "my_weight_records_data";
-    private static final String SAVINGS_KEY = "my_debt_manager_data";
+    private static final String SNAPSHOT_KEY = "my_home_widget_snapshot_v1";
+    private static final int SNAPSHOT_VERSION = 1;
 
     private static final int REQUEST_MOOD = 101;
     private static final int REQUEST_WEIGHT = 102;
@@ -90,145 +82,20 @@ public class ForMyselfWidgetProvider extends AppWidgetProvider {
     private static WidgetSnapshot readSnapshot(Context context) {
         SharedPreferences preferences =
             context.getSharedPreferences(PREFERENCES_FILE, Context.MODE_PRIVATE);
-        String today = new SimpleDateFormat("yyyy-MM-dd", Locale.US).format(new Date());
-
-        MoodSnapshot mood = readMood(
-            preferences.getString(MOOD_KEY, null),
-            preferences.getString(MOOD_DEFINITIONS_KEY, null),
-            today
-        );
-        WeightSnapshot weight = readWeight(preferences.getString(WEIGHT_KEY, null), today);
-        SavingsSnapshot savings = readSavings(preferences.getString(SAVINGS_KEY, null), today);
-
-        int todayCount = 0;
-        if (mood.loggedToday) todayCount++;
-        if (weight.loggedToday) todayCount++;
-        if (savings.loggedToday) todayCount++;
-
-        return new WidgetSnapshot(
-            mood.text,
-            weight.text,
-            savings.text,
-            todayCount
-        );
-    }
-
-    private static MoodSnapshot readMood(String rawValue, String rawDefinitions, String today) {
-        String latestMood = null;
-        long latestCreatedAt = Long.MIN_VALUE;
-
         try {
-            JSONArray records = new JSONArray(rawValue == null ? "[]" : rawValue);
-            for (int index = 0; index < records.length(); index++) {
-                JSONObject record = records.optJSONObject(index);
-                if (record == null || !today.equals(record.optString("date"))) continue;
-                if (record.optBoolean("autoFilled", false)) continue;
-
-                long createdAt = record.optLong("createdAt", 0);
-                if (latestMood == null || createdAt >= latestCreatedAt) {
-                    latestMood = record.optString("mood", "normal");
-                    latestCreatedAt = createdAt;
-                }
+            JSONObject snapshot = new JSONObject(preferences.getString(SNAPSHOT_KEY, "{}"));
+            if (snapshot.optInt("version", 0) != SNAPSHOT_VERSION) {
+                return new WidgetSnapshot("未记录", "暂无", "暂无", 0);
             }
+            return new WidgetSnapshot(
+                snapshot.optString("moodText", "未记录"),
+                snapshot.optString("weightText", "暂无"),
+                snapshot.optString("savingsText", "暂无"),
+                Math.max(0, Math.min(3, snapshot.optInt("todayCount", 0)))
+            );
         } catch (Exception ignored) {
-            latestMood = null;
+            return new WidgetSnapshot("未记录", "暂无", "暂无", 0);
         }
-
-        if (latestMood == null) return new MoodSnapshot("未记录", false);
-        return new MoodSnapshot(moodLabel(latestMood, rawDefinitions), true);
-    }
-
-    private static String moodLabel(String mood, String rawDefinitions) {
-        try {
-            JSONArray definitions = new JSONArray(rawDefinitions == null ? "[]" : rawDefinitions);
-            for (int index = 0; index < definitions.length(); index++) {
-                JSONObject definition = definitions.optJSONObject(index);
-                if (definition == null || !mood.equals(definition.optString("id"))) continue;
-                String label = definition.optString("label", "").trim();
-                if (!label.isEmpty()) return label;
-            }
-        } catch (Exception ignored) {
-            // Use the legacy labels below when the custom catalog is missing or malformed.
-        }
-        switch (mood) {
-            case "great": return "超赞";
-            case "good": return "开心";
-            case "bad": return "低落";
-            case "terrible": return "很糟";
-            default: return "一般";
-        }
-    }
-
-    private static WeightSnapshot readWeight(String rawValue, String today) {
-        String latestDate = "";
-        long latestCreatedAt = Long.MIN_VALUE;
-        double latestWeight = Double.NaN;
-
-        try {
-            JSONArray records = new JSONArray(rawValue == null ? "[]" : rawValue);
-            for (int index = 0; index < records.length(); index++) {
-                JSONObject record = records.optJSONObject(index);
-                if (record == null) continue;
-
-                String date = record.optString("date", "");
-                double value = record.optDouble("weight", Double.NaN);
-                long createdAt = record.optLong("createdAt", record.optLong("id", 0));
-                if (date.isEmpty() || Double.isNaN(value)) continue;
-
-                if (date.compareTo(latestDate) > 0
-                    || (date.equals(latestDate) && createdAt >= latestCreatedAt)) {
-                    latestDate = date;
-                    latestCreatedAt = createdAt;
-                    latestWeight = value;
-                }
-            }
-        } catch (Exception ignored) {
-            latestWeight = Double.NaN;
-        }
-
-        if (Double.isNaN(latestWeight)) return new WeightSnapshot("暂无", false);
-        DecimalFormat formatter = new DecimalFormat("0.#");
-        return new WeightSnapshot(
-            formatter.format(latestWeight) + " kg",
-            today.equals(latestDate)
-        );
-    }
-
-    private static SavingsSnapshot readSavings(String rawValue, String today) {
-        int bestProgress = -1;
-        boolean loggedToday = false;
-
-        try {
-            JSONArray debts = new JSONArray(rawValue == null ? "[]" : rawValue);
-            for (int index = 0; index < debts.length(); index++) {
-                JSONObject debt = debts.optJSONObject(index);
-                if (debt == null) continue;
-
-                JSONArray records = debt.optJSONArray("records");
-                double saved = 0;
-                if (records != null) {
-                    for (int recordIndex = 0; recordIndex < records.length(); recordIndex++) {
-                        JSONObject record = records.optJSONObject(recordIndex);
-                        if (record == null) continue;
-                        saved += record.optDouble("amount", 0);
-                        if (today.equals(record.optString("date"))) loggedToday = true;
-                    }
-                }
-
-                if (debt.optBoolean("isCleared", false)) continue;
-                double total = debt.optDouble("totalAmount", 0);
-                int progress = total > 0
-                    ? (int) Math.round(Math.min(100, (saved / total) * 100))
-                    : 0;
-                if (progress > bestProgress) bestProgress = progress;
-            }
-        } catch (Exception ignored) {
-            bestProgress = -1;
-            loggedToday = false;
-        }
-
-        String text = bestProgress < 0 ? "暂无" : bestProgress + "%";
-        return new SavingsSnapshot(text, loggedToday);
     }
 
     private static final class WidgetSnapshot {
@@ -245,33 +112,4 @@ public class ForMyselfWidgetProvider extends AppWidgetProvider {
         }
     }
 
-    private static final class MoodSnapshot {
-        final String text;
-        final boolean loggedToday;
-
-        MoodSnapshot(String text, boolean loggedToday) {
-            this.text = text;
-            this.loggedToday = loggedToday;
-        }
-    }
-
-    private static final class WeightSnapshot {
-        final String text;
-        final boolean loggedToday;
-
-        WeightSnapshot(String text, boolean loggedToday) {
-            this.text = text;
-            this.loggedToday = loggedToday;
-        }
-    }
-
-    private static final class SavingsSnapshot {
-        final String text;
-        final boolean loggedToday;
-
-        SavingsSnapshot(String text, boolean loggedToday) {
-            this.text = text;
-            this.loggedToday = loggedToday;
-        }
-    }
 }

@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, watch } from 'vue'
-import { Preferences } from '@capacitor/preferences'
+import { preferenceStorage as Preferences } from '../platform/storage/preferences.js'
+import { STORAGE_KEYS } from '../platform/storage/keys.js'
 import CryptoJS from 'crypto-js'
 import {
   DEFAULT_VAULT_CATEGORY,
@@ -10,9 +11,9 @@ import {
   normalizeVaultCategoryName
 } from '../services/passwordVaultRecords.js'
 
-const ENCRYPTED_KEY = 'my_password_vault_encrypted'
-const CATEGORIES_ENCRYPTED_KEY = 'my_password_vault_categories_encrypted'
-const LEGACY_KEY = 'my_password_manager_data'
+const ENCRYPTED_KEY = STORAGE_KEYS.passwordVault
+const CATEGORIES_ENCRYPTED_KEY = STORAGE_KEYS.passwordVaultCategories
+const LEGACY_KEY = STORAGE_KEYS.legacyPasswordVault
 
 export const usePasswordVaultStore = defineStore('passwordVault', () => {
   const records = ref([])

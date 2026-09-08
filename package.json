@@ -8,6 +8,10 @@
     "dev": "vite",
     "build": "vite build",
     "test": "node --test tests/*.test.js",
+    "test:component": "vitest run tests/SettingsOverview.spec.js tests/UnlockFeedback.spec.js",
+    "lint": "eslint src tests scripts vite.config.js",
+    "typecheck": "vue-tsc --noEmit -p tsconfig.json",
+    "check": "npm run lint && npm test && npm run test:component && npm run typecheck && npm run build",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -19,7 +23,6 @@
     "@capacitor/share": "^8.0.1",
     "@capacitor/status-bar": "^8.0.2",
     "@capgo/capacitor-native-biometric": "^8.4.2",
-    "@rolldown/binding-linux-x64-gnu": "^1.1.2",
     "crypto-js": "^4.2.0",
     "pinia": "^3.0.4",
     "vue": "^3.5.32"
@@ -28,7 +31,16 @@
     "@capacitor/android": "^8.3.1",
     "@capacitor/assets": "^3.0.5",
     "@capacitor/cli": "^8.3.1",
+    "@eslint/js": "^9.35.0",
     "@vitejs/plugin-vue": "^6.0.6",
-    "vite": "^8.0.10"
+    "@vue/test-utils": "^2.4.6",
+    "eslint": "^9.35.0",
+    "eslint-plugin-vue": "^10.4.0",
+    "globals": "^16.3.0",
+    "jsdom": "^26.1.0",
+    "typescript": "^5.9.2",
+    "vite": "^8.0.10",
+    "vitest": "^3.2.4",
+    "vue-tsc": "^3.0.6"
   }
 }

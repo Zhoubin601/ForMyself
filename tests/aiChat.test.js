@@ -15,7 +15,7 @@ import {
   selectTurnLifeContext,
   splitCompanionReply,
   streamCompanionReply
-} from '../src/services/chatCompanion.js'
+} from '../src/features/chat/chatCompanion.js'
 import { useSettingsStore } from '../src/stores/settings.js'
 
 const encoder = new TextEncoder()

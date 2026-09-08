@@ -91,7 +91,8 @@ test('桌面信息卡展示三类基本信息和今日完成度', async () => {
     assert.match(provider, new RegExp(`R\\.id\\.${viewId}`))
   }
 
-  assert.match(provider, /my_mood_records_data/)
-  assert.match(provider, /my_weight_records_data/)
-  assert.match(provider, /my_debt_manager_data/)
+  assert.match(provider, /my_home_widget_snapshot_v1/)
+  assert.match(provider, /SNAPSHOT_VERSION = 1/)
+  assert.match(provider, /snapshot\.optString\("moodText"/)
+  assert.doesNotMatch(provider, /preferences\.getString\("my_mood_records_data"/)
 })

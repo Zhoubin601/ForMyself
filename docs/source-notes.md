@@ -574,3 +574,53 @@
 - 本地恢复兼容性验证通过；不在项目中记录备份版本、时间、校验值、数据数量或私人内容。
 - 用户提供的主密码只在本地测试会话中临时使用，没有写入源码、测试、脚本、文档或交付物。
 - 本轮未把备份、解密后的私人数据或验收截图纳入仓库，也未将其发送到任何外部服务。
+## 2026-09-02 心情等级自定义与个性化维护
+
+来源名称：用户提供的 ForMyself 完整备份
+链接或文件名：`ForMyself_Full_Backup_2026-09-02.json`
+引用日期：2026-09-02
+
+- 该文件为完整备份 v6，包含 79 条心情记录。
+- 心情记录实际使用 `great/good/normal/bad/terrible` 五个既有 key，心情元数据仅含追踪起始日期和自定义标签，尚无等级目录。
+- 当前项目的 `src/services/moodRecords.js`、`src/stores/mood.js`、`src/components/MoodView.vue`、`src/components/SettingsView.vue`、`src/components/HomeView.vue`、`src/components/MonthlyReportView.vue`、AI 上下文服务、完整备份服务和 Android 桌面组件均直接依赖固定五档映射。
+- 用户确认：允许新增、编辑、排序、归档和恢复心情等级；素材仅使用系统 Emoji；已使用等级归档保留历史；始终指定一个默认项；量表按积极到低落排序。
+- 备份密码仅用于本次兼容性验证，不写入项目文件。
+
+## 2026-09-05 重构后 Android 模拟器回归
+
+来源名称：当前工作区构建产物与本机 Android 模拟器
+
+链接或文件名：`android/app/build/outputs/apk/debug/app-debug.apk`、Pixel 6 Pro AVD
+
+引用日期：2026-09-05
+
+- 使用覆盖安装验证升级路径，并在隔离的临时 Android 用户中验证首次设密、主要页面、传统改密、指纹解锁和指纹授权改密；测试结束后已删除临时用户并切回原用户。
+- 未使用 `raw/` 文件或外部网络资料；未读取、摘录或记录原用户的主密码、API Key、密码库及聊天内容。
+- 一次性测试主密码、系统 PIN 和指纹只存在于模拟器测试会话，没有写入项目文件、脚本或长期记忆。
+- 模拟器证据与完整结果记录在 `docs/20260905-emulator-regression.md`。
+
+## 2026-09-06 启动与解锁性能优化
+
+来源名称：用户确认的《ForMyself 启动与解锁性能优化》计划、当前工作区源码和本机 Android 模拟器
+
+链接或文件名：`src/`、`tests/`、`android/app/build/outputs/apk/debug/app-debug.apk`、Pixel 6 Pro AVD
+
+引用日期：2026-09-06
+
+- 性能基线来自用户计划中的 CryptoJS PBKDF2 主线程测量；本轮使用相同 210,000 次 PBKDF2 参数实现兼容的 Web Crypto 与 Worker 路径。
+- 冷启动、热解锁、受保护数据后台加载、页面溢出、生物解锁和改密结果记录在 `docs/20260906-unlock-performance.md`。
+- 原用户仅验证覆盖安装后主密码记录仍存在，未读取或记录其主密码、API Key、聊天及密码库内容。
+- 一次性测试主密码、系统 PIN 和虚拟指纹仅用于随后删除的临时 Android 用户，没有写入项目文件或长期记忆。
+- 本轮未使用 `raw/` 文件或外部网络资料。
+
+## 2026-09-06 近期更新总结文档
+
+来源名称：本轮已经确认和验收的重构、安全存储、模拟器回归与性能优化记录
+
+链接或文件名：`docs/20260904-maintainability-refactor-plan.md`、`docs/20260904-master-password-security-plan.md`、`docs/20260905-emulator-regression.md`、`docs/20260906-unlock-performance.md`
+
+引用日期：2026-09-06
+
+- 正式总结整理到 `output/20260906-ForMyself-update-summary-v1.md`。
+- 文档只汇总已实施和已验证内容，不增加未经确认的功能或数据。
+- 未使用 `raw/` 文件或外部资料。

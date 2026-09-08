@@ -1,6 +1,6 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
-import { useMoodStore } from '../stores/mood'
+import { useMoodStore } from '../features/mood/moodStore'
 import { useWeightStore } from '../stores/weight'
 import { useDebtStore } from '../stores/debt'
 import { useSettingsStore } from '../stores/settings'

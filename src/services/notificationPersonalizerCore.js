@@ -3,7 +3,7 @@ import {
   buildReminderPrompt,
   getReminderContextFingerprint
 } from './reminderContext.js'
-import { normalizeCompanionReply } from './companionPrompts.js'
+import { normalizeCompanionReply } from '../features/chat/companionPrompts.js'
 import {
   getPersonalizedReminderBodies,
   normalizeNotificationAiCache,

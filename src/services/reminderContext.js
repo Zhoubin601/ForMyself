@@ -3,7 +3,7 @@ import {
   buildReminderCompanionPrompt,
   buildSavingsHistory,
   buildWeightHistory
-} from './companionPrompts.js'
+} from '../features/chat/companionPrompts.js'
 
 export function buildMoodReminderContext(records = [], referenceDate = new Date(), definitions = []) {
   return buildMoodHistory(records, referenceDate, '', definitions)

@@ -1,6 +1,6 @@
 import { normalizeAutoLockDelay } from './autoLockPolicy.js'
 import { normalizeHealthSettings } from './weightInsights.js'
-import { normalizeMoodDefinitions, normalizeMoodRecords } from './moodRecords.js'
+import { normalizeMoodDefinitions, normalizeMoodRecords } from '../features/mood/moodRecords.js'
 import {
   BUILT_IN_VAULT_CATEGORIES,
   normalizePasswordVaultRecords,
@@ -10,9 +10,9 @@ import {
   normalizeNotificationAiCache,
   normalizeReminderSettings
 } from './reminderSchedule.js'
-import { normalizeScheduleData } from './scheduleCore.js'
+import { normalizeScheduleData } from '../features/schedule/scheduleCore.js'
 import { normalizeThemeSettings } from './themeSystem.js'
-import { normalizeChatData } from './chatRecords.js'
+import { normalizeChatData } from '../features/chat/chatRecords.js'
 
 export const FULL_BACKUP_TYPE = 'formyself-full-backup'
 export const FULL_BACKUP_VERSION = 7

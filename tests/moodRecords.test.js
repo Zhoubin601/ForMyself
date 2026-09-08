@@ -12,8 +12,8 @@ import {
   normalizeMoodRecord,
   normalizeMoodRecords,
   normalizeMoodTags
-} from '../src/services/moodRecords.js'
-import { useMoodStore } from '../src/stores/mood.js'
+} from '../src/features/mood/moodRecords.js'
+import { useMoodStore } from '../src/features/mood/moodStore.js'
 
 test('旧心情记录导入时自动补上学习标签且保留原字段', () => {
   const oldRecord = { id: '1782124966217', date: '2026-06-22', mood: 'bad', note: '旧记录' }

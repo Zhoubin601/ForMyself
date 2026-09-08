@@ -1,6 +1,9 @@
 import { defineStore } from 'pinia'
 import { ref, computed, watch } from 'vue'
-import { Preferences } from '@capacitor/preferences'
+import { Capacitor } from '@capacitor/core'
+import { preferenceStorage as Preferences } from '../platform/storage/preferences.js'
+import { STORAGE_KEYS } from '../platform/storage/keys.js'
+import { secureCredentials } from '../platform/security/secureCredentials.js'
 import { normalizeAutoLockDelay } from '../services/autoLockPolicy.js'
 import {
   DEFAULT_REMINDER_SETTINGS,
@@ -53,6 +56,9 @@ export const useSettingsStore = defineStore('settings', () => {
   const weightChangeThreshold = ref(1)
   const pendingPreferenceWrites = new Map()
   const pendingPreferenceTimers = new Map()
+  let pendingApiKey = null
+  let apiKeyWriteTimer = null
+  let apiKeyWriteChain = Promise.resolve()
 
   const flushPreferenceWrite = async key => {
     const pending = pendingPreferenceWrites.get(key)
@@ -72,8 +78,28 @@ export const useSettingsStore = defineStore('settings', () => {
       flushPreferenceWrite(key).catch(error => console.warn(`保存设置 ${key} 失败`, error))
     }, delay))
   }
+  const flushApiKeyWrite = () => {
+    if (pendingApiKey === null || !Capacitor.isNativePlatform()) return apiKeyWriteChain
+    const value = pendingApiKey
+    pendingApiKey = null
+    apiKeyWriteChain = apiKeyWriteChain.catch(() => {}).then(() => secureCredentials.storeApiKey(value))
+    return apiKeyWriteChain
+  }
   const flushPendingSettingsWrites = async () => {
     await Promise.all([...pendingPreferenceWrites.keys()].map(flushPreferenceWrite))
+    if (apiKeyWriteTimer) globalThis.clearTimeout(apiKeyWriteTimer)
+    apiKeyWriteTimer = null
+    await flushApiKeyWrite()
+    await apiKeyWriteChain
+  }
+  const queueApiKeyWrite = value => {
+    if (!isDataLoaded.value || !Capacitor.isNativePlatform()) return
+    pendingApiKey = String(value || '')
+    if (apiKeyWriteTimer) globalThis.clearTimeout(apiKeyWriteTimer)
+    apiKeyWriteTimer = globalThis.setTimeout(() => {
+      apiKeyWriteTimer = null
+      flushApiKeyWrite().catch(error => console.warn('安全保存 API Key 失败', error))
+    }, 500)
   }
 
   const viewLabels = {
@@ -118,28 +144,48 @@ export const useSettingsStore = defineStore('settings', () => {
 
   const loadSettings = async () => {
     try {
-      const bgRes = await Preferences.get({ key: 'my_custom_bg' })
+      const bgRes = await Preferences.get({ key: STORAGE_KEYS.customBackground })
       if (bgRes.value) customBg.value = bgRes.value
-      const themeRes = await Preferences.get({ key: 'my_theme_settings' })
+      const themeRes = await Preferences.get({ key: STORAGE_KEYS.themeSettings })
       if (themeRes.value) themeSettings.value = normalizeThemeSettings(JSON.parse(themeRes.value))
-      const bannerRes = await Preferences.get({ key: 'my_banner_settings' })
+      const bannerRes = await Preferences.get({ key: STORAGE_KEYS.bannerSettings })
       if (bannerRes.value) bannerSettings.value = JSON.parse(bannerRes.value)
-      const aiRes = await Preferences.get({ key: 'my_ai_settings' })
-      if (aiRes.value) { const c = JSON.parse(aiRes.value); if (c.url) aiProviderUrl.value = c.url; if (c.key) aiApiKey.value = c.key; if (c.model) aiModel.value = c.model }
-      const securityRes = await Preferences.get({ key: 'my_security_settings' })
+      const [aiRes, legacyAiRes] = await Promise.all([
+        Preferences.get({ key: STORAGE_KEYS.aiProviderSettings }),
+        Preferences.get({ key: STORAGE_KEYS.legacyAiSettings })
+      ])
+      const c = JSON.parse(aiRes.value || legacyAiRes.value || '{}')
+      if (c.url) aiProviderUrl.value = c.url
+      if (c.model) aiModel.value = c.model
+      if (Capacitor.isNativePlatform()) {
+        let secureApiKey = await secureCredentials.getApiKey().catch(() => '')
+        if (!secureApiKey && c.key) {
+          await secureCredentials.storeApiKey(c.key)
+          secureApiKey = await secureCredentials.getApiKey()
+        }
+        aiApiKey.value = secureApiKey
+        await Preferences.set({
+          key: STORAGE_KEYS.aiProviderSettings,
+          value: JSON.stringify({ url: aiProviderUrl.value, model: aiModel.value })
+        })
+        if (legacyAiRes.value) await Preferences.remove({ key: STORAGE_KEYS.legacyAiSettings })
+      } else if (c.key) {
+        aiApiKey.value = c.key
+      }
+      const securityRes = await Preferences.get({ key: STORAGE_KEYS.securitySettings })
       if (securityRes.value) {
         const security = JSON.parse(securityRes.value)
         autoLockDelaySeconds.value = normalizeAutoLockDelay(security.autoLockDelaySeconds)
       }
-      const notificationRes = await Preferences.get({ key: 'my_notification_settings' })
+      const notificationRes = await Preferences.get({ key: STORAGE_KEYS.notificationSettings })
       if (notificationRes.value) {
         notificationSettings.value = normalizeReminderSettings(JSON.parse(notificationRes.value))
       }
-      const notificationAiRes = await Preferences.get({ key: 'my_notification_ai_content' })
+      const notificationAiRes = await Preferences.get({ key: STORAGE_KEYS.notificationAiContent })
       if (notificationAiRes.value) {
         notificationAiContent.value = normalizeNotificationAiCache(JSON.parse(notificationAiRes.value))
       }
-      const healthRes = await Preferences.get({ key: 'my_health_settings' })
+      const healthRes = await Preferences.get({ key: STORAGE_KEYS.healthSettings })
       if (healthRes.value) {
         const health = normalizeHealthSettings(JSON.parse(healthRes.value))
         targetWeight.value = health.targetWeight
@@ -148,7 +194,7 @@ export const useSettingsStore = defineStore('settings', () => {
         weightChangeThreshold.value = health.weightChangeThreshold
       }
 
-      const cacheRes = await Preferences.get({ key: 'my_home_cache' })
+      const cacheRes = await Preferences.get({ key: STORAGE_KEYS.homeCache })
       if (cacheRes.value) {
         const c = JSON.parse(cacheRes.value)
         if (c.cachedQuote) cachedQuote.value = c.cachedQuote
@@ -160,23 +206,29 @@ export const useSettingsStore = defineStore('settings', () => {
 
   const persistHomeCache = async () => {
     if (isDataLoaded.value) {
-      queuePreferenceWrite('my_home_cache', JSON.stringify({ cachedQuote: cachedQuote.value, dataFingerprint: dataFingerprint.value, lastEncouragement: lastEncouragement.value }))
+      queuePreferenceWrite(STORAGE_KEYS.homeCache, JSON.stringify({ cachedQuote: cachedQuote.value, dataFingerprint: dataFingerprint.value, lastEncouragement: lastEncouragement.value }))
     }
   }
 
-  watch(bannerSettings, v => queuePreferenceWrite('my_banner_settings', JSON.stringify(v)), { deep: true })
+  watch(bannerSettings, v => queuePreferenceWrite(STORAGE_KEYS.bannerSettings, JSON.stringify(v)), { deep: true })
   watch(themeSettings, value => {
-    queuePreferenceWrite('my_theme_settings', JSON.stringify(normalizeThemeSettings(value)))
+    queuePreferenceWrite(STORAGE_KEYS.themeSettings, JSON.stringify(normalizeThemeSettings(value)))
   }, { deep: true })
-  watch(() => ({ url: aiProviderUrl.value, key: aiApiKey.value, model: aiModel.value }), v => queuePreferenceWrite('my_ai_settings', JSON.stringify(v)), { deep: true })
+  watch(() => ({ url: aiProviderUrl.value, key: aiApiKey.value, model: aiModel.value }), value => {
+    const persisted = Capacitor.isNativePlatform()
+      ? { url: value.url, model: value.model }
+      : value
+    queuePreferenceWrite(STORAGE_KEYS.aiProviderSettings, JSON.stringify(persisted))
+    queueApiKeyWrite(value.key)
+  }, { deep: true })
   watch(autoLockDelaySeconds, value => {
-    queuePreferenceWrite('my_security_settings', JSON.stringify({ autoLockDelaySeconds: normalizeAutoLockDelay(value) }))
+    queuePreferenceWrite(STORAGE_KEYS.securitySettings, JSON.stringify({ autoLockDelaySeconds: normalizeAutoLockDelay(value) }))
   })
   watch(notificationSettings, value => {
-    queuePreferenceWrite('my_notification_settings', JSON.stringify(normalizeReminderSettings(value)))
+    queuePreferenceWrite(STORAGE_KEYS.notificationSettings, JSON.stringify(normalizeReminderSettings(value)))
   }, { deep: true })
   watch(notificationAiContent, value => {
-    queuePreferenceWrite('my_notification_ai_content', JSON.stringify(normalizeNotificationAiCache(value)))
+    queuePreferenceWrite(STORAGE_KEYS.notificationAiContent, JSON.stringify(normalizeNotificationAiCache(value)))
   }, { deep: true })
   watch(() => ({
     targetWeight: targetWeight.value,
@@ -184,7 +236,7 @@ export const useSettingsStore = defineStore('settings', () => {
     weightChangeReminderEnabled: weightChangeReminderEnabled.value,
     weightChangeThreshold: weightChangeThreshold.value
   }), value => {
-    queuePreferenceWrite('my_health_settings', JSON.stringify(normalizeHealthSettings(value)))
+    queuePreferenceWrite(STORAGE_KEYS.healthSettings, JSON.stringify(normalizeHealthSettings(value)))
   }, { deep: true })
 
   watch(cachedQuote, () => persistHomeCache(), { deep: true })
@@ -267,11 +319,11 @@ export const useSettingsStore = defineStore('settings', () => {
     }
     navigate({ view: 'schedule', scheduleTarget: nextTarget })
   }
-  const updateBanner = async (v) => { bannerSettings.value = v; queuePreferenceWrite('my_banner_settings', JSON.stringify(v)) }
-  const updateBg = async (b) => { customBg.value = b; if (b) await Preferences.set({ key: 'my_custom_bg', value: b }); else await Preferences.remove({ key: 'my_custom_bg' }) }
+  const updateBanner = async (v) => { bannerSettings.value = v; queuePreferenceWrite(STORAGE_KEYS.bannerSettings, JSON.stringify(v)) }
+  const updateBg = async (b) => { customBg.value = b; if (b) await Preferences.set({ key: STORAGE_KEYS.customBackground, value: b }); else await Preferences.remove({ key: STORAGE_KEYS.customBackground }) }
   const updateThemeSettings = async value => {
     themeSettings.value = normalizeThemeSettings(value)
-    queuePreferenceWrite('my_theme_settings', JSON.stringify(themeSettings.value))
+    queuePreferenceWrite(STORAGE_KEYS.themeSettings, JSON.stringify(themeSettings.value))
   }
   const updateHealthSettings = (value) => {
     const health = normalizeHealthSettings(value)
@@ -323,24 +375,33 @@ export const useSettingsStore = defineStore('settings', () => {
     lastEncouragement.value = backup.homeCache.lastEncouragement
 
     const writes = [
-      Preferences.set({ key: 'my_banner_settings', value: JSON.stringify(backup.banner) }),
-      Preferences.set({ key: 'my_theme_settings', value: JSON.stringify(backup.theme) }),
-      Preferences.set({ key: 'my_ai_settings', value: JSON.stringify(backup.ai) }),
+      Preferences.set({ key: STORAGE_KEYS.bannerSettings, value: JSON.stringify(backup.banner) }),
+      Preferences.set({ key: STORAGE_KEYS.themeSettings, value: JSON.stringify(backup.theme) }),
       Preferences.set({
-        key: 'my_security_settings',
+        key: STORAGE_KEYS.aiProviderSettings,
+        value: JSON.stringify(Capacitor.isNativePlatform()
+          ? { url: backup.ai.url, model: backup.ai.model }
+          : backup.ai)
+      }),
+      Preferences.set({
+        key: STORAGE_KEYS.securitySettings,
         value: JSON.stringify({ autoLockDelaySeconds: backup.autoLockDelaySeconds })
       }),
-      Preferences.set({ key: 'my_notification_settings', value: JSON.stringify(backup.notificationSettings) }),
-      Preferences.set({ key: 'my_notification_ai_content', value: JSON.stringify(backup.notificationAiContent) }),
-      Preferences.set({ key: 'my_health_settings', value: JSON.stringify(backup.health) }),
-      Preferences.set({ key: 'my_home_cache', value: JSON.stringify(backup.homeCache) })
+      Preferences.set({ key: STORAGE_KEYS.notificationSettings, value: JSON.stringify(backup.notificationSettings) }),
+      Preferences.set({ key: STORAGE_KEYS.notificationAiContent, value: JSON.stringify(backup.notificationAiContent) }),
+      Preferences.set({ key: STORAGE_KEYS.healthSettings, value: JSON.stringify(backup.health) }),
+      Preferences.set({ key: STORAGE_KEYS.homeCache, value: JSON.stringify(backup.homeCache) })
     ]
     if (backup.customBg) {
-      writes.push(Preferences.set({ key: 'my_custom_bg', value: backup.customBg }))
+      writes.push(Preferences.set({ key: STORAGE_KEYS.customBackground, value: backup.customBg }))
     } else {
-      writes.push(Preferences.remove({ key: 'my_custom_bg' }))
+      writes.push(Preferences.remove({ key: STORAGE_KEYS.customBackground }))
     }
     await Promise.all(writes)
+    if (Capacitor.isNativePlatform()) {
+      await secureCredentials.storeApiKey(backup.ai.key)
+      await Preferences.remove({ key: STORAGE_KEYS.legacyAiSettings })
+    }
     return backup
   }
 

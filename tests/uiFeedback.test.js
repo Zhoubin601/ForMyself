@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import { readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import test from 'node:test'
+import { readSourceContract } from './sourceContractReader.js'
 
 const sourceRoot = join(process.cwd(), 'src')
 
@@ -53,7 +54,7 @@ test('应用内时间转盘支持每一分钟精确选择', () => {
 })
 
 test('侧边栏包含统一图标导航、隐私说明和关闭控件', () => {
-  const appSource = readFileSync(join(sourceRoot, 'App.vue'), 'utf8')
+  const appSource = readSourceContract('App.vue')
   assert.match(appSource, /drawerItems/)
   assert.match(appSource, /drawer-item-icon/)
   assert.match(appSource, /核心数据保存在设备内/)
@@ -61,9 +62,9 @@ test('侧边栏包含统一图标导航、隐私说明和关闭控件', () => {
 })
 
 test('只有存在独立配置的模块显示设置入口', () => {
-  const appSource = readFileSync(join(sourceRoot, 'App.vue'), 'utf8')
-  const settingsStoreSource = readFileSync(join(sourceRoot, 'stores', 'settings.js'), 'utf8')
-  const settingsViewSource = readFileSync(join(sourceRoot, 'components', 'SettingsView.vue'), 'utf8')
+  const appSource = readSourceContract('App.vue')
+  const settingsStoreSource = readSourceContract('stores/settings.js')
+  const settingsViewSource = readSourceContract('components/SettingsView.vue')
   assert.match(appSource, /moduleSettingsViews = new Set\(\['debts', 'weight', 'mood', 'passwords', 'chat'\]\)/)
   assert.doesNotMatch(appSource, /moduleSettingsViews = new Set\([^)]*'home'/)
   assert.match(settingsStoreSource, /openModuleSettings/)
@@ -79,7 +80,7 @@ test('只有存在独立配置的模块显示设置入口', () => {
 })
 
 test('日程页保留搜索框并移除重复的顶部搜索按钮', () => {
-  const scheduleViewSource = readFileSync(join(sourceRoot, 'components', 'ScheduleView.vue'), 'utf8')
+  const scheduleViewSource = readFileSync(join(sourceRoot, 'features', 'schedule', 'ScheduleView.vue'), 'utf8')
   assert.match(scheduleViewSource, /placeholder="搜索日程"/)
   assert.doesNotMatch(scheduleViewSource, /search-trigger/)
 })

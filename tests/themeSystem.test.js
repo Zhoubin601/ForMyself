@@ -1,6 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
+import { readSourceContract } from './sourceContractReader.js'
 import {
   DEFAULT_THEME_SETTINGS,
   THEME_PRESETS,
@@ -53,10 +54,10 @@ test('主题 CSS 变量包含浅色表面、边框、渐变和可访问主按钮
 
 test('主题设置可持久化且首页栏目统一中文', async () => {
   const [settingsStore, settingsView, homeView, appView] = await Promise.all([
-    readFile(new URL('../src/stores/settings.js', import.meta.url), 'utf8'),
-    readFile(new URL('../src/components/SettingsView.vue', import.meta.url), 'utf8'),
+    Promise.resolve(readSourceContract('stores/settings.js')),
+    Promise.resolve(readSourceContract('components/SettingsView.vue')),
     readFile(new URL('../src/components/HomeView.vue', import.meta.url), 'utf8'),
-    readFile(new URL('../src/App.vue', import.meta.url), 'utf8')
+    Promise.resolve(readSourceContract('App.vue'))
   ])
 
   assert.match(settingsStore, /my_theme_settings/)

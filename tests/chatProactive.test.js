@@ -7,7 +7,7 @@ import {
   generateProactiveOutbox,
   shouldCreateSmartEntry,
   syncChatProactiveNotifications
-} from '../src/services/chatProactive.js'
+} from '../src/features/chat/chatProactive.js'
 
 const at = value => new Date(value).getTime()
 

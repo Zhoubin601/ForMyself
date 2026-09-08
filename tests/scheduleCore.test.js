@@ -6,7 +6,7 @@ import {
   countScheduleCategoryUsage,
   generateOccurrences,
   normalizeScheduleData
-} from '../src/services/scheduleCore.js'
+} from '../src/features/schedule/scheduleCore.js'
 
 const now = new Date('2026-07-24T08:00:00')
 
