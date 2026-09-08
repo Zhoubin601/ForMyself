@@ -6,7 +6,7 @@ import {
   countScheduleCategoryUsage,
   generateOccurrences,
   normalizeScheduleData
-} from '../src/services/scheduleCore.js'
+} from '../src/features/schedule/scheduleCore.js'
 
 const now = new Date('2026-07-24T08:00:00')
 
@@ -115,7 +115,7 @@ test('通知和组件快照只包含未过期事项并使用独立稳定 ID', ()
 })
 
 test('已到点的提醒不会在应用恢复重校准时再次安排', () => {
-  const current = new Date('2026-07-24T10:00:30+08:00')
+  const current = new Date('2026-07-24T10:00:30')
   const data = normalizeScheduleData({
     series: [{
       id: 'same-minute',

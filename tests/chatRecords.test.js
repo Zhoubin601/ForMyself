@@ -13,7 +13,7 @@ import {
   normalizeOpenLoops,
   normalizeVirtualEvents,
   parseMemoryExtraction
-} from '../src/services/chatRecords.js'
+} from '../src/features/chat/chatRecords.js'
 
 test('聊天消息按时间规范化、按 ID 去重并保留中止状态', () => {
   const avatar = 'data:image/png;base64,aGVsbG8='

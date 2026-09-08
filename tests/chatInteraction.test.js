@@ -8,8 +8,8 @@ import {
   parseReactionFollowup,
   planCompanionInteraction,
   planReactionFollowup
-} from '../src/services/chatInteraction.js'
-import { collapseConsecutiveChatMessages } from '../src/services/chatCompanion.js'
+} from '../src/features/chat/chatInteraction.js'
+import { collapseConsecutiveChatMessages } from '../src/features/chat/chatCompanion.js'
 
 const userMessage = {
   id: 'user-1',

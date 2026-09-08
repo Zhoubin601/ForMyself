@@ -7,11 +7,11 @@ import {
   parsePlannedReplyOutput,
   planChatBehavior,
   generateCompanionWorldDraft
-} from '../src/services/chatRealism.js'
+} from '../src/features/chat/chatRealism.js'
 import {
   generateDailyCompanionWorld,
   parseRelationshipUpdate
-} from '../src/services/chatRelationship.js'
+} from '../src/features/chat/chatRelationship.js'
 
 test('行为计划只保留合法引用并在规划失败时使用本地安全计划', async () => {
   const normalized = normalizeChatBehaviorPlan({

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { getSquareImageCrop } from '../src/services/chatAvatar.js'
+import { getSquareImageCrop } from '../src/features/chat/chatAvatar.js'
 
 test('头像裁剪会从横图中央截取正方形', () => {
   assert.deepEqual(getSquareImageCrop(800, 600), {

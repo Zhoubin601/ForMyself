@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, watch } from 'vue'
-import { Preferences } from '@capacitor/preferences'
+import { preferenceStorage as Preferences } from '../platform/storage/preferences.js'
+import { STORAGE_KEYS } from '../platform/storage/keys.js'
 
 export const useDebtStore = defineStore('debt', () => {
   const savedDebts = ref([])
@@ -8,7 +9,7 @@ export const useDebtStore = defineStore('debt', () => {
 
   const loadDebts = async () => {
     try {
-      const { value } = await Preferences.get({ key: 'my_debt_manager_data' })
+      const { value } = await Preferences.get({ key: STORAGE_KEYS.debtRecords })
       if (value) {
         savedDebts.value = JSON.parse(value)
       }
@@ -24,7 +25,7 @@ export const useDebtStore = defineStore('debt', () => {
     async (newDebts) => {
       if (isDataLoaded.value) {
         await Preferences.set({
-          key: 'my_debt_manager_data',
+          key: STORAGE_KEYS.debtRecords,
           value: JSON.stringify(newDebts)
         })
       }
@@ -43,7 +44,7 @@ export const useDebtStore = defineStore('debt', () => {
   const restoreDebts = async (newList) => {
     savedDebts.value = newList
     await Preferences.set({
-      key: 'my_debt_manager_data',
+      key: STORAGE_KEYS.debtRecords,
       value: JSON.stringify(savedDebts.value)
     })
   }

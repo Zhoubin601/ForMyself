@@ -7,7 +7,7 @@ import {
   createChatStorage,
   decryptChatData,
   encryptChatData
-} from '../src/services/chatStorage.js'
+} from '../src/features/chat/chatStorage.js'
 
 const missing = path => Object.assign(new Error(`File does not exist: ${path}`), { code: 'ENOENT' })
 

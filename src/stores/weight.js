@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, watch } from 'vue'
-import { Preferences } from '@capacitor/preferences'
+import { preferenceStorage as Preferences } from '../platform/storage/preferences.js'
+import { STORAGE_KEYS } from '../platform/storage/keys.js'
 
 export const useWeightStore = defineStore('weight', () => {
   const weightRecords = ref([])
@@ -8,7 +9,7 @@ export const useWeightStore = defineStore('weight', () => {
 
   const loadWeightRecords = async () => {
     try {
-      const { value } = await Preferences.get({ key: 'my_weight_records_data' })
+      const { value } = await Preferences.get({ key: STORAGE_KEYS.weightRecords })
       if (value) {
         weightRecords.value = JSON.parse(value)
       }
@@ -24,7 +25,7 @@ export const useWeightStore = defineStore('weight', () => {
     async (newRecords) => {
       if (isDataLoaded.value) {
         await Preferences.set({
-          key: 'my_weight_records_data',
+          key: STORAGE_KEYS.weightRecords,
           value: JSON.stringify(newRecords)
         })
       }
@@ -43,7 +44,7 @@ export const useWeightStore = defineStore('weight', () => {
   const restoreWeightRecords = async (newList) => {
     weightRecords.value = newList
     await Preferences.set({
-      key: 'my_weight_records_data',
+      key: STORAGE_KEYS.weightRecords,
       value: JSON.stringify(weightRecords.value)
     })
   }

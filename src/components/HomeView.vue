@@ -1,11 +1,10 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
 import { useSettingsStore } from '../stores/settings'
-import { useMoodStore } from '../stores/mood'
+import { useMoodStore } from '../features/mood/moodStore'
 import { useWeightStore } from '../stores/weight'
 import { useDebtStore } from '../stores/debt'
-import { useScheduleStore } from '../stores/schedule'
-import { useChatStore } from '../stores/chat'
+import { useScheduleStore } from '../features/schedule/scheduleStore'
 import { askAI } from '../services/aiEngine'
 import {
   buildHomeCompanionContext,
@@ -13,14 +12,19 @@ import {
   getCompanionContextFingerprint,
   normalizeCompanionReply,
   shouldGenerateHomeCompanion
-} from '../services/companionPrompts'
+} from '../features/chat/companionPrompts'
 
 const settingsStore = useSettingsStore()
 const moodStore = useMoodStore()
 const weightStore = useWeightStore()
 const debtStore = useDebtStore()
 const scheduleStore = useScheduleStore()
-const chatStore = useChatStore()
+const props = defineProps({
+  chatUnreadCount: { type: Number, default: 0 },
+  showBiometricSetup: { type: Boolean, default: false },
+  isEnablingBiometric: { type: Boolean, default: false }
+})
+const emit = defineEmits(['enable-biometric', 'dismiss-biometric'])
 const currentTime = ref(new Date())
 
 const formatLocalDate = (date) => {
@@ -313,12 +317,26 @@ onMounted(() => {
           <span class="companion-icon">✦</span>
           <p>{{ companionText }}</p>
           <span
-            v-if="chatStore.unreadCount"
+            v-if="props.chatUnreadCount"
             class="companion-unread"
-            :aria-label="`${chatStore.unreadCount}条未读消息`"
-          >{{ chatStore.unreadCount > 99 ? '99+' : chatStore.unreadCount }}</span>
+            :aria-label="`${props.chatUnreadCount}条未读消息`"
+          >{{ props.chatUnreadCount > 99 ? '99+' : props.chatUnreadCount }}</span>
           <b aria-hidden="true">›</b>
         </button>
+      </div>
+    </section>
+
+    <section v-if="props.showBiometricSetup" class="biometric-setup-card" aria-live="polite">
+      <span class="biometric-setup-icon" aria-hidden="true">◉</span>
+      <div>
+        <strong>启用指纹快捷解锁</strong>
+        <p>下次可以用系统生物认证直接进入，主密码仍保留作为安全后备。</p>
+      </div>
+      <div class="biometric-setup-actions">
+        <button type="button" :disabled="props.isEnablingBiometric" @click="emit('enable-biometric')">
+          {{ props.isEnablingBiometric ? '正在启用…' : '启用' }}
+        </button>
+        <button type="button" :disabled="props.isEnablingBiometric" @click="emit('dismiss-biometric')">稍后</button>
       </div>
     </section>
 
@@ -654,6 +672,25 @@ button {
   font-weight: 700;
 }
 .companion-unread + b { margin-left: 0; }
+
+.biometric-setup-card {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 14px 15px;
+  border: 1px solid var(--theme-border);
+  border-radius: 18px;
+  background: var(--theme-surface);
+  box-shadow: var(--shadow-card);
+}
+.biometric-setup-icon { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 13px; background: var(--theme-soft); color: var(--primary); font-size: 20px; }
+.biometric-setup-card strong { display: block; color: var(--home-ink); font-size: 13px; }
+.biometric-setup-card p { margin: 4px 0 0; color: var(--home-muted); font-size: 10px; line-height: 1.45; }
+.biometric-setup-actions { display: flex; gap: 5px; }
+.biometric-setup-actions button { min-height: 34px; padding: 0 9px; border: 0; border-radius: 11px; background: var(--theme-soft); color: var(--primary); font-size: 11px; font-weight: 700; }
+.biometric-setup-actions button:last-child { background: transparent; color: var(--home-muted); }
+.biometric-setup-actions button:disabled { opacity: .55; }
 
 .dashboard-section { display: flex; flex-direction: column; gap: 12px; }
 

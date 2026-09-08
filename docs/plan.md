@@ -339,3 +339,17 @@
 发布标签：`v2026.09.04-mood-customization`；源码提交：`b4d5855`。
 发布地址：https://github.com/Zhoubin601/ForMyself/releases/tag/v2026.09.04-mood-customization
 已核验 GitHub 附件状态为 uploaded，APK 大小与 SHA-256 和本地验收包一致。
+
+## 2026-09-06 启动与解锁性能优化
+
+- [x] 将 210,000 次 PBKDF2 改为兼容旧记录的异步 Web Crypto 实现，并加入 Worker 回退
+- [x] 增加即时解锁反馈、重复提交保护和密码验证后的首页优先绘制
+- [x] 将聊天和密码库改为首页绘制后并行安全加载，并增加固定尺寸加载态
+- [x] 延后生物能力、设置、通知和桌面组件启动任务，合并重复同步
+- [x] 将非首页页面改为异步组件，并从首包移出聊天 Store 和 CryptoJS
+- [x] 补齐密码兼容、回退、加载反馈、后台加载和首次生物启用测试
+- [x] 完成 226 项单元测试、7 项组件测试、lint、类型检查、Vite 构建、Capacitor 同步和 Android Debug 构建
+- [x] 完成 5 次冷启动、10 次热解锁、错误密码、首次设密、聊天/密码库加载、全页面排版和日志回归
+- [x] 完成首次指纹启用、指纹解锁、指纹授权改密、实际改密及凭据同步回归
+- [x] 保留原模拟器用户数据，删除临时 Android 用户和调试转发
+- [x] 生成 `output/20260906-ForMyself-unlock-performance-v1-debug.apk`

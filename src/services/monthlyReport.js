@@ -1,4 +1,4 @@
-import { normalizeMoodDefinitions } from './moodRecords.js'
+import { normalizeMoodDefinitions } from '../features/mood/moodRecords.js'
 
 export function getMonthKey(year, month) {
   return `${year}-${String(month).padStart(2, '0')}`

@@ -4,7 +4,7 @@ import {
   CHAT_FOLLOWUP_NOTIFICATION_MIN,
   createDelayedFollowup,
   syncChatFollowupNotifications
-} from '../src/services/chatFollowup.js'
+} from '../src/features/chat/chatFollowup.js'
 
 test('延迟补话限制在10至90秒并过滤敏感凭据', () => {
   const now = 1_800_000_000_000

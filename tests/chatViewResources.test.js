@@ -1,10 +1,6 @@
 import assert from 'node:assert/strict'
-import { readFileSync } from 'node:fs'
-import { join } from 'node:path'
 import test from 'node:test'
-
-const sourceRoot = join(process.cwd(), 'src')
-const read = path => readFileSync(join(sourceRoot, path), 'utf8')
+import { readSourceContract as read } from './sourceContractReader.js'
 
 test('侧栏与首页陪伴卡都可以进入温馨小家', () => {
   const app = read('App.vue')
@@ -12,13 +8,14 @@ test('侧栏与首页陪伴卡都可以进入温馨小家', () => {
   const settings = read('stores/settings.js')
 
   assert.match(app, /\{ id: 'chat', label: '温馨小家', meta: '陪伴'/)
-  assert.match(app, /<KeepAlive :max="7">[\s\S]*<ChatView[\s\S]*v-else-if="settingsStore\.currentView === 'chat'"/)
+  assert.match(app, /const ChatView = defineAsyncComponent\(\(\) => import\('\.\/features\/chat\/ChatView\.vue'\)\)/)
+  assert.match(app, /<KeepAlive :max="7">[\s\S]*<ChatView[\s\S]*v-else-if="settingsStore\.currentView === 'chat' && protectedDataStatus === 'ready'"/)
   assert.match(home, /@click="switchView\('chat'\)"/)
   assert.match(settings, /chat: '温馨小家'/)
 })
 
 test('聊天界面包含全高布局、100 条分批加载、流式停止、重试和单条操作', () => {
-  const view = read('components/ChatView.vue')
+  const view = read('features/chat/ChatView.vue')
   const app = read('App.vue')
 
   assert.match(view, /const visibleCount = ref\(100\)/)
@@ -44,7 +41,7 @@ test('聊天界面包含全高布局、100 条分批加载、流式停止、重�
 })
 
 test('聊天支持双向微信式互动、拍一拍和未读定位', () => {
-  const view = read('components/ChatView.vue')
+  const view = read('features/chat/ChatView.vue')
   const app = read('App.vue')
   const home = read('components/HomeView.vue')
 
@@ -62,7 +59,7 @@ test('聊天支持双向微信式互动、拍一拍和未读定位', () => {
 })
 
 test('消息表情使用独立轻量表情条，不以负边距穿插相邻气泡', () => {
-  const view = read('components/ChatView.vue')
+  const view = read('features/chat/ChatView.vue')
   const reactionBlock = view.match(/\.message-reactions \{([\s\S]*?)\n\}/)?.[1] || ''
   const reactionItemBlock = view.match(/\.message-reactions span \{([\s\S]*?)\n\}/)?.[1] || ''
 
@@ -76,7 +73,7 @@ test('消息表情使用独立轻量表情条，不以负边距穿插相邻气�
 })
 
 test('聊天每次进入和内容更新后强制定位最底部', () => {
-  const view = read('components/ChatView.vue')
+  const view = read('features/chat/ChatView.vue')
 
   assert.match(view, /timeline\.scrollTop = timeline\.scrollHeight/)
   assert.match(view, /requestAnimationFrame/)
@@ -90,7 +87,7 @@ test('聊天每次进入和内容更新后强制定位最底部', () => {
 })
 
 test('流式回复会按节奏拆成连续气泡并在完整一轮后只更新一次关系状态', () => {
-  const view = read('components/ChatView.vue')
+  const view = read('features/chat/ChatView.vue')
 
   assert.match(view, /sanitizeCompanionReply\(content/)
   assert.match(view, /const parts = splitCompanionReply\(normalizedContent/)
@@ -106,7 +103,7 @@ test('流式回复会按节奏拆成连续气泡并在完整一轮后只更新�
 })
 
 test('用户发送新消息后会使尚未落地的智能开场失效', () => {
-  const view = read('components/ChatView.vue')
+  const view = read('features/chat/ChatView.vue')
 
   assert.match(view, /let smartEntryRun = 0/)
   assert.match(view, /const entryRun = \+\+smartEntryRun/)
@@ -118,7 +115,7 @@ test('用户发送新消息后会使尚未落地的智能开场失效', () => {
 
 test('切换应用页面或进入锁屏时保留聊天生成任务，并在进程重建后恢复未回复消息', () => {
   const app = read('App.vue')
-  const view = read('components/ChatView.vue')
+  const view = read('features/chat/ChatView.vue')
 
   assert.match(app, /v-if="hasEnteredApp" v-show="!authStore\.isLocked" class="main-app/)
   assert.match(app, /<KeepAlive :max="7">[\s\S]*<ChatView/)
@@ -151,7 +148,7 @@ test('温馨小家设置页在窄屏使用紧凑字号和完整宽度输入布�
 })
 
 test('进入页面使用六小时智能主动消息并持久化，反复进出不再固定欢迎', () => {
-  const view = read('components/ChatView.vue')
+  const view = read('features/chat/ChatView.vue')
 
   assert.match(view, /onMounted\(async \(\) =>/)
   assert.match(view, /initializeCompanionContinuity\(\)/)
@@ -187,8 +184,8 @@ test('设置页提供名字、长期记忆、三种清理行为与独立备份�
 })
 
 test('聊天上下文只组合生活 Store，不读取密码库、主密码或 API Key 内容', () => {
-  const view = read('components/ChatView.vue')
-  const companion = read('services/chatCompanion.js')
+  const view = read('features/chat/ChatView.vue')
+  const companion = read('features/chat/chatCompanion.js')
   const contextBlock = view.slice(view.indexOf('const buildLifeContext'), view.indexOf('const currentSystemPrompt'))
 
   assert.doesNotMatch(contextBlock, /vaultStore|savedMasterPwd|aiApiKey/)

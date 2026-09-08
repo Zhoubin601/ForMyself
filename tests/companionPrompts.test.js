@@ -11,7 +11,7 @@ import {
   getCompanionContextFingerprint,
   normalizeCompanionReply,
   shouldGenerateHomeCompanion
-} from '../src/services/companionPrompts.js'
+} from '../src/features/chat/companionPrompts.js'
 
 test('近 30 天心情历史保留全部真实记录、分组同日事件并排除自动补记', () => {
   const history = buildMoodHistory([
@@ -98,7 +98,7 @@ test('回复清理器去除引号并执行不同场景的字符硬上限', () =>
 })
 
 test('心情界面不再使用闺蜜文案并接入共享提示词', async () => {
-  const source = await readFile(new URL('../src/components/MoodView.vue', import.meta.url), 'utf8')
+  const source = await readFile(new URL('../src/features/mood/MoodView.vue', import.meta.url), 'utf8')
   assert.doesNotMatch(source, /闺蜜正在感知/)
   assert.match(source, /buildMoodEchoContext/)
   assert.match(source, /normalizeCompanionReply\(echoText, 200\)/)
