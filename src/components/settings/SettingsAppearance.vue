@@ -1,29 +1,10 @@
 <script setup>
 import { toRefs } from 'vue'
 const props = defineProps({ model: { type: Object, required: true } })
-const { activateCustomTheme, applyThemePickerColor, bgInputRef, clearBg, handleBgUpload, isGeneralSection, localBanner, saveBannerSettings, selectThemePreset, settingsScope, settingsStore, themeColorBoardRef, themeColorBoardStyle, themeColorCursorStyle, themeColorHue, themePresets, triggerBgUpload, updateThemeColorFromBoard, updateThemeColorFromHex } = toRefs(props.model)
+const { activateCustomTheme, applyThemePickerColor, bgInputRef, clearBg, handleBgUpload, isGeneralSection, selectThemePreset, settingsStore, themeColorBoardRef, themeColorBoardStyle, themeColorCursorStyle, themeColorHue, themePresets, triggerBgUpload, updateThemeColorFromBoard, updateThemeColorFromHex } = toRefs(props.model)
 </script>
 
 <template>
-    <div v-if="settingsScope === 'debts'" class="setting-section">
-      <h3 class="caption body-muted section-title">省钱看板文案</h3>
-      <div class="store-utility-card" style="margin-top: 8px;">
-        <div class="input-group">
-          <label class="caption">主标题前缀</label>
-          <input v-model="localBanner.prefix" class="apple-input" placeholder="例如：你已经省下了" />
-        </div>
-        <div class="input-group">
-          <label class="caption">主标题后缀</label>
-          <input v-model="localBanner.suffix" class="apple-input" placeholder="例如：元" />
-        </div>
-        <div class="input-group">
-          <label class="caption">主标题字体大小 (px)</label>
-          <input type="number" v-model="localBanner.titleSize" class="apple-input" />
-        </div>
-        <button class="button-primary full-width" style="margin-top: 16px;" @click="saveBannerSettings">保存看板配置</button>
-      </div>
-    </div>
-
     <div v-if="isGeneralSection('appearance')" class="setting-section">
       <h3 class="caption body-muted section-title">外观与主题</h3>
       <div class="store-utility-card theme-settings-card">

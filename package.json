@@ -8,7 +8,7 @@
     "dev": "vite",
     "build": "vite build",
     "test": "node --test tests/*.test.js",
-    "test:component": "vitest run tests/SettingsOverview.spec.js tests/UnlockFeedback.spec.js",
+    "test:component": "vitest run",
     "lint": "eslint src tests scripts vite.config.js",
     "typecheck": "vue-tsc --noEmit -p tsconfig.json",
     "check": "npm run lint && npm test && npm run test:component && npm run typecheck && npm run build",

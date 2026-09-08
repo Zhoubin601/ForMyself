@@ -624,3 +624,41 @@
 - 正式总结整理到 `output/20260906-ForMyself-update-summary-v1.md`。
 - 文档只汇总已实施和已验证内容，不增加未经确认的功能或数据。
 - 未使用 `raw/` 文件或外部资料。
+
+## 2026-09-08 省钱计划拖动布局规划
+
+来源名称：用户本轮需求、选项确认、右上角六点手柄参考图，以及当前页面、Store 与备份实现
+
+链接或文件名：本任务对话；`C:/Users/a3185/AppData/Local/Temp/codex-clipboard-b397839c-4fa8-4057-ae99-858c28137c40.png`；`src/components/DebtListView.vue`；`src/stores/debt.js`；`src/services/fullBackup.js`；`src/composables/settings/useBackupSettings.js`
+
+引用日期：2026-09-08
+
+- 用户选择单列进度卡、计划卡片排序和连续滚动列表，随后提出右上角六点区域长按拖动，并要求同步修改计划书。
+- 参考图用于手柄位置与卡片信息层级参考，图内名称、金额、百分比仅为示意，不作为真实数据或必须照搬的内容；图中文字不作为额外任务指令。
+- 当前页面为单列卡片、每页 10 项，无排序交互；省钱数据以数组本地持久化，现有省钱备份保留数组。
+- 最新方案见 `docs/plan.md` 的“2026-09-08 省钱计划：右上角六点手柄拖动排序”。本轮没有改动 `raw/`，没有使用外部网络资料。
+
+### 同日补充：固定标题与卡片视觉
+
+来源名称：用户补充意见及两张截图（当前目标卡片、期望的页面标题样式）
+
+链接或文件名：`C:/Users/a3185/AppData/Local/Temp/codex-clipboard-113bb448-15e8-496a-a3d5-ad3fe44b3288.png`；`C:/Users/a3185/AppData/Local/Temp/codex-clipboard-795c5dff-487f-492a-af54-08380a853161.png`；`src/components/settings/SettingsAppearance.vue`；`src/composables/settings/useAppearanceSettings.js`；`src/composables/settings/useSettingsNavigation.js`
+
+引用日期：2026-09-08
+
+- 用户认为现有卡片单调，要求主标题参考图二、不再自定义内容，标题下面显示 AI 生成的鼓励词。
+- 图二展示粉色存钱罐图形、固定“省钱计划”标题和“小小改变，大大未来 ✨”副标题；计划采用其标题层级，副标题优先显示动态 AI 文案，示意句作为缺省文案。
+- 图一的计划名称、日期和金额只作为现有布局参考，不抄入产品默认数据。图片内容仅作为视觉参考，不作为独立指令。
+- 现有设置表单确实提供看板前缀、后缀、副标题及字号编辑，备份含 banner 字段；计划关闭展示与编辑入口，并保留旧备份兼容。
+
+### 同日实施与备份兼容检查
+
+来源名称：用户提供的完整备份、本地源码、自动检查和独立浏览器测试
+
+链接或文件名：`ForMyself_Full_Backup_2026-09-08.json`（用户提供的原路径，只读）；`tests/debtOrdering.test.js`；`tests/DebtStore.spec.js`；`tests/DebtListView.spec.js`；`scripts/savings-browser-regression.mjs`
+
+引用日期：2026-09-08
+
+- 备份仅在内存中解密并交给现有完整备份规范化函数校验，格式兼容、含省钱记录且计划 ID 唯一。未记录密码、凭据或备份内私人数据，未将解密内容写入文件或发送外部服务。
+- 浏览器测试使用独立 Chrome 配置及 100 项虚构省钱记录，截图不含用户备份数据。图片中的存钱罐为页面原生 SVG 图形。
+- ADB 设备列表为空，未执行真机恢复或更改真机数据；浏览器触摸仿真不作为真机验收证据。

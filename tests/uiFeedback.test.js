@@ -73,10 +73,7 @@ test('只有存在独立配置的模块显示设置入口', () => {
   assert.match(settingsViewSource, /showGeneralSettingsHome/)
   assert.match(settingsViewSource, /generalSettingsCategories/)
   assert.match(settingsViewSource, /isGeneralSection\('appearance'\)/)
-  assert.match(
-    settingsViewSource,
-    /v-if="settingsScope === 'debts'" class="setting-section">\s*<h3[^>]*>省钱看板文案/,
-  )
+  assert.doesNotMatch(settingsViewSource, /省钱看板文案|localBanner|saveBannerSettings/)
 })
 
 test('日程页保留搜索框并移除重复的顶部搜索按钮', () => {
