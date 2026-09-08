@@ -12,18 +12,18 @@ import {
 const at = value => new Date(value).getTime()
 
 test('六小时内反复进入不重复说话，跨日或久别才生成智能主动消息', () => {
-  const now = new Date('2026-07-27T20:00:00+08:00')
+  const now = new Date('2026-07-27T20:00:00')
   assert.equal(shouldCreateSmartEntry({
-    messages: [{ role: 'assistant', content: '刚聊完', createdAt: at('2026-07-27T18:30:00+08:00') }],
+    messages: [{ role: 'assistant', content: '刚聊完', createdAt: at('2026-07-27T18:30:00') }],
     now
   }), false)
   assert.equal(shouldCreateSmartEntry({
-    messages: [{ role: 'assistant', content: '隔了很久', createdAt: at('2026-07-27T12:00:00+08:00') }],
+    messages: [{ role: 'assistant', content: '隔了很久', createdAt: at('2026-07-27T12:00:00') }],
     now
   }), true)
   assert.equal(shouldCreateSmartEntry({
-    messages: [{ role: 'assistant', content: '昨天聊过', createdAt: at('2026-07-26T23:50:00+08:00') }],
-    now: new Date('2026-07-27T00:10:00+08:00')
+    messages: [{ role: 'assistant', content: '昨天聊过', createdAt: at('2026-07-26T23:50:00') }],
+    now: new Date('2026-07-27T00:10:00')
   }), true)
 })
 
