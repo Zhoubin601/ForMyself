@@ -28,7 +28,7 @@ export function useSettingsNavigation() {
   const isGeneralSection = section => settingsScope.value === 'general' && settingsSection.value === section
   const showGeneralSettingsHome = computed(() => settingsScope.value === 'general' && !settingsSection.value)
   const scopeMeta = computed(() => ({
-    debts: { icon: '◎', title: '省钱计划设置', description: '管理省钱看板文案、目标回顾提醒与个性化鼓励。' },
+    debts: { icon: '◎', title: '省钱计划设置', description: '管理目标回顾提醒与 AI 个性化鼓励。' },
     weight: { icon: '◇', title: '体重记录设置', description: '管理健康参数、变化提醒与每日记录提醒。' },
     mood: { icon: '♡', title: '心情日记设置', description: '管理心情等级、自定义标签与每日关怀提醒。' },
     schedule: { icon: '□', title: '日程提醒设置', description: '管理日程标签、颜色和分类规则。' },

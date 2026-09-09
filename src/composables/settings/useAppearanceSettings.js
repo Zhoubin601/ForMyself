@@ -229,19 +229,6 @@ export function useAppearanceSettings() {
     background: getThemePrimary(settingsStore.themeSettings)
   }))
 
-  // --- 看板设置 ---
-  const localBanner = ref({ ...settingsStore.bannerSettings })
-
-  watch(() => settingsStore.bannerSettings, (newVal) => {
-    if (newVal) localBanner.value = { ...newVal }
-  }, { deep: true, immediate: true })
-
-  const saveBannerSettings = () => {
-    settingsStore.updateBanner({ ...localBanner.value })
-    appToast('看板配置已保存生效', { tone: 'success' })
-  }
-
-
   const triggerBgUpload = () => bgInputRef.value.click()
   const handleBgUpload = (event) => {
     const file = event.target.files[0]; if (!file) return;
@@ -302,8 +289,6 @@ export function useAppearanceSettings() {
     updateThemeColorFromHex,
     themeColorBoardStyle,
     themeColorCursorStyle,
-    localBanner,
-    saveBannerSettings,
     triggerBgUpload,
     handleBgUpload,
     clearBg
