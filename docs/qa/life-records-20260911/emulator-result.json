@@ -1,0 +1,67 @@
+{
+  "layouts": [
+    {
+      "name": "weight-320",
+      "width": 320,
+      "overflow": false,
+      "bodyOverflow": false
+    },
+    {
+      "name": "savings-320",
+      "width": 320,
+      "overflow": false,
+      "bodyOverflow": false,
+      "cardHeight": 233.99610900878906
+    },
+    {
+      "name": "weight-390",
+      "width": 390,
+      "overflow": false,
+      "bodyOverflow": false
+    },
+    {
+      "name": "savings-390",
+      "width": 390,
+      "overflow": false,
+      "bodyOverflow": false,
+      "cardHeight": 234.10223388671875
+    },
+    {
+      "name": "weight-411",
+      "width": 411,
+      "overflow": false,
+      "bodyOverflow": false
+    },
+    {
+      "name": "savings-411",
+      "width": 411,
+      "overflow": false,
+      "bodyOverflow": false,
+      "cardHeight": 234.0708465576172
+    },
+    {
+      "name": "settings-320",
+      "width": 320,
+      "overflow": false,
+      "bodyOverflow": false
+    },
+    {
+      "name": "settings-390",
+      "width": 390,
+      "overflow": false,
+      "bodyOverflow": false
+    },
+    {
+      "name": "settings-411",
+      "width": 411,
+      "overflow": false,
+      "bodyOverflow": false
+    }
+  ],
+  "weightEditAndAdd": true,
+  "commonNotesAndBack": true,
+  "savingsDragUndo": true,
+  "palettePriorityAndTags": true,
+  "moodHistoryCrudAndPlaceholder": true,
+  "forceStopPersistence": true
+}

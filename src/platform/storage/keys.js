@@ -17,6 +17,8 @@ export const STORAGE_KEYS = Object.freeze({
   moodRecords: 'my_mood_records_data',
   moodTrackingStartDate: 'my_mood_tracking_start_date',
   moodCustomTags: 'my_mood_custom_tags',
+  moodTagSettings: 'my_mood_tag_settings_v2',
+  commonNotes: 'my_common_notes_v1',
   moodDefinitions: 'my_mood_definitions_v1',
   passwordVault: 'my_password_vault_encrypted',
   passwordVaultCategories: 'my_password_vault_categories_encrypted',

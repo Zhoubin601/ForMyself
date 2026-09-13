@@ -37,6 +37,13 @@ export const useWeightStore = defineStore('weight', () => {
     weightRecords.value.push(record)
   }
 
+  const updateRecord = (id, updates) => {
+    const index = weightRecords.value.findIndex(record => record.id === id)
+    if (index < 0) return false
+    weightRecords.value[index] = { ...weightRecords.value[index], ...updates, id }
+    return true
+  }
+
   const updateWeightRecords = (newList) => {
     weightRecords.value = newList
   }
@@ -58,6 +65,7 @@ export const useWeightStore = defineStore('weight', () => {
     isDataLoaded,
     loadWeightRecords,
     addRecord,
+    updateRecord,
     updateWeightRecords,
     restoreWeightRecords,
     deleteRecord

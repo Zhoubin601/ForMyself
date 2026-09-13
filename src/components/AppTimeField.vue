@@ -7,6 +7,7 @@ defineOptions({ inheritAttrs: false })
 const props = defineProps({
   modelValue: { type: String, default: '08:00' },
   disabled: { type: Boolean, default: false },
+  emptyLabel: { type: String, default: '' },
   ariaLabel: { type: String, default: '选择时间' }
 })
 const emit = defineEmits(['update:modelValue'])
@@ -29,7 +30,7 @@ const isValidTime = value => {
   return Boolean(match && Number(match[1]) <= 23 && Number(match[2]) <= 59)
 }
 
-const displayValue = computed(() => isValidTime(props.modelValue) ? props.modelValue : '08:00')
+const displayValue = computed(() => isValidTime(props.modelValue) ? props.modelValue : (props.emptyLabel || '08:00'))
 const selectedTime = computed(() => `${padTime(hour.value)}:${padTime(minute.value)}`)
 const hourOptions = [
   ...Array.from({ length: 12 }, (_, index) => ({
@@ -65,7 +66,7 @@ const positionOnDial = (angle, radius) => {
 
 const showPicker = () => {
   if (props.disabled) return
-  const [currentHour = '08', currentMinute = '00'] = displayValue.value.split(':')
+  const [currentHour = '08', currentMinute = '00'] = (isValidTime(props.modelValue) ? props.modelValue : '08:00').split(':')
   hour.value = Number(currentHour)
   minute.value = Number(currentMinute)
   phase.value = 'hour'

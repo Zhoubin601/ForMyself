@@ -1,3 +1,4 @@
+import { sortWeightRecords } from './weightInsights.js'
 import { normalizeMoodDefinitions } from '../features/mood/moodRecords.js'
 
 export function getMonthKey(year, month) {
@@ -53,10 +54,9 @@ export function calculateMoodMonthlyStats(records = [], year, month, definitions
 
 export function calculateWeightMonthlyStats(records = [], year, month, targetWeight = null) {
   const prefix = getMonthKey(year, month)
-  const monthRecords = records
+  const monthRecords = sortWeightRecords(records
     .filter(item => item?.date?.startsWith(prefix) && Number.isFinite(Number(item.weight)))
-    .map(item => ({ ...item, weight: Number(item.weight) }))
-    .sort((a, b) => a.date.localeCompare(b.date))
+    .map(item => ({ ...item, weight: Number(item.weight) }))).reverse()
 
   if (!monthRecords.length) {
     return { count: 0, average: null, first: null, latest: null, change: null, trend: 'none', targetGap: null }

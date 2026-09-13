@@ -1,4 +1,5 @@
 <script setup>
+import { sortWeightRecords } from "../services/weightInsights.js"
 import { computed, onMounted, ref } from 'vue'
 import { useSettingsStore } from '../stores/settings'
 import { useMoodStore } from '../features/mood/moodStore'
@@ -75,9 +76,7 @@ const getMoodEmoji = mood => moodStore.getMoodDefinition(mood).emoji
 const getMoodLabel = mood => moodStore.getMoodDefinition(mood).label
 const todayMoodEmoji = computed(() => todayMood.value ? getMoodEmoji(todayMood.value.mood) : null)
 
-const sortedWeights = computed(() => [...weightStore.weightRecords]
-  .filter(record => Number.isFinite(Number(record.weight)) && record.date)
-  .sort((a, b) => b.date.localeCompare(a.date)))
+const sortedWeights = computed(() => sortWeightRecords(weightStore.weightRecords))
 const latestWeight = computed(() => sortedWeights.value[0] || null)
 const isWeightLoggedToday = computed(() => latestWeight.value?.date === todayStr.value)
 

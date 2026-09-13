@@ -64,6 +64,8 @@ export function useBackupSettings() {
       records: moodStore.moodRecords,
       trackingStartDate: moodStore.trackingStartDate,
       customTags: moodStore.customTags,
+      builtInTags: moodStore.builtInTags,
+      defaultTags: moodStore.defaultTags,
       definitions: moodStore.moodDefinitions
     })
   }
@@ -118,6 +120,8 @@ export function useBackupSettings() {
     moodMetadata: {
       trackingStartDate: moodStore.trackingStartDate,
       customTags: moodStore.customTags,
+      builtInTags: moodStore.builtInTags,
+      defaultTags: moodStore.defaultTags,
       definitions: moodStore.moodDefinitions
     },
     vaultMetadata: {

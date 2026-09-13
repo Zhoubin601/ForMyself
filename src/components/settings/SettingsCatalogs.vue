@@ -1,7 +1,25 @@
 <script setup>
-import { toRefs } from 'vue'
+import { ref, toRefs } from 'vue'
+import AppColorPalette from '../AppColorPalette.vue'
+import { appAlert } from '../../services/uiFeedback.js'
 const props = defineProps({ model: { type: Object, required: true } })
-const { addMoodDefinition, addScheduleCategory, addVaultCategory, applySchedulePickerColor, archiveMoodDefinition, beginEditMoodDefinition, deleteMoodDefinition, deleteMoodTag, deleteScheduleCategory, deleteVaultCategory, draggedMoodId, dropMoodDefinition, editMoodColor, editMoodEmoji, editMoodLabel, editingMoodId, isGeneralSection, moodDefinitionUsageCount, moodStore, moveMoodDefinition, newMoodColor, newMoodEmoji, newMoodLabel, newScheduleCategory, newScheduleCategoryColor, newVaultCategory, restoreMoodDefinition, saveMoodDefinition, scheduleColorBoardRef, scheduleColorBoardStyle, scheduleColorCursorStyle, scheduleColorHue, scheduleStore, setDefaultMoodDefinition, settingsScope, updateScheduleColorFromBoard, updateScheduleColorFromHex, vaultCategoryUsageCount, vaultStore } = toRefs(props.model)
+const { newMoodPriority, editMoodPriority, addMoodDefinition, addScheduleCategory, addVaultCategory, applySchedulePickerColor, archiveMoodDefinition, beginEditMoodDefinition, deleteMoodDefinition, deleteMoodTag, deleteScheduleCategory, deleteVaultCategory, draggedMoodId, dropMoodDefinition, editMoodColor, editMoodEmoji, editMoodLabel, editingMoodId, isGeneralSection, moodDefinitionUsageCount, moodStore, moveMoodDefinition, newMoodColor, newMoodEmoji, newMoodLabel, newScheduleCategory, newScheduleCategoryColor, newVaultCategory, restoreMoodDefinition, saveMoodDefinition, scheduleColorBoardRef, scheduleColorBoardStyle, scheduleColorCursorStyle, scheduleColorHue, scheduleStore, setDefaultMoodDefinition, settingsScope, updateScheduleColorFromBoard, updateScheduleColorFromHex, vaultCategoryUsageCount, vaultStore } = toRefs(props.model)
+const editingTag = ref(null)
+const tagDraft = ref('')
+const newTag = ref('')
+const saveTag = tag => {
+  if (!moodStore.value.renameTag(tag, tagDraft.value)) return appAlert('标签名称不能为空或重复')
+  editingTag.value = null
+}
+const addTag = () => { if (moodStore.value.addCustomTag(newTag.value)) newTag.value = '' }
+const toggleDefaultTag = tag => {
+  const selected = moodStore.value.defaultTags
+  moodStore.value.setDefaultTags(selected.includes(tag) ? selected.filter(item => item !== tag) : [...selected, tag])
+}
+const updatePriority = (definition, event) => {
+  const result = moodStore.value.updateMoodDefinition(definition.id, { ...definition, displayPriority: event.target.value })
+  if (!result.ok) { event.target.value = definition.displayPriority || 0; appAlert('优先级请输入 0–999 的整数') }
+}
 </script>
 
 <template>
@@ -83,10 +101,12 @@ const { addMoodDefinition, addScheduleCategory, addVaultCategory, applyScheduleP
         <div class="mood-definition-add">
           <input v-model="newMoodEmoji" class="apple-input mood-emoji-input" maxlength="12" aria-label="新心情 Emoji" />
           <input v-model="newMoodLabel" class="apple-input" maxlength="12" placeholder="心情名称" @keyup.enter="addMoodDefinition" />
-          <input v-model="newMoodColor" class="apple-input mood-color-text" maxlength="7" aria-label="新心情颜色 HEX" />
+          <label class="priority-field">显示优先级<input v-model.number="newMoodPriority" class="apple-input" type="number" min="0" max="999" step="1" aria-label="新心情显示优先级" /></label>
           <button class="button-primary taxonomy-add-button" @click="addMoodDefinition">添加</button>
         </div>
 
+        <AppColorPalette v-model="newMoodColor" label="新心情颜色" />
+        <p class="caption body-muted">显示优先级：数字越大，日历和当天列表越靠前；相同则最新记录在前。颜色用于心情标识，Emoji 保持自身配色。</p>
         <div class="taxonomy-list mood-definition-list">
           <div
             v-for="(definition, index) in moodStore.activeMoodDefinitions"
@@ -102,7 +122,8 @@ const { addMoodDefinition, addScheduleCategory, addVaultCategory, applyScheduleP
               <div class="mood-definition-editor">
                 <input v-model="editMoodEmoji" class="apple-input mood-emoji-input" maxlength="12" aria-label="编辑心情 Emoji" />
                 <input v-model="editMoodLabel" class="apple-input" maxlength="12" aria-label="编辑心情名称" />
-                <input v-model="editMoodColor" class="apple-input mood-color-text" maxlength="7" aria-label="编辑心情颜色 HEX" />
+                <label class="priority-field">显示优先级<input v-model.number="editMoodPriority" class="apple-input" type="number" min="0" max="999" step="1" aria-label="编辑心情显示优先级" /></label>
+                <AppColorPalette v-model="editMoodColor" label="编辑心情颜色" />
                 <button class="text-link" @click="saveMoodDefinition">保存</button>
                 <button class="text-link" @click="editingMoodId = ''">取消</button>
               </div>
@@ -113,7 +134,7 @@ const { addMoodDefinition, addScheduleCategory, addVaultCategory, applyScheduleP
                 <b>{{ definition.emoji }}</b>
                 <i :style="{ background: definition.color }"></i>
                 <span>{{ definition.label }}</span>
-                <small v-if="definition.isDefault">默认</small>
+                <small v-if="definition.isDefault">默认</small><small>优先级 {{ definition.displayPriority || 0 }}</small>
               </span>
               <span class="mood-definition-actions">
                 <button class="mood-order-button" :disabled="index === 0" aria-label="上移" @click="moveMoodDefinition(definition.id, -1)">↑</button>
@@ -136,6 +157,7 @@ const { addMoodDefinition, addScheduleCategory, addVaultCategory, applyScheduleP
                 <small>{{ moodDefinitionUsageCount(definition.id) }} 条历史记录</small>
               </span>
               <span class="mood-definition-actions">
+                <label class="priority-field">显示优先级<input class="apple-input" type="number" min="0" max="999" step="1" :value="definition.displayPriority || 0" :aria-label="`${definition.label}显示优先级`" @change="updatePriority(definition, $event)" /></label>
                 <button class="text-link" @click="restoreMoodDefinition(definition)">恢复</button>
                 <button v-if="!moodDefinitionUsageCount(definition.id)" class="text-link danger-text" @click="deleteMoodDefinition(definition)">删除</button>
               </span>
@@ -145,15 +167,16 @@ const { addMoodDefinition, addScheduleCategory, addVaultCategory, applyScheduleP
       </div>
 
       <div v-if="settingsScope === 'mood' || isGeneralSection('labels')" class="store-utility-card taxonomy-card">
-        <h4 class="body-strong taxonomy-title">心情日记自定义标签</h4>
-        <p class="caption body-muted taxonomy-description">删除标签时会同时从历史心情记录中移除；内置标签“工作、学习、家庭、睡眠”固定保留。</p>
-        <div v-if="moodStore.customTags.length" class="taxonomy-list">
-          <div v-for="tag in moodStore.customTags" :key="tag" class="taxonomy-row">
-            <span>{{ tag }}</span>
-            <button class="text-link danger-text taxonomy-action" @click="deleteMoodTag(tag)">删除</button>
+        <h4 class="body-strong taxonomy-title">心情日记标签</h4>
+        <p class="caption body-muted taxonomy-description">内置与自定义标签均可改名，并同步历史日记。默认勾选仅影响新增日记，允许不选。</p>
+        <div class="taxonomy-add-row"><input v-model="newTag" class="apple-input" maxlength="12" placeholder="新标签名称" @keyup.enter="addTag" /><button class="button-primary" @click="addTag">添加</button></div>
+        <div class="taxonomy-list">
+          <div v-for="tag in [...moodStore.builtInTags, ...moodStore.customTags]" :key="tag" class="taxonomy-row tag-row">
+            <template v-if="editingTag === tag"><input v-model="tagDraft" class="apple-input" maxlength="12" aria-label="修改标签名称" @keyup.enter="saveTag(tag)" /><button class="text-link" @click="saveTag(tag)">保存</button><button class="text-link" @click="editingTag = null">取消</button></template>
+            <template v-else><label class="tag-default"><input type="checkbox" :checked="moodStore.defaultTags.includes(tag)" :aria-label="`默认勾选${tag}`" @change="toggleDefaultTag(tag)" /><span>{{ tag }}</span></label><span v-if="moodStore.builtInTags.includes(tag)" class="caption body-muted">内置</span><button class="text-link" @click="editingTag = tag; tagDraft = tag">改名</button><button v-if="!moodStore.builtInTags.includes(tag)" class="text-link danger-text" @click="deleteMoodTag(tag)">删除</button></template>
           </div>
         </div>
-        <p v-else class="caption body-muted taxonomy-empty">暂无自定义心情标签</p>
+        <p class="caption body-muted">新增日记默认：{{ moodStore.defaultTags.length ? moodStore.defaultTags.join('、') : '不选任何标签' }}</p>
       </div>
 
       <div v-if="settingsScope === 'passwords' || isGeneralSection('labels')" class="store-utility-card taxonomy-card">
@@ -186,3 +209,7 @@ const { addMoodDefinition, addScheduleCategory, addVaultCategory, applyScheduleP
       </div>
     </div>
 </template>
+
+<style scoped>
+.priority-field { display:flex; align-items:center; gap:8px; font-size:12px; flex-wrap:wrap; }.priority-field input { width:85px; min-width:0; }.tag-row { gap:8px; flex-wrap:wrap; }.tag-row > input { min-width:0; flex:1; }.tag-default { flex:1; display:flex; align-items:center; gap:8px; min-height:44px; overflow-wrap:anywhere; }.tag-default input { accent-color:var(--primary); }.mood-definition-editor .color-palette { grid-column:1/-1; flex-basis:100%; }.mood-definition-editor,.mood-definition-add { flex-wrap:wrap; }.mood-definition-preview { flex-wrap:wrap; }
+</style>

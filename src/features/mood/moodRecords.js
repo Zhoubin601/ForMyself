@@ -1,14 +1,14 @@
 export const DEFAULT_MOOD_TAG = '学习'
 export const BUILT_IN_MOOD_TAGS = ['工作', '学习', '家庭', '睡眠']
 export const MOOD_BACKUP_TYPE = 'formyself-mood-backup'
-export const MOOD_BACKUP_VERSION = 1
+export const MOOD_BACKUP_VERSION = 2
 
 export const DEFAULT_MOOD_DEFINITIONS = Object.freeze([
-  Object.freeze({ id: 'great', emoji: '🤩', label: '超赞', color: '#34C759', order: 0, archived: false, isDefault: false }),
-  Object.freeze({ id: 'good', emoji: '🙂', label: '开心', color: '#75C86B', order: 1, archived: false, isDefault: false }),
-  Object.freeze({ id: 'normal', emoji: '😐', label: '一般', color: '#FFCC00', order: 2, archived: false, isDefault: true }),
-  Object.freeze({ id: 'bad', emoji: '😔', label: '低落', color: '#FF9500', order: 3, archived: false, isDefault: false }),
-  Object.freeze({ id: 'terrible', emoji: '😫', label: '极差', color: '#FF3B30', order: 4, archived: false, isDefault: false })
+  Object.freeze({ id: 'great', emoji: '🤩', label: '超赞', color: '#34C759', order: 0, displayPriority: 50, archived: false, isDefault: false }),
+  Object.freeze({ id: 'good', emoji: '🙂', label: '开心', color: '#75C86B', order: 1, displayPriority: 40, archived: false, isDefault: false }),
+  Object.freeze({ id: 'normal', emoji: '😐', label: '一般', color: '#FFCC00', order: 2, displayPriority: 30, archived: false, isDefault: true }),
+  Object.freeze({ id: 'bad', emoji: '😔', label: '低落', color: '#FF9500', order: 3, displayPriority: 20, archived: false, isDefault: false }),
+  Object.freeze({ id: 'terrible', emoji: '😫', label: '极差', color: '#FF3B30', order: 4, displayPriority: 10, archived: false, isDefault: false })
 ])
 
 const MAX_TAG_LENGTH = 12
@@ -53,7 +53,7 @@ export function normalizeMoodTag(value) {
 export function normalizeMoodTags(value) {
   const source = Array.isArray(value) ? value : value ? [value] : []
   const tags = [...new Set(source.map(normalizeMoodTag).filter(Boolean))]
-  return (tags.length ? tags : [DEFAULT_MOOD_TAG]).slice(0, MAX_TAGS_PER_RECORD)
+  return (value == null ? [DEFAULT_MOOD_TAG] : tags).slice(0, MAX_TAGS_PER_RECORD)
 }
 
 const defaultIdFactory = () => `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
@@ -66,7 +66,7 @@ export function normalizeMoodRecord(record = {}, idFactory = defaultIdFactory, d
     date: String(record.date || ''),
     mood: normalizeMoodId(record.mood) || normalizeMoodId(defaultMoodId) || 'normal',
     note: String(record.note || ''),
-    tags: normalizeMoodTags(record.tags ?? record.tag)
+    tags: record.autoFilled ? [] : normalizeMoodTags(record.tags ?? record.tag)
   }
 }
 
@@ -94,6 +94,9 @@ const nextUniqueLabel = (base, usedLabels) => {
 
 export function normalizeMoodDefinitions(value, records = []) {
   const supplied = Array.isArray(value) && value.length ? value : DEFAULT_MOOD_DEFINITIONS
+  const defaultPriorities = new Map(DEFAULT_MOOD_DEFINITIONS.map(item => [item.id, item.displayPriority]))
+  // Upgrade the previous release's untouched, all-zero built-in priorities.
+  const migrateZeroDefaults = DEFAULT_MOOD_DEFINITIONS.every(base => supplied.some(item => item?.id === base.id && Number(item.displayPriority ?? 0) === 0 && item.priorityDefaultsVersion !== 1))
   const byId = new Map()
   const usedLabels = new Set()
   supplied.map((definition, index) => ({ definition, index }))
@@ -113,6 +116,7 @@ export function normalizeMoodDefinitions(value, records = []) {
       byId.set(id, {
         id, emoji, label,
         color: normalizeMoodColor(definition.color),
+        displayPriority: normalizeMoodPriority((definition.displayPriority == null || migrateZeroDefaults) && defaultPriorities.has(id) ? defaultPriorities.get(id) : definition.displayPriority),
         order: byId.size,
         archived: definition.archived === true,
         isDefault: definition.isDefault === true
@@ -140,7 +144,7 @@ export function normalizeMoodDefinitions(value, records = []) {
     active = [fallback]
   }
   const defaultDefinition = active.find(item => item.isDefault) || active.find(item => item.id === 'normal') || active[0]
-  definitions = definitions.map((item, order) => ({ ...item, order, isDefault: item.id === defaultDefinition.id }))
+  definitions = definitions.map((item, order) => ({ ...item, priorityDefaultsVersion: 1, displayPriority: normalizeMoodPriority(item.displayPriority), order, isDefault: item.id === defaultDefinition.id }))
   return definitions
 }
 
@@ -162,14 +166,15 @@ export function mergeMoodDefinitions(current = [], incoming = [], records = []) 
   return normalizeMoodDefinitions([...merged.values()], records)
 }
 
-export function getCustomMoodTags(records = [], savedTags = []) {
+export function getCustomMoodTags(records = [], savedTags = [], builtInTags = BUILT_IN_MOOD_TAGS) {
   const allTags = [...(Array.isArray(savedTags) ? savedTags : []), ...records.flatMap(record => normalizeMoodTags(record.tags ?? record.tag))]
   return [...new Set(allTags.map(normalizeMoodTag).filter(Boolean))]
-    .filter(tag => !BUILT_IN_MOOD_TAGS.includes(tag))
+    .filter(tag => !builtInTags.includes(tag))
     .sort((a, b) => a.localeCompare(b, 'zh-CN'))
 }
 
-export function buildMoodBackupSnapshot({ records = [], trackingStartDate = '', customTags = [], definitions = [] } = {}, createdAt = new Date().toISOString()) {
+export function buildMoodBackupSnapshot({ records = [], trackingStartDate = '', customTags = [], definitions = [], builtInTags = BUILT_IN_MOOD_TAGS, defaultTags = [DEFAULT_MOOD_TAG] } = {}, createdAt = new Date().toISOString()) {
+  builtInTags = normalizeMoodTagCatalog(builtInTags)
   const baseDefinitions = normalizeMoodDefinitions(definitions)
   const defaultMoodId = getDefaultMoodDefinition(baseDefinitions).id
   const normalizedRecords = normalizeMoodRecords(records, undefined, defaultMoodId)
@@ -180,7 +185,9 @@ export function buildMoodBackupSnapshot({ records = [], trackingStartDate = '', 
     data: { records: cloneJson(normalizedRecords) },
     metadata: {
       trackingStartDate: /^\d{4}-\d{2}-\d{2}$/.test(String(trackingStartDate || '')) ? String(trackingStartDate) : '',
-      customTags: getCustomMoodTags(normalizedRecords, customTags),
+      customTags: getCustomMoodTags(normalizedRecords, customTags, builtInTags),
+      builtInTags: normalizeMoodTagCatalog(builtInTags),
+      defaultTags: normalizeMoodTags(defaultTags),
       definitions: cloneJson(normalizeMoodDefinitions(definitions, normalizedRecords))
     }
   }
@@ -190,12 +197,14 @@ export function normalizeMoodBackupSnapshot(value, fallbackDefinitions = []) {
   if (Array.isArray(value)) return buildMoodBackupSnapshot({ records: value, definitions: fallbackDefinitions })
   if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error('INVALID_MOOD_BACKUP')
   if (value.type !== MOOD_BACKUP_TYPE) throw new Error('INVALID_MOOD_BACKUP_TYPE')
-  if (value.version !== MOOD_BACKUP_VERSION) throw new Error('UNSUPPORTED_MOOD_BACKUP_VERSION')
+  if (![1, MOOD_BACKUP_VERSION].includes(value.version)) throw new Error('UNSUPPORTED_MOOD_BACKUP_VERSION')
   if (!value.data || !Array.isArray(value.data.records)) throw new Error('INVALID_MOOD_BACKUP_RECORDS')
   const snapshot = buildMoodBackupSnapshot({
     records: value.data.records,
     trackingStartDate: value.metadata?.trackingStartDate,
     customTags: value.metadata?.customTags,
+    builtInTags: value.metadata?.builtInTags,
+    defaultTags: value.metadata?.defaultTags,
     definitions: Array.isArray(value.metadata?.definitions) && value.metadata.definitions.length
       ? value.metadata.definitions
       : fallbackDefinitions
@@ -210,4 +219,21 @@ export function compareMoodRecordsNewestFirst(a, b) {
   const createdCompare = Number(b.createdAt || 0) - Number(a.createdAt || 0)
   if (createdCompare) return createdCompare
   return String(b.id || '').localeCompare(String(a.id || ''))
+}
+
+export function normalizeMoodPriority(value) {
+  const number = Number(value)
+  return Number.isFinite(number) ? Math.max(0, Math.min(999, Math.trunc(number))) : 0
+}
+
+export function normalizeMoodTagCatalog(value = BUILT_IN_MOOD_TAGS) {
+  return [...new Set((Array.isArray(value) ? value : BUILT_IN_MOOD_TAGS).map(normalizeMoodTag).filter(Boolean))]
+}
+
+export function compareMoodDayRecords(a, b, definitions = []) {
+  const manual = Number(Boolean(a.autoFilled)) - Number(Boolean(b.autoFilled))
+  const priority = id => normalizeMoodPriority(definitions.find(item => item.id === id)?.displayPriority)
+  return manual || priority(b.mood) - priority(a.mood)
+    || Number(b.createdAt || 0) - Number(a.createdAt || 0)
+    || String(b.id || '').localeCompare(String(a.id || ''))
 }

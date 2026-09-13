@@ -3,133 +3,72 @@ import { ref, computed, onBeforeUnmount, watch } from 'vue'
 import { useWeightStore } from '../stores/weight'
 import { useSettingsStore } from '../stores/settings'
 import {
+  sortWeightRecords, normalizeWeightTime, localWeightDate, filterWeightRange, calculateDailyAverages,
   calculateBmi,
   calculateWeeklyAverages,
-  calculateWeightChangeNotice,
-  normalizeHealthSettings
+  calculateWeightChangeNotice
 } from '../services/weightInsights.js'
 import { notifyWeightChange } from '../services/notificationService.js'
 import { appAlert, appConfirm } from '../services/uiFeedback'
 import { registerBackHandler } from '../services/backNavigation'
 import AppDateField from './AppDateField.vue'
+import AppTimeField from './AppTimeField.vue'
+import CommonNoteField from './CommonNoteField.vue'
 
 const weightStore = useWeightStore()
 const settingsStore = useSettingsStore()
 
 const showAddModal = ref(false)
-const showHealthModal = ref(false)
 const unregisterBackHandler = registerBackHandler(() => {
-  if (showHealthModal.value) { showHealthModal.value = false; return true }
   if (showAddModal.value) { showAddModal.value = false; return true }
   return false
-}, { priority: 500, isActive: () => showHealthModal.value || showAddModal.value })
+}, { priority: 500, isActive: () => showAddModal.value })
 onBeforeUnmount(unregisterBackHandler)
 const editDate = ref('')
 const editWeight = ref(null)
 const editNote = ref('')
-const filterSegment = ref('all')
-const chartMode = ref('weekly')
+const filterSegment = ref(30)
+const chartMode = ref('daily')
+const editingId = ref(null)
+const editTime = ref('')
+const selectedPoint = ref(null)
 const changeNotice = ref(null)
 const changeNoticeSent = ref(false)
-const healthForm = ref({
-  heightCm: '',
-  targetWeight: '',
-  weightChangeReminderEnabled: true,
-  weightChangeThreshold: 1
-})
+const getTodayStr = () => localWeightDate()
 
-watch(() => [
-  settingsStore.heightCm,
-  settingsStore.targetWeight,
-  settingsStore.weightChangeReminderEnabled,
-  settingsStore.weightChangeThreshold
-], () => {
-  healthForm.value = {
-    heightCm: settingsStore.heightCm ?? '',
-    targetWeight: settingsStore.targetWeight ?? '',
-    weightChangeReminderEnabled: settingsStore.weightChangeReminderEnabled,
-    weightChangeThreshold: settingsStore.weightChangeThreshold
-  }
-}, { immediate: true })
-
-const getTodayStr = () => {
-  const n = new Date()
-  return `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}-${String(n.getDate()).padStart(2, '0')}`
-}
-
-const sortedRecords = computed(() => [...weightStore.weightRecords].sort((a, b) => b.date.localeCompare(a.date)))
-
-const filteredRecords = computed(() => {
-  const now = new Date()
-  if (filterSegment.value === 'week') {
-    const weekAgo = new Date(now); weekAgo.setDate(weekAgo.getDate() - 7)
-    const cutoff = weekAgo.toISOString().slice(0, 10)
-    return sortedRecords.value.filter(r => r.date >= cutoff)
-  }
-  if (filterSegment.value === 'month') {
-    const monthAgo = new Date(now); monthAgo.setMonth(monthAgo.getMonth() - 1)
-    const cutoff = monthAgo.toISOString().slice(0, 10)
-    return sortedRecords.value.filter(r => r.date >= cutoff)
-  }
-  return sortedRecords.value
-})
+const sortedRecords = computed(() => sortWeightRecords(weightStore.weightRecords))
+const filteredRecords = computed(() => filterWeightRange(sortedRecords.value, filterSegment.value))
 
 const WEIGHT_PAGE_SIZE = 10
 const weightPage = ref(1)
-const totalWeightPages = computed(() => Math.ceil(filteredRecords.value.length / WEIGHT_PAGE_SIZE) || 1)
+const totalWeightPages = computed(() => Math.ceil(sortedRecords.value.length / WEIGHT_PAGE_SIZE) || 1)
 const paginatedWeightRecords = computed(() => {
   const start = (weightPage.value - 1) * WEIGHT_PAGE_SIZE
-  return filteredRecords.value.slice(start, start + WEIGHT_PAGE_SIZE)
+  return sortedRecords.value.slice(start, start + WEIGHT_PAGE_SIZE)
 })
 watch(totalWeightPages, (n) => { if (weightPage.value > n) weightPage.value = n > 0 ? n : 1 })
 
-const dailyChartRecords = computed(() => {
-  const allSorted = [...weightStore.weightRecords].sort((a, b) => a.date.localeCompare(b.date))
-  if (allSorted.length < 2) return allSorted
-  const now = new Date()
-  if (filterSegment.value === 'week') {
-    const weekAgo = new Date(now); weekAgo.setDate(weekAgo.getDate() - 7)
-    const cutoff = weekAgo.toISOString().slice(0, 10)
-    return allSorted.filter(r => r.date >= cutoff)
-  }
-  if (filterSegment.value === 'month') {
-    const monthAgo = new Date(now); monthAgo.setMonth(monthAgo.getMonth() - 1)
-    const cutoff = monthAgo.toISOString().slice(0, 10)
-    return allSorted.filter(r => r.date >= cutoff)
-  }
-  return allSorted
+const groupedRecords = computed(() => {
+  const days = new Map()
+  paginatedWeightRecords.value.forEach(record => {
+    if (!days.has(record.date)) days.set(record.date, [])
+    days.get(record.date).push(record)
+  })
+  return [...days].map(([date, records]) => ({ date, records }))
 })
-
-const weeklyAverages = computed(() => calculateWeeklyAverages(weightStore.weightRecords))
-const latestWeeklyAverage = computed(() => weeklyAverages.value[weeklyAverages.value.length - 1] || null)
-
-const weeklyChartRecords = computed(() => {
-  const now = new Date()
-  let cutoff = ''
-  if (filterSegment.value === 'week') {
-    const weekAgo = new Date(now); weekAgo.setDate(weekAgo.getDate() - 7)
-    cutoff = weekAgo.toISOString().slice(0, 10)
-  } else if (filterSegment.value === 'month') {
-    const monthAgo = new Date(now); monthAgo.setMonth(monthAgo.getMonth() - 1)
-    cutoff = monthAgo.toISOString().slice(0, 10)
-  }
-  return weeklyAverages.value
-    .filter(item => !cutoff || item.weekEnd >= cutoff)
-    .map(item => ({ date: item.weekStart, weight: item.average, days: item.days }))
-})
-
+const dailyChartRecords = computed(() => calculateDailyAverages(filteredRecords.value))
+const weeklyChartRecords = computed(() => calculateWeeklyAverages(filteredRecords.value).map(item => ({
+  date: item.weekStart, weight: item.average, count: filteredRecords.value.filter(record => record.date >= item.weekStart && record.date <= item.weekEnd).length
+})))
 const chartRecords = computed(() => chartMode.value === 'weekly' ? weeklyChartRecords.value : dailyChartRecords.value)
-
-const stats = computed(() => {
-  const records = weightStore.weightRecords
-  if (records.length === 0) return { latest: null, min: null, max: null, start: null, diff: null }
-  const sorted = [...records].sort((a, b) => a.date.localeCompare(b.date))
-  const latest = sorted[sorted.length - 1]
-  let min = sorted[0], max = sorted[0]
-  sorted.forEach(r => { if (r.weight < min.weight) min = r; if (r.weight > max.weight) max = r })
-  const diff = (latest.weight - sorted[0].weight).toFixed(1)
-  return { latest, min, max, start: sorted[0], diff }
+const stats = computed(() => ({ latest: sortedRecords.value[0] || null }))
+const latestChange = computed(() => sortedRecords.value.length > 1 ? Number((sortedRecords.value[0].weight - sortedRecords.value[1].weight).toFixed(1)) : null)
+const sevenDayAverage = computed(() => {
+  const days = calculateDailyAverages(filterWeightRange(weightStore.weightRecords, 7))
+  return days.length ? (days.reduce((sum, day) => sum + day.weight, 0) / days.length).toFixed(1) : null
 })
+const showChartMarkers = computed(() => chartRecords.value.length <= 1 || (filterSegment.value !== 90 && filterSegment.value !== 0 && chartRecords.value.length <= 12))
+watch([chartRecords, chartMode], () => { selectedPoint.value = null })
 
 const bmi = computed(() => calculateBmi(stats.value.latest?.weight, settingsStore.heightCm))
 const targetGap = computed(() => {
@@ -143,14 +82,6 @@ const targetGapText = computed(() => {
   return targetGap.value > 0 ? `相差 ${targetGap.value} kg` : `低于目标 ${Math.abs(targetGap.value)} kg`
 })
 
-const weeklyChangeText = computed(() => {
-  const item = latestWeeklyAverage.value
-  if (!item) return '暂无周均数据'
-  if (item.change === null) return `${item.days} 天记录`
-  if (Math.abs(item.change) < 0.05) return `较前一周稳定 · ${item.days} 天`
-  return `较前一周${item.change > 0 ? '+' : ''}${item.change} kg · ${item.days} 天`
-})
-
 const CHART_PADDING = { top: 20, right: 16, bottom: 28, left: 44 }
 const CHART_W = 300, CHART_H = 160
 const plotW = CHART_W - CHART_PADDING.left - CHART_PADDING.right
@@ -158,14 +89,14 @@ const plotH = CHART_H - CHART_PADDING.top - CHART_PADDING.bottom
 
 const chartPoints = computed(() => {
   const records = chartRecords.value
-  if (records.length < 2) return null
+  if (!records.length) return null
   const weights = records.map(r => r.weight)
   const minW = Math.min(...weights), maxW = Math.max(...weights), range = maxW - minW || 1
   const yMin = minW - range * 0.15, yMax = maxW + range * 0.15, yRange = yMax - yMin || 1
   const points = records.map((r, i) => ({
-    x: CHART_PADDING.left + (i / (records.length - 1)) * plotW,
+    x: CHART_PADDING.left + (records.length === 1 ? .5 : (Date.parse(r.date) - Date.parse(records[0].date)) / (Date.parse(records[records.length - 1].date) - Date.parse(records[0].date) || 1)) * plotW,
     y: CHART_PADDING.top + ((yMax - r.weight) / yRange) * plotH,
-    weight: r.weight, date: r.date, isFirst: i === 0, isLast: i === records.length - 1
+    weight: r.weight, date: r.date, count: r.count, isFirst: i === 0, isLast: i === records.length - 1
   }))
   return { points, yMin: Math.round(yMin * 10) / 10, yMax: Math.round(yMax * 10) / 10, firstDate: records[0].date, lastDate: records[records.length - 1].date }
 })
@@ -182,33 +113,23 @@ const chartAreaPath = computed(() => {
 })
 
 const formatDateShort = (dateStr) => { const d = new Date(dateStr + 'T00:00:00'); return `${d.getMonth() + 1}/${d.getDate()}` }
-const formatWeekRange = item => item ? `${formatDateShort(item.weekStart)}—${formatDateShort(item.weekEnd)}` : ''
-
-const openAddModal = () => { editDate.value = getTodayStr(); editWeight.value = null; editNote.value = ''; showAddModal.value = true }
-
-const openHealthModal = () => { showHealthModal.value = true }
-
-const saveHealthSettings = () => {
-  const raw = healthForm.value
-  const height = Number(raw.heightCm)
-  const target = Number(raw.targetWeight)
-  const threshold = Number(raw.weightChangeThreshold)
-  if (raw.heightCm !== '' && (!Number.isFinite(height) || height < 80 || height > 250)) return appAlert('身高请输入 80—250 cm')
-  if (raw.targetWeight !== '' && (!Number.isFinite(target) || target < 20 || target > 300)) return appAlert('目标体重请输入 20—300 kg')
-  if (raw.weightChangeReminderEnabled && (!Number.isFinite(threshold) || threshold < 0.1 || threshold > 20)) return appAlert('变化提醒阈值请输入 0.1—20 kg')
-  settingsStore.updateHealthSettings(normalizeHealthSettings(raw))
-  showHealthModal.value = false
-}
+const currentTime = () => new Date().toTimeString().slice(0, 5)
+const openAddModal = () => { editingId.value = null; editDate.value = getTodayStr(); editTime.value = currentTime(); editWeight.value = null; editNote.value = ''; showAddModal.value = true }
+const editRecord = record => { editingId.value = record.id; editDate.value = record.date; editTime.value = normalizeWeightTime(record.time); editWeight.value = record.weight; editNote.value = record.note || ''; showAddModal.value = true }
+const stepWeight = delta => { editWeight.value = Math.max(20, Math.min(300, Number((Number(editWeight.value || stats.value.latest?.weight || 60) + delta).toFixed(1)))) }
 
 const saveRecord = async () => {
+  changeNotice.value = null
   if (!editDate.value) return appAlert('请选择日期')
   if (editWeight.value === null || editWeight.value === '' || isNaN(editWeight.value)) return appAlert('请填写有效体重')
   if (editWeight.value < 20 || editWeight.value > 300) return appAlert('体重数值似乎不合理（20-300 kg）')
-  const record = { id: Date.now().toString(), date: editDate.value, weight: Number(editWeight.value), note: editNote.value || '' }
+  if (editTime.value && !normalizeWeightTime(editTime.value)) return appAlert('请选择有效时间')
+  const record = { id: editingId.value || `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`, date: editDate.value, time: normalizeWeightTime(editTime.value), weight: Number(Number(editWeight.value).toFixed(1)), note: editNote.value || '' }
   const notice = settingsStore.weightChangeReminderEnabled
     ? calculateWeightChangeNotice(weightStore.weightRecords, record, settingsStore.weightChangeThreshold)
     : null
-  weightStore.addRecord(record)
+  if (editingId.value) weightStore.updateRecord(editingId.value, record)
+  else weightStore.addRecord(record)
   showAddModal.value = false
   if (notice) {
     changeNotice.value = notice
@@ -228,6 +149,7 @@ const deleteRecord = async (record) => {
     destructive: true
   })) return
   weightStore.deleteRecord(record.id)
+  changeNotice.value = null
 }
 
 const formatDate = (dateStr) => {
@@ -237,9 +159,9 @@ const formatDate = (dateStr) => {
 }
 
 const getTrend = (record) => {
-  const recordIndex = filteredRecords.value.findIndex(item => item.id === record.id)
-  if (recordIndex < 0 || recordIndex >= filteredRecords.value.length - 1) return ''
-  const next = filteredRecords.value[recordIndex + 1]
+  const recordIndex = sortedRecords.value.findIndex(item => item.id === record.id)
+  if (recordIndex < 0 || recordIndex >= sortedRecords.value.length - 1) return ''
+  const next = sortedRecords.value[recordIndex + 1]
   if (!next) return ''
   const diff = record.weight - next.weight
   return diff > 0 ? 'up' : diff < 0 ? 'down' : 'flat'
@@ -248,11 +170,14 @@ const getTrend = (record) => {
 
 <template>
 <div class="fade-in weight-container">
+  <section class="weight-hero">
+    <div><span class="stat-label">最新体重</span><div class="hero-value">{{ stats.latest ? stats.latest.weight : '--' }} <small>kg</small></div><p class="caption body-muted">{{ stats.latest ? `${stats.latest.date} · ${stats.latest.time || '未记录时间'}` : '从第一次记录开始' }}</p><p class="caption">{{ latestChange === null ? '记录两次后显示变化' : `较上次 ${latestChange > 0 ? '+' : ''}${latestChange.toFixed(1)} kg` }}</p></div>
+    <button class="button-primary" @click="openAddModal">＋ 记录体重</button>
+  </section>
   <div class="stats-grid">
-    <div class="stat-card"><span class="stat-label">当前体重</span><span class="stat-value">{{ stats.latest ? stats.latest.weight + ' kg' : '--' }}</span></div>
-    <div class="stat-card"><span class="stat-label">目标体重</span><span class="stat-value">{{ settingsStore.targetWeight !== null ? settingsStore.targetWeight + ' kg' : '--' }}</span><span class="stat-detail">{{ targetGapText }}</span></div>
+    <div class="stat-card"><span class="stat-label">目标差距</span><span class="stat-value">{{ targetGap === null ? '--' : `${Math.abs(targetGap)} kg` }}</span><span class="stat-detail">{{ targetGapText }}</span></div>
+    <div class="stat-card"><span class="stat-label">近 7 天均重</span><span class="stat-value">{{ sevenDayAverage ? sevenDayAverage + ' kg' : '--' }}</span><span class="stat-detail">按有记录的每日均值计算</span></div>
     <div class="stat-card"><span class="stat-label">BMI</span><span class="stat-value">{{ bmi ? bmi.value : '--' }}</span><span class="stat-detail">{{ bmi ? bmi.label + ' · 仅供参考' : '填写身高后计算' }}</span></div>
-    <div class="stat-card"><span class="stat-label">最近记录周均重</span><span class="stat-value">{{ latestWeeklyAverage ? latestWeeklyAverage.average + ' kg' : '--' }}</span><span class="stat-detail">{{ latestWeeklyAverage ? formatWeekRange(latestWeeklyAverage) + ' · ' + weeklyChangeText : weeklyChangeText }}</span></div>
   </div>
 
   <button class="health-settings-button" @click="settingsStore.openModuleSettings('weight')">
@@ -265,41 +190,42 @@ const getTrend = (record) => {
     <button aria-label="关闭提醒" @click="changeNotice = null">×</button>
   </div>
 
-  <div class="chart-card" v-if="chartPoints && chartPoints.points.length >= 2">
+  <div class="chart-card">
+    <div class="segment-control weight-range"><button v-for="range in [7, 30, 90, 0]" :key="range" :class="{ active: filterSegment === range }" @click="filterSegment = range">{{ range ? `近 ${range} 天` : '全部' }}</button></div>
     <div class="chart-header">
-      <div><span class="chart-title">{{ chartMode === 'weekly' ? '周平均趋势' : '每日体重趋势' }}</span><span class="chart-range" v-if="chartPoints.firstDate !== chartPoints.lastDate">{{ formatDateShort(chartPoints.firstDate) }} — {{ formatDateShort(chartPoints.lastDate) }}</span></div>
+      <div><span class="chart-title">{{ chartMode === 'weekly' ? '周平均趋势' : '每日体重趋势' }}</span><span class="chart-range" v-if="chartPoints && chartPoints.firstDate !== chartPoints.lastDate">{{ formatDateShort(chartPoints.firstDate) }} — {{ formatDateShort(chartPoints.lastDate) }}</span></div>
       <div class="chart-mode-control"><button :class="{ active: chartMode === 'weekly' }" @click="chartMode = 'weekly'">周均</button><button :class="{ active: chartMode === 'daily' }" @click="chartMode = 'daily'">每日</button></div>
     </div>
-    <div class="chart-svg-wrapper">
+    <div v-if="chartPoints" class="chart-svg-wrapper">
       <svg viewBox="0 0 300 160" class="weight-chart">
         <line x1="44" :y1="CHART_PADDING.top" x2="44" :y2="CHART_PADDING.top+plotH" stroke="#e0e0e0" stroke-width="1" />
         <line :x1="CHART_PADDING.left" :y1="CHART_PADDING.top+plotH" :x2="CHART_PADDING.left+plotW" :y2="CHART_PADDING.top+plotH" stroke="#e0e0e0" stroke-width="1" />
               <defs><linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="var(--primary)" stop-opacity="0.15" /><stop offset="100%" stop-color="var(--primary)" stop-opacity="0.02" /></linearGradient></defs>
         <path :d="chartAreaPath" fill="url(#areaGrad)" />
               <path :d="chartLinePath" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-              <circle v-for="p in chartPoints.points" :key="p.date" :cx="p.x" :cy="p.y" r="3.5" fill="var(--primary)" stroke="#fff" stroke-width="1.5" />
+              <template v-if="showChartMarkers"><circle v-for="p in chartPoints.points" :key="p.date" :cx="p.x" :cy="p.y" r="3.5" fill="var(--primary)" stroke="#fff" stroke-width="1.5" tabindex="0" role="button" :aria-label="`${p.date} 均重 ${p.weight} kg，${p.count} 次记录`" @click="selectedPoint = p" @keydown.enter="selectedPoint = p" /></template>
         <text :x="chartPoints.points[0].x" :y="CHART_PADDING.top+plotH+16" text-anchor="start" class="chart-label">{{ formatDateShort(chartPoints.firstDate) }}</text>
         <text :x="chartPoints.points[chartPoints.points.length-1].x" :y="CHART_PADDING.top+plotH+16" text-anchor="end" class="chart-label">{{ formatDateShort(chartPoints.lastDate) }}</text>
         <template v-for="p in chartPoints.points" :key="'lb-'+p.date">
-          <text v-if="p.isFirst || p.isLast || p.weight === chartPoints.yMax || p.weight === chartPoints.yMin" :x="p.x" :y="p.y - 8" text-anchor="middle" class="chart-weight-label">{{ p.weight }}</text>
+          <text v-if="showChartMarkers && (p.isFirst || p.isLast)" :x="p.x" :y="p.y - 8" text-anchor="middle" class="chart-weight-label">{{ p.weight }}</text>
         </template>
       </svg>
     </div>
+    <p v-if="!chartPoints" class="chart-note">这个时间范围内还没有记录。</p>
+    <p v-if="selectedPoint" class="chart-note" role="status">{{ selectedPoint.date }}{{ chartMode === 'weekly' ? ' 起的一周' : '' }} · 均重 {{ selectedPoint.weight }} kg · {{ selectedPoint.count }} 次记录</p>
     <p v-if="chartMode === 'weekly'" class="chart-note">同一天多次称重会先求日均，再计算自然周平均，减少单次波动影响。</p>
   </div>
 
-  <div class="segment-row">
-    <div class="segment-control"><button :class="{ active: filterSegment === 'all' }" @click="filterSegment = 'all'">全部</button><button :class="{ active: filterSegment === 'month' }" @click="filterSegment = 'month'">近一月</button><button :class="{ active: filterSegment === 'week' }" @click="filterSegment = 'week'">近一周</button></div>
-    <button class="button-primary add-btn" @click="openAddModal">+ 记录</button>
-  </div>
-
-  <div v-if="filteredRecords.length === 0" class="empty-state">
+  <div class="history-heading"><strong>全部体重记录</strong><span class="caption body-muted">共 {{ sortedRecords.length }} 条 · 每页 {{ WEIGHT_PAGE_SIZE }} 条</span></div>
+  <div v-if="sortedRecords.length === 0" class="empty-state">
     <p class="body-text body-muted">还没有体重记录</p>
     <p class="caption body-muted">点击上方按钮添加第一条记录</p>
   </div>
 
   <div v-else class="record-list">
-    <div v-for="record in paginatedWeightRecords" :key="record.id" class="record-item">
+    <section v-for="group in groupedRecords" :key="group.date" class="weight-day-group">
+    <h3 class="caption body-muted">{{ formatDate(group.date) }}</h3>
+    <div v-for="record in group.records" :key="record.id" class="record-item">
       <div class="record-main">
         <div class="record-left">
           <div class="record-weight">
@@ -311,14 +237,16 @@ const getTrend = (record) => {
           <div class="record-note" v-if="record.note">{{ record.note }}</div>
         </div>
         <div class="record-right">
-          <span class="record-date">{{ formatDate(record.date) }}</span>
-          <button class="delete-btn" @click="deleteRecord(record)"><svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"><path d="M4 7h16M10 11v6M14 11v6M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2l1-12M9 7V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v3"/></svg></button>
+          <span class="record-date">{{ record.time || '未记录时间' }}</span>
+          <div class="record-actions"><button class="text-link" @click="editRecord(record)">编辑</button>
+          <button class="delete-btn" aria-label="删除体重记录" @click="deleteRecord(record)"><svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"><path d="M4 7h16M10 11v6M14 11v6M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2l1-12M9 7V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v3"/></svg></button></div>
         </div>
       </div>
     </div>
+    </section>
   </div>
 
-  <div class="pagination-bar" v-if="totalWeightPages > 1">
+  <div class="pagination-bar" v-if="sortedRecords.length">
     <button class="page-btn" :disabled="weightPage === 1" @click="weightPage--">‹ 上一页</button>
     <span class="page-info">{{ weightPage }} / {{ totalWeightPages }}</span>
     <button class="page-btn" :disabled="weightPage === totalWeightPages" @click="weightPage++">下一页 ›</button>
@@ -327,33 +255,22 @@ const getTrend = (record) => {
   <Teleport to="body">
     <div class="modal-overlay" v-if="showAddModal" @click="showAddModal = false"></div>
     <div class="modal-panel" v-if="showAddModal">
-      <h3 class="body-strong" style="margin: 0 0 20px 0;">记录体重</h3>
+      <h3 class="body-strong" style="margin: 0 0 20px 0;">{{ editingId ? '编辑体重' : '记录体重' }}</h3>
       <div class="input-group"><label class="caption">日期</label><AppDateField v-model="editDate" class="apple-input" aria-label="选择体重记录日期" /></div>
-      <div class="input-group"><label class="caption">体重 (kg)</label><input type="number" step="0.1" v-model="editWeight" class="apple-input" placeholder="例如：65.5" @keyup.enter="saveRecord" /></div>
-      <div class="input-group"><label class="caption">备注（可选）</label><input v-model="editNote" class="apple-input" placeholder="例如：晨起空腹" /></div>
+      <div class="input-group"><label class="caption">时间（可选）</label><div class="weight-stepper"><AppTimeField v-model="editTime" empty-label="未记录时间" class="apple-input" aria-label="测量时间" /><button class="text-link" @click="editTime = ''">清空</button></div></div>
+      <div class="input-group"><label class="caption">体重 (kg)</label><div class="weight-stepper"><button class="button-secondary-pill" aria-label="减 0.1 kg" @click="stepWeight(-0.1)">−</button><input type="number" inputmode="decimal" step="0.1" v-model="editWeight" class="apple-input" placeholder="例如：65.5" aria-label="体重 kg" @keyup.enter="saveRecord" /><button class="button-secondary-pill" aria-label="加 0.1 kg" @click="stepWeight(0.1)">＋</button></div></div>
+      <div class="input-group"><label class="caption">备注（可选）</label><CommonNoteField v-model="editNote" scope="weight" placeholder="例如：晨起空腹" /></div>
       <div style="display: flex; gap: 12px; margin-top: 24px;"><button class="button-primary" style="flex:1" @click="saveRecord">保存</button><button class="button-secondary-pill" style="flex:1" @click="showAddModal = false">取消</button></div>
     </div>
   </Teleport>
 
-  <Teleport to="body">
-    <div class="modal-overlay" v-if="showHealthModal" @click="showHealthModal = false"></div>
-    <div class="modal-panel" v-if="showHealthModal">
-      <h3 class="body-strong" style="margin: 0 0 8px 0;">健康与趋势设置</h3>
-      <p class="caption body-muted health-modal-note">BMI 仅用于观察趋势，不能替代专业健康评估。</p>
-      <div class="health-input-grid">
-        <div class="input-group"><label class="caption">身高 (cm)</label><input type="number" min="80" max="250" step="0.1" v-model="healthForm.heightCm" class="apple-input" placeholder="例如：170" /></div>
-        <div class="input-group"><label class="caption">目标体重 (kg)</label><input type="number" min="20" max="300" step="0.1" v-model="healthForm.targetWeight" class="apple-input" placeholder="例如：60" /></div>
-      </div>
-      <label class="weight-reminder-option"><input v-model="healthForm.weightChangeReminderEnabled" type="checkbox" /><span><strong>体重变化提醒</strong><small>与上一条有效记录的变化达到阈值时提醒</small></span></label>
-      <div class="input-group" v-if="healthForm.weightChangeReminderEnabled"><label class="caption">提醒阈值 (kg)</label><input type="number" min="0.1" max="20" step="0.1" v-model="healthForm.weightChangeThreshold" class="apple-input" /></div>
-      <p class="caption body-muted health-modal-note">页面内提醒始终可用；系统通知只在你已经授予通知权限时发送。</p>
-      <div style="display: flex; gap: 12px; margin-top: 24px;"><button class="button-primary" style="flex:1" @click="saveHealthSettings">保存设置</button><button class="button-secondary-pill" style="flex:1" @click="showHealthModal = false">取消</button></div>
-    </div>
-  </Teleport>
+
 </div>
 </template>
 
 <style scoped>
+.weight-hero { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; padding:20px; border:1px solid var(--hairline); border-radius:18px; background:var(--canvas); }.hero-value { font-size:40px; font-weight:700; margin-top:8px; }.hero-value small { font-size:16px; font-weight:400; }.weight-hero p { margin:6px 0; }.weight-range { margin-bottom:16px; }.weight-range button { flex:1; padding:10px 6px!important; }.weight-stepper { display:flex; align-items:center; gap:8px; }.weight-stepper .apple-input { min-width:0; flex:1; }.weight-stepper > .text-link { white-space:nowrap; flex-shrink:0; }.weight-stepper button { min-width:44px; min-height:44px; padding:6px; }.weight-day-group h3 { margin:4px 0 10px; }.weight-day-group + .weight-day-group { margin-top:18px; }.weight-chart circle { cursor:pointer; }.stats-grid .stat-card:last-child { grid-column:1/-1; flex-direction:row; align-items:center; gap:10px; padding:12px 16px; }.stats-grid .stat-card:last-child .stat-detail { margin-left:auto; text-align:right; }.modal-panel { max-height:85dvh; overflow:auto; }
+
 .weight-container { display: flex; flex-direction: column; gap: 20px; }
 .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .stat-card { background: var(--canvas); border: 1px solid var(--hairline); border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 6px; }
@@ -427,4 +344,26 @@ const getTrend = (record) => {
   .health-input-grid { grid-template-columns: 1fr; gap: 0; }
   .chart-header { align-items: flex-start; }
 }
+
+/* Keep date groups and record controls compact without reducing touch targets. */
+.weight-container { gap:12px; }
+.weight-hero { padding:14px; gap:8px; }
+.hero-value { font-size:34px; margin-top:4px; }
+.stats-grid { gap:8px; }
+.stat-card { padding:12px; gap:4px; }
+.health-settings-button { padding:10px 14px; }
+.history-heading { display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap; }
+.weight-day-group h3 { margin:0 0 4px; font-size:12px; }
+.weight-day-group + .weight-day-group { margin-top:8px; }
+.record-list { gap:0; }
+.record-item { padding:8px 12px; border-radius:12px; margin-bottom:4px; }
+.record-main { gap:8px; }
+.record-left { min-width:0; }
+.record-right { gap:0; flex-shrink:0; }
+.record-actions { display:flex; align-items:center; gap:4px; }
+.record-actions button { min-width:44px; min-height:44px; padding:4px; }
+.weight-num { font-size:23px; }
+.record-note { font-size:12px; line-height:1.4; margin-top:2px; overflow-wrap:anywhere; }
+.record-date { font-size:11px; }
+.pagination-bar { margin-top:4px; }
 </style>

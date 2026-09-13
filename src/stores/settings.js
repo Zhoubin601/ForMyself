@@ -1,3 +1,4 @@
+import { normalizeCommonNotes } from '../services/commonNotes.js'
 import { defineStore } from 'pinia'
 import { ref, computed, watch } from 'vue'
 import { Capacitor } from '@capacitor/core'
@@ -27,6 +28,7 @@ import {
 
 export const useSettingsStore = defineStore('settings', () => {
   const bannerSettings = ref({ prefix: '你已经省下了', suffix: '元', subtitle: '可喜可贺，继续保持。✨', titleSize: 38 })
+  const commonNotes = ref(normalizeCommonNotes())
   const customBg = ref('')
   const themeSettings = ref(normalizeThemeSettings())
   const themeCssVariables = computed(() => buildThemeCssVariables(themeSettings.value))
@@ -185,6 +187,8 @@ export const useSettingsStore = defineStore('settings', () => {
       if (notificationAiRes.value) {
         notificationAiContent.value = normalizeNotificationAiCache(JSON.parse(notificationAiRes.value))
       }
+      const notesResult = await Preferences.get({ key: STORAGE_KEYS.commonNotes })
+      commonNotes.value = normalizeCommonNotes(notesResult.value ? JSON.parse(notesResult.value) : {})
       const healthRes = await Preferences.get({ key: STORAGE_KEYS.healthSettings })
       if (healthRes.value) {
         const health = normalizeHealthSettings(JSON.parse(healthRes.value))
@@ -333,7 +337,10 @@ export const useSettingsStore = defineStore('settings', () => {
     weightChangeThreshold.value = health.weightChangeThreshold
   }
 
+  watch(commonNotes, value => queuePreferenceWrite(STORAGE_KEYS.commonNotes, JSON.stringify(value), 0), { deep: true })
+
   const getBackupSnapshot = () => ({
+    commonNotes: normalizeCommonNotes(commonNotes.value),
     banner: { ...bannerSettings.value },
     customBg: customBg.value,
     theme: { ...themeSettings.value },
@@ -360,6 +367,7 @@ export const useSettingsStore = defineStore('settings', () => {
 
   const restoreBackupSnapshot = async (value) => {
     const backup = normalizeFullBackupSettings(value)
+    commonNotes.value = backup.commonNotes
     bannerSettings.value = backup.banner
     customBg.value = backup.customBg
     themeSettings.value = backup.theme
@@ -375,6 +383,7 @@ export const useSettingsStore = defineStore('settings', () => {
     lastEncouragement.value = backup.homeCache.lastEncouragement
 
     const writes = [
+      Preferences.set({ key: STORAGE_KEYS.commonNotes, value: JSON.stringify(backup.commonNotes) }),
       Preferences.set({ key: STORAGE_KEYS.bannerSettings, value: JSON.stringify(backup.banner) }),
       Preferences.set({ key: STORAGE_KEYS.themeSettings, value: JSON.stringify(backup.theme) }),
       Preferences.set({
@@ -405,5 +414,5 @@ export const useSettingsStore = defineStore('settings', () => {
     return backup
   }
 
-  return { bannerSettings, customBg, themeSettings, themeCssVariables, currentView, settingsScope, settingsSection, settingsReturnView, scheduleTarget, isDrawerOpen, navigationStack, navigationRevision, currentRoute, currentRouteKey, canGoBack, isDataLoaded, viewTitle, cachedQuote, dataFingerprint, lastEncouragement, aiProviderUrl, aiApiKey, aiModel, autoLockDelaySeconds, notificationSettings, notificationAiContent, targetWeight, heightCm, weightChangeReminderEnabled, weightChangeThreshold, loadSettings, flushPendingSettingsWrites, navigate, replaceRoute, goBack, updateLastHistoryScroll, updateCurrentRouteScroll, switchView, openGeneralSettingsSection, closeGeneralSettingsSection, openModuleSettings, closeModuleSettings, openScheduleTarget, updateBanner, updateBg, updateThemeSettings, updateHealthSettings, getBackupSnapshot, restoreBackupSnapshot }
+  return { commonNotes, bannerSettings, customBg, themeSettings, themeCssVariables, currentView, settingsScope, settingsSection, settingsReturnView, scheduleTarget, isDrawerOpen, navigationStack, navigationRevision, currentRoute, currentRouteKey, canGoBack, isDataLoaded, viewTitle, cachedQuote, dataFingerprint, lastEncouragement, aiProviderUrl, aiApiKey, aiModel, autoLockDelaySeconds, notificationSettings, notificationAiContent, targetWeight, heightCm, weightChangeReminderEnabled, weightChangeThreshold, loadSettings, flushPendingSettingsWrites, navigate, replaceRoute, goBack, updateLastHistoryScroll, updateCurrentRouteScroll, switchView, openGeneralSettingsSection, closeGeneralSettingsSection, openModuleSettings, closeModuleSettings, openScheduleTarget, updateBanner, updateBg, updateThemeSettings, updateHealthSettings, getBackupSnapshot, restoreBackupSnapshot }
 })

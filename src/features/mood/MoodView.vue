@@ -51,7 +51,7 @@ const nextMonth = () => {
 
 const getRecordsForDay = (day) => {
   const dateStr = `${currentYear.value}-${String(currentMonth.value).padStart(2, '0')}-${String(day).padStart(2, '0')}`
-  return moodStore.getRecordsByDate(dateStr)
+  return moodStore.getDayDisplayRecords(dateStr)
 }
 
 const getMoodEmoji = (day) => {
@@ -60,7 +60,7 @@ const getMoodEmoji = (day) => {
   return moodStore.getMoodDefinition(record.mood)?.emoji || null
 }
 
-const getEventCount = day => getRecordsForDay(day).length
+const getEventCount = day => getRecordsForDay(day).filter(record => !record.autoFilled).length
 
 const monthRecords = computed(() => {
   const prefix = `${currentYear.value}-${String(currentMonth.value).padStart(2, '0')}`
@@ -93,16 +93,23 @@ watch(totalMoodPages, (n) => {
 
 // --- 弹窗 ---
 const showModal = ref(false)
+const selectedDate = ref('')
+const dayRecords = computed(() => moodStore.getDayDisplayRecords(selectedDate.value))
+const dayManualCount = computed(() => dayRecords.value.filter(record => !record.autoFilled).length)
+const addForDay = () => { resetEditor(selectedDate.value); showModal.value = true }
+const recordTime = record => record.createdAt ? new Date(record.createdAt).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }) : '未记录时间'
+
 const unregisterBackHandler = registerBackHandler(() => {
-  if (activeEcho.value) { activeEcho.value = null; return true }
+  if (activeEcho.value) { closeEcho(); return true }
   if (showModal.value) { showModal.value = false; return true }
+  if (selectedDate.value) { selectedDate.value = ''; return true }
   return false
-}, { priority: 500, isActive: () => Boolean(activeEcho.value || showModal.value) })
+}, { priority: 500, isActive: () => Boolean(activeEcho.value || showModal.value || selectedDate.value) })
 onBeforeUnmount(unregisterBackHandler)
 const editDate = ref('')
 const editMood = ref('normal')
 const editNote = ref('')
-const editTags = ref(['学习'])
+const editTags = ref([])
 const customTagInput = ref('')
 const editingId = ref(null)
 
@@ -119,13 +126,14 @@ const resetEditor = (date) => {
   editDate.value = date
   editMood.value = moodStore.defaultMoodDefinition.id
   editNote.value = ''
-  editTags.value = ['学习']
+  editTags.value = [...moodStore.defaultTags]
   customTagInput.value = ''
 }
 
 const openAddModal = () => {
   const n = new Date()
   const today = `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}-${String(n.getDate()).padStart(2, '0')}`
+  selectedDate.value = today
   resetEditor(today)
   showModal.value = true
 }
@@ -133,16 +141,16 @@ const openAddModal = () => {
 const todayRecords = computed(() => {
   const n = new Date()
   const today = `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}-${String(n.getDate()).padStart(2, '0')}`
-  return moodStore.getRecordsByDate(today)
+  return moodStore.getRecordsByDate(today).filter(record => !record.autoFilled)
 })
 
 const handleDayClick = (day) => {
   const dateStr = `${currentYear.value}-${String(currentMonth.value).padStart(2, '0')}-${String(day).padStart(2, '0')}`
-  resetEditor(dateStr)
-  showModal.value = true
+  selectedDate.value = dateStr
 }
 
 const editRecord = (record) => {
+  selectedDate.value = record.date
   editingId.value = record.id
   editDate.value = record.date
   editMood.value = record.mood
@@ -155,10 +163,12 @@ const editRecord = (record) => {
 // --- AI 情绪回音壁 ---
 const activeEcho = ref(null)
 const isEchoThinking = ref(false)
+let echoRequest = 0
+const closeEcho = () => { echoRequest++; activeEcho.value = null; isEchoThinking.value = false }
+onBeforeUnmount(closeEcho)
 
 const saveRecord = async () => {
   if (!editDate.value) return appAlert('请选择日期')
-  if (!editTags.value.length) editTags.value = ['学习']
   let savedRecord = null
   if (editingId.value) {
     moodStore.updateRecord(editingId.value, { date: editDate.value, mood: editMood.value, note: editNote.value, tags: editTags.value })
@@ -167,19 +177,23 @@ const saveRecord = async () => {
     savedRecord = moodStore.addRecord(editDate.value, editMood.value, editNote.value, editTags.value)
   }
   showModal.value = false
+  selectedDate.value = editDate.value
+  currentYear.value = Number(editDate.value.slice(0, 4))
+  currentMonth.value = Number(editDate.value.slice(5, 7))
 
   // 有可回应的真实内容时，使用本次记录和近 30 天历史生成专属陪伴。
   if (settingsStore.aiApiKey && savedRecord && (savedRecord.note || savedRecord.mood !== moodStore.defaultMoodDefinition.id)) {
+    const request = ++echoRequest
     activeEcho.value = 'thinking'
     isEchoThinking.value = true
     try {
       const context = buildMoodEchoContext(moodStore.moodRecords, savedRecord, moodStore.moodDefinitions)
       const echoText = await askAI(buildMoodEchoPrompt(context))
-      activeEcho.value = normalizeCompanionReply(echoText, 200)
-    } catch (e) {
-      activeEcho.value = null
+      if (request === echoRequest) activeEcho.value = normalizeCompanionReply(echoText, 200)
+    } catch {
+      if (request === echoRequest) activeEcho.value = null
     } finally {
-      isEchoThinking.value = false
+      if (request === echoRequest) isEchoThinking.value = false
     }
   }
 }
@@ -239,7 +253,7 @@ const isToday = (day) => {
 
       <div class="calendar-grid">
         <div v-for="i in firstDayOffset" :key="'b'+i" class="cal-day empty"></div>
-        <div v-for="day in daysInMonth" :key="day" class="cal-day" :class="{ today: isToday(day) }" @click="handleDayClick(day)">
+        <div v-for="day in daysInMonth" :key="day" role="button" tabindex="0" :aria-label="`${yearMonthLabel}${day}日，${getEventCount(day)}条日记`" @keydown.enter="handleDayClick(day)" @keydown.space.prevent="handleDayClick(day)" class="cal-day" :class="{ today: isToday(day) }" @click="handleDayClick(day)">
           <span class="cal-day-num">{{ day }}</span>
           <span class="cal-day-mood" v-if="getMoodEmoji(day)">
             {{ getMoodEmoji(day) }}<small v-if="getEventCount(day) > 1">×{{ getEventCount(day) }}</small>
@@ -300,6 +314,22 @@ const isToday = (day) => {
 
     <!-- 弹窗 -->
     <Teleport to="body">
+      <template v-if="selectedDate && !showModal && !activeEcho">
+        <div class="modal-overlay" @click="selectedDate = ''"></div>
+        <section class="modal-panel mood-day-panel" role="dialog" aria-modal="true" aria-labelledby="mood-day-title">
+          <header class="day-heading"><div><h3 id="mood-day-title">{{ selectedDate }} 的日记</h3><p class="caption body-muted">{{ dayManualCount }} 条日记</p></div><button class="text-link" aria-label="关闭当天日记" @click="selectedDate = ''">关闭</button></header>
+          <button class="button-primary" @click="addForDay">＋ 新增当天日记</button>
+          <p v-if="!dayManualCount" class="caption body-muted">这一天还没有日记，可以补记当时的心情。</p>
+          <article v-for="record in dayRecords" :key="record.id" class="day-record" :class="{ 'auto-record': record.autoFilled }">
+            <div class="day-record-title"><strong>{{ getMoodInfo(record.mood).emoji }} {{ getMoodInfo(record.mood).label }}</strong><small v-if="!record.autoFilled">{{ recordTime(record) }}</small></div>
+            <p v-if="record.note" class="day-note">{{ record.note }}</p><p v-if="record.tags?.length" class="caption body-muted">{{ record.tags.join(' · ') }}</p>
+            <div class="day-record-actions"><button class="text-link" @click="record.autoFilled ? addForDay() : editRecord(record)">{{ record.autoFilled ? '补写日记' : '编辑' }}</button><button v-if="!record.autoFilled" class="text-link danger-text" @click="deleteRecord(record)">删除</button></div>
+          </article>
+        </section>
+      </template>
+    </Teleport>
+
+    <Teleport to="body">
       <div v-if="showModal" class="modal-overlay" @click="showModal = false"></div>
       <div v-if="showModal" class="modal-panel">
         <h3 class="body-strong" style="margin: 0 0 20px 0;">{{ editingId ? '编辑心情事件' : '记录一个心情事件' }}</h3>
@@ -310,7 +340,7 @@ const isToday = (day) => {
         </div>
 
         <div class="input-group">
-          <label class="caption">今天的心情</label>
+          <label class="caption">这一天的心情</label>
           <div class="mood-selector">
             <div v-for="opt in editorMoodOptions" :key="opt.id" class="mood-option" :class="{ selected: editMood === opt.id }" @click="selectMood(opt.id)">
               <span class="mood-emoji">{{ opt.emoji }}</span>
@@ -341,7 +371,7 @@ const isToday = (day) => {
             />
             <button type="button" class="button-secondary-pill custom-tag-add" @click="createCustomTag">添加</button>
           </div>
-          <p v-if="!editTags.length" class="tag-hint">未选择时保存将默认使用“学习”</p>
+          <p v-if="!editTags.length" class="tag-hint">未选择标签，保存后将保留为空</p>
         </div>
 
         <div class="input-group">
@@ -366,7 +396,7 @@ const isToday = (day) => {
             <p v-if="isEchoThinking" class="echo-thinking">你的专属女孩正在认真听...</p>
             <p v-else>{{ activeEcho }}</p>
           </div>
-          <button class="echo-close" @click="activeEcho = null">×</button>
+          <button class="echo-close" @click="closeEcho">×</button>
         </div>
       </Transition>
     </Teleport>
@@ -375,6 +405,8 @@ const isToday = (day) => {
 </template>
 
 <style scoped>
+.mood-day-panel { max-height:80dvh; overflow:auto; }.day-heading { display:flex; justify-content:space-between; gap:12px; }.day-heading h3 { margin:0; font-size:17px; }.day-record { margin-top:12px; padding:12px; border:1px solid var(--hairline); border-radius:14px; }.day-record-title { display:flex; flex-wrap:wrap; gap:8px; justify-content:space-between; }.day-record-title small { color:var(--body-muted); font-size:11px; }.day-record-actions { display:flex; gap:20px; }.day-record-actions button { min-height:44px; }.day-note { white-space:pre-wrap; overflow-wrap:anywhere; font-size:14px; line-height:1.6; }.auto-record { opacity:.7; }
+
 .mood-container { display: flex; flex-direction: column; gap: 16px; }
 
 .calendar-card { background: var(--canvas); border: 1px solid var(--hairline); border-radius: 18px; padding: 20px 16px; }

@@ -24,6 +24,8 @@ export function useCatalogSettings({ newScheduleCategoryColor }) {
   const newScheduleCategory = ref('')
   const newMoodLabel = ref('')
   const newMoodEmoji = ref('😊')
+  const newMoodPriority = ref(0)
+  const editMoodPriority = ref(0)
   const newMoodColor = ref('#FF9F43')
   const editingMoodId = ref('')
   const editMoodLabel = ref('')
@@ -40,6 +42,7 @@ export function useCatalogSettings({ newScheduleCategoryColor }) {
   }
 
   const moodDefinitionError = reason => ({
+    INVALID_PRIORITY: '显示优先级请输入 0–999 的整数',
     INVALID_LABEL: '请输入 1–12 个字符的心情名称',
     INVALID_EMOJI: '请输入一个完整的系统 Emoji',
     INVALID_COLOR: '请输入有效的 HEX 颜色，例如 #FF9F43',
@@ -53,9 +56,11 @@ export function useCatalogSettings({ newScheduleCategoryColor }) {
     const result = moodStore.addMoodDefinition({
       label: newMoodLabel.value,
       emoji: newMoodEmoji.value,
+      displayPriority: newMoodPriority.value,
       color: newMoodColor.value
     })
     if (!result.ok) return appAlert(moodDefinitionError(result.reason))
+    newMoodPriority.value = 0
     newMoodLabel.value = ''
     newMoodEmoji.value = '😊'
     newMoodColor.value = '#FF9F43'
@@ -63,6 +68,7 @@ export function useCatalogSettings({ newScheduleCategoryColor }) {
   }
 
   const beginEditMoodDefinition = definition => {
+    editMoodPriority.value = definition.displayPriority || 0
     editingMoodId.value = definition.id
     editMoodLabel.value = definition.label
     editMoodEmoji.value = definition.emoji
@@ -73,6 +79,7 @@ export function useCatalogSettings({ newScheduleCategoryColor }) {
     const result = moodStore.updateMoodDefinition(editingMoodId.value, {
       label: editMoodLabel.value,
       emoji: editMoodEmoji.value,
+      displayPriority: editMoodPriority.value,
       color: editMoodColor.value
     })
     if (!result.ok) return appAlert(moodDefinitionError(result.reason))
@@ -189,6 +196,7 @@ export function useCatalogSettings({ newScheduleCategoryColor }) {
   }
 
   return {
+    newMoodPriority, editMoodPriority,
     appAlert,
     appConfirm,
     appToast,

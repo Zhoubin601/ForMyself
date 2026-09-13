@@ -1,3 +1,4 @@
+import { sortWeightRecords } from '../../services/weightInsights.js'
 import { normalizeMoodDefinitions, normalizeMoodTags, resolveMoodDefinition } from '../mood/moodRecords.js'
 
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/
@@ -106,15 +107,16 @@ export function buildMoodHistory(records = [], referenceDate = new Date(), exclu
 
 export function buildWeightHistory(records = [], referenceDate = new Date()) {
   const date = formatLocalDate(referenceDate)
-  return [...records]
+  return sortWeightRecords(records
     .filter(record => (
       record?.date &&
       Number.isFinite(Number(record.weight)) &&
       isWithinHistory(record.date, date)
     ))
-    .sort(sortByDateAndCreation)
+    ).reverse()
     .map(record => ({
       date: record.date,
+      ...(record.time ? { time: record.time } : {}),
       weight: Number(record.weight),
       note: cleanNote(record.note)
     }))

@@ -1,3 +1,4 @@
+import { sortWeightRecords } from './weightInsights.js'
 export const HOME_WIDGET_SNAPSHOT_VERSION = 1
 
 const localDate = date => {
@@ -23,7 +24,7 @@ export function buildHomeWidgetSnapshot({
   const todayMoods = moodRecords.filter(record => record?.date === today && !record?.autoFilled)
   const currentMood = latestByDate(todayMoods)
   const moodDefinition = moodDefinitions.find(item => item?.id === currentMood?.mood)
-  const currentWeight = latestByDate(weightRecords.filter(record => Number.isFinite(Number(record?.weight))))
+  const currentWeight = sortWeightRecords(weightRecords.filter(record => Number.isFinite(Number(record?.weight))))[0]
   const activeDebts = savedDebts.filter(item => !item?.isCleared)
   const savingsProgress = activeDebts.map(item => {
     const saved = (Array.isArray(item?.records) ? item.records : [])

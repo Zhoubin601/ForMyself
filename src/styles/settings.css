@@ -472,3 +472,12 @@
   .settings-container .chat-memory-row { flex-direction: column; }
   .settings-container .chat-memory-actions { align-self: flex-end; }
 }
+
+/* Editable mood colors and priorities need full-width controls on phones. */
+.settings-container .mood-definition-add,
+.settings-container .mood-definition-editor { grid-template-columns: 56px minmax(0, 1fr); }
+.settings-container .mood-definition-add .priority-field,
+.settings-container .mood-definition-editor .priority-field,
+.settings-container .mood-definition-editor .color-palette { grid-column: 1 / -1; }
+.settings-container .mood-definition-add .taxonomy-add-button { grid-column: 1 / -1; }
+.settings-container .mood-definition-row:has(.mood-definition-editor) { display:block; }

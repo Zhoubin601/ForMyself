@@ -29,9 +29,9 @@ test('兼容单个 tag 字段并规范为可多选 tags 数组', () => {
   assert.equal('tag' in record, false)
 })
 
-test('标签去空白、去重，空标签默认学习', () => {
+test('标签去空白、去重，显式空标签保留为空', () => {
   assert.deepEqual(normalizeMoodTags([' 家庭 ', '家庭', '', '睡眠']), ['家庭', '睡眠'])
-  assert.deepEqual(normalizeMoodTags([]), ['学习'])
+  assert.deepEqual(normalizeMoodTags([]), [])
 })
 
 test('同一天的多个事件在规范化时全部保留', () => {
@@ -83,7 +83,7 @@ test('用户补写真实事件时替换自动补记占位而不重复计数', ()
   assert.equal(sameDay[0].note, '后来补写')
 })
 
-test('删除自定义标签时会同步清理历史记录并为无标签记录回退到学习', () => {
+test('删除自定义标签时会同步清理历史记录并保留无标签记录', () => {
   setActivePinia(createPinia())
   const store = useMoodStore()
   store.updateMoodRecords([
@@ -93,7 +93,7 @@ test('删除自定义标签时会同步清理历史记录并为无标签记录�
 
   assert.equal(store.removeCustomTag('旅行'), true)
   assert.deepEqual(store.moodRecords[0].tags, ['工作'])
-  assert.deepEqual(store.moodRecords[1].tags, [DEFAULT_MOOD_TAG])
+  assert.deepEqual(store.moodRecords[1].tags, [])
   assert.equal(store.customTags.includes('旅行'), false)
   assert.equal(store.removeCustomTag('学习'), false)
 })

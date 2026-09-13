@@ -100,10 +100,10 @@ export function calculateWeightChangeNotice(records = [], newRecord, threshold =
   const weight = Number(newRecord?.weight)
   const date = String(newRecord?.date || '')
   if (!Number.isFinite(weight) || !parseDate(date)) return null
-  const previous = records
-    .map((record, index) => ({ record, index }))
-    .filter(item => item.record?.date && item.record.date <= date && Number.isFinite(Number(item.record.weight)))
-    .sort((a, b) => b.record.date.localeCompare(a.record.date) || b.index - a.index)[0]?.record
+  const previous = sortWeightRecords(records.filter(record =>
+    (!newRecord?.id || record?.id !== newRecord.id) && record?.date && Number.isFinite(Number(record.weight))
+    && compareWeightRecordsNewestFirst(record, newRecord) >= 0
+  ))[0]
   if (!previous) return null
 
   const diff = round(weight - Number(previous.weight))
@@ -128,4 +128,37 @@ export function buildWeightChangeNotification(notice, at = new Date(Date.now() +
     schedule: { at },
     extra: { reminderType: 'weight-change' }
   }
+}
+
+export function normalizeWeightTime(value) {
+  return /^([01]\d|2[0-3]):[0-5]\d$/.test(String(value || '')) ? String(value) : ''
+}
+export function compareWeightRecordsNewestFirst(a, b) {
+  return String(b?.date || '').localeCompare(String(a?.date || ''))
+    || normalizeWeightTime(b?.time).localeCompare(normalizeWeightTime(a?.time))
+}
+export function sortWeightRecords(records = []) {
+  return records.map((record, index) => ({ record, index }))
+    .sort((a, b) => compareWeightRecordsNewestFirst(a.record, b.record) || b.index - a.index)
+    .map(item => item.record)
+}
+export function localWeightDate(date = new Date()) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+}
+export function filterWeightRange(records, days, now = new Date()) {
+  if (!days) return records
+  const start = new Date(now); start.setDate(start.getDate() - Number(days) + 1)
+  const from = localWeightDate(start), through = localWeightDate(now)
+  return records.filter(record => record.date >= from && record.date <= through)
+}
+export function calculateDailyAverages(records = []) {
+  const days = new Map()
+  records.forEach(record => {
+    const weight = Number(record.weight)
+    if (!parseDate(record.date) || !Number.isFinite(weight) || weight < 20 || weight > 300) return
+    const day = days.get(record.date) || { sum: 0, count: 0 }
+    day.sum += weight; day.count++
+    days.set(record.date, day)
+  })
+  return [...days.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([date, day]) => ({ date, weight: round(day.sum / day.count), count: day.count }))
 }

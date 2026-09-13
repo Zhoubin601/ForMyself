@@ -7,6 +7,8 @@ import {
   DEFAULT_MOOD_DEFINITIONS,
   DEFAULT_MOOD_TAG,
   compareMoodRecordsNewestFirst,
+  compareMoodDayRecords,
+  normalizeMoodTagCatalog,
   getDefaultMoodDefinition,
   getCustomMoodTags,
   mergeMoodDefinitions,
@@ -26,6 +28,8 @@ export const useMoodStore = defineStore('mood', () => {
   const isDataLoaded = ref(false)
   const trackingStartDate = ref('')
   const customTags = ref([])
+  const builtInTags = ref([...BUILT_IN_MOOD_TAGS])
+  const defaultTags = ref([DEFAULT_MOOD_TAG])
   const moodDefinitions = ref(DEFAULT_MOOD_DEFINITIONS.map(item => ({ ...item })))
 
   const STORAGE_KEY = STORAGE_KEYS.moodRecords
@@ -45,11 +49,12 @@ export const useMoodStore = defineStore('mood', () => {
 
   const loadMoodRecords = async () => {
     try {
-      const [{ value }, startResult, customTagsResult, definitionsResult] = await Promise.all([
+      const [{ value }, startResult, customTagsResult, definitionsResult, tagSettingsResult] = await Promise.all([
         Preferences.get({ key: STORAGE_KEY }),
         Preferences.get({ key: START_DATE_KEY }),
         Preferences.get({ key: CUSTOM_TAGS_KEY }),
-        Preferences.get({ key: MOOD_DEFINITIONS_KEY })
+        Preferences.get({ key: MOOD_DEFINITIONS_KEY }),
+        Preferences.get({ key: STORAGE_KEYS.moodTagSettings })
       ])
       let parsed = []
       if (value) {
@@ -64,8 +69,11 @@ export const useMoodStore = defineStore('mood', () => {
       moodDefinitions.value = normalizeMoodDefinitions(savedDefinitions, moodRecords.value)
       await Preferences.set({ key: MOOD_DEFINITIONS_KEY, value: JSON.stringify(moodDefinitions.value) })
 
+      const tagSettings = tagSettingsResult.value ? JSON.parse(tagSettingsResult.value) : {}
+      builtInTags.value = normalizeMoodTagCatalog(tagSettings.builtInTags)
+      defaultTags.value = normalizeMoodTags(tagSettings.defaultTags)
       const savedCustomTags = customTagsResult.value ? JSON.parse(customTagsResult.value) : []
-      customTags.value = getCustomMoodTags(moodRecords.value, savedCustomTags)
+      customTags.value = getCustomMoodTags(moodRecords.value, savedCustomTags, builtInTags.value)
 
       if (startResult.value) {
         trackingStartDate.value = startResult.value
@@ -142,7 +150,7 @@ export const useMoodStore = defineStore('mood', () => {
           date: dateStr,
           mood: defaultMoodDefinition.value.id,
           note: '',
-          tags: [DEFAULT_MOOD_TAG],
+          tags: [],
           autoFilled: true,
           createdAt: Date.now()
         })
@@ -161,7 +169,7 @@ export const useMoodStore = defineStore('mood', () => {
     }
   }
 
-  const addRecord = (date, mood = defaultMoodDefinition.value.id, note = '', tags = [DEFAULT_MOOD_TAG]) => {
+  const addRecord = (date, mood = defaultMoodDefinition.value.id, note = '', tags = [...defaultTags.value]) => {
     const record = normalizeMoodRecord({
       id: `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
       date,
@@ -188,6 +196,8 @@ export const useMoodStore = defineStore('mood', () => {
         ...updates,
         autoFilled: false
       }, undefined, defaultMoodDefinition.value.id)
+      const updatedDate = moodRecords.value[idx].date
+      moodRecords.value = moodRecords.value.filter(record => record.id === id || record.date !== updatedDate || !record.autoFilled)
       syncCustomTagsFromRecords()
     }
   }
@@ -209,7 +219,10 @@ export const useMoodStore = defineStore('mood', () => {
     const defaultMoodId = getDefaultMoodDefinition(baseDefinitions).id
     moodRecords.value = normalizeMoodRecords(records, undefined, defaultMoodId)
     moodDefinitions.value = normalizeMoodDefinitions(baseDefinitions, moodRecords.value)
-    customTags.value = getCustomMoodTags(moodRecords.value, metadata.customTags)
+    builtInTags.value = normalizeMoodTagCatalog(metadata.builtInTags)
+    defaultTags.value = normalizeMoodTags(metadata.defaultTags)
+    customTags.value = getCustomMoodTags(moodRecords.value, metadata.customTags, builtInTags.value)
+    await persistTagSettings()
     const existingDates = moodRecords.value.map(record => record.date).filter(Boolean).sort()
     trackingStartDate.value = /^\d{4}-\d{2}-\d{2}$/.test(String(metadata.trackingStartDate || ''))
       ? metadata.trackingStartDate
@@ -228,7 +241,7 @@ export const useMoodStore = defineStore('mood', () => {
     )
     moodDefinitions.value = mergeMoodDefinitions(moodDefinitions.value, metadata.definitions, mergedRecords)
     moodRecords.value = mergedRecords
-    customTags.value = getCustomMoodTags(moodRecords.value, [...customTags.value, ...(metadata.customTags || [])])
+    customTags.value = getCustomMoodTags(moodRecords.value, [...customTags.value, ...(metadata.customTags || []), ...normalizeMoodTagCatalog(metadata.builtInTags)], builtInTags.value)
     await Preferences.set({ key: STORAGE_KEY, value: JSON.stringify(moodRecords.value) })
     await Preferences.set({ key: CUSTOM_TAGS_KEY, value: JSON.stringify(customTags.value) })
     await Preferences.set({ key: MOOD_DEFINITIONS_KEY, value: JSON.stringify(moodDefinitions.value) })
@@ -246,26 +259,43 @@ export const useMoodStore = defineStore('mood', () => {
 
   const addCustomTag = (value) => {
     const tag = normalizeMoodTag(value)
-    if (!tag || BUILT_IN_MOOD_TAGS.includes(tag) || customTags.value.includes(tag)) return tag
+    if (!tag || builtInTags.value.includes(tag) || customTags.value.includes(tag)) return tag
     customTags.value = [...customTags.value, tag].sort((a, b) => a.localeCompare(b, 'zh-CN'))
     return tag
   }
 
   const removeCustomTag = (value) => {
     const tag = normalizeMoodTag(value)
-    if (!tag || BUILT_IN_MOOD_TAGS.includes(tag) || !customTags.value.includes(tag)) return false
+    if (!tag || builtInTags.value.includes(tag) || !customTags.value.includes(tag)) return false
 
     moodRecords.value = moodRecords.value.map(record => ({
       ...record,
       tags: normalizeMoodTags(record.tags.filter(item => item !== tag))
     }))
     customTags.value = customTags.value.filter(item => item !== tag)
+    defaultTags.value = defaultTags.value.filter(item => item !== tag)
     return true
   }
 
   function syncCustomTagsFromRecords() {
-    customTags.value = getCustomMoodTags(moodRecords.value, customTags.value)
+    customTags.value = getCustomMoodTags(moodRecords.value, customTags.value, builtInTags.value)
   }
+
+  const persistTagSettings = () => Preferences.set({ key: STORAGE_KEYS.moodTagSettings, value: JSON.stringify({ builtInTags: builtInTags.value, defaultTags: defaultTags.value }) })
+  watch([builtInTags, defaultTags], () => { if (isDataLoaded.value) persistTagSettings().catch(error => console.error('保存心情标签失败', error)) }, { deep: true })
+  const renameTag = (oldName, value) => {
+    const name = normalizeMoodTag(value)
+    const all = [...builtInTags.value, ...customTags.value]
+    if (!name || !all.includes(oldName) || (name !== oldName && all.includes(name))) return false
+    const replace = list => list.map(tag => tag === oldName ? name : tag)
+    builtInTags.value = replace(builtInTags.value)
+    customTags.value = replace(customTags.value)
+    defaultTags.value = replace(defaultTags.value)
+    moodRecords.value = moodRecords.value.map(record => ({ ...record, tags: replace(record.tags) }))
+    return true
+  }
+  const setDefaultTags = tags => { defaultTags.value = normalizeMoodTags(tags).filter(tag => [...builtInTags.value, ...customTags.value].includes(tag)) }
+  const getDayDisplayRecords = date => moodRecords.value.filter(record => record.date === date).sort((a, b) => compareMoodDayRecords(a, b, moodDefinitions.value))
 
   const getMoodDefinition = id => resolveMoodDefinition(moodDefinitions.value, id)
 
@@ -279,7 +309,9 @@ export const useMoodStore = defineStore('mood', () => {
     if (moodDefinitions.value.some(item => item.id !== excludeId && item.label === label)) {
       return { ok: false, reason: 'DUPLICATE_LABEL' }
     }
-    return { ok: true, value: { label, emoji, color } }
+    const displayPriority = Number(input?.displayPriority ?? 0)
+    if (!Number.isInteger(displayPriority) || displayPriority < 0 || displayPriority > 999) return { ok: false, reason: 'INVALID_PRIORITY' }
+    return { ok: true, value: { label, emoji, color, displayPriority } }
   }
 
   const addMoodDefinition = input => {
@@ -376,7 +408,11 @@ export const useMoodStore = defineStore('mood', () => {
     defaultMoodDefinition,
     customTags,
     trackingStartDate,
-    builtInTags: BUILT_IN_MOOD_TAGS,
+    builtInTags,
+    defaultTags,
+    renameTag,
+    setDefaultTags,
+    getDayDisplayRecords,
     isDataLoaded,
     loadMoodRecords,
     autoFillMissingDays,
