@@ -13,6 +13,8 @@ export const STORAGE_KEYS = Object.freeze({
   healthSettings: 'my_health_settings',
   homeCache: 'my_home_cache',
   debtRecords: 'my_debt_manager_data',
+  debtGroups: 'my_debt_groups_v1',
+  savingsDensity: 'my_savings_density_v1',
   weightRecords: 'my_weight_records_data',
   moodRecords: 'my_mood_records_data',
   moodTrackingStartDate: 'my_mood_tracking_start_date',

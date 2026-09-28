@@ -340,7 +340,72 @@
 .settings-container .mood-emoji-input { padding-inline: 8px; text-align: center; font-size: 23px; }
 .settings-container .mood-color-text { padding-inline: 5px; text-align: center; font-size: 10px; text-transform: uppercase; }
 .settings-container .mood-definition-row { justify-content: flex-start; }
-.settings-container .mood-drag-handle { flex: 0 0 auto; color: var(--body-muted); font-size: 17px; cursor: grab; }
+.settings-container .mood-drag-handle {
+  flex: 0 0 auto;
+  color: var(--body-muted);
+  font-size: 17px;
+  cursor: grab;
+  background: transparent;
+  border: 0;
+  padding: 4px 6px;
+  border-radius: 6px;
+  touch-action: none !important;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+}
+.settings-container .mood-drag-handle:active {
+  background: var(--divider-soft);
+}
+.mood-item-move {
+  transition: transform 0.22s cubic-bezier(0.2, 0, 0, 1);
+}
+.settings-container .mood-definition-row.drag-placeholder {
+  opacity: 0.28;
+  border: 1px dashed var(--primary);
+  transform: scale(0.985);
+  transition: transform 0.18s ease, border-color 0.18s ease;
+}
+.mood-drag-ghost {
+  position: fixed;
+  z-index: 10000;
+  pointer-events: none;
+  box-sizing: border-box;
+  padding: 10px 14px;
+  border: 1px solid var(--primary);
+  border-radius: 14px;
+  background: var(--canvas);
+  color: var(--ink);
+  box-shadow: 0 14px 32px rgba(15, 35, 60, 0.2);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transform: scale(1.025);
+  overflow: hidden;
+  will-change: top, left, transform;
+  transition: transform 0.14s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.14s ease;
+}
+.mood-drag-ghost.is-lifting,
+.mood-drag-ghost.is-dragging {
+  /* 拖拽跟手中：位移零延迟，禁用所有补间过渡 */
+  transition: none !important;
+}
+.mood-drag-ghost.is-settling {
+  transform: scale(1);
+  box-shadow: 0 4px 12px rgba(15, 35, 60, 0.08);
+  transition: top 0.18s cubic-bezier(0.2, 0, 0, 1), left 0.18s cubic-bezier(0.2, 0, 0, 1), transform 0.18s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.18s ease !important;
+}
+.mood-drag-ghost.is-returning {
+  transform: scale(1);
+  opacity: 0.75;
+  box-shadow: 0 4px 12px rgba(15, 35, 60, 0.08);
+  transition: top 0.18s cubic-bezier(0.2, 0, 0, 1), left 0.18s cubic-bezier(0.2, 0, 0, 1), transform 0.18s cubic-bezier(0.2, 0, 0, 1), opacity 0.18s ease !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  .mood-item-move { transition: none; }
+  .mood-drag-ghost { transform: none; transition: none; }
+  .settings-container .mood-definition-row.drag-placeholder { transform: none; transition: none; }
+}
 .settings-container .mood-definition-preview { display: flex; min-width: 0; flex: 1; align-items: center; gap: 8px; }
 .settings-container .mood-definition-preview b { width: 28px; text-align: center; font-size: 22px; }
 .settings-container .mood-definition-preview i { width: 10px; height: 10px; flex: 0 0 auto; border-radius: 50%; }

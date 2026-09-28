@@ -13,6 +13,7 @@ import { syncChatProactiveNotifications } from '../../features/chat/chatProactiv
 import { syncChatFollowupNotifications } from '../../features/chat/chatFollowup'
 import { useAuthStore } from '../../stores/auth'
 import { useDebtStore } from '../../stores/debt'
+import { normalizeDebtGroups } from '../../services/debtOrdering.js'
 import { useWeightStore } from '../../stores/weight'
 import { useMoodStore } from '../../features/mood/moodStore'
 import { useSettingsStore } from '../../stores/settings'
@@ -55,7 +56,7 @@ export function useBackupSettings() {
   }
 
   const getDataArray = () => {
-    if (exportDataType.value === 'savings') return debtStore.savedDebts
+    if (exportDataType.value === 'savings') return { records: debtStore.savedDebts, groups: debtStore.debtGroups }
     if (exportDataType.value === 'weight') return weightStore.weightRecords
     if (exportDataType.value === 'passwords') return vaultStore.records
     if (exportDataType.value === 'schedules') return scheduleStore.snapshot
@@ -72,7 +73,9 @@ export function useBackupSettings() {
 
   const setDataArray = async (data, overwrite) => {
     if (exportDataType.value === 'savings') {
-      debtStore.updateDebts(overwrite ? data : [...debtStore.savedDebts, ...data])
+      const records = overwrite ? data.records : [...debtStore.savedDebts, ...data.records]
+      const groups = overwrite ? data.groups : normalizeDebtGroups([...debtStore.debtGroups, ...data.groups], records)
+      await debtStore.restoreDebts(records, groups)
     } else if (exportDataType.value === 'weight') {
       weightStore.updateWeightRecords(overwrite ? data : [...weightStore.weightRecords, ...data])
     } else if (exportDataType.value === 'passwords') {
@@ -112,6 +115,7 @@ export function useBackupSettings() {
 
   const createFullBackupSnapshot = () => buildFullBackupSnapshot({
     savings: debtStore.savedDebts,
+    savingsMetadata: { groups: debtStore.debtGroups },
     weight: weightStore.weightRecords,
     mood: moodStore.moodRecords,
     passwords: vaultStore.records,
@@ -132,7 +136,7 @@ export function useBackupSettings() {
 
   const applyFullBackupSnapshot = async (snapshot) => {
     const results = await Promise.allSettled([
-      debtStore.restoreDebts(snapshot.data.savings),
+      debtStore.restoreDebts(snapshot.data.savings, snapshot.metadata.savings.groups),
       weightStore.restoreWeightRecords(snapshot.data.weight),
       moodStore.restoreMoodBackup(snapshot.data.mood, snapshot.metadata.mood),
       vaultStore.restoreRecords(snapshot.data.passwords, snapshot.metadata.vault),
@@ -297,6 +301,18 @@ export function useBackupSettings() {
           if (overwrite) await moodStore.restoreMoodBackup(snapshot.data.records, snapshot.metadata)
           else await moodStore.mergeMoodBackup(snapshot.data.records, snapshot.metadata)
           appToast('心情日记数据恢复成功', { tone: 'success' })
+          return
+        }
+
+        if (exportDataType.value === 'savings') {
+          const records = Array.isArray(importedData) ? importedData : importedData?.records
+          if (!Array.isArray(records)) throw new Error('格式错误')
+          const groups = normalizeDebtGroups(importedData?.groups, records)
+          const overwrite = await appConfirm(`成功解密出 ${records.length} 条省钱计划和 ${groups.length} 个分组。\n选择“覆盖”会替换当前计划与分组；取消则合并。`, {
+            title: '选择恢复方式', confirmText: '覆盖当前数据', cancelText: '合并数据'
+          })
+          await setDataArray({ records, groups }, overwrite)
+          appToast('省钱数据恢复成功', { tone: 'success' })
           return
         }
 

@@ -1,12 +1,62 @@
 <script setup>
-import { ref, toRefs } from 'vue'
+import { computed, ref, toRefs } from 'vue'
 import AppColorPalette from '../AppColorPalette.vue'
 import { appAlert } from '../../services/uiFeedback.js'
+import { useSortableDrag } from '../../composables/useSortableDrag.js'
+import { DEFAULT_DEBT_GROUP } from '../../services/debtOrdering.js'
+
 const props = defineProps({ model: { type: Object, required: true } })
-const { newMoodPriority, editMoodPriority, addMoodDefinition, addScheduleCategory, addVaultCategory, applySchedulePickerColor, archiveMoodDefinition, beginEditMoodDefinition, deleteMoodDefinition, deleteMoodTag, deleteScheduleCategory, deleteVaultCategory, draggedMoodId, dropMoodDefinition, editMoodColor, editMoodEmoji, editMoodLabel, editingMoodId, isGeneralSection, moodDefinitionUsageCount, moodStore, moveMoodDefinition, newMoodColor, newMoodEmoji, newMoodLabel, newScheduleCategory, newScheduleCategoryColor, newVaultCategory, restoreMoodDefinition, saveMoodDefinition, scheduleColorBoardRef, scheduleColorBoardStyle, scheduleColorCursorStyle, scheduleColorHue, scheduleStore, setDefaultMoodDefinition, settingsScope, updateScheduleColorFromBoard, updateScheduleColorFromHex, vaultCategoryUsageCount, vaultStore } = toRefs(props.model)
+const { newMoodPriority, editMoodPriority, addMoodDefinition, addScheduleCategory, addVaultCategory, applySchedulePickerColor, archiveMoodDefinition, beginEditMoodDefinition, deleteMoodDefinition, deleteMoodTag, deleteScheduleCategory, deleteVaultCategory, debtStore, editMoodColor, editMoodEmoji, editMoodLabel, editingMoodId, isGeneralSection, moodDefinitionUsageCount, moodStore, moveMoodDefinition, newMoodColor, newMoodEmoji, newMoodLabel, newScheduleCategory, newScheduleCategoryColor, newVaultCategory, restoreMoodDefinition, saveMoodDefinition, scheduleColorBoardRef, scheduleColorBoardStyle, scheduleColorCursorStyle, scheduleColorHue, scheduleStore, setDefaultMoodDefinition, settingsScope, updateScheduleColorFromBoard, updateScheduleColorFromHex, vaultCategoryUsageCount, vaultStore } = toRefs(props.model)
 const editingTag = ref(null)
 const tagDraft = ref('')
 const newTag = ref('')
+const moodListRef = ref(null)
+const newSavingsGroup = ref('')
+const addingSavingsGroup = ref(false)
+
+const savingsGroupCount = name => debtStore.value.savedDebts.filter(item => (item.group || DEFAULT_DEBT_GROUP) === name).length
+const addSavingsGroup = async () => {
+  const name = newSavingsGroup.value.trim()
+  if (!name || addingSavingsGroup.value) return
+  if (debtStore.value.debtGroups.includes(name)) return appAlert('这个分组名称已经存在')
+  if (debtStore.value.debtGroups.length >= 51) return appAlert('最多可创建 50 个自定义分组')
+  addingSavingsGroup.value = true
+  try {
+    await debtStore.value.addDebtGroup(name)
+    newSavingsGroup.value = ''
+  } catch { appAlert('新增分组失败，请重试') }
+  finally { addingSavingsGroup.value = false }
+}
+
+const activeMoods = computed(() => moodStore.value.activeMoodDefinitions)
+const {
+  start: startMoodDrag,
+  draggedId: internalDraggedMoodId,
+  previewIds: previewMoodIds,
+  ghost: moodGhost
+} = useSortableDrag({
+  items: activeMoods,
+  disabled: computed(() => Boolean(editingMoodId.value)),
+  listRef: moodListRef,
+  itemSelector: '[data-mood-id]',
+  idAttr: 'data-mood-id',
+  thresholdMs: 300,
+  onDrop: newIds => {
+    moodStore.value.reorderMoodDefinitions(newIds)
+  }
+})
+
+const displayMoodDefinitions = computed(() => {
+  const all = moodStore.value.activeMoodDefinitions
+  if (!previewMoodIds.value) return all
+  const map = new Map(all.map(m => [m.id, m]))
+  return previewMoodIds.value.map(id => map.get(id)).filter(Boolean)
+})
+
+const draggedMoodDef = computed(() => {
+  return moodStore.value.activeMoodDefinitions.find(item => item.id === internalDraggedMoodId.value)
+})
+
 const saveTag = tag => {
   if (!moodStore.value.renameTag(tag, tagDraft.value)) return appAlert('标签名称不能为空或重复')
   editingTag.value = null
@@ -23,8 +73,22 @@ const updatePriority = (definition, event) => {
 </script>
 
 <template>
-    <div v-if="['schedule', 'mood', 'passwords'].includes(settingsScope) || isGeneralSection('labels')" class="setting-section">
-      <h3 class="caption body-muted section-title">内容标签与分类</h3>
+    <div v-if="['debts', 'schedule', 'mood', 'passwords'].includes(settingsScope) || isGeneralSection('labels')" class="setting-section">
+      <h3 class="caption body-muted section-title">{{ settingsScope === 'debts' ? '计划分组' : '内容标签与分类' }}</h3>
+
+      <div v-if="settingsScope === 'debts'" class="store-utility-card taxonomy-card">
+        <h4 class="body-strong taxonomy-title">省钱计划分组</h4>
+        <p class="caption body-muted taxonomy-description">新增分组后，可以在省钱计划页把计划拖进去；已有计划不会自动移动。</p>
+        <div class="taxonomy-add-row">
+          <input v-model="newSavingsGroup" class="apple-input" maxlength="20" aria-label="新省钱计划分组名称" placeholder="输入新分组名称" @keyup.enter="addSavingsGroup" />
+          <button class="button-primary taxonomy-add-button" :disabled="!newSavingsGroup.trim() || addingSavingsGroup" @click="addSavingsGroup">添加分组</button>
+        </div>
+        <div class="taxonomy-list">
+          <div v-for="name in debtStore.debtGroups" :key="name" class="taxonomy-row savings-group-setting-row">
+            <span>{{ name }}</span><span class="caption body-muted">{{ savingsGroupCount(name) }} 项</span>
+          </div>
+        </div>
+      </div>
 
       <div v-if="settingsScope === 'schedule' || isGeneralSection('labels')" class="store-utility-card taxonomy-card">
         <h4 class="body-strong taxonomy-title">日程标签</h4>
@@ -107,46 +171,70 @@ const updatePriority = (definition, event) => {
 
         <AppColorPalette v-model="newMoodColor" label="新心情颜色" />
         <p class="caption body-muted">显示优先级：数字越大，日历和当天列表越靠前；相同则最新记录在前。颜色用于心情标识，Emoji 保持自身配色。</p>
-        <div class="taxonomy-list mood-definition-list">
-          <div
-            v-for="(definition, index) in moodStore.activeMoodDefinitions"
-            :key="definition.id"
-            class="taxonomy-row mood-definition-row"
-            draggable="true"
-            @dragstart="draggedMoodId = definition.id"
-            @dragend="draggedMoodId = ''"
-            @dragover.prevent
-            @drop.prevent="dropMoodDefinition(definition.id)"
-          >
-            <template v-if="editingMoodId === definition.id">
-              <div class="mood-definition-editor">
-                <input v-model="editMoodEmoji" class="apple-input mood-emoji-input" maxlength="12" aria-label="编辑心情 Emoji" />
-                <input v-model="editMoodLabel" class="apple-input" maxlength="12" aria-label="编辑心情名称" />
-                <label class="priority-field">显示优先级<input v-model.number="editMoodPriority" class="apple-input" type="number" min="0" max="999" step="1" aria-label="编辑心情显示优先级" /></label>
-                <AppColorPalette v-model="editMoodColor" label="编辑心情颜色" />
-                <button class="text-link" @click="saveMoodDefinition">保存</button>
-                <button class="text-link" @click="editingMoodId = ''">取消</button>
-              </div>
-            </template>
-            <template v-else>
-              <span class="mood-drag-handle" aria-hidden="true">⋮⋮</span>
-              <span class="mood-definition-preview">
-                <b>{{ definition.emoji }}</b>
-                <i :style="{ background: definition.color }"></i>
-                <span>{{ definition.label }}</span>
-                <small v-if="definition.isDefault">默认</small><small>优先级 {{ definition.displayPriority || 0 }}</small>
-              </span>
-              <span class="mood-definition-actions">
-                <button class="mood-order-button" :disabled="index === 0" aria-label="上移" @click="moveMoodDefinition(definition.id, -1)">↑</button>
-                <button class="mood-order-button" :disabled="index === moodStore.activeMoodDefinitions.length - 1" aria-label="下移" @click="moveMoodDefinition(definition.id, 1)">↓</button>
-                <button v-if="!definition.isDefault" class="text-link" @click="setDefaultMoodDefinition(definition)">设默认</button>
-                <button class="text-link" @click="beginEditMoodDefinition(definition)">编辑</button>
-                <button class="text-link" @click="archiveMoodDefinition(definition)">归档</button>
-                <button v-if="!moodDefinitionUsageCount(definition.id)" class="text-link danger-text" @click="deleteMoodDefinition(definition)">删除</button>
-              </span>
-            </template>
-          </div>
+        <div ref="moodListRef" class="taxonomy-list mood-definition-list">
+          <TransitionGroup name="mood-item">
+            <div
+              v-for="(definition, index) in displayMoodDefinitions"
+              :key="definition.id"
+              class="taxonomy-row mood-definition-row"
+              :data-mood-id="definition.id"
+              :class="{ 'drag-placeholder': internalDraggedMoodId === definition.id }"
+            >
+              <template v-if="editingMoodId === definition.id">
+                <div class="mood-definition-editor">
+                  <input v-model="editMoodEmoji" class="apple-input mood-emoji-input" maxlength="12" aria-label="编辑心情 Emoji" />
+                  <input v-model="editMoodLabel" class="apple-input" maxlength="12" aria-label="编辑心情名称" />
+                  <label class="priority-field">显示优先级<input v-model.number="editMoodPriority" class="apple-input" type="number" min="0" max="999" step="1" aria-label="编辑心情显示优先级" /></label>
+                  <AppColorPalette v-model="editMoodColor" label="编辑心情颜色" />
+                  <button class="text-link" @click="saveMoodDefinition">保存</button>
+                  <button class="text-link" @click="editingMoodId = ''">取消</button>
+                </div>
+              </template>
+              <template v-else>
+                <button
+                  type="button"
+                  class="mood-drag-handle"
+                  :aria-label="`拖动排序：${definition.label}`"
+                  @pointerdown="startMoodDrag($event, definition.id)"
+                  @contextmenu.prevent
+                  @click.stop
+                >⋮⋮</button>
+                <span class="mood-definition-preview">
+                  <b>{{ definition.emoji }}</b>
+                  <i :style="{ background: definition.color }"></i>
+                  <span>{{ definition.label }}</span>
+                  <small v-if="definition.isDefault">默认</small><small>优先级 {{ definition.displayPriority || 0 }}</small>
+                </span>
+                <span class="mood-definition-actions">
+                  <button class="mood-order-button" :disabled="index === 0" aria-label="上移" @click="moveMoodDefinition(definition.id, -1)">↑</button>
+                  <button class="mood-order-button" :disabled="index === displayMoodDefinitions.length - 1" aria-label="下移" @click="moveMoodDefinition(definition.id, 1)">↓</button>
+                  <button v-if="!definition.isDefault" class="text-link" @click="setDefaultMoodDefinition(definition)">设默认</button>
+                  <button class="text-link" @click="beginEditMoodDefinition(definition)">编辑</button>
+                  <button class="text-link" @click="archiveMoodDefinition(definition)">归档</button>
+                  <button v-if="!moodDefinitionUsageCount(definition.id)" class="text-link danger-text" @click="deleteMoodDefinition(definition)">删除</button>
+                </span>
+              </template>
+            </div>
+          </TransitionGroup>
         </div>
+
+        <Teleport to="body">
+          <div
+            v-if="moodGhost && draggedMoodDef"
+            class="mood-drag-ghost"
+            :class="moodGhost.state"
+            :style="{ top: moodGhost.top + 'px', left: moodGhost.left + 'px', width: moodGhost.width + 'px', height: moodGhost.height + 'px' }"
+            aria-hidden="true"
+          >
+            <span class="mood-drag-handle" aria-hidden="true">⋮⋮</span>
+            <span class="mood-definition-preview">
+              <b>{{ draggedMoodDef.emoji }}</b>
+              <i :style="{ background: draggedMoodDef.color }"></i>
+              <span>{{ draggedMoodDef.label }}</span>
+              <small v-if="draggedMoodDef.isDefault">默认</small><small>优先级 {{ draggedMoodDef.displayPriority || 0 }}</small>
+            </span>
+          </div>
+        </Teleport>
 
         <div v-if="moodStore.moodDefinitions.some(item => item.archived)" class="mood-archive-section">
           <p class="caption body-muted">已归档</p>

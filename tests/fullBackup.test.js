@@ -126,6 +126,25 @@ test('完整备份可用当前主密码加密并完整解密', () => {
   assert.deepEqual(restored.metadata.vault.categories, ['工作', '个人', '未分类'])
 })
 
+test('完整备份保留省钱自定义分组，旧 v8 数据自动归入未分组', () => {
+  const snapshot = buildFullBackupSnapshot({
+    savings: [{ id: 'trip', group: '旅行', iconLabel: '✈️', records: [{ amount: 20 }] }],
+    savingsMetadata: { groups: ['旅行', '未分组', '换电脑'] }
+  })
+  const restored = normalizeFullBackupSnapshot(snapshot)
+  assert.deepEqual(restored.metadata.savings.groups, ['旅行', '未分组', '换电脑'])
+  assert.equal(restored.data.savings[0].group, '旅行')
+  assert.equal(restored.data.savings[0].iconLabel, '✈️')
+
+  const legacy = normalizeFullBackupSnapshot({
+    ...snapshot, version: 8,
+    data: { ...snapshot.data, savings: [{ id: 'old', records: [] }] },
+    metadata: { ...snapshot.metadata, savings: undefined }
+  })
+  assert.deepEqual(legacy.metadata.savings.groups, ['未分组'])
+  assert.equal(legacy.data.savings[0].iconLabel, undefined)
+})
+
 test('完整恢复在写入前拒绝错误类型、版本、日期和缺失数据集', () => {
   const snapshot = buildFixture()
 

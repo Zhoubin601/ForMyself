@@ -14,9 +14,10 @@ import {
 import { normalizeScheduleData } from '../features/schedule/scheduleCore.js'
 import { normalizeThemeSettings } from './themeSystem.js'
 import { normalizeChatData } from '../features/chat/chatRecords.js'
+import { normalizeDebtGroups } from './debtOrdering.js'
 
 export const FULL_BACKUP_TYPE = 'formyself-full-backup'
-export const FULL_BACKUP_VERSION = 8
+export const FULL_BACKUP_VERSION = 9
 
 const cloneJson = value => JSON.parse(JSON.stringify(value))
 const cleanText = (value, maxLength = 500) => String(value || '').slice(0, maxLength)
@@ -71,6 +72,7 @@ export function buildFullBackupSnapshot({
   schedules = {},
   chat = {},
   moodMetadata = {},
+  savingsMetadata = {},
   vaultMetadata = {},
   settings = {}
 }, createdAt = new Date().toISOString()) {
@@ -97,6 +99,9 @@ export function buildFullBackupSnapshot({
       }
     },
     metadata: {
+      savings: {
+        groups: normalizeDebtGroups(savingsMetadata?.groups, savings)
+      },
       mood: {
         builtInTags: normalizeMoodTagCatalog(safeMoodMetadata.builtInTags),
         defaultTags: normalizeMoodTags(safeMoodMetadata.defaultTags),
@@ -119,7 +124,7 @@ export function buildFullBackupSnapshot({
 export function normalizeFullBackupSnapshot(value) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error('INVALID_FULL_BACKUP')
   if (value.type !== FULL_BACKUP_TYPE) throw new Error('INVALID_FULL_BACKUP_TYPE')
-  if (![1, 2, 3, 4, 5, 6, 7, FULL_BACKUP_VERSION].includes(value.version)) throw new Error('UNSUPPORTED_FULL_BACKUP_VERSION')
+  if (![1, 2, 3, 4, 5, 6, 7, 8, FULL_BACKUP_VERSION].includes(value.version)) throw new Error('UNSUPPORTED_FULL_BACKUP_VERSION')
   if (!value.data || typeof value.data !== 'object') throw new Error('INVALID_FULL_BACKUP_DATA')
   if (!value.settings || typeof value.settings !== 'object') throw new Error('INVALID_FULL_BACKUP_SETTINGS')
   if (value.version >= 3 && (!value.data.chat || typeof value.data.chat !== 'object' || Array.isArray(value.data.chat))) {
@@ -134,6 +139,7 @@ export function normalizeFullBackupSnapshot(value) {
     schedules: value.version >= 2 ? normalizeScheduleData(value.data.schedules) : normalizeScheduleData(),
     chat: value.version >= 3 ? normalizeChatData(value.data.chat) : normalizeChatData(),
     moodMetadata: value.metadata?.mood,
+    savingsMetadata: value.metadata?.savings,
     vaultMetadata: value.metadata?.vault,
     settings: value.settings
   }, value.createdAt)

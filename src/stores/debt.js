@@ -2,10 +2,11 @@ import { defineStore } from 'pinia'
 import { ref, watch } from 'vue'
 import { preferenceStorage as Preferences } from '../platform/storage/preferences.js'
 import { STORAGE_KEYS } from '../platform/storage/keys.js'
-import { reorderDebtRecords } from '../services/debtOrdering.js'
+import { arrangeDebtRecords, DEFAULT_DEBT_GROUP, normalizeDebtGroups, reorderDebtRecords } from '../services/debtOrdering.js'
 
 export const useDebtStore = defineStore('debt', () => {
   const savedDebts = ref([])
+  const debtGroups = ref([DEFAULT_DEBT_GROUP])
   const isDataLoaded = ref(false)
   const isReordering = ref(false)
   let revision = 0
@@ -19,6 +20,7 @@ export const useDebtStore = defineStore('debt', () => {
     return result
   }
   const write = value => Preferences.set({ key: STORAGE_KEYS.debtRecords, value })
+  const writeGroups = value => Preferences.set({ key: STORAGE_KEYS.debtGroups, value })
   const assign = records => {
     silent = true
     savedDebts.value = records
@@ -28,10 +30,14 @@ export const useDebtStore = defineStore('debt', () => {
 
   const loadDebts = async () => {
     try {
-      const { value } = await Preferences.get({ key: STORAGE_KEYS.debtRecords })
+      const [{ value }, groupResult] = await Promise.all([
+        Preferences.get({ key: STORAGE_KEYS.debtRecords }),
+        Preferences.get({ key: STORAGE_KEYS.debtGroups })
+      ])
       if (value) {
         assign(JSON.parse(value))
       }
+      debtGroups.value = normalizeDebtGroups(groupResult.value ? JSON.parse(groupResult.value) : [], savedDebts.value)
     } catch (e) {
       console.error('读取省钱数据失败', e)
     } finally {
@@ -63,12 +69,88 @@ export const useDebtStore = defineStore('debt', () => {
 
   const updateDebts = (newList) => {
     savedDebts.value = newList
+    debtGroups.value = normalizeDebtGroups(debtGroups.value, newList)
+    enqueue(() => writeGroups(JSON.stringify(debtGroups.value))).catch(() => console.error('保存省钱分组失败'))
   }
 
-  const restoreDebts = async (newList) => {
+  const restoreDebts = async (newList, groups = []) => {
     assign(newList)
+    debtGroups.value = normalizeDebtGroups(groups, newList)
     const value = JSON.stringify(newList)
-    await enqueue(() => write(value))
+    await enqueue(async () => {
+      await write(value)
+      await writeGroups(JSON.stringify(debtGroups.value))
+    })
+    isDataLoaded.value = true
+  }
+
+  const addDebtGroup = async name => {
+    const clean = String(name || '').trim().slice(0, 20)
+    if (!clean || debtGroups.value.includes(clean) || debtGroups.value.length >= 51) throw new Error('INVALID_DEBT_GROUP')
+    const next = [...debtGroups.value, clean]
+    await enqueue(() => writeGroups(JSON.stringify(next)))
+    debtGroups.value = next
+    return clean
+  }
+
+  const renameDebtGroup = async (oldName, newName) => {
+    const clean = String(newName || '').trim().slice(0, 20)
+    if (oldName === DEFAULT_DEBT_GROUP || !debtGroups.value.includes(oldName) || !clean ||
+      (clean !== oldName && debtGroups.value.includes(clean))) throw new Error('INVALID_DEBT_GROUP')
+    if (clean === oldName) return
+    const nextRecords = savedDebts.value.map(item => item.group === oldName ? { ...item, group: clean } : item)
+    const nextGroups = debtGroups.value.map(name => name === oldName ? clean : name)
+    await enqueue(async () => {
+      await write(JSON.stringify(nextRecords))
+      await writeGroups(JSON.stringify(nextGroups))
+    })
+    assign(nextRecords)
+    debtGroups.value = nextGroups
+  }
+
+  const deleteDebtGroup = async name => {
+    if (name === DEFAULT_DEBT_GROUP || !debtGroups.value.includes(name)) throw new Error('INVALID_DEBT_GROUP')
+    const nextRecords = savedDebts.value.map(item => item.group === name ? { ...item, group: DEFAULT_DEBT_GROUP } : item)
+    const nextGroups = debtGroups.value.filter(group => group !== name)
+    await enqueue(async () => {
+      await write(JSON.stringify(nextRecords))
+      await writeGroups(JSON.stringify(nextGroups))
+    })
+    assign(nextRecords)
+    debtGroups.value = nextGroups
+  }
+
+  const reorderDebtGroups = async orderedNames => {
+    const before = [...debtGroups.value]
+    if (!isDataLoaded.value || !Array.isArray(orderedNames) || orderedNames.length !== before.length ||
+      new Set(orderedNames).size !== before.length || orderedNames.some(name => !before.includes(name))) {
+      throw new Error('DEBT_GROUP_ORDER_CHANGED')
+    }
+    if (orderedNames.every((name, index) => name === before[index])) return
+    await enqueue(async () => {
+      if (debtGroups.value.some((name, index) => name !== before[index])) throw new Error('DEBT_GROUP_ORDER_CHANGED')
+      await writeGroups(JSON.stringify(orderedNames))
+      debtGroups.value = [...orderedNames]
+    })
+  }
+
+  const arrangeDebts = async options => {
+    if (!isDataLoaded.value || isReordering.value ||
+      (options.targetGroup !== null && options.targetGroup !== undefined && !debtGroups.value.includes(options.targetGroup))) {
+      throw new Error('DEBT_ORDER_BUSY')
+    }
+    isReordering.value = true
+    try {
+      await enqueue(async () => {
+        const next = arrangeDebtRecords(savedDebts.value, options)
+        const beforeRevision = revision
+        await write(JSON.stringify(next))
+        if (beforeRevision !== revision) throw new Error('DEBT_ORDER_CHANGED')
+        assign(next)
+      })
+    } finally {
+      isReordering.value = false
+    }
   }
 
   const reorderDebts = async options => {
@@ -107,9 +189,15 @@ export const useDebtStore = defineStore('debt', () => {
 
   return {
     savedDebts,
+    debtGroups,
     isDataLoaded,
     isReordering,
     reorderDebts,
+    arrangeDebts,
+    reorderDebtGroups,
+    addDebtGroup,
+    renameDebtGroup,
+    deleteDebtGroup,
     loadDebts,
     addDebt,
     updateDebts,
