@@ -28,12 +28,12 @@ export function useSettingsNavigation() {
   const isGeneralSection = section => settingsScope.value === 'general' && settingsSection.value === section
   const showGeneralSettingsHome = computed(() => settingsScope.value === 'general' && !settingsSection.value)
   const scopeMeta = computed(() => ({
-    debts: { icon: '◎', title: '省钱计划设置', description: '管理计划分组、目标回顾提醒与 AI 个性化鼓励。' },
-    weight: { icon: '◇', title: '体重记录设置', description: '管理健康参数、变化提醒与每日记录提醒。' },
-    mood: { icon: '♡', title: '心情日记设置', description: '管理心情等级、自定义标签与每日关怀提醒。' },
-    schedule: { icon: '□', title: '日程提醒设置', description: '管理日程标签、颜色和分类规则。' },
-    passwords: { icon: '⌑', title: '密码库设置', description: '管理密码分类；主密码仍在通用配置中管理。' },
-    chat: { icon: '⌂', title: '温馨小家设置', description: '管理女朋友名字、记忆和聊天数据。' }
+    debts: { title: '省钱计划设置', description: '管理计划分组、目标回顾提醒与 AI 个性化鼓励。' },
+    weight: { title: '体重记录设置', description: '管理健康参数、变化提醒与每日记录提醒。' },
+    mood: { title: '心情日记设置', description: '管理心情等级、自定义标签与每日关怀提醒。' },
+    schedule: { title: '日程提醒设置', description: '管理日程标签、颜色和分类规则。' },
+    passwords: { title: '密码库设置', description: '管理密码分类；主密码仍在通用配置中管理。' },
+    chat: { title: '温馨小家设置', description: '管理女朋友名字、记忆和聊天数据。' }
   })[settingsScope.value] || null)
 
   const autoLockPickerOpen = ref(false)
@@ -60,30 +60,30 @@ export function useSettingsNavigation() {
     .filter(key => settingsStore.notificationSettings[key]?.enabled).length)
   const generalSettingsCategories = computed(() => [
     {
-      id: 'appearance', icon: '✦', title: '外观与首页',
+      id: 'appearance', title: '外观与首页',
       description: settingsStore.themeSettings.mode === 'preset'
         ? `${THEME_PRESETS[settingsStore.themeSettings.presetId]?.name || '云朵蓝'}主题`
         : '自定义主题色'
     },
     {
-      id: 'notifications', icon: '◷', title: '通知与提醒',
+      id: 'notifications', title: '通知与提醒',
       description: enabledReminderCount.value ? `已开启 ${enabledReminderCount.value} 项每日提醒` : '当前未开启每日提醒'
     },
-    { id: 'security', icon: '⌑', title: '安全与解锁', description: `后台后${autoLockLabel.value}` },
+    { id: 'security', title: '安全与解锁', description: `后台后${autoLockLabel.value}` },
     {
-      id: 'labels', icon: '◇', title: '内容标签',
+      id: 'labels', title: '内容标签',
       description: `${scheduleStore.categories.length} 个日程标签 · ${vaultStore.categories.length} 个密码分类`
     },
     {
-      id: 'health', icon: '♡', title: '健康与趋势',
+      id: 'health', title: '健康与趋势',
       description: settingsStore.targetWeight ? `目标体重 ${settingsStore.targetWeight} kg` : '设置身高、目标体重与变化提醒'
     },
-    { id: 'data', icon: '⇅', title: '数据与备份', description: '加密导入、导出与完整恢复' },
+    { id: 'data', title: '数据与备份', description: '加密导入、导出与完整恢复' },
     {
-      id: 'ai', icon: '◎', title: 'AI 服务',
+      id: 'ai', title: 'AI 服务',
       description: settingsStore.aiApiKey?.trim() ? `已配置 ${settingsStore.aiModel || '模型'}` : '尚未配置 API Key'
     },
-    { id: 'widgets', icon: '▦', title: '桌面小组件', description: '今日信息与临近日程组件' }
+    { id: 'widgets', title: '桌面小组件', description: '今日信息与临近日程组件' }
   ])
   const openGeneralSettingsCategory = section => settingsStore.openGeneralSettingsSection(section)
 

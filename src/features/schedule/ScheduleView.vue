@@ -13,6 +13,11 @@ import { appAlert, appChoose, appConfirm } from '../../services/uiFeedback'
 import { registerBackHandler } from '../../services/backNavigation'
 import AppDateField from '../../components/AppDateField.vue'
 import AppTimeField from '../../components/AppTimeField.vue'
+import { MorphIcon } from 'morphicons/vue'
+import { Settings2 } from 'lucide-vue-next'
+
+const TASK_UNCHECKED_ICON = 'M12 2a10 10 0 1 0 0 20a10 10 0 0 0 0-20Z'
+const TASK_CHECKED_ICON = 'M12 2a10 10 0 1 0 0 20a10 10 0 0 0 0-20Z M8 12l3 3 5-6'
 
 const scheduleStore = useScheduleStore()
 const settingsStore = useSettingsStore()
@@ -371,10 +376,7 @@ onMounted(() => scrollAgendaToLatest())
         <span>{{ new Date().getFullYear().toString().slice(0, 2) }}</span><b>{{ new Date().getFullYear().toString().slice(2) }}</b>
       </div>
       <button class="plain-icon schedule-settings-trigger" aria-label="打开日程设置" @click="settingsStore.openModuleSettings('schedule')">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M12 3.5 14 5l2.5-.2.8 2.4 2 1.5-1 2.3.5 2.5-2.3 1.1-1.2 2.2-2.5-.4-2.1 1.4-1.8-1.7-2.5-.1-.5-2.5-1.8-1.7 1.3-2.2-.2-2.5 2.4-.9L9 4.6l2.5.6L12 3.5Z"></path>
-          <circle cx="12" cy="11" r="2.6"></circle>
-        </svg>
+        <Settings2 :size="23" :stroke-width="1.8" aria-hidden="true" />
       </button>
     </header>
 
@@ -429,9 +431,10 @@ onMounted(() => scrollAgendaToLatest())
               class="task-check"
               :class="{ checked: item.completed }"
               :style="{ '--category-color': categoryById(item.categoryId)?.color }"
-              aria-label="切换完成状态"
+              :aria-label="`将${item.title}标记为${item.completed ? '未完成' : '完成'}`"
+              :aria-pressed="item.completed"
               @click.stop="complete(item)"
-            >✓</button>
+            ><MorphIcon :icon="item.completed ? TASK_CHECKED_ICON : TASK_UNCHECKED_ICON" spring="snappy" reduced-motion="user" :size="23" :stroke-width="1.8" /></button>
             <span
               v-else
               class="category-dot"
@@ -643,6 +646,7 @@ onMounted(() => scrollAgendaToLatest())
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  touch-action: pan-x pan-y;
   background:
     radial-gradient(circle at 90% 0%, rgba(var(--theme-primary-rgb), .08), transparent 28%),
     #f5f5f7;
@@ -663,7 +667,6 @@ onMounted(() => scrollAgendaToLatest())
 .year-mark { text-align: center; font-size: 28px; font-weight: 700; letter-spacing: .5px; }
 .year-mark b { color: var(--primary); }
 .schedule-settings-trigger { display: grid; place-items: center; padding: 8px; color: var(--primary); }
-.schedule-settings-trigger svg { width: 21px; height: 21px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .view-tabs {
   width: calc(100% - 40px);
   max-width: 520px;
@@ -712,9 +715,9 @@ onMounted(() => scrollAgendaToLatest())
 .agenda-item:last-child { border-bottom: 0; }
 .category-dot { width: 12px; height: 12px; margin-top: 6px; border-radius: 50%; flex: 0 0 auto; }
 .task-check {
-  width: 23px; height: 23px; margin-top: 1px; border-radius: 50%; border: 2px solid var(--category-color); color: transparent; background: transparent; padding: 0;
+  display: grid; place-items: center; width: 23px; height: 23px; flex: 0 0 23px; margin-top: 1px; border: 0; border-radius: 50%; color: var(--category-color); background: transparent; padding: 0; cursor: pointer;
 }
-.task-check.checked { background: var(--category-color); color: white; }
+.task-check.checked { color: var(--category-color); }
 .item-copy { min-width: 0; flex: 1; display: flex; flex-direction: column; gap: 5px; }
 .item-copy strong {
   font-size: var(--schedule-title-size, 18px);

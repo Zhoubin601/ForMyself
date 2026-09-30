@@ -3,6 +3,8 @@ import { defineAsyncComponent } from 'vue'
 import { useAppController } from './composables/useAppController.js'
 import HomeView from './components/HomeView.vue'
 import AppFeedbackHost from './components/AppFeedbackHost.vue'
+import { House, ChartNoAxesColumn, Wallet, Scale, Heart, HouseHeart, CalendarDays, LockKeyhole, SlidersHorizontal, Menu, X, Settings2, ChevronLeft } from 'lucide-vue-next'
+const drawerIcons = { home: House, reports: ChartNoAxesColumn, debts: Wallet, weight: Scale, mood: Heart, chat: HouseHeart, schedule: CalendarDays, passwords: LockKeyhole, settings: SlidersHorizontal }
 const MonthlyReportView = defineAsyncComponent(() => import('./components/MonthlyReportView.vue'))
 const DebtListView = defineAsyncComponent(() => import('./components/DebtListView.vue'))
 const WeightView = defineAsyncComponent(() => import('./components/WeightView.vue'))
@@ -141,22 +143,10 @@ const {
           aria-label="返回模块"
           @click="settingsStore.settingsSection ? settingsStore.closeGeneralSettingsSection() : settingsStore.closeModuleSettings()"
         >
-          <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none">
-            <path d="m15 5-7 7 7 7"></path>
-          </svg>
+          <ChevronLeft :size="24" :stroke-width="2" aria-hidden="true" />
         </button>
         <button v-else class="nav-link-btn" aria-label="打开导航菜单" @click="settingsStore.isDrawerOpen = true">
-          <svg
-            viewBox="0 0 24 24"
-            width="24"
-            height="24"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            fill="none"
-          >
-            <path d="M4 6h16M4 12h16M4 18h16"></path>
-          </svg>
+          <Menu :size="24" :stroke-width="2" aria-hidden="true" />
         </button>
         <h2 class="tagline">{{ settingsStore.viewTitle }}</h2>
         <button
@@ -165,10 +155,7 @@ const {
           :aria-label="`打开${settingsStore.viewTitle}设置`"
           @click="settingsStore.openModuleSettings(settingsStore.currentView)"
         >
-          <svg viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 3.5 14 5l2.5-.2.8 2.4 2 1.5-1 2.3.5 2.5-2.3 1.1-1.2 2.2-2.5-.4-2.1 1.4-1.8-1.7-2.5-.1-.5-2.5-1.8-1.7 1.3-2.2-.2-2.5 2.4-.9L9 4.6l2.5.6L12 3.5Z"></path>
-            <circle cx="12" cy="11" r="2.6"></circle>
-          </svg>
+          <Settings2 :size="23" :stroke-width="1.8" aria-hidden="true" />
         </button>
         <div v-else class="nav-side-placeholder" aria-hidden="true"></div>
       </div>
@@ -199,7 +186,7 @@ const {
               aria-label="关闭导航菜单"
               @click="settingsStore.isDrawerOpen = false"
             >
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 7 10 10M17 7 7 17" /></svg>
+              <X :size="21" :stroke-width="1.8" aria-hidden="true" />
             </button>
           </div>
           <p class="drawer-section-label">生活面板</p>
@@ -216,7 +203,7 @@ const {
               @keydown.space.prevent="settingsStore.switchView(item.id)"
             >
               <span class="drawer-item-icon">
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path :d="item.icon" /></svg>
+                <component :is="drawerIcons[item.id]" :size="21" :stroke-width="1.8" aria-hidden="true" />
               </span>
               <span class="drawer-item-label">{{ item.label }}</span>
               <span

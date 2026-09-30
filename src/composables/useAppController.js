@@ -70,15 +70,15 @@ export function useAppController() {
   const showPassword = ref(false)
   const moduleSettingsViews = new Set(['debts', 'weight', 'mood', 'passwords', 'chat'])
   const drawerItems = [
-    { id: 'home', label: '首页总览', meta: '今天', icon: 'M3.5 10.5 12 3.5l8.5 7v9a1 1 0 0 1-1 1h-5v-6h-5v6h-5a1 1 0 0 1-1-1v-9Z' },
-    { id: 'reports', label: '月度报告', meta: '回顾', icon: 'M4 19V10m5 9V5m6 14v-7m5 7H2' },
-    { id: 'debts', label: '省钱计划', meta: '目标', icon: 'M4 7.5h15a2 2 0 0 1 2 2v9H5a2 2 0 0 1-2-2v-11a2 2 0 0 1 2-2h12M16 13h5' },
-    { id: 'weight', label: '体重记录', meta: '健康', icon: 'M6.3 7.4a7.5 7.5 0 1 1-1.5 4.6M8 8.3A5.7 5.7 0 0 1 16 8m-4 2 2.5-2.5' },
-    { id: 'mood', label: '心情日记', meta: '感受', icon: 'M20.8 9.3c0 5-8.8 10.6-8.8 10.6S3.2 14.3 3.2 9.3A4.7 4.7 0 0 1 12 7a4.7 4.7 0 0 1 8.8 2.3Z' },
-    { id: 'chat', label: '温馨小家', meta: '陪伴', icon: 'M4 11.2 12 4l8 7.2V20h-5v-5H9v5H4v-8.8Zm5.2-.4c0-2.3 2.8-3.1 3.8-1.1 1-2 3.8-1.2 3.8 1.1 0 2.1-3.8 4.3-3.8 4.3s-3.8-2.2-3.8-4.3Z' },
-    { id: 'schedule', label: '日程提醒', meta: '安排', icon: 'M6 3v3m12-3v3M4 9h16M5 5h14a1 1 0 0 1 1 1v14H4V6a1 1 0 0 1 1-1Zm3 8h3m2 0h3m-8 4h3' },
-    { id: 'passwords', label: '密码库', meta: '安全', icon: 'M7 10V8a5 5 0 0 1 10 0v2m-11 0h12a1 1 0 0 1 1 1v9H5v-9a1 1 0 0 1 1-1Zm6 4v3' },
-    { id: 'settings', label: '通用配置', meta: '设置', icon: 'M4 7h10m4 0h2M4 17h2m4 0h10M14 4v6M6 14v6' }
+    { id: 'home', label: '首页总览', meta: '今天' },
+    { id: 'reports', label: '月度报告', meta: '回顾' },
+    { id: 'debts', label: '省钱计划', meta: '目标' },
+    { id: 'weight', label: '体重记录', meta: '健康' },
+    { id: 'mood', label: '心情日记', meta: '感受' },
+    { id: 'chat', label: '温馨小家', meta: '陪伴' },
+    { id: 'schedule', label: '日程提醒', meta: '安排' },
+    { id: 'passwords', label: '密码库', meta: '安全' },
+    { id: 'settings', label: '通用配置', meta: '设置' }
   ]
   let backgroundedAt = null
   let reminderRefreshTimer = null

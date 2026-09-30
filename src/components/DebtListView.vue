@@ -15,6 +15,7 @@ import { debtIconGraphemes, normalizeDebtIconLabel } from '../services/debtIcon'
 import { preferenceStorage as Preferences } from '../platform/storage/preferences.js'
 import { STORAGE_KEYS } from '../platform/storage/keys.js'
 import AppDateField from './AppDateField.vue'
+import { Plus, Ellipsis } from 'lucide-vue-next'
 
 const debtStore = useDebtStore()
 const settingsStore = useSettingsStore()
@@ -70,8 +71,7 @@ function groupGeometry(list) {
     }]
   }))
 }
-function animateDensity(value, list) {
-  const before = groupGeometry(list)
+function animateDensity(value, list, before) {
   const version = densityAnimationVersion
   density.value = value
   nextTick(() => {
@@ -95,9 +95,18 @@ function animateDensity(value, list) {
         const top = now.top - rect.top
         densityAnimatedStyles.push({ node: card, overflow: card.style.overflow, boxSizing: card.style.boxSizing, transformOrigin: card.style.transformOrigin })
         card.style.transformOrigin = 'top left'
+        const dx = oldCard.left - left
+        const dy = oldCard.top - top
+        const distance = Math.hypot(dx, dy)
+        const bend = Math.min(16, distance * 0.08)
+        const middleX = dx / 2 - (distance ? dy / distance * bend : 0)
+        const middleY = dy / 2 + (distance ? dx / distance * bend : 0)
+        const scaleX = oldCard.width / Math.max(1, now.width)
+        const scaleY = oldCard.height / Math.max(1, now.height)
         densityAnimations.push(card.animate([
-          { transform: `translate(${oldCard.left - left}px, ${oldCard.top - top}px) scale(${oldCard.width / Math.max(1, now.width)}, ${oldCard.height / Math.max(1, now.height)})`, opacity: 0.72 },
-          { transform: 'translate(0, 0) scale(1)', opacity: 1 }
+          { transform: `translate(${dx}px, ${dy}px) scale(${scaleX}, ${scaleY})`, opacity: 0.72, offset: 0 },
+          { transform: `translate(${middleX}px, ${middleY}px) scale(${(scaleX + 1) / 2}, ${(scaleY + 1) / 2})`, opacity: 0.9, offset: 0.5 },
+          { transform: 'translate(0, 0) scale(1)', opacity: 1, offset: 1 }
         ], { duration: 380, easing }))
       }
     }
@@ -111,10 +120,11 @@ function animateDensity(value, list) {
 
 function setDensity(value) {
   if (!densityOptions.includes(value) || density.value === value) return
-  clearDensityAnimation()
   const list = listRef.value
+  const before = list ? groupGeometry(list) : null
+  clearDensityAnimation()
   const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches
-  if (list && !reduceMotion && typeof Element.prototype.animate === 'function') animateDensity(value, list)
+  if (list && before && !reduceMotion && typeof Element.prototype.animate === 'function') animateDensity(value, list, before)
   else density.value = value
   Preferences.set({ key: STORAGE_KEYS.savingsDensity, value }).catch(() => appToast('显示方式未保存', { tone: 'danger' }))
 }
@@ -508,10 +518,10 @@ onMounted(fetchAIEncouragement)
         <div class="saving-track" role="progressbar" :aria-label="`${debt.name}完成进度`" :aria-valuenow="debt.percent" aria-valuemin="0" aria-valuemax="100"><span :style="{ width: debt.percent + '%' }"></span></div>
         <div class="progress-caption"><span>目标 ¥{{ money(debt.target) }}</span><strong>{{ debt.percent }}%</strong></div>
         <div class="card-actions">
-          <button v-if="!debt.isCleared" class="button-primary small-pill" :disabled="busy" @click="startRepay(debt)">＋ 存入</button>
+          <button v-if="!debt.isCleared" class="button-primary small-pill" :disabled="busy" @click="startRepay(debt)"><Plus :size="14" aria-hidden="true" />存入</button>
           <button class="button-secondary-pill small-pill" :disabled="busy" @click="viewDetails(debt)">明细</button>
           <div class="more-wrap" @click.stop>
-            <button class="more-button" :disabled="busy" :aria-label="`${debt.name}的更多操作`" :aria-expanded="moreId === debt.id" @click="moreId = moreId === debt.id ? null : debt.id">更多 ···</button>
+            <button class="more-button" :disabled="busy" :aria-label="`${debt.name}的更多操作`" :aria-expanded="moreId === debt.id" @click="moreId = moreId === debt.id ? null : debt.id">更多 <Ellipsis :size="17" aria-hidden="true" /></button>
             <div v-if="moreId === debt.id" class="card-menu">
               <button v-if="!debt.isCleared" @click="startEdit(debt); moreId = null">编辑计划</button>
               <button :disabled="sortDisabled || index === 0" @click="moveDebt(debt.id, -1)">上移</button>
@@ -541,7 +551,7 @@ onMounted(fetchAIEncouragement)
         <div class="card-amounts"><div><span class="caption body-muted">已存下</span><strong class="saved-amount">¥{{ money(draggedDebt.saved) }}</strong></div><span class="remaining">{{ draggedDebt.isCleared ? '目标达成 ✨' : `还差 ¥${money(draggedDebt.remaining)}` }}</span></div>
         <div class="saving-track"><span :style="{ width: draggedDebt.percent + '%' }"></span></div>
         <div class="progress-caption"><span>目标 ¥{{ money(draggedDebt.target) }}</span><strong>{{ draggedDebt.percent }}%</strong></div>
-        <div class="card-actions"><span v-if="!draggedDebt.isCleared" class="button-primary small-pill">＋ 存入</span><span class="button-secondary-pill small-pill">明细</span><span class="more-wrap more-button">更多 ···</span></div>
+        <div class="card-actions"><span v-if="!draggedDebt.isCleared" class="button-primary small-pill"><Plus :size="14" aria-hidden="true" />存入</span><span class="button-secondary-pill small-pill">明细</span><span class="more-wrap more-button">更多 <Ellipsis :size="17" aria-hidden="true" /></span></div>
       </article>
       <div v-if="orderMessage" class="order-toast" role="status"><span>{{ orderMessage }}</span><button v-if="undoOrder" :disabled="busy" @click="undoLastOrder">撤销</button></div>
     </Teleport>
@@ -656,7 +666,7 @@ onMounted(fetchAIEncouragement)
 .record-list.density-grid .progress-caption, .savings-drag-ghost.density-grid .progress-caption { font-size: 10px; }
 .record-list.density-grid .card-actions, .savings-drag-ghost.density-grid .card-actions { gap: 4px; }
 .record-list.density-grid .card-actions .small-pill, .savings-drag-ghost.density-grid .card-actions .small-pill { padding: 7px; min-height: 34px; font-size: 11px; }
-.record-list.density-grid .card-actions .more-button, .savings-drag-ghost.density-grid .card-actions .more-button { font-size: 11px; }
+.record-list.density-grid .card-actions .more-button, .savings-drag-ghost.density-grid .card-actions .more-button { width: 28px; justify-content: center; font-size: 0; }
 .record-list.density-rows .savings-card, .savings-drag-ghost.density-rows { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 5px 8px; padding: 10px 12px; border-radius: 14px; }
 .record-list.density-rows .card-header, .savings-drag-ghost.density-rows .card-header { margin: 0; }
 .record-list.density-rows .goal-icon, .savings-drag-ghost.density-rows .goal-icon { width: 30px; height: 30px; flex-basis: 30px; font-size: 19px; }
@@ -682,7 +692,7 @@ onMounted(fetchAIEncouragement)
 .drag-handle { width: 44px; height: 44px; padding: 10px 14px; border: 0; border-radius: 12px; background: transparent; color: var(--body-muted); flex-shrink: 0; cursor: grab; touch-action: none !important; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }.drag-handle svg { width: 16px; height: 24px; fill: currentColor; }.drag-handle:active { background: var(--divider-soft); }.drag-handle:disabled { opacity: .3; cursor: default; }
 .card-amounts { display: flex; justify-content: space-between; align-items: end; gap: 12px; margin-bottom: 14px; }.card-amounts > div { min-width: 0; }.saved-amount { display: block; margin-top: 4px; font-size: 28px; line-height: 1.2; font-variant-numeric: tabular-nums; letter-spacing: -.5px; overflow-wrap: anywhere; }.remaining { color: var(--primary); font-size: 12px; text-align: right; max-width: 45%; overflow-wrap: anywhere; }
 .saving-track { height: 9px; border-radius: 9px; overflow: hidden; background: var(--divider-soft); }.saving-track > span { display: block; height: 100%; background: var(--primary); border-radius: inherit; }.progress-caption { display: flex; justify-content: space-between; gap: 12px; margin-top: 8px; font-size: 12px; color: var(--body-muted); overflow-wrap: anywhere; }
-.card-actions { display: flex; align-items: center; gap: 8px; border-top: 1px solid var(--divider-soft); padding-top: 8px; margin-top: 10px; }.small-pill { padding: 9px 18px; min-height: 40px; font-size: 13px; }.more-wrap { margin-left: auto; position: relative; }.more-button { min-height: 44px; padding: 6px; color: var(--body-muted); border: 0; background: none; cursor: pointer; }
+.card-actions { display: flex; align-items: center; gap: 8px; border-top: 1px solid var(--divider-soft); padding-top: 8px; margin-top: 10px; }.small-pill { display: inline-flex; align-items: center; justify-content: center; gap: 3px; padding: 9px 18px; min-height: 40px; font-size: 13px; white-space: nowrap; }.small-pill svg, .more-button svg { flex: 0 0 auto; }.more-wrap { margin-left: auto; position: relative; }.more-button { display: inline-flex; align-items: center; gap: 2px; min-height: 44px; padding: 6px; color: var(--body-muted); border: 0; background: none; cursor: pointer; white-space: nowrap; }
 .card-menu { position: absolute; right: 0; bottom: 100%; width: 132px; z-index: 5; background: var(--canvas); border: 1px solid var(--hairline); border-radius: 14px; padding: 5px; box-shadow: 0 8px 30px #0002; }.card-menu button { display: block; width: 100%; min-height: 44px; border: 0; border-radius: 9px; background: none; color: var(--ink); text-align: left; padding: 10px 14px; cursor: pointer; }.card-menu button:hover { background: var(--divider-soft); }.card-menu .destructive { color: #cc344d; }
 .savings-page button:disabled { opacity: .4; cursor: default; }.savings-page button:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }.cleared .goal-icon { background: #e5f5eb; color: #288052; }.cleared .remaining { color: #288052; }
 .empty-state { text-align: center; padding: 48px 0; color: var(--body-muted); font-size: 14px; }.empty-state > span { font-size: 34px; }

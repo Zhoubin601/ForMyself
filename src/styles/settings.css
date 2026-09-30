@@ -23,7 +23,7 @@
 .settings-container .general-settings-copy strong, .settings-container .general-settings-copy small { display: block; }
 .settings-container .general-settings-copy strong { font-size: 14px; line-height: 1.25; }
 .settings-container .general-settings-copy small { margin-top: 5px; color: var(--body-muted); font-size: 11px; line-height: 1.4; overflow-wrap: anywhere; }
-.settings-container .general-settings-card > b { color: var(--body-muted); font-size: 21px; font-weight: 400; }
+.settings-container .settings-card-chevron { color: var(--body-muted); }
 .settings-container .section-title { padding: 0 12px; margin-bottom: 8px; font-weight: 650; letter-spacing: .02em; }
 .settings-container .module-settings-intro {
   display: flex; align-items: center; gap: 14px; padding: 18px;

@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.webkit.WebSettings;
 
 import com.getcapacitor.BridgeActivity;
 
@@ -14,6 +15,9 @@ public class MainActivity extends BridgeActivity {
     protected void onCreate(Bundle savedInstanceState) {
         registerPlugin(ForMyselfWidgetPlugin.class);
         super.onCreate(savedInstanceState);
+        WebSettings webSettings = getBridge().getWebView().getSettings();
+        webSettings.setSupportZoom(false);
+        webSettings.setBuiltInZoomControls(false);
         handleWidgetPinRequest(getIntent());
     }
 

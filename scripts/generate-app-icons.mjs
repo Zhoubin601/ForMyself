@@ -3,11 +3,11 @@ import path from 'node:path'
 import sharp from 'sharp'
 
 const root = path.resolve(import.meta.dirname, '..')
-const source = path.join(root, 'newicon.png')
+const source = path.join(root, 'assets', 'app-icon-source.png')
 const metadata = await sharp(source).metadata()
 
 if (!metadata.width || !metadata.height || metadata.width !== metadata.height || metadata.width < 1024) {
-  throw new Error('newicon.png 必须是至少 1024×1024 的正方形图片')
+  throw new Error('assets/app-icon-source.png 必须是至少 1024×1024 的正方形图片')
 }
 
 const pixel = await sharp(source)
