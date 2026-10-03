@@ -88,6 +88,7 @@ test('完整备份 v6 包含互动聊天、连续关系、五类生活数据和�
     mood: 1,
     passwords: 1,
     schedules: 1,
+    todos: 0,
     chatMessages: 2,
     chatMemories: 2
   })

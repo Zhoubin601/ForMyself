@@ -5,6 +5,9 @@ import { useSettingsStore } from '../stores/settings'
 import { useMoodStore } from '../features/mood/moodStore'
 import { useWeightStore } from '../stores/weight'
 import { useDebtStore } from '../stores/debt'
+import TodoProgressCard from '../features/todo/TodoProgressCard.vue'
+import { useTodoStore } from '../features/todo/todoStore.js'
+import { appToast } from '../services/uiFeedback.js'
 import { useScheduleStore } from '../features/schedule/scheduleStore'
 import { askAI } from '../services/aiEngine'
 import {
@@ -20,6 +23,11 @@ const moodStore = useMoodStore()
 const weightStore = useWeightStore()
 const debtStore = useDebtStore()
 const scheduleStore = useScheduleStore()
+const todoStore = useTodoStore()
+const completeTodo = async item => {
+  try { await todoStore.complete(item.taskId, item.date, !item.completed) }
+  catch { appToast('保存待办失败，请重试', { tone:'danger' }) }
+}
 const props = defineProps({
   chatUnreadCount: { type: Number, default: 0 },
   showBiometricSetup: { type: Boolean, default: false },
@@ -364,6 +372,7 @@ onMounted(() => {
       </div>
     </section>
 
+    <TodoProgressCard :items="todoStore.todayItems" compact @complete="completeTodo" @open="switchView('todo')" />
     <button class="schedule-home-card dashboard-card" @click="switchView('schedule')">
       <div class="schedule-date-tile">
         <strong>{{ currentTime.getDate() }}</strong>

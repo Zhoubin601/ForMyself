@@ -17,6 +17,14 @@ dist-ssr
 /raw/*
 /Output/
 
+# Local emulator captures; keep the reviewed synthetic widget preview
+/docs/qa/todo/*
+!/docs/qa/todo/v8-api37-reference-widget.png
+
+# Python QA caches
+__pycache__/
+*.py[cod]
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

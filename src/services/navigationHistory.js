@@ -6,6 +6,7 @@ export const APP_VIEWS = Object.freeze([
   'mood',
   'chat',
   'schedule',
+  'todo',
   'passwords',
   'settings'
 ])
@@ -34,6 +35,7 @@ export function normalizeAppRoute(value = {}, fallbackView = 'home') {
           occurrence: cleanText(source.scheduleTarget?.occurrence)
         }
       : { item: '', occurrence: '' },
+    todoTarget: view === 'todo' ? { item: cleanText(source.todoTarget?.item), date: cleanText(source.todoTarget?.date) } : { item: '', date: '' },
     scrollTop: Math.max(0, Number(source.scrollTop) || 0)
   }
 }
@@ -45,7 +47,9 @@ export function appRouteKey(value) {
     route.settingsScope,
     route.settingsSection,
     route.scheduleTarget.item,
-    route.scheduleTarget.occurrence
+    route.scheduleTarget.occurrence,
+    route.todoTarget.item,
+    route.todoTarget.date
   ].join('|')
 }
 

@@ -3,12 +3,13 @@ import { defineAsyncComponent } from 'vue'
 import { useAppController } from './composables/useAppController.js'
 import HomeView from './components/HomeView.vue'
 import AppFeedbackHost from './components/AppFeedbackHost.vue'
-import { House, ChartNoAxesColumn, Wallet, Scale, Heart, HouseHeart, CalendarDays, LockKeyhole, SlidersHorizontal, Menu, X, Settings2, ChevronLeft } from 'lucide-vue-next'
-const drawerIcons = { home: House, reports: ChartNoAxesColumn, debts: Wallet, weight: Scale, mood: Heart, chat: HouseHeart, schedule: CalendarDays, passwords: LockKeyhole, settings: SlidersHorizontal }
+import { ListChecks, House, ChartNoAxesColumn, Wallet, Scale, Heart, HouseHeart, CalendarDays, LockKeyhole, SlidersHorizontal, Menu, X, Settings2, ChevronLeft } from 'lucide-vue-next'
+const drawerIcons = { todo: ListChecks, home: House, reports: ChartNoAxesColumn, debts: Wallet, weight: Scale, mood: Heart, chat: HouseHeart, schedule: CalendarDays, passwords: LockKeyhole, settings: SlidersHorizontal }
 const MonthlyReportView = defineAsyncComponent(() => import('./components/MonthlyReportView.vue'))
 const DebtListView = defineAsyncComponent(() => import('./components/DebtListView.vue'))
 const WeightView = defineAsyncComponent(() => import('./components/WeightView.vue'))
 const MoodView = defineAsyncComponent(() => import('./features/mood/MoodView.vue'))
+const TodoView = defineAsyncComponent(() => import('./features/todo/TodoView.vue'))
 const ScheduleView = defineAsyncComponent(() => import('./features/schedule/ScheduleView.vue'))
 const ChatView = defineAsyncComponent(() => import('./features/chat/ChatView.vue'))
 const PasswordVaultView = defineAsyncComponent(() => import('./components/PasswordVaultView.vue'))
@@ -243,6 +244,7 @@ const {
           <DebtListView v-else-if="settingsStore.currentView === 'debts'" />
           <WeightView v-else-if="settingsStore.currentView === 'weight'" />
           <MoodView v-else-if="settingsStore.currentView === 'mood'" />
+          <TodoView v-else-if="settingsStore.currentView === 'todo'" />
           <ScheduleView v-else-if="settingsStore.currentView === 'schedule'" />
           <ChatView
             v-else-if="settingsStore.currentView === 'chat' && protectedDataStatus === 'ready'"

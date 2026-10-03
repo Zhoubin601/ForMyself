@@ -14,6 +14,7 @@ public class MainActivity extends BridgeActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         registerPlugin(ForMyselfWidgetPlugin.class);
+        registerPlugin(TodoPlugin.class);
         super.onCreate(savedInstanceState);
         WebSettings webSettings = getBridge().getWebView().getSettings();
         webSettings.setSupportZoom(false);
@@ -46,7 +47,7 @@ public class MainActivity extends BridgeActivity {
             boolean scheduleWidget = "schedule".equals(uri.getQueryParameter("type"));
             ComponentName provider = new ComponentName(
                 this,
-                scheduleWidget ? ScheduleWidgetProvider.class : ForMyselfWidgetProvider.class
+                "todo".equals(uri.getQueryParameter("type")) ? TodoWidgetProvider.class : scheduleWidget ? ScheduleWidgetProvider.class : ForMyselfWidgetProvider.class
             );
             manager.requestPinAppWidget(provider, null, null);
         });

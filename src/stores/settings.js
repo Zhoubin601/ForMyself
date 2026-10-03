@@ -36,6 +36,7 @@ export const useSettingsStore = defineStore('settings', () => {
   const settingsScope = ref('general')
   const settingsSection = ref('')
   const settingsReturnView = ref('home')
+  const todoTarget = ref({ item: '', date: '' })
   const scheduleTarget = ref({ item: '', occurrence: '' })
   const isDrawerOpen = ref(false)
   const navigationStack = ref([])
@@ -112,6 +113,7 @@ export const useSettingsStore = defineStore('settings', () => {
     mood: '心情日记',
     chat: '温馨小家',
     schedule: '日程提醒',
+    todo: '每日待办',
     passwords: '我的密码库',
     settings: '通用配置'
   }
@@ -139,6 +141,7 @@ export const useSettingsStore = defineStore('settings', () => {
     settingsScope: settingsScope.value,
     settingsSection: settingsSection.value,
     scheduleTarget: scheduleTarget.value,
+    todoTarget: todoTarget.value,
     scrollTop: routeScrollTop.value
   }))
   const currentRouteKey = computed(() => appRouteKey(currentRoute.value))
@@ -253,6 +256,7 @@ export const useSettingsStore = defineStore('settings', () => {
     settingsScope.value = route.settingsScope
     settingsSection.value = route.settingsSection
     scheduleTarget.value = route.scheduleTarget
+    todoTarget.value = route.todoTarget
     routeScrollTop.value = route.scrollTop
     isDrawerOpen.value = false
     navigationRevision.value += 1
@@ -414,5 +418,5 @@ export const useSettingsStore = defineStore('settings', () => {
     return backup
   }
 
-  return { commonNotes, bannerSettings, customBg, themeSettings, themeCssVariables, currentView, settingsScope, settingsSection, settingsReturnView, scheduleTarget, isDrawerOpen, navigationStack, navigationRevision, currentRoute, currentRouteKey, canGoBack, isDataLoaded, viewTitle, cachedQuote, dataFingerprint, lastEncouragement, aiProviderUrl, aiApiKey, aiModel, autoLockDelaySeconds, notificationSettings, notificationAiContent, targetWeight, heightCm, weightChangeReminderEnabled, weightChangeThreshold, loadSettings, flushPendingSettingsWrites, navigate, replaceRoute, goBack, updateLastHistoryScroll, updateCurrentRouteScroll, switchView, openGeneralSettingsSection, closeGeneralSettingsSection, openModuleSettings, closeModuleSettings, openScheduleTarget, updateBanner, updateBg, updateThemeSettings, updateHealthSettings, getBackupSnapshot, restoreBackupSnapshot }
+  return { todoTarget, commonNotes, bannerSettings, customBg, themeSettings, themeCssVariables, currentView, settingsScope, settingsSection, settingsReturnView, scheduleTarget, isDrawerOpen, navigationStack, navigationRevision, currentRoute, currentRouteKey, canGoBack, isDataLoaded, viewTitle, cachedQuote, dataFingerprint, lastEncouragement, aiProviderUrl, aiApiKey, aiModel, autoLockDelaySeconds, notificationSettings, notificationAiContent, targetWeight, heightCm, weightChangeReminderEnabled, weightChangeThreshold, loadSettings, flushPendingSettingsWrites, navigate, replaceRoute, goBack, updateLastHistoryScroll, updateCurrentRouteScroll, switchView, openGeneralSettingsSection, closeGeneralSettingsSection, openModuleSettings, closeModuleSettings, openScheduleTarget, updateBanner, updateBg, updateThemeSettings, updateHealthSettings, getBackupSnapshot, restoreBackupSnapshot }
 })

@@ -18,6 +18,8 @@ import { useWeightStore } from '../../stores/weight'
 import { useMoodStore } from '../../features/mood/moodStore'
 import { useSettingsStore } from '../../stores/settings'
 import { usePasswordVaultStore } from '../../stores/passwordVault'
+import { buildTodoBackup, readTodoBackup } from '../../features/todo/todoCore.js'
+import { useTodoStore } from '../../features/todo/todoStore.js'
 import { useScheduleStore } from '../../features/schedule/scheduleStore'
 import { useChatStore } from '../../features/chat/chatStore'
 import { syncScheduleNotifications } from '../../features/schedule/scheduleNotificationService'
@@ -33,6 +35,7 @@ export function useBackupSettings() {
   const settingsStore = useSettingsStore()
   const vaultStore = usePasswordVaultStore()
   const scheduleStore = useScheduleStore()
+  const todoStore = useTodoStore()
   const chatStore = useChatStore()
 
   const fileInputRef = ref(null)
@@ -47,6 +50,7 @@ export function useBackupSettings() {
     { value: 'mood', label: '心情数据' },
     { value: 'passwords', label: '密码库数据' },
     { value: 'schedules', label: '日程数据' },
+    { value: 'todos', label: '每日待办数据' },
     { value: 'chat', label: '温馨小家数据' }
   ]
 
@@ -59,6 +63,7 @@ export function useBackupSettings() {
     if (exportDataType.value === 'savings') return { records: debtStore.savedDebts, groups: debtStore.debtGroups }
     if (exportDataType.value === 'weight') return weightStore.weightRecords
     if (exportDataType.value === 'passwords') return vaultStore.records
+    if (exportDataType.value === 'todos') return buildTodoBackup(todoStore.snapshot)
     if (exportDataType.value === 'schedules') return scheduleStore.snapshot
     if (exportDataType.value === 'chat') return buildChatBackupSnapshot(chatStore.snapshot)
     return buildMoodBackupSnapshot({
@@ -72,7 +77,9 @@ export function useBackupSettings() {
   }
 
   const setDataArray = async (data, overwrite) => {
-    if (exportDataType.value === 'savings') {
+    if (exportDataType.value === 'todos') {
+      await todoStore.restore(data)
+    } else if (exportDataType.value === 'savings') {
       const records = overwrite ? data.records : [...debtStore.savedDebts, ...data.records]
       const groups = overwrite ? data.groups : normalizeDebtGroups([...debtStore.debtGroups, ...data.groups], records)
       await debtStore.restoreDebts(records, groups)
@@ -110,7 +117,7 @@ export function useBackupSettings() {
   }
 
   const getFilePrefix = () => {
-    return { full: 'Full', savings: 'Savings', weight: 'Weight', mood: 'Mood', passwords: 'Passwords', schedules: 'Schedules', chat: 'WarmHome' }[exportDataType.value]
+    return { full: 'Full', savings: 'Savings', weight: 'Weight', mood: 'Mood', passwords: 'Passwords', schedules: 'Schedules', todos:'Todos', chat: 'WarmHome' }[exportDataType.value]
   }
 
   const createFullBackupSnapshot = () => buildFullBackupSnapshot({
@@ -120,6 +127,7 @@ export function useBackupSettings() {
     mood: moodStore.moodRecords,
     passwords: vaultStore.records,
     schedules: scheduleStore.snapshot,
+    todos: todoStore.snapshot,
     chat: chatStore.snapshot,
     moodMetadata: {
       trackingStartDate: moodStore.trackingStartDate,
@@ -141,6 +149,7 @@ export function useBackupSettings() {
       moodStore.restoreMoodBackup(snapshot.data.mood, snapshot.metadata.mood),
       vaultStore.restoreRecords(snapshot.data.passwords, snapshot.metadata.vault),
       scheduleStore.restoreScheduleData(snapshot.data.schedules),
+      ...(Object.hasOwn(snapshot.data, 'todos') ? [todoStore.restore(snapshot.data.todos)] : []),
       chatStore.restoreChatData(snapshot.data.chat),
       settingsStore.restoreBackupSnapshot(snapshot.settings)
     ])
@@ -149,6 +158,8 @@ export function useBackupSettings() {
   }
 
   const restoreFullBackup = async (snapshot) => {
+    await todoStore.load()
+    if (!todoStore.isDataLoaded) throw new Error(todoStore.loadError)
     const previousSnapshot = createFullBackupSnapshot()
     try {
       await applyFullBackupSnapshot(snapshot)
@@ -165,6 +176,7 @@ export function useBackupSettings() {
       await syncReminderNotifications(settingsStore.notificationSettings, {
         personalizedBodies: getPersonalizedReminderBodies(settingsStore.notificationAiContent)
       })
+      await todoStore.syncReminders()
       await syncScheduleNotifications(scheduleStore.snapshot)
       chatStore.materializeDueProactive(Date.now())
       chatStore.materializeDueFollowups(Date.now())
@@ -196,6 +208,11 @@ export function useBackupSettings() {
   }
 
   const exportJSON = async () => {
+    if (['full','todos'].includes(exportDataType.value)) {
+      await todoStore.flush()
+      await todoStore.load()
+      if (!todoStore.isDataLoaded) return appAlert('待办未能安全加载，请重试后导出')
+    }
     const label = getDataTypeLabel()
     const isFullBackup = exportDataType.value === 'full'
     const data = isFullBackup ? createFullBackupSnapshot() : getDataArray()
@@ -256,11 +273,19 @@ export function useBackupSettings() {
         const importedData = JSON.parse(decryptedData)
         const label = getDataTypeLabel()
 
+        if (exportDataType.value === 'todos') {
+          const data = readTodoBackup(importedData)
+          if (!await appConfirm(`待办备份包含 ${data.tasks.length} 个任务版本和 ${data.completions.length} 条完成记录。继续将覆盖当前待办，其他模块保持不变。`, {title:'恢复每日待办？', confirmText:'覆盖并恢复',destructive:true})) return
+          await todoStore.restore(data)
+          await todoStore.syncReminders()
+          appToast('待办恢复成功')
+          return
+        }
         if (exportDataType.value === 'full') {
           const snapshot = normalizeFullBackupSnapshot(importedData)
           const counts = getFullBackupCounts(snapshot)
           const confirmed = await appConfirm(
-        `完整备份包含：\n省钱 ${counts.savings} 项、体重 ${counts.weight} 条、心情 ${counts.mood} 条、密码 ${counts.passwords} 项、日程 ${counts.schedules} 项、聊天 ${counts.chatMessages} 条、长期记忆 ${counts.chatMemories} 条，以及女朋友头像。\n\n继续将覆盖以上全部数据和应用设置。主密码与设备生物识别凭据不会改变。`,
+        `完整备份包含：\n省钱 ${counts.savings} 项、体重 ${counts.weight} 条、心情 ${counts.mood} 条、密码 ${counts.passwords} 项、日程 ${counts.schedules} 项、待办 ${counts.todos} 个版本、聊天 ${counts.chatMessages} 条、长期记忆 ${counts.chatMemories} 条，以及女朋友头像。\n\n继续将覆盖以上全部数据和应用设置。主密码与设备生物识别凭据不会改变。`,
             { title: '恢复完整备份？', confirmText: '覆盖并恢复', destructive: true }
           )
           if (!confirmed) return
@@ -328,8 +353,10 @@ export function useBackupSettings() {
           await setDataArray(importedData, false)
         }
         appToast(`${label}数据恢复成功`, { tone: 'success' })
-      } catch (err) {
-        if (exportDataType.value === 'full') {
+      } catch {
+        if (exportDataType.value === 'todos') {
+          appAlert('待办恢复失败：文件格式、版本或主密码不匹配；原待办保留')
+        } else if (exportDataType.value === 'full') {
           appAlert('完整备份恢复失败：文件损坏、版本不兼容或主密码不匹配')
         } else {
           appAlert('解密失败：主密码与当前备份包不匹配')

@@ -11,6 +11,7 @@ public class ForMyselfWidgetPlugin extends Plugin {
     public void refresh(PluginCall call) {
         ForMyselfWidgetProvider.updateAll(getContext());
         ScheduleWidgetProvider.updateAll(getContext());
+        TodoWidgetProvider.updateAll(getContext());
         call.resolve();
     }
 }

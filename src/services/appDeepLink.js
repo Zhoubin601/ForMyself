@@ -9,6 +9,7 @@ const VIEW_ALIASES = Object.freeze({
   debts: 'debts',
   reports: 'reports',
   schedule: 'schedule',
+  todo: 'todo',
   chat: 'chat'
 })
 
@@ -31,6 +32,7 @@ export const getRouteFromAppUrl = (url) => {
         occurrence: parsedUrl.searchParams.get('occurrence') || ''
       }
     }
+    if (view === 'todo') return { view, item: parsedUrl.searchParams.get('item') || '', date: parsedUrl.searchParams.get('date') || '' }
     if (view === 'chat') {
       return {
         view,

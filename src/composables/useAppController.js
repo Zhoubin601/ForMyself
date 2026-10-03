@@ -7,6 +7,9 @@ import { useSettingsStore } from '../stores/settings'
 import { useMoodStore } from '../features/mood/moodStore'
 import { useDebtStore } from '../stores/debt'
 import { useWeightStore } from '../stores/weight'
+import { useTodoStore } from '../features/todo/todoStore.js'
+import { TodoNative } from '../features/todo/todoRepository.js'
+import { Capacitor } from '@capacitor/core'
 import { useScheduleStore } from '../features/schedule/scheduleStore'
 import { shouldLockOnBackground, shouldLockOnResume } from '../services/autoLockPolicy'
 import {
@@ -30,6 +33,7 @@ export function useAppController() {
   const debtStore = useDebtStore()
   const weightStore = useWeightStore()
   const scheduleStore = useScheduleStore()
+  const todoStore = useTodoStore()
   const chatUnreadCount = ref(0)
   const chatUnreadLabel = computed(() => (
     chatUnreadCount.value > 99 ? '99+' : String(chatUnreadCount.value || '')
@@ -76,6 +80,7 @@ export function useAppController() {
     { id: 'weight', label: '体重记录', meta: '健康' },
     { id: 'mood', label: '心情日记', meta: '感受' },
     { id: 'chat', label: '温馨小家', meta: '陪伴' },
+    { id: 'todo', label: '每日待办', meta: '计划' },
     { id: 'schedule', label: '日程提醒', meta: '安排' },
     { id: 'passwords', label: '密码库', meta: '安全' },
     { id: 'settings', label: '通用配置', meta: '设置' }
@@ -86,6 +91,8 @@ export function useAppController() {
   let widgetRefreshTimer = null
   let scheduleSyncTimer = null
   let startupIdleHandle = null
+  let todoClockCleanup = () => {}
+  let todoChangeListener = null
 
   const resyncStoredReminders = () => syncReminderNotifications(settingsStore.notificationSettings, {
     personalizedBodies: getPersonalizedReminderBodies(settingsStore.notificationAiContent)
@@ -156,7 +163,8 @@ export function useAppController() {
   const openAppUrl = (url) => {
     const route = getRouteFromAppUrl(url)
     if (!route) return
-    if (route.view === 'schedule') settingsStore.openScheduleTarget(route)
+    if (route.view === 'todo') settingsStore.navigate({ view:'todo', todoTarget:{ item:route.item, date:route.date } })
+    else if (route.view === 'schedule') settingsStore.openScheduleTarget(route)
     else {
       if (route.view === 'chat') {
         pendingChatRoute = route
@@ -266,6 +274,7 @@ export function useAppController() {
         savedDebts: debtStore.savedDebts
       }),
       syncScheduleNotifications(scheduleStore.snapshot),
+      todoStore.syncReminders(),
       resyncStoredReminders()
     ]
     const results = await Promise.allSettled(tasks)
@@ -300,6 +309,10 @@ export function useAppController() {
     }
 
     window.addEventListener('keydown', handleAppKeydown)
+    const todoDayTimer = window.setInterval(() => {
+      if (todoStore.today !== new Date().toLocaleDateString('sv-SE')) void todoStore.load().then(() => todoStore.syncReminders())
+    }, 30000)
+    todoClockCleanup = () => window.clearInterval(todoDayTimer)
 
     try {
       await StatusBar.show()
@@ -320,8 +333,10 @@ export function useAppController() {
       debtStore.loadDebts(),
       weightStore.loadWeightRecords(),
       moodStore.loadMoodRecords(),
-      scheduleStore.loadSchedules()
+      scheduleStore.loadSchedules(),
+      todoStore.load()
     ])
+    if (Capacitor.getPlatform() === 'android') todoChangeListener = await TodoNative.addListener('changed', () => { void todoStore.load() })
     moodStore.$subscribe(queueReminderPersonalizationRefresh)
     weightStore.$subscribe(queueReminderPersonalizationRefresh)
     debtStore.$subscribe(queueReminderPersonalizationRefresh)
@@ -352,6 +367,7 @@ export function useAppController() {
           Promise.all([
             chatStore?.flush() || Promise.resolve(),
             scheduleStore.persist(),
+            todoStore.flush(),
             settingsStore.flushPendingSettingsWrites()
           ]).catch(error => console.warn('进入后台时保存数据失败', error))
           if (!nativeActivityGuarded && shouldLockOnBackground(settingsStore.autoLockDelaySeconds)) {
@@ -369,6 +385,7 @@ export function useAppController() {
         }
         backgroundedAt = null
         if (moodStore.isDataLoaded) moodStore.autoFillMissingDays()
+        void todoStore.load().then(() => todoStore.syncReminders())
         queueScheduleRefresh()
         if (protectedDataStatus.value === 'ready') {
           resyncChatProactive().catch(error => console.warn('恢复应用后同步温馨小家主动联系失败', error))
@@ -391,6 +408,8 @@ export function useAppController() {
   onBeforeUnmount(() => {
     window.removeEventListener('keydown', handleAppKeydown)
     stopUnreadWatch?.()
+    todoClockCleanup()
+    void todoChangeListener?.remove()
     if (startupIdleHandle !== null) {
       if (typeof window.cancelIdleCallback === 'function') window.cancelIdleCallback(startupIdleHandle)
       else window.clearTimeout(startupIdleHandle)

@@ -14,7 +14,8 @@ const { isGeneralSection, requestWidgetPin } = toRefs(props.model)
         <button class="list-item text-link" style="text-align: left;" @click="requestWidgetPin('schedule')">
           添加 2×2 临近日程组件
         </button>
+        <button class="list-item text-link" style="text-align: left;" @click="requestWidgetPin('todo')">添加每日待办组件</button>
       </div>
-      <p class="caption body-muted" style="padding: 10px 16px 0; margin: 0;">若桌面不支持应用内添加，可长按桌面并从“小组件”列表选择 ForMyself。</p>
+      <p class="caption body-muted" style="padding: 10px 16px 0; margin: 0;">每日待办默认 2×2，可长按组件调整大小，实际格数由桌面决定。若桌面不支持应用内添加，可长按桌面并从“小组件”列表选择 ForMyself。</p>
     </div>
 </template>

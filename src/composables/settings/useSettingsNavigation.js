@@ -83,13 +83,13 @@ export function useSettingsNavigation() {
       id: 'ai', title: 'AI 服务',
       description: settingsStore.aiApiKey?.trim() ? `已配置 ${settingsStore.aiModel || '模型'}` : '尚未配置 API Key'
     },
-    { id: 'widgets', title: '桌面小组件', description: '今日信息与临近日程组件' }
+    { id: 'widgets', title: '桌面小组件', description: '今日信息、日程与每日待办组件' }
   ])
   const openGeneralSettingsCategory = section => settingsStore.openGeneralSettingsSection(section)
 
   const requestWidgetPin = type => {
     if (!Capacitor.isNativePlatform()) return appAlert('桌面小组件仅在 Android 手机上可用')
-    const suffix = type === 'schedule' ? '?type=schedule' : ''
+    const suffix = ['schedule','todo'].includes(type) ? `?type=${type}` : ''
     window.location.href = `formyself://widget/add${suffix}`
   }
 

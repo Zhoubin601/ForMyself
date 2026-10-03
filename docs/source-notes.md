@@ -681,3 +681,55 @@
 
 ## 2026-09-11 备注下拉截图
 来源：用户提供 codex-clipboard-0941414d-c5e3-46b2-8672-f3f8d8b1d7df.jpg。现状为分离箭头与撑开表单的备注管理列表；用户要求常规下拉框交互。
+
+
+## 2026-10-01 每日待办三阶段实施
+来源名称：用户确认的三阶段计划、版本保护补充、进度底色参考图、本地源码与 Android 官方文档。
+链接或文件名：本任务对话；D:/2026Autumn Semester File/视频内容解析/01_6种组件交互提升App和小程序质感/snapshots/02_进度就是底色_02_平滑推进中.jpg；src/features/schedule/；src/services/fullBackup.js；https://developer.android.com/develop/ui/views/appwidgets/collections；https://developer.android.com/develop/ui/views/appwidgets/advanced。
+引用日期：2026-10-01。
+参考图只用于深色卡片、青绿色底色与进度布局，不使用图中任务或统计。测试数据采用用户随后明确指定的 raw 加密 JSON，图与 JSON 均保持只读；memory-bank 目录未提供。
+
+同日补充：用户明确授权各版调用 Android 模拟器，并使用 raw/ 中提供的加密测试备份。原文件只读，解密限于本机内存，凭据不写入源码、脚本、文档或截图，外部 AI 在测试期间禁用。
+
+来源名称：用户指定的加密测试 JSON（完整备份 v8）。
+链接或文件名：`raw/测试数据密码[凭据已隐藏].json`。文件名中的凭据不在文档复述；以 SHA-256 `67C0A6902EB91F5C0A6A497C773DE6A5583A39345E57BBAF5D23BDFCF9A053B9` 唯一核对原文件。
+引用日期：2026-10-01。
+验证：真实恢复到模拟器中的隔离测试用户，逐模块记录数量与解密后的规范化备份一致；原备份缺少 Todo，待办交互与录屏均使用合成任务。测试期间清空测试用户的外部 AI 配置，关闭主动联系与非待办提醒。交付前再次比对上述哈希。
+
+## 2026-10-01 Todo v4
+来源：用户确认的 v4 计划、两台手机尺寸与卡顿反馈、现有本地 SDK 源码。加密测试备份沿用 raw/ 中原文件，只读；参考图沿用底色示例。真实手机型号及系统版本资料未提供。
+
+来源名称：本地官方Android SDK镜像、隔离模拟器实际操作与录屏结果。
+链接或文件名：本机SDK的API30/31/34/37镜像；`Test_data/todo-v4-apiXX-*.json`；`docs/qa/todo/v4-apiXX-widget-animation.mp4`，XX为30、31、37。
+引用日期：2026-10-01～2026-10-02。
+API30/31测试环境使用从官方API34镜像提取的WebView113.0.5672.136及配套Trichrome库，避免把原镜像过旧WebView的启动失败算作通过。备份在各隔离环境真实恢复，Todo合成夹具可还原；10月2日核对原始JSON及前三版APK哈希均保持不变。未新增或保存凭据。
+
+## 2026-10-02 Todo v5
+来源名称：用户桌面截图、缩放与勾选样式反馈、现有源码。
+链接或文件名：`C:/Users/a3185/AppData/Local/Temp/codex-clipboard-b3a4aa60-b618-403e-abaf-0a67887638df.png`；`android/app/src/main/res/layout/widget_todo_row.xml`；项目已有 `lucide-vue-next` 依赖。
+引用日期：2026-10-02。
+截图仅作为样式与间距参考，不复制其中任务。用户要求以3×3为基准，缩小2×2及放大时适度缩放间距，并实际调用模拟器测试；设计数值由实施确定。原加密测试备份仍只读。
+
+同日验收来源：`Test_data/todo-v5-apiXX-spacing.json`、`todo-v5-apiXX-widget.json`、`todo-v5-apiXX-widget-animation.json`、`todo-v5-apiXX-restored.json`，以及 `docs/qa/todo/v5-apiXX-spacing-*.png`、动画MP4，XX为30、31或37。实际尺寸从真实桌面拖拽后测量，动画从录屏检测；本轮沿用v4已恢复原备份的隔离环境，合成Todo退出后精确还原。原始JSON及v1～v4包哈希保持不变。过小初始状态的16dp间隔与1.5倍参考是设计估计，不是用户截图提供的数据。
+
+## 2026-10-02：待办组件 v6 视觉参考
+
+来源名称：用户当前消息及截图。文件名：`codex-clipboard-8b893e9a-64d6-4b0b-b158-50631c3ff0a1.png`（会话附件）。引用日期：2026-10-02。用户指定2×2、深灰磨砂、日期/星期与TODAY、薄荷青圆环和圆形勾选框；数字及任务样例只作为视觉构图，不进入真实默认数据。
+
+### v6动画诊断的框架来源
+来源名称：AOSP Android 12 AppWidgetServiceImpl 源码（官方镜像）。链接：https://raw.githubusercontent.com/aosp-mirror/platform_frameworks_base/android12-release/services/appwidget/java/com/android/server/appwidget/AppWidgetServiceImpl.java 。引用日期：2026-10-02。局部更新先合并系统缓存，再将有效视图通知桌面，因此内联集合会随动画重复传输。另参考本机SDK `sources/android-36.1/android/graphics/Bitmap.java` 及 `platforms/android-36/data/api-versions.xml`，确认 `asShared` 自API31可用。
+
+### v6验收来源
+`Test_data/todo-v6-apiXX-spacing.json`、`-widget.json`、`-stress.json`、`-widget-animation.json`、`-restored.json` 及 `docs/qa/todo/v6-apiXX-*`，XX为30/31/37。最终包与较早完整缩放构建的884项布局资源一致，依据 `todo-v6-layout-resource-comparison.json`。真实结果和失败重测均记于 `20261002-todo-v6-verification.md`。
+
+## 2026-10-02：v7间距来源
+用户最新消息要求日期不贴左、任务间距按先前附件收紧；来源附件 codex-clipboard-8b893e9a-64d6-4b0b-b158-50631c3ff0a1.png。沿用已恢复原备份的隔离模拟器，不重复导入。
+
+### v7验收来源
+Test_data/todo-v7-apiXX-spacing.json、-widget.json、-stress.json、-widget-animation.json、-restored.json及docs/qa/todo/v7-apiXX-*，XX为30/31/37。API37空任务最终复查见empty-final.log；API31提醒初始失败及后续完整通过分别记录。详见20261002-todo-v7-verification.md。
+
+## 2026-10-02 v8来源
+用户当前要求任务行再收紧一些；沿用之前参考图codex-clipboard-8b893e9a-64d6-4b0b-b158-50631c3ff0a1.png及已恢复用户备份的隔离AVD。
+
+### v8验收来源
+Test_data/todo-v8-apiXX-spacing.json、-widget.json、-native.log、-restored.json及docs/qa/todo/v8-apiXX-*；XX为30/31/37。API37动画压力失败和v7对照记录保留，见20261002-todo-v8-verification.md，不标为全部动画验收通过。

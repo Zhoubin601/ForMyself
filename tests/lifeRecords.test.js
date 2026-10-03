@@ -84,7 +84,7 @@ test('新版全量及心情备份保留空默认、改名目录、优先级与�
   const metadata = { builtInTags: ['成长'], defaultTags: [], definitions }
   const mood = [{ id: 'a', date: '2026-09-08', mood: 'normal', tags: [] }]
   const full = normalizeFullBackupSnapshot(buildFullBackupSnapshot({ weight: weights, mood, moodMetadata: metadata, settings: { commonNotes: { weight: [' 空腹 ', '空腹'], savings: ['少喝奶茶'] } } }))
-  assert.equal(full.version, 9)
+  assert.equal(full.version, 10)
   assert.deepEqual(full.metadata.mood.defaultTags, [])
   assert.deepEqual(full.metadata.mood.builtInTags, ['成长'])
   assert.deepEqual(full.data.mood[0].tags, [])
@@ -96,6 +96,6 @@ test('新版全量及心情备份保留空默认、改名目录、优先级与�
   assert.deepEqual(single.metadata.defaultTags, [])
   const legacy = { ...single, version: 1, metadata: {} }
   assert.deepEqual(normalizeMoodBackupSnapshot(legacy).metadata.defaultTags, ['学习'])
-  assert.equal(normalizeFullBackupSnapshot({ ...full, version: 7 }).version, 9)
+  assert.equal(normalizeFullBackupSnapshot({ ...full, version: 7 }).version, 10)
   assert.deepEqual(normalizeCommonNotes(), { weight: [], savings: [] })
 })
