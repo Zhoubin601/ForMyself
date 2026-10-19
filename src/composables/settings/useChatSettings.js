@@ -1,4 +1,4 @@
-import { computed, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { CHAT_MEMORY_SCOPES } from '../../features/chat/chatRecords'
 import { prepareCompanionAvatar } from '../../features/chat/chatAvatar'
 import { generateDailyCompanionWorld, localDailyCompanionWorld } from '../../features/chat/chatRelationship'
@@ -25,6 +25,9 @@ export function useChatSettings() {
   const vaultStore = usePasswordVaultStore()
   const scheduleStore = useScheduleStore()
   const chatStore = useChatStore()
+  let settingsActive = true
+  onBeforeUnmount(() => { settingsActive = false })
+  const canRunChat = () => settingsActive && settingsStore.warmHomeEnabled
   const settingsScope = computed(() => settingsStore.settingsScope || 'general')
 
   const companionAvatarInputRef = ref(null)
@@ -415,7 +418,7 @@ export function useChatSettings() {
   const setFollowupEnabled = async value => {
     const settings = chatStore.setRealismSettings({ followupEnabled: value })
     if (!settings.followupEnabled) chatStore.setFollowupOutbox([])
-    await syncChatFollowupNotifications(chatStore.followupOutbox, settings, {
+    await syncChatFollowupNotifications(chatStore.followupOutbox, settings, { isFeatureEnabled: () => settingsStore.warmHomeEnabled,
       requestPermission: false,
       now: new Date()
     }).catch(error => console.warn('刷新延迟补话通知失败', error))
@@ -442,6 +445,7 @@ export function useChatSettings() {
         console.warn('重新生成女朋友状态失败，已使用本地状态', error)
         world = localDailyCompanionWorld()
       }
+      if (!canRunChat()) return
       chatStore.setCompanionState(world.state)
       if (world.virtualEvent && !chatStore.virtualEvents.some(item => item.date === world.virtualEvent.date)) {
         chatStore.addVirtualEvent(world.virtualEvent)
@@ -453,6 +457,7 @@ export function useChatSettings() {
   }
 
   const saveChatProactiveSettings = async () => {
+    if (!canRunChat()) return
     isSavingChatProactive.value = true
     try {
       const settings = chatStore.setProactiveSettings(proactiveForm.value)
@@ -477,15 +482,16 @@ export function useChatSettings() {
         virtualEvents: chatStore.virtualEvents.slice(0, 12),
         now
       })
+      if (!canRunChat()) return
       chatStore.setProactiveOutbox(outbox)
-      const result = await syncChatProactiveNotifications(outbox, settings, {
+      const result = await syncChatProactiveNotifications(outbox, settings, { isFeatureEnabled: () => settingsStore.warmHomeEnabled,
         requestPermission: settings.enabled,
         now
       })
       await syncChatFollowupNotifications(
         chatStore.followupOutbox,
         chatStore.realismSettings,
-        { requestPermission: false, now }
+        { isFeatureEnabled: () => settingsStore.warmHomeEnabled, requestPermission: false, now }
       )
       if (settings.enabled && result.permission !== 'granted') {
         appToast('主动联系已保存，但系统还没有通知权限', { tone: 'warning', duration: 3500 })
@@ -510,11 +516,11 @@ export function useChatSettings() {
   const cancelStoredChatProactive = async () => {
     chatStore.setProactiveOutbox([])
     chatStore.setFollowupOutbox([])
-    await syncChatProactiveNotifications([], { ...chatStore.proactiveSettings, enabled: false }, {
+    await syncChatProactiveNotifications([], { ...chatStore.proactiveSettings, enabled: false }, { isFeatureEnabled: () => settingsStore.warmHomeEnabled,
       requestPermission: false,
       now: new Date()
     }).catch(error => console.warn('清理温馨小家主动通知失败', error))
-    await syncChatFollowupNotifications([], { followupEnabled: false }, {
+    await syncChatFollowupNotifications([], { followupEnabled: false }, { isFeatureEnabled: () => settingsStore.warmHomeEnabled,
       requestPermission: false,
       now: new Date()
     }).catch(error => console.warn('清理温馨小家补话通知失败', error))

@@ -99,6 +99,7 @@ const swipingMessageId = ref('')
 const swipeOffset = ref(0)
 let replyController = null
 let componentActive = true
+const isChatRunning = () => componentActive && settingsStore.warmHomeEnabled
 let replyAbortReason = ''
 let isStreamingRequest = false
 let latestGeneratedText = ''
@@ -301,7 +302,7 @@ const appendAssistantReply = async (
   const baseTime = Date.now()
   const messages = []
   for (let index = 0; index < parts.length; index += 1) {
-    if (!componentActive || (runId !== null && runId !== generationRun)) break
+    if (!isChatRunning() || (runId !== null && runId !== generationRun)) break
     const message = chatStore.appendMessage('assistant', parts[index], {
       createdAt: baseTime + index,
       status,
@@ -319,6 +320,7 @@ const appendAssistantReply = async (
 }
 
 const queueProactiveRefresh = (delay = 500) => {
+  if (!isChatRunning()) return
   if (proactiveRefreshTimer) clearTimeout(proactiveRefreshTimer)
   proactiveRefreshTimer = setTimeout(() => refreshProactivePlan(), delay)
 }
@@ -327,14 +329,14 @@ const cancelProactivePlan = () => {
   if (proactiveRefreshTimer) clearTimeout(proactiveRefreshTimer)
   proactiveRefreshTimer = null
   chatStore.setProactiveOutbox([])
-  syncChatProactiveNotifications([], chatStore.proactiveSettings, {
+  syncChatProactiveNotifications([], chatStore.proactiveSettings, { isFeatureEnabled: () => settingsStore.warmHomeEnabled,
     requestPermission: false,
     now: new Date()
   }).catch(error => console.warn('取消旧的主动联系计划失败', error))
 }
 
 const syncFollowupPlan = async ({ requestPermission = false } = {}) => {
-  await syncChatFollowupNotifications(chatStore.followupOutbox, chatStore.realismSettings, {
+  await syncChatFollowupNotifications(chatStore.followupOutbox, chatStore.realismSettings, { isFeatureEnabled: () => settingsStore.warmHomeEnabled,
     requestPermission,
     now: new Date()
   }).catch(error => console.warn('同步延迟补话通知失败', error))
@@ -343,6 +345,7 @@ const syncFollowupPlan = async ({ requestPermission = false } = {}) => {
 const scheduleFollowupMaterialization = () => {
   if (followupTimer) clearTimeout(followupTimer)
   followupTimer = null
+  if (!isChatRunning()) return
   const next = chatStore.followupOutbox[0]
   if (!next) return
   const delay = Math.max(0, Math.min(2_147_000_000, next.scheduledAt - Date.now()))
@@ -367,6 +370,7 @@ const cancelPendingFollowups = () => {
 }
 
 const updateRelationshipNow = async (userMessages, assistantMessages) => {
+  if (!isChatRunning()) return
   const sourceMessage = assistantMessages.at(-1)
   if (!sourceMessage) return
   try {
@@ -383,6 +387,7 @@ const updateRelationshipNow = async (userMessages, assistantMessages) => {
       currentState: chatStore.companionState,
       now: new Date()
     })
+    if (!isChatRunning()) return
     if (update.memoryUpserts.length) chatStore.upsertMemories(update.memoryUpserts)
     if (update.resolvedLoopKeys.length) chatStore.resolveOpenLoops(update.resolvedLoopKeys)
     if (update.openLoopUpserts.length) chatStore.upsertOpenLoops(update.openLoopUpserts)
@@ -398,7 +403,7 @@ const updateRelationshipNow = async (userMessages, assistantMessages) => {
         now: Date.now()
       }))
     }
-    if (componentActive) queueProactiveRefresh()
+    if (isChatRunning()) queueProactiveRefresh()
   } catch (error) {
     console.warn('本轮关系状态整理失败', error)
   }
@@ -431,7 +436,7 @@ const ensureTodayState = async () => {
     console.warn('今日女朋友状态生成失败，已使用本地状态', error)
     world = localDailyCompanionWorld()
   }
-  if (componentActive) {
+  if (isChatRunning()) {
     chatStore.setCompanionState(world.state)
     if (world.virtualEvent && !chatStore.virtualEvents.some(item => item.date === today)) {
       chatStore.addVirtualEvent(world.virtualEvent)
@@ -441,7 +446,7 @@ const ensureTodayState = async () => {
 }
 
 const refreshProactivePlan = async () => {
-  if (!componentActive || !chatStore.isDataLoaded) return
+  if (!isChatRunning() || !chatStore.isDataLoaded) return
   try {
     const now = new Date()
     chatStore.materializeDueProactive(now.getTime())
@@ -465,9 +470,9 @@ const refreshProactivePlan = async () => {
       recentMessages: chatStore.messages.slice(-30),
       now
     })
-    if (!componentActive) return
+    if (!isChatRunning()) return
     chatStore.setProactiveOutbox(outbox)
-    await syncChatProactiveNotifications(outbox, chatStore.proactiveSettings, {
+    await syncChatProactiveNotifications(outbox, chatStore.proactiveSettings, { isFeatureEnabled: () => settingsStore.warmHomeEnabled,
       requestPermission: false,
       now
     })
@@ -477,13 +482,14 @@ const refreshProactivePlan = async () => {
 }
 
 const initializeCompanionContinuity = async () => {
+  if (!isChatRunning()) return
   chatStore.materializeDueProactive(Date.now())
   chatStore.materializeDueFollowups(Date.now())
   await syncFollowupPlan()
   scheduleFollowupMaterialization()
   await scrollToBottom(true)
   const state = await ensureTodayState()
-  if (!componentActive) return
+  if (!isChatRunning()) return
   if (shouldCreateSmartEntry({
     messages: chatStore.messages,
     outbox: chatStore.proactiveOutbox,
@@ -507,7 +513,7 @@ const initializeCompanionContinuity = async () => {
       })
       const currentLastMessage = chatStore.messages.at(-1)
       const entryStillCurrent = (
-        componentActive &&
+        isChatRunning() &&
         entryRun === smartEntryRun &&
         entryGenerationRun === generationRun &&
         chatStore.messages.length === entryMessageCount &&
@@ -527,6 +533,7 @@ const initializeCompanionContinuity = async () => {
 }
 
 const requestReply = async userMessages => {
+  if (!isChatRunning()) return
   const batch = (Array.isArray(userMessages) ? userMessages : [userMessages]).filter(Boolean)
   if (!batch.length) return
   replyController?.abort('superseded')
@@ -564,6 +571,7 @@ const requestReply = async userMessages => {
       companionState: chatStore.companionState,
       deferredFollowupBrief
     })
+    if (!isChatRunning() || runId !== generationRun) return
     deferredFollowupBrief = ''
     if (!shouldKeepDelayedFollowup({
       sourceMessageId,
@@ -587,18 +595,18 @@ const requestReply = async userMessages => {
       signal: controller.signal,
       maxTokens: turnContext.replyPolicy.maxTokens,
       onDelta: (_delta, full) => {
-        if (!componentActive || runId !== generationRun) return
+        if (!isChatRunning() || runId !== generationRun) return
         latestGeneratedText = full
         scrollToBottom()
       }
     })
     isStreamingRequest = false
-    if (!componentActive || runId !== generationRun) return
+    if (!isChatRunning() || runId !== generationRun) return
     latestGeneratedText = answer
     const plannedReply = parsePlannedReplyOutput(answer)
     if (!plannedReply.main) throw new Error('EMPTY_RESPONSE')
     const interaction = await interactionPlanPromise
-    if (!componentActive || runId !== generationRun) return
+    if (!isChatRunning() || runId !== generationRun) return
     const targetMessage = chatStore.messages.find(item => item.id === interaction.targetMessageId)
     if (interaction.action === 'react' && targetMessage) {
       chatStore.setMessageReaction(targetMessage.id, 'assistant', interaction.emoji)
@@ -645,7 +653,7 @@ const requestReply = async userMessages => {
           recentMessages: chatStore.messages
         })
       }
-    } else if (componentActive && runId === generationRun) {
+    } else if (isChatRunning() && runId === generationRun) {
       const fallbackText = turnContext.replyMode === 'safety'
         ? '我在听。刚才回复没有完整送到，你现在安全吗？如果有立即危险，先联系身边可信任的人或当地紧急帮助。'
         : '刚才那句没有完整送到，但我没有不理你。你再说一遍，我接着听。'
@@ -670,6 +678,7 @@ const requestReply = async userMessages => {
 }
 
 const scheduleReply = (delay = 900) => {
+  if (!isChatRunning()) return
   if (replyDebounceTimer) clearTimeout(replyDebounceTimer)
   isWaitingToReply.value = pendingReplyMessageIds.size > 0
   replyDebounceTimer = setTimeout(() => {
@@ -688,7 +697,7 @@ const findRecentUnansweredUserMessages = (now = Date.now()) => {
   const lastAssistantIndex = chatStore.messages.findLastIndex(item => item.role === 'assistant')
   const trailingUsers = chatStore.messages
     .slice(lastAssistantIndex + 1)
-    .filter(item => item.role === 'user' && item.type === 'text')
+    .filter(item => item.role === 'user' && item.type === 'text' && item.createdAt > settingsStore.warmHomePausedAt)
   const latest = trailingUsers.at(-1)
   if (!latest || now - latest.createdAt > 24 * 60 * 60 * 1000) return []
   return trailingUsers
@@ -910,10 +919,10 @@ const selectMessageReaction = async (message, emoji) => {
     recentMessages: chatStore.messages.slice(-16),
     companionState: chatStore.companionState
   })
-  if (componentActive && runId === lightInteractionRun && result.reply) {
+  if (isChatRunning() && runId === lightInteractionRun && result.reply) {
     await appendAssistantReply(result.content)
   }
-  if (componentActive && runId === lightInteractionRun) {
+  if (isChatRunning() && runId === lightInteractionRun) {
     isWaitingToReply.value = false
     queueProactiveRefresh()
   }
@@ -938,13 +947,13 @@ const triggerPoke = async () => {
     recentMessages: chatStore.messages.slice(-16),
     companionState: chatStore.companionState
   })
-  if (!componentActive || runId !== lightInteractionRun) return
+  if (!isChatRunning() || runId !== lightInteractionRun) return
   if (response.action === 'poke') {
     await appendPokeEvent('assistant')
   } else if (response.action === 'message') {
     await appendAssistantReply(response.content)
   }
-  if (componentActive && runId === lightInteractionRun) {
+  if (isChatRunning() && runId === lightInteractionRun) {
     isWaitingToReply.value = false
     queueProactiveRefresh()
   }
@@ -986,6 +995,22 @@ const scrollToQuotedMessage = async (messageId, { behavior = 'smooth' } = {}) =>
 
 const openAiSettings = () => settingsStore.switchView('settings')
 const openChatSettings = () => settingsStore.openModuleSettings('chat')
+
+watch(() => settingsStore.warmHomeEnabled, enabled => {
+  if (enabled) return
+  generationRun += 1
+  smartEntryRun += 1
+  lightInteractionRun += 1
+  clearTimeout(replyDebounceTimer)
+  clearTimeout(proactiveRefreshTimer)
+  clearTimeout(followupTimer)
+  pendingReplyMessageIds.clear()
+  isGenerating.value = false
+  isWaitingToReply.value = false
+  latestGeneratedText = ''
+  replyAbortReason = 'disabled'
+  replyController?.abort('disabled')
+}, { flush: 'sync' })
 
 watch(() => chatStore.messages.length, async (size, previousSize) => {
   if (!timelineReady.value || size <= previousSize) return

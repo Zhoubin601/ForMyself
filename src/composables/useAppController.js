@@ -73,7 +73,7 @@ export function useAppController() {
   const pwdInput = ref('')
   const showPassword = ref(false)
   const moduleSettingsViews = new Set(['debts', 'weight', 'mood', 'passwords', 'chat'])
-  const drawerItems = [
+  const drawerItems = computed(() => [
     { id: 'home', label: '首页总览', meta: '今天' },
     { id: 'reports', label: '月度报告', meta: '回顾' },
     { id: 'debts', label: '省钱计划', meta: '目标' },
@@ -84,7 +84,7 @@ export function useAppController() {
     { id: 'schedule', label: '日程提醒', meta: '安排' },
     { id: 'passwords', label: '密码库', meta: '安全' },
     { id: 'settings', label: '通用配置', meta: '设置' }
-  ]
+  ].filter(item => item.id !== 'chat' || settingsStore.warmHomeEnabled))
   let backgroundedAt = null
   let reminderRefreshTimer = null
   let reminderResumeTimer = null
@@ -153,6 +153,7 @@ export function useAppController() {
   }
 
   const applyPendingChatRoute = () => {
+    if (!settingsStore.warmHomeEnabled) { pendingChatRoute = null; return }
     if (!chatStore || !pendingChatRoute) return
     chatStore.materializeDueProactive(Date.now())
     chatStore.materializeDueFollowups(Date.now())
@@ -167,6 +168,10 @@ export function useAppController() {
     else if (route.view === 'schedule') settingsStore.openScheduleTarget(route)
     else {
       if (route.view === 'chat') {
+        if (!settingsStore.warmHomeEnabled) {
+          appToast('温馨小家入口已关闭，可在设置中重新开启')
+          return
+        }
         pendingChatRoute = route
         applyPendingChatRoute()
       }
@@ -226,26 +231,46 @@ export function useAppController() {
   }
 
   const resyncChatProactive = async () => {
-    if (protectedDataStatus.value !== 'ready' || !chatStore) return
+    if (settingsStore.warmHomeEnabled && (protectedDataStatus.value !== 'ready' || !chatStore)) return
     const [{ syncChatProactiveNotifications }, { syncChatFollowupNotifications }] = await Promise.all([
       import('../features/chat/chatProactive.js'),
       import('../features/chat/chatFollowup.js')
     ])
-    chatStore.materializeDueProactive(Date.now())
-    chatStore.materializeDueFollowups(Date.now())
+    if (settingsStore.warmHomeEnabled && (protectedDataStatus.value !== 'ready' || !chatStore)) return
+    if (settingsStore.warmHomeEnabled) {
+      chatStore.materializeDueProactive(Date.now())
+      chatStore.materializeDueFollowups(Date.now())
+    } else {
+      pendingChatRoute = null
+      chatStore?.pauseWarmHome()
+    }
     await Promise.all([
       syncChatProactiveNotifications(
-        chatStore.proactiveOutbox,
-        chatStore.proactiveSettings,
-        { requestPermission: false, now: new Date() }
+        chatStore?.proactiveOutbox || [],
+        chatStore?.proactiveSettings || {},
+        { requestPermission: false, now: new Date(), isFeatureEnabled: () => settingsStore.warmHomeEnabled }
       ),
       syncChatFollowupNotifications(
-        chatStore.followupOutbox,
-        chatStore.realismSettings,
-        { requestPermission: false, now: new Date() }
+        chatStore?.followupOutbox || [],
+        chatStore?.realismSettings || {},
+        { requestPermission: false, now: new Date(), isFeatureEnabled: () => settingsStore.warmHomeEnabled }
       )
     ])
   }
+
+  watch(() => settingsStore.warmHomeEnabled, enabled => {
+    if (!enabled) {
+      pendingChatRoute = null
+      chatStore?.pauseWarmHome()
+      if (settingsStore.currentView === 'chat' || (settingsStore.currentView === 'settings' && settingsStore.settingsScope === 'chat')) {
+        settingsStore.replaceRoute({ view: 'settings', settingsScope: 'general', settingsSection: 'appearance' })
+      }
+    }
+    resyncChatProactive().catch(error => {
+      console.warn('同步温馨小家开关失败', error)
+      appToast('温馨小家通知同步失败，请重新打开应用重试', { tone: 'warning' })
+    })
+  })
 
   const queueScheduleRefresh = () => {
     clearTimeout(scheduleSyncTimer)

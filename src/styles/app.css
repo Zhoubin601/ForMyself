@@ -127,8 +127,6 @@ button,
 .bg-blur-layer {
   position: fixed;
   inset: 0;
-  background: rgba(245, 245, 247, 0.85);
-  backdrop-filter: blur(40px) saturate(150%);
   z-index: 0;
   pointer-events: none;
 }
@@ -143,6 +141,12 @@ button,
     radial-gradient(circle at 8% 5%, rgba(var(--theme-primary-rgb), .095), transparent 32%),
     radial-gradient(circle at 94% 74%, rgba(var(--theme-primary-rgb), .055), transparent 30%);
   contain: strict;
+}
+
+.has-custom-bg .lock-screen,
+.has-custom-bg .warm-home,
+.has-custom-bg .vivo-schedule {
+  background: transparent;
 }
 
 .ambient-orb {

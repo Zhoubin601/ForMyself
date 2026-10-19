@@ -1,5 +1,6 @@
 import { computed, ref, watch } from 'vue'
 import { defineStore } from 'pinia'
+import { useSettingsStore } from '../../stores/settings.js'
 import {
   createChatMemory,
   createChatMessage,
@@ -22,6 +23,7 @@ import {
 import { createChatStorage } from './chatStorage.js'
 
 export const useChatStore = defineStore('chat', () => {
+  const settingsStore = useSettingsStore()
   const profile = ref(normalizeChatData().profile)
   const messages = ref([])
   const memories = ref([])
@@ -97,8 +99,8 @@ export const useChatStore = defineStore('chat', () => {
       evolutionCandidates.value = result.data.evolutionCandidates
       companionState.value = result.data.companionState
       openLoops.value = result.data.openLoops
-      proactiveOutbox.value = result.data.proactiveOutbox
-      followupOutbox.value = result.data.followupOutbox
+      proactiveOutbox.value = settingsStore.warmHomeEnabled ? result.data.proactiveOutbox : []
+      followupOutbox.value = settingsStore.warmHomeEnabled ? result.data.followupOutbox : []
       proactiveSettings.value = result.data.proactiveSettings
       realismSettings.value = result.data.realismSettings
       readState.value = result.data.readState
@@ -131,6 +133,7 @@ export const useChatStore = defineStore('chat', () => {
   watch(snapshot, () => { queuePersist().catch(() => {}) }, { deep: true })
 
   const appendMessage = (role, content, options = {}) => {
+    if (!settingsStore.warmHomeEnabled) return null
     const message = createChatMessage(role, content, options)
     if (message) messages.value.push(message)
     return message
@@ -316,16 +319,17 @@ export const useChatStore = defineStore('chat', () => {
   }
 
   const setProactiveOutbox = values => {
-    proactiveOutbox.value = normalizeProactiveOutbox(values)
+    proactiveOutbox.value = settingsStore.warmHomeEnabled ? normalizeProactiveOutbox(values) : []
     return proactiveOutbox.value
   }
 
   const setFollowupOutbox = values => {
-    followupOutbox.value = normalizeFollowupOutbox(values)
+    followupOutbox.value = settingsStore.warmHomeEnabled ? normalizeFollowupOutbox(values) : []
     return followupOutbox.value
   }
 
   const materializeDueFollowups = (now = Date.now()) => {
+    if (!settingsStore.warmHomeEnabled) return []
     const due = followupOutbox.value.filter(item => item.scheduledAt <= now)
     if (!due.length) return []
     const existing = new Set(messages.value.map(item => item.proactiveId).filter(Boolean))
@@ -377,6 +381,7 @@ export const useChatStore = defineStore('chat', () => {
   }
 
   const materializeDueProactive = (now = Date.now()) => {
+    if (!settingsStore.warmHomeEnabled) return []
     const due = proactiveOutbox.value.filter(item => item.scheduledAt <= now)
     if (!due.length) return []
     const existing = new Set(messages.value.map(item => item.proactiveId).filter(Boolean))
@@ -392,6 +397,13 @@ export const useChatStore = defineStore('chat', () => {
     proactiveOutbox.value = proactiveOutbox.value.filter(item => !dueIds.has(item.id))
     return materialized
   }
+
+  const pauseWarmHome = () => {
+    proactiveOutbox.value = []
+    followupOutbox.value = []
+    pendingFocusProactiveId.value = ''
+  }
+  watch(() => settingsStore.warmHomeEnabled, enabled => { if (!enabled) pauseWarmHome() }, { flush: 'sync' })
 
   const clearMessages = () => {
     messages.value = []
@@ -453,8 +465,8 @@ export const useChatStore = defineStore('chat', () => {
     evolutionCandidates.value = data.evolutionCandidates
     companionState.value = data.companionState
     openLoops.value = data.openLoops
-    proactiveOutbox.value = data.proactiveOutbox
-    followupOutbox.value = data.followupOutbox
+    proactiveOutbox.value = settingsStore.warmHomeEnabled ? data.proactiveOutbox : []
+    followupOutbox.value = settingsStore.warmHomeEnabled ? data.followupOutbox : []
     proactiveSettings.value = data.proactiveSettings
     realismSettings.value = data.realismSettings
     readState.value = data.readState
@@ -499,6 +511,7 @@ export const useChatStore = defineStore('chat', () => {
     isDataLoaded,
     loadError,
     recoveredFromBackup,
+    pauseWarmHome,
     loadChatData,
     appendMessage,
     updateMessage,

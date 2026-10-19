@@ -546,3 +546,30 @@
 .settings-container .mood-definition-editor .color-palette { grid-column: 1 / -1; }
 .settings-container .mood-definition-add .taxonomy-add-button { grid-column: 1 / -1; }
 .settings-container .mood-definition-row:has(.mood-definition-editor) { display:block; }
+
+/* 独立的解锁页与应用内背景效果。 */
+.settings-container .warm-home-setting { overflow: hidden; padding: 0; }
+.settings-container .warm-home-toggle-row { display: flex; align-items: center; gap: 16px; padding: 18px 16px; }
+.settings-container .warm-home-toggle-copy { flex: 1; min-width: 0; }
+.settings-container .warm-home-toggle-copy p { margin: 7px 0 0; line-height: 1.65; }
+.settings-container .warm-home-setting .list-item { width: 100%; text-align: left; }
+.settings-container .background-settings-card { overflow: hidden; padding: 0; }
+.settings-container .background-settings-note { margin: 0; padding: 16px 16px 12px; line-height: 1.65; }
+.settings-container .background-scope-picker { display: flex; gap: 4px; padding: 4px; margin: 0 16px 14px; border-radius: 14px; background: var(--canvas-parchment); }
+.settings-container .background-scope-picker button { flex: 1; min-height: 44px; border: 0; border-radius: 11px; background: transparent; color: var(--body-muted); font: inherit; font-size: 14px; cursor: pointer; }
+.settings-container .background-scope-picker button[aria-pressed="true"] { background: var(--canvas); color: var(--primary); box-shadow: var(--shadow-card); font-weight: 600; }
+.settings-container .background-preview { position: relative; display: grid; place-items: center; height: 156px; margin: 0 16px; overflow: hidden; isolation: isolate; border-radius: 16px; background: var(--theme-soft) center / cover; }
+.settings-container .background-preview-filter { position: absolute; inset: 0; z-index: -1; border-radius: inherit; }
+.settings-container .background-preview-caption { padding: 9px 14px; border-radius: 12px; background: rgba(255,255,255,.9); color: var(--ink); font-size: 13px; }
+.settings-container .background-effect-controls { min-width: 0; border: 0; margin: 0; padding: 18px 16px 10px; }
+.settings-container .background-effect-controls:disabled { opacity: .5; }
+.settings-container .background-effect-controls label { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 14px; }
+.settings-container .background-effect-controls output { color: var(--primary); font-variant-numeric: tabular-nums; }
+.settings-container .background-effect-controls input[type="range"] { display: block; width: 100%; height: 44px; margin: 4px 0 0; accent-color: var(--primary); touch-action: pan-y; }
+.settings-container .background-range-hints { display: flex; justify-content: space-between; margin-bottom: 18px; color: var(--body-muted); font-size: 12px; }
+.settings-container .background-reset-effect { min-height: 44px; padding: 0; background: transparent; border: 0; font: inherit; font-size: 13px; cursor: pointer; }
+.settings-container .background-settings-card > button { width: 100%; }
+.settings-container .background-scope-picker button:focus-visible,
+.settings-container .background-effect-controls input:focus-visible,
+.settings-container .background-reset-effect:focus-visible,
+.settings-container .warm-home-setting input:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }

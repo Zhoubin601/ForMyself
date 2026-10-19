@@ -1,0 +1,28 @@
+{
+  "date": "2026-10-19",
+  "data": "Synthetic records only; isolated browser profile",
+  "layouts": [
+    {
+      "width": 320,
+      "overflow": false,
+      "previewWidth": 254
+    },
+    {
+      "width": 390,
+      "overflow": false,
+      "previewWidth": 324
+    },
+    {
+      "width": 1280,
+      "overflow": false,
+      "previewWidth": 734
+    }
+  ],
+  "errors": [],
+  "cachedChatUnmounted": true,
+  "independentEffects": true,
+  "persisted": true,
+  "homeQuoteRetained": true,
+  "disabledClickBlocked": true,
+  "drawerHidden": true
+}

@@ -9,7 +9,7 @@ test('侧栏与首页陪伴卡都可以进入温馨小家', () => {
 
   assert.match(app, /\{ id: 'chat', label: '温馨小家', meta: '陪伴'/)
   assert.match(app, /const ChatView = defineAsyncComponent\(\(\) => import\('\.\/features\/chat\/ChatView\.vue'\)\)/)
-  assert.match(app, /<KeepAlive :max="7">[\s\S]*<ChatView[\s\S]*v-else-if="settingsStore\.currentView === 'chat' && protectedDataStatus === 'ready'"/)
+  assert.match(app, /<KeepAlive :max="7"[^>]*>[\s\S]*<ChatView[\s\S]*v-else-if="settingsStore\.currentView === 'chat' && protectedDataStatus === 'ready'"/)
   assert.match(home, /@click="switchView\('chat'\)"/)
   assert.match(settings, /chat: '温馨小家'/)
 })
@@ -118,7 +118,7 @@ test('切换应用页面或进入锁屏时保留聊天生成任务，并在进�
   const view = read('features/chat/ChatView.vue')
 
   assert.match(app, /v-if="hasEnteredApp" v-show="!authStore\.isLocked" class="main-app/)
-  assert.match(app, /<KeepAlive :max="7">[\s\S]*<ChatView/)
+  assert.match(app, /<KeepAlive :max="7"[^>]*>[\s\S]*<ChatView/)
   assert.match(app, /:is-visible="!authStore\.isLocked && settingsStore\.currentView === 'chat'"/)
   assert.match(view, /const findRecentUnansweredUserMessages/)
   assert.match(view, /24 \* 60 \* 60 \* 1000/)

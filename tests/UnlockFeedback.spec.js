@@ -70,6 +70,22 @@ describe('解锁反馈', () => {
     expect(unlockButton.text()).toContain('解锁进入')
   })
 
+  it('解锁和重新锁定分别使用对应背景参数，不改写另一组', async () => {
+    controller.settingsStore.customBg = 'data:image/png;base64,synthetic'
+    controller.settingsStore.backgroundEffects = { lock: { blur: 0, fade: 0 }, pages: { blur: 75, fade: 50 } }
+    const wrapper = mountApp()
+    expect(wrapper.find('.bg-blur-layer').element.style.backdropFilter).toBe('blur(0px)')
+    expect(wrapper.find('.bg-blur-layer').element.style.backgroundColor).toBe('rgba(245, 245, 247, 0)')
+    controller.authStore.isLocked = false
+    await nextTick()
+    expect(wrapper.find('.bg-blur-layer').element.style.backdropFilter).toBe('blur(30px)')
+    expect(wrapper.find('.bg-blur-layer').element.style.backgroundColor).toBe('rgba(245, 245, 247, 0.5)')
+    controller.authStore.isLocked = true
+    await nextTick()
+    expect(wrapper.find('.bg-blur-layer').element.style.backdropFilter).toBe('blur(0px)')
+    wrapper.unmount()
+  })
+
   it('验证通过后首页可以在受保护数据加载期间先显示', async () => {
     controller.authStore.isLocked = false
     controller.hasEnteredApp.value = true

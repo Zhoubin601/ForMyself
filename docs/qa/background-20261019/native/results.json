@@ -1,0 +1,64 @@
+{
+  "date": "2026-10-19",
+  "serial": "emulator-5586",
+  "user": "12",
+  "tests": [
+    {
+      "name": "native-first-entry",
+      "passed": true
+    },
+    {
+      "name": "native-image-picker-upload",
+      "passed": true,
+      "imageLength": 47322
+    },
+    {
+      "name": "native-touch-slider",
+      "passed": true
+    },
+    {
+      "name": "independent-background-groups",
+      "passed": true
+    },
+    {
+      "name": "native-background-lock-and-unlock-effects",
+      "passed": true
+    },
+    {
+      "name": "native-notifications-cancelled-and-history-preserved",
+      "passed": true
+    },
+    {
+      "name": "native-home-quote-retained-and-click-blocked",
+      "passed": true
+    },
+    {
+      "name": "native-drawer-hidden",
+      "passed": true
+    },
+    {
+      "name": "native-cold-start-persistence",
+      "passed": true
+    },
+    {
+      "name": "native-reenable-restores-entry-and-data",
+      "passed": true
+    },
+    {
+      "name": "native-layout-and-runtime",
+      "passed": true,
+      "width": 411,
+      "documentWidth": 411
+    }
+  ],
+  "errors": [],
+  "environment": {
+    "userAgent": "Mozilla/5.0 (Linux; Android 17; sdk_gphone16k_x86_64 Build/CP21.260330.005; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/145.0.7632.218 Mobile Safari/537.36",
+    "viewport": [
+      411,
+      826
+    ],
+    "devicePixelRatio": 3.5,
+    "native": true
+  }
+}

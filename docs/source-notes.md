@@ -733,3 +733,13 @@ Test_data/todo-v7-apiXX-spacing.json、-widget.json、-stress.json、-widget-ani
 
 ### v8验收来源
 Test_data/todo-v8-apiXX-spacing.json、-widget.json、-native.log、-restored.json及docs/qa/todo/v8-apiXX-*；XX为30/31/37。API37动画压力失败和v7对照记录保留，见20261002-todo-v8-verification.md，不标为全部动画验收通过。
+
+## 2026-10-19 温馨小家开关与独立背景效果
+
+来源：用户本轮确认；项目 App.vue、HomeView.vue、设置 Store、聊天及通知实现。raw/ 仅检查文件目录，未读取真实数据；无外部资料。
+
+确认：全局共用背景图片；解锁页与其他页面分别保存模糊和背景淡化两项参数；关闭温馨小家隐藏侧栏入口、暂停聊天和通知，保留首页鼓励语，点击提示入口已关闭。
+
+## 2026-10-19 用户指定电脑模拟器测试
+
+用户提供 E:\Android。目录包含 SDK 与 Pixel_6_Pro AVD，实际镜像设备为 sdk_gphone16k_x86_64 / Android 17（API37），未发现三星设备配置。已向用户说明实际配置名称。现有设备包含原用户数据，采用新建临时 Android 用户隔离，原数据不清空。

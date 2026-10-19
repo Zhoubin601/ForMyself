@@ -1,5 +1,5 @@
 import { clampColorValue, hsvToHex, hexToHsv } from '../../services/colorPicker.js'
-import { computed, ref, watch } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import { useAuthStore } from '../../stores/auth'
 import { useDebtStore } from '../../stores/debt'
 import { useWeightStore } from '../../stores/weight'
@@ -10,6 +10,7 @@ import { useScheduleStore } from '../../features/schedule/scheduleStore'
 import { useChatStore } from '../../features/chat/chatStore'
 import { appAlert, appConfirm, appToast } from '../../services/uiFeedback'
 import { THEME_PRESETS, getThemePrimary, normalizeHexColor } from '../../services/themeSystem'
+import { backgroundEffectStyle, DEFAULT_BACKGROUND_EFFECT } from '../../services/backgroundSettings.js'
 
 export function useAppearanceSettings() {
 
@@ -23,6 +24,44 @@ export function useAppearanceSettings() {
   const chatStore = useChatStore()
 
   const bgInputRef = ref(null)
+  const backgroundScope = ref('pages')
+  const isUploadingBackground = ref(false)
+  const isSavingWarmHome = ref(false)
+  const backgroundEffect = computed(() => settingsStore.backgroundEffects[backgroundScope.value])
+  const backgroundPreviewEffect = computed(() => backgroundEffectStyle(backgroundEffect.value))
+  const updateBackgroundEffect = (key, value) => {
+    settingsStore.backgroundEffects = {
+      ...settingsStore.backgroundEffects,
+      [backgroundScope.value]: { ...backgroundEffect.value, [key]: Number(value) }
+    }
+  }
+  const saveBackgroundEffects = async () => {
+    try {
+      await nextTick()
+      await settingsStore.flushPendingSettingsWrites()
+    } catch {
+      appToast('背景效果保存失败，请重试', { tone: 'danger' })
+    }
+  }
+  const resetBackgroundEffects = async () => {
+    settingsStore.backgroundEffects = {
+      ...settingsStore.backgroundEffects,
+      [backgroundScope.value]: { ...DEFAULT_BACKGROUND_EFFECT }
+    }
+    await saveBackgroundEffects()
+  }
+  const toggleWarmHome = async event => {
+    if (isSavingWarmHome.value) return
+    isSavingWarmHome.value = true
+    try {
+      await settingsStore.updateWarmHomeEnabled(event.target.checked)
+    } catch {
+      appToast('温馨小家开关保存失败，请重试', { tone: 'danger' })
+    } finally {
+      event.target.checked = settingsStore.warmHomeEnabled
+      isSavingWarmHome.value = false
+    }
+  }
 
   const newScheduleCategoryColor = ref('#4fd5d7')
   const moduleHealthForm = ref({
@@ -180,23 +219,56 @@ export function useAppearanceSettings() {
   }))
 
   const triggerBgUpload = () => bgInputRef.value.click()
-  const handleBgUpload = (event) => {
-    const file = event.target.files[0]; if (!file) return;
+  const handleBgUpload = async event => {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+    if (!file || isUploadingBackground.value) return
     if (file.size > 5 * 1024 * 1024) return appAlert('请使用 5MB 以内的图像文件')
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      settingsStore.updateBg(e.target.result)
-      appToast('背景墙纸已部署', { tone: 'success' })
+    if (!file.type.startsWith('image/')) return appAlert('请选择可用的图片文件')
+    isUploadingBackground.value = true
+    try {
+      const dataUrl = await new Promise((resolve, reject) => {
+        const reader = new FileReader()
+        reader.onload = () => resolve(String(reader.result))
+        reader.onerror = () => reject(new Error('IMAGE_READ_FAILED'))
+        reader.onabort = () => reject(new Error('IMAGE_READ_ABORTED'))
+        reader.readAsDataURL(file)
+      })
+      await new Promise((resolve, reject) => {
+        const picture = new Image()
+        picture.onload = resolve
+        picture.onerror = () => reject(new Error('IMAGE_DECODE_FAILED'))
+        picture.src = dataUrl
+      })
+      await settingsStore.updateBg(dataUrl)
+      appToast('背景图片已更新', { tone: 'success' })
+    } catch {
+      appToast('图片无法读取或保存，请换一张图片重试', { tone: 'danger' })
+    } finally {
+      isUploadingBackground.value = false
     }
-    reader.readAsDataURL(file)
   }
   const clearBg = async () => {
     if (await appConfirm('当前自定义壁纸将被移除。', { title: '恢复默认背景？' })) {
-      settingsStore.updateBg('')
+      try {
+        await settingsStore.updateBg('')
+        appToast('已恢复默认背景', { tone: 'success' })
+      } catch {
+        appToast('背景恢复失败，请重试', { tone: 'danger' })
+      }
     }
   }
 
   return {
+    backgroundScope,
+    backgroundEffect,
+    backgroundPreviewEffect,
+    isUploadingBackground,
+    isSavingWarmHome,
+    updateBackgroundEffect,
+    saveBackgroundEffects,
+    resetBackgroundEffects,
+    toggleWarmHome,
     appAlert,
     appConfirm,
     appToast,

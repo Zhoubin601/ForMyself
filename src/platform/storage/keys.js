@@ -3,6 +3,8 @@ export const STORAGE_KEYS = Object.freeze({
   masterPasswordVerifier: 'my_master_password_verifier_v1',
   masterPasswordBiometricBinding: 'my_master_password_biometric_binding_v1',
   customBackground: 'my_custom_bg',
+  backgroundEffects: 'my_background_effects_v1',
+  warmHomeEnabled: 'my_warm_home_enabled_v1',
   themeSettings: 'my_theme_settings',
   bannerSettings: 'my_banner_settings',
   legacyAiSettings: 'my_ai_settings',

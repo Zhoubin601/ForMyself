@@ -1,4 +1,6 @@
 import { normalizeCommonNotes } from '../services/commonNotes.js'
+import { normalizeBackgroundEffects } from '../services/backgroundSettings.js'
+import { appToast } from '../services/uiFeedback.js'
 import { defineStore } from 'pinia'
 import { ref, computed, watch } from 'vue'
 import { Capacitor } from '@capacitor/core'
@@ -30,6 +32,9 @@ export const useSettingsStore = defineStore('settings', () => {
   const bannerSettings = ref({ prefix: '你已经省下了', suffix: '元', subtitle: '可喜可贺，继续保持。✨', titleSize: 38 })
   const commonNotes = ref(normalizeCommonNotes())
   const customBg = ref('')
+  const backgroundEffects = ref(normalizeBackgroundEffects())
+  const warmHomeEnabled = ref(true)
+  const warmHomePausedAt = ref(0)
   const themeSettings = ref(normalizeThemeSettings())
   const themeCssVariables = computed(() => buildThemeCssVariables(themeSettings.value))
   const currentView = ref('home')
@@ -151,6 +156,12 @@ export const useSettingsStore = defineStore('settings', () => {
     try {
       const bgRes = await Preferences.get({ key: STORAGE_KEYS.customBackground })
       if (bgRes.value) customBg.value = bgRes.value
+      const effectsRes = await Preferences.get({ key: STORAGE_KEYS.backgroundEffects })
+      backgroundEffects.value = normalizeBackgroundEffects(effectsRes.value ? JSON.parse(effectsRes.value) : {})
+      const warmHomeRes = await Preferences.get({ key: STORAGE_KEYS.warmHomeEnabled })
+      const warmHomeState = warmHomeRes.value ? JSON.parse(warmHomeRes.value) : true
+      warmHomePausedAt.value = Math.max(0, Number(warmHomeState?.pausedAt) || 0)
+      warmHomeEnabled.value = warmHomeState !== false && warmHomeState?.enabled !== false
       const themeRes = await Preferences.get({ key: STORAGE_KEYS.themeSettings })
       if (themeRes.value) themeSettings.value = normalizeThemeSettings(JSON.parse(themeRes.value))
       const bannerRes = await Preferences.get({ key: STORAGE_KEYS.bannerSettings })
@@ -218,6 +229,7 @@ export const useSettingsStore = defineStore('settings', () => {
   }
 
   watch(bannerSettings, v => queuePreferenceWrite(STORAGE_KEYS.bannerSettings, JSON.stringify(v)), { deep: true })
+  watch(backgroundEffects, value => queuePreferenceWrite(STORAGE_KEYS.backgroundEffects, JSON.stringify(normalizeBackgroundEffects(value))), { deep: true })
   watch(themeSettings, value => {
     queuePreferenceWrite(STORAGE_KEYS.themeSettings, JSON.stringify(normalizeThemeSettings(value)))
   }, { deep: true })
@@ -251,7 +263,11 @@ export const useSettingsStore = defineStore('settings', () => {
   watch(lastEncouragement, () => persistHomeCache())
 
   const applyRoute = value => {
-    const route = normalizeAppRoute(value, currentView.value)
+    let route = normalizeAppRoute(value, currentView.value)
+    if (!warmHomeEnabled.value && (route.view === 'chat' || (route.view === 'settings' && route.settingsScope === 'chat'))) {
+      appToast('温馨小家入口已关闭，可在设置中重新开启')
+      route = normalizeAppRoute({ view: 'settings', settingsScope: 'general', settingsSection: 'appearance' })
+    }
     currentView.value = route.view
     settingsScope.value = route.settingsScope
     settingsSection.value = route.settingsSection
@@ -328,7 +344,17 @@ export const useSettingsStore = defineStore('settings', () => {
     navigate({ view: 'schedule', scheduleTarget: nextTarget })
   }
   const updateBanner = async (v) => { bannerSettings.value = v; queuePreferenceWrite(STORAGE_KEYS.bannerSettings, JSON.stringify(v)) }
-  const updateBg = async (b) => { customBg.value = b; if (b) await Preferences.set({ key: STORAGE_KEYS.customBackground, value: b }); else await Preferences.remove({ key: STORAGE_KEYS.customBackground }) }
+  const updateBg = async b => {
+    if (b) await Preferences.set({ key: STORAGE_KEYS.customBackground, value: b })
+    else await Preferences.remove({ key: STORAGE_KEYS.customBackground })
+    customBg.value = b
+  }
+  const updateWarmHomeEnabled = async enabled => {
+    const pausedAt = enabled ? warmHomePausedAt.value : Date.now()
+    await Preferences.set({ key: STORAGE_KEYS.warmHomeEnabled, value: JSON.stringify({ enabled: Boolean(enabled), pausedAt }) })
+    warmHomePausedAt.value = pausedAt
+    warmHomeEnabled.value = Boolean(enabled)
+  }
   const updateThemeSettings = async value => {
     themeSettings.value = normalizeThemeSettings(value)
     queuePreferenceWrite(STORAGE_KEYS.themeSettings, JSON.stringify(themeSettings.value))
@@ -347,6 +373,9 @@ export const useSettingsStore = defineStore('settings', () => {
     commonNotes: normalizeCommonNotes(commonNotes.value),
     banner: { ...bannerSettings.value },
     customBg: customBg.value,
+    backgroundEffects: normalizeBackgroundEffects(backgroundEffects.value),
+    warmHomeEnabled: warmHomeEnabled.value,
+    warmHomePausedAt: warmHomePausedAt.value,
     theme: { ...themeSettings.value },
     ai: {
       url: aiProviderUrl.value,
@@ -374,6 +403,9 @@ export const useSettingsStore = defineStore('settings', () => {
     commonNotes.value = backup.commonNotes
     bannerSettings.value = backup.banner
     customBg.value = backup.customBg
+    backgroundEffects.value = backup.backgroundEffects
+    warmHomePausedAt.value = backup.warmHomePausedAt
+    warmHomeEnabled.value = backup.warmHomeEnabled
     themeSettings.value = backup.theme
     aiProviderUrl.value = backup.ai.url
     aiApiKey.value = backup.ai.key
@@ -387,6 +419,8 @@ export const useSettingsStore = defineStore('settings', () => {
     lastEncouragement.value = backup.homeCache.lastEncouragement
 
     const writes = [
+      Preferences.set({ key: STORAGE_KEYS.backgroundEffects, value: JSON.stringify(backup.backgroundEffects) }),
+      Preferences.set({ key: STORAGE_KEYS.warmHomeEnabled, value: JSON.stringify({ enabled: backup.warmHomeEnabled, pausedAt: backup.warmHomePausedAt }) }),
       Preferences.set({ key: STORAGE_KEYS.commonNotes, value: JSON.stringify(backup.commonNotes) }),
       Preferences.set({ key: STORAGE_KEYS.bannerSettings, value: JSON.stringify(backup.banner) }),
       Preferences.set({ key: STORAGE_KEYS.themeSettings, value: JSON.stringify(backup.theme) }),
@@ -418,5 +452,5 @@ export const useSettingsStore = defineStore('settings', () => {
     return backup
   }
 
-  return { todoTarget, commonNotes, bannerSettings, customBg, themeSettings, themeCssVariables, currentView, settingsScope, settingsSection, settingsReturnView, scheduleTarget, isDrawerOpen, navigationStack, navigationRevision, currentRoute, currentRouteKey, canGoBack, isDataLoaded, viewTitle, cachedQuote, dataFingerprint, lastEncouragement, aiProviderUrl, aiApiKey, aiModel, autoLockDelaySeconds, notificationSettings, notificationAiContent, targetWeight, heightCm, weightChangeReminderEnabled, weightChangeThreshold, loadSettings, flushPendingSettingsWrites, navigate, replaceRoute, goBack, updateLastHistoryScroll, updateCurrentRouteScroll, switchView, openGeneralSettingsSection, closeGeneralSettingsSection, openModuleSettings, closeModuleSettings, openScheduleTarget, updateBanner, updateBg, updateThemeSettings, updateHealthSettings, getBackupSnapshot, restoreBackupSnapshot }
+  return { backgroundEffects, warmHomePausedAt, warmHomeEnabled, updateWarmHomeEnabled, todoTarget, commonNotes, bannerSettings, customBg, themeSettings, themeCssVariables, currentView, settingsScope, settingsSection, settingsReturnView, scheduleTarget, isDrawerOpen, navigationStack, navigationRevision, currentRoute, currentRouteKey, canGoBack, isDataLoaded, viewTitle, cachedQuote, dataFingerprint, lastEncouragement, aiProviderUrl, aiApiKey, aiModel, autoLockDelaySeconds, notificationSettings, notificationAiContent, targetWeight, heightCm, weightChangeReminderEnabled, weightChangeThreshold, loadSettings, flushPendingSettingsWrites, navigate, replaceRoute, goBack, updateLastHistoryScroll, updateCurrentRouteScroll, switchView, openGeneralSettingsSection, closeGeneralSettingsSection, openModuleSettings, closeModuleSettings, openScheduleTarget, updateBanner, updateBg, updateThemeSettings, updateHealthSettings, getBackupSnapshot, restoreBackupSnapshot }
 })

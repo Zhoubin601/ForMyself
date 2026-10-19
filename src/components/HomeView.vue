@@ -297,7 +297,13 @@ const fetchAIQuote = async () => {
   }
 }
 
-const switchView = (view) => settingsStore.switchView(view)
+const switchView = view => {
+  if (view === 'chat' && settingsStore.warmHomeEnabled === false) {
+    appToast('温馨小家入口已关闭，可在设置中重新开启')
+    return
+  }
+  settingsStore.switchView(view)
+}
 
 onMounted(() => {
   currentTime.value = new Date()
@@ -324,7 +330,7 @@ onMounted(() => {
           <span class="companion-icon">✦</span>
           <p>{{ companionText }}</p>
           <span
-            v-if="props.chatUnreadCount"
+            v-if="settingsStore.warmHomeEnabled !== false && props.chatUnreadCount"
             class="companion-unread"
             :aria-label="`${props.chatUnreadCount}条未读消息`"
           >{{ props.chatUnreadCount > 99 ? '99+' : props.chatUnreadCount }}</span>

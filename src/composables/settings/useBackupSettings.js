@@ -104,12 +104,12 @@ export function useBackupSettings() {
       await syncChatProactiveNotifications(
         chatStore.proactiveOutbox,
         chatStore.proactiveSettings,
-        { requestPermission: false, now: new Date() }
+        { isFeatureEnabled: () => settingsStore.warmHomeEnabled, requestPermission: false, now: new Date() }
       ).catch(error => console.warn('导入温馨小家后刷新主动联系失败', error))
       await syncChatFollowupNotifications(
         chatStore.followupOutbox,
         chatStore.realismSettings,
-        { requestPermission: false, now: new Date() }
+        { isFeatureEnabled: () => settingsStore.warmHomeEnabled, requestPermission: false, now: new Date() }
       ).catch(error => console.warn('导入温馨小家后刷新补话失败', error))
     } else {
       moodStore.updateMoodRecords(overwrite ? data : [...moodStore.moodRecords, ...data])
@@ -183,12 +183,12 @@ export function useBackupSettings() {
       await syncChatProactiveNotifications(
         chatStore.proactiveOutbox,
         chatStore.proactiveSettings,
-        { requestPermission: false, now: new Date() }
+        { isFeatureEnabled: () => settingsStore.warmHomeEnabled, requestPermission: false, now: new Date() }
       )
       await syncChatFollowupNotifications(
         chatStore.followupOutbox,
         chatStore.realismSettings,
-        { requestPermission: false, now: new Date() }
+        { isFeatureEnabled: () => settingsStore.warmHomeEnabled, requestPermission: false, now: new Date() }
       )
     } catch (error) {
       console.warn('恢复完整备份后刷新通知失败', error)

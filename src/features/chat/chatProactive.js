@@ -352,11 +352,19 @@ const isChatProactiveNotificationId = id => {
     number < CHAT_PROACTIVE_NOTIFICATION_MAX
 }
 
-export async function syncChatProactiveNotifications(outbox = [], settings = {}, {
+let notificationSyncChain = Promise.resolve()
+export function syncChatProactiveNotifications(...args) {
+  const next = notificationSyncChain.catch(() => {}).then(() => syncChatProactiveNotificationsNow(...args))
+  notificationSyncChain = next
+  return next
+}
+
+async function syncChatProactiveNotificationsNow(outbox = [], settings = {}, {
   requestPermission = false,
   notificationPlugin = LocalNotifications,
   platform = Capacitor.getPlatform(),
-  now = new Date()
+  now = new Date(),
+  isFeatureEnabled = () => true
 } = {}) {
   const normalizedSettings = normalizeChatProactiveSettings(settings)
   const pending = await notificationPlugin.getPending()
@@ -379,7 +387,7 @@ export async function syncChatProactiveNotifications(outbox = [], settings = {},
     }))
 
   if (previous.length) await notificationPlugin.cancel({ notifications: previous })
-  if (!normalizedSettings.enabled || !upcoming.length) {
+  if (!isFeatureEnabled() || !normalizedSettings.enabled || !upcoming.length) {
     return { scheduled: 0, permission: 'not_required' }
   }
   let permission = await notificationPlugin.checkPermissions()
@@ -401,6 +409,7 @@ export async function syncChatProactiveNotifications(outbox = [], settings = {},
       vibration: true
     })
   }
+  if (!isFeatureEnabled()) return { scheduled: 0, permission: 'not_required' }
   const result = await notificationPlugin.schedule({ notifications: upcoming })
   return { scheduled: result.notifications.length, permission: 'granted' }
 }

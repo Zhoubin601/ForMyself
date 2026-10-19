@@ -1,5 +1,6 @@
 <script setup>
-import { defineAsyncComponent } from 'vue'
+import { computed, defineAsyncComponent } from 'vue'
+import { backgroundEffectStyle } from './services/backgroundSettings.js'
 import { useAppController } from './composables/useAppController.js'
 import HomeView from './components/HomeView.vue'
 import AppFeedbackHost from './components/AppFeedbackHost.vue'
@@ -37,6 +38,9 @@ const {
   unlockApp,
   unlockWithBiometric
 } = useAppController()
+const activeBackgroundStyle = computed(() => backgroundEffectStyle(
+  settingsStore.backgroundEffects?.[authStore.isLocked ? 'lock' : 'pages']
+))
 </script>
 
 <template>
@@ -44,6 +48,7 @@ const {
     ref="appWrapperRef"
     class="app-wrapper"
     :class="{
+      'has-custom-bg': Boolean(settingsStore.customBg),
       'schedule-active': !authStore.isLocked && settingsStore.currentView === 'schedule',
       'chat-active': !authStore.isLocked && settingsStore.currentView === 'chat'
     }"
@@ -59,7 +64,7 @@ const {
     "
     @scroll.passive="handleAppScroll"
   >
-    <div v-if="settingsStore.customBg" class="bg-blur-layer"></div>
+    <div v-if="settingsStore.customBg" class="bg-blur-layer" :style="activeBackgroundStyle" aria-hidden="true"></div>
     <div v-else class="ambient-canvas" aria-hidden="true">
       <span class="ambient-orb ambient-orb-blue"></span>
       <span class="ambient-orb ambient-orb-mint"></span>
@@ -231,7 +236,7 @@ const {
           'chat-content-area': settingsStore.currentView === 'chat'
         }"
       >
-        <KeepAlive :max="7">
+        <KeepAlive :max="7" :exclude="settingsStore.warmHomeEnabled === false ? ['ChatView'] : []">
           <HomeView
             v-if="settingsStore.currentView === 'home'"
             :chat-unread-count="chatUnreadCount"

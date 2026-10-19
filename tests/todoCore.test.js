@@ -1,7 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { applyTodoCommand, buildTodoBackup, buildTodoNotifications, getTodoDay, normalizeTodoData, readTodoBackup, todoProgress } from '../src/features/todo/todoCore.js'
-import { buildFullBackupSnapshot, normalizeFullBackupSnapshot } from '../src/services/fullBackup.js'
+import { FULL_BACKUP_VERSION, buildFullBackupSnapshot, normalizeFullBackupSnapshot } from '../src/services/fullBackup.js'
 const task = (extra = {}) => ({ id:'water', title:'每天喝水', startDate:'2026-10-01', recurrence:{ type:'daily' }, ...extra })
 const create = (extra = {}) => normalizeTodoData({ tasks:[task(extra)] })
 
@@ -64,7 +64,7 @@ test('完成取消当次提醒，撤销只恢复尚未到点的提醒', () => {
 })
 test('完整备份v10保留任务；v9缺失待办保持缺失语义', () => {
   const full=buildFullBackupSnapshot({todos:create()})
-  assert.equal(full.version,10)
+  assert.equal(full.version,FULL_BACKUP_VERSION)
   assert.deepEqual(normalizeFullBackupSnapshot(full).data.todos,full.data.todos)
   const old=buildFullBackupSnapshot({}); old.version=9
   assert.equal(Object.hasOwn(normalizeFullBackupSnapshot(old).data,'todos'),false)

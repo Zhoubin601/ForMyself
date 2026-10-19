@@ -5,7 +5,7 @@ import { sortWeightRecords, filterWeightRange, calculateDailyAverages, calculate
 import { useWeightStore } from '../src/stores/weight.js'
 import { useMoodStore } from '../src/features/mood/moodStore.js'
 import { buildMoodBackupSnapshot, normalizeMoodBackupSnapshot, normalizeMoodDefinitions } from '../src/features/mood/moodRecords.js'
-import { buildFullBackupSnapshot, normalizeFullBackupSnapshot } from '../src/services/fullBackup.js'
+import { FULL_BACKUP_VERSION, buildFullBackupSnapshot, normalizeFullBackupSnapshot } from '../src/services/fullBackup.js'
 import { buildHomeWidgetSnapshot } from '../src/services/homeWidgetSnapshot.js'
 import { calculateWeightMonthlyStats } from '../src/services/monthlyReport.js'
 import { buildWeightReminderContext } from '../src/services/reminderContext.js'
@@ -84,7 +84,7 @@ test('新版全量及心情备份保留空默认、改名目录、优先级与�
   const metadata = { builtInTags: ['成长'], defaultTags: [], definitions }
   const mood = [{ id: 'a', date: '2026-09-08', mood: 'normal', tags: [] }]
   const full = normalizeFullBackupSnapshot(buildFullBackupSnapshot({ weight: weights, mood, moodMetadata: metadata, settings: { commonNotes: { weight: [' 空腹 ', '空腹'], savings: ['少喝奶茶'] } } }))
-  assert.equal(full.version, 10)
+  assert.equal(full.version, FULL_BACKUP_VERSION)
   assert.deepEqual(full.metadata.mood.defaultTags, [])
   assert.deepEqual(full.metadata.mood.builtInTags, ['成长'])
   assert.deepEqual(full.data.mood[0].tags, [])
@@ -96,6 +96,6 @@ test('新版全量及心情备份保留空默认、改名目录、优先级与�
   assert.deepEqual(single.metadata.defaultTags, [])
   const legacy = { ...single, version: 1, metadata: {} }
   assert.deepEqual(normalizeMoodBackupSnapshot(legacy).metadata.defaultTags, ['学习'])
-  assert.equal(normalizeFullBackupSnapshot({ ...full, version: 7 }).version, 10)
+  assert.equal(normalizeFullBackupSnapshot({ ...full, version: 7 }).version, FULL_BACKUP_VERSION)
   assert.deepEqual(normalizeCommonNotes(), { weight: [], savings: [] })
 })

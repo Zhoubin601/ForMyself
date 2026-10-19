@@ -38,20 +38,28 @@ const isFollowupNotificationId = id => {
     number < CHAT_FOLLOWUP_NOTIFICATION_MAX
 }
 
-export async function syncChatFollowupNotifications(outbox = [], settings = {}, options = {}) {
+let notificationSyncChain = Promise.resolve()
+export function syncChatFollowupNotifications(...args) {
+  const next = notificationSyncChain.catch(() => {}).then(() => syncChatFollowupNotificationsNow(...args))
+  notificationSyncChain = next
+  return next
+}
+
+async function syncChatFollowupNotificationsNow(outbox = [], settings = {}, options = {}) {
   const enabled = settings.enabled ?? settings.followupEnabled !== false
   const {
     requestPermission = false,
     notificationPlugin = LocalNotifications,
     platform = Capacitor.getPlatform(),
-    now = new Date()
+    now = new Date(),
+    isFeatureEnabled = () => true
   } = options
   const pending = await notificationPlugin.getPending()
   const previous = pending.notifications
     .filter(item => isFollowupNotificationId(item.id))
     .map(item => ({ id: item.id }))
   if (previous.length) await notificationPlugin.cancel({ notifications: previous })
-  const upcoming = enabled
+  const upcoming = enabled && isFeatureEnabled()
     ? normalizeFollowupOutbox(outbox)
       .filter(item => item.scheduledAt > now.getTime())
       .map(item => ({
@@ -86,6 +94,7 @@ export async function syncChatFollowupNotifications(outbox = [], settings = {}, 
       vibration: true
     })
   }
+  if (!isFeatureEnabled()) return { scheduled: 0, permission: 'not_required' }
   const result = await notificationPlugin.schedule({ notifications: upcoming })
   return { scheduled: result.notifications.length, permission: 'granted' }
 }

@@ -42,5 +42,5 @@ test('动效遵循系统减少动态效果偏好', async () => {
 
 test('默认自定义壁纸不会与氛围柔光重复叠加', async () => {
   const app = readSourceContract('App.vue')
-  assert.match(app, /<div v-if="settingsStore\.customBg" class="bg-blur-layer"><\/div>\s*<div v-else class="ambient-canvas"/)
+  assert.match(app, /<div v-if="settingsStore\.customBg" class="bg-blur-layer"[^>]*><\/div>\s*<div v-else class="ambient-canvas"/)
 })
