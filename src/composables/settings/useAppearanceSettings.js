@@ -11,6 +11,8 @@ import { useChatStore } from '../../features/chat/chatStore'
 import { appAlert, appConfirm, appToast } from '../../services/uiFeedback'
 import { THEME_PRESETS, getThemePrimary, normalizeHexColor } from '../../services/themeSystem'
 import { backgroundEffectStyle, DEFAULT_BACKGROUND_EFFECT } from '../../services/backgroundSettings.js'
+import { DEFAULT_COMPONENT_TRANSPARENCY, normalizeComponentTransparency } from '../../services/componentAppearance.js'
+import { beginNativeActivityGuard } from '../../services/nativeActivityGuard.js'
 
 export function useAppearanceSettings() {
 
@@ -26,9 +28,26 @@ export function useAppearanceSettings() {
   const bgInputRef = ref(null)
   const backgroundScope = ref('pages')
   const isUploadingBackground = ref(false)
+  const pendingBackground = ref('')
+  const isSavingBackground = ref(false)
   const isSavingWarmHome = ref(false)
   const backgroundEffect = computed(() => settingsStore.backgroundEffects[backgroundScope.value])
   const backgroundPreviewEffect = computed(() => backgroundEffectStyle(backgroundEffect.value))
+  const updateComponentTransparency = value => {
+    settingsStore.componentTransparency = normalizeComponentTransparency(value)
+  }
+  const saveComponentTransparency = async () => {
+    try {
+      await nextTick()
+      await settingsStore.flushPendingSettingsWrites()
+    } catch {
+      appToast('组件透明度保存失败，请重试', { tone: 'danger' })
+    }
+  }
+  const resetComponentTransparency = async () => {
+    updateComponentTransparency(DEFAULT_COMPONENT_TRANSPARENCY)
+    await saveComponentTransparency()
+  }
   const updateBackgroundEffect = (key, value) => {
     settingsStore.backgroundEffects = {
       ...settingsStore.backgroundEffects,
@@ -218,7 +237,10 @@ export function useAppearanceSettings() {
     background: getThemePrimary(settingsStore.themeSettings)
   }))
 
-  const triggerBgUpload = () => bgInputRef.value.click()
+  const triggerBgUpload = () => {
+    beginNativeActivityGuard()
+    bgInputRef.value.click()
+  }
   const handleBgUpload = async event => {
     const file = event.target.files?.[0]
     event.target.value = ''
@@ -240,12 +262,27 @@ export function useAppearanceSettings() {
         picture.onerror = () => reject(new Error('IMAGE_DECODE_FAILED'))
         picture.src = dataUrl
       })
-      await settingsStore.updateBg(dataUrl)
-      appToast('背景图片已更新', { tone: 'success' })
+      pendingBackground.value = dataUrl
     } catch {
       appToast('图片无法读取或保存，请换一张图片重试', { tone: 'danger' })
     } finally {
       isUploadingBackground.value = false
+    }
+  }
+  const cancelBackgroundCrop = () => {
+    if (!isSavingBackground.value) pendingBackground.value = ''
+  }
+  const confirmBackgroundCrop = async dataUrl => {
+    if (!pendingBackground.value || isSavingBackground.value) return
+    isSavingBackground.value = true
+    try {
+      await settingsStore.updateBg(dataUrl)
+      pendingBackground.value = ''
+      appToast('背景图片已更新', { tone: 'success' })
+    } catch {
+      appToast('背景保存失败，请重试，原壁纸已保留', { tone: 'danger' })
+    } finally {
+      isSavingBackground.value = false
     }
   }
   const clearBg = async () => {
@@ -260,6 +297,13 @@ export function useAppearanceSettings() {
   }
 
   return {
+    pendingBackground,
+    isSavingBackground,
+    cancelBackgroundCrop,
+    confirmBackgroundCrop,
+    updateComponentTransparency,
+    saveComponentTransparency,
+    resetComponentTransparency,
     backgroundScope,
     backgroundEffect,
     backgroundPreviewEffect,

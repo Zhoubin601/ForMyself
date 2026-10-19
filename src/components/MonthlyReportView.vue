@@ -195,9 +195,9 @@ const generateMonthlySummary = async () => {
 .month-switcher div { display: flex; flex-direction: column; gap: 3px; }
 .month-switcher strong { font-size: 22px; }
 .month-switcher span { color: var(--body-muted); font-size: 13px; }
-.month-nav { width: 40px; height: 40px; border: 0; border-radius: 50%; background: var(--canvas); color: var(--primary); font-size: 28px; cursor: pointer; }
+.month-nav { width: 40px; height: 40px; border: 0; border-radius: 50%; background: var(--component-surface); color: var(--primary); font-size: 28px; cursor: pointer; }
 .month-nav:disabled { opacity: .3; }
-.report-card { position: relative; overflow: hidden; isolation: isolate; padding: 20px; border-radius: 20px; background: rgba(255,255,255,.92); border: 1px solid rgba(255,255,255,.8); box-shadow: 0 8px 28px rgba(0,0,0,.055); }
+.report-card { position: relative; overflow: hidden; isolation: isolate; padding: 20px; border-radius: 20px; background: var(--component-surface); border: 1px solid rgba(255,255,255,.8); box-shadow: 0 8px 28px rgba(0,0,0,.055); }
 .report-card::before {
   content: '';
   position: absolute;
@@ -228,23 +228,23 @@ const generateMonthlySummary = async () => {
   to { transform: scaleX(1); opacity: 1; }
 }
 .metric-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
-.metric-box { display: flex; flex-direction: column; gap: 7px; padding: 15px; border-radius: 14px; background: var(--surface-pearl); }
+.metric-box { display: flex; flex-direction: column; gap: 7px; padding: 15px; border-radius: 14px; background: var(--component-soft); }
 .metric-box span { color: var(--body-muted); font-size: 13px; }
 .metric-box strong { font-size: 23px; font-variant-numeric: tabular-nums; }
 .metric-box small { color: var(--body-muted); font-size: 13px; font-weight: 400; }
 .target-input-wrap { display: flex; align-items: center; gap: 7px; }
 .target-input-wrap label { color: var(--body-muted); font-size: 12px; }
-.target-input-wrap input { width: 70px; padding: 8px; border: 1px solid var(--hairline); border-radius: 10px; background: var(--surface-pearl); font-size: 14px; }
+.target-input-wrap input { width: 70px; padding: 8px; border: 1px solid var(--hairline); border-radius: 10px; background: var(--component-soft); font-size: 14px; }
 .insight-line { display: flex; justify-content: space-between; gap: 12px; margin-top: 14px; color: var(--ink); font-size: 13px; }
 .saved-total { color: var(--primary); font-size: 27px; font-weight: 650; }
-.plan-progress-block { margin-top: 16px; padding: 15px; border-radius: 14px; background: var(--surface-pearl); }
+.plan-progress-block { margin-top: 16px; padding: 15px; border-radius: 14px; background: var(--component-soft); }
 .plan-progress-head { display: flex; justify-content: space-between; font-size: 14px; font-weight: 600; }
 .plan-track { height: 8px; margin-top: 10px; overflow: hidden; border-radius: 999px; background: var(--divider-soft); }
 .plan-track div { height: 100%; border-radius: inherit; background: var(--primary); }
 .plan-progress-block p { margin: 8px 0 0; color: var(--body-muted); font-size: 12px; }
 .report-footnote { margin: 14px 0 0; color: var(--body-muted); font-size: 12px; }
 .empty-copy { margin: 0 0 18px; color: var(--body-muted); font-size: 14px; line-height: 1.6; }
-.ai-report { background: linear-gradient(145deg, rgba(237,246,255,.96), rgba(255,250,240,.96)); }
+.ai-report { background: var(--component-tint); }
 .ai-spark { display: inline-block; font-size: 28px; animation: aiSparkFloat 3.6s ease-in-out infinite; }
 @keyframes aiSparkFloat {
   0%, 100% { transform: translate3d(0, 0, 0) rotate(-3deg); }

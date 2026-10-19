@@ -65,5 +65,5 @@ test('主题设置可持久化且首页栏目统一中文', async () => {
   assert.doesNotMatch(settingsView, /type=["']color["']/)
   assert.doesNotMatch(homeView, />TODAY<|>WEIGHT<|>MOOD<|>RECENT<|MONTHLY REPORT/)
   assert.match(homeView, />今日日程<|>主要目标<|>体重趋势<|>心情回顾<|>最近记录<|>月度回顾</)
-  assert.match(appView, /\.sub-nav-frosted\s*\{[\s\S]*?background:\s*#f8f9fc;/)
+  assert.match(appView, /\.sub-nav-frosted\s*\{[\s\S]*?background:\s*var\(--component-soft\);/)
 })

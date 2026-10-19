@@ -161,7 +161,7 @@ watch(() => props.modelValue, value => {
   padding: 8px 18px calc(20px + env(safe-area-inset-bottom));
   border: 1px solid rgba(255,255,255,.8);
   border-radius: 28px 28px 0 0;
-  background: rgba(251,252,255,.98);
+  background: var(--component-panel);
   box-shadow: 0 -18px 55px rgba(22,30,45,.18);
 }
 .picker-handle { width: 42px; height: 5px; margin: 2px auto 14px; border-radius: 999px; background: #d4d8df; }

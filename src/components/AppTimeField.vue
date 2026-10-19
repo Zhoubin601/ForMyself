@@ -237,13 +237,13 @@ const save = () => {
 .app-time-field {
   display: flex; align-items: center; justify-content: space-between; gap: 7px;
   min-height: 40px; padding: 8px 10px; border: 1px solid var(--hairline);
-  border-radius: 10px; color: inherit; background: var(--canvas);
+  border-radius: 10px; color: inherit; background: var(--component-surface);
   box-sizing: border-box; font: inherit; text-align: left;
 }
 .app-time-field svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; opacity: .72; }
 .app-time-field:disabled { opacity: .45; }
 .time-picker-mask { position: fixed; inset: 0; z-index: 18000; display: flex; align-items: flex-end; background: rgba(15,20,31,.34); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
-.time-picker-sheet { width: 100%; max-height: 92vh; overflow-y: auto; padding: 8px 18px calc(18px + env(safe-area-inset-bottom)); border: 1px solid rgba(255,255,255,.8); border-radius: 28px 28px 0 0; background: rgba(251,252,255,.98); box-shadow: 0 -18px 55px rgba(22,30,45,.18); }
+.time-picker-sheet { width: 100%; max-height: 92vh; overflow-y: auto; padding: 8px 18px calc(18px + env(safe-area-inset-bottom)); border: 1px solid rgba(255,255,255,.8); border-radius: 28px 28px 0 0; background: var(--component-panel); box-shadow: 0 -18px 55px rgba(22,30,45,.18); }
 .time-handle { width: 42px; height: 5px; margin: 2px auto 12px; border-radius: 999px; background: #d4d8df; }
 header { display: flex; align-items: center; justify-content: space-between; padding: 1px 4px 10px; }
 header small { display: block; margin-bottom: 5px; color: #8b929e; font-size: 11px; }

@@ -1,0 +1,28 @@
+{
+  "date": "2026-10-19",
+  "user": 12,
+  "input": "Synthetic file through the actual file-input change handler; native system picker separately verified in native-verification.json",
+  "tests": [
+    {
+      "name": "two-finger-grow",
+      "passed": true
+    },
+    {
+      "name": "two-finger-shrink-and-one-finger-continued-drag",
+      "passed": true
+    },
+    {
+      "name": "page-zoom-unchanged",
+      "passed": true
+    },
+    {
+      "name": "native-back-cancels-without-changing-wallpaper",
+      "passed": true
+    },
+    {
+      "name": "final-build-crop-confirm-and-save",
+      "passed": true
+    }
+  ],
+  "errors": []
+}

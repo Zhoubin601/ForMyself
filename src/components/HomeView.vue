@@ -549,9 +549,9 @@ button {
   isolation: isolate;
 }
 
-.hero-morning { background: linear-gradient(145deg, var(--theme-soft) 0%, #fbfdff 58%, var(--theme-surface) 100%); }
-.hero-afternoon { background: linear-gradient(145deg, #fff0df 0%, #fff9f1 54%, var(--theme-soft) 100%); }
-.hero-night { background: linear-gradient(145deg, var(--theme-soft) 0%, #f1edff 52%, var(--theme-surface) 100%); }
+.hero-morning { background: var(--component-tint); }
+.hero-afternoon { background: rgba(255, 243, 225, var(--component-opacity)); }
+.hero-night { background: rgba(242, 237, 255, var(--component-opacity)); }
 
 .hero-orb {
   position: absolute;
@@ -641,7 +641,7 @@ button {
   padding: 13px 15px;
   border: 1px solid rgba(255, 255, 255, 0.8);
   border-radius: var(--radius-control);
-  background: rgba(255, 255, 255, 0.54);
+  background: var(--component-surface);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   width: 100%;
@@ -695,7 +695,7 @@ button {
   padding: 14px 15px;
   border: 1px solid var(--theme-border);
   border-radius: 18px;
-  background: var(--theme-surface);
+  background: var(--component-tint);
   box-shadow: var(--shadow-card);
 }
 .biometric-setup-icon { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 13px; background: var(--theme-soft); color: var(--primary); font-size: 20px; }
@@ -753,7 +753,7 @@ button {
   color: var(--home-ink);
   border: 1px solid var(--theme-border);
   border-radius: var(--radius-card);
-  background: rgba(255, 255, 255, 0.82);
+  background: var(--component-surface);
   box-shadow: var(--shadow-card);
   cursor: pointer;
   transition: transform 0.2s ease, border-color 0.2s ease;
@@ -785,7 +785,7 @@ button {
 .today-action:active { transform: scale(0.97); }
 .today-action:active::before,
 .dashboard-card:active::before { opacity: 1; transform: scale(1.12); }
-.today-action.completed { border-color: rgba(76, 161, 122, 0.28); background: rgba(247, 255, 251, 0.9); }
+.today-action.completed { border-color: rgba(76, 161, 122, 0.28); background: rgba(247, 255, 251, var(--component-opacity)); }
 
 .today-icon {
   display: grid;
@@ -813,7 +813,7 @@ button {
   isolation: isolate;
   border: 1px solid var(--theme-border);
   border-radius: var(--radius-card);
-  background: rgba(255, 255, 255, 0.86);
+  background: var(--component-surface);
   box-shadow: var(--shadow-card);
   transition: transform .22s ease, box-shadow .28s ease, border-color .28s ease;
 }
@@ -829,9 +829,7 @@ button {
   text-align: left;
   color: var(--home-ink);
   cursor: pointer;
-  background:
-    radial-gradient(circle at 100% 0%, rgba(var(--theme-primary-rgb), .1), transparent 34%),
-    rgba(255, 255, 255, 0.9);
+  background: var(--component-surface);
 }
 
 .schedule-date-tile {
@@ -1049,7 +1047,7 @@ button {
   color: var(--home-ink);
   border: 1px solid var(--theme-border);
   border-radius: var(--radius-card);
-  background: linear-gradient(135deg, var(--theme-soft) 0%, var(--theme-surface) 58%, rgba(var(--theme-primary-rgb), .17) 100%);
+  background: var(--component-tint);
   background-size: 180% 180%;
   box-shadow: var(--shadow-card);
   cursor: pointer;
@@ -1080,7 +1078,7 @@ button {
   82%, 100% { transform: translate3d(70%, 0, 0) rotate(5deg); opacity: 0; }
 }
 
-.report-mark { display: grid; place-items: center; width: 48px; height: 48px; border-radius: 17px; background: rgba(255, 255, 255, 0.66); color: var(--primary); font-size: 20px; font-weight: 700; }
+.report-mark { display: grid; place-items: center; width: 48px; height: 48px; border-radius: 17px; background: var(--component-surface); color: var(--primary); font-size: 20px; font-weight: 700; }
 .report-copy { min-width: 0; }
 .report-copy small, .report-copy strong, .report-copy span { display: block; }
 .report-copy small { margin-bottom: 4px; color: var(--primary); font-size: 10px; font-weight: 750; letter-spacing: .04em; }
@@ -1125,7 +1123,16 @@ button {
   .schedule-date-tile,
   .progress-value::after,
   .report-banner,
-  .report-banner::before { animation: none; }
+  .report-banner::before {
+  content: '';
+  position: absolute;
+  inset: -80% -38%;
+  z-index: 0;
+  background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,.65) 50%, transparent 60%);
+  transform: translate3d(-70%, 0, 0) rotate(5deg);
+  animation: reportBannerShine 7.5s ease-in-out infinite;
+  pointer-events: none;
+}
   .today-action,
   .goal-card,
   .insight-card,

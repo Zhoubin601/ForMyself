@@ -94,7 +94,7 @@ describe('独立背景效果和温馨小家开关', () => {
     wrapper.unmount()
   })
 
-  it('保存背景失败保留旧图，重新选择同一文件仍可触发上传', async () => {
+  it('选图先裁剪，取消和保存失败保留旧图，确认后才更新背景', async () => {
     const { wrapper, settings, model } = await mountAppearance()
     const previous = settings.customBg
     vi.stubGlobal('FileReader', class {
@@ -104,14 +104,24 @@ describe('独立背景效果和温馨小家开关', () => {
       set src(_value) { this.onload() }
     })
     const event = { target: { files: [new File(['synthetic'], 'synthetic.png', { type: 'image/png' })], value: 'synthetic.png' } }
-    vi.mocked(preferenceStorage.set).mockRejectedValueOnce(new Error('SYNTHETIC_STORAGE_FULL'))
     try {
       await model.handleBgUpload(event)
       expect(settings.customBg).toBe(previous)
       expect(event.target.value).toBe('')
-      expect(appToast).toHaveBeenCalledWith('图片无法读取或保存，请换一张图片重试', { tone: 'danger' })
+      expect(model.pendingBackground).toBe('data:image/png;base64,new-synthetic')
+      model.cancelBackgroundCrop()
+      expect(model.pendingBackground).toBe('')
+      expect(settings.customBg).toBe(previous)
       await model.handleBgUpload(event)
-      expect(settings.customBg).toBe('data:image/png;base64,new-synthetic')
+      vi.mocked(preferenceStorage.set).mockRejectedValueOnce(new Error('SYNTHETIC_STORAGE_FULL'))
+      await model.confirmBackgroundCrop('data:image/jpeg;base64,cropped-synthetic')
+      expect(settings.customBg).toBe(previous)
+      expect(model.pendingBackground).not.toBe('')
+      expect(model.isSavingBackground).toBe(false)
+      expect(appToast).toHaveBeenCalledWith('背景保存失败，请重试，原壁纸已保留', { tone: 'danger' })
+      await model.confirmBackgroundCrop('data:image/jpeg;base64,cropped-synthetic')
+      expect(settings.customBg).toBe('data:image/jpeg;base64,cropped-synthetic')
+      expect(model.pendingBackground).toBe('')
     } finally {
       vi.unstubAllGlobals()
       wrapper.unmount()
@@ -141,9 +151,50 @@ describe('独立背景效果和温馨小家开关', () => {
     const { wrapper, settings, model } = await mountAppearance()
     settings.backgroundEffects = { lock: { blur: 0, fade: 0 }, pages: { blur: 90, fade: 70 } }
     model.backgroundScope = 'pages'
-    await wrapper.find('.background-reset-effect').trigger('click')
+    await wrapper.find('.background-settings-card .background-reset-effect').trigger('click')
     await flushPromises()
     expect(settings.backgroundEffects).toEqual({ lock: { blur: 0, fade: 0 }, pages: { blur: 20, fade: 20 } })
     wrapper.unmount()
+  })
+
+  it('透明度实时调节、重建Store恢复，默认恢复独立于壁纸效果', async () => {
+    const { wrapper, settings } = await mountAppearance()
+    await wrapper.find('#component-transparency').setValue(75)
+    await flushPromises()
+    expect(settings.componentCssVariables['--component-opacity']).toBe('0.25')
+    await settings.flushPendingSettingsWrites()
+    wrapper.unmount()
+    setActivePinia(createPinia())
+    const reloaded = useSettingsStore()
+    await reloaded.loadSettings()
+    expect(reloaded.componentTransparency).toBe(75)
+    const backup = reloaded.getBackupSnapshot()
+    reloaded.componentTransparency = 0
+    await reloaded.restoreBackupSnapshot(backup)
+    expect(reloaded.componentTransparency).toBe(75)
+  })
+
+  it('外观并行读取且等待图片解码，完整设置加载不会重复读取壁纸', async () => {
+    preferences.set('my_custom_bg', 'data:image/png;base64,synthetic')
+    preferences.set('my_background_effects_v1', JSON.stringify({ lock: { blur: 0, fade: 0 } }))
+    preferences.set('my_component_transparency_v1', '65')
+    let finishDecode
+    const decode = vi.fn(() => new Promise(resolve => { finishDecode = resolve }))
+    vi.stubGlobal('Image', class { decode = decode })
+    try {
+      const settings = useSettingsStore()
+      const loading = settings.loadAppearanceSettings()
+      await flushPromises()
+      expect(decode).toHaveBeenCalledOnce()
+      expect(settings.customBg).toBe('')
+      expect(settings.componentTransparency).toBe(65)
+      expect(settings.backgroundEffects.lock).toEqual({ blur: 0, fade: 0 })
+      finishDecode()
+      await loading
+      expect(settings.customBg).toBe('data:image/png;base64,synthetic')
+      await settings.loadSettings()
+      expect(vi.mocked(preferenceStorage.get).mock.calls.filter(([arg]) => arg.key === 'my_custom_bg')).toHaveLength(1)
+      expect(decode).toHaveBeenCalledOnce()
+    } finally { vi.unstubAllGlobals() }
   })
 })

@@ -25,8 +25,8 @@ const shown = computed(() => props.compact ? props.items.slice(0, 3) : props.ite
 </template>
 
 <style scoped>
-.todo-progress-card { position:relative; overflow:hidden; isolation:isolate; border-radius:26px; background:#19191f; color:#fff; border:1px solid #ffffff14; box-shadow:0 12px 28px #14282518; }
-.todo-fill { position:absolute; inset:0 auto 0 0; background:#315956; border-right:2px solid #72d1bd; z-index:-1; pointer-events:none; }
+.todo-progress-card { position:relative; overflow:hidden; isolation:isolate; border-radius:26px; background: var(--component-dark); color:#fff; border:1px solid #ffffff14; box-shadow:0 12px 28px #14282518; }
+.todo-fill { position:absolute; inset:0 auto 0 0; background: rgba(49, 89, 86, var(--component-opacity)); border-right:2px solid #72d1bd; z-index:-1; pointer-events:none; }
 .animated .todo-fill { transition:width 400ms cubic-bezier(.22,.68,.3,1); }
 .todo-card-content { padding:22px; }
 header { display:flex; justify-content:space-between; align-items:center; gap:10px; color:#a8bab6; font-size:12px; letter-spacing:.8px; }

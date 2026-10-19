@@ -182,9 +182,7 @@ onBeforeUnmount(() => {
   padding: 26px 22px 18px;
   border: 1px solid rgba(255, 255, 255, .9);
   border-radius: 26px;
-  background:
-    radial-gradient(circle at 12% 0%, rgba(54, 132, 255, .11), transparent 34%),
-    rgba(255, 255, 255, .97);
+  background: var(--component-panel);
   box-shadow: 0 26px 70px rgba(20, 31, 54, .24), 0 2px 8px rgba(20, 31, 54, .08);
   color: var(--ink, #1d1d1f);
 }

@@ -122,12 +122,12 @@ onBeforeUnmount(() => {
 .note-input svg{transition:transform .18s}.note-input svg.rotated{transform:rotate(180deg)}
 .note-tools{display:flex;align-items:center;justify-content:space-between}
 .note-tools button{min-height:36px;font-size:12px}
-.note-options{position:fixed;z-index:10020;overflow:auto;overscroll-behavior:contain;box-sizing:border-box;padding:4px;border:1px solid var(--hairline);border-radius:12px;background:var(--canvas,#fff);color:var(--ink);box-shadow:0 8px 28px #0002}
+.note-options{position:fixed;z-index:10020;overflow:auto;overscroll-behavior:contain;box-sizing:border-box;padding:4px;border:1px solid var(--hairline);border-radius:12px;background: var(--component-panel);color:var(--ink);box-shadow:0 8px 28px #0002}
 .note-select{display:flex;justify-content:space-between;gap:12px;width:100%;min-height:44px;padding:10px 12px;border:0;border-radius:8px;background:transparent;color:var(--ink);text-align:left;font:inherit;font-size:14px;overflow-wrap:anywhere}
 .note-select[aria-selected=true],.note-select[data-active=true],.note-select:hover{background:color-mix(in srgb,var(--accent,#477ba0) 10%,transparent)}
 .note-empty{font-size:12px;color:var(--ink-secondary,#888);padding:8px;margin:0;line-height:1.6}
 .note-manager-backdrop{position:fixed;inset:0;z-index:10030;background:#0005;display:flex;align-items:center;justify-content:center;padding:16px}
-.note-manager{width:100%;max-width:400px;max-height:70dvh;overflow:auto;box-sizing:border-box;padding:16px;border-radius:18px;background:var(--canvas,#fff);color:var(--ink)}
+.note-manager{width:100%;max-width:400px;max-height:70dvh;overflow:auto;box-sizing:border-box;padding:16px;border-radius:18px;background: var(--component-panel);color:var(--ink)}
 .note-manager header{display:flex;align-items:center;justify-content:space-between}
 .note-manager button{min-height:44px}
 .note-option{display:flex;align-items:center;gap:10px;border-top:1px solid var(--hairline);padding:4px 0}

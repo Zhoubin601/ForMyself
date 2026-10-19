@@ -1,5 +1,6 @@
 import { normalizeCommonNotes } from '../services/commonNotes.js'
 import { normalizeBackgroundEffects } from '../services/backgroundSettings.js'
+import { buildComponentCssVariables, decodeBackground, normalizeComponentTransparency } from '../services/componentAppearance.js'
 import { appToast } from '../services/uiFeedback.js'
 import { defineStore } from 'pinia'
 import { ref, computed, watch } from 'vue'
@@ -33,6 +34,8 @@ export const useSettingsStore = defineStore('settings', () => {
   const commonNotes = ref(normalizeCommonNotes())
   const customBg = ref('')
   const backgroundEffects = ref(normalizeBackgroundEffects())
+  const componentTransparency = ref(normalizeComponentTransparency())
+  const componentCssVariables = computed(() => buildComponentCssVariables(componentTransparency.value))
   const warmHomeEnabled = ref(true)
   const warmHomePausedAt = ref(0)
   const themeSettings = ref(normalizeThemeSettings())
@@ -152,18 +155,41 @@ export const useSettingsStore = defineStore('settings', () => {
   const currentRouteKey = computed(() => appRouteKey(currentRoute.value))
   const canGoBack = computed(() => navigationStack.value.length > 0)
 
+  let appearanceLoadPromise = null
+  const loadAppearanceSettings = () => {
+    if (appearanceLoadPromise) return appearanceLoadPromise
+    appearanceLoadPromise = (async () => {
+      const [bgRes, effectsRes, transparencyRes, themeRes] = await Promise.all([
+        Preferences.get({ key: STORAGE_KEYS.customBackground }),
+        Preferences.get({ key: STORAGE_KEYS.backgroundEffects }),
+        Preferences.get({ key: STORAGE_KEYS.componentTransparency }),
+        Preferences.get({ key: STORAGE_KEYS.themeSettings })
+      ])
+      const parse = (value, fallback) => {
+        try { return value == null ? fallback : JSON.parse(value) } catch { return fallback }
+      }
+      backgroundEffects.value = normalizeBackgroundEffects(parse(effectsRes.value, {}))
+      componentTransparency.value = normalizeComponentTransparency(parse(transparencyRes.value, undefined))
+      themeSettings.value = normalizeThemeSettings(parse(themeRes.value, {}))
+      if (bgRes.value) {
+        try {
+          await decodeBackground(bgRes.value)
+          customBg.value = bgRes.value
+        } catch (error) {
+          console.warn('背景图片无法解码，使用默认背景', error)
+        }
+      }
+    })().catch(error => { console.warn('读取外观设置失败，使用默认外观', error) })
+    return appearanceLoadPromise
+  }
+
   const loadSettings = async () => {
     try {
-      const bgRes = await Preferences.get({ key: STORAGE_KEYS.customBackground })
-      if (bgRes.value) customBg.value = bgRes.value
-      const effectsRes = await Preferences.get({ key: STORAGE_KEYS.backgroundEffects })
-      backgroundEffects.value = normalizeBackgroundEffects(effectsRes.value ? JSON.parse(effectsRes.value) : {})
+      await loadAppearanceSettings()
       const warmHomeRes = await Preferences.get({ key: STORAGE_KEYS.warmHomeEnabled })
       const warmHomeState = warmHomeRes.value ? JSON.parse(warmHomeRes.value) : true
       warmHomePausedAt.value = Math.max(0, Number(warmHomeState?.pausedAt) || 0)
       warmHomeEnabled.value = warmHomeState !== false && warmHomeState?.enabled !== false
-      const themeRes = await Preferences.get({ key: STORAGE_KEYS.themeSettings })
-      if (themeRes.value) themeSettings.value = normalizeThemeSettings(JSON.parse(themeRes.value))
       const bannerRes = await Preferences.get({ key: STORAGE_KEYS.bannerSettings })
       if (bannerRes.value) bannerSettings.value = JSON.parse(bannerRes.value)
       const [aiRes, legacyAiRes] = await Promise.all([
@@ -230,6 +256,7 @@ export const useSettingsStore = defineStore('settings', () => {
 
   watch(bannerSettings, v => queuePreferenceWrite(STORAGE_KEYS.bannerSettings, JSON.stringify(v)), { deep: true })
   watch(backgroundEffects, value => queuePreferenceWrite(STORAGE_KEYS.backgroundEffects, JSON.stringify(normalizeBackgroundEffects(value))), { deep: true })
+  watch(componentTransparency, value => queuePreferenceWrite(STORAGE_KEYS.componentTransparency, JSON.stringify(normalizeComponentTransparency(value))))
   watch(themeSettings, value => {
     queuePreferenceWrite(STORAGE_KEYS.themeSettings, JSON.stringify(normalizeThemeSettings(value)))
   }, { deep: true })
@@ -374,6 +401,7 @@ export const useSettingsStore = defineStore('settings', () => {
     banner: { ...bannerSettings.value },
     customBg: customBg.value,
     backgroundEffects: normalizeBackgroundEffects(backgroundEffects.value),
+    componentTransparency: normalizeComponentTransparency(componentTransparency.value),
     warmHomeEnabled: warmHomeEnabled.value,
     warmHomePausedAt: warmHomePausedAt.value,
     theme: { ...themeSettings.value },
@@ -404,6 +432,7 @@ export const useSettingsStore = defineStore('settings', () => {
     bannerSettings.value = backup.banner
     customBg.value = backup.customBg
     backgroundEffects.value = backup.backgroundEffects
+    componentTransparency.value = backup.componentTransparency
     warmHomePausedAt.value = backup.warmHomePausedAt
     warmHomeEnabled.value = backup.warmHomeEnabled
     themeSettings.value = backup.theme
@@ -420,6 +449,7 @@ export const useSettingsStore = defineStore('settings', () => {
 
     const writes = [
       Preferences.set({ key: STORAGE_KEYS.backgroundEffects, value: JSON.stringify(backup.backgroundEffects) }),
+      Preferences.set({ key: STORAGE_KEYS.componentTransparency, value: JSON.stringify(backup.componentTransparency) }),
       Preferences.set({ key: STORAGE_KEYS.warmHomeEnabled, value: JSON.stringify({ enabled: backup.warmHomeEnabled, pausedAt: backup.warmHomePausedAt }) }),
       Preferences.set({ key: STORAGE_KEYS.commonNotes, value: JSON.stringify(backup.commonNotes) }),
       Preferences.set({ key: STORAGE_KEYS.bannerSettings, value: JSON.stringify(backup.banner) }),
@@ -452,5 +482,5 @@ export const useSettingsStore = defineStore('settings', () => {
     return backup
   }
 
-  return { backgroundEffects, warmHomePausedAt, warmHomeEnabled, updateWarmHomeEnabled, todoTarget, commonNotes, bannerSettings, customBg, themeSettings, themeCssVariables, currentView, settingsScope, settingsSection, settingsReturnView, scheduleTarget, isDrawerOpen, navigationStack, navigationRevision, currentRoute, currentRouteKey, canGoBack, isDataLoaded, viewTitle, cachedQuote, dataFingerprint, lastEncouragement, aiProviderUrl, aiApiKey, aiModel, autoLockDelaySeconds, notificationSettings, notificationAiContent, targetWeight, heightCm, weightChangeReminderEnabled, weightChangeThreshold, loadSettings, flushPendingSettingsWrites, navigate, replaceRoute, goBack, updateLastHistoryScroll, updateCurrentRouteScroll, switchView, openGeneralSettingsSection, closeGeneralSettingsSection, openModuleSettings, closeModuleSettings, openScheduleTarget, updateBanner, updateBg, updateThemeSettings, updateHealthSettings, getBackupSnapshot, restoreBackupSnapshot }
+  return { componentTransparency, componentCssVariables, loadAppearanceSettings, backgroundEffects, warmHomePausedAt, warmHomeEnabled, updateWarmHomeEnabled, todoTarget, commonNotes, bannerSettings, customBg, themeSettings, themeCssVariables, currentView, settingsScope, settingsSection, settingsReturnView, scheduleTarget, isDrawerOpen, navigationStack, navigationRevision, currentRoute, currentRouteKey, canGoBack, isDataLoaded, viewTitle, cachedQuote, dataFingerprint, lastEncouragement, aiProviderUrl, aiApiKey, aiModel, autoLockDelaySeconds, notificationSettings, notificationAiContent, targetWeight, heightCm, weightChangeReminderEnabled, weightChangeThreshold, loadSettings, flushPendingSettingsWrites, navigate, replaceRoute, goBack, updateLastHistoryScroll, updateCurrentRouteScroll, switchView, openGeneralSettingsSection, closeGeneralSettingsSection, openModuleSettings, closeModuleSettings, openScheduleTarget, updateBanner, updateBg, updateThemeSettings, updateHealthSettings, getBackupSnapshot, restoreBackupSnapshot }
 })

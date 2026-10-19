@@ -1,0 +1,104 @@
+{
+  "date": "2026-10-19",
+  "data": "Synthetic records only; isolated browser profile",
+  "layouts": [
+    {
+      "width": 320,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "width": 1280,
+      "overflow": false
+    }
+  ],
+  "errors": [],
+  "pinch": {
+    "grow": true,
+    "shrink": true,
+    "anchorStable": true,
+    "pageScale": 1,
+    "cancel": true
+  },
+  "crop": {
+    "width": 555,
+    "height": 1200,
+    "bytes": 8011,
+    "type": "data:image/jpeg;base64,",
+    "cancelPreserved": true,
+    "keyboard": true,
+    "pointer": true
+  },
+  "pages": [
+    {
+      "view": "home",
+      "background": "rgba(255, 255, 255, 0.35)",
+      "opacity": "1",
+      "overflow": false
+    },
+    {
+      "view": "reports",
+      "background": "rgba(255, 255, 255, 0.35)",
+      "opacity": "1",
+      "overflow": false
+    },
+    {
+      "view": "debts",
+      "background": "color(srgb 0.865732 0.905387 0.947823 / 0.394588)",
+      "opacity": "1",
+      "overflow": false
+    },
+    {
+      "view": "weight",
+      "background": "rgba(255, 255, 255, 0.35)",
+      "opacity": "1",
+      "overflow": false
+    },
+    {
+      "view": "mood",
+      "background": "rgba(255, 255, 255, 0.35)",
+      "opacity": "1",
+      "overflow": false
+    },
+    {
+      "view": "todo",
+      "background": "rgba(25, 25, 31, 0.35)",
+      "opacity": "1",
+      "overflow": false
+    },
+    {
+      "view": "schedule",
+      "background": "rgba(246, 248, 251, 0.35)",
+      "opacity": "1",
+      "overflow": false
+    },
+    {
+      "view": "chat",
+      "background": "rgba(255, 255, 255, 0.35)",
+      "opacity": "1",
+      "overflow": false
+    },
+    {
+      "view": "passwords",
+      "background": "rgba(255, 255, 255, 0.35)",
+      "opacity": "1",
+      "overflow": false
+    },
+    {
+      "view": "settings",
+      "background": "rgba(255, 255, 255, 0.35)",
+      "opacity": "1",
+      "overflow": false
+    }
+  ],
+  "startup": {
+    "custom": true,
+    "background": "cropped JPEG present on first Vue frame",
+    "opacity": "0.35",
+    "at": 178.09999999962747,
+    "readyMark": 169.79999999981374
+  }
+}

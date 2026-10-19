@@ -383,7 +383,7 @@ onUnmounted(() => {
 .vault-filters { display: flex; gap: 10px; margin: -8px 0 20px; }
 .category-filter { flex: 1; min-width: 0; }
 .vault-select { position: relative; }
-.custom-select-trigger { display: grid; grid-template-columns: 38px minmax(0, 1fr) 20px; gap: 11px; align-items: center; width: 100%; min-height: 58px; padding: 9px 13px 9px 10px; text-align: left; color: var(--ink); border: 1px solid #dfe3ea; border-radius: 16px; background: rgba(255,255,255,.9); box-shadow: 0 6px 18px rgba(36,50,70,.055); cursor: pointer; transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease; }
+.custom-select-trigger { display: grid; grid-template-columns: 38px minmax(0, 1fr) 20px; gap: 11px; align-items: center; width: 100%; min-height: 58px; padding: 9px 13px 9px 10px; text-align: left; color: var(--ink); border: 1px solid #dfe3ea; border-radius: 16px; background: var(--component-surface); box-shadow: 0 6px 18px rgba(36,50,70,.055); cursor: pointer; transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease; }
 .custom-select-trigger:active { transform: scale(.985); }
 .vault-select.open .custom-select-trigger { border-color: rgba(0,102,204,.62); box-shadow: 0 0 0 4px rgba(0,102,204,.1), 0 9px 24px rgba(36,50,70,.08); }
 .select-leading { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 13px; background: linear-gradient(145deg, #eaf4ff, #dcecff); color: var(--primary); font-size: 17px; font-weight: 700; }
@@ -393,7 +393,7 @@ onUnmounted(() => {
 .select-copy strong { overflow: hidden; color: var(--ink); font-size: 14px; font-weight: 650; line-height: 1.25; text-overflow: ellipsis; white-space: nowrap; }
 .select-chevron { width: 20px; height: 20px; fill: none; stroke: #7c8492; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; transition: transform .2s ease; }
 .vault-select.open .select-chevron { transform: rotate(180deg); }
-.custom-select-menu { position: absolute; top: calc(100% + 8px); left: 0; right: 0; z-index: 80; max-height: 270px; overflow-y: auto; padding: 7px; border: 1px solid rgba(215,220,229,.92); border-radius: 18px; background: rgba(255,255,255,.995); box-shadow: 0 20px 50px rgba(25,36,54,.18); backdrop-filter: blur(24px) saturate(170%); -webkit-backdrop-filter: blur(24px) saturate(170%); animation: selectMenuIn .18s ease-out; }
+.custom-select-menu { position: absolute; top: calc(100% + 8px); left: 0; right: 0; z-index: 80; max-height: 270px; overflow-y: auto; padding: 7px; border: 1px solid rgba(215,220,229,.92); border-radius: 18px; background: var(--component-panel); box-shadow: 0 20px 50px rgba(25,36,54,.18); backdrop-filter: blur(24px) saturate(170%); -webkit-backdrop-filter: blur(24px) saturate(170%); animation: selectMenuIn .18s ease-out; }
 .custom-select-option { display: grid; grid-template-columns: 32px minmax(0, 1fr) 20px; gap: 10px; align-items: center; width: 100%; min-height: 44px; padding: 6px 9px; text-align: left; color: var(--ink); border: 0; border-radius: 12px; background: transparent; font-size: 14px; cursor: pointer; }
 .custom-select-option + .custom-select-option { margin-top: 2px; }
 .custom-select-option:active { background: #f2f4f7; }
@@ -403,10 +403,11 @@ onUnmounted(() => {
 .option-initial { font-size: 13px; }
 .option-check { color: transparent; font-size: 15px; font-weight: 750; }
 .custom-select-option.selected .option-check { color: var(--primary); }
-.favorite-filter { flex-shrink: 0; min-height: 58px; padding: 10px 15px; border: 1px solid #dfe3ea; border-radius: 16px; background: rgba(255,255,255,.9); color: var(--body-muted); box-shadow: 0 6px 18px rgba(36,50,70,.04); cursor: pointer; }
+.favorite-filter { flex-shrink: 0; min-height: 58px; padding: 10px 15px; border: 1px solid #dfe3ea; border-radius: 16px; background: var(--component-surface); color: var(--body-muted); box-shadow: 0 6px 18px rgba(36,50,70,.04); cursor: pointer; }
 .favorite-filter.active { border-color: #f5b800; background: #fff8dc; color: #8a6200; font-weight: 600; }
 .vault-warning { padding: 14px 16px; margin-bottom: 16px; border-radius: 12px; color: #b42318; background: #fef3f2; }
-.glass-card { background: rgba(255,255,255,.88); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,.75); box-shadow: 0 8px 28px rgba(0,0,0,.06); }
+.glass-card { background: var(--component-surface); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,.75); box-shadow: 0 8px 28px rgba(0,0,0,.06); }
+.vault-editor.glass-card { background: var(--component-panel); }
 .empty-vault { padding: 44px 24px; border-radius: 20px; text-align: center; }
 .empty-vault-icon { font-size: 42px; margin-bottom: 12px; }
 .empty-vault h3 { margin: 0 0 8px; }
@@ -424,7 +425,7 @@ onUnmounted(() => {
 .password-card-actions { display: flex; gap: 12px; }
 .compact-action { font-size: 14px; }
 .danger-text { color: #d92d20; }
-.secret-row { display: flex; align-items: center; gap: 10px; margin-top: 18px; padding: 12px 14px; background: var(--surface-pearl); border-radius: 12px; }
+.secret-row { display: flex; align-items: center; gap: 10px; margin-top: 18px; padding: 12px 14px; background: var(--component-soft); border-radius: 12px; }
 .secret-value { flex: 1; min-width: 0; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; word-break: break-all; user-select: text; -webkit-user-select: text; }
 .secret-action { padding: 5px 8px; border: 0; background: transparent; color: var(--primary); font-size: 14px; cursor: pointer; }
 .secret-action:disabled { opacity: .5; cursor: wait; }

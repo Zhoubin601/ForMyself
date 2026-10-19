@@ -65,7 +65,7 @@ export function useAppController() {
 
   watchEffect(() => {
     if (typeof document === 'undefined') return
-    Object.entries(settingsStore.themeCssVariables || {}).forEach(([name, value]) => {
+    Object.entries({ ...settingsStore.themeCssVariables, ...settingsStore.componentCssVariables }).forEach(([name, value]) => {
       document.documentElement.style.setProperty(name, value)
     })
   })

@@ -1,6 +1,7 @@
 import { normalizeTodoData } from '../features/todo/todoCore.js'
 import { normalizeCommonNotes } from './commonNotes.js'
 import { normalizeBackgroundEffects } from './backgroundSettings.js'
+import { normalizeComponentTransparency } from './componentAppearance.js'
 import { normalizeAutoLockDelay } from './autoLockPolicy.js'
 import { normalizeHealthSettings } from './weightInsights.js'
 import { normalizeMoodDefinitions, normalizeMoodRecords, normalizeMoodTagCatalog, normalizeMoodTags } from '../features/mood/moodRecords.js'
@@ -42,6 +43,7 @@ export function normalizeFullBackupSettings(value = {}) {
     },
     customBg: String(value.customBg || ''),
     backgroundEffects: normalizeBackgroundEffects(value.backgroundEffects),
+    componentTransparency: normalizeComponentTransparency(value.componentTransparency),
     warmHomeEnabled: value.warmHomeEnabled !== false,
     warmHomePausedAt: Number.isFinite(pausedAt) && pausedAt > 0 ? pausedAt : 0,
     theme: normalizeThemeSettings(value.theme),

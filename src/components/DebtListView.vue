@@ -619,24 +619,24 @@ onMounted(fetchAIEncouragement)
 .heading-copy { min-width: 0; }
 .heading-copy h1 { margin: 0 0 6px; font-size: 29px; line-height: 1.2; letter-spacing: -.8px; color: var(--ink); }
 .encouragement { margin: 0; color: var(--body-muted); font-size: 13px; line-height: 1.6; overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-.savings-summary { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 18px; margin-bottom: 10px; border-radius: 18px; background: color-mix(in srgb, var(--primary) 7%, var(--canvas)); }
+.savings-summary { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 18px; margin-bottom: 10px; border-radius: 18px; background: color-mix(in srgb, var(--primary) 7%, var(--component-surface)); }
 .savings-summary span { font-size: 13px; flex-shrink: 0; }.savings-summary small { display: block; margin-top: 5px; font-size: 11px; color: var(--body-muted); }.savings-summary strong { font-size: 25px; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; min-width: 0; text-align: right; }
 .top-controls { display: flex; gap: 10px; margin-bottom: 10px; align-items: center; }.search-input { border-radius: 14px; min-width: 0; }.add-btn { flex-shrink: 0; padding: 12px 15px; border-radius: 14px; }
 .segmented-control { display: flex; padding: 4px; border-radius: 14px; background: var(--divider-soft); }
-.segment { flex: 1; border: 0; background: none; padding: 9px 4px; border-radius: 11px; color: var(--body-muted); font: inherit; font-size: 14px; cursor: pointer; }.segment span { margin-left: 5px; font-size: 12px; }.segment.active { color: var(--primary); background: var(--canvas); box-shadow: 0 2px 6px #00000009; font-weight: 600; }
+.segment { flex: 1; border: 0; background: none; padding: 9px 4px; border-radius: 11px; color: var(--body-muted); font: inherit; font-size: 14px; cursor: pointer; }.segment span { margin-left: 5px; font-size: 12px; }.segment.active { color: var(--primary); background: var(--component-surface); box-shadow: 0 2px 6px #00000009; font-weight: 600; }
 .record-list { margin-top: 14px; }
 .group-choice { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 7px; }
-.group-choice button { min-height: 40px; padding: 7px 12px; border: 1px solid var(--hairline); border-radius: 10px; background: var(--canvas); color: var(--ink); font: inherit; }
-.group-choice button.active { border-color: var(--primary); color: var(--primary); background: color-mix(in srgb, var(--primary) 9%, var(--canvas)); }
+.group-choice button { min-height: 40px; padding: 7px 12px; border: 1px solid var(--hairline); border-radius: 10px; background: var(--component-surface); color: var(--ink); font: inherit; }
+.group-choice button.active { border-color: var(--primary); color: var(--primary); background: color-mix(in srgb, var(--primary) 9%, var(--component-surface)); }
 .icon-label-editor { display: flex; align-items: center; gap: 10px; margin-top: 7px; }
 .icon-label-editor .apple-input { min-width: 0; flex: 1; }
 .icon-quick-picks { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 9px; }
-.icon-quick-picks button { display: grid; place-items: center; width: 40px; height: 40px; border: 1px solid var(--hairline); border-radius: 11px; background: var(--canvas); font-size: 19px; cursor: pointer; }
-.icon-quick-picks button[aria-pressed="true"] { border-color: var(--primary); background: color-mix(in srgb, var(--primary) 10%, var(--canvas)); }
+.icon-quick-picks button { display: grid; place-items: center; width: 40px; height: 40px; border: 1px solid var(--hairline); border-radius: 11px; background: var(--component-surface); font-size: 19px; cursor: pointer; }
+.icon-quick-picks button[aria-pressed="true"] { border-color: var(--primary); background: color-mix(in srgb, var(--primary) 10%, var(--component-surface)); }
 .icon-label-hint { margin: 7px 0 0; color: var(--body-muted); font-size: 11px; }
-.savings-group { margin: 0 0 18px; padding: 12px; border: 1px solid var(--hairline); border-radius: 20px; background: color-mix(in srgb, var(--primary) 2%, var(--canvas)); transition: border-color .16s ease, background .16s ease, box-shadow .16s ease; }
+.savings-group { margin: 0 0 18px; padding: 12px; border: 1px solid var(--hairline); border-radius: 20px; background: color-mix(in srgb, var(--primary) 2%, var(--component-surface)); transition: border-color .16s ease, background .16s ease, box-shadow .16s ease; }
 .savings-group-move { transition: transform .22s cubic-bezier(0.2, 0, 0, 1); }
-.savings-group.drop-active { border-color: var(--primary); background: color-mix(in srgb, var(--primary) 8%, var(--canvas)); box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 12%, transparent); }
+.savings-group.drop-active { border-color: var(--primary); background: color-mix(in srgb, var(--primary) 8%, var(--component-surface)); box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 12%, transparent); }
 .savings-group-header, .savings-group-header > div { display: flex; align-items: center; gap: 8px; }
 .savings-group-header { justify-content: space-between; min-height: 34px; margin-bottom: 10px; }
 .savings-group-header > div:first-child { min-width: 0; }
@@ -645,7 +645,7 @@ onMounted(fetchAIEncouragement)
 .group-drag-handle { display: grid; place-items: center; flex: 0 0 34px; width: 34px; height: 38px; padding: 7px; border: 0; border-radius: 10px; background: transparent; color: var(--body-muted); cursor: grab; touch-action: none !important; user-select: none; -webkit-user-select: none; }
 .group-drag-handle svg { width: 14px; height: 22px; fill: currentColor; }
 .group-drag-handle:active { background: var(--divider-soft); }
-.group-drag-placeholder { border-radius: 10px; outline: 1px dashed var(--primary); background: color-mix(in srgb, var(--primary) 7%, var(--canvas)); }
+.group-drag-placeholder { border-radius: 10px; outline: 1px dashed var(--primary); background: color-mix(in srgb, var(--primary) 7%, var(--component-surface)); }
 .group-drag-placeholder > * { opacity: .25; }
 .savings-group-actions button { padding: 6px; border: 0; background: transparent; color: var(--body-muted); font-size: 11px; cursor: pointer; }
 .savings-group-rename { display: flex; gap: 7px; margin: 8px 0; }
@@ -680,8 +680,8 @@ onMounted(fetchAIEncouragement)
 .record-list.density-rows .card-actions, .savings-drag-ghost.density-rows .card-actions { grid-column: 1 / -1; margin: 0; padding: 0; border: 0; }
 .record-list.density-rows .card-actions .small-pill, .savings-drag-ghost.density-rows .card-actions .small-pill { min-height: 30px; padding: 4px 8px; font-size: 11px; }
 @media (min-width: 900px) { .record-list.density-grid .savings-group-list { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
-.savings-card { position: relative; padding: 14px; margin-bottom: 16px; border-radius: 22px; border: 1px solid var(--hairline); background: linear-gradient(135deg, color-mix(in srgb, var(--primary) 4%, var(--canvas)), var(--canvas) 65%); box-shadow: 0 5px 18px #152b4610; }
-.card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }.goal-icon { display: inline-flex; flex: 0 0 40px; width: 40px; height: 40px; align-items: center; justify-content: center; overflow: hidden; white-space: nowrap; border-radius: 15px; background: color-mix(in srgb, var(--primary) 12%, var(--canvas)); color: var(--primary); font-size: 27px; }
+.savings-card { position: relative; padding: 14px; margin-bottom: 16px; border-radius: 22px; border: 1px solid var(--hairline); background: linear-gradient(135deg, color-mix(in srgb, var(--primary) 4%, var(--component-surface)), var(--component-surface) 65%); box-shadow: 0 5px 18px #152b4610; }
+.card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }.goal-icon { display: inline-flex; flex: 0 0 40px; width: 40px; height: 40px; align-items: center; justify-content: center; overflow: hidden; white-space: nowrap; border-radius: 15px; background: color-mix(in srgb, var(--primary) 12%, var(--component-surface)); color: var(--primary); font-size: 27px; }
 .goal-icon.has-label { font-size: 22px; line-height: 1; }
 .goal-icon.multi-label { font-size: 14px; letter-spacing: -1px; }
 .record-list.density-grid .goal-icon.has-label, .savings-drag-ghost.density-grid .goal-icon.has-label { font-size: 18px; }
@@ -693,11 +693,11 @@ onMounted(fetchAIEncouragement)
 .card-amounts { display: flex; justify-content: space-between; align-items: end; gap: 12px; margin-bottom: 14px; }.card-amounts > div { min-width: 0; }.saved-amount { display: block; margin-top: 4px; font-size: 28px; line-height: 1.2; font-variant-numeric: tabular-nums; letter-spacing: -.5px; overflow-wrap: anywhere; }.remaining { color: var(--primary); font-size: 12px; text-align: right; max-width: 45%; overflow-wrap: anywhere; }
 .saving-track { height: 9px; border-radius: 9px; overflow: hidden; background: var(--divider-soft); }.saving-track > span { display: block; height: 100%; background: var(--primary); border-radius: inherit; }.progress-caption { display: flex; justify-content: space-between; gap: 12px; margin-top: 8px; font-size: 12px; color: var(--body-muted); overflow-wrap: anywhere; }
 .card-actions { display: flex; align-items: center; gap: 8px; border-top: 1px solid var(--divider-soft); padding-top: 8px; margin-top: 10px; }.small-pill { display: inline-flex; align-items: center; justify-content: center; gap: 3px; padding: 9px 18px; min-height: 40px; font-size: 13px; white-space: nowrap; }.small-pill svg, .more-button svg { flex: 0 0 auto; }.more-wrap { margin-left: auto; position: relative; }.more-button { display: inline-flex; align-items: center; gap: 2px; min-height: 44px; padding: 6px; color: var(--body-muted); border: 0; background: none; cursor: pointer; white-space: nowrap; }
-.card-menu { position: absolute; right: 0; bottom: 100%; width: 132px; z-index: 5; background: var(--canvas); border: 1px solid var(--hairline); border-radius: 14px; padding: 5px; box-shadow: 0 8px 30px #0002; }.card-menu button { display: block; width: 100%; min-height: 44px; border: 0; border-radius: 9px; background: none; color: var(--ink); text-align: left; padding: 10px 14px; cursor: pointer; }.card-menu button:hover { background: var(--divider-soft); }.card-menu .destructive { color: #cc344d; }
+.card-menu { position: absolute; right: 0; bottom: 100%; width: 132px; z-index: 5; background: var(--component-panel); border: 1px solid var(--hairline); border-radius: 14px; padding: 5px; box-shadow: 0 8px 30px #0002; }.card-menu button { display: block; width: 100%; min-height: 44px; border: 0; border-radius: 9px; background: none; color: var(--ink); text-align: left; padding: 10px 14px; cursor: pointer; }.card-menu button:hover { background: var(--divider-soft); }.card-menu .destructive { color: #cc344d; }
 .savings-page button:disabled { opacity: .4; cursor: default; }.savings-page button:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }.cleared .goal-icon { background: #e5f5eb; color: #288052; }.cleared .remaining { color: #288052; }
 .empty-state { text-align: center; padding: 48px 0; color: var(--body-muted); font-size: 14px; }.empty-state > span { font-size: 34px; }
 .savings-card-move { transition: transform .22s cubic-bezier(0.2, 0, 0, 1); }
-.drag-placeholder { border: 2px dashed color-mix(in srgb, var(--primary) 70%, var(--canvas)); background: color-mix(in srgb, var(--primary) 8%, var(--canvas)); box-shadow: inset 0 0 0 3px color-mix(in srgb, var(--primary) 4%, transparent); transform: scale(0.985); transition: transform 0.18s ease, border-color 0.18s ease; }
+.drag-placeholder { border: 2px dashed color-mix(in srgb, var(--primary) 70%, var(--canvas)); background: color-mix(in srgb, var(--primary) 8%, var(--component-surface)); box-shadow: inset 0 0 0 3px color-mix(in srgb, var(--primary) 4%, transparent); transform: scale(0.985); transition: transform 0.18s ease, border-color 0.18s ease; }
 .drag-placeholder > * { visibility: hidden; }
 .drag-placeholder::after { content: '松手放在这里'; position: absolute; inset: 0; display: grid; place-items: center; color: var(--primary); font-size: 13px; font-weight: 600; }
 .savings-drag-ghost {
@@ -708,7 +708,7 @@ onMounted(fetchAIEncouragement)
   padding: 14px;
   border: 1px solid var(--primary);
   border-radius: 22px;
-  background: var(--canvas);
+  background: var(--component-surface);
   color: var(--ink);
   margin: 0;
   box-shadow: 0 16px 40px #152b4638;
@@ -717,7 +717,7 @@ onMounted(fetchAIEncouragement)
   will-change: top, left, transform;
   animation: savings-lift 0.15s cubic-bezier(0.2, 0, 0, 1) both;
 }
-.savings-group-drag-ghost { position: fixed; z-index: 10000; pointer-events: none; box-sizing: border-box; display: flex; align-items: center; gap: 8px; padding: 0 10px; border: 1px solid var(--primary); border-radius: 12px; background: var(--canvas); color: var(--ink); box-shadow: 0 12px 30px #152b4630; transform: scale(1.02); will-change: top, left, transform; }
+.savings-group-drag-ghost { position: fixed; z-index: 10000; pointer-events: none; box-sizing: border-box; display: flex; align-items: center; gap: 8px; padding: 0 10px; border: 1px solid var(--primary); border-radius: 12px; background: var(--component-surface); color: var(--ink); box-shadow: 0 12px 30px #152b4630; transform: scale(1.02); will-change: top, left, transform; }
 .savings-group-drag-ghost strong { font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .savings-group-drag-ghost span { flex-shrink: 0; color: var(--body-muted); font-size: 11px; }
 .savings-group-drag-ghost .group-drag-ghost-handle { font-size: 19px; letter-spacing: -4px; padding-right: 5px; }
@@ -755,7 +755,7 @@ onMounted(fetchAIEncouragement)
   .drag-placeholder { transform: none; transition: none; }
 }
 .apple-modal-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(5px); z-index: 9999; display: flex; align-items: center; justify-content: center; }
-.apple-modal-card { background: var(--canvas); border-radius: 18px; padding: 32px 24px; width: 90%; max-width: 400px; box-shadow: 0 20px 40px rgba(0,0,0,0.15); max-height: 85vh; overflow-y: auto; }
+.apple-modal-card { background: var(--component-panel); border-radius: 18px; padding: 32px 24px; width: 90%; max-width: 400px; box-shadow: 0 20px 40px rgba(0,0,0,0.15); max-height: 85vh; overflow-y: auto; }
 .modal-title { font-size: 26px; text-align: center; margin-bottom: 24px; letter-spacing: -0.28px; }
 .form-stack { display: flex; flex-direction: column; gap: 16px; }
 .apple-modal-card .form-stack { gap: 12px; }

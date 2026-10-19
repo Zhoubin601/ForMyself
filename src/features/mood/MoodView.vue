@@ -409,12 +409,12 @@ const isToday = (day) => {
 
 .mood-container { display: flex; flex-direction: column; gap: 16px; }
 
-.calendar-card { background: var(--canvas); border: 1px solid var(--hairline); border-radius: 18px; padding: 20px 16px; }
+.calendar-card { background: var(--component-surface); border: 1px solid var(--hairline); border-radius: 18px; padding: 20px 16px; }
 
 .calendar-header { display: flex; align-items: center; justify-content: center; gap: 20px; margin-bottom: 16px; }
 
 .nav-arrow { background: transparent; border: none; font-size: 28px; color: var(--primary); cursor: pointer; padding: 4px 8px; line-height: 1; border-radius: 8px; transition: background 0.2s; }
-.nav-arrow:active { background: var(--surface-pearl); }
+.nav-arrow:active { background: var(--component-soft); }
 .nav-arrow:disabled { color: var(--hairline); cursor: default; }
 
 .month-label { font-family: "SF Pro Display",-apple-system,sans-serif; font-size: 19px; font-weight: 600; color: var(--ink); }
@@ -425,7 +425,7 @@ const isToday = (day) => {
 .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
 
 .cal-day { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; padding: 6px 2px; border-radius: 12px; cursor: pointer; min-height: 48px; transition: background 0.15s; }
-.cal-day:active { background: var(--surface-pearl); }
+.cal-day:active { background: var(--component-soft); }
 .cal-day.empty { cursor: default; }
 .cal-day.today .cal-day-num { background: var(--primary); color: #fff; border-radius: 50%; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; }
 
@@ -437,13 +437,13 @@ const isToday = (day) => {
 .cs-item { font-size: 13px; color: var(--body-muted); font-weight: 400; }
 .cs-item.active { color: var(--ink); font-weight: 500; }
 
-.mood-add-btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; background: var(--canvas); border: 2px dashed var(--hairline); border-radius: 18px; padding: 20px; color: var(--primary); font-size: 17px; font-weight: 500; cursor: pointer; transition: all 0.2s; }
-.mood-add-btn:active { background: var(--surface-pearl); border-color: var(--primary); }
+.mood-add-btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; background: var(--component-surface); border: 2px dashed var(--hairline); border-radius: 18px; padding: 20px; color: var(--primary); font-size: 17px; font-weight: 500; cursor: pointer; transition: all 0.2s; }
+.mood-add-btn:active { background: var(--component-soft); border-color: var(--primary); }
 
 .mood-list { display: flex; flex-direction: column; gap: 10px; }
-.mood-card { background: var(--canvas); border: 1px solid var(--hairline); border-radius: 16px; padding: 16px; display: flex; align-items: flex-start; gap: 14px; cursor: pointer; transition: background 0.2s; }
-.mood-card:active { background: var(--surface-pearl); }
-.mood-card-left { flex-shrink: 0; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; background: var(--surface-pearl); border-radius: 14px; }
+.mood-card { background: var(--component-surface); border: 1px solid var(--hairline); border-radius: 16px; padding: 16px; display: flex; align-items: flex-start; gap: 14px; cursor: pointer; transition: background 0.2s; }
+.mood-card:active { background: var(--component-soft); }
+.mood-card-left { flex-shrink: 0; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; background: var(--component-soft); border-radius: 14px; }
 .mood-card-emoji { font-size: 28px; line-height: 1; }
 .mood-card-body { flex: 1; min-width: 0; }
 .mood-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
@@ -459,18 +459,18 @@ const isToday = (day) => {
 .empty-state { text-align: center; padding: 40px 20px; }
 
 .pagination-bar { display: flex; justify-content: center; align-items: center; gap: 16px; margin-top: 20px; padding-bottom: 8px; }
-.page-btn { background: var(--canvas); border: 1px solid var(--hairline); border-radius: 12px; padding: 8px 16px; font-size: 14px; color: var(--primary); font-weight: 500; cursor: pointer; transition: all 0.2s; }
-.page-btn:active { transform: scale(0.95); background: var(--surface-pearl); }
+.page-btn { background: var(--component-surface); border: 1px solid var(--hairline); border-radius: 12px; padding: 8px 16px; font-size: 14px; color: var(--primary); font-weight: 500; cursor: pointer; transition: all 0.2s; }
+.page-btn:active { transform: scale(0.95); background: var(--component-soft); }
 .page-btn:disabled { opacity: 0.4; color: var(--body-muted); pointer-events: none; }
 .page-info { font-size: 14px; color: var(--body-muted); font-weight: 500; font-variant-numeric: tabular-nums; }
 
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.3); z-index: 200; }
-.modal-panel { position: fixed; bottom: 0; left: 0; right: 0; background: var(--canvas); border-radius: 18px 18px 0 0; padding: 24px 20px; z-index: 201; max-width: 500px; margin: 0 auto; max-height: 85vh; overflow-y: auto; }
+.modal-panel { position: fixed; bottom: 0; left: 0; right: 0; background: var(--component-panel); border-radius: 18px 18px 0 0; padding: 24px 20px; z-index: 201; max-width: 500px; margin: 0 auto; max-height: 85vh; overflow-y: auto; }
 .input-group { margin-bottom: 16px; }
 .input-group label { display: block; margin-bottom: 6px; color: var(--body-muted); }
 
 .mood-selector { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
-.mood-option { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 12px 10px; border-radius: 14px; border: 2px solid transparent; background: var(--surface-pearl); cursor: pointer; transition: all 0.2s; min-width: 56px; }
+.mood-option { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 12px 10px; border-radius: 14px; border: 2px solid transparent; background: var(--component-soft); cursor: pointer; transition: all 0.2s; min-width: 56px; }
 .mood-option:active { transform: scale(0.95); }
 .mood-option.selected { border-color: var(--primary); background: rgba(0, 102, 204, 0.06); }
 .mood-emoji { font-size: 28px; line-height: 1; }
@@ -479,14 +479,14 @@ const isToday = (day) => {
 .mood-option.selected .mood-label { color: var(--primary); font-weight: 600; }
 
 .tag-selector { display: flex; flex-wrap: wrap; gap: 8px; }
-.tag-option { appearance: none; border: 1px solid var(--hairline); border-radius: 999px; padding: 8px 13px; background: var(--surface-pearl); color: var(--body-muted); font-size: 14px; cursor: pointer; }
+.tag-option { appearance: none; border: 1px solid var(--hairline); border-radius: 999px; padding: 8px 13px; background: var(--component-soft); color: var(--body-muted); font-size: 14px; cursor: pointer; }
 .tag-option.selected { border-color: var(--primary); background: rgba(0, 102, 204, 0.1); color: var(--primary); font-weight: 600; }
 .custom-tag-row { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
 .custom-tag-row .apple-input { flex: 1; min-width: 0; }
 .custom-tag-add { flex-shrink: 0; padding: 10px 16px; }
 .tag-hint { margin: 7px 2px 0; color: var(--body-muted); font-size: 12px; }
 
-.mood-textarea { background-color: var(--canvas); color: var(--ink); font-size: 16px; font-weight: 400; border-radius: 11px; padding: 14px 16px; border: 1px solid var(--hairline); outline: none; transition: border-color 0.2s; width: 100%; box-sizing: border-box; resize: vertical; font-family: inherit; line-height: 1.5; }
+.mood-textarea { background-color: var(--component-surface); color: var(--ink); font-size: 16px; font-weight: 400; border-radius: 11px; padding: 14px 16px; border: 1px solid var(--hairline); outline: none; transition: border-color 0.2s; width: 100%; box-sizing: border-box; resize: vertical; font-family: inherit; line-height: 1.5; }
 .mood-textarea:focus { border-color: var(--primary-focus); outline: 2px solid rgba(0, 102, 204, 0.2); }
 .mood-textarea::placeholder { color: var(--body-muted); }
 
@@ -498,7 +498,7 @@ const isToday = (day) => {
   transform: translateX(-50%);
   max-width: 400px;
   width: calc(100% - 40px);
-  background: var(--canvas);
+  background: var(--component-surface);
   border: 1px solid var(--hairline);
   border-radius: 18px;
   padding: 16px;

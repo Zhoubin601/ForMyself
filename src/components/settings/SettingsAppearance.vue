@@ -1,6 +1,9 @@
 <script setup>
 import { toRefs } from 'vue'
+import BackgroundCropper from '../BackgroundCropper.vue'
 const props = defineProps({ model: { type: Object, required: true } })
+const { pendingBackground, isSavingBackground, cancelBackgroundCrop, confirmBackgroundCrop } = toRefs(props.model)
+const { updateComponentTransparency, saveComponentTransparency, resetComponentTransparency } = toRefs(props.model)
 const { backgroundScope, backgroundEffect, backgroundPreviewEffect, isUploadingBackground, isSavingWarmHome, updateBackgroundEffect, saveBackgroundEffects, resetBackgroundEffects, toggleWarmHome } = toRefs(props.model)
 const { activateCustomTheme, applyThemePickerColor, bgInputRef, clearBg, handleBgUpload, isGeneralSection, selectThemePreset, settingsStore, themeColorBoardRef, themeColorBoardStyle, themeColorCursorStyle, themeColorHue, themePresets, triggerBgUpload, updateThemeColorFromBoard, updateThemeColorFromHex } = toRefs(props.model)
 </script>
@@ -86,6 +89,17 @@ const { activateCustomTheme, applyThemePickerColor, bgInputRef, clearBg, handleB
         </div>
       </div>
 
+      <h3 class="caption body-muted section-title theme-background-title">组件透明度</h3>
+      <div class="store-utility-card component-transparency-card">
+        <p id="component-transparency-help" class="caption body-muted">统一调整首页和其他页面的卡片、列表与导航底色，拖动即可预览。数值越高，壁纸越明显。</p>
+        <div class="background-effect-controls">
+          <label for="component-transparency"><span>组件透明度</span><output for="component-transparency">{{ settingsStore.componentTransparency }}%</output></label>
+          <input id="component-transparency" type="range" min="0" max="100" step="1" :value="settingsStore.componentTransparency" :aria-valuetext="`透明度 ${settingsStore.componentTransparency}%`" aria-describedby="component-transparency-help" @input="updateComponentTransparency($event.target.value)" @change="saveComponentTransparency" />
+          <div class="background-range-hints"><span>不透明</span><span>全透明</span></div>
+          <button type="button" class="background-reset-effect text-link" @click="resetComponentTransparency">恢复默认透明度</button>
+        </div>
+      </div>
+
       <h3 class="caption body-muted section-title theme-background-title">环境背景</h3>
       <div class="store-utility-card background-settings-card">
         <p class="caption body-muted background-settings-note">共用一张背景图片，解锁页和其他页面分别调整效果。</p>
@@ -110,5 +124,6 @@ const { activateCustomTheme, applyThemePickerColor, bgInputRef, clearBg, handleB
         <input ref="bgInputRef" type="file" accept="image/*" style="display: none" @change="handleBgUpload" />
         <button v-if="settingsStore.customBg" class="list-item text-link destructive" style="text-align: left;" @click="clearBg">恢复默认背景</button>
       </div>
+      <BackgroundCropper v-if="pendingBackground" :source="pendingBackground" :saving="isSavingBackground" @cancel="cancelBackgroundCrop" @confirm="confirmBackgroundCrop" />
     </div>
 </template>

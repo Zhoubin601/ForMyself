@@ -1,0 +1,41 @@
+{
+  "date": "2026-10-19",
+  "user": 12,
+  "tests": [
+    {
+      "name": "system-photo-picker-returns-to-crop-without-locking",
+      "passed": true
+    },
+    {
+      "name": "native-touch-drag-crop",
+      "passed": true
+    },
+    {
+      "name": "crop-and-compressed-save",
+      "passed": true,
+      "width": 615,
+      "height": 1200,
+      "bytes": 16995
+    },
+    {
+      "name": "native-transparency-slider-and-save",
+      "passed": true
+    },
+    {
+      "name": "home-translucent-background",
+      "passed": true
+    },
+    {
+      "name": "cold-start-restores-wallpaper-before-first-content",
+      "passed": true,
+      "appearance": 3920.2000000000116,
+      "lock": 10017.799999999988,
+      "paint": 4352
+    },
+    {
+      "name": "unlock-and-no-horizontal-overflow",
+      "passed": true
+    }
+  ],
+  "errors": []
+}
