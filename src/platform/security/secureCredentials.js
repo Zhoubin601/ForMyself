@@ -1,4 +1,5 @@
 import { Capacitor } from '@capacitor/core'
+import { withNativeActivityGuard } from '../../services/nativeActivityGuard.js'
 import {
   AccessControl,
   NativeBiometric
@@ -37,12 +38,12 @@ export function createSecureCredentials({
     },
     async getMasterPassword(options = {}) {
       nativeOnly()
-      const credentials = await biometric.getSecureCredentials({
+      const credentials = await withNativeActivityGuard(() => biometric.getSecureCredentials({
         server: MASTER_PASSWORD_CREDENTIAL,
         title: options.title || '解锁 ForMyself',
         reason: options.reason || '验证生物信息以解锁私人空间',
         negativeButtonText: '取消'
-      })
+      }))
       if (credentials?.username !== USERNAME || !credentials.password) {
         throw new Error('INVALID_MASTER_PASSWORD_CREDENTIAL')
       }
@@ -51,27 +52,27 @@ export function createSecureCredentials({
     hasMasterPassword: () => isSaved(MASTER_PASSWORD_CREDENTIAL),
     async storeApiKey(apiKey) {
       nativeOnly()
-      if (!apiKey) {
-        await biometric.setCredentials({
-          username: USERNAME,
-          password: '',
-          server: API_KEY_CREDENTIAL,
-          accessControl: AccessControl.NONE
-        })
-        return
-      }
+      const value = String(apiKey || '')
       await biometric.setCredentials({
         username: USERNAME,
-        password: apiKey,
+        password: value,
         server: API_KEY_CREDENTIAL,
         accessControl: AccessControl.NONE
       })
+      const stored = await biometric.getCredentials({ server: API_KEY_CREDENTIAL })
+      if (stored?.username !== USERNAME || stored.password !== value) {
+        throw new Error('API_KEY_WRITE_VERIFICATION_FAILED')
+      }
     },
     async getApiKey() {
       nativeOnly()
-      if (!await isSaved(API_KEY_CREDENTIAL)) return ''
+      // A failed existence check is a read failure, not an absent credential.
+      if (!(await biometric.isCredentialsSaved({ server: API_KEY_CREDENTIAL })).isSaved) return ''
       const credentials = await biometric.getCredentials({ server: API_KEY_CREDENTIAL })
-      return credentials?.username === USERNAME ? String(credentials.password || '') : ''
+      if (credentials?.username !== USERNAME || typeof credentials.password !== 'string') {
+        throw new Error('INVALID_API_KEY_CREDENTIAL')
+      }
+      return credentials.password
     },
     hasApiKey: () => isSaved(API_KEY_CREDENTIAL)
   }

@@ -1,0 +1,20 @@
+{
+  "date": "2026-10-19",
+  "artifact": "20261019-ForMyself-optional-unlock-v1-debug.apk",
+  "tests": [
+    {
+      "name": "installed package exactly matches delivered APK",
+      "passed": true,
+      "sha256": "FD3014670520E7D429018B023D2D10C56A87AA17A80023B7399B21F68B69F9B0"
+    }
+  ],
+  "errors": [
+    "Error: Command failed: E:/Android/Sdk/platform-tools/adb.exe -s emulator-5586 shell am start --user 14 -n com.yubin.formyself/.MainActivity\nError type 3\r\nError: Activity class {com.yubin.formyself/com.yubin.formyself.MainActivity} does not exist.\r\n\n    at genericNodeError (node:internal/errors:985:15)\n    at wrappedFn (node:internal/errors:539:14)\n    at checkExecSyncError (node:child_process:925:11)\n    at execFileSync (node:child_process:961:15)\n    at adb (file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/docs/qa/optional-unlock-20261019/recheck-native.mjs:7:21)\n    at launch (file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/docs/qa/optional-unlock-20261019/recheck-native.mjs:18:22)\n    at file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/docs/qa/optional-unlock-20261019/recheck-native.mjs:91:3"
+  ],
+  "cleanup": {
+    "currentUser": "0",
+    "removedUser": "Success: removed user",
+    "forwarding": "emulator-5586 tcp:9364 localabstract:webview_devtools_remote_7610"
+  },
+  "user": "14"
+}

@@ -149,6 +149,7 @@ export function useReminderSettings() {
     if (!settingsStore.aiApiKey) return appAlert('请先填写 API Key')
     isTestingAI.value = true
     try {
+      await settingsStore.saveAiSettings()
       const res = await askAI('请回复"连接成功！"这四个字，不要其他内容。')
       appAlert(res, { title: 'AI 握手成功', tone: 'success' })
     } catch (e) {

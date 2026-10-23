@@ -1,0 +1,54 @@
+{
+  "date": "2026-10-23",
+  "device": "emulator-5586",
+  "tests": [
+    {
+      "name": "actual UI save is verified against Android encrypted credentials; ordinary preferences exclude Key",
+      "passed": true
+    },
+    {
+      "name": "force-stop and cold start restore Key from actual Android storage",
+      "passed": true
+    },
+    {
+      "name": "three consecutive verified saves survive immediate force-stop and cold start",
+      "passed": true
+    },
+    {
+      "name": "model-only edits never write or clear credentials",
+      "passed": true
+    },
+    {
+      "name": "native write failure is visible and retry saves retained input without retyping",
+      "passed": true
+    },
+    {
+      "name": "retried Key survives actual process restart",
+      "passed": true
+    },
+    {
+      "name": "actual startup loader with injected read failure preserves credentials; model edit cannot overwrite; retry recovers",
+      "passed": true
+    },
+    {
+      "name": "credential existence-check errors remain visible and retryable",
+      "passed": true
+    },
+    {
+      "name": "handshake sends no request on save failure; mock response succeeds only after verified persistence",
+      "passed": true
+    },
+    {
+      "name": "explicit clear persists across cold start",
+      "passed": true
+    }
+  ],
+  "cleanup": {
+    "forwardRemoved": true,
+    "currentUser": "0",
+    "testUserRemoved": true
+  },
+  "android": "12",
+  "testUser": "14",
+  "error": "Synthetic legacy fixture did not reach disk before migration test"
+}

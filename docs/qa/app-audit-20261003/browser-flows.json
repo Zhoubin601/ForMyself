@@ -1,0 +1,46 @@
+[
+  {
+    "name": "weight-invalid-rejected",
+    "actual": true
+  },
+  {
+    "name": "weight-add",
+    "actual": true
+  },
+  {
+    "name": "weight-edit",
+    "actual": true
+  },
+  {
+    "name": "weight-dialog-focus",
+    "actual": {
+      "dialogRole": null,
+      "focusInDialog": false,
+      "activeClass": "health-settings-button"
+    }
+  },
+  {
+    "name": "savings-add",
+    "actual": true
+  },
+  {
+    "name": "savings-deposit",
+    "actual": true
+  },
+  {
+    "name": "savings-negative-deposit-rejected",
+    "actual": false
+  },
+  {
+    "name": "savings-negative-target-rejected",
+    "actual": false
+  },
+  {
+    "name": "mood-add",
+    "actual": true
+  },
+  {
+    "name": "harness-failure",
+    "error": "Error: Error: Missing button 每天\n    at <anonymous>:1:120\n    at <anonymous>:1:165\n    at Object.evaluate (file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/docs/qa/app-audit-20261003/cdp.mjs:27:40)\n    at async textClick (file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/docs/qa/app-audit-20261003/browser-flows.mjs:7:3)\n    at async file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/docs/qa/app-audit-20261003/browser-flows.mjs:43:121"
+  }
+]

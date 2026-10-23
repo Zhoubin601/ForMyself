@@ -1,0 +1,55 @@
+[
+  {
+    "name": "monthly-summary-race",
+    "requestedMonth": "2026年10月",
+    "displayedMonth": "2026年9月",
+    "oldSummaryDisplayed": true
+  },
+  {
+    "name": "weight-write-failure-ui",
+    "modalStillOpen": true,
+    "feedbackError": false,
+    "inMemoryCount": 2
+  },
+  {
+    "name": "savings-stress",
+    "count": 100,
+    "renderMs": 144,
+    "cards": 102,
+    "nodes": 3895,
+    "overflow": false
+  },
+  {
+    "name": "savings-stress",
+    "count": 500,
+    "renderMs": 465,
+    "cards": 500,
+    "nodes": 18223,
+    "overflow": false
+  },
+  {
+    "name": "theme",
+    "preset": "cloud",
+    "primary": "#3E77B4"
+  },
+  {
+    "name": "theme",
+    "preset": "peach",
+    "primary": "#A55668"
+  },
+  {
+    "name": "theme",
+    "preset": "mint",
+    "primary": "#3B816E"
+  },
+  {
+    "name": "theme",
+    "preset": "lavender",
+    "primary": "#796BAE"
+  },
+  {
+    "name": "reduced-motion",
+    "matches": true,
+    "todoFillTransition": "1e-05s"
+  }
+]

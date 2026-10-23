@@ -21,6 +21,7 @@ import {
   normalizeVirtualEvents
 } from './chatRecords.js'
 import { createChatStorage } from './chatStorage.js'
+import { createChatPersistence } from './chatPersistence.js'
 
 export const useChatStore = defineStore('chat', () => {
   const settingsStore = useSettingsStore()
@@ -45,8 +46,12 @@ export const useChatStore = defineStore('chat', () => {
   const encryptionPassword = ref('')
   const canPersist = ref(false)
   const storage = createChatStorage()
+  const persistence = createChatPersistence(storage)
+  const { saveError, hasPendingSave } = persistence
   const pendingFocusProactiveId = ref('')
-  let persistChain = Promise.resolve()
+  let loadRevision = 0
+  let isReencrypting = false
+  let changedDuringReencrypt = false
 
   const snapshot = computed(() => normalizeChatData({
     profile: profile.value,
@@ -72,23 +77,20 @@ export const useChatStore = defineStore('chat', () => {
 
   const queuePersist = () => {
     if (!isDataLoaded.value || !canPersist.value || !encryptionPassword.value) return Promise.resolve()
-    const value = snapshot.value
-    persistChain = persistChain
-      .catch(() => {})
-      .then(() => storage.save(value, encryptionPassword.value))
-      .catch(error => {
-        console.error('保存温馨小家数据失败', error)
-        loadError.value = '聊天记录保存失败，请稍后重试'
-        throw error
-      })
-    return persistChain
+    if (isReencrypting) { changedDuringReencrypt = true; return Promise.resolve() }
+    return persistence.queue(snapshot.value, encryptionPassword.value)
   }
 
   const loadChatData = async password => {
+    if (!password) throw new Error('CHAT_PASSWORD_REQUIRED')
+    const revision = ++loadRevision
+    isDataLoaded.value = false
+    canPersist.value = false
     encryptionPassword.value = String(password || '')
     loadError.value = ''
     try {
-      const result = await storage.load(encryptionPassword.value)
+      const result = await persistence.load(encryptionPassword.value)
+      if (revision !== loadRevision) return
       profile.value = result.data.profile
       messages.value = result.data.messages
       memories.value = result.data.memories
@@ -107,6 +109,7 @@ export const useChatStore = defineStore('chat', () => {
       recoveredFromBackup.value = result.recovered
       canPersist.value = true
     } catch (error) {
+      if (revision !== loadRevision) return
       console.error('读取温馨小家数据失败', error)
       loadError.value = '聊天记录解密失败，请确认主密码或恢复备份'
       profile.value = normalizeChatData().profile
@@ -126,11 +129,11 @@ export const useChatStore = defineStore('chat', () => {
       readState.value = normalizeChatReadState()
       canPersist.value = false
     } finally {
-      isDataLoaded.value = true
+      if (revision === loadRevision) isDataLoaded.value = true
     }
   }
 
-  watch(snapshot, () => { queuePersist().catch(() => {}) }, { deep: true })
+  watch(snapshot, () => { queuePersist().catch(() => {}) }, { deep: true, flush: 'sync' })
 
   const appendMessage = (role, content, options = {}) => {
     if (!settingsStore.warmHomeEnabled) return null
@@ -476,20 +479,46 @@ export const useChatStore = defineStore('chat', () => {
 
   const restoreChatData = replaceChatData
 
+  const release = async () => {
+    ++loadRevision
+    canPersist.value = false
+    isDataLoaded.value = false
+    encryptionPassword.value = ''
+    resetAll()
+    pendingFocusProactiveId.value = ''
+    loadError.value = ''
+    await persistence.wait()
+  }
+
   const reencrypt = async newPassword => {
     if (!canPersist.value) throw new Error('CHAT_STORAGE_NOT_LOADED')
-    await persistChain.catch(() => {})
-    await storage.save(snapshot.value, newPassword)
-    encryptionPassword.value = newPassword
+    if (isReencrypting) throw new Error('CHAT_REENCRYPT_IN_PROGRESS')
+    isReencrypting = true
+    try {
+      do {
+        changedDuringReencrypt = false
+        await persistence.reencrypt(snapshot.value, newPassword)
+      } while (changedDuringReencrypt)
+      encryptionPassword.value = newPassword
+    } finally {
+      isReencrypting = false
+    }
   }
 
   const flush = async () => {
-    await queuePersist()
-    await persistChain
+    if (isDataLoaded.value && canPersist.value) await queuePersist()
+    else await persistence.retry()
+    await persistence.wait()
+  }
+
+  const suspendPersistence = () => {
+    canPersist.value = false
+    loadError.value = '主密码修改回滚未完成，请保留应用数据并联系维护者。'
   }
 
   return {
     profile,
+    release,
     messages,
     memories,
     selfProfile,
@@ -510,6 +539,9 @@ export const useChatStore = defineStore('chat', () => {
     snapshot,
     isDataLoaded,
     loadError,
+    saveError,
+    hasPendingSave,
+    suspendPersistence,
     recoveredFromBackup,
     pauseWarmHome,
     loadChatData,

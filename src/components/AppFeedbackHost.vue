@@ -94,6 +94,9 @@ onBeforeUnmount(() => {
             v-if="isInputDialog"
             ref="inputRef"
             v-model="dialog.inputValue"
+            :type="dialog.inputType"
+            :autocomplete="dialog.inputType === 'password' ? 'current-password' : 'off'"
+            :aria-label="dialog.inputPlaceholder || dialog.title"
             class="feedback-input"
             :placeholder="dialog.inputPlaceholder"
           />

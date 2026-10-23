@@ -1,0 +1,657 @@
+[
+  {
+    "phase": "initial",
+    "text": "MY PRIVATE SPACE\n\nForMyself\n\n第一次见面，请配置安全主密码\n\n初始化并进入\n主密码只用于本机解锁，不会上传"
+  },
+  {
+    "phase": "first-entry",
+    "text": "首页总览\n中午好\n10月3日星期六\n安排好今天，\n也照顾好自己。\n今天已留下 0 项记录\n✦\n\n今天还没有留下记录，从你最想关注的一项开始就好。\n\n›\n今日\n今日记录\n0/3 有动态\n☺\n心情\n记录此刻感受\n去记录 ›\n⚖\n体重\n记录今日体重\n去记录 ›\n¥\n存钱\n为目标存一笔\n去记录 ›\n今日待办\n0 / 0 已完成\n0\n%\n\n今天还没有安排，留一点空间给自己\n\n安排一件小事\n→\n3\n周六\n今日日程\n今日暂无日程\n\n今天可以留一点空白\n\n0\n剩余\n主要目标\n建立一个省钱目标\n0%\n\n给想做的事设定金额，首页会持续显示进度。\n\n新建计划 ›\n详情 ›\n体重趋势\n-- kg\n\n记录两次后显示变化\n\n详情 ›\n心情回顾\n七天心情\n·\n日\n·\n一\n·\n二\n·\n三\n·\n四\n·\n五\n·\n六\n\n最近七天还没有心情记录\n\n最近记录\n最近动态\n⌁\n\n记录心情、体重或存钱后，最近动态会出现在这里。\n\n月\n月度回顾\n看看这个月的自己\n心情、体重与省钱进度汇总\n›\n\nMY PRIVATE SPACE\n\nForMyself\n\n生活面板\n\n首页总览\n今天\n月度报告\n回顾\n省钱计划\n目标\n体重记录\n健康\n心情日记\n感受\n温馨小家\n陪伴\n每日待办\n计划\n日程提醒\n安排\n密码库\n安全\n通用配置\n设置\n你的私人空间\n核心数据保存在设备内"
+  },
+  {
+    "phase": "layout",
+    "width": 320,
+    "view": "home",
+    "overflow": false,
+    "rootWidth": 320,
+    "scrollWidth": 320,
+    "small": [],
+    "unnamed": [],
+    "inputs": [],
+    "text": "首页总览\n中午好\n10月3日星期六\n安排好今天，\n也照顾好自己。\n今天已留下 0 项记录\n✦\n\n今天还没有留下记录，从你最想关注的一项开始就好。\n\n›\n今日\n今日记录\n0/3 有动态\n☺\n心情\n记录此刻感受\n去记录 ›\n⚖\n体重\n记录今日体重\n去记录 ›\n¥\n存钱\n为目标存一笔\n去记录 ›\n今日待办\n0 / 0 已完成\n0\n%\n\n今天还没有安排，留一点空间给自己\n\n安排一件小事\n→\n3\n周六\n今日日程\n今日暂无日程\n\n今天可以留一点空白\n\n0\n剩余\n主要目标\n建立一个省钱目标\n0%\n\n给想做的事设定金额，首页会持续显示进度。\n\n新建计划 ›\n详情 ›\n体重趋势\n-- kg\n\n记录两次后显示变化\n\n详情 ›\n心情回顾\n七天心情\n·\n日\n·\n一\n·\n二\n·\n三\n·\n四\n·\n五\n·\n六\n\n最近七天还没有心情记录\n\n最近记录\n最近动态\n⌁\n\n记录心情、体重或存钱后，最近动态会出现在这里。\n\n月\n月度回顾\n看看这个月的自己\n心情、体重与省钱进度汇总\n›\n\nMY PRIVATE SPACE\n\nForMyself\n\n生活面板\n\n首页总览\n今天\n月度报告\n回顾\n省钱计划\n目标\n体重记录\n健康\n心情日记\n感受\n温馨小家\n陪伴\n每日待办\n计划\n日程提醒\n安排\n密码库\n安全\n通用配置\n设置\n你的私人空间\n核心数据保存在设备内"
+  },
+  {
+    "phase": "layout",
+    "width": 320,
+    "view": "debts",
+    "overflow": false,
+    "rootWidth": 320,
+    "scrollWidth": 320,
+    "small": [],
+    "unnamed": [],
+    "inputs": [],
+    "text": "我的省钱计划\n\nMY PRIVATE SPACE\n\nForMyself\n\n生活面板\n\n首页总览\n今天\n月度报告\n回顾\n省钱计划\n目标\n体重记录\n健康\n心情日记\n感受\n温馨小家\n陪伴\n每日待办\n计划\n日程提醒\n安排\n密码库\n安全\n通用配置\n设置\n你的私人空间\n核心数据保存在设备内"
+  },
+  {
+    "phase": "layout",
+    "width": 320,
+    "view": "weight",
+    "overflow": false,
+    "rootWidth": 320,
+    "scrollWidth": 320,
+    "small": [],
+    "unnamed": [],
+    "inputs": [],
+    "text": "体重记录\n\nMY PRIVATE SPACE\n\nForMyself\n\n生活面板\n\n首页总览\n今天\n月度报告\n回顾\n省钱计划\n目标\n体重记录\n健康\n心情日记\n感受\n温馨小家\n陪伴\n每日待办\n计划\n日程提醒\n安排\n密码库\n安全\n通用配置\n设置\n你的私人空间\n核心数据保存在设备内"
+  },
+  {
+    "phase": "layout",
+    "width": 320,
+    "view": "mood",
+    "overflow": false,
+    "rootWidth": 320,
+    "scrollWidth": 320,
+    "small": [],
+    "unnamed": [],
+    "inputs": [],
+    "text": "心情日记\n\nMY PRIVATE SPACE\n\nForMyself\n\n生活面板\n\n首页总览\n今天\n月度报告\n回顾\n省钱计划\n目标\n体重记录\n健康\n心情日记\n感受\n温馨小家\n陪伴\n每日待办\n计划\n日程提醒\n安排\n密码库\n安全\n通用配置\n设置\n你的私人空间\n核心数据保存在设备内"
+  },
+  {
+    "phase": "layout",
+    "width": 320,
+    "view": "todo",
+    "overflow": false,
+    "rootWidth": 320,
+    "scrollWidth": 320,
+    "small": [],
+    "unnamed": [],
+    "inputs": [],
+    "text": "每日待办\n\nMY PRIVATE SPACE\n\nForMyself\n\n生活面板\n\n首页总览\n今天\n月度报告\n回顾\n省钱计划\n目标\n体重记录\n健康\n心情日记\n感受\n温馨小家\n陪伴\n每日待办\n计划\n日程提醒\n安排\n密码库\n安全\n通用配置\n设置\n你的私人空间\n核心数据保存在设备内"
+  },
+  {
+    "phase": "layout",
+    "width": 320,
+    "view": "schedule",
+    "overflow": false,
+    "rootWidth": 320,
+    "scrollWidth": 320,
+    "small": [],
+    "unnamed": [],
+    "inputs": [],
+    "text": "MY PRIVATE SPACE\n\nForMyself\n\n生活面板\n\n首页总览\n今天\n月度报告\n回顾\n省钱计划\n目标\n体重记录\n健康\n心情日记\n感受\n温馨小家\n陪伴\n每日待办\n计划\n日程提醒\n安排\n密码库\n安全\n通用配置\n设置\n你的私人空间\n核心数据保存在设备内"
+  },
+  {
+    "phase": "layout",
+    "width": 320,
+    "view": "passwords",
+    "overflow": false,
+    "rootWidth": 320,
+    "scrollWidth": 320,
+    "small": [],
+    "unnamed": [],
+    "inputs": [],
+    "text": "我的密码库\n\n正在安全载入密码库…\n\nMY PRIVATE SPACE\n\nForMyself\n\n生活面板\n\n首页总览\n今天\n月度报告\n回顾\n省钱计划\n目标\n体重记录\n健康\n心情日记\n感受\n温馨小家\n陪伴\n每日待办\n计划\n日程提醒\n安排\n密码库\n安全\n通用配置\n设置\n你的私人空间\n核心数据保存在设备内"
+  },
+  {
+    "phase": "layout",
+    "width": 320,
+    "view": "reports",
+    "overflow": false,
+    "rootWidth": 320,
+    "scrollWidth": 320,
+    "small": [],
+    "unnamed": [],
+    "inputs": [],
+    "text": "月度报告\n\nMY PRIVATE SPACE\n\nForMyself\n\n生活面板\n\n首页总览\n今天\n月度报告\n回顾\n省钱计划\n目标\n体重记录\n健康\n心情日记\n感受\n温馨小家\n陪伴\n每日待办\n计划\n日程提醒\n安排\n密码库\n安全\n通用配置\n设置\n你的私人空间\n核心数据保存在设备内"
+  },
+  {
+    "phase": "layout",
+    "width": 320,
+    "view": "chat",
+    "overflow": false,
+    "rootWidth": 320,
+    "scrollWidth": 320,
+    "small": [
+      {
+        "text": "去配置",
+        "w": 45,
+        "h": 18
+      }
+    ],
+    "unnamed": [],
+    "inputs": [
+      {
+        "type": "textarea",
+        "label": null,
+        "placeholder": "想和她说点什么…"
+      }
+    ],
+    "text": "温馨小家\n♡\n小暖\n 陪着你\n0\n配置自己的 AI Key 后，就能开始聊天\n去配置\n\n聊天与选中的生活记录会发送给你配置的 AI 服务商\n\nMY PRIVATE SPACE\n\nForMyself\n\n生活面板\n\n首页总览\n今天\n月度报告\n回顾\n省钱计划\n目标\n体重记录\n健康\n心情日记\n感受\n温馨小家\n陪伴\n每日待办\n计划\n日程提醒\n安排\n密码库\n安全\n通用配置\n设置\n你的私人空间\n核心数据保存在设备内"
+  },
+  {
+    "phase": "layout",
+    "width": 320,
+    "view": "settings",
+    "overflow": false,
+    "rootWidth": 320,
+    "scrollWidth": 320,
+    "small": [],
+    "unnamed": [],
+    "inputs": [],
+    "text": "通用配置\n按类别管理\n需要调整什么？\n\n设置已按用途整理；进入分类后，返回键会回到这里。\n\n外观与首页\n云朵蓝主题\n通知与提醒\n当前未开启每日提醒\n安全与解锁\n后台后立即锁定\n内容标签\n1 个日程标签 · 7 个密码分类\n健康与趋势\n设置身高、目标体重与变化提醒\n数据与备份\n加密导入、导出与完整恢复\nAI 服务\n尚未配置 API Key\n桌面小组件\n今日信息、日程与每日待办组件\n\nMY PRIVATE SPACE\n\nForMyself\n\n生活面板\n\n首页总览\n今天\n月度报告\n回顾\n省钱计划\n目标\n体重记录\n健康\n心情日记\n感受\n温馨小家\n陪伴\n每日待办\n计划\n日程提醒\n安排\n密码库\n安全\n通用配置\n设置\n你的私人空间\n核心数据保存在设备内"
+  },
+  {
+    "phase": "layout",
+    "width": 390,
+    "view": "home",
+    "overflow": false,
+    "rootWidth": 390,
+    "scrollWidth": 390,
+    "small": [],
+    "unnamed": [],
+    "inputs": [],
+    "text": "首页总览\n中午好\n10月3日星期六\n安排好今天，\n也照顾好自己。\n今天已留下 0 项记录\n✦\n\n今天还没有留下记录，从你最想关注的一项开始就好。\n\n›\n今日\n今日记录\n0/3 有动态\n☺\n心情\n记录此刻感受\n去记录 ›\n⚖\n体重\n记录今日体重\n去记录 ›\n¥\n存钱\n为目标存一笔\n去记录 ›\n今日待办\n0 / 0 已完成\n0\n%\n\n今天还没有安排，留一点空间给自己\n\n安排一件小事\n→\n3\n周六\n今日日程\n今日暂无日程\n\n今天可以留一点空白\n\n0\n剩余\n主要目标\n建立一个省钱目标\n0%\n\n给想做的事设定金额，首页会持续显示进度。\n\n新建计划 ›\n详情 ›\n体重趋势\n-- kg\n\n记录两次后显示变化\n\n详情 ›\n心情回顾\n七天心情\n·\n日\n·\n一\n·\n二\n·\n三\n·\n四\n·\n五\n·\n六\n\n最近七天还没有心情记录\n\n最近记录\n最近动态\n⌁\n\n记录心情、体重或存钱后，最近动态会出现在这里。\n\n月\n月度回顾\n看看这个月的自己\n心情、体重与省钱进度汇总\n›\n\nMY PRIVATE SPACE\n\nForMyself\n\n生活面板\n\n首页总览\n今天\n月度报告\n回顾\n省钱计划\n目标\n体重记录\n健康\n心情日记\n感受\n温馨小家\n陪伴\n每日待办\n计划\n日程提醒\n安排\n密码库\n安全\n通用配置\n设置\n你的私人空间\n核心数据保存在设备内"
+  },
+  {
+    "phase": "layout",
+    "width": 390,
+    "view": "debts",
+    "overflow": false,
+    "rootWidth": 390,
+    "scrollWidth": 390,
+    "small": [],
+    "unnamed": [],
+    "inputs": [
+      {
+        "type": "text",
+        "label": "搜索省钱项目",
+        "placeholder": "搜索省钱项目"
+      }
+    ],
+    "text": "我的省钱计划\n省钱计划\n\n小小改变，大大未来 ✨\n\n累计已省\n每一笔，都算数\n¥0\n＋ 新建计划\n进行中 0\n已达成 0\n未分组\n0 项\n拖动计划到这里\n🌱\n\n从一个小目标开始，慢慢积累\n\nMY PRIVATE SPACE\n\nForMyself\n\n生活面板\n\n首页总览\n今天\n月度报告\n回顾\n省钱计划\n目标\n体重记录\n健康\n心情日记\n感受\n温馨小家\n陪伴\n每日待办\n计划\n日程提醒\n安排\n密码库\n安全\n通用配置\n设置\n你的私人空间\n核心数据保存在设备内"
+  },
+  {
+    "phase": "layout",
+    "width": 390,
+    "view": "weight",
+    "overflow": false,
+    "rootWidth": 390,
+    "scrollWidth": 390,
+    "small": [],
+    "unnamed": [],
+    "inputs": [],
+    "text": "体重记录\n最新体重\n-- kg\n\n从第一次记录开始\n\n记录两次后显示变化\n\n＋ 记录体重\n目标差距\n--\n设置后显示差距\n近 7 天均重\n--\n按有记录的每日均值计算\nBMI\n--\n填写身高后计算\n健康与趋势设置\n身高、目标体重、变化提醒阈值\n›\n近 7 天\n近 30 天\n近 90 天\n全部\n每日体重趋势\n周均\n每日\n\n这个时间范围内还没有记录。\n\n全部体重记录\n共 0 条 · 每页 10 条\n\n还没有体重记录\n\n点击上方按钮添加第一条记录\n\nMY PRIVATE SPACE\n\nForMyself\n\n生活面板\n\n首页总览\n今天\n月度报告\n回顾\n省钱计划\n目标\n体重记录\n健康\n心情日记\n感受\n温馨小家\n陪伴\n每日待办\n计划\n日程提醒\n安排\n密码库\n安全\n通用配置\n设置\n你的私人空间\n核心数据保存在设备内"
+  },
+  {
+    "phase": "layout",
+    "width": 390,
+    "view": "mood",
+    "overflow": false,
+    "rootWidth": 390,
+    "scrollWidth": 390,
+    "small": [],
+    "unnamed": [],
+    "inputs": [],
+    "text": "心情日记\n‹\n2026年10月\n›\n日\n一\n二\n三\n四\n五\n六\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\n15\n16\n17\n18\n19\n20\n21\n22\n23\n24\n25\n26\n27\n28\n29\n30\n31\n🤩 0\n🙂 0\n😐 0\n😔 0\n😫 0\n记录今天的第一个事件\n\n这个月还没有心情记录\n\n点击上方按钮记录第一条心情\n\nMY PRIVATE SPACE\n\nForMyself\n\n生活面板\n\n首页总览\n今天\n月度报告\n回顾\n省钱计划\n目标\n体重记录\n健康\n心情日记\n感受\n温馨小家\n陪伴\n每日待办\n计划\n日程提醒\n安排\n密码库\n安全\n通用配置\n设置\n你的私人空间\n核心数据保存在设备内"
+  },
+  {
+    "phase": "layout",
+    "width": 390,
+    "view": "todo",
+    "overflow": false,
+    "rootWidth": 390,
+    "scrollWidth": 390,
+    "small": [],
+    "unnamed": [],
+    "inputs": [],
+    "text": "每日待办\n每日待办\n计划管理\n＋ 新建\n‹\n2026年10月3日\n›\n今天\n今日待办\n0 / 0 已完成\n0\n%\n\n今天还没有安排，留一点空间给自己\n\n安排一件小事\n→\n\nMY PRIVATE SPACE\n\nForMyself\n\n生活面板\n\n首页总览\n今天\n月度报告\n回顾\n省钱计划\n目标\n体重记录\n健康\n心情日记\n感受\n温馨小家\n陪伴\n每日待办\n计划\n日程提醒\n安排\n密码库\n安全\n通用配置\n设置\n你的私人空间\n核心数据保存在设备内"
+  },
+  {
+    "phase": "layout",
+    "width": 390,
+    "view": "schedule",
+    "overflow": false,
+    "rootWidth": 390,
+    "scrollWidth": 390,
+    "small": [],
+    "unnamed": [],
+    "inputs": [
+      {
+        "type": "text",
+        "label": null,
+        "placeholder": "搜索日程"
+      }
+    ],
+    "text": "2026\n月历\n日程\n全部分类\n学习\n10/03\n周六\n\n今日暂无日程\n\n＋\n\nMY PRIVATE SPACE\n\nForMyself\n\n生活面板\n\n首页总览\n今天\n月度报告\n回顾\n省钱计划\n目标\n体重记录\n健康\n心情日记\n感受\n温馨小家\n陪伴\n每日待办\n计划\n日程提醒\n安排\n密码库\n安全\n通用配置\n设置\n你的私人空间\n核心数据保存在设备内"
+  },
+  {
+    "phase": "layout",
+    "width": 390,
+    "view": "passwords",
+    "overflow": false,
+    "rootWidth": 390,
+    "scrollWidth": 390,
+    "small": [],
+    "unnamed": [],
+    "inputs": [
+      {
+        "type": "text",
+        "label": null,
+        "placeholder": "搜索名称、账号或分类"
+      }
+    ],
+    "text": "我的密码库\n添加\n▦\n分类筛选\n全部分类\n☆ 仅看收藏\n🔐\n密码库还是空的\n\n添加账号密码后，数据会使用主密码加密保存在设备中。\n\n添加第一条记录\n\nMY PRIVATE SPACE\n\nForMyself\n\n生活面板\n\n首页总览\n今天\n月度报告\n回顾\n省钱计划\n目标\n体重记录\n健康\n心情日记\n感受\n温馨小家\n陪伴\n每日待办\n计划\n日程提醒\n安排\n密码库\n安全\n通用配置\n设置\n你的私人空间\n核心数据保存在设备内"
+  },
+  {
+    "phase": "layout",
+    "width": 390,
+    "view": "reports",
+    "overflow": false,
+    "rootWidth": 390,
+    "scrollWidth": 390,
+    "small": [],
+    "unnamed": [],
+    "inputs": [
+      {
+        "type": "number",
+        "label": null,
+        "placeholder": "--"
+      }
+    ],
+    "text": "月度报告\n‹\n2026年10月\n生活月度报告\n›\n心情\n本月情绪分布\n0\n最长连续天数\n\n本月还没有心情记录。\n\n本月共记录 0 个事件，覆盖 0 天\n\n体重\n变化趋势\n目标 kg\n月平均\n-- kg\n最新记录\n-- kg\n本月暂无记录\n设置目标后显示差距\n\n本月有效记录 0 次\n\n省钱\n本月完成速度\n¥0\n日均存入\n¥0\n存入次数\n0 次\n\n暂无进行中的省钱计划。\n\nAI 月度总结\n把这个月轻轻收好\n✨\n\nAI 会综合心情、体重和省钱数据，给你一段温柔而客观的月度回顾。\n\n生成月度总结\n\nMY PRIVATE SPACE\n\nForMyself\n\n生活面板\n\n首页总览\n今天\n月度报告\n回顾\n省钱计划\n目标\n体重记录\n健康\n心情日记\n感受\n温馨小家\n陪伴\n每日待办\n计划\n日程提醒\n安排\n密码库\n安全\n通用配置\n设置\n你的私人空间\n核心数据保存在设备内"
+  },
+  {
+    "phase": "layout",
+    "width": 390,
+    "view": "chat",
+    "overflow": false,
+    "rootWidth": 390,
+    "scrollWidth": 390,
+    "small": [
+      {
+        "text": "去配置",
+        "w": 45,
+        "h": 18
+      }
+    ],
+    "unnamed": [],
+    "inputs": [
+      {
+        "type": "textarea",
+        "label": null,
+        "placeholder": "想和她说点什么…"
+      }
+    ],
+    "text": "温馨小家\n♡\n小暖\n 偷偷想你一下\n0\n10月3日周六\n♡\n偷偷冒个泡。小暖想哥哥了 (｡･ω･｡)ﾉ♡\n13:12\n•••\n配置自己的 AI Key 后，就能开始聊天\n去配置\n\n聊天与选中的生活记录会发送给你配置的 AI 服务商\n\nMY PRIVATE SPACE\n\nForMyself\n\n生活面板\n\n首页总览\n今天\n月度报告\n回顾\n省钱计划\n目标\n体重记录\n健康\n心情日记\n感受\n温馨小家\n陪伴\n每日待办\n计划\n日程提醒\n安排\n密码库\n安全\n通用配置\n设置\n你的私人空间\n核心数据保存在设备内"
+  },
+  {
+    "phase": "layout",
+    "width": 390,
+    "view": "settings",
+    "overflow": false,
+    "rootWidth": 390,
+    "scrollWidth": 390,
+    "small": [],
+    "unnamed": [],
+    "inputs": [],
+    "text": "通用配置\n按类别管理\n需要调整什么？\n\n设置已按用途整理；进入分类后，返回键会回到这里。\n\n外观与首页\n云朵蓝主题\n通知与提醒\n当前未开启每日提醒\n安全与解锁\n后台后立即锁定\n内容标签\n1 个日程标签 · 7 个密码分类\n健康与趋势\n设置身高、目标体重与变化提醒\n数据与备份\n加密导入、导出与完整恢复\nAI 服务\n尚未配置 API Key\n桌面小组件\n今日信息、日程与每日待办组件\n\nMY PRIVATE SPACE\n\nForMyself\n\n生活面板\n\n首页总览\n今天\n月度报告\n回顾\n省钱计划\n目标\n体重记录\n健康\n心情日记\n感受\n温馨小家\n陪伴\n每日待办\n计划\n日程提醒\n安排\n密码库\n安全\n通用配置\n设置\n你的私人空间\n核心数据保存在设备内"
+  },
+  {
+    "phase": "layout",
+    "width": 768,
+    "view": "home",
+    "overflow": false,
+    "rootWidth": 753,
+    "scrollWidth": 753,
+    "small": [],
+    "unnamed": [],
+    "inputs": [],
+    "text": "首页总览\n中午好\n10月3日星期六\n安排好今天，\n也照顾好自己。\n今天已留下 0 项记录\n✦\n\n今天还没有留下记录，从你最想关注的一项开始就好。\n\n›\n今日\n今日记录\n0/3 有动态\n☺\n心情\n记录此刻感受\n去记录 ›\n⚖\n体重\n记录今日体重\n去记录 ›\n¥\n存钱\n为目标存一笔\n去记录 ›\n今日待办\n0 / 0 已完成\n0\n%\n\n今天还没有安排，留一点空间给自己\n\n安排一件小事\n→\n3\n周六\n今日日程\n今日暂无日程\n\n今天可以留一点空白\n\n0\n剩余\n主要目标\n建立一个省钱目标\n0%\n\n给想做的事设定金额，首页会持续显示进度。\n\n新建计划 ›\n详情 ›\n体重趋势\n-- kg\n\n记录两次后显示变化\n\n详情 ›\n心情回顾\n七天心情\n·\n日\n·\n一\n·\n二\n·\n三\n·\n四\n·\n五\n·\n六\n\n最近七天还没有心情记录\n\n最近记录\n最近动态\n⌁\n\n记录心情、体重或存钱后，最近动态会出现在这里。\n\n月\n月度回顾\n看看这个月的自己\n心情、体重与省钱进度汇总\n›\n\nMY PRIVATE SPACE\n\nForMyself\n\n生活面板\n\n首页总览\n今天\n月度报告\n回顾\n省钱计划\n目标\n体重记录\n健康\n心情日记\n感受\n温馨小家\n陪伴\n每日待办\n计划\n日程提醒\n安排\n密码库\n安全\n通用配置\n设置\n你的私人空间\n核心数据保存在设备内"
+  },
+  {
+    "phase": "layout",
+    "width": 768,
+    "view": "debts",
+    "overflow": false,
+    "rootWidth": 768,
+    "scrollWidth": 768,
+    "small": [],
+    "unnamed": [],
+    "inputs": [
+      {
+        "type": "text",
+        "label": "搜索省钱项目",
+        "placeholder": "搜索省钱项目"
+      }
+    ],
+    "text": "我的省钱计划\n省钱计划\n\n小小改变，大大未来 ✨\n\n累计已省\n每一笔，都算数\n¥0\n＋ 新建计划\n进行中 0\n已达成 0\n未分组\n0 项\n拖动计划到这里\n🌱\n\n从一个小目标开始，慢慢积累\n\nMY PRIVATE SPACE\n\nForMyself\n\n生活面板\n\n首页总览\n今天\n月度报告\n回顾\n省钱计划\n目标\n体重记录\n健康\n心情日记\n感受\n温馨小家\n陪伴\n每日待办\n计划\n日程提醒\n安排\n密码库\n安全\n通用配置\n设置\n你的私人空间\n核心数据保存在设备内"
+  },
+  {
+    "phase": "layout",
+    "width": 768,
+    "view": "weight",
+    "overflow": false,
+    "rootWidth": 753,
+    "scrollWidth": 753,
+    "small": [],
+    "unnamed": [],
+    "inputs": [],
+    "text": "体重记录\n最新体重\n-- kg\n\n从第一次记录开始\n\n记录两次后显示变化\n\n＋ 记录体重\n目标差距\n--\n设置后显示差距\n近 7 天均重\n--\n按有记录的每日均值计算\nBMI\n--\n填写身高后计算\n健康与趋势设置\n身高、目标体重、变化提醒阈值\n›\n近 7 天\n近 30 天\n近 90 天\n全部\n每日体重趋势\n周均\n每日\n\n这个时间范围内还没有记录。\n\n全部体重记录\n共 0 条 · 每页 10 条\n\n还没有体重记录\n\n点击上方按钮添加第一条记录\n\nMY PRIVATE SPACE\n\nForMyself\n\n生活面板\n\n首页总览\n今天\n月度报告\n回顾\n省钱计划\n目标\n体重记录\n健康\n心情日记\n感受\n温馨小家\n陪伴\n每日待办\n计划\n日程提醒\n安排\n密码库\n安全\n通用配置\n设置\n你的私人空间\n核心数据保存在设备内"
+  },
+  {
+    "phase": "layout",
+    "width": 768,
+    "view": "mood",
+    "overflow": false,
+    "rootWidth": 768,
+    "scrollWidth": 768,
+    "small": [],
+    "unnamed": [],
+    "inputs": [],
+    "text": "心情日记\n‹\n2026年10月\n›\n日\n一\n二\n三\n四\n五\n六\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\n15\n16\n17\n18\n19\n20\n21\n22\n23\n24\n25\n26\n27\n28\n29\n30\n31\n🤩 0\n🙂 0\n😐 0\n😔 0\n😫 0\n记录今天的第一个事件\n\n这个月还没有心情记录\n\n点击上方按钮记录第一条心情\n\nMY PRIVATE SPACE\n\nForMyself\n\n生活面板\n\n首页总览\n今天\n月度报告\n回顾\n省钱计划\n目标\n体重记录\n健康\n心情日记\n感受\n温馨小家\n陪伴\n每日待办\n计划\n日程提醒\n安排\n密码库\n安全\n通用配置\n设置\n你的私人空间\n核心数据保存在设备内"
+  },
+  {
+    "phase": "layout",
+    "width": 768,
+    "view": "todo",
+    "overflow": false,
+    "rootWidth": 768,
+    "scrollWidth": 768,
+    "small": [],
+    "unnamed": [],
+    "inputs": [],
+    "text": "每日待办\n每日待办\n计划管理\n＋ 新建\n‹\n2026年10月3日\n›\n今天\n今日待办\n0 / 0 已完成\n0\n%\n\n今天还没有安排，留一点空间给自己\n\n安排一件小事\n→\n\nMY PRIVATE SPACE\n\nForMyself\n\n生活面板\n\n首页总览\n今天\n月度报告\n回顾\n省钱计划\n目标\n体重记录\n健康\n心情日记\n感受\n温馨小家\n陪伴\n每日待办\n计划\n日程提醒\n安排\n密码库\n安全\n通用配置\n设置\n你的私人空间\n核心数据保存在设备内"
+  },
+  {
+    "phase": "layout",
+    "width": 768,
+    "view": "schedule",
+    "overflow": false,
+    "rootWidth": 768,
+    "scrollWidth": 768,
+    "small": [],
+    "unnamed": [],
+    "inputs": [
+      {
+        "type": "text",
+        "label": null,
+        "placeholder": "搜索日程"
+      }
+    ],
+    "text": "2026\n月历\n日程\n全部分类\n学习\n10/03\n周六\n\n今日暂无日程\n\n＋\n\nMY PRIVATE SPACE\n\nForMyself\n\n生活面板\n\n首页总览\n今天\n月度报告\n回顾\n省钱计划\n目标\n体重记录\n健康\n心情日记\n感受\n温馨小家\n陪伴\n每日待办\n计划\n日程提醒\n安排\n密码库\n安全\n通用配置\n设置\n你的私人空间\n核心数据保存在设备内"
+  },
+  {
+    "phase": "layout",
+    "width": 768,
+    "view": "passwords",
+    "overflow": false,
+    "rootWidth": 768,
+    "scrollWidth": 768,
+    "small": [],
+    "unnamed": [],
+    "inputs": [
+      {
+        "type": "text",
+        "label": null,
+        "placeholder": "搜索名称、账号或分类"
+      }
+    ],
+    "text": "我的密码库\n添加\n▦\n分类筛选\n全部分类\n☆ 仅看收藏\n🔐\n密码库还是空的\n\n添加账号密码后，数据会使用主密码加密保存在设备中。\n\n添加第一条记录\n\nMY PRIVATE SPACE\n\nForMyself\n\n生活面板\n\n首页总览\n今天\n月度报告\n回顾\n省钱计划\n目标\n体重记录\n健康\n心情日记\n感受\n温馨小家\n陪伴\n每日待办\n计划\n日程提醒\n安排\n密码库\n安全\n通用配置\n设置\n你的私人空间\n核心数据保存在设备内"
+  },
+  {
+    "phase": "layout",
+    "width": 768,
+    "view": "reports",
+    "overflow": false,
+    "rootWidth": 753,
+    "scrollWidth": 753,
+    "small": [],
+    "unnamed": [],
+    "inputs": [
+      {
+        "type": "number",
+        "label": null,
+        "placeholder": "--"
+      }
+    ],
+    "text": "月度报告\n‹\n2026年10月\n生活月度报告\n›\n心情\n本月情绪分布\n0\n最长连续天数\n\n本月还没有心情记录。\n\n本月共记录 0 个事件，覆盖 0 天\n\n体重\n变化趋势\n目标 kg\n月平均\n-- kg\n最新记录\n-- kg\n本月暂无记录\n设置目标后显示差距\n\n本月有效记录 0 次\n\n省钱\n本月完成速度\n¥0\n日均存入\n¥0\n存入次数\n0 次\n\n暂无进行中的省钱计划。\n\nAI 月度总结\n把这个月轻轻收好\n✨\n\nAI 会综合心情、体重和省钱数据，给你一段温柔而客观的月度回顾。\n\n生成月度总结\n\nMY PRIVATE SPACE\n\nForMyself\n\n生活面板\n\n首页总览\n今天\n月度报告\n回顾\n省钱计划\n目标\n体重记录\n健康\n心情日记\n感受\n温馨小家\n陪伴\n每日待办\n计划\n日程提醒\n安排\n密码库\n安全\n通用配置\n设置\n你的私人空间\n核心数据保存在设备内"
+  },
+  {
+    "phase": "layout",
+    "width": 768,
+    "view": "chat",
+    "overflow": false,
+    "rootWidth": 768,
+    "scrollWidth": 768,
+    "small": [
+      {
+        "text": "去配置",
+        "w": 45,
+        "h": 18
+      }
+    ],
+    "unnamed": [],
+    "inputs": [
+      {
+        "type": "textarea",
+        "label": null,
+        "placeholder": "想和她说点什么…"
+      }
+    ],
+    "text": "温馨小家\n♡\n小暖\n 偷偷想你一下\n0\n10月3日周六\n♡\n偷偷冒个泡。小暖想哥哥了 (｡･ω･｡)ﾉ♡\n13:12\n•••\n配置自己的 AI Key 后，就能开始聊天\n去配置\n\n聊天与选中的生活记录会发送给你配置的 AI 服务商\n\nMY PRIVATE SPACE\n\nForMyself\n\n生活面板\n\n首页总览\n今天\n月度报告\n回顾\n省钱计划\n目标\n体重记录\n健康\n心情日记\n感受\n温馨小家\n陪伴\n每日待办\n计划\n日程提醒\n安排\n密码库\n安全\n通用配置\n设置\n你的私人空间\n核心数据保存在设备内"
+  },
+  {
+    "phase": "layout",
+    "width": 768,
+    "view": "settings",
+    "overflow": false,
+    "rootWidth": 768,
+    "scrollWidth": 768,
+    "small": [],
+    "unnamed": [],
+    "inputs": [],
+    "text": "通用配置\n按类别管理\n需要调整什么？\n\n设置已按用途整理；进入分类后，返回键会回到这里。\n\n外观与首页\n云朵蓝主题\n通知与提醒\n当前未开启每日提醒\n安全与解锁\n后台后立即锁定\n内容标签\n1 个日程标签 · 7 个密码分类\n健康与趋势\n设置身高、目标体重与变化提醒\n数据与备份\n加密导入、导出与完整恢复\nAI 服务\n尚未配置 API Key\n桌面小组件\n今日信息、日程与每日待办组件\n\nMY PRIVATE SPACE\n\nForMyself\n\n生活面板\n\n首页总览\n今天\n月度报告\n回顾\n省钱计划\n目标\n体重记录\n健康\n心情日记\n感受\n温馨小家\n陪伴\n每日待办\n计划\n日程提醒\n安排\n密码库\n安全\n通用配置\n设置\n你的私人空间\n核心数据保存在设备内"
+  },
+  {
+    "phase": "layout",
+    "width": 1440,
+    "view": "home",
+    "overflow": false,
+    "rootWidth": 1425,
+    "scrollWidth": 1425,
+    "small": [],
+    "unnamed": [],
+    "inputs": [],
+    "text": "首页总览\n中午好\n10月3日星期六\n安排好今天，\n也照顾好自己。\n今天已留下 0 项记录\n✦\n\n今天还没有留下记录，从你最想关注的一项开始就好。\n\n›\n今日\n今日记录\n0/3 有动态\n☺\n心情\n记录此刻感受\n去记录 ›\n⚖\n体重\n记录今日体重\n去记录 ›\n¥\n存钱\n为目标存一笔\n去记录 ›\n今日待办\n0 / 0 已完成\n0\n%\n\n今天还没有安排，留一点空间给自己\n\n安排一件小事\n→\n3\n周六\n今日日程\n今日暂无日程\n\n今天可以留一点空白\n\n0\n剩余\n主要目标\n建立一个省钱目标\n0%\n\n给想做的事设定金额，首页会持续显示进度。\n\n新建计划 ›\n详情 ›\n体重趋势\n-- kg\n\n记录两次后显示变化\n\n详情 ›\n心情回顾\n七天心情\n·\n日\n·\n一\n·\n二\n·\n三\n·\n四\n·\n五\n·\n六\n\n最近七天还没有心情记录\n\n最近记录\n最近动态\n⌁\n\n记录心情、体重或存钱后，最近动态会出现在这里。\n\n月\n月度回顾\n看看这个月的自己\n心情、体重与省钱进度汇总\n›\n\nMY PRIVATE SPACE\n\nForMyself\n\n生活面板\n\n首页总览\n今天\n月度报告\n回顾\n省钱计划\n目标\n体重记录\n健康\n心情日记\n感受\n温馨小家\n陪伴\n每日待办\n计划\n日程提醒\n安排\n密码库\n安全\n通用配置\n设置\n你的私人空间\n核心数据保存在设备内"
+  },
+  {
+    "phase": "layout",
+    "width": 1440,
+    "view": "debts",
+    "overflow": false,
+    "rootWidth": 1440,
+    "scrollWidth": 1440,
+    "small": [],
+    "unnamed": [],
+    "inputs": [
+      {
+        "type": "text",
+        "label": "搜索省钱项目",
+        "placeholder": "搜索省钱项目"
+      }
+    ],
+    "text": "我的省钱计划\n省钱计划\n\n小小改变，大大未来 ✨\n\n累计已省\n每一笔，都算数\n¥0\n＋ 新建计划\n进行中 0\n已达成 0\n未分组\n0 项\n拖动计划到这里\n🌱\n\n从一个小目标开始，慢慢积累\n\nMY PRIVATE SPACE\n\nForMyself\n\n生活面板\n\n首页总览\n今天\n月度报告\n回顾\n省钱计划\n目标\n体重记录\n健康\n心情日记\n感受\n温馨小家\n陪伴\n每日待办\n计划\n日程提醒\n安排\n密码库\n安全\n通用配置\n设置\n你的私人空间\n核心数据保存在设备内"
+  },
+  {
+    "phase": "layout",
+    "width": 1440,
+    "view": "weight",
+    "overflow": false,
+    "rootWidth": 1425,
+    "scrollWidth": 1425,
+    "small": [],
+    "unnamed": [],
+    "inputs": [],
+    "text": "体重记录\n最新体重\n-- kg\n\n从第一次记录开始\n\n记录两次后显示变化\n\n＋ 记录体重\n目标差距\n--\n设置后显示差距\n近 7 天均重\n--\n按有记录的每日均值计算\nBMI\n--\n填写身高后计算\n健康与趋势设置\n身高、目标体重、变化提醒阈值\n›\n近 7 天\n近 30 天\n近 90 天\n全部\n每日体重趋势\n周均\n每日\n\n这个时间范围内还没有记录。\n\n全部体重记录\n共 0 条 · 每页 10 条\n\n还没有体重记录\n\n点击上方按钮添加第一条记录\n\nMY PRIVATE SPACE\n\nForMyself\n\n生活面板\n\n首页总览\n今天\n月度报告\n回顾\n省钱计划\n目标\n体重记录\n健康\n心情日记\n感受\n温馨小家\n陪伴\n每日待办\n计划\n日程提醒\n安排\n密码库\n安全\n通用配置\n设置\n你的私人空间\n核心数据保存在设备内"
+  },
+  {
+    "phase": "layout",
+    "width": 1440,
+    "view": "mood",
+    "overflow": false,
+    "rootWidth": 1440,
+    "scrollWidth": 1440,
+    "small": [],
+    "unnamed": [],
+    "inputs": [],
+    "text": "心情日记\n‹\n2026年10月\n›\n日\n一\n二\n三\n四\n五\n六\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\n15\n16\n17\n18\n19\n20\n21\n22\n23\n24\n25\n26\n27\n28\n29\n30\n31\n🤩 0\n🙂 0\n😐 0\n😔 0\n😫 0\n记录今天的第一个事件\n\n这个月还没有心情记录\n\n点击上方按钮记录第一条心情\n\nMY PRIVATE SPACE\n\nForMyself\n\n生活面板\n\n首页总览\n今天\n月度报告\n回顾\n省钱计划\n目标\n体重记录\n健康\n心情日记\n感受\n温馨小家\n陪伴\n每日待办\n计划\n日程提醒\n安排\n密码库\n安全\n通用配置\n设置\n你的私人空间\n核心数据保存在设备内"
+  },
+  {
+    "phase": "layout",
+    "width": 1440,
+    "view": "todo",
+    "overflow": false,
+    "rootWidth": 1440,
+    "scrollWidth": 1440,
+    "small": [],
+    "unnamed": [],
+    "inputs": [],
+    "text": "每日待办\n每日待办\n计划管理\n＋ 新建\n‹\n2026年10月3日\n›\n今天\n今日待办\n0 / 0 已完成\n0\n%\n\n今天还没有安排，留一点空间给自己\n\n安排一件小事\n→\n\nMY PRIVATE SPACE\n\nForMyself\n\n生活面板\n\n首页总览\n今天\n月度报告\n回顾\n省钱计划\n目标\n体重记录\n健康\n心情日记\n感受\n温馨小家\n陪伴\n每日待办\n计划\n日程提醒\n安排\n密码库\n安全\n通用配置\n设置\n你的私人空间\n核心数据保存在设备内"
+  },
+  {
+    "phase": "layout",
+    "width": 1440,
+    "view": "schedule",
+    "overflow": false,
+    "rootWidth": 1440,
+    "scrollWidth": 1440,
+    "small": [],
+    "unnamed": [],
+    "inputs": [
+      {
+        "type": "text",
+        "label": null,
+        "placeholder": "搜索日程"
+      }
+    ],
+    "text": "2026\n月历\n日程\n全部分类\n学习\n10/03\n周六\n\n今日暂无日程\n\n＋\n\nMY PRIVATE SPACE\n\nForMyself\n\n生活面板\n\n首页总览\n今天\n月度报告\n回顾\n省钱计划\n目标\n体重记录\n健康\n心情日记\n感受\n温馨小家\n陪伴\n每日待办\n计划\n日程提醒\n安排\n密码库\n安全\n通用配置\n设置\n你的私人空间\n核心数据保存在设备内"
+  },
+  {
+    "phase": "layout",
+    "width": 1440,
+    "view": "passwords",
+    "overflow": false,
+    "rootWidth": 1440,
+    "scrollWidth": 1440,
+    "small": [],
+    "unnamed": [],
+    "inputs": [
+      {
+        "type": "text",
+        "label": null,
+        "placeholder": "搜索名称、账号或分类"
+      }
+    ],
+    "text": "我的密码库\n添加\n▦\n分类筛选\n全部分类\n☆ 仅看收藏\n🔐\n密码库还是空的\n\n添加账号密码后，数据会使用主密码加密保存在设备中。\n\n添加第一条记录\n\nMY PRIVATE SPACE\n\nForMyself\n\n生活面板\n\n首页总览\n今天\n月度报告\n回顾\n省钱计划\n目标\n体重记录\n健康\n心情日记\n感受\n温馨小家\n陪伴\n每日待办\n计划\n日程提醒\n安排\n密码库\n安全\n通用配置\n设置\n你的私人空间\n核心数据保存在设备内"
+  },
+  {
+    "phase": "layout",
+    "width": 1440,
+    "view": "reports",
+    "overflow": false,
+    "rootWidth": 1425,
+    "scrollWidth": 1425,
+    "small": [],
+    "unnamed": [],
+    "inputs": [
+      {
+        "type": "number",
+        "label": null,
+        "placeholder": "--"
+      }
+    ],
+    "text": "月度报告\n‹\n2026年10月\n生活月度报告\n›\n心情\n本月情绪分布\n0\n最长连续天数\n\n本月还没有心情记录。\n\n本月共记录 0 个事件，覆盖 0 天\n\n体重\n变化趋势\n目标 kg\n月平均\n-- kg\n最新记录\n-- kg\n本月暂无记录\n设置目标后显示差距\n\n本月有效记录 0 次\n\n省钱\n本月完成速度\n¥0\n日均存入\n¥0\n存入次数\n0 次\n\n暂无进行中的省钱计划。\n\nAI 月度总结\n把这个月轻轻收好\n✨\n\nAI 会综合心情、体重和省钱数据，给你一段温柔而客观的月度回顾。\n\n生成月度总结\n\nMY PRIVATE SPACE\n\nForMyself\n\n生活面板\n\n首页总览\n今天\n月度报告\n回顾\n省钱计划\n目标\n体重记录\n健康\n心情日记\n感受\n温馨小家\n陪伴\n每日待办\n计划\n日程提醒\n安排\n密码库\n安全\n通用配置\n设置\n你的私人空间\n核心数据保存在设备内"
+  },
+  {
+    "phase": "layout",
+    "width": 1440,
+    "view": "chat",
+    "overflow": false,
+    "rootWidth": 1440,
+    "scrollWidth": 1440,
+    "small": [
+      {
+        "text": "去配置",
+        "w": 45,
+        "h": 18
+      }
+    ],
+    "unnamed": [],
+    "inputs": [
+      {
+        "type": "textarea",
+        "label": null,
+        "placeholder": "想和她说点什么…"
+      }
+    ],
+    "text": "温馨小家\n♡\n小暖\n 偷偷想你一下\n0\n10月3日周六\n♡\n偷偷冒个泡。小暖想哥哥了 (｡･ω･｡)ﾉ♡\n13:12\n•••\n配置自己的 AI Key 后，就能开始聊天\n去配置\n\n聊天与选中的生活记录会发送给你配置的 AI 服务商\n\nMY PRIVATE SPACE\n\nForMyself\n\n生活面板\n\n首页总览\n今天\n月度报告\n回顾\n省钱计划\n目标\n体重记录\n健康\n心情日记\n感受\n温馨小家\n陪伴\n每日待办\n计划\n日程提醒\n安排\n密码库\n安全\n通用配置\n设置\n你的私人空间\n核心数据保存在设备内"
+  },
+  {
+    "phase": "layout",
+    "width": 1440,
+    "view": "settings",
+    "overflow": false,
+    "rootWidth": 1440,
+    "scrollWidth": 1440,
+    "small": [],
+    "unnamed": [],
+    "inputs": [],
+    "text": "通用配置\n按类别管理\n需要调整什么？\n\n设置已按用途整理；进入分类后，返回键会回到这里。\n\n外观与首页\n云朵蓝主题\n通知与提醒\n当前未开启每日提醒\n安全与解锁\n后台后立即锁定\n内容标签\n1 个日程标签 · 7 个密码分类\n健康与趋势\n设置身高、目标体重与变化提醒\n数据与备份\n加密导入、导出与完整恢复\nAI 服务\n尚未配置 API Key\n桌面小组件\n今日信息、日程与每日待办组件\n\nMY PRIVATE SPACE\n\nForMyself\n\n生活面板\n\n首页总览\n今天\n月度报告\n回顾\n省钱计划\n目标\n体重记录\n健康\n心情日记\n感受\n温馨小家\n陪伴\n每日待办\n计划\n日程提醒\n安排\n密码库\n安全\n通用配置\n设置\n你的私人空间\n核心数据保存在设备内"
+  },
+  {
+    "phase": "errors",
+    "events": [
+      {
+        "method": "Log.entryAdded",
+        "params": {
+          "entry": {
+            "source": "recommendation",
+            "level": "verbose",
+            "text": "[DOM] Password field is not contained in a form: (More info: https://goo.gl/9p2vKq) %o",
+            "timestamp": 1791004299129.861,
+            "url": "http://127.0.0.1:5178/",
+            "args": [
+              {
+                "type": "object",
+                "subtype": "node",
+                "className": "HTMLInputElement",
+                "description": "input",
+                "objectId": "-4477075419629824645.3.1"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "method": "Log.entryAdded",
+        "params": {
+          "entry": {
+            "source": "recommendation",
+            "level": "verbose",
+            "text": "[DOM] Password field is not contained in a form: (More info: https://goo.gl/9p2vKq) %o",
+            "timestamp": 1791004332315.278,
+            "url": "http://127.0.0.1:5178/",
+            "args": [
+              {
+                "type": "object",
+                "subtype": "node",
+                "className": "HTMLInputElement",
+                "description": "input",
+                "objectId": "-4477075419629824645.4.1"
+              }
+            ]
+          }
+        }
+      }
+    ]
+  }
+]

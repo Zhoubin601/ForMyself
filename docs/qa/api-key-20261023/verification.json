@@ -1,0 +1,28 @@
+{
+  "date": "2026-10-23",
+  "verdict": "PASS_FOR_TESTED_SCENARIOS",
+  "apk": "20261023-ForMyself-api-key-fix-debug-v1.apk",
+  "bytes": 12194052,
+  "sha256": "0B1D22168340566392801C4B358D95CB8C451DF3FFAFF879FFBA19C2B13A435B",
+  "distFilesCompared": 49,
+  "installedApkMatches": true,
+  "nativeDurabilityPatchPresent": true,
+  "nodeTests": 260,
+  "componentTests": 99,
+  "newApiKeyTests": 20,
+  "nativeScenarios": 13,
+  "lintErrors": 0,
+  "existingLintWarnings": 55,
+  "androidVersion": "12",
+  "webView": "113.0.5672.136",
+  "cleanup": {
+    "forwardRemoved": true,
+    "currentUser": "0",
+    "testUserRemoved": true
+  },
+  "limitations": [
+    "Physical device and its original failure were not inspected.",
+    "Handshake used synthetic local responses, no real provider requests.",
+    "Already overwritten credentials cannot be recovered by this fix."
+  ]
+}

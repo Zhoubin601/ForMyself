@@ -1,0 +1,51 @@
+[
+  {
+    "name": "todo-daily-add",
+    "actual": true
+  },
+  {
+    "name": "todo-complete",
+    "actual": true
+  },
+  {
+    "name": "todo-single-edit-preserves-completion",
+    "actual": true
+  },
+  {
+    "name": "todo-undo",
+    "actual": true
+  },
+  {
+    "name": "schedule-add",
+    "actual": true
+  },
+  {
+    "name": "vault-add-masked",
+    "actual": true
+  },
+  {
+    "name": "full-backup-v10",
+    "actual": {
+      "version": 10,
+      "weight": 1,
+      "vault": 1,
+      "todo": 1
+    }
+  },
+  {
+    "name": "full-backup-restore",
+    "actual": true
+  },
+  {
+    "name": "lock-hides-records",
+    "actual": true
+  },
+  {
+    "name": "lock-memory-cleared",
+    "actual": false
+  },
+  {
+    "name": "password-reunlock",
+    "actual": true
+  }
+]

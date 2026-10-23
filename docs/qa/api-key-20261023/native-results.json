@@ -1,0 +1,73 @@
+{
+  "date": "2026-10-23",
+  "device": "emulator-5586",
+  "tests": [
+    {
+      "name": "actual UI save is verified against Android encrypted credentials; ordinary preferences exclude Key",
+      "passed": true
+    },
+    {
+      "name": "force-stop and cold start restore Key from actual Android storage",
+      "passed": true
+    },
+    {
+      "name": "three consecutive verified saves survive immediate force-stop and cold start",
+      "passed": true
+    },
+    {
+      "name": "model-only edits never write or clear credentials",
+      "passed": true
+    },
+    {
+      "name": "native write failure is visible and retry saves retained input without retyping",
+      "passed": true
+    },
+    {
+      "name": "retried Key survives actual process restart",
+      "passed": true
+    },
+    {
+      "name": "actual startup loader with injected read failure preserves credentials; model edit cannot overwrite; retry recovers",
+      "passed": true
+    },
+    {
+      "name": "credential existence-check errors remain visible and retryable",
+      "passed": true
+    },
+    {
+      "name": "handshake sends no request on save failure; mock response succeeds only after verified persistence",
+      "passed": true
+    },
+    {
+      "name": "explicit clear persists across cold start",
+      "passed": true
+    },
+    {
+      "name": "cold-start legacy migration writes verified native credentials before removing legacy preference",
+      "passed": true
+    },
+    {
+      "name": "failed native migration preserves legacy Key until explicit retry succeeds",
+      "passed": true
+    },
+    {
+      "name": "paste then immediate HOME and close retains Key after native background flush and cold start",
+      "passed": true
+    }
+  ],
+  "cleanup": {
+    "forwardRemoved": true,
+    "currentUser": "0",
+    "testUserRemoved": true
+  },
+  "android": "12",
+  "testUser": "15",
+  "migrationObservation": {
+    "status": "saved",
+    "loadedMatches": true,
+    "legacyPresent": false,
+    "legacyMatches": false,
+    "nativeMatches": true,
+    "nativeEmpty": false
+  }
+}

@@ -3,6 +3,7 @@ import { normalizeCommonNotes } from './commonNotes.js'
 import { normalizeBackgroundEffects } from './backgroundSettings.js'
 import { normalizeComponentTransparency } from './componentAppearance.js'
 import { normalizeAutoLockDelay } from './autoLockPolicy.js'
+import { normalizeSecuritySettings } from './securitySettings.js'
 import { normalizeHealthSettings } from './weightInsights.js'
 import { normalizeMoodDefinitions, normalizeMoodRecords, normalizeMoodTagCatalog, normalizeMoodTags } from '../features/mood/moodRecords.js'
 import {
@@ -20,7 +21,7 @@ import { normalizeChatData } from '../features/chat/chatRecords.js'
 import { normalizeDebtGroups } from './debtOrdering.js'
 
 export const FULL_BACKUP_TYPE = 'formyself-full-backup'
-export const FULL_BACKUP_VERSION = 11
+export const FULL_BACKUP_VERSION = 12
 
 const cloneJson = value => JSON.parse(JSON.stringify(value))
 const cleanText = (value, maxLength = 500) => String(value || '').slice(0, maxLength)
@@ -53,6 +54,7 @@ export function normalizeFullBackupSettings(value = {}) {
       model: cleanText(ai.model, 200) || 'deepseek-chat'
     },
     autoLockDelaySeconds: normalizeAutoLockDelay(value.autoLockDelaySeconds),
+    requireAppUnlock: normalizeSecuritySettings(value).requireAppUnlock,
     notificationSettings: normalizeReminderSettings(value.notificationSettings),
     notificationAiContent: normalizeNotificationAiCache(value.notificationAiContent),
     health: normalizeHealthSettings(value.health),
@@ -134,7 +136,7 @@ export function buildFullBackupSnapshot({
 export function normalizeFullBackupSnapshot(value) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error('INVALID_FULL_BACKUP')
   if (value.type !== FULL_BACKUP_TYPE) throw new Error('INVALID_FULL_BACKUP_TYPE')
-  if (![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, FULL_BACKUP_VERSION].includes(value.version)) throw new Error('UNSUPPORTED_FULL_BACKUP_VERSION')
+  if (![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, FULL_BACKUP_VERSION].includes(value.version)) throw new Error('UNSUPPORTED_FULL_BACKUP_VERSION')
   if (!value.data || typeof value.data !== 'object') throw new Error('INVALID_FULL_BACKUP_DATA')
   if (!value.settings || typeof value.settings !== 'object') throw new Error('INVALID_FULL_BACKUP_SETTINGS')
   if (value.version >= 3 && (!value.data.chat || typeof value.data.chat !== 'object' || Array.isArray(value.data.chat))) {

@@ -1,0 +1,101 @@
+{
+  "date": "2026-10-19",
+  "platform": "android",
+  "device": "emulator-5586",
+  "user": "12",
+  "tests": [
+    {
+      "name": "biometric-credential-ready",
+      "passed": true
+    },
+    {
+      "name": "password-vault-record-prepared",
+      "passed": true
+    },
+    {
+      "name": "view-password-biometric-cancelled-keeps-hidden",
+      "passed": true
+    },
+    {
+      "name": "view-password-biometric-success-reveals-secret",
+      "passed": true
+    },
+    {
+      "name": "copy-password-biometric-success",
+      "passed": true
+    },
+    {
+      "name": "background-triggers-lockscreen",
+      "passed": true
+    },
+    {
+      "name": "lockscreen-biometric-cancel-retains-lock",
+      "passed": true
+    },
+    {
+      "name": "lockscreen-biometric-unlock-success",
+      "passed": true
+    },
+    {
+      "name": "cold-start-shows-lockscreen-in-mode-1",
+      "passed": true
+    },
+    {
+      "name": "require-app-unlock-disabled-successfully",
+      "passed": true
+    },
+    {
+      "name": "mode-2-cold-start-direct-home-zero-decryption",
+      "passed": true
+    },
+    {
+      "name": "mode-2-browse-ordinary-modules-zero-decryption",
+      "passed": true
+    },
+    {
+      "name": "mode-2-entry-prompt-cancel-keeps-idle",
+      "passed": true
+    },
+    {
+      "name": "mode-2-passwords-loaded-chat-remains-idle",
+      "passed": true
+    },
+    {
+      "name": "mode-2-chat-loaded-via-session-reuse-without-reprompt",
+      "passed": true
+    },
+    {
+      "name": "mode-2-session-expiry-unloads-protected-data",
+      "passed": true
+    },
+    {
+      "name": "backup-data-integrity-verified",
+      "passed": true
+    },
+    {
+      "name": "master-password-change-transaction-success",
+      "passed": true
+    },
+    {
+      "name": "old-password-rejected-new-password-accepted",
+      "passed": true
+    },
+    {
+      "name": "password-change-atomic-rollback-verified",
+      "passed": true
+    },
+    {
+      "name": "concurrency-lease-protects-in-flight-writes-on-background",
+      "passed": true
+    },
+    {
+      "name": "restore-require-app-unlock-enabled",
+      "passed": true
+    },
+    {
+      "name": "cold-start-lockscreen-restored-finally",
+      "passed": true
+    }
+  ],
+  "timings": {}
+}

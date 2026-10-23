@@ -12,6 +12,7 @@ import { buildChatBackupSnapshot, normalizeChatBackupSnapshot } from '../../feat
 import { syncChatProactiveNotifications } from '../../features/chat/chatProactive'
 import { syncChatFollowupNotifications } from '../../features/chat/chatFollowup'
 import { useAuthStore } from '../../stores/auth'
+import { useProtectedAccessStore } from '../../stores/protectedAccess.js'
 import { useDebtStore } from '../../stores/debt'
 import { normalizeDebtGroups } from '../../services/debtOrdering.js'
 import { useWeightStore } from '../../stores/weight'
@@ -29,6 +30,9 @@ import { appAlert, appConfirm, appToast } from '../../services/uiFeedback'
 export function useBackupSettings() {
 
   const authStore = useAuthStore()
+  const protectedAccess = useProtectedAccessStore()
+  const backupModules = () => exportDataType.value === 'full' ? ['passwords', 'chat']
+      : ['passwords', 'chat'].includes(exportDataType.value) ? [exportDataType.value] : []
   const debtStore = useDebtStore()
   const weightStore = useWeightStore()
   const moodStore = useMoodStore()
@@ -207,7 +211,7 @@ export function useBackupSettings() {
     URL.revokeObjectURL(url)
   }
 
-  const exportJSON = async () => {
+  const exportJSONAuthenticated = async (password, session) => {
     if (['full','todos'].includes(exportDataType.value)) {
       await todoStore.flush()
       await todoStore.load()
@@ -227,8 +231,9 @@ export function useBackupSettings() {
     if (!isFullBackup && isEmpty) return appAlert(`没有检测到可导出的${label}`)
 
     try {
+      if (session !== authStore.sessionRevision || !password) return
       const rawData = JSON.stringify(data)
-      const encryptedData = CryptoJS.AES.encrypt(rawData, authStore.savedMasterPwd).toString()
+      const encryptedData = CryptoJS.AES.encrypt(rawData, password).toString()
       const date = new Date().toISOString().slice(0, 10)
       const prefix = getFilePrefix()
       const filename = `ForMyself_${prefix}_Backup_${date}.json`
@@ -254,7 +259,10 @@ export function useBackupSettings() {
     }
   }
 
-  const triggerImport = () => {
+  const exportJSON = () => protectedAccess.runOperation(backupModules(), exportJSONAuthenticated)
+
+  const triggerImport = async () => {
+    if (!await protectedAccess.ensureModules(backupModules())) return
     if (!fileInputRef.value) return
     beginNativeActivityGuard()
     fileInputRef.value.click()
@@ -264,10 +272,10 @@ export function useBackupSettings() {
     const file = event.target.files[0]
     if (!file) return
     const reader = new FileReader()
-    reader.onload = async (e) => {
+    reader.onload = async (e) => protectedAccess.runOperation(backupModules(), async (password, session) => {
       try {
         const encryptedContent = e.target.result
-        const bytes = CryptoJS.AES.decrypt(encryptedContent, authStore.savedMasterPwd)
+        const bytes = CryptoJS.AES.decrypt(encryptedContent, password)
         const decryptedData = bytes.toString(CryptoJS.enc.Utf8)
         if (!decryptedData) throw new Error('密码错误')
         const importedData = JSON.parse(decryptedData)
@@ -276,6 +284,7 @@ export function useBackupSettings() {
         if (exportDataType.value === 'todos') {
           const data = readTodoBackup(importedData)
           if (!await appConfirm(`待办备份包含 ${data.tasks.length} 个任务版本和 ${data.completions.length} 条完成记录。继续将覆盖当前待办，其他模块保持不变。`, {title:'恢复每日待办？', confirmText:'覆盖并恢复',destructive:true})) return
+          if (session !== authStore.sessionRevision) return
           await todoStore.restore(data)
           await todoStore.syncReminders()
           appToast('待办恢复成功')
@@ -289,6 +298,7 @@ export function useBackupSettings() {
             { title: '恢复完整备份？', confirmText: '覆盖并恢复', destructive: true }
           )
           if (!confirmed) return
+          if (session !== authStore.sessionRevision) return
           await restoreFullBackup(snapshot)
           appToast('完整数据恢复成功', { tone: 'success', duration: 3200 })
           return
@@ -300,6 +310,7 @@ export function useBackupSettings() {
             `成功解密出 ${normalized.series.length} 条日程。\n选择“覆盖”会替换当前日程和标签；取消则执行合并。`,
             { title: '选择恢复方式', confirmText: '覆盖当前数据', cancelText: '合并数据' }
           )
+          if (session !== authStore.sessionRevision) return
           await setDataArray(normalized, overwrite)
           await syncScheduleNotifications(scheduleStore.snapshot)
           appToast('日程数据恢复成功', { tone: 'success' })
@@ -312,6 +323,7 @@ export function useBackupSettings() {
         `成功解密出 ${snapshot.data.messages.length} 条聊天和 ${snapshot.data.memories.length} 条长期记忆。\n选择“覆盖”会替换名字、头像、聊天和记忆；取消则合并数据并保留当前名字与头像。`,
             { title: '恢复温馨小家', confirmText: '覆盖当前数据', cancelText: '合并数据' }
           )
+          if (session !== authStore.sessionRevision) return
           await setDataArray(snapshot.data, overwrite)
           appToast('温馨小家数据恢复成功', { tone: 'success' })
           return
@@ -323,6 +335,7 @@ export function useBackupSettings() {
             `成功解密出 ${snapshot.data.records.length} 条心情记录，并包含标签与心情等级配置。\n选择“覆盖”会替换当前心情数据；取消则合并记录和等级。`,
             { title: '恢复心情日记', confirmText: '覆盖当前数据', cancelText: '合并数据' }
           )
+          if (session !== authStore.sessionRevision) return
           if (overwrite) await moodStore.restoreMoodBackup(snapshot.data.records, snapshot.metadata)
           else await moodStore.mergeMoodBackup(snapshot.data.records, snapshot.metadata)
           appToast('心情日记数据恢复成功', { tone: 'success' })
@@ -336,6 +349,7 @@ export function useBackupSettings() {
           const overwrite = await appConfirm(`成功解密出 ${records.length} 条省钱计划和 ${groups.length} 个分组。\n选择“覆盖”会替换当前计划与分组；取消则合并。`, {
             title: '选择恢复方式', confirmText: '覆盖当前数据', cancelText: '合并数据'
           })
+          if (session !== authStore.sessionRevision) return
           await setDataArray({ records, groups }, overwrite)
           appToast('省钱数据恢复成功', { tone: 'success' })
           return
@@ -348,8 +362,10 @@ export function useBackupSettings() {
           confirmText: '覆盖当前数据',
           cancelText: '追加数据'
         })) {
+          if (session !== authStore.sessionRevision) return
           await setDataArray(importedData, true)
         } else {
+          if (session !== authStore.sessionRevision) return
           await setDataArray(importedData, false)
         }
         appToast(`${label}数据恢复成功`, { tone: 'success' })
@@ -364,7 +380,7 @@ export function useBackupSettings() {
       } finally {
         event.target.value = ''
       }
-    }
+    })
     reader.readAsText(file)
   }
 

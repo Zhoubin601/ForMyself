@@ -1,0 +1,27 @@
+{
+  "date": "2026-10-19",
+  "baseline": true,
+  "syntheticDataOnly": true,
+  "tests": [
+    "first setup and unified data load"
+  ],
+  "timings": [
+    {
+      "name": "app:boot-to-lock-ready",
+      "duration": 158
+    },
+    {
+      "name": "unlock:verify",
+      "duration": 56
+    },
+    {
+      "name": "unlock:to-home-paint",
+      "duration": 136.40000000037253
+    },
+    {
+      "name": "protected:load",
+      "duration": 43
+    }
+  ],
+  "errors": []
+}

@@ -3,6 +3,8 @@ import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { Capacitor } from '@capacitor/core'
 import { NativeBiometric } from '@capgo/capacitor-native-biometric'
 import { usePasswordVaultStore } from '../stores/passwordVault'
+import { useAuthStore } from '../stores/auth.js'
+import { withNativeActivityGuard } from '../services/nativeActivityGuard.js'
 import {
   DEFAULT_VAULT_CATEGORY,
   compareVaultRecords
@@ -12,6 +14,7 @@ import { appAlert, appConfirm, appToast } from '../services/uiFeedback'
 import { registerBackHandler } from '../services/backNavigation'
 
 const vaultStore = usePasswordVaultStore()
+const authStore = useAuthStore()
 const searchQuery = ref('')
 const categoryFilter = ref('all')
 const favoritesOnly = ref(false)
@@ -115,6 +118,7 @@ const hideAllSecrets = () => {
 }
 
 const requestBiometricAccess = async (record, action) => {
+  const session = authStore.sessionRevision
   if (verifyingId.value) return false
   verifyingId.value = record.id
   const result = await verifyVaultSecretAccess({
@@ -122,7 +126,7 @@ const requestBiometricAccess = async (record, action) => {
       if (!Capacitor.isNativePlatform()) return { isAvailable: false }
       return NativeBiometric.isAvailable({ useFallback: false })
     },
-    verifyIdentity: () => NativeBiometric.verifyIdentity({
+    verifyIdentity: () => withNativeActivityGuard(() => NativeBiometric.verifyIdentity({
       title: '密码库安全验证',
       subtitle: record.appName || '密码记录',
       reason: action === 'copy' ? '验证身份后复制密码' : '验证身份后查看密码',
@@ -130,11 +134,11 @@ const requestBiometricAccess = async (record, action) => {
       negativeButtonText: '取消',
       useFallback: false,
       maxAttempts: 3
-    })
+    }))
   })
   verifyingId.value = null
 
-  if (result.granted) return true
+  if (result.granted) return session === authStore.sessionRevision && !authStore.isLocked && vaultStore.isDataLoaded
   if (result.code === VAULT_ACCESS_RESULT.BIOMETRIC_UNAVAILABLE) {
     appAlert('设备尚未启用可用的生物识别，请先在系统设置中录入指纹或面容。')
   } else {

@@ -1,0 +1,74 @@
+{
+  "date": "2026-10-19",
+  "baseline": false,
+  "syntheticDataOnly": true,
+  "tests": [
+    "first setup and unified data load",
+    "cancel disabling entry verification retains old setting",
+    "wrong password cannot disable entry verification",
+    "cold reload directly enters home without lock flash or protected decryption",
+    "ordinary pages and general settings do not decrypt protected data",
+    "password vault independently authenticates and decrypts only itself",
+    "chat decrypts independently and reuses a valid session",
+    "session expiry clears protected state and unloads cached chat without locking ordinary pages",
+    "chat settings entry is guarded and becomes usable after decryption",
+    "password category settings load the vault through the same guard",
+    "security setting layouts fit 320/390/1280 widths",
+    "re-enabled mode restores unified verification and decryption of both modules",
+    "manual lock hides the app and releases protected data"
+  ],
+  "timings": [
+    {
+      "name": "app:boot-to-lock-ready",
+      "duration": 217.19999999925494
+    },
+    {
+      "name": "unlock:verify",
+      "duration": 104.5
+    },
+    {
+      "name": "unlock:to-home-paint",
+      "duration": 104.69999999925494
+    },
+    {
+      "name": "protected:passwords:load",
+      "duration": 20.300000000745058
+    },
+    {
+      "name": "protected:chat:load",
+      "duration": 62.19999999925494
+    }
+  ],
+  "directEntryTimings": {
+    "firstFrame": 160.7999999988824,
+    "measures": [
+      {
+        "name": "app:boot-to-lock-ready",
+        "duration": 127.80000000074506
+      }
+    ]
+  },
+  "unifiedReloadTimings": [
+    {
+      "name": "app:boot-to-lock-ready",
+      "duration": 213.40000000037253
+    },
+    {
+      "name": "unlock:verify",
+      "duration": 45
+    },
+    {
+      "name": "unlock:to-home-paint",
+      "duration": 45.19999999925494
+    },
+    {
+      "name": "protected:passwords:load",
+      "duration": 9.200000001117587
+    },
+    {
+      "name": "protected:chat:load",
+      "duration": 25.399999998509884
+    }
+  ],
+  "errors": []
+}

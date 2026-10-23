@@ -84,6 +84,7 @@ test('受保护存储迁移失败时会按反序回滚', async () => {
   assert.deepEqual(calls, [
     'first:new',
     'second:new',
+    'second:old',
     'first:old'
   ])
 })
@@ -101,18 +102,22 @@ test('新验证值提交失败时也会回滚已重加密的数据', async () =>
 
 test('安全凭据适配器使用不同命名空间保存主密码和 API Key', async () => {
   const calls = []
+  const savedCredentials = new Map()
   const adapter = createSecureCredentials({
     isNative: () => true,
     biometric: {
       isCredentialsSaved: async () => ({ isSaved: true }),
-      setCredentials: async options => calls.push(['set', options]),
+      setCredentials: async options => {
+        calls.push(['set', options])
+        savedCredentials.set(options.server, { username: options.username, password: options.password })
+      },
       getSecureCredentials: async options => {
         calls.push(['get-secure', options])
         return { username: 'formyself', password: 'master' }
       },
       getCredentials: async options => {
         calls.push(['get', options])
-        return { username: 'formyself', password: options.server.includes('master') ? 'master' : 'api' }
+        return savedCredentials.get(options.server)
       },
       deleteCredentials: async options => calls.push(['delete', options])
     }
@@ -125,8 +130,7 @@ test('安全凭据适配器使用不同命名空间保存主密码和 API Key', 
   assert.notEqual(calls[0][1].server, calls[1][1].server)
   assert.notEqual(calls[0][1].accessControl, calls[1][1].accessControl)
   await adapter.storeApiKey('')
-  assert.equal(calls.at(-1)[0], 'set')
-  assert.equal(calls.at(-1)[1].password, '')
+  assert.equal(calls.filter(([action]) => action === 'set').at(-1)[1].password, '')
   assert.equal(calls.some(([action]) => action === 'delete'), false)
 })
 

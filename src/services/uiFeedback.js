@@ -11,6 +11,7 @@ const defaultDialog = () => ({
   destructive: false,
   inputValue: '',
   inputPlaceholder: '',
+  inputType: 'text',
   options: []
 })
 
@@ -89,6 +90,7 @@ export const resolveFeedbackDialog = value => {
   const resolve = activeResolver
   activeResolver = null
   uiFeedbackState.dialog.open = false
+  if (uiFeedbackState.dialog.inputType === 'password') uiFeedbackState.dialog.inputValue = ''
   resolve?.(value)
 }
 

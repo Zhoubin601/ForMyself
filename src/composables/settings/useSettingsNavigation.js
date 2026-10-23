@@ -69,7 +69,7 @@ export function useSettingsNavigation() {
       id: 'notifications', title: '通知与提醒',
       description: enabledReminderCount.value ? `已开启 ${enabledReminderCount.value} 项每日提醒` : '当前未开启每日提醒'
     },
-    { id: 'security', title: '安全与解锁', description: `后台后${autoLockLabel.value}` },
+    { id: 'security', title: '安全与解锁', description: `${settingsStore.requireAppUnlock ? '进入时验证' : '直接进入首页'} · 后台后${autoLockLabel.value}` },
     {
       id: 'labels', title: '内容标签',
       description: `${scheduleStore.categories.length} 个日程标签 · ${vaultStore.categories.length} 个密码分类`
@@ -81,7 +81,9 @@ export function useSettingsNavigation() {
     { id: 'data', title: '数据与备份', description: '加密导入、导出与完整恢复' },
     {
       id: 'ai', title: 'AI 服务',
-      description: settingsStore.aiApiKey?.trim() ? `已配置 ${settingsStore.aiModel || '模型'}` : '尚未配置 API Key'
+      description: settingsStore.apiKeyStorageStatus === 'load-error' ? 'API Key 读取失败，点击重试'
+        : settingsStore.apiKeyStorageStatus === 'save-error' ? 'API Key 保存失败，点击重试'
+          : settingsStore.aiApiKey?.trim() ? `已配置 ${settingsStore.aiModel || '模型'}` : '尚未配置 API Key'
     },
     { id: 'widgets', title: '桌面小组件', description: '今日信息、日程与每日待办组件' }
   ])

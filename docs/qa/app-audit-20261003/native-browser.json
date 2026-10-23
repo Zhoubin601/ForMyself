@@ -1,0 +1,72 @@
+{
+  "state": {
+    "url": "https://localhost/",
+    "userAgent": "Mozilla/5.0 (Linux; Android 11; sdk_gphone_x86_64 Build/RSR1.240422.006; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/83.0.4103.106 Mobile Safari/537.36",
+    "text": "",
+    "vueReady": false
+  },
+  "errors": [
+    {
+      "method": "Runtime.exceptionThrown",
+      "params": {
+        "timestamp": 1791004803238.08,
+        "exceptionDetails": {
+          "exceptionId": 1,
+          "text": "Uncaught",
+          "lineNumber": 1,
+          "columnNumber": 7232,
+          "scriptId": "11",
+          "url": "https://localhost/assets/index-DWSWbqhl.js",
+          "exception": {
+            "type": "object",
+            "subtype": "error",
+            "className": "SyntaxError",
+            "description": "SyntaxError: Unexpected token '='",
+            "objectId": "{\"injectedScriptId\":1,\"id\":6}"
+          },
+          "executionContextId": 1
+        }
+      }
+    },
+    {
+      "method": "Runtime.exceptionThrown",
+      "params": {
+        "timestamp": 1791004967671.7588,
+        "exceptionDetails": {
+          "exceptionId": 2,
+          "text": "Uncaught",
+          "lineNumber": 1,
+          "columnNumber": 7232,
+          "scriptId": "21",
+          "url": "https://localhost/assets/index-DWSWbqhl.js",
+          "exception": {
+            "type": "object",
+            "subtype": "error",
+            "className": "SyntaxError",
+            "description": "SyntaxError: Unexpected token '='",
+            "objectId": "{\"injectedScriptId\":2,\"id\":2}",
+            "preview": {
+              "type": "object",
+              "subtype": "error",
+              "description": "SyntaxError: Unexpected token '='",
+              "overflow": false,
+              "properties": [
+                {
+                  "name": "stack",
+                  "type": "string",
+                  "value": "SyntaxError: Unexpected token '='"
+                },
+                {
+                  "name": "message",
+                  "type": "string",
+                  "value": "Unexpected token '='"
+                }
+              ]
+            }
+          },
+          "executionContextId": 2
+        }
+      }
+    }
+  ]
+}

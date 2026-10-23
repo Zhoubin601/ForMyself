@@ -28,6 +28,7 @@ export const STORAGE_KEYS = Object.freeze({
   passwordVault: 'my_password_vault_encrypted',
   passwordVaultCategories: 'my_password_vault_categories_encrypted',
   legacyPasswordVault: 'my_password_manager_data',
+  chatRecovery: 'my_chat_recovery_encrypted_v1',
   scheduleData: 'my_schedule_data_v2',
   homeWidgetSnapshot: 'my_home_widget_snapshot_v1',
   scheduleWidgetSnapshot: 'my_schedule_widget_snapshot'

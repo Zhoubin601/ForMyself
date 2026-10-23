@@ -1,0 +1,44 @@
+{
+  "date": "2026-10-19",
+  "artifact": "20261019-ForMyself-optional-unlock-v1-debug.apk",
+  "tests": [
+    {
+      "name": "installed package exactly matches delivered APK",
+      "passed": true,
+      "sha256": "FD3014670520E7D429018B023D2D10C56A87AA17A80023B7399B21F68B69F9B0"
+    },
+    {
+      "name": "fresh installation sets a master password and unified mode decrypts both modules",
+      "passed": true
+    },
+    {
+      "name": "actual full export file decrypts and contains both modules plus the v12 setting",
+      "passed": true
+    },
+    {
+      "name": "actual single-vault export file decrypts and contains the saved record",
+      "passed": true
+    },
+    {
+      "name": "actual FileReader import and confirmation restore the single-vault backup",
+      "passed": true
+    },
+    {
+      "name": "actual complete backup import restores the deleted chat record",
+      "passed": true
+    },
+    {
+      "name": "re-enabled unified mode restores the native cold-start lock screen",
+      "passed": true
+    }
+  ],
+  "errors": [],
+  "cleanup": {
+    "currentUser": "0",
+    "removedUser": "Success: removed user",
+    "forwarding": "emulator-5586 tcp:9364 localabstract:webview_devtools_remote_7610"
+  },
+  "user": "18",
+  "shareFocus": "  mCurrentFocus=Window{2a75501 u18 com.android.intentresolver/com.android.intentresolver.ChooserActivityLauncher}\r",
+  "runtimeErrors": []
+}

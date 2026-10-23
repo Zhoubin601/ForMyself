@@ -1,0 +1,75 @@
+{
+  "date": "2026-10-19",
+  "artifact": "20261019-ForMyself-optional-unlock-v1-debug.apk",
+  "tests": [
+    {
+      "name": "installed package exactly matches delivered APK",
+      "passed": true,
+      "sha256": "FD3014670520E7D429018B023D2D10C56A87AA17A80023B7399B21F68B69F9B0"
+    },
+    {
+      "name": "fresh installation sets a master password and unified mode decrypts both modules",
+      "passed": true
+    },
+    {
+      "name": "mode 2 cold start enters home with no master password in memory and both modules idle",
+      "passed": true
+    },
+    {
+      "name": "ordinary pages do not decrypt either module",
+      "passed": true
+    },
+    {
+      "name": "vault independently decrypts the persisted synthetic record",
+      "passed": true
+    },
+    {
+      "name": "chat loads through the existing authenticated session",
+      "passed": true
+    },
+    {
+      "name": "actual Android background lifecycle releases sensitive data while ordinary pages remain accessible",
+      "passed": true
+    }
+  ],
+  "errors": [
+    "AssertionError [ERR_ASSERTION]: [\"WebView\",\"Crash Reports\"]\n    at file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/docs/qa/optional-unlock-20261019/recheck-native.mjs:156:10"
+  ],
+  "cleanup": {
+    "currentUser": "0",
+    "removedUser": "Success: removed user",
+    "forwarding": "emulator-5586 tcp:9364 localabstract:webview_devtools_remote_7610"
+  },
+  "user": "16",
+  "backgroundBeforeResume": {
+    "focus": "  mCurrentFocus=Window{b050f8 u16 com.google.android.apps.nexuslauncher/com.google.android.apps.nexuslauncher.NexusLauncherActivity}\r",
+    "activity": {
+      "isActive": false
+    }
+  },
+  "backgroundAfterResume": {
+    "events": [
+      {
+        "state": {
+          "isActive": false
+        },
+        "at": 1792392005695
+      },
+      {
+        "state": {
+          "isActive": true
+        },
+        "at": 1792392006112
+      }
+    ],
+    "mode": false,
+    "delay": 0,
+    "sessionRevision": 1,
+    "hasPassword": false,
+    "status": {
+      "passwords": "idle",
+      "chat": "idle"
+    },
+    "messageCount": 0
+  }
+}

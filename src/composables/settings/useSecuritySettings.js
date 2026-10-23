@@ -1,5 +1,7 @@
-import { ref } from 'vue'
+import { onBeforeUnmount, ref, watch } from 'vue'
 import { useAuthStore } from '../../stores/auth'
+import { useSettingsStore } from '../../stores/settings.js'
+import { useProtectedAccessStore } from '../../stores/protectedAccess.js'
 import { usePasswordVaultStore } from '../../stores/passwordVault'
 import { useChatStore } from '../../features/chat/chatStore'
 import { appAlert, appToast } from '../../services/uiFeedback'
@@ -8,6 +10,25 @@ import { changeMasterPasswordTransaction } from '../../services/masterPasswordCh
 export function useSecuritySettings() {
 
   const authStore = useAuthStore()
+  const settingsStore = useSettingsStore()
+  const protectedAccess = useProtectedAccessStore()
+  const isUpdatingEntryVerification = ref(false)
+  const updateEntryVerification = async event => {
+    const requested = event.target.checked
+    event.target.checked = settingsStore.requireAppUnlock
+    if (isUpdatingEntryVerification.value) return
+    isUpdatingEntryVerification.value = true
+    try {
+      if (!requested && !await protectedAccess.authenticate({ force: true })) return
+      await settingsStore.updateRequireAppUnlock(requested)
+      appToast(requested ? '已开启进入应用验证' : '已关闭进入应用验证，密码库与聊天仍需验证')
+    } catch {
+      void appAlert('安全设置保存失败，已保留原设置。')
+    } finally {
+      event.target.checked = settingsStore.requireAppUnlock
+      isUpdatingEntryVerification.value = false
+    }
+  }
   const vaultStore = usePasswordVaultStore()
   const chatStore = useChatStore()
 
@@ -19,29 +40,45 @@ export function useSecuritySettings() {
   const confirmNewPwdInput = ref('')
 
   // --- 安全 ---
+  const passwordChangeBusy = ref(false)
   const applyPasswordChange = async () => {
-    const currentPassword = authStore.savedMasterPwd
+    if (passwordChangeBusy.value) return false
+    passwordChangeBusy.value = true
+    const requestedPassword = newPwdInput.value
     try {
-      const result = await changeMasterPasswordTransaction({
-        currentPassword,
-        newPassword: newPwdInput.value,
-        reencryptors: [vaultStore.reencrypt, chatStore.reencrypt],
-        commit: authStore.commitPasswordChange
+      return await protectedAccess.runOperation(['passwords', 'chat'], async (currentPassword, session) => {
+        const result = await changeMasterPasswordTransaction({
+          currentPassword,
+          newPassword: requestedPassword,
+          reencryptors: [vaultStore.reencrypt, chatStore.reencrypt],
+          commit: password => authStore.commitPasswordChange(password, session)
+        })
+        if (result.biometricAttempted && !result.biometricReady) {
+          appToast('主密码已更新；生物快捷解锁未启用，请下次用主密码解锁', { duration: 3600 })
+        } else {
+          appToast('主密码已重设', { tone: 'success' })
+        }
+        return true
       })
-      if (result.biometricAttempted && !result.biometricReady) {
-        appToast('主密码已更新；生物快捷解锁未启用，请下次用主密码解锁', { duration: 3600 })
-      } else {
-        appToast('主密码已重设', { tone: 'success' })
-      }
-      return true
     } catch (error) {
       const suffix = error.rollbackFailed ? '，且部分数据回滚失败，请立即保留现有应用数据并联系维护者' : ''
       appAlert(`主密码修改失败${suffix}`)
       return false
+    } finally {
+      passwordChangeBusy.value = false
     }
   }
 
+  const clearPasswordInputs = () => {
+    oldPwdInput.value = ''; newPwdInput.value = ''; confirmNewPwdInput.value = ''
+    isChangingPwd.value = false; isChangingPwdBio.value = false
+  }
+  watch(() => authStore.sessionRevision, clearPasswordInputs, { flush: 'sync' })
+  onBeforeUnmount(clearPasswordInputs)
+
   const changeMasterPassword = async () => {
+    if (passwordChangeBusy.value) return
+    if (!await authStore.unlockWithPassword(oldPwdInput.value, { unlockApp: false })) return appAlert('原密码错误')
     const err = await authStore.validatePasswordChange(oldPwdInput.value, newPwdInput.value, confirmNewPwdInput.value)
     if (err) return appAlert(err)
     if (!await applyPasswordChange()) return
@@ -67,6 +104,7 @@ export function useSecuritySettings() {
   const lockApp = () => { authStore.lockApp() }
 
   const enableBiometricUnlock = async () => {
+    if (!await protectedAccess.authenticate()) return
     if (await authStore.enableBiometricUnlock()) {
       appToast('指纹快捷解锁已启用', { tone: 'success' })
     } else {
@@ -76,11 +114,15 @@ export function useSecuritySettings() {
 
   return {
     authStore,
+    settingsStore,
+    isUpdatingEntryVerification,
+    updateEntryVerification,
     isChangingPwd,
     isChangingPwdBio,
     oldPwdInput,
     newPwdInput,
     confirmNewPwdInput,
+    passwordChangeBusy,
     changeMasterPassword,
     triggerBioChangePwd,
     changeMasterPasswordBio,

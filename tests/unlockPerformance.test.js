@@ -19,7 +19,7 @@ test('主密码通过后主页先绘制且受保护数据在随后加载', () =>
   const app = read('App.vue')
   assert.match(controller, /if \(ok\) await finishUnlock\(\)/)
   assert.match(controller, /afterTwoPaints\(start\)/)
-  assert.match(controller, /protectedDataStatus\.value = 'loading'/)
+  assert.match(read('stores/protectedAccess.js'), /status\[module\] = 'loading'/)
   assert.match(app, /protectedDataStatus !== 'ready'/)
   assert.match(app, /正在安全载入密码库/)
 })

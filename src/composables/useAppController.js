@@ -2,6 +2,7 @@ import { computed, nextTick, onBeforeUnmount, ref, onMounted, watch, watchEffect
 import { StatusBar } from '@capacitor/status-bar'
 import { LocalNotifications } from '@capacitor/local-notifications'
 import { useAuthStore } from '../stores/auth'
+import { useProtectedAccessStore } from '../stores/protectedAccess.js'
 import { App as CapacitorApp } from '@capacitor/app'
 import { useSettingsStore } from '../stores/settings'
 import { useMoodStore } from '../features/mood/moodStore'
@@ -39,13 +40,23 @@ export function useAppController() {
     chatUnreadCount.value > 99 ? '99+' : String(chatUnreadCount.value || '')
   ))
   const hasEnteredApp = ref(false)
-  const protectedDataStatus = ref('idle')
+  const protectedAccess = useProtectedAccessStore()
+  const protectedModule = computed(() => {
+    if (['passwords', 'chat'].includes(settingsStore.currentView)) return settingsStore.currentView
+    if (settingsStore.currentView === 'settings') {
+      if (['passwords', 'chat'].includes(settingsStore.settingsScope)) return settingsStore.settingsScope
+      if (settingsStore.settingsSection === 'labels') return 'passwords'
+    }
+    return null
+  })
+  const protectedDataStatus = computed(() => protectedModule.value
+    ? protectedAccess.status[protectedModule.value]
+    : (protectedAccess.status.passwords === 'ready' && protectedAccess.status.chat === 'ready' ? 'ready' : 'idle'))
   const isUnlocking = ref(false)
   const showBiometricSetup = ref(false)
   const isEnablingBiometric = ref(false)
   const appWrapperRef = ref(null)
-  const authLoadPromise = authStore.loadAuthData({ checkBiometric: false })
-  let protectedLoadPromise = null
+  const authLoadPromise = authStore.isDataLoaded ? Promise.resolve() : authStore.loadAuthData({ checkBiometric: false })
   let vaultStore = null
   let chatStore = null
   let stopUnreadWatch = null
@@ -59,7 +70,7 @@ export function useAppController() {
   }, { immediate: true })
 
   watch(() => authStore.needsBiometricSetup, needsSetup => {
-    if (needsSetup && !authStore.isLocked && !biometricSetupDismissed) showBiometricSetup.value = true
+    if (needsSetup && authStore.savedMasterPwd && !authStore.isLocked && !biometricSetupDismissed) showBiometricSetup.value = true
     if (!needsSetup) showBiometricSetup.value = false
   })
 
@@ -136,16 +147,15 @@ export function useAppController() {
     }, 350)
   }
 
-  const loadProtectedRuntime = async () => {
-    if (vaultStore && chatStore) return { vaultStore, chatStore }
-    const [vaultModule, chatModule] = await Promise.all([
-      import('../stores/passwordVault.js'),
-      import('../features/chat/chatStore.js')
-    ])
-    vaultStore = vaultModule.usePasswordVaultStore()
-    chatStore = chatModule.useChatStore()
-    if (!stopUnreadWatch) {
-      stopUnreadWatch = watch(() => chatStore.unreadCount, value => {
+  const loadProtectedRuntime = async modules => {
+    if (modules.includes('passwords') && !vaultStore) {
+      const vaultModule = await import('../stores/passwordVault.js')
+      vaultStore = vaultModule.usePasswordVaultStore()
+    }
+    if (modules.includes('chat') && !chatStore) {
+      const chatModule = await import('../features/chat/chatStore.js')
+      chatStore = chatModule.useChatStore()
+      stopUnreadWatch = watch(() => protectedAccess.status.chat === 'ready' ? chatStore.unreadCount : 0, value => {
         chatUnreadCount.value = value
       }, { immediate: true })
     }
@@ -154,7 +164,7 @@ export function useAppController() {
 
   const applyPendingChatRoute = () => {
     if (!settingsStore.warmHomeEnabled) { pendingChatRoute = null; return }
-    if (!chatStore || !pendingChatRoute) return
+    if (!chatStore || protectedAccess.status.chat !== 'ready' || !pendingChatRoute) return
     chatStore.materializeDueProactive(Date.now())
     chatStore.materializeDueFollowups(Date.now())
     chatStore.setPendingFocusProactiveId(pendingChatRoute.proactive)
@@ -231,12 +241,12 @@ export function useAppController() {
   }
 
   const resyncChatProactive = async () => {
-    if (settingsStore.warmHomeEnabled && (protectedDataStatus.value !== 'ready' || !chatStore)) return
+    if (settingsStore.warmHomeEnabled && (protectedAccess.status.chat !== 'ready' || !chatStore)) return
     const [{ syncChatProactiveNotifications }, { syncChatFollowupNotifications }] = await Promise.all([
       import('../features/chat/chatProactive.js'),
       import('../features/chat/chatFollowup.js')
     ])
-    if (settingsStore.warmHomeEnabled && (protectedDataStatus.value !== 'ready' || !chatStore)) return
+    if (settingsStore.warmHomeEnabled && (protectedAccess.status.chat !== 'ready' || !chatStore)) return
     if (settingsStore.warmHomeEnabled) {
       chatStore.materializeDueProactive(Date.now())
       chatStore.materializeDueFollowups(Date.now())
@@ -369,6 +379,7 @@ export function useAppController() {
     weightStore.$subscribe(queueHomeWidgetRefresh)
     debtStore.$subscribe(queueHomeWidgetRefresh)
     scheduleStore.$subscribe(queueScheduleRefresh)
+    queueStartupSync()
 
     try {
       LocalNotifications.addListener('localNotificationActionPerformed', ({ notification }) => {
@@ -376,7 +387,7 @@ export function useAppController() {
         if (url) openAppUrl(url)
       })
       LocalNotifications.addListener('localNotificationReceived', ({ extra }) => {
-        if (!chatStore) return
+        if (!chatStore || protectedAccess.status.chat !== 'ready') return
         if (extra?.followupId) chatStore.materializeDueFollowups(Date.now())
         else if (extra?.proactiveId) chatStore.materializeDueProactive(Date.now())
       })
@@ -396,7 +407,7 @@ export function useAppController() {
             settingsStore.flushPendingSettingsWrites()
           ]).catch(error => console.warn('进入后台时保存数据失败', error))
           if (!nativeActivityGuarded && shouldLockOnBackground(settingsStore.autoLockDelaySeconds)) {
-            authStore.lockApp()
+            authStore.expireSession({ lockApp: settingsStore.requireAppUnlock })
           }
           return
         }
@@ -406,13 +417,13 @@ export function useAppController() {
           !nativeActivityGuarded &&
           shouldLockOnResume(settingsStore.autoLockDelaySeconds, backgroundedAt, Date.now())
         ) {
-          authStore.lockApp()
+          authStore.expireSession({ lockApp: settingsStore.requireAppUnlock })
         }
         backgroundedAt = null
         if (moodStore.isDataLoaded) moodStore.autoFillMissingDays()
         void todoStore.load().then(() => todoStore.syncReminders())
         queueScheduleRefresh()
-        if (protectedDataStatus.value === 'ready') {
+        if (protectedAccess.status.chat === 'ready') {
           resyncChatProactive().catch(error => console.warn('恢复应用后同步温馨小家主动联系失败', error))
         }
 
@@ -441,43 +452,25 @@ export function useAppController() {
     }
   })
 
-  const ensureProtectedDataReady = async () => {
-    if (protectedDataStatus.value === 'ready') return true
-    if (protectedLoadPromise) return protectedLoadPromise
-    const password = authStore.savedMasterPwd
-    if (!password) return false
-    protectedDataStatus.value = 'loading'
-    markAppPerformance('protected:load-start')
-    protectedLoadPromise = (async () => {
-      try {
-        const runtime = await loadProtectedRuntime()
-        await Promise.all([
-          runtime.vaultStore.loadRecords(password),
-          runtime.chatStore.loadChatData(password)
-        ])
-        if (runtime.vaultStore.loadError || runtime.chatStore.loadError) throw new Error('PROTECTED_DATA_LOAD_FAILED')
-        protectedDataStatus.value = 'ready'
-        applyPendingChatRoute()
-        await authStore.finalizeLegacyMigration()
-        markAppPerformance('protected:ready')
-        measureAppPerformance('protected:load', 'protected:load-start', 'protected:ready')
-        queueStartupSync()
-        refreshReminderPersonalization().catch(() => {})
-        return true
-      } catch {
-        protectedDataStatus.value = 'error'
-        authStore.lockApp()
-        pwdInput.value = ''
-        appAlert('密码库或聊天数据无法安全解密，应用已重新锁定；请保留现有数据并重试', {
-          title: '受保护数据加载失败'
-        })
-        return false
-      } finally {
-        protectedLoadPromise = null
-      }
-    })()
-    return protectedLoadPromise
+  const ensureProtectedDataReady = async (modules = ['passwords', 'chat']) => {
+    const session = authStore.sessionRevision
+    const ok = await protectedAccess.ensureModules(modules)
+    if (!ok || session !== authStore.sessionRevision) return false
+    await loadProtectedRuntime(modules)
+    if (session !== authStore.sessionRevision) return false
+    if (modules.includes('chat')) {
+      applyPendingChatRoute()
+      resyncChatProactive().catch(() => {})
+    }
+    return true
   }
+
+  const retryProtectedModule = () => {
+    if (protectedModule.value && !authStore.isLocked) void ensureProtectedDataReady([protectedModule.value])
+  }
+  watch([protectedModule, () => authStore.isLocked, () => settingsStore.navigationRevision], ([module, locked]) => {
+    if (module && !locked) retryProtectedModule()
+  }, { immediate: true })
 
   const scheduleProtectedDataLoad = () => {
     const start = () => ensureProtectedDataReady().catch(() => {})
@@ -490,8 +483,8 @@ export function useAppController() {
     afterNextPaint().then(() => {
       markAppPerformance('unlock:home-paint')
       measureAppPerformance('unlock:to-home-paint', 'unlock:start', 'unlock:home-paint')
-      scheduleProtectedDataLoad()
-      showBiometricSetup.value = authStore.needsBiometricSetup && !biometricSetupDismissed
+      if (settingsStore.requireAppUnlock) scheduleProtectedDataLoad()
+      showBiometricSetup.value = Boolean(authStore.savedMasterPwd) && authStore.needsBiometricSetup && !biometricSetupDismissed
     })
   }
 
@@ -538,6 +531,7 @@ export function useAppController() {
     if (isEnablingBiometric.value) return
     isEnablingBiometric.value = true
     try {
+      if (!await protectedAccess.authenticate()) return
       if (await authStore.enableBiometricUnlock()) {
         showBiometricSetup.value = false
         appToast('指纹快捷解锁已启用', { tone: 'success' })
@@ -564,6 +558,9 @@ export function useAppController() {
     isUnlocking,
     moduleSettingsViews,
     protectedDataStatus,
+    protectedModule,
+    protectedAccess,
+    retryProtectedModule,
     pwdInput,
     setMasterPassword,
     settingsStore,

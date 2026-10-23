@@ -1,0 +1,65 @@
+{
+  "files": 102,
+  "largest": [
+    {
+      "file": "src/features/chat/ChatView.vue",
+      "lines": 1695
+    },
+    {
+      "file": "src/components/HomeView.vue",
+      "lines": 1129
+    },
+    {
+      "file": "src/features/chat/chatCompanion.js",
+      "lines": 995
+    },
+    {
+      "file": "src/features/schedule/ScheduleView.vue",
+      "lines": 918
+    },
+    {
+      "file": "src/components/DebtListView.vue",
+      "lines": 771
+    },
+    {
+      "file": "src/features/chat/chatRecords.js",
+      "lines": 703
+    },
+    {
+      "file": "src/styles/app.css",
+      "lines": 694
+    },
+    {
+      "file": "src/composables/settings/useChatSettings.js",
+      "lines": 639
+    },
+    {
+      "file": "src/composables/useAppController.js",
+      "lines": 551
+    },
+    {
+      "file": "src/styles/settings.css",
+      "lines": 549
+    },
+    {
+      "file": "src/features/chat/chatStore.js",
+      "lines": 543
+    },
+    {
+      "file": "src/features/mood/MoodView.vue",
+      "lines": 529
+    },
+    {
+      "file": "src/components/PasswordVaultView.vue",
+      "lines": 455
+    },
+    {
+      "file": "src/features/mood/moodStore.js",
+      "lines": 441
+    },
+    {
+      "file": "src/stores/settings.js",
+      "lines": 423
+    }
+  ]
+}

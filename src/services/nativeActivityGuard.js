@@ -1,6 +1,7 @@
 const DEFAULT_NATIVE_ACTIVITY_TTL_MS = 5 * 60 * 1000
 
 let guardedUntil = 0
+let guardRevision = 0
 
 export function beginNativeActivityGuard(
   now = Date.now(),
@@ -11,6 +12,7 @@ export function beginNativeActivityGuard(
     ? ttlMs
     : DEFAULT_NATIVE_ACTIVITY_TTL_MS
   guardedUntil = safeNow + safeTtl
+  guardRevision += 1
 }
 
 export function isNativeActivityGuardActive(now = Date.now()) {
@@ -25,4 +27,16 @@ export function consumeNativeActivityGuard(now = Date.now()) {
 
 export function resetNativeActivityGuard() {
   guardedUntil = 0
+  guardRevision += 1
+}
+
+export async function withNativeActivityGuard(action) {
+  beginNativeActivityGuard()
+  const revision = guardRevision
+  try {
+    return await action()
+  } finally {
+    // Some devices deliver the resume event just after the biometric promise resolves.
+    setTimeout(() => { if (revision === guardRevision) consumeNativeActivityGuard() }, 500)
+  }
 }

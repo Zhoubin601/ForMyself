@@ -1,0 +1,43 @@
+{
+  "date": "2026-10-19",
+  "verdict": "NOT_ACCEPTED",
+  "apkSha256": "FD3014670520E7D429018B023D2D10C56A87AA17A80023B7399B21F68B69F9B0",
+  "projectCheck": {
+    "nodePassed": 260,
+    "componentPassed": 68,
+    "lintErrors": 0,
+    "lintWarnings": 55,
+    "typecheck": "passed",
+    "build": "passed"
+  },
+  "browserChecksPassed": 13,
+  "nativeChecksPassed": [
+    "installed package exactly matches delivered APK",
+    "fresh installation sets a master password and unified mode decrypts both modules",
+    "mode 2 cold start enters home with no master password in memory and both modules idle",
+    "ordinary pages do not decrypt either module",
+    "vault independently decrypts the persisted synthetic record",
+    "chat loads through the existing authenticated session",
+    "actual Android background lifecycle releases sensitive data while ordinary pages remain accessible",
+    "actual full export file decrypts and contains both modules plus the v12 setting",
+    "actual single-vault export file decrypts and contains the saved record",
+    "actual FileReader import and confirmation restore the single-vault backup",
+    "actual complete backup import restores the deleted chat record",
+    "re-enabled unified mode restores the native cold-start lock screen"
+  ],
+  "nativeDriverErrorsRetained": [
+    "AssertionError [ERR_ASSERTION]: [\"WebView\",\"Crash Reports\"]\n    at file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/docs/qa/optional-unlock-20261019/recheck-native.mjs:156:10"
+  ],
+  "backupRetryErrors": [],
+  "additionalStorageFaultTests": {
+    "passed": 0,
+    "failed": 2
+  },
+  "productionCodeChangedDuringReview": false,
+  "apkReplacedDuringReview": false,
+  "cleanup": {
+    "currentUser": "0",
+    "users": "Users:\n\tUserInfo{0:Owner:4c13} running\n\tUserInfo{10:Todo-v4-QA:410}\n\tUserInfo{11:Todo-Reboot-QA:8410}",
+    "adbForwarding": ""
+  }
+}

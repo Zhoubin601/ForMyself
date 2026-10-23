@@ -1,0 +1,24 @@
+{
+  "date": "2026-10-19",
+  "verdict": "PASS_FOR_TESTED_SCENARIOS",
+  "apk": "20261019-ForMyself-optional-unlock-v2-debug.apk",
+  "bytes": 12194052,
+  "sha256": "D24DA6268374C915AC3886CE4C9DE93F2E7EA0142B66080928D2DB616CDE17A6",
+  "artifactFilesCompared": 49,
+  "nodeTests": 260,
+  "componentTests": 79,
+  "newStorageTests": 11,
+  "originalRegressionTests": 2,
+  "browserScenarios": 13,
+  "nativeScenarios": 20,
+  "nativeRuntimeErrors": [],
+  "cleanup": {
+    "currentUser": "0",
+    "users": "Users:\n\tUserInfo{0:Owner:4c13} running\n\tUserInfo{10:Todo-v4-QA:410}\n\tUserInfo{11:Todo-Reboot-QA:8410}",
+    "adbForwarding": ""
+  },
+  "limitations": [
+    "No physical-device biometric retest",
+    "If both filesystem and preference storage are unwritable, only in-process ciphertext recovery is available until persistence succeeds"
+  ]
+}

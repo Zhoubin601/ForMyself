@@ -15,6 +15,7 @@ import {
 
 export const useAuthStore = defineStore('auth', () => {
   const isLocked = ref(true)
+  const sessionRevision = ref(0)
   const hasMasterPassword = ref(false)
   const savedMasterPwd = ref('')
   const hasBiometric = ref(false)
@@ -132,7 +133,8 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  const unlockWithPassword = async inputPassword => {
+  const unlockWithPassword = async (inputPassword, { unlockApp = true } = {}) => {
+    const revision = sessionRevision.value
     const password = String(inputPassword || '')
     const valid = verifierRecord.value
       ? await verifyMasterPassword(password, verifierRecord.value)
@@ -140,12 +142,14 @@ export const useAuthStore = defineStore('auth', () => {
     if (!valid) return false
 
     if (!verifierRecord.value) await saveVerifier(password)
+    if (revision !== sessionRevision.value) return false
     savedMasterPwd.value = password
-    isLocked.value = false
+    if (unlockApp) isLocked.value = false
     return true
   }
 
-  const unlockWithBiometric = async () => {
+  const unlockWithBiometric = async ({ unlockApp = true } = {}) => {
+    const revision = sessionRevision.value
     try {
       let password
       if (biometricCredentialReady.value) {
@@ -163,8 +167,9 @@ export const useAuthStore = defineStore('auth', () => {
         biometricCredentialReady.value = false
         return false
       }
+      if (revision !== sessionRevision.value) return false
       savedMasterPwd.value = password
-      isLocked.value = false
+      if (unlockApp) isLocked.value = false
       return true
     } catch (error) {
       const retryableCodes = new Set(['10', '11', '15', '16', '17'])
@@ -199,6 +204,7 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   const authorizeBiometricPasswordChange = async () => {
+    const revision = sessionRevision.value
     if (!biometricCredentialReady.value) return false
     try {
       const password = await secureCredentials.getMasterPassword({
@@ -206,7 +212,8 @@ export const useAuthStore = defineStore('auth', () => {
         reason: '验证生物信息以重设主密码'
       })
       const valid = verifierRecord.value && await verifyMasterPassword(password, verifierRecord.value)
-      if (!valid) return false
+      if (!valid || revision !== sessionRevision.value) return false
+      savedMasterPwd.value = password
       biometricChangeAuthorizedUntil = Date.now() + 2 * 60 * 1000
       return true
     } catch {
@@ -222,10 +229,10 @@ export const useAuthStore = defineStore('auth', () => {
     return null
   }
 
-  const commitPasswordChange = async newPassword => {
+  const commitPasswordChange = async (newPassword, revision = sessionRevision.value) => {
     const shouldRefreshBiometric = biometricCredentialReady.value
     await saveVerifier(newPassword)
-    savedMasterPwd.value = newPassword
+    if (revision === sessionRevision.value) savedMasterPwd.value = newPassword
     legacyPassword = ''
     isLegacyPasswordPending.value = false
     await preferenceStorage.remove({ key: STORAGE_KEYS.legacyMasterPassword }).catch(() => {})
@@ -240,14 +247,23 @@ export const useAuthStore = defineStore('auth', () => {
     return provisionBiometricCredential(savedMasterPwd.value)
   }
 
-  const lockApp = () => {
-    isLocked.value = true
+  const expireSession = ({ lockApp = true } = {}) => {
+    sessionRevision.value += 1
+    if (lockApp) isLocked.value = true
     savedMasterPwd.value = ''
     biometricChangeAuthorizedUntil = 0
   }
 
+  const lockApp = () => expireSession()
+  const enterWithoutUnlock = () => {
+    if (isDataLoaded.value && hasMasterPassword.value && !loadError.value) isLocked.value = false
+  }
+
   return {
     isLocked,
+    sessionRevision,
+    expireSession,
+    enterWithoutUnlock,
     hasMasterPassword,
     savedMasterPwd,
     hasBiometric,

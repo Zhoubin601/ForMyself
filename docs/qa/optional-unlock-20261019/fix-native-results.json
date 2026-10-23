@@ -1,0 +1,129 @@
+{
+  "date": "2026-10-19",
+  "artifact": "20261019-ForMyself-optional-unlock-v2-debug.apk",
+  "tests": [
+    {
+      "name": "installed package exactly matches delivered APK",
+      "passed": true,
+      "sha256": "D24DA6268374C915AC3886CE4C9DE93F2E7EA0142B66080928D2DB616CDE17A6"
+    },
+    {
+      "name": "fresh installation sets a master password and unified mode decrypts both modules",
+      "passed": true
+    },
+    {
+      "name": "mode 2 cold start enters home with no master password in memory and both modules idle",
+      "passed": true
+    },
+    {
+      "name": "ordinary pages do not decrypt either module",
+      "passed": true
+    },
+    {
+      "name": "vault independently decrypts the persisted synthetic record",
+      "passed": true
+    },
+    {
+      "name": "chat loads through the existing authenticated session",
+      "passed": true
+    },
+    {
+      "name": "actual Android background lifecycle releases sensitive data while ordinary pages remain accessible",
+      "passed": true
+    },
+    {
+      "name": "native password-change failure rolls both ciphertexts back to original password",
+      "passed": true,
+      "failedKey": "my_password_vault_categories_encrypted"
+    },
+    {
+      "name": "native password-change failure rolls both ciphertexts back to original password",
+      "passed": true,
+      "failedKey": "my_password_vault_encrypted"
+    },
+    {
+      "name": "rolled-back vault remains readable after actual process restart",
+      "passed": true
+    },
+    {
+      "name": "native failed chat save displays warning and journals encrypted recovery data",
+      "passed": true
+    },
+    {
+      "name": "failed-save lock still clears plaintext and master password",
+      "passed": true
+    },
+    {
+      "name": "actual process restart restores failed-save message from journal and saves it successfully",
+      "passed": true
+    },
+    {
+      "name": "native retry button keeps warning on failure and clears it after successful save",
+      "passed": true
+    },
+    {
+      "name": "actual full export file decrypts and contains both modules plus the v12 setting",
+      "passed": true
+    },
+    {
+      "name": "actual single-vault export file decrypts and contains the saved record",
+      "passed": true
+    },
+    {
+      "name": "actual FileReader import and confirmation restore the single-vault backup",
+      "passed": true
+    },
+    {
+      "name": "actual complete backup import restores the deleted chat record",
+      "passed": true
+    },
+    {
+      "name": "successful real UI password change rejects old password and accepts new password",
+      "passed": true
+    },
+    {
+      "name": "re-enabled unified mode restores the native cold-start lock screen",
+      "passed": true
+    }
+  ],
+  "errors": [],
+  "cleanup": {
+    "currentUser": "0",
+    "removedUser": "Success: removed user",
+    "forwarding": ""
+  },
+  "user": "19",
+  "backgroundBeforeResume": {
+    "focus": "  mCurrentFocus=Window{2406cc u19 com.google.android.apps.nexuslauncher/com.google.android.apps.nexuslauncher.NexusLauncherActivity}\r",
+    "activity": {
+      "isActive": true
+    }
+  },
+  "backgroundAfterResume": {
+    "events": [
+      {
+        "state": {
+          "isActive": false
+        },
+        "at": 1792393480103
+      },
+      {
+        "state": {
+          "isActive": true
+        },
+        "at": 1792393480111
+      }
+    ],
+    "mode": false,
+    "delay": 0,
+    "sessionRevision": 1,
+    "hasPassword": false,
+    "status": {
+      "passwords": "idle",
+      "chat": "idle"
+    },
+    "messageCount": 0
+  },
+  "shareFocus": "  mCurrentFocus=Window{2455763 u19 com.android.intentresolver/com.android.intentresolver.ChooserActivityLauncher}\r",
+  "runtimeErrors": []
+}

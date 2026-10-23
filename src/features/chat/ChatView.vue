@@ -67,6 +67,13 @@ const props = defineProps({
 })
 
 const chatStore = useChatStore()
+const isRetryingSave = ref(false)
+const retrySave = async () => {
+  if (isRetryingSave.value) return
+  isRetryingSave.value = true
+  try { await chatStore.flush() } catch { /* The save warning remains visible until persistence succeeds. */ }
+  finally { isRetryingSave.value = false }
+}
 const settingsStore = useSettingsStore()
 const moodStore = useMoodStore()
 const weightStore = useWeightStore()
@@ -1110,6 +1117,11 @@ onBeforeUnmount(() => {
     <div v-if="chatStore.loadError" class="chat-warning">
       <strong>聊天数据暂时无法读取</strong>
       <span>{{ chatStore.loadError }}</span>
+    </div>
+    <div v-if="chatStore.saveError" class="chat-warning" role="alert">
+      <strong>聊天尚未保存</strong>
+      <span>{{ chatStore.saveError }}</span>
+      <button class="text-link" :disabled="isRetryingSave" @click="retrySave">{{ isRetryingSave ? '正在重试…' : '重试保存' }}</button>
     </div>
 
     <main

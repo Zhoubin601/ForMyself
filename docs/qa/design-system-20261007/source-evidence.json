@@ -1,0 +1,368 @@
+{
+  "date": "2026-10-07",
+  "timezone": "Asia/Shanghai",
+  "commit": "b2d4fdf",
+  "initialGitStatus": " M docs/analysis-notes.md\n M docs/plan.md\n M docs/questions.md\n M docs/source-notes.md\n?? docs/20261003-app-audit-v1.md\n?? docs/20261003-daily-todo-v8-release.md\n?? docs/qa/app-audit-20261003/\n?? docs/qa/design-system-20261007/\n",
+  "rawAggregateSha256Before": "4b5c71d8ec0b8ea72825aa061549df459ac97fc951fe6b3418e9e84480dd73e9",
+  "sources": [
+    {
+      "file": "package.json",
+      "sha256": "6cce87d5daaca4e9e22594f290bf82ee7e5ea7662e512f03ec0bc1f1ccb463ab"
+    },
+    {
+      "file": "package-lock.json",
+      "sha256": "6dd0a75f4b80bcf27214d4579dc35facdc185ab1cc1d00eafc50b5e6361a11bd"
+    },
+    {
+      "file": "index.html",
+      "sha256": "94e1336e105dad456f68533d202ae2f9de848ad9033887e2cfa35ca58145d16c"
+    },
+    {
+      "file": "src/main.js",
+      "sha256": "e1c0a78cc38ed0a05458a0fbe0961be18405dcd7e2ccf976c751129f84aeed1b"
+    },
+    {
+      "file": "src/App.vue",
+      "sha256": "3e2e52f784ce76e62093727fdf562c87d792d3faf0f67a8d84026ee619176bf8"
+    },
+    {
+      "file": "src/styles/app.css",
+      "sha256": "b098b27938f4fd188788242591dfe620d1214b2965429f6961f3717b50e80805"
+    },
+    {
+      "file": "src/styles/settings.css",
+      "sha256": "2833555c18432e63ce3749d4207db6267f1c1d69dad9b59f0b80c1471203b50f"
+    },
+    {
+      "file": "src/services/themeSystem.js",
+      "sha256": "cd8429c82902fb14269864ca4bc321f92d2c92a024902e89839e5ebeef6012ab"
+    },
+    {
+      "file": "src/composables/useAppController.js",
+      "sha256": "de648afdf939a5fc8afa51d8e74a928ed44dc750c75138e107559c67547c02f2"
+    },
+    {
+      "file": "src/components/HomeView.vue",
+      "sha256": "a6b64062b3002f44b57c803ba0137cb6c4f856f947e63fdc860ab92004da15b7"
+    },
+    {
+      "file": "src/components/WeightView.vue",
+      "sha256": "095bb68947786e16e4842187a66f8ff6e34fa84a013631bbcad126c4ca2bfbf2"
+    },
+    {
+      "file": "src/components/DebtListView.vue",
+      "sha256": "4698cf5c2a38daad6e9c06fea270aaf4fb8fc3317c3122a6812dd5a00df74edd"
+    },
+    {
+      "file": "src/components/PasswordVaultView.vue",
+      "sha256": "ff6f7a4fa2a80eb215a4d079aa539ff7604e274eade71a6272ff995adff698e6"
+    },
+    {
+      "file": "src/components/AppFeedbackHost.vue",
+      "sha256": "d36d26089aad8be8942001bf6dd80afc5451490ab38bbf568044ac4174faf986"
+    },
+    {
+      "file": "src/components/AppDateField.vue",
+      "sha256": "883ae6a40490c01333b903f137529b7ef83c7a2b3795580f7143daefc33ef220"
+    },
+    {
+      "file": "src/components/AppTimeField.vue",
+      "sha256": "7bf615113e9e3346a579b129f3b90cafb5c984ee8bfdad73f3763a2f05067733"
+    },
+    {
+      "file": "src/components/AppColorPalette.vue",
+      "sha256": "d174075a8c1573793d955f050361fccd27f18817c7b758e5f976159fc0120511"
+    },
+    {
+      "file": "src/components/CommonNoteField.vue",
+      "sha256": "e06ae32559a4b1a09254df671273520fdb28dccdc04097913abefd44ac87c4b7"
+    },
+    {
+      "file": "src/components/settings/SettingsOverview.vue",
+      "sha256": "adf1bd0adad61375fdf1f80249129e273b1639f5ca4954a38154a2a21913f0f1"
+    },
+    {
+      "file": "src/components/settings/SettingsAppearance.vue",
+      "sha256": "60995eff439de45c38d41baeb994024d56941bec0ecd1f5b496ef5524b0ec491"
+    },
+    {
+      "file": "src/features/todo/TodoProgressCard.vue",
+      "sha256": "f36283b0a3944dfced7c135250ae7d5b4b36d5d1f5b9929909e621e807903dbf"
+    },
+    {
+      "file": "src/features/todo/TodoView.vue",
+      "sha256": "c3d48a1ee5e9e048114ee9b2474d03b50da29be42fbf490d28b3df38c17f2fa5"
+    },
+    {
+      "file": "src/features/mood/MoodView.vue",
+      "sha256": "82eb330dfa0883d02dfbdc95b95af6b10410545d2a1bbe24ee12312683401b1e"
+    },
+    {
+      "file": "src/features/schedule/ScheduleView.vue",
+      "sha256": "b6ad0a4441003fc8637d65ffafc0960b24fb8bbeb8115a082d38df0fb4735928"
+    },
+    {
+      "file": "src/features/chat/ChatView.vue",
+      "sha256": "50b4d79a4a9ffcdc0769c10805f1f3429fb5ce88ff98123352ec193a9d3fae0c"
+    },
+    {
+      "file": "src/components/MonthlyReportView.vue",
+      "sha256": "95baa90a89dbd499b35771e362d94b816dcc152cc2f6c4c2325cc6b73e17b455"
+    },
+    {
+      "file": "android/app/src/main/java/com/yubin/formyself/TodoWidgetSpacing.java",
+      "sha256": "778727feee03218709e2d624288672f0a86f2d380d5c04fa7ed467629735ddc5"
+    },
+    {
+      "file": "android/app/src/main/java/com/yubin/formyself/TodoWidgetAnimation.java",
+      "sha256": "870ede8cb347ae341858e37ae7d691ccdf8b69866a3fc24b9abe91cd6b41ef60"
+    },
+    {
+      "file": "docs/20261003-app-audit-v1.md",
+      "sha256": "1e514c93768689c89938cb9d6352dacbbf8287137c428d28219bc23600f9ebfb"
+    },
+    {
+      "file": "docs/20261002-todo-v8-verification.md",
+      "sha256": "804fe01746bec76252ae36251a2c5a4952ff8dad7b1354b38b275a248132e139"
+    }
+  ],
+  "screenshots": [
+    {
+      "file": "docs/qa/app-audit-20261003/390-home.png",
+      "sha256": "2835d9014f435358323890b34fd0f3619110abfc80b2d427e1df03523c108f35",
+      "captured": "2026-10-03",
+      "reviewed": "2026-10-07",
+      "kind": "historical synthetic-data screenshots"
+    },
+    {
+      "file": "docs/qa/app-audit-20261003/390-todo-filled.png",
+      "sha256": "f744a9756b32a91ce08bd1ee25de20fa7275868c4f81cc35fa0629876cd7b5c3",
+      "captured": "2026-10-03",
+      "reviewed": "2026-10-07",
+      "kind": "historical synthetic-data screenshots"
+    },
+    {
+      "file": "docs/qa/app-audit-20261003/390-settings.png",
+      "sha256": "b9a7e2c9f240ee14c95b2eda47f70f3a7d4918571d4881ce77cc143eee407475",
+      "captured": "2026-10-03",
+      "reviewed": "2026-10-07",
+      "kind": "historical synthetic-data screenshots"
+    },
+    {
+      "file": "docs/qa/app-audit-20261003/390-mood.png",
+      "sha256": "b15769f7014da8d454936640f50543bc66572642a576c4d5680394a9fbabdfa1",
+      "captured": "2026-10-03",
+      "reviewed": "2026-10-07",
+      "kind": "historical synthetic-data screenshots"
+    },
+    {
+      "file": "docs/qa/app-audit-20261003/390-schedule.png",
+      "sha256": "cbeb72623524e80c27d3c6a448915b1b664e0f5f32c9054000e508a84b4658dd",
+      "captured": "2026-10-03",
+      "reviewed": "2026-10-07",
+      "kind": "historical synthetic-data screenshots"
+    },
+    {
+      "file": "docs/qa/app-audit-20261003/390-passwords.png",
+      "sha256": "9c92eb983ca176682fb30e309df105e8db162ccb14438da410f5716392620262",
+      "captured": "2026-10-03",
+      "reviewed": "2026-10-07",
+      "kind": "historical synthetic-data screenshots"
+    },
+    {
+      "file": "docs/qa/app-audit-20261003/390-weight.png",
+      "sha256": "35629ec7a859bcad6b941176e90ba849b2ef3c6f9167bff3d0ebbedad39f96a8",
+      "captured": "2026-10-03",
+      "reviewed": "2026-10-07",
+      "kind": "historical synthetic-data screenshots"
+    }
+  ],
+  "libraries": [
+    {
+      "name": "vue",
+      "declared": "^3.5.32",
+      "installed": "3.5.38"
+    },
+    {
+      "name": "pinia",
+      "declared": "^3.0.4",
+      "installed": "3.0.4"
+    },
+    {
+      "name": "lucide-vue-next",
+      "declared": "^0.577.0",
+      "installed": "0.577.0"
+    },
+    {
+      "name": "morphicons",
+      "declared": "^1.7.1",
+      "installed": "1.7.1"
+    },
+    {
+      "name": "@capacitor/core",
+      "declared": "^8.3.1",
+      "installed": "8.4.1"
+    },
+    {
+      "name": "vite",
+      "declared": "^8.0.10",
+      "installed": "8.0.16"
+    }
+  ],
+  "themes": {
+    "cloud": {
+      "--theme-primary": "#4A8FD8",
+      "--theme-primary-rgb": "74, 143, 216",
+      "--theme-primary-strong": "#3E77B4",
+      "--theme-primary-strong-rgb": "62, 119, 180",
+      "--theme-on-primary": "#FFFFFF",
+      "--theme-primary-soft": "#E6EFFA",
+      "--theme-primary-soft-strong": "#CCE0F4",
+      "--theme-surface-tint": "#F4F8FD",
+      "--theme-border": "#D7E6F6",
+      "--theme-gradient-start": "#4D82BA",
+      "--theme-gradient-end": "#37699E",
+      "--theme-soft": "#E6EFFA",
+      "--theme-surface": "#F4F8FD",
+      "--theme-gradient": "linear-gradient(145deg, #4D82BA, #37699E)",
+      "--primary": "#3E77B4",
+      "--primary-focus": "#386BA2"
+    },
+    "peach": {
+      "--theme-primary": "#E4778F",
+      "--theme-primary-rgb": "228, 119, 143",
+      "--theme-primary-strong": "#A55668",
+      "--theme-primary-strong-rgb": "165, 86, 104",
+      "--theme-on-primary": "#FFFFFF",
+      "--theme-primary-soft": "#FBECEF",
+      "--theme-primary-soft-strong": "#F7D9E0",
+      "--theme-surface-tint": "#FDF7F8",
+      "--theme-border": "#F9E1E6",
+      "--theme-gradient-start": "#AC6474",
+      "--theme-gradient-end": "#914C5C",
+      "--theme-soft": "#FBECEF",
+      "--theme-surface": "#FDF7F8",
+      "--theme-gradient": "linear-gradient(145deg, #AC6474, #914C5C)",
+      "--primary": "#A55668",
+      "--primary-focus": "#954D5E"
+    },
+    "mint": {
+      "--theme-primary": "#479B84",
+      "--theme-primary-rgb": "71, 155, 132",
+      "--theme-primary-strong": "#3B816E",
+      "--theme-primary-strong-rgb": "59, 129, 110",
+      "--theme-on-primary": "#FFFFFF",
+      "--theme-primary-soft": "#E5F1EE",
+      "--theme-primary-soft-strong": "#CBE3DD",
+      "--theme-surface-tint": "#F4F9F8",
+      "--theme-border": "#D7E9E4",
+      "--theme-gradient-start": "#4B8B7A",
+      "--theme-gradient-end": "#347261",
+      "--theme-soft": "#E5F1EE",
+      "--theme-surface": "#F4F9F8",
+      "--theme-gradient": "linear-gradient(145deg, #4B8B7A, #347261)",
+      "--primary": "#3B816E",
+      "--primary-focus": "#357463"
+    },
+    "lavender": {
+      "--theme-primary": "#8878C4",
+      "--theme-primary-rgb": "136, 120, 196",
+      "--theme-primary-strong": "#796BAE",
+      "--theme-primary-strong-rgb": "121, 107, 174",
+      "--theme-on-primary": "#FFFFFF",
+      "--theme-primary-soft": "#EEECF7",
+      "--theme-primary-soft-strong": "#DED9EE",
+      "--theme-surface-tint": "#F8F7FB",
+      "--theme-border": "#E5E1F2",
+      "--theme-gradient-start": "#8477B4",
+      "--theme-gradient-end": "#6A5E99",
+      "--theme-soft": "#EEECF7",
+      "--theme-surface": "#F8F7FB",
+      "--theme-gradient": "linear-gradient(145deg, #8477B4, #6A5E99)",
+      "--primary": "#796BAE",
+      "--primary-focus": "#6D609D"
+    }
+  },
+  "contrastPairs": [
+    {
+      "name": "原正文/白",
+      "fg": "#1D1D1F",
+      "bg": "#FFFFFF",
+      "ratio": 16.83
+    },
+    {
+      "name": "原次文字/白",
+      "fg": "#7D8491",
+      "bg": "#FFFFFF",
+      "ratio": 3.763
+    },
+    {
+      "name": "原次文字/页面",
+      "fg": "#7D8491",
+      "bg": "#F6F8FB",
+      "ratio": 3.537
+    },
+    {
+      "name": "原品牌蓝/白",
+      "fg": "#4A8FD8",
+      "bg": "#FFFFFF",
+      "ratio": 3.381
+    },
+    {
+      "name": "建议次文字/白",
+      "fg": "#626D7D",
+      "bg": "#FFFFFF",
+      "ratio": 5.246
+    },
+    {
+      "name": "建议次文字/页面",
+      "fg": "#626D7D",
+      "bg": "#F6F8FB",
+      "ratio": 4.931
+    },
+    {
+      "name": "危险文字/白",
+      "fg": "#C44343",
+      "bg": "#FFFFFF",
+      "ratio": 4.963
+    },
+    {
+      "name": "成功文字/浅绿",
+      "fg": "#23734F",
+      "bg": "#EAF8F1",
+      "ratio": 5.278
+    },
+    {
+      "name": "警告文字/浅黄",
+      "fg": "#8B5610",
+      "bg": "#FFF5E5",
+      "ratio": 5.658
+    },
+    {
+      "name": "待办白/背景",
+      "fg": "#FFFFFF",
+      "bg": "#19191F",
+      "ratio": 17.497
+    },
+    {
+      "name": "待办白/填充",
+      "fg": "#FFFFFF",
+      "bg": "#315956",
+      "ratio": 7.795
+    }
+  ],
+  "skills": [
+    {
+      "name": "design-system",
+      "file": "C:/Users/a3185/.agents/skills/design-system/SKILL.md",
+      "version": "1.0.0",
+      "use": "三层 tokens、组件规范"
+    },
+    {
+      "name": "ui-ux-pro-max",
+      "file": "C:/Users/a3185/.agents/skills/ui-ux-pro-max/SKILL.md",
+      "version": "资料未声明",
+      "use": "本地焦点/语义控件检索与交互审核"
+    }
+  ]
+}

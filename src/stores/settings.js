@@ -9,6 +9,7 @@ import { preferenceStorage as Preferences } from '../platform/storage/preference
 import { STORAGE_KEYS } from '../platform/storage/keys.js'
 import { secureCredentials } from '../platform/security/secureCredentials.js'
 import { normalizeAutoLockDelay } from '../services/autoLockPolicy.js'
+import { normalizeSecuritySettings } from '../services/securitySettings.js'
 import {
   DEFAULT_REMINDER_SETTINGS,
   EMPTY_NOTIFICATION_AI_CACHE,
@@ -58,7 +59,28 @@ export const useSettingsStore = defineStore('settings', () => {
   const aiProviderUrl = ref('https://api.deepseek.com')
   const aiApiKey = ref('')
   const aiModel = ref('deepseek-chat')
+  const apiKeyStorageStatus = ref('loading')
+  let applyingApiKey = false
+  let aiSettingsReady = false
+  let aiProviderLoaded = false
+  let aiSettingsLoadPromise = null
   const autoLockDelaySeconds = ref(0)
+  const requireAppUnlock = ref(true)
+  let securityLoadPromise = null
+  const loadSecuritySettings = () => {
+    if (!securityLoadPromise) securityLoadPromise = (async () => {
+      try {
+        const result = await Preferences.get({ key: STORAGE_KEYS.securitySettings })
+        const value = JSON.parse(result.value || '{}')
+        requireAppUnlock.value = normalizeSecuritySettings(value).requireAppUnlock
+        autoLockDelaySeconds.value = normalizeAutoLockDelay(value.autoLockDelaySeconds)
+      } catch {
+        requireAppUnlock.value = true
+        autoLockDelaySeconds.value = 0
+      }
+    })()
+    return securityLoadPromise
+  }
   const notificationSettings = ref(normalizeReminderSettings(DEFAULT_REMINDER_SETTINGS))
   const notificationAiContent = ref(normalizeNotificationAiCache(EMPTY_NOTIFICATION_AI_CACHE))
   const targetWeight = ref(null)
@@ -68,8 +90,8 @@ export const useSettingsStore = defineStore('settings', () => {
   const pendingPreferenceWrites = new Map()
   const pendingPreferenceTimers = new Map()
   let pendingApiKey = null
-  let apiKeyWriteTimer = null
-  let apiKeyWriteChain = Promise.resolve()
+  let apiKeyWritePromise = null
+  let apiKeyRevision = 0
 
   const flushPreferenceWrite = async key => {
     const pending = pendingPreferenceWrites.get(key)
@@ -89,28 +111,116 @@ export const useSettingsStore = defineStore('settings', () => {
       flushPreferenceWrite(key).catch(error => console.warn(`保存设置 ${key} 失败`, error))
     }, delay))
   }
-  const flushApiKeyWrite = () => {
-    if (pendingApiKey === null || !Capacitor.isNativePlatform()) return apiKeyWriteChain
-    const value = pendingApiKey
-    pendingApiKey = null
-    apiKeyWriteChain = apiKeyWriteChain.catch(() => {}).then(() => secureCredentials.storeApiKey(value))
-    return apiKeyWriteChain
+  const flushApiKeyWrite = async () => {
+    if (apiKeyWritePromise) {
+      await apiKeyWritePromise
+      if (pendingApiKey !== null) await flushApiKeyWrite()
+      return
+    }
+    if (pendingApiKey === null || !Capacitor.isNativePlatform()) return
+    apiKeyStorageStatus.value = 'saving'
+    apiKeyWritePromise = (async () => {
+      while (pendingApiKey !== null) {
+        const value = pendingApiKey
+        const revision = apiKeyRevision
+        try {
+          await secureCredentials.storeApiKey(value)
+        } catch {
+          // A newer edit supersedes this failed write; keep saving the latest value.
+          if (revision !== apiKeyRevision) continue
+          apiKeyStorageStatus.value = 'save-error'
+          appToast('API Key 保存失败，请重试保存，成功前请勿关闭应用', { tone: 'danger', duration: 5000 })
+          throw new Error('API Key 保存失败，请重试保存')
+        }
+        if (revision === apiKeyRevision) pendingApiKey = null
+      }
+      apiKeyStorageStatus.value = aiApiKey.value ? 'saved' : 'empty'
+    })().finally(() => { apiKeyWritePromise = null })
+    await apiKeyWritePromise
+    if (pendingApiKey !== null) await flushApiKeyWrite()
   }
   const flushPendingSettingsWrites = async () => {
-    await Promise.all([...pendingPreferenceWrites.keys()].map(flushPreferenceWrite))
-    if (apiKeyWriteTimer) globalThis.clearTimeout(apiKeyWriteTimer)
-    apiKeyWriteTimer = null
-    await flushApiKeyWrite()
-    await apiKeyWriteChain
+    // Unrelated preference failures must not prevent the credential from flushing.
+    await Promise.all([
+      flushApiKeyWrite(),
+      ...[...pendingPreferenceWrites.keys()].map(flushPreferenceWrite)
+    ])
   }
   const queueApiKeyWrite = value => {
     if (!isDataLoaded.value || !Capacitor.isNativePlatform()) return
     pendingApiKey = String(value || '')
-    if (apiKeyWriteTimer) globalThis.clearTimeout(apiKeyWriteTimer)
-    apiKeyWriteTimer = globalThis.setTimeout(() => {
-      apiKeyWriteTimer = null
-      flushApiKeyWrite().catch(error => console.warn('安全保存 API Key 失败', error))
-    }, 500)
+    apiKeyRevision += 1
+    apiKeyStorageStatus.value = 'saving'
+    // Begin native storage immediately; the queue coalesces edits during an active write.
+    void flushApiKeyWrite().catch(() => {})
+  }
+  const applyLoadedApiKey = value => {
+    applyingApiKey = true
+    try { aiApiKey.value = value } finally { applyingApiKey = false }
+  }
+  const queueAiProviderWrite = () => {
+    // Preserve legacy credentials until native migration/readback succeeds.
+    if (!aiSettingsReady) return
+    const value = { url: aiProviderUrl.value, model: aiModel.value }
+    if (!Capacitor.isNativePlatform()) value.key = aiApiKey.value
+    queuePreferenceWrite(STORAGE_KEYS.aiProviderSettings, JSON.stringify(value))
+  }
+  const loadAiSettings = () => {
+    if (aiSettingsLoadPromise) return aiSettingsLoadPromise
+    aiSettingsReady = false
+    apiKeyStorageStatus.value = 'loading'
+    aiSettingsLoadPromise = (async () => {
+      try {
+        const [aiRes, legacyRes] = await Promise.all([
+          Preferences.get({ key: STORAGE_KEYS.aiProviderSettings }),
+          Preferences.get({ key: STORAGE_KEYS.legacyAiSettings })
+        ])
+        const current = JSON.parse(aiRes.value || '{}')
+        const legacy = JSON.parse(legacyRes.value || '{}')
+        if (!aiProviderLoaded) {
+          aiProviderUrl.value = current.url || legacy.url || aiProviderUrl.value
+          aiModel.value = current.model || legacy.model || aiModel.value
+          aiProviderLoaded = true
+        }
+        let key = current.key || legacy.key || ''
+        if (Capacitor.isNativePlatform()) {
+          const storedKey = await secureCredentials.getApiKey()
+          if (!storedKey && key) await secureCredentials.storeApiKey(key)
+          else key = storedKey
+          // Never discard the legacy copy before a successful read or verified migration.
+          await Preferences.set({
+            key: STORAGE_KEYS.aiProviderSettings,
+            value: JSON.stringify({ url: aiProviderUrl.value, model: aiModel.value })
+          })
+          if (legacyRes.value) await Preferences.remove({ key: STORAGE_KEYS.legacyAiSettings })
+        }
+        applyLoadedApiKey(key)
+        aiSettingsReady = true
+        apiKeyStorageStatus.value = Capacitor.isNativePlatform() ? (key ? 'saved' : 'empty') : 'ready'
+        return true
+      } catch {
+        apiKeyStorageStatus.value = 'load-error'
+        appToast('API Key 读取失败，原配置已保留，请在 AI 服务中重试', { tone: 'danger', duration: 5000 })
+        return false
+      }
+    })().finally(() => { aiSettingsLoadPromise = null })
+    return aiSettingsLoadPromise
+  }
+  const saveAiSettings = async () => {
+    if (aiSettingsLoadPromise) await aiSettingsLoadPromise
+    if (!aiSettingsReady) throw new Error('API Key 读取失败，请先重试读取')
+    await flushApiKeyWrite()
+    queueAiProviderWrite()
+    await flushPreferenceWrite(STORAGE_KEYS.aiProviderSettings)
+  }
+  const retryApiKeyStorage = async () => {
+    if (apiKeyStorageStatus.value === 'load-error' || apiKeyStorageStatus.value === 'loading') return loadAiSettings()
+    try {
+      await saveAiSettings()
+      return true
+    } catch {
+      return false
+    }
   }
 
   const viewLabels = {
@@ -192,33 +302,8 @@ export const useSettingsStore = defineStore('settings', () => {
       warmHomeEnabled.value = warmHomeState !== false && warmHomeState?.enabled !== false
       const bannerRes = await Preferences.get({ key: STORAGE_KEYS.bannerSettings })
       if (bannerRes.value) bannerSettings.value = JSON.parse(bannerRes.value)
-      const [aiRes, legacyAiRes] = await Promise.all([
-        Preferences.get({ key: STORAGE_KEYS.aiProviderSettings }),
-        Preferences.get({ key: STORAGE_KEYS.legacyAiSettings })
-      ])
-      const c = JSON.parse(aiRes.value || legacyAiRes.value || '{}')
-      if (c.url) aiProviderUrl.value = c.url
-      if (c.model) aiModel.value = c.model
-      if (Capacitor.isNativePlatform()) {
-        let secureApiKey = await secureCredentials.getApiKey().catch(() => '')
-        if (!secureApiKey && c.key) {
-          await secureCredentials.storeApiKey(c.key)
-          secureApiKey = await secureCredentials.getApiKey()
-        }
-        aiApiKey.value = secureApiKey
-        await Preferences.set({
-          key: STORAGE_KEYS.aiProviderSettings,
-          value: JSON.stringify({ url: aiProviderUrl.value, model: aiModel.value })
-        })
-        if (legacyAiRes.value) await Preferences.remove({ key: STORAGE_KEYS.legacyAiSettings })
-      } else if (c.key) {
-        aiApiKey.value = c.key
-      }
-      const securityRes = await Preferences.get({ key: STORAGE_KEYS.securitySettings })
-      if (securityRes.value) {
-        const security = JSON.parse(securityRes.value)
-        autoLockDelaySeconds.value = normalizeAutoLockDelay(security.autoLockDelaySeconds)
-      }
+      await loadAiSettings()
+      await loadSecuritySettings()
       const notificationRes = await Preferences.get({ key: STORAGE_KEYS.notificationSettings })
       if (notificationRes.value) {
         notificationSettings.value = normalizeReminderSettings(JSON.parse(notificationRes.value))
@@ -260,16 +345,29 @@ export const useSettingsStore = defineStore('settings', () => {
   watch(themeSettings, value => {
     queuePreferenceWrite(STORAGE_KEYS.themeSettings, JSON.stringify(normalizeThemeSettings(value)))
   }, { deep: true })
-  watch(() => ({ url: aiProviderUrl.value, key: aiApiKey.value, model: aiModel.value }), value => {
-    const persisted = Capacitor.isNativePlatform()
-      ? { url: value.url, model: value.model }
-      : value
-    queuePreferenceWrite(STORAGE_KEYS.aiProviderSettings, JSON.stringify(persisted))
-    queueApiKeyWrite(value.key)
-  }, { deep: true })
+  watch([aiProviderUrl, aiModel], queueAiProviderWrite, { flush: 'sync' })
+  watch(aiApiKey, value => {
+    if (applyingApiKey || !aiSettingsReady) return
+    if (Capacitor.isNativePlatform()) queueApiKeyWrite(value)
+    else queueAiProviderWrite()
+  }, { flush: 'sync' })
   watch(autoLockDelaySeconds, value => {
-    queuePreferenceWrite(STORAGE_KEYS.securitySettings, JSON.stringify({ autoLockDelaySeconds: normalizeAutoLockDelay(value) }))
+    queuePreferenceWrite(STORAGE_KEYS.securitySettings, JSON.stringify({ requireAppUnlock: requireAppUnlock.value, autoLockDelaySeconds: normalizeAutoLockDelay(value) }))
   })
+  const updateRequireAppUnlock = async value => {
+    const previous = requireAppUnlock.value
+    await flushPreferenceWrite(STORAGE_KEYS.securitySettings)
+    const serialize = required => JSON.stringify({ requireAppUnlock: required, autoLockDelaySeconds: autoLockDelaySeconds.value })
+    try {
+      await Preferences.set({ key: STORAGE_KEYS.securitySettings, value: serialize(value !== false) })
+      const stored = await Preferences.get({ key: STORAGE_KEYS.securitySettings })
+      if (JSON.parse(stored.value || '{}').requireAppUnlock !== (value !== false)) throw new Error('SECURITY_SETTINGS_WRITE_FAILED')
+      requireAppUnlock.value = value !== false
+    } catch (error) {
+      await Preferences.set({ key: STORAGE_KEYS.securitySettings, value: serialize(previous) }).catch(() => {})
+      throw error
+    }
+  }
   watch(notificationSettings, value => {
     queuePreferenceWrite(STORAGE_KEYS.notificationSettings, JSON.stringify(normalizeReminderSettings(value)))
   }, { deep: true })
@@ -396,38 +494,47 @@ export const useSettingsStore = defineStore('settings', () => {
 
   watch(commonNotes, value => queuePreferenceWrite(STORAGE_KEYS.commonNotes, JSON.stringify(value), 0), { deep: true })
 
-  const getBackupSnapshot = () => ({
-    commonNotes: normalizeCommonNotes(commonNotes.value),
-    banner: { ...bannerSettings.value },
-    customBg: customBg.value,
-    backgroundEffects: normalizeBackgroundEffects(backgroundEffects.value),
-    componentTransparency: normalizeComponentTransparency(componentTransparency.value),
-    warmHomeEnabled: warmHomeEnabled.value,
-    warmHomePausedAt: warmHomePausedAt.value,
-    theme: { ...themeSettings.value },
-    ai: {
-      url: aiProviderUrl.value,
-      key: aiApiKey.value,
-      model: aiModel.value
-    },
-    autoLockDelaySeconds: autoLockDelaySeconds.value,
-    notificationSettings: notificationSettings.value,
-    notificationAiContent: notificationAiContent.value,
-    health: {
-      targetWeight: targetWeight.value,
-      heightCm: heightCm.value,
-      weightChangeReminderEnabled: weightChangeReminderEnabled.value,
-      weightChangeThreshold: weightChangeThreshold.value
-    },
-    homeCache: {
-      cachedQuote: cachedQuote.value,
-      dataFingerprint: dataFingerprint.value,
-      lastEncouragement: lastEncouragement.value
+  const getBackupSnapshot = () => {
+    if (!aiSettingsReady) throw new Error('AI 配置尚未读取成功，请重试后再备份')
+    return {
+      commonNotes: normalizeCommonNotes(commonNotes.value),
+      banner: { ...bannerSettings.value },
+      customBg: customBg.value,
+      backgroundEffects: normalizeBackgroundEffects(backgroundEffects.value),
+      componentTransparency: normalizeComponentTransparency(componentTransparency.value),
+      warmHomeEnabled: warmHomeEnabled.value,
+      warmHomePausedAt: warmHomePausedAt.value,
+      theme: { ...themeSettings.value },
+      ai: {
+        url: aiProviderUrl.value,
+        key: aiApiKey.value,
+        model: aiModel.value
+      },
+      autoLockDelaySeconds: autoLockDelaySeconds.value,
+      requireAppUnlock: requireAppUnlock.value,
+      notificationSettings: notificationSettings.value,
+      notificationAiContent: notificationAiContent.value,
+      health: {
+        targetWeight: targetWeight.value,
+        heightCm: heightCm.value,
+        weightChangeReminderEnabled: weightChangeReminderEnabled.value,
+        weightChangeThreshold: weightChangeThreshold.value
+      },
+      homeCache: {
+        cachedQuote: cachedQuote.value,
+        dataFingerprint: dataFingerprint.value,
+        lastEncouragement: lastEncouragement.value
+      }
     }
-  })
+  }
 
   const restoreBackupSnapshot = async (value) => {
     const backup = normalizeFullBackupSettings(value)
+    if (aiSettingsLoadPromise) await aiSettingsLoadPromise
+    if (Capacitor.isNativePlatform()) {
+      await flushApiKeyWrite()
+      await secureCredentials.storeApiKey(backup.ai.key)
+    }
     commonNotes.value = backup.commonNotes
     bannerSettings.value = backup.banner
     customBg.value = backup.customBg
@@ -437,9 +544,12 @@ export const useSettingsStore = defineStore('settings', () => {
     warmHomeEnabled.value = backup.warmHomeEnabled
     themeSettings.value = backup.theme
     aiProviderUrl.value = backup.ai.url
-    aiApiKey.value = backup.ai.key
+    applyLoadedApiKey(backup.ai.key)
+    aiSettingsReady = true
+    apiKeyStorageStatus.value = Capacitor.isNativePlatform() ? (backup.ai.key ? 'saved' : 'empty') : 'ready'
     aiModel.value = backup.ai.model
     autoLockDelaySeconds.value = backup.autoLockDelaySeconds
+    requireAppUnlock.value = backup.requireAppUnlock
     notificationSettings.value = backup.notificationSettings
     notificationAiContent.value = backup.notificationAiContent
     updateHealthSettings(backup.health)
@@ -462,7 +572,7 @@ export const useSettingsStore = defineStore('settings', () => {
       }),
       Preferences.set({
         key: STORAGE_KEYS.securitySettings,
-        value: JSON.stringify({ autoLockDelaySeconds: backup.autoLockDelaySeconds })
+        value: JSON.stringify({ requireAppUnlock: backup.requireAppUnlock, autoLockDelaySeconds: backup.autoLockDelaySeconds })
       }),
       Preferences.set({ key: STORAGE_KEYS.notificationSettings, value: JSON.stringify(backup.notificationSettings) }),
       Preferences.set({ key: STORAGE_KEYS.notificationAiContent, value: JSON.stringify(backup.notificationAiContent) }),
@@ -476,11 +586,10 @@ export const useSettingsStore = defineStore('settings', () => {
     }
     await Promise.all(writes)
     if (Capacitor.isNativePlatform()) {
-      await secureCredentials.storeApiKey(backup.ai.key)
       await Preferences.remove({ key: STORAGE_KEYS.legacyAiSettings })
     }
     return backup
   }
 
-  return { componentTransparency, componentCssVariables, loadAppearanceSettings, backgroundEffects, warmHomePausedAt, warmHomeEnabled, updateWarmHomeEnabled, todoTarget, commonNotes, bannerSettings, customBg, themeSettings, themeCssVariables, currentView, settingsScope, settingsSection, settingsReturnView, scheduleTarget, isDrawerOpen, navigationStack, navigationRevision, currentRoute, currentRouteKey, canGoBack, isDataLoaded, viewTitle, cachedQuote, dataFingerprint, lastEncouragement, aiProviderUrl, aiApiKey, aiModel, autoLockDelaySeconds, notificationSettings, notificationAiContent, targetWeight, heightCm, weightChangeReminderEnabled, weightChangeThreshold, loadSettings, flushPendingSettingsWrites, navigate, replaceRoute, goBack, updateLastHistoryScroll, updateCurrentRouteScroll, switchView, openGeneralSettingsSection, closeGeneralSettingsSection, openModuleSettings, closeModuleSettings, openScheduleTarget, updateBanner, updateBg, updateThemeSettings, updateHealthSettings, getBackupSnapshot, restoreBackupSnapshot }
+  return { apiKeyStorageStatus, saveAiSettings, retryApiKeyStorage, requireAppUnlock, loadSecuritySettings, updateRequireAppUnlock, componentTransparency, componentCssVariables, loadAppearanceSettings, backgroundEffects, warmHomePausedAt, warmHomeEnabled, updateWarmHomeEnabled, todoTarget, commonNotes, bannerSettings, customBg, themeSettings, themeCssVariables, currentView, settingsScope, settingsSection, settingsReturnView, scheduleTarget, isDrawerOpen, navigationStack, navigationRevision, currentRoute, currentRouteKey, canGoBack, isDataLoaded, viewTitle, cachedQuote, dataFingerprint, lastEncouragement, aiProviderUrl, aiApiKey, aiModel, autoLockDelaySeconds, notificationSettings, notificationAiContent, targetWeight, heightCm, weightChangeReminderEnabled, weightChangeThreshold, loadSettings, flushPendingSettingsWrites, navigate, replaceRoute, goBack, updateLastHistoryScroll, updateCurrentRouteScroll, switchView, openGeneralSettingsSection, closeGeneralSettingsSection, openModuleSettings, closeModuleSettings, openScheduleTarget, updateBanner, updateBg, updateThemeSettings, updateHealthSettings, getBackupSnapshot, restoreBackupSnapshot }
 })

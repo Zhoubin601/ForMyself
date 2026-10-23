@@ -1,0 +1,131 @@
+{
+  "date": "2026-10-07",
+  "cssParsing": "passed",
+  "tokenCount": 230,
+  "referenceCount": 110,
+  "checkedLocalLinks": 27,
+  "sections": 15,
+  "rawUnchanged": true,
+  "sourceFilesUnchanged": 30,
+  "screenshotFilesUnchanged": 7,
+  "browser": {
+    "standalone": [
+      {
+        "id": "cloud",
+        "buttonBackground": "rgb(62, 119, 180)",
+        "buttonText": "rgb(255, 255, 255)",
+        "minHeight": "48px",
+        "duration": "0.18s",
+        "unresolved": [],
+        "contrast": 4.663956974597861
+      },
+      {
+        "id": "peach",
+        "buttonBackground": "rgb(165, 86, 104)",
+        "buttonText": "rgb(255, 255, 255)",
+        "minHeight": "48px",
+        "duration": "0.18s",
+        "unresolved": [],
+        "contrast": 5.08366600236405
+      },
+      {
+        "id": "mint",
+        "buttonBackground": "rgb(59, 129, 110)",
+        "buttonText": "rgb(255, 255, 255)",
+        "minHeight": "48px",
+        "duration": "0.18s",
+        "unresolved": [],
+        "contrast": 4.6141454699649165
+      },
+      {
+        "id": "lavender",
+        "buttonBackground": "rgb(121, 107, 174)",
+        "buttonText": "rgb(255, 255, 255)",
+        "minHeight": "48px",
+        "duration": "0.18s",
+        "unresolved": [],
+        "contrast": 4.638561016829457
+      }
+    ],
+    "bridges": [
+      {
+        "settings": {
+          "presetId": "cloud"
+        },
+        "buttonBackground": "rgb(62, 119, 180)",
+        "buttonText": "rgb(255, 255, 255)",
+        "minHeight": "48px",
+        "duration": "0.18s",
+        "unresolved": [],
+        "contrast": 4.663956974597861
+      },
+      {
+        "settings": {
+          "presetId": "peach"
+        },
+        "buttonBackground": "rgb(165, 86, 104)",
+        "buttonText": "rgb(255, 255, 255)",
+        "minHeight": "48px",
+        "duration": "0.18s",
+        "unresolved": [],
+        "contrast": 5.08366600236405
+      },
+      {
+        "settings": {
+          "presetId": "mint"
+        },
+        "buttonBackground": "rgb(59, 129, 110)",
+        "buttonText": "rgb(255, 255, 255)",
+        "minHeight": "48px",
+        "duration": "0.18s",
+        "unresolved": [],
+        "contrast": 4.6141454699649165
+      },
+      {
+        "settings": {
+          "presetId": "lavender"
+        },
+        "buttonBackground": "rgb(121, 107, 174)",
+        "buttonText": "rgb(255, 255, 255)",
+        "minHeight": "48px",
+        "duration": "0.18s",
+        "unresolved": [],
+        "contrast": 4.638561016829457
+      },
+      {
+        "settings": {
+          "mode": "custom",
+          "customPrimary": "#F8DD55"
+        },
+        "buttonBackground": "rgb(125, 112, 43)",
+        "buttonText": "rgb(255, 255, 255)",
+        "minHeight": "48px",
+        "duration": "0.18s",
+        "unresolved": [],
+        "contrast": 4.9709476544258395
+      }
+    ],
+    "reducedMotion": {
+      "duration": "0s",
+      "tokens": [
+        "0ms",
+        "0ms",
+        "0ms",
+        "0ms"
+      ]
+    },
+    "noRemoteResources": []
+  },
+  "outputs": [
+    {
+      "file": "D:\\2026Autumn Semester File\\GitHub\\formyself-app\\output\\20261007-formyself-design-system-v1.md",
+      "bytes": 35090,
+      "sha256": "2cfc7a6b2595d660876221fc1015fa3319e81435748253a22e7e65bb6e6bf8b6"
+    },
+    {
+      "file": "D:\\2026Autumn Semester File\\GitHub\\formyself-app\\output\\20261007-formyself-design-tokens-v1.css",
+      "bytes": 12280,
+      "sha256": "f248ed7360c77df934945e9828ed224a7c01474b68f773e7fe2a0eb20ac6b5b6"
+    }
+  ]
+}

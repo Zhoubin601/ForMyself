@@ -30,6 +30,9 @@ const {
   isUnlocking,
   moduleSettingsViews,
   protectedDataStatus,
+  protectedModule,
+  protectedAccess,
+  retryProtectedModule,
   pwdInput,
   setMasterPassword,
   settingsStore,
@@ -236,7 +239,7 @@ const activeBackgroundStyle = computed(() => backgroundEffectStyle(
           'chat-content-area': settingsStore.currentView === 'chat'
         }"
       >
-        <KeepAlive :max="7" :exclude="settingsStore.warmHomeEnabled === false ? ['ChatView'] : []">
+        <KeepAlive :max="7" :exclude="settingsStore.warmHomeEnabled === false || protectedAccess?.status.chat !== 'ready' ? ['ChatView'] : []">
           <HomeView
             v-if="settingsStore.currentView === 'home'"
             :chat-unread-count="chatUnreadCount"
@@ -261,19 +264,28 @@ const activeBackgroundStyle = computed(() => backgroundEffectStyle(
           class="protected-data-loading"
           role="status"
         >
-          <span class="unlock-spinner"></span>
-          <p>正在安全载入温馨小家…</p>
+          <span v-if="protectedDataStatus === 'loading'" class="unlock-spinner"></span>
+          <p>{{ protectedAccess?.recoveryRequired ? '数据恢复未完成，请保留应用数据并联系维护者。' : protectedDataStatus === 'loading' ? '正在安全载入温馨小家…' : '验证身份后进入温馨小家' }}</p>
+          <button v-if="protectedDataStatus !== 'loading' && !protectedAccess?.recoveryRequired" class="button-primary" @click="retryProtectedModule">验证并进入</button>
+          <button class="text-link" @click="settingsStore.switchView('home')">返回首页</button>
         </div>
         <div
           v-if="settingsStore.currentView === 'passwords' && protectedDataStatus !== 'ready'"
           class="protected-data-loading"
           role="status"
         >
-          <span class="unlock-spinner"></span>
-          <p>正在安全载入密码库…</p>
+          <span v-if="protectedDataStatus === 'loading'" class="unlock-spinner"></span>
+          <p>{{ protectedAccess?.recoveryRequired ? '数据恢复未完成，请保留应用数据并联系维护者。' : protectedDataStatus === 'loading' ? '正在安全载入密码库…' : '验证身份后进入密码库' }}</p>
+          <button v-if="protectedDataStatus !== 'loading' && !protectedAccess?.recoveryRequired" class="button-primary" @click="retryProtectedModule">验证并进入</button>
+          <button class="text-link" @click="settingsStore.switchView('home')">返回首页</button>
         </div>
         <PasswordVaultView v-else-if="settingsStore.currentView === 'passwords'" />
-        <SettingsView v-if="settingsStore.currentView === 'settings'" />
+        <SettingsView v-if="settingsStore.currentView === 'settings' && (!protectedModule || protectedDataStatus === 'ready')" :key="protectedModule || 'general'" />
+        <div v-else-if="settingsStore.currentView === 'settings' && protectedModule" class="protected-data-loading" role="status">
+          <p>{{ protectedAccess?.recoveryRequired ? '数据恢复未完成，请保留应用数据并联系维护者。' : protectedDataStatus === 'loading' ? '正在安全载入设置…' : '此设置需要验证身份' }}</p>
+          <button v-if="protectedDataStatus !== 'loading' && !protectedAccess?.recoveryRequired" class="button-primary" @click="retryProtectedModule">验证并继续</button>
+          <button class="text-link" @click="settingsStore.switchView('home')">返回首页</button>
+        </div>
       </div>
     </div>
   </div>

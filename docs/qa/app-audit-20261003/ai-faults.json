@@ -1,0 +1,23 @@
+[
+  {
+    "test": "auth-failure-stream-fallback",
+    "calls": 2,
+    "error": "HTTP_401",
+    "protocol": "http:",
+    "httpsRequired": false
+  },
+  {
+    "test": "non-sse-truncation",
+    "truncatedThrown": false,
+    "partialAccepted": true
+  },
+  {
+    "test": "reasoning-display",
+    "internalReasoningAccepted": true
+  },
+  {
+    "test": "ask-ai-stall",
+    "pendingAfter300ms": true,
+    "abortSignalProvided": false
+  }
+]

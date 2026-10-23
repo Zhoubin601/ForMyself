@@ -1,0 +1,28 @@
+[
+  {
+    "test": "corrupt-weight-load",
+    "isDataLoaded": true,
+    "loadError": null,
+    "originalCorruptionPreserved": false
+  },
+  {
+    "test": "corrupt-schedule-load",
+    "isDataLoaded": true,
+    "originalCorruptionPreserved": false,
+    "remainingSeries": 0
+  },
+  {
+    "test": "vault-decrypt-failure",
+    "loadError": "密码库解密失败，请确认主密码或恢复备份",
+    "isDataLoaded": true,
+    "ciphertextPreserved": false,
+    "recordsRemainingUnderAttemptedPassword": 0
+  },
+  {
+    "test": "partial-password-change-write-failure",
+    "caught": "QA_SIMULATED_WRITE_FAILURE",
+    "committed": false,
+    "oldPasswordDecrypts": false,
+    "newPasswordDecrypts": true
+  }
+]

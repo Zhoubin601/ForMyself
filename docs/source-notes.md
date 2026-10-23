@@ -734,6 +734,68 @@ Test_data/todo-v7-apiXX-spacing.json、-widget.json、-stress.json、-widget-ani
 ### v8验收来源
 Test_data/todo-v8-apiXX-spacing.json、-widget.json、-native.log、-restored.json及docs/qa/todo/v8-apiXX-*；XX为30/31/37。API37动画压力失败和v7对照记录保留，见20261002-todo-v8-verification.md，不标为全部动画验收通过。
 
+## 2026-10-03 全面检查来源
+- 用户当前消息：要求架构、UI、功能全面检查、测试并检索；已授权此次外部检索。
+- raw/：存在用户加密备份，仅清点元数据；本轮不解密，不复制原始记录与凭据。
+- 当前代码：HEAD b2d4fdf，package.json、src/、android/、tests/、scripts/、.github/workflows/quality.yml。
+- README.md、HANDOFF.md：作为背景说明，功能与安全声明需以当前代码核对，不能直接视为事实。
+- docs/20261002-todo-v8-verification.md、docs/20261003-daily-todo-v8-release.md：已有验收与动画限制，不能替代本轮实测。
+- memory-bank/：目录未提供。真机访问、目标设备型号与正式发布要求：资料未提供。
+- 初始git状态：已有未跟踪 docs/20261003-daily-todo-v8-release.md，保留。
+
+### 2026-10-03 外部资料（用户已要求检索）
+来源名称：Capacitor v8 Preferences 官方文档。
+链接或文件名：https://capacitorjs.com/docs/apis/preferences
+引用日期：2026-10-03。
+用途：Preferences为轻量键值存储，不作为复杂本地数据库。
+来源名称：Android Developers Auto Backup。
+链接或文件名：https://developer.android.com/identity/data/autobackup
+引用日期：2026-10-03。
+用途：默认备份范围、allowBackup及新旧版本排除规则；本轮未执行云备份。
+来源名称：W3C WAI-ARIA Dialog Pattern。
+链接或文件名：https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/
+引用日期：2026-10-03。
+用途：初始焦点、焦点圈定与恢复。
+来源名称：W3C WCAG 2.2 Target Size Minimum。
+链接或文件名：https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum.html
+引用日期：2026-10-03。
+用途：24 CSS px目标及间距例外，不能仅按尺寸宣称合规失败。
+来源名称：Android Developers Accessibility。
+链接或文件名：https://developer.android.com/guide/topics/ui/accessibility/apps
+引用日期：2026-10-03。
+用途：Android推荐触控面积与可用性。
+来源名称：CryptoJS 官方文档与已安装4.2.0源代码。
+链接或文件名：https://cryptojs.gitbook.io/docs；node_modules/crypto-js/evpkdf.js、cipher-core.js。
+引用日期：2026-10-03。
+用途：默认CBC/口令派生路径；MD5与迭代次数以安装源代码核对，未进行私人备份破解。
+来源名称：Web Crypto encrypt 文档（MDN，Web API文档）。
+链接或文件名：https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/encrypt
+引用日期：2026-10-03。
+用途：认证加密与AES-GCM建议。
+来源名称：Vite 官方生产构建说明。
+链接或文件名：https://vite.dev/guide/build.html
+引用日期：2026-10-03。
+用途：默认现代浏览器target、语法转换与polyfill边界。
+来源名称：Vitest 维护者安全通告。
+链接或文件名：https://github.com/vitest-dev/vitest/security/advisories/GHSA-5xrq-8626-4rwp
+引用日期：2026-10-03。
+用途：旧Vitest测试/UI服务器风险条件，非App已被利用证明。
+来源名称：npm 官方审计接口返回。
+链接或文件名：docs/qa/app-audit-20261003/npm-audit-official.json、npm-audit-production.json。
+引用日期：2026-10-03。
+用途：16个全依赖告警包、2个omit-dev包。默认镜像接口404，未更改仓库依赖或registry。
+
+
+## 2026-10-07 设计系统资料来源
+- 用户当前消息及需求附件codex-clipboard-2c8b7fd5-2648-4527-b304-98478d7ea0f5.jpg；该图是需求文字，不是App视觉截图。
+- 用户确认Markdown + CSS、沿用当前浅色柔和卡片和可切换主题色；补充要求记录UI库和Skill。
+- 当前代码b2d4fdf；主题、全局/局部CSS、自绘组件、图标导入、package.json与本机安装版本。
+- docs/qa/app-audit-20261003/中的七份390px历史合成截图：首页、待办含数据、设置、心情、日程、密码、体重；本轮实际查看。
+- docs/20261003-app-audit-v1.md与v8待办验收，仅作为历史记录，未当成本轮新实测。
+- raw加密备份未采用或解密；仅计算文件整体摘要核对未改动；memory-bank目录、用户画像研究和品牌手册资料未提供。
+- 本地技能design-system与ui-ux-pro-max用于结构/交互参考；未联网使用新外部资料。
+- 详细文件名、源码hash、历史截图hash、主题派生与对比计算：docs/qa/design-system-20261007/source-evidence.json。
+
 ## 2026-10-19 温馨小家开关与独立背景效果
 
 来源：用户本轮确认；项目 App.vue、HomeView.vue、设置 Store、聊天及通知实现。raw/ 仅检查文件目录，未读取真实数据；无外部资料。
@@ -752,3 +814,67 @@ Test_data/todo-v8-apiXX-spacing.json、-widget.json、-native.log、-restored.js
 追加需求：用户要求选图后显示可裁剪的选择框。来源为当前用户消息。
 
 追加：用户询问双指缩放；已向用户明确当前实现只有滑块，并继续补充双指捏合。
+
+## 2026-10-19 可选进入验证与敏感数据按需加载
+
+来源：
+- 用户 2026-10-19 当前需求与确认事项。
+- 当前项目源码：
+  - `src/stores/settings.ts`、`src/stores/auth.ts`、`src/stores/protectedAccess.ts`
+  - `src/stores/passwordVault.ts`、`src/stores/chat.ts`、`src/stores/backup.ts`
+  - `src/components/SettingsView.vue`、`src/components/PasswordVaultView.vue`、`src/components/ChatView.vue`、`src/components/AppUnlockOverlay.vue`、`src/App.vue`
+- 测试验证证据：
+  - 自动化测试执行脚本：`docs/qa/optional-unlock-20261019/native-full-verification.mjs`
+  - 运行结果日志：`docs/qa/optional-unlock-20261019/native-verification-results.json`
+  - 最终状态界面截图：`docs/qa/optional-unlock-20261019/final-verification-screen.png`
+- 模拟器环境：
+  - 用户提供路径 `E:\Android` 对应 AVD `Pixel_6_Pro`，运行实例 `emulator-5586`（API 37）。测试在独立隔离临时用户 12 中执行，测试完毕已恢复用户 0（Owner）并移除临时用户 12。
+- 原始资料与外部资料声明：
+  - `raw/` 原始资料未改写、未重命名、未移动、未覆盖。
+  - 本轮全部采用合成测试数据，未读取或解密任何真实私人备份。
+  - 未使用任何外部网络资料。
+
+
+## 2026-10-19 可选进入验证：独立复核来源修正
+
+本节修正前一节列出的不存在源码路径。实际核对来源为 src/stores/{settings,auth,protectedAccess,passwordVault}.js、src/features/chat/{chatStore,chatStorage}.js、src/services/{masterPasswordChange,fullBackup,nativeActivityGuard}.js、src/composables/settings/{useSecuritySettings,useBackupSettings}.js、src/composables/useAppController.js、src/App.vue 和现有组件；并非 .ts 文件，也没有使用前文列出的 backup.ts 或 AppUnlockOverlay.vue。
+
+交付 APK 实际摘要与用户消息一致，已比较包内 assets/public 与本轮构建 dist 的49个文件，内容全部一致。重新运行常规检查和隔离浏览器主要流程通过；直接调用实际业务函数的两项新增存储异常回归失败。来源为 docs/qa/optional-unlock-20261019/recheck-project.log、recheck-browser.log、recheck.spec.js 和 recheck-regressions.log。具体问题及原生证据边界见 docs/20261019-optional-unlock-independent-review-v1.md。
+
+本次依据用户要求、现有源码、包文件和合成测试结果；未读取 raw 私人备份，未使用外部资料；未修改业务代码或重新发布 APK。
+
+独立复核补充：原生两模式主要流程与实际完整/单项备份导出、解密、导入已补测；最终恢复用户0，本轮隔离用户已移除，9364/9365转发已清理。2项存储异常失败仍未修复，维持“未通过全量验收”结论。完整事实、执行器失败边界与汇总见 docs/20261019-optional-unlock-independent-review-v1.md 和 docs/qa/optional-unlock-20261019/recheck-summary.json。
+
+
+## 2026-10-19 独立复核问题修复来源
+
+来源：用户“检查并修复”；docs/20261019-optional-unlock-independent-review-v1.md及recheck.spec.js、fix-before.log；实际src/services/masterPasswordChange.js、src/stores/passwordVault.js、src/stores/protectedAccess.js、src/features/chat/chatStore.js及chatStorage.js、存储适配器、既有测试。raw只核对目录，未读取私人备份；memory-bank未提供；未引入外部资料。
+
+
+## 2026-10-19 v2修复实际来源与证据
+
+新增源码来源：src/features/chat/chatPersistence.js、实际chatStorage/chatStore、事务与密码库、protectedAccess及保存提示；测试tests/ProtectedDataRecovery.spec.js、原recheck.spec.js和fix-native.mjs。只在测试环境的原生桥边界注入错误，APK不包含测试钩子。Node260/组件79、原复现2项、浏览器13、Android20项已实际执行；真实备份文件和两份密码库密文均已读取并解密验证。证据详见docs/20261019-optional-unlock-fix-v2.md及fix-verification.json。无外部资料，raw与私人备份未读取或修改。
+
+## 2026-10-23 Android API Key 关闭重开排查
+
+来源名称：用户当前说明与项目源码。
+链接或文件名：src/components/settings/SettingsAI.vue；src/stores/settings.js；src/platform/security/secureCredentials.js；src/platform/storage/preferences.js；src/composables/useAppController.js；src/composables/settings/useReminderSettings.js。
+引用日期：2026-10-23。
+摘录：Android Key 单独使用安全凭据存储，500ms防抖；保存失败仅日志；启动读取错误转换为空；URL/Key/模型组合监听可在读取失败后写回空值。
+
+来源名称：本机安装依赖与隔离复现。
+链接或文件名：node_modules/@capgo/capacitor-native-biometric/package.json；android/src/main/java/ee/forgr/biometric/NativeBiometric.java（该依赖目录下）；docs/qa/api-key-20261023/diagnosis.spec.js。
+引用日期：2026-10-23。
+事实：本机依赖8.4.11；7项合成数据诊断通过；没有连接Android设备，未实测用户设备Keystore；raw仅清点，未读取私人备份。memory-bank资料未提供。未联网查外部资料。
+
+## 2026-10-23 API Key 修复实施来源补充
+
+来源名称：项目源码、安全凭据依赖与 Android 偏好插件的本机安装源码。
+链接或文件名：src/stores/settings.js；src/platform/security/secureCredentials.js；src/components/settings/SettingsAi.vue；src/composables/settings/useReminderSettings.js；src/composables/settings/useSettingsNavigation.js；node_modules/@capgo/capacitor-native-biometric/android/src/main/java/ee/forgr/biometric/NativeBiometric.java；node_modules/@capacitor/preferences/android/src/main/java/com/capacitorjs/plugins/preferences/Preferences.java。
+引用日期：2026-10-23。
+关键事实：两个插件原实现均使用SharedPreferences.Editor.apply()；其返回不代表磁盘提交已完成，紧接着get读取的是内存缓存。本轮通过可重复的postinstall补丁，将NativeBiometric非生物识别凭据写入改为检查commit()成功后才返回，保留Android Keystore加密。原配置迁移在原生保存并校验成功前不删旧副本。
+
+来源名称：本地技能与本轮合成数据回归。
+链接或文件名：C:/Users/a3185/.agents/skills/ui-ux-pro-max/SKILL.md；tests/ApiKeyPersistence.spec.js；docs/qa/api-key-20261023/native-verification.mjs。
+引用日期：2026-10-23。
+用途：设置页提交状态、重试与role=status反馈；实际Store与原生驱动故障替身回归、隔离Android12用户原生测试。真实服务请求由测试响应替代，未使用真实Key或向服务商发送请求；未联网查资料，未读取raw私人备份。

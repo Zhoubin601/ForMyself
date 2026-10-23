@@ -1,0 +1,37 @@
+[
+  {
+    "test": "closed-drawer-focusable",
+    "isOpen": false,
+    "focusEnteredClosedDrawer": true,
+    "offscreen": true,
+    "ariaHidden": null,
+    "inert": false
+  },
+  {
+    "test": "pwa",
+    "lang": "en",
+    "manifest": false,
+    "controlledByServiceWorker": false,
+    "registeredServiceWorkers": 0
+  },
+  {
+    "test": "ai-input-labels",
+    "inputs": [
+      {
+        "placeholder": "https://api.deepseek.com",
+        "associatedLabel": false,
+        "ariaLabel": false
+      },
+      {
+        "placeholder": "sk-...",
+        "associatedLabel": false,
+        "ariaLabel": false
+      },
+      {
+        "placeholder": "deepseek-chat / gpt-4o-mini",
+        "associatedLabel": false,
+        "ariaLabel": false
+      }
+    ]
+  }
+]

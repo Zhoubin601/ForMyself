@@ -1,0 +1,28 @@
+{
+  "date": "2026-10-19",
+  "artifact": "20261019-ForMyself-optional-unlock-v1-debug.apk",
+  "tests": [
+    {
+      "name": "installed package exactly matches delivered APK",
+      "passed": true,
+      "sha256": "FD3014670520E7D429018B023D2D10C56A87AA17A80023B7399B21F68B69F9B0"
+    },
+    {
+      "name": "fresh installation sets a master password and unified mode decrypts both modules",
+      "passed": true
+    },
+    {
+      "name": "actual full export file decrypts and contains both modules plus the v12 setting",
+      "passed": true
+    }
+  ],
+  "errors": [
+    "AssertionError [ERR_ASSERTION]: Export must create an actual encrypted cache file\n    at readBackup (file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/docs/qa/optional-unlock-20261019/recheck-native.mjs:68:10)\n    at async file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/docs/qa/optional-unlock-20261019/recheck-native.mjs:174:18"
+  ],
+  "cleanup": {
+    "currentUser": "0",
+    "removedUser": "Success: removed user",
+    "forwarding": "emulator-5586 tcp:9364 localabstract:webview_devtools_remote_7610"
+  },
+  "user": "17"
+}

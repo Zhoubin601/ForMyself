@@ -7,16 +7,17 @@ export async function changeMasterPasswordTransaction({
   const completed = []
   try {
     for (const reencrypt of reencryptors) {
-      await reencrypt(newPassword)
       completed.push(reencrypt)
+      await reencrypt(newPassword)
     }
     return await commit(newPassword)
   } catch (error) {
-    const rollbackResults = await Promise.allSettled(
-      [...completed].reverse().map(reencrypt => reencrypt(currentPassword))
-    )
-    if (rollbackResults.some(result => result.status === 'rejected')) {
-      error.rollbackFailed = true
+    for (const reencrypt of [...completed].reverse()) {
+      try {
+        await reencrypt(currentPassword)
+      } catch {
+        error.rollbackFailed = true
+      }
     }
     throw error
   }

@@ -30,6 +30,8 @@ export function decryptChatData(value, password) {
   }
 }
 
+export const chatCiphertextFingerprint = value => value ? CryptoJS.SHA256(value).toString() : ''
+
 export function createChatStorage(filesystem = Filesystem, directory = Directory.Data) {
   const readEncrypted = async path => {
     const result = await filesystem.readFile({ path, directory, encoding: Encoding.UTF8 })
@@ -59,17 +61,18 @@ export function createChatStorage(filesystem = Filesystem, directory = Directory
     ]) {
       try {
         if (!await exists(path)) continue
-        return { data: decryptChatData(await readEncrypted(path), password), recovered }
+        const ciphertext = await readEncrypted(path)
+        return { data: decryptChatData(ciphertext, password), recovered, fingerprint: chatCiphertextFingerprint(ciphertext) }
       } catch (error) {
         if (!recovered) primaryError = error
       }
     }
     if (primaryError) throw primaryError
-    return { data: normalizeChatData(), recovered: false }
+    return { data: normalizeChatData(), recovered: false, fingerprint: '' }
   }
 
-  const save = async (value, password) => {
-    const encrypted = encryptChatData(value, password)
+  const saveEncrypted = async encrypted => {
+    if (!encrypted) throw new Error('MISSING_CHAT_CIPHERTEXT')
     await filesystem.mkdir({ path: CHAT_DATA_DIRECTORY, directory, recursive: true }).catch(error => {
       if (!/exist/i.test(String(error?.message || error))) throw error
     })
@@ -79,7 +82,7 @@ export function createChatStorage(filesystem = Filesystem, directory = Directory
       directory,
       encoding: Encoding.UTF8
     })
-    decryptChatData(await readEncrypted(CHAT_TEMP_PATH), password)
+    if (await readEncrypted(CHAT_TEMP_PATH) !== encrypted) throw new Error('CHAT_CIPHERTEXT_WRITE_FAILED')
 
     const hadPrimary = await exists(CHAT_DATA_PATH)
     if (hadPrimary) {
@@ -110,8 +113,13 @@ export function createChatStorage(filesystem = Filesystem, directory = Directory
       }
       throw error
     }
+    return chatCiphertextFingerprint(encrypted)
+  }
+
+  const save = async (value, password) => {
+    await saveEncrypted(encryptChatData(value, password))
     return normalizeChatData(value)
   }
 
-  return { load, save }
+  return { load, save, saveEncrypted }
 }
