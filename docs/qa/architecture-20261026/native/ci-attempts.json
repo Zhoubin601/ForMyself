@@ -155,6 +155,13 @@
       "root_evidence": "Local official AOSP ATD34 system.img contains debug.hwui.drawing_enabled=0; AOSP Android14 Properties.h defines this flag and Properties.cpp uses it for DrawingEnabled",
       "fix": "Enable actual HWUI drawing on the dedicated emulator before launching the cleared app; capture real Android screenshots through Playwright device API and reject images without rendered pixel variation",
       "scope": "Functional checks were not failed; no full acceptance package until screenshot and all later behavior checks complete"
+    },
+    {
+      "run_id": 40364891108,
+      "commit": "e257403",
+      "passed": "Real rendering with two non-black Android screenshots; initialization, entry modes, API key, vault, actual chat reply, actual native deep-link route, true Android background release/reauthentication, force-stop uncommitted rollback",
+      "failed_step": "Second restore had a prepared journal but no durable commit marker; original caught error was not retained",
+      "next_probe": "Retain and rethrow actual participant restore/flush errors and the coordinator error, assert the only expected post-commit failure is the injected journal cleanup failure; do not relax the durable commit requirement"
     }
   ]
 }

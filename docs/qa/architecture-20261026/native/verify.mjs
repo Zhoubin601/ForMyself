@@ -222,9 +222,15 @@ try {
     const journal=Object.values(entry).find(x=>x&&Object.hasOwn(x,'inspect')&&Object.hasOwn(x,'commit')&&Object.hasOwn(x,'prepare'));
     if(!journal)throw Error('Missing actual journal');
     const target=window.__qaRuntime.createFullBackupSnapshot();target.data.weight=[{id:'native-committed',date:'2026-10-26',weight:61}];
+    const info=window.__qaCommittedDiagnostics={participants:[],error:null};
+    for(const participant of window.__qaRuntime.registry.list)for(const method of ['restore','flush']){
+      const original=participant[method];participant[method]=async(...args)=>{try{return await original(...args)}catch(error){info.participants.push({id:participant.id,method,message:String(error?.message||error),code:error?.code});throw error}};
+    }
     journal.clear=async()=>{throw Error('synthetic cleanup failure')};
-    try{await window.__qaRuntime.restore(target,'${password}')}catch{}
-    if(!(await journal.inspect()).committed)throw Error('Missing durable commit');return true;`)
+    try{await window.__qaRuntime.restore(target,'${password}')}catch(error){info.error={message:String(error?.message||error),code:error?.code,rollbackFailed:error?.rollbackFailed}}
+    const record=await journal.inspect();info.recordPresent=Boolean(record);info.committed=record?.committed;
+    if(!record?.committed)throw Error('Missing durable commit: '+JSON.stringify(info));
+    if(info.error?.message!=='synthetic cleanup failure')throw Error('Unexpected committed restore error: '+JSON.stringify(info));return true;`)
   page=await coldStart(); await page.getByRole('button',{name:'验证并重试恢复',exact:true}).waitFor(); await verifyIdentity(page)
   await waitState(page,"return stores.get('weight').weightRecords[0]?.id==='native-committed'")
   await waitRestoreIdle(page)
@@ -261,7 +267,7 @@ try {
 } catch(error) {
   results.error=String(error)
   if (activePage && !activePage.isClosed()) {
-    results.failedView = await evaluate(activePage,"return {view:stores.get('settings').currentView,requireAppUnlock:stores.get('settings').requireAppUnlock,hasMasterPassword:stores.get('auth').hasMasterPassword,authLoadError:stores.get('auth').loadError,locked:stores.get('auth').isLocked,status:stores.get('protectedAccess').status,sessionRevision:stores.get('auth').sessionRevision,credentialPresent:Boolean(stores.get('auth').savedMasterPwd),apiKeyStatus:stores.get('settings').apiKeyStorageStatus,visibility:document.visibilityState,unlockButtonDisabled:document.querySelector('.lock-btn')?.disabled,enteredPasswordMatches:document.querySelector('.lock-screen input')?.value==="+JSON.stringify(password)+",dialog:document.querySelector('[role=dialog]')?.textContent?.slice(0,250),unlockMarks:performance.getEntriesByType('mark').filter(x=>x.name.startsWith('unlock:')).map(x=>x.name),nativeUrls:window.__qaNativeUrlEvents||[]};").catch(()=>null)
+    results.failedView = await evaluate(activePage,"return {view:stores.get('settings').currentView,requireAppUnlock:stores.get('settings').requireAppUnlock,hasMasterPassword:stores.get('auth').hasMasterPassword,authLoadError:stores.get('auth').loadError,locked:stores.get('auth').isLocked,status:stores.get('protectedAccess').status,sessionRevision:stores.get('auth').sessionRevision,credentialPresent:Boolean(stores.get('auth').savedMasterPwd),apiKeyStatus:stores.get('settings').apiKeyStorageStatus,visibility:document.visibilityState,unlockButtonDisabled:document.querySelector('.lock-btn')?.disabled,enteredPasswordMatches:document.querySelector('.lock-screen input')?.value==="+JSON.stringify(password)+",dialog:document.querySelector('[role=dialog]')?.textContent?.slice(0,250),unlockMarks:performance.getEntriesByType('mark').filter(x=>x.name.startsWith('unlock:')).map(x=>x.name),committedRestoreDiagnostics:window.__qaCommittedDiagnostics,nativeUrls:window.__qaNativeUrlEvents||[]};").catch(()=>null)
     results.nativeEventDiagnostics = await evaluate(activePage, `
       const cap=window.Capacitor, root=document.querySelector('#app')._vnode?.component;
       const parsed=new URL('formyself://open/todo?item=synthetic&date=2026-10-26');
