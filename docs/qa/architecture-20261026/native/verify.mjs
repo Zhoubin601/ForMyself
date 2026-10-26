@@ -10,6 +10,7 @@ const pkg = 'com.yubin.formyself'
 let password = 'Synthetic-P6-native-only'
 const storeExpression = "document.querySelector('#app').__vue_app__.config.globalProperties.$pinia._s"
 const results = { pageErrors: [] }
+let activePage
 const devices = await _android.devices({ omitDriverInstall: true })
 const device = devices.find(d => d.serial() === (process.env.FORMYSELF_DEVICE_SERIAL || 'emulator-5554'))
 if (!device || !device.serial().startsWith('emulator-')) throw new Error('Only the isolated task emulator is supported')
@@ -31,6 +32,7 @@ const attach = async () => {
   await device.shell(`am start -n ${pkg}/.MainActivity`)
   const view = await device.webView({ pkg })
   const page = await view.page()
+  activePage = page
   page.setDefaultTimeout(120000)
   page.on('pageerror', error => results.pageErrors.push(error.message))
   await page.route('https://synthetic.invalid/**', route => route.fulfill({ status:200,contentType:'application/json',body:JSON.stringify({choices:[{message:{content:'合成回复：原生验证已收到消息。'}}]}) }))
@@ -51,6 +53,14 @@ const verifyIdentity = async page => {
   }
   await waitReady(page)
 }
+const verifyProtectedIdentity = async page => {
+  const input = page.locator('.feedback-input')
+  const retry = page.getByRole('button',{name:'验证并进入',exact:true})
+  await input.or(retry).first().waitFor()
+  if (!await input.isVisible()) await retry.click()
+  await input.fill(password)
+  await page.getByRole('button',{name:'验证',exact:true}).click()
+}
 const loadRuntime = page => evaluate(page, `const module=await import('/assets/${runtimeAsset}'); window.__qaRuntime=Object.values(module).find(x=>typeof x==='function')(); return true;`)
 try {
   results.deviceSerial = device.serial()
@@ -66,13 +76,18 @@ try {
   console.log('App initialized')
   await verifyIdentity(page); results.initialization = true
   await evaluate(page, `const s=stores.get('settings'); s.aiProviderUrl='https://synthetic.invalid'; s.aiApiKey='synthetic-native-key-only'; s.aiModel='synthetic'; await s.saveAiSettings();
-    await stores.get('weight').restoreWeightRecords([{id:'native-original',date:'2026-10-26',weight:65}]); await s.updateRequireAppUnlock(false); await s.flushPendingSettingsWrites(); return true;`)
+    await stores.get('weight').restoreWeightRecords([{id:'native-original',date:'2026-10-26',weight:65}]); await s.flushPendingSettingsWrites(); return true;`)
+  page=await coldStart()
+  await page.locator('.lock-screen input').waitFor()
+  results.requiredEntryColdStart = await evaluate(page,"return stores.get('auth').isLocked&&!stores.get('auth').savedMasterPwd;")
+  await verifyIdentity(page)
+  await evaluate(page,"await stores.get('settings').updateRequireAppUnlock(false);await stores.get('settings').flushPendingSettingsWrites();return true;")
   page=await coldStart(); await waitReady(page)
   results.optionalEntryColdStart = await evaluate(page, `return !stores.get('auth').isLocked && !stores.get('auth').savedMasterPwd && Object.values(stores.get('protectedAccess').status).every(s=>s==='idle');`)
   results.apiKeyColdStart = await evaluate(page,"return stores.get('settings').aiApiKey==='synthetic-native-key-only';")
   console.log('Cold start and credentials checked')
   await evaluate(page,"stores.get('settings').switchView('passwords'); return true;")
-  await page.locator('.feedback-input').fill(password); await page.getByRole('button',{name:'验证',exact:true}).click()
+  await verifyProtectedIdentity(page)
   await page.waitForFunction(`() => ${storeExpression}.get('protectedAccess').status.passwords==='ready'`)
   results.onlyRequestedModuleLoaded = await evaluate(page,"return stores.get('protectedAccess').status.chat==='idle';")
   await page.getByRole('button',{name:'添加',exact:true}).click()
@@ -87,7 +102,7 @@ try {
   await evaluate(page,"stores.get('settings').switchView('chat'); return true;")
   await page.waitForSelector('.chat-composer textarea')
   await page.locator('.chat-composer textarea').fill('合成原生测试消息'); await page.getByRole('button',{name:'发送消息',exact:true}).click()
-  await page.waitForFunction(`() => { const m=${storeExpression}.get('chat').messages,u=m.filter(x=>x.role==='user'&&x.content==='合成原生测试消息').slice(-1)[0];return u&&m.some(x=>x.role==='assistant'&&x.createdAt>u.createdAt&&x.status==='complete') }`, null,{timeout:120000})
+  await page.waitForFunction(`() => { const m=${storeExpression}.get('chat').messages,u=m.filter(x=>x.role==='user'&&x.content==='合成原生测试消息').slice(-1)[0];return u&&m.some(x=>x.role==='assistant'&&x.createdAt>u.createdAt&&x.status==='complete'&&x.content.includes('合成回复：原生验证')) }`, null,{timeout:120000})
   results.chatSendReply = true; await page.screenshot({path:resolve(directory,'native-chat.png')})
   console.log('Chat checked')
   const taskId = await evaluate(page,"await stores.get('todo').add({title:'合成深链待办',startDate:'2026-10-26',recurrence:{type:'none'}});return stores.get('todo').snapshot.tasks.find(t=>t.title==='合成深链待办').id;")
@@ -100,8 +115,7 @@ try {
   await page.waitForFunction(`() => {const s=${storeExpression};return Object.values(s.get('protectedAccess').status).every(x=>x==='idle')&&!s.get('auth').savedMasterPwd&&s.get('chat').messages.length===0}`,null,{polling:500})
   results.backgroundReleasesSensitiveData = await evaluate(page,"return !stores.get('auth').isLocked&&!stores.get('auth').savedMasterPwd&&stores.get('chat').messages.length===0;")
   await evaluate(page,"stores.get('settings').switchView('chat');return true;")
-  await page.locator('.feedback-input').fill(password)
-  await page.getByRole('button',{name:'验证',exact:true}).click()
+  await verifyProtectedIdentity(page)
   await page.waitForSelector('.chat-composer textarea')
   await loadRuntime(page)
   await evaluate(page,`await stores.get('protectedAccess').ensureModules(); const target=window.__qaRuntime.createFullBackupSnapshot();target.data.weight=[{id:'native-partial',date:'2026-10-26',weight:60}];
@@ -141,8 +155,7 @@ try {
   password = nextPassword
   page = await coldStart(); await waitReady(page)
   await evaluate(page,"stores.get('settings').switchView('chat');return true;")
-  await page.locator('.feedback-input').fill(password)
-  await page.getByRole('button',{name:'验证',exact:true}).click()
+  await verifyProtectedIdentity(page)
   await page.waitForSelector('.chat-composer textarea')
   results.passwordChangeColdStartPreservesChat = await evaluate(page,"return stores.get('chat').messages.some(m=>m.role==='user'&&m.content==='合成原生测试消息');")
   results.apiKeyAfterPasswordChange = await evaluate(page,"return stores.get('settings').aiApiKey==='synthetic-native-key-only';")
@@ -159,6 +172,10 @@ try {
   console.log(JSON.stringify(results))
 } catch(error) {
   results.error=String(error)
+  if (activePage && !activePage.isClosed()) {
+    results.failedView = await evaluate(activePage,"return {view:stores.get('settings').currentView,locked:stores.get('auth').isLocked,status:stores.get('protectedAccess').status};").catch(()=>null)
+    await activePage.screenshot({path:resolve(directory,'playwright-failure.png'),timeout:5000}).catch(()=>{})
+  }
   await writeFile(resolve(directory,'playwright-attempt.json'),JSON.stringify(results,null,2)+'\n')
   throw error
 } finally { await device.close() }

@@ -6,6 +6,13 @@
       "failed_step": "android-actions/setup-android@v3",
       "reason": "Default action packages requested obsolete SDK package tools, which is no longer available",
       "fix": "Request platform-tools explicitly; SDK/platform/build-tools remain explicit"
+    },
+    {
+      "run_id": 40285818837,
+      "commit": "1b10632",
+      "passed": "Web quality, Android build/instrumentation, app initialization, optional-entry/API-key cold start, vault UI, chat, deep link and background release",
+      "failed_step": "Post-background protected entry test driver waited directly for password input",
+      "fix": "Click the product verification CTA before waiting for its input; also test required-entry cold start and assert mocked reply content"
     }
   ]
 }
