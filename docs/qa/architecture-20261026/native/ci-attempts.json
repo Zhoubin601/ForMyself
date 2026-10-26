@@ -1,0 +1,11 @@
+{
+  "attempts": [
+    {
+      "run_id": 40285681136,
+      "commit": "3d35ee3",
+      "failed_step": "android-actions/setup-android@v3",
+      "reason": "Default action packages requested obsolete SDK package tools, which is no longer available",
+      "fix": "Request platform-tools explicitly; SDK/platform/build-tools remain explicit"
+    }
+  ]
+}
