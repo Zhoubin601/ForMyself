@@ -77,7 +77,7 @@ export const useMoodStore = defineStore('mood', () => {
   watch(
     moodRecords,
     (newVal) => {
-      if (isDataLoaded.value) {
+      if (persistence.canAutosave()) {
         void Preferences.set({
           key: STORAGE_KEY,
           value: JSON.stringify(newVal)
@@ -90,7 +90,7 @@ export const useMoodStore = defineStore('mood', () => {
   watch(
     customTags,
     (newVal) => {
-      if (isDataLoaded.value) {
+      if (persistence.canAutosave()) {
         void Preferences.set({ key: CUSTOM_TAGS_KEY, value: JSON.stringify(newVal) }).catch(() => {})
       }
     },
@@ -100,7 +100,7 @@ export const useMoodStore = defineStore('mood', () => {
   watch(
     moodDefinitions,
     (newVal) => {
-      if (isDataLoaded.value) {
+      if (persistence.canAutosave()) {
         void Preferences.set({ key: MOOD_DEFINITIONS_KEY, value: JSON.stringify(newVal) }).catch(() => {})
       }
     },
@@ -109,7 +109,7 @@ export const useMoodStore = defineStore('mood', () => {
 
   // --- 自动补齐缺失日期的逻辑 ---
   const autoFillMissingDays = async () => {
-    if (!isDataLoaded.value) return
+    if (!persistence.canAutosave()) return
     if (!trackingStartDate.value) return
 
     // 计算"昨天"的日期（今天留给用户自己填）
@@ -203,7 +203,7 @@ export const useMoodStore = defineStore('mood', () => {
   }
 
   const restoreMoodBackup = async (records, metadata = {}) => {
-    persistence.assertReady()
+    persistence.assertLoaded()
     const baseDefinitions = normalizeMoodDefinitions(metadata.definitions)
     const defaultMoodId = getDefaultMoodDefinition(baseDefinitions).id
     moodRecords.value = normalizeMoodRecords(records, undefined, defaultMoodId)
@@ -274,7 +274,7 @@ export const useMoodStore = defineStore('mood', () => {
   }
 
   const persistTagSettings = () => Preferences.set({ key: STORAGE_KEYS.moodTagSettings, value: JSON.stringify({ builtInTags: builtInTags.value, defaultTags: defaultTags.value }) })
-  watch([builtInTags, defaultTags], () => { if (isDataLoaded.value) persistTagSettings().catch(error => console.error('保存心情标签失败', error)) }, { deep: true, flush: 'sync' })
+  watch([builtInTags, defaultTags], () => { if (persistence.canAutosave()) persistTagSettings().catch(error => console.error('保存心情标签失败', error)) }, { deep: true, flush: 'sync' })
   const renameTag = (oldName, value) => {
     persistence.assertReady()
     const name = normalizeMoodTag(value)
@@ -371,7 +371,7 @@ export const useMoodStore = defineStore('mood', () => {
   }
 
   const restoreMoodDefinition = id => {
-    persistence.assertReady()
+    persistence.assertLoaded()
     if (!moodDefinitions.value.some(item => item.id === id)) return false
     moodDefinitions.value = normalizeMoodDefinitions(moodDefinitions.value.map(item => (
       item.id === id ? { ...item, archived: false } : item

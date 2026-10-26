@@ -1,3 +1,4 @@
+import { assertOrdinaryWriteAllowed, restoreState } from './restoreState.js'
 import { ref } from 'vue'
 
 // The driver is injected; stores share failure semantics without sharing business data.
@@ -5,11 +6,13 @@ export function createStorePersistence(isDataLoaded, driver) {
   const loadStatus = ref('idle'), loadError = ref(''), saveStatus = ref('saved'), saveError = ref('')
   const pending = new Map()
   let chain = Promise.resolve(), loading = null
-  const assertReady = () => {
+  const assertLoaded = () => {
     if (!isDataLoaded.value) throw new Error('数据尚未安全加载，请先重试读取')
   }
+  const assertReady = () => { assertLoaded(); assertOrdinaryWriteAllowed() }
+  const canAutosave = () => isDataLoaded.value && !restoreState.blocked
   const write = options => {
-    assertReady()
+    assertLoaded()
     const entry = { ...options }
     pending.set(entry.key, entry)
     saveStatus.value = 'saving'
@@ -27,7 +30,7 @@ export function createStorePersistence(isDataLoaded, driver) {
     return result
   }
   const flush = async () => {
-    assertReady()
+    assertLoaded()
     await chain
     if (pending.size) {
       // Snapshot the latest values, including edits made while a previous write failed.
@@ -49,13 +52,13 @@ export function createStorePersistence(isDataLoaded, driver) {
       }
       commit(value)
       isDataLoaded.value = true; loadStatus.value = 'ready'
-      try { await afterLoad() } catch { /* write() retains the failed value and visible status */ }
+      try { if (!restoreState.blocked) await afterLoad() } catch { /* write() retains the failed value and visible status */ }
       return true
     })().finally(() => { loading = null })
     return loading
   }
   const expose = { loadStatus, loadError, saveStatus, saveError, flush, retrySave: flush }
-  return { load, assertReady, write, expose, storage: { get: options => driver.get(options), set: write } }
+  return { load, assertReady, assertLoaded, canAutosave, write, expose, storage: { get: options => driver.get(options), set: write } }
 }
 
 export function parseStoredJson(value, fallback, kind = 'array') {

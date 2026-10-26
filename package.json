@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "postinstall": "node scripts/patch-capacitor-local-notifications.mjs && node scripts/patch-capacitor-native-biometric.mjs",
+    "postinstall": "node scripts/patch-capacitor-local-notifications.mjs && node scripts/patch-capacitor-native-biometric.mjs && node scripts/patch-capacitor-preferences.mjs",
     "dev": "vite",
     "build": "vite build",
     "test": "node --test tests/*.test.js",

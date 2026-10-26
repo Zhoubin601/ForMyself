@@ -1,3 +1,4 @@
+import { assertOrdinaryWriteAllowed } from '../platform/storage/restoreState.js'
 import { computed, reactive, ref, watch } from 'vue'
 import { defineStore } from 'pinia'
 import { useAuthStore } from './auth.js'
@@ -136,8 +137,8 @@ export const useProtectedAccessStore = defineStore('protectedAccess', () => {
       finish()
     }
   }
-  const runOperation = (modules, action) => {
-    const task = operationQueue.catch(() => {}).then(() => performOperation(modules, action))
+  const runOperation = (modules, action, { recovering = false } = {}) => {
+    const task = operationQueue.catch(() => {}).then(() => { if (!recovering) assertOrdinaryWriteAllowed(); return performOperation(modules, action) })
     operationQueue = task
     return task
   }
@@ -166,5 +167,14 @@ export const useProtectedAccessStore = defineStore('protectedAccess', () => {
     }
   }, { flush: 'sync' })
 
-  return { status, revision, recoveryRequired, releaseError, authenticated, authenticate, ensureModule, ensureModules, runOperation }
+  const prepareRecovery = async () => {
+    if (!await authenticate()) return false
+    if (recoveryRequired.value) {
+      recoveryRequired.value = false
+      for (const module of Object.keys(status)) status[module] = 'idle'
+    }
+    return ensureModules()
+  }
+
+  return { prepareRecovery, status, revision, recoveryRequired, releaseError, authenticated, authenticate, ensureModule, ensureModules, runOperation }
 })

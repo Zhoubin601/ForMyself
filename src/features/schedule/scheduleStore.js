@@ -38,7 +38,7 @@ export const useScheduleStore = defineStore('schedule', () => {
   const persist = async () => {
     if (persistTimer) globalThis.clearTimeout(persistTimer)
     persistTimer = null
-    persistence.assertReady()
+    persistence.assertLoaded()
     const data = normalizeScheduleData(snapshot.value)
     await Promise.all([
       Preferences.set({ key: SCHEDULE_STORAGE_KEY, value: JSON.stringify(data) }),
@@ -49,7 +49,7 @@ export const useScheduleStore = defineStore('schedule', () => {
     ])
   }
   const queuePersist = () => {
-    if (!isDataLoaded.value) return
+    if (!persistence.canAutosave()) return
     if (persistTimer) globalThis.clearTimeout(persistTimer)
     persistTimer = globalThis.setTimeout(() => {
       persist().catch(error => console.warn('保存日程数据失败', error))
@@ -190,7 +190,7 @@ export const useScheduleStore = defineStore('schedule', () => {
   const categoryUsageCount = id => countScheduleCategoryUsage(snapshot.value, id)
 
   const restoreScheduleData = async value => {
-    persistence.assertReady()
+    persistence.assertLoaded()
     const data = normalizeScheduleData(value)
     series.value = data.series
     occurrences.value = data.occurrences

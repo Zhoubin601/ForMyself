@@ -1,3 +1,4 @@
+import { restoreState } from '../platform/storage/restoreState.js'
 import { computed, nextTick, onBeforeUnmount, ref, onMounted, watch, watchEffect } from 'vue'
 import { StatusBar } from '@capacitor/status-bar'
 import { LocalNotifications } from '@capacitor/local-notifications'
@@ -41,9 +42,9 @@ export function useAppController() {
     { id: 'mood', title: '心情日记', store: moodStore, load: () => moodStore.loadMoodRecords() },
     { id: 'schedule', title: '日程提醒', store: scheduleStore, load: () => scheduleStore.loadSchedules() }
   ]
-  const aggregateReady = () => [moodStore, weightStore, debtStore].every(store => store.isDataLoaded && !store.saveError)
+  const aggregateReady = () => !restoreState.blocked && [moodStore, weightStore, debtStore].every(store => store.isDataLoaded && !store.saveError)
   const refreshSafeHomeWidget = data => aggregateReady() ? refreshHomeWidget(data) : Promise.resolve(false)
-  const syncSafeScheduleNotifications = data => scheduleStore.isDataLoaded && !scheduleStore.saveError
+  const syncSafeScheduleNotifications = data => !restoreState.blocked && scheduleStore.isDataLoaded && !scheduleStore.saveError
     ? syncScheduleNotifications(data) : Promise.resolve(false)
   const dataIssues = computed(() => ordinaryData.flatMap(({ id, title, store, load }) => {
     if (store.loadError) return [{ id, title, message: store.loadError, action: '重试读取', retry: load }]
@@ -52,6 +53,7 @@ export function useAppController() {
     return []
   }))
   const dataReady = computed(() => {
+    if (restoreState.blocked) return false
     const view = settingsStore.currentView === 'settings' ? settingsStore.settingsScope : settingsStore.currentView
     if (['home', 'reports'].includes(view)) return ordinaryData.every(({ store }) => store.isDataLoaded)
     return ordinaryData.find(item => item.id === view)?.store.isDataLoaded ?? true
@@ -263,6 +265,7 @@ export function useAppController() {
   }
 
   const resyncChatProactive = async () => {
+    if (restoreState.blocked) return
     if (settingsStore.warmHomeEnabled && (protectedAccess.status.chat !== 'ready' || !chatStore)) return
     const [{ syncChatProactiveNotifications }, { syncChatFollowupNotifications }] = await Promise.all([
       import('../features/chat/chatProactive.js'),
@@ -495,6 +498,7 @@ export function useAppController() {
   }, { immediate: true })
 
   const scheduleProtectedDataLoad = () => {
+    if (restoreState.blocked) { void retryFullRecovery(); return }
     const start = () => ensureProtectedDataReady().catch(() => {})
     afterTwoPaints(start)
   }
@@ -565,7 +569,22 @@ export function useAppController() {
     }
   }
 
+  const retryFullRecovery = async () => {
+    if (restoreState.busy) return
+    try {
+      if (!await protectedAccess.prepareRecovery()) return
+      const { createFullBackupRuntime } = await import('../application/fullBackupRuntime.js')
+      const runtime = createFullBackupRuntime()
+      await protectedAccess.runOperation(['passwords', 'chat'], password => runtime.recover(password), { recovering: true })
+    } catch { appToast(restoreState.message || '恢复失败，请保留应用数据并重试', { tone: 'danger' }) }
+  }
+  const retryRestoreSync = async () => {
+    const { createFullBackupRuntime } = await import('../application/fullBackupRuntime.js')
+    await createFullBackupRuntime().retrySynchronization()
+  }
+
   return {
+    restoreState, retryFullRecovery, retryRestoreSync,
     dataIssues,
     dataReady,
     appWrapperRef,

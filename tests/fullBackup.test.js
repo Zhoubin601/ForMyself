@@ -300,3 +300,21 @@ test('完整备份中的空心情 ID 回退到备份目录的默认项', () => {
   const restored = normalizeFullBackupSnapshot(snapshot)
   assert.equal(restored.data.mood[0].mood, 'calm')
 })
+
+for (let version = 1; version <= FULL_BACKUP_VERSION; version++) {
+  test(`完整备份v${version}兼容入口保留核心记录及旧版缺失字段语义`, () => {
+    const fixture = buildFixture()
+    fixture.version = version
+    if (version < 2) delete fixture.data.schedules
+    if (version < 3) delete fixture.data.chat
+    if (version < 10) delete fixture.data.todos
+    const restored = normalizeFullBackupSnapshot(fixture)
+    assert.equal(restored.data.weight[0].id, 'weight-1')
+    assert.equal(restored.data.passwords[0].appName, '示例账户')
+    assert.equal(restored.data.savings[0].id, 'saving-1')
+    assert.equal(restored.data.mood[0].id, 'mood-1')
+    if (version < 2) assert.equal(restored.data.schedules.series.length, 0)
+    if (version < 3) assert.equal(restored.data.chat.messages.length, 0)
+    if (version < 10) assert.equal(Object.hasOwn(restored.data, 'todos'), false)
+  })
+}

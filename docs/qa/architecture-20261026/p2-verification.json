@@ -1,0 +1,13 @@
+{
+  "stage": "P2",
+  "command": "npm run check",
+  "exit_code": 0,
+  "node_passed": 274,
+  "component_passed": 127,
+  "lint_errors": 0,
+  "lint_warnings": 55,
+  "typecheck": "passed",
+  "build": "passed",
+  "native": "deferred to P6",
+  "restore_encryption": "AES-GCM, PBKDF2-SHA256 210000 iterations"
+}

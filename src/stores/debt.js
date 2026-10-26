@@ -43,7 +43,7 @@ export const useDebtStore = defineStore('debt', () => {
     savedDebts,
     (newDebts) => {
       if (!silent) revision++
-      if (isDataLoaded.value && !silent) {
+      if (persistence.canAutosave() && !silent) {
         automaticValue = JSON.stringify(newDebts)
         if (!automaticWriteQueued) {
           automaticWriteQueued = true
@@ -70,7 +70,7 @@ export const useDebtStore = defineStore('debt', () => {
   }
 
   const restoreDebts = async (newList, groups = []) => {
-    persistence.assertReady()
+    persistence.assertLoaded()
     assign(newList)
     debtGroups.value = normalizeDebtGroups(groups, newList)
     const value = JSON.stringify(newList)

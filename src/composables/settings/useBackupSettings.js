@@ -1,3 +1,5 @@
+import { restoreState } from '../../platform/storage/restoreState.js'
+import { createFullBackupRuntime } from '../../application/fullBackupRuntime.js'
 import { Capacitor } from '@capacitor/core'
 import { ref } from 'vue'
 import { Filesystem, Directory, Encoding } from '@capacitor/filesystem'
@@ -124,80 +126,9 @@ export function useBackupSettings() {
     return { full: 'Full', savings: 'Savings', weight: 'Weight', mood: 'Mood', passwords: 'Passwords', schedules: 'Schedules', todos:'Todos', chat: 'WarmHome' }[exportDataType.value]
   }
 
-  const createFullBackupSnapshot = () => buildFullBackupSnapshot({
-    savings: debtStore.savedDebts,
-    savingsMetadata: { groups: debtStore.debtGroups },
-    weight: weightStore.weightRecords,
-    mood: moodStore.moodRecords,
-    passwords: vaultStore.records,
-    schedules: scheduleStore.snapshot,
-    todos: todoStore.snapshot,
-    chat: chatStore.snapshot,
-    moodMetadata: {
-      trackingStartDate: moodStore.trackingStartDate,
-      customTags: moodStore.customTags,
-      builtInTags: moodStore.builtInTags,
-      defaultTags: moodStore.defaultTags,
-      definitions: moodStore.moodDefinitions
-    },
-    vaultMetadata: {
-      categories: vaultStore.categories
-    },
-    settings: settingsStore.getBackupSnapshot()
-  })
-
-  const applyFullBackupSnapshot = async (snapshot) => {
-    const results = await Promise.allSettled([
-      debtStore.restoreDebts(snapshot.data.savings, snapshot.metadata.savings.groups),
-      weightStore.restoreWeightRecords(snapshot.data.weight),
-      moodStore.restoreMoodBackup(snapshot.data.mood, snapshot.metadata.mood),
-      vaultStore.restoreRecords(snapshot.data.passwords, snapshot.metadata.vault),
-      scheduleStore.restoreScheduleData(snapshot.data.schedules),
-      ...(Object.hasOwn(snapshot.data, 'todos') ? [todoStore.restore(snapshot.data.todos)] : []),
-      chatStore.restoreChatData(snapshot.data.chat),
-      settingsStore.restoreBackupSnapshot(snapshot.settings)
-    ])
-    const failure = results.find(result => result.status === 'rejected')
-    if (failure) throw failure.reason
-  }
-
-  const restoreFullBackup = async (snapshot) => {
-    await todoStore.load()
-    if (!todoStore.isDataLoaded) throw new Error(todoStore.loadError)
-    const previousSnapshot = createFullBackupSnapshot()
-    try {
-      await applyFullBackupSnapshot(snapshot)
-    } catch (error) {
-      try {
-        await applyFullBackupSnapshot(previousSnapshot)
-      } catch (rollbackError) {
-        console.error('完整备份恢复失败且回滚未完全成功', rollbackError)
-      }
-      throw error
-    }
-
-    try {
-      await syncReminderNotifications(settingsStore.notificationSettings, {
-        personalizedBodies: getPersonalizedReminderBodies(settingsStore.notificationAiContent)
-      })
-      await todoStore.syncReminders()
-      await syncScheduleNotifications(scheduleStore.snapshot)
-      chatStore.materializeDueProactive(Date.now())
-      chatStore.materializeDueFollowups(Date.now())
-      await syncChatProactiveNotifications(
-        chatStore.proactiveOutbox,
-        chatStore.proactiveSettings,
-        { isFeatureEnabled: () => settingsStore.warmHomeEnabled, requestPermission: false, now: new Date() }
-      )
-      await syncChatFollowupNotifications(
-        chatStore.followupOutbox,
-        chatStore.realismSettings,
-        { isFeatureEnabled: () => settingsStore.warmHomeEnabled, requestPermission: false, now: new Date() }
-      )
-    } catch (error) {
-      console.warn('恢复完整备份后刷新通知失败', error)
-    }
-  }
+  const fullBackup = createFullBackupRuntime()
+  const { createFullBackupSnapshot, applyFullBackupSnapshot } = fullBackup
+  const restoreFullBackup = snapshot => fullBackup.restore(snapshot, authStore.savedMasterPwd)
 
   const downloadAsFile = (content, filename) => {
     const blob = new Blob([content], { type: 'application/json' })
@@ -211,16 +142,20 @@ export function useBackupSettings() {
     URL.revokeObjectURL(url)
   }
 
+  const ensureOrdinaryDataReady = async () => {
+    const required = { savings: debtStore, weight: weightStore, mood: moodStore, schedules: scheduleStore }
+    const targets = exportDataType.value === 'full' ? Object.values(required) : [required[exportDataType.value]].filter(Boolean)
+    if (targets.some(store => !store.isDataLoaded)) throw new Error('部分数据尚未安全读取，请重试读取后再备份或导入')
+    for (const store of targets) await store.flush()
+  }
+
   const exportJSONAuthenticated = async (password, session) => {
     if (['full','todos'].includes(exportDataType.value)) {
       await todoStore.flush()
       await todoStore.load()
       if (!todoStore.isDataLoaded) return appAlert('待办未能安全加载，请重试后导出')
     }
-    const required = { savings: debtStore, weight: weightStore, mood: moodStore, schedules: scheduleStore }
-    const targets = exportDataType.value === 'full' ? Object.values(required) : [required[exportDataType.value]].filter(Boolean)
-    if (targets.some(store => !store.isDataLoaded)) return appAlert('部分数据尚未安全读取，请重试读取后再备份')
-    for (const store of targets) await store.flush()
+    await ensureOrdinaryDataReady()
     const label = getDataTypeLabel()
     const isFullBackup = exportDataType.value === 'full'
     const data = isFullBackup ? createFullBackupSnapshot() : getDataArray()
@@ -283,11 +218,8 @@ export function useBackupSettings() {
         const decryptedData = bytes.toString(CryptoJS.enc.Utf8)
         if (!decryptedData) throw new Error('密码错误')
         const importedData = JSON.parse(decryptedData)
-        const required = { savings: debtStore, weight: weightStore, mood: moodStore, schedules: scheduleStore }
-    const targets = exportDataType.value === 'full' ? Object.values(required) : [required[exportDataType.value]].filter(Boolean)
-    if (targets.some(store => !store.isDataLoaded)) return appAlert('部分数据尚未安全读取，请重试读取后再备份')
-    for (const store of targets) await store.flush()
-    const label = getDataTypeLabel()
+        await ensureOrdinaryDataReady()
+        const label = getDataTypeLabel()
 
         if (exportDataType.value === 'todos') {
           const data = readTodoBackup(importedData)
@@ -377,7 +309,9 @@ export function useBackupSettings() {
           await setDataArray(importedData, false)
         }
         appToast(`${label}数据恢复成功`, { tone: 'success' })
-      } catch {
+      } catch (error) {
+        if (restoreState.blocked) return appAlert(restoreState.message)
+        if (error?.rollbackFailed) return appAlert('完整恢复回滚失败，请保留应用数据并重试恢复')
         if (exportDataType.value === 'todos') {
           appAlert('待办恢复失败：文件格式、版本或主密码不匹配；原待办保留')
         } else if (exportDataType.value === 'full') {

@@ -1,3 +1,4 @@
+import { assertOrdinaryWriteAllowed, restoreState } from '../../platform/storage/restoreState.js'
 import { computed, ref } from 'vue'
 import { defineStore } from 'pinia'
 import { todoRepository } from './todoRepository.js'
@@ -15,6 +16,7 @@ export const useTodoStore = defineStore('todo', () => {
   let reminders = Promise.resolve()
   const syncReminders = (requestPermission = false) => {
     const result = reminders.catch(() => {}).then(async () => {
+      if (restoreState.blocked) return
       try { await syncTodoNotifications(await todoRepository.read(), requestPermission); reminderError.value = '' }
       catch (e) { reminderError.value = e.message; if (requestPermission) throw e }
     })
@@ -31,6 +33,7 @@ export const useTodoStore = defineStore('todo', () => {
     catch (e) { loadError.value = e.message; isDataLoaded.value = false }
   }
   const apply = async command => {
+    if (command.type !== 'restore') assertOrdinaryWriteAllowed()
     if (!isDataLoaded.value) throw new Error('待办尚未加载，请重试')
     const saved = await todoRepository.apply(command)
     if (saved.revision >= snapshot.value.revision) snapshot.value = saved

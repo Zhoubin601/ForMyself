@@ -1,3 +1,8 @@
+import { createFullBackupRuntime } from '../src/application/fullBackupRuntime.js'
+import { buildFullBackupSnapshot } from '../src/services/fullBackup.js'
+import { restoreState } from '../src/platform/storage/restoreState.js'
+import { RESTORE_PATH } from '../src/platform/storage/restoreJournal.js'
+import { useWeightStore } from '../src/stores/weight.js'
 import { webcrypto } from 'node:crypto'
 import CryptoJS from 'crypto-js'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -53,6 +58,7 @@ const decode = (ciphertext, password) => JSON.parse(CryptoJS.AES.decrypt(ciphert
 describe('实际加密存储：改密回滚与失败保存恢复', () => {
   let auth, access
   beforeEach(async () => {
+    Object.assign(restoreState, { blocked: false, busy: false, message: '', syncError: '' })
     await preferenceStorage.flush()
     vi.stubGlobal('crypto', webcrypto)
     mock.preferences.clear(); mock.files.clear(); mock.alert.mockClear()
@@ -204,4 +210,18 @@ describe('实际加密存储：改密回滚与失败保存恢复', () => {
     expect(useChatStore().messages.some(x => x.content === 'Synthetic newer message')).toBe(true)
     expect((await createChatStorage().load(original)).data.messages).toHaveLength(2)
   })
+  it('产品完整恢复协调器使用实际全部Store，参与者失败后原数据与加密资料均回滚', async () => {
+    const weight = useWeightStore(); await weight.loadWeightRecords()
+    weight.addRecord({ id: 'original-weight', date: '2026-10-26', weight: 65 }); await weight.flush()
+    await prepareVault()
+    const runtime = createFullBackupRuntime()
+    mock.failPreference = STORAGE_KEYS.debtGroups
+    const target = buildFullBackupSnapshot({ weight: [{ id: 'target-weight', weight: 60 }], passwords: [{ id: 'changed', appName: 'target', password: 'fake' }] })
+    await expect(runtime.restore(target, original)).rejects.toThrow('INJECTED_PREFERENCE_FAILURE')
+    expect(weight.weightRecords[0].id).toBe('original-weight')
+    expect(JSON.parse(mock.preferences.get(STORAGE_KEYS.weightRecords))[0].id).toBe('original-weight')
+    await expectOriginalVaultReadable()
+    expect(restoreState.blocked).toBe(false); expect(mock.files.has(RESTORE_PATH)).toBe(false)
+  })
+
 })

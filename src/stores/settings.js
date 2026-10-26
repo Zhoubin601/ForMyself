@@ -1,3 +1,4 @@
+import { restoreState } from '../platform/storage/restoreState.js'
 import { normalizeCommonNotes } from '../services/commonNotes.js'
 import { normalizeBackgroundEffects } from '../services/backgroundSettings.js'
 import { buildComponentCssVariables, decodeBackground, normalizeComponentTransparency } from '../services/componentAppearance.js'
@@ -103,7 +104,7 @@ export const useSettingsStore = defineStore('settings', () => {
     await Preferences.set({ key, value: pending })
   }
   const queuePreferenceWrite = (key, value, delay = 300) => {
-    if (!isDataLoaded.value) return
+    if (!isDataLoaded.value || restoreState.blocked) return
     pendingPreferenceWrites.set(key, value)
     const previous = pendingPreferenceTimers.get(key)
     if (previous) globalThis.clearTimeout(previous)
@@ -147,7 +148,7 @@ export const useSettingsStore = defineStore('settings', () => {
     ])
   }
   const queueApiKeyWrite = value => {
-    if (!isDataLoaded.value || !Capacitor.isNativePlatform()) return
+    if (!isDataLoaded.value || restoreState.blocked || !Capacitor.isNativePlatform()) return
     pendingApiKey = String(value || '')
     apiKeyRevision += 1
     apiKeyStorageStatus.value = 'saving'

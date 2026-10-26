@@ -92,8 +92,12 @@ public final class TodoRepository {
         result.sort(Comparator.comparing((JSONObject t) -> t.optString("time").isEmpty() ? "99:99" : t.optString("time")).thenComparingLong(t -> t.optLong("createdAt")).thenComparing(t -> t.optString("id")));
         return result;
     }
+    private static void ensureNoPendingRestore(Context context) throws Exception {
+        if (new java.io.File(context.getFilesDir(), "formyself/restore-v1.enc").exists()) throw new Exception("RESTORE_RECOVERY_REQUIRED");
+    }
     public static JSONObject toggleCompleted(Context context,String taskId,String date) throws Exception {
         synchronized (LOCK) {
+            ensureNoPendingRestore(context);
             if (!today().equals(date)) throw new Exception("TODO_STALE_WIDGET");
             for(JSONObject item:day(readUnlocked(context),date)) {
                 if(item.getString("id").equals(taskId)) return setCompleted(context,taskId,date,!item.optBoolean("completed"));
@@ -103,6 +107,7 @@ public final class TodoRepository {
     }
     public static JSONObject setCompleted(Context context, String taskId, String date, boolean completed) throws Exception {
         synchronized (LOCK) {
+            ensureNoPendingRestore(context);
             if (!today().equals(date)) throw new Exception("TODO_STALE_WIDGET");
             JSONObject data = readUnlocked(context);
             boolean valid = false;

@@ -18,6 +18,7 @@ const PasswordVaultView = defineAsyncComponent(() => import('./components/Passwo
 const SettingsView = defineAsyncComponent(() => import('./components/SettingsView.vue'))
 
 const {
+  restoreState, retryFullRecovery, retryRestoreSync,
   dataIssues,
   dataReady,
   appWrapperRef,
@@ -147,6 +148,13 @@ const activeBackgroundStyle = computed(() => backgroundEffectStyle(
       </div>
     </div>
 
+    <div v-if="restoreState?.blocked && !authStore.isLocked" class="protected-data-loading" role="alert">
+      <p>{{ restoreState.message }}</p>
+      <button class="button-primary" :disabled="restoreState.busy" @click="retryFullRecovery">{{ restoreState.busy ? '正在恢复…' : '验证并重试恢复' }}</button>
+    </div>
+    <div v-if="restoreState?.syncError" class="protected-data-loading" role="status">
+      <p>{{ restoreState.syncError }}</p><button class="button-secondary-pill" @click="retryRestoreSync">重试同步</button>
+    </div>
     <div v-if="hasEnteredApp" v-show="!authStore.isLocked" class="main-app fade-in">
       <div v-if="settingsStore.currentView !== 'schedule'" class="top-nav sub-nav-frosted">
         <button

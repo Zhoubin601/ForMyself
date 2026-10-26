@@ -18,7 +18,7 @@ export const useWeightStore = defineStore('weight', () => {
   watch(
     weightRecords,
     (newRecords) => {
-      if (isDataLoaded.value) {
+      if (persistence.canAutosave()) {
         void Preferences.set({
           key: STORAGE_KEYS.weightRecords,
           value: JSON.stringify(newRecords)
@@ -47,7 +47,7 @@ export const useWeightStore = defineStore('weight', () => {
   }
 
   const restoreWeightRecords = async (newList) => {
-    persistence.assertReady()
+    persistence.assertLoaded()
     weightRecords.value = newList
     await Preferences.set({
       key: STORAGE_KEYS.weightRecords,
