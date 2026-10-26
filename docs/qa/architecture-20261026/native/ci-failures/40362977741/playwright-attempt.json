@@ -1,0 +1,199 @@
+{
+  "pageErrors": [],
+  "startedAt": "2026-10-26T16:55:45.933Z",
+  "deviceSerial": "emulator-5554",
+  "uiInput": "Playwright Android coordinate touch mapped from DOM button bounds to actual native WebView bounds; CDP filling/inspection and state assertions",
+  "webviewTransport": "Isolated ADB forward + Playwright Chromium CDP",
+  "functionalTestDisplay": "480x800, density160, prefers-reduced-motion:reduce; browser QA separately uses normal motion",
+  "scriptSha256": "cf246eb3c30c595d55021d7e909d65a78dc461162ee3bde91557655826a48a6d",
+  "apkSha256": "00face7fe1cabd172a3967f3306c206e650a82517137c22e7f7a0a92f6d9a79e",
+  "api": "34",
+  "testWebViewFlags": "",
+  "webview": "Current WebView package (name, version): (com.android.webview, 113.0.5672.136)",
+  "emulatorScreenOffTimeout": "2147483647",
+  "uiTapTargets": [
+    {
+      "name": "初始化并进入",
+      "point": {
+        "x": 240,
+        "y": 523
+      },
+      "webViewBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 480,
+        "height": 800
+      },
+      "viewport": {
+        "width": 480,
+        "height": 800,
+        "dpr": 1
+      }
+    },
+    {
+      "name": "解锁进入",
+      "point": {
+        "x": 240,
+        "y": 523
+      },
+      "webViewBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 480,
+        "height": 800
+      },
+      "viewport": {
+        "width": 480,
+        "height": 800,
+        "dpr": 1
+      }
+    },
+    {
+      "name": "验证",
+      "point": {
+        "x": 329,
+        "y": 522
+      },
+      "webViewBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 480,
+        "height": 800
+      },
+      "viewport": {
+        "width": 480,
+        "height": 800,
+        "dpr": 1
+      }
+    },
+    {
+      "name": "添加",
+      "point": {
+        "x": 425,
+        "y": 101
+      },
+      "webViewBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 480,
+        "height": 800
+      },
+      "viewport": {
+        "width": 480,
+        "height": 800,
+        "dpr": 1
+      }
+    },
+    {
+      "name": "保存记录",
+      "point": {
+        "x": 379,
+        "y": 666
+      },
+      "webViewBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 480,
+        "height": 800
+      },
+      "viewport": {
+        "width": 480,
+        "height": 800,
+        "dpr": 1
+      }
+    }
+  ],
+  "initialization": true,
+  "masterPasswordInitialSave": true,
+  "apiKeyInitialSave": true,
+  "requiredEntryColdStart": true,
+  "optionalEntryInitialSave": true,
+  "optionalEntryColdStart": true,
+  "apiKeyColdStart": true,
+  "onlyRequestedModuleLoaded": true,
+  "vaultUiCreate": true,
+  "error": "TimeoutError: page.screenshot: Timeout 120000ms exceeded.\nCall log:\n  - taking page screenshot\n  - waiting for fonts to load...\n  - fonts loaded\n",
+  "failedView": {
+    "view": "passwords",
+    "requireAppUnlock": false,
+    "hasMasterPassword": true,
+    "authLoadError": "",
+    "locked": false,
+    "status": {
+      "passwords": "ready",
+      "chat": "idle"
+    },
+    "sessionRevision": 0,
+    "credentialPresent": true,
+    "apiKeyStatus": "saved",
+    "visibility": "visible",
+    "enteredPasswordMatches": false,
+    "unlockMarks": [],
+    "nativeUrls": []
+  },
+  "nativeEventDiagnostics": {
+    "url": {
+      "protocol": "formyself:",
+      "host": "",
+      "path": "//open/todo"
+    },
+    "rootMounted": true,
+    "rootUnmounted": false,
+    "mountHooks": 1,
+    "header": {
+      "name": "App",
+      "methods": [
+        {
+          "name": "toggleBackButtonHandler",
+          "rtype": "promise"
+        },
+        {
+          "name": "getState",
+          "rtype": "promise"
+        },
+        {
+          "name": "getInfo",
+          "rtype": "promise"
+        },
+        {
+          "name": "removeAllListeners",
+          "rtype": "promise"
+        },
+        {
+          "name": "getLaunchUrl",
+          "rtype": "promise"
+        },
+        {
+          "name": "checkPermissions",
+          "rtype": "promise"
+        },
+        {
+          "name": "requestPermissions",
+          "rtype": "promise"
+        },
+        {
+          "name": "exitApp",
+          "rtype": "promise"
+        },
+        {
+          "name": "removeListener"
+        },
+        {
+          "name": "getAppLanguage",
+          "rtype": "promise"
+        },
+        {
+          "name": "addListener"
+        },
+        {
+          "name": "minimizeApp",
+          "rtype": "promise"
+        }
+      ]
+    }
+  },
+  "consoleWarnings": [
+    "Error injecting safe area CSS: TypeError: Cannot read properties of null (reading 'style')\n    at <anonymous>:2:28",
+    "Error injecting safe area CSS: TypeError: Cannot read properties of null (reading 'style')\n    at <anonymous>:2:28"
+  ]
+}
