@@ -66,6 +66,13 @@
       "driver_error": "JS Playwright string function literals are expression values rather than invoked predicates; unlike the Python API, they were truthy without waiting",
       "fix": "Use an explicitly invoked shared state predicate, verify false/pending/timeout/function rejection in a real browser, and wait for sensitive release before resuming the Activity",
       "scope": "No failed/partial native run is counted as complete acceptance; browser Python wait semantics were independently checked"
+    },
+    {
+      "run_id": 40339155771,
+      "commit": "189de71",
+      "result": "The corrected waits exposed an API-key cold-start assertion failure, so no acceptance package was produced",
+      "driver_issue": "The fixture waited for ordinary stores but not settings initialization; API-key loading could still overwrite an early direct fixture assignment",
+      "fix": "Include settings.isDataLoaded in startup readiness and verify native API-key saved status before any force-stop; retain the cold-start value assertion"
     }
   ]
 }

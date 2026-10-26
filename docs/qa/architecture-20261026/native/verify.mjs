@@ -40,7 +40,7 @@ const settingsAsset = files.find(name => name.startsWith('settings-') && name.en
 if (!runtimeAsset || !settingsAsset) throw new Error('Missing matching production build')
 const evaluate = (page, body) => bounded(page.evaluate(`(async () => { const stores = ${storeExpression}; ${body} })()`),'WebView evaluate',90000)
 const waitState = (page, body, options) => waitForStoreState(page,storeExpression,body,options)
-const waitReady = page => waitState(page,"return ['weight','debt','mood','schedule','todo'].every(k=>stores.get(k)?.isDataLoaded)")
+const waitReady = page => waitState(page,"return ['settings','weight','debt','mood','schedule','todo'].every(k=>stores.get(k)?.isDataLoaded)")
 const waitRestoreIdle = page => page.waitForFunction(async asset => {
   const entry = await import('/assets/'+asset)
   const state = Object.values(entry).find(x => x && Object.hasOwn(x,'blocked') && Object.hasOwn(x,'busy') && Object.hasOwn(x,'syncError'))
@@ -113,6 +113,8 @@ try {
   await checkpoint('Initialization verified')
   await evaluate(page, `const s=stores.get('settings'); s.aiProviderUrl='https://synthetic.invalid'; s.aiApiKey='synthetic-native-key-only'; s.aiModel='synthetic'; await s.saveAiSettings();
     await stores.get('weight').restoreWeightRecords([{id:'native-original',date:'2026-10-26',weight:65}]); await s.flushPendingSettingsWrites(); return true;`)
+  await waitState(page,"return stores.get('settings').apiKeyStorageStatus==='saved'")
+  results.apiKeyInitialSave = await evaluate(page,"return stores.get('settings').aiApiKey==='synthetic-native-key-only'&&stores.get('settings').apiKeyStorageStatus==='saved';")
   await checkpoint('Native settings committed')
   page=await coldStart()
   await page.locator('.lock-screen input').waitFor()
