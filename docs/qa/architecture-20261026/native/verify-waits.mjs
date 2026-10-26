@@ -16,7 +16,11 @@ try {
   assert.equal(completed,true)
   await assert.rejects(waitForStoreState(page,'window.qaStore','return false',{timeout:100,polling:25}),/Timeout/)
   await assert.rejects(waitForStoreState(page,'window.qaStore','return () => false',{timeout:500}),/must return a value/)
-  const result={falseRemainsPending:true,trueResolves:true,falseTimesOut:true,functionValueRejected:true,browser:browser.version(),executedAt:new Date().toISOString()}
+  const rawAsync=await page.waitForFunction(async()=>false,null,{timeout:500})
+  assert.equal(await rawAsync.jsonValue(),false,'raw async false resolves a handle rather than polling again')
+  await rawAsync.dispose()
+  await assert.rejects(waitForStoreState(page,'window.qaStore','return Promise.resolve(false)',{timeout:500}),/synchronous value/)
+  const result={falseRemainsPending:true,trueResolves:true,falseTimesOut:true,functionValueRejected:true,promiseValueRejected:true,rawAsyncFalseReturnsFalseHandle:true,browser:browser.version(),executedAt:new Date().toISOString()}
   await writeFile(new URL('./wait-contract-results.json',import.meta.url),JSON.stringify(result,null,2)+'\n')
   console.log(JSON.stringify(result))
 } finally { await browser.close() }

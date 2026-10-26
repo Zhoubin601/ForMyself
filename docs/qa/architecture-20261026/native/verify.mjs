@@ -41,12 +41,15 @@ if (!runtimeAsset || !settingsAsset) throw new Error('Missing matching productio
 const evaluate = (page, body) => bounded(page.evaluate(`(async () => { const stores = ${storeExpression}; ${body} })()`),'WebView evaluate',90000)
 const waitState = (page, body, options) => waitForStoreState(page,storeExpression,body,options)
 const waitReady = page => waitState(page,"return ['settings','weight','debt','mood','schedule','todo'].every(k=>stores.get(k)?.isDataLoaded)")
-const waitRestoreIdle = page => page.waitForFunction(async asset => {
-  const entry = await import('/assets/'+asset)
-  const state = Object.values(entry).find(x => x && Object.hasOwn(x,'blocked') && Object.hasOwn(x,'busy') && Object.hasOwn(x,'syncError'))
-  if (!state) throw Error('Missing actual restore state')
-  return !state.blocked && !state.busy
-}, settingsAsset, { polling:250 })
+const waitRestoreIdle = async page => {
+  await bounded(page.evaluate(async asset => {
+    const entry=await import('/assets/'+asset)
+    const state=Object.values(entry).find(x=>x&&Object.hasOwn(x,'blocked')&&Object.hasOwn(x,'busy')&&Object.hasOwn(x,'syncError'))
+    if(!state)throw Error('Missing actual restore state')
+    window.__qaRestoreState=state
+  },settingsAsset),'Load actual restore state')
+  await waitState(page,'return Boolean(window.__qaRestoreState)&&!window.__qaRestoreState.blocked&&!window.__qaRestoreState.busy',{polling:250})
+}
 const attach = async () => {
   console.log('Attaching app WebView')
   await shell('input keyevent KEYCODE_WAKEUP')
@@ -221,6 +224,7 @@ try {
   await evaluate(page,`const entry=await import(document.querySelector('script[type=module]').src);
     const journal=Object.values(entry).find(x=>x&&Object.hasOwn(x,'inspect')&&Object.hasOwn(x,'commit')&&Object.hasOwn(x,'prepare'));
     if(!journal)throw Error('Missing actual journal');
+    if(await journal.inspect())throw Error('Previous recovery journal was not cleared before the next scenario');
     const target=window.__qaRuntime.createFullBackupSnapshot();target.data.weight=[{id:'native-committed',date:'2026-10-26',weight:61}];
     const info=window.__qaCommittedDiagnostics={participants:[],error:null};
     for(const participant of window.__qaRuntime.registry.list)for(const method of ['restore','flush']){

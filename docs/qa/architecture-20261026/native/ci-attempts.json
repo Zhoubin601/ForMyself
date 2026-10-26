@@ -162,6 +162,14 @@
       "passed": "Real rendering with two non-black Android screenshots; initialization, entry modes, API key, vault, actual chat reply, actual native deep-link route, true Android background release/reauthentication, force-stop uncommitted rollback",
       "failed_step": "Second restore had a prepared journal but no durable commit marker; original caught error was not retained",
       "next_probe": "Retain and rethrow actual participant restore/flush errors and the coordinator error, assert the only expected post-commit failure is the injected journal cleanup failure; do not relax the durable commit requirement"
+    },
+    {
+      "run_id": 40366715171,
+      "commit": "83328c6",
+      "diagnosis": "No participant failed. The next restore was rejected with RESTORE_RECOVERY_REQUIRED while an uncommitted journal still existed. The async waitRestoreIdle returned a false handle rather than polling: Playwright accepts its Promise as truthy, then resolves its false value. Cleanup injection could therefore interfere with the previous recovery still finishing.",
+      "fix": "Import the actual restore state once, then synchronously poll blocked/busy through the checked helper; assert the prior journal is absent before starting the committed scenario; reject Promise predicates in the helper",
+      "regression": "Real Chromium confirms raw async false resolves a false handle; false remains pending, true resolves, false times out, function/Promise return values are rejected; wait-contract-results.json",
+      "scope": "Keep all real native recovery assertions; previous partial flags are not complete acceptance"
     }
   ]
 }
