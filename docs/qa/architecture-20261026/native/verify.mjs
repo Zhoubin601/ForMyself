@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url'
 import { createHash } from 'node:crypto'
 import { execFile } from 'node:child_process'
 import { promisify } from 'node:util'
+import { waitForStoreState } from './waitForStoreState.mjs'
 const modulePath = process.env.FORMYSELF_PLAYWRIGHT_MODULE || 'playwright-core'
 const { _android, chromium } = await import(modulePath)
 const directory = dirname(fileURLToPath(import.meta.url)), root = resolve(directory, '../../../..')
@@ -38,7 +39,8 @@ const runtimeAsset = files.find(name => name.startsWith('fullBackupRuntime-') &&
 const settingsAsset = files.find(name => name.startsWith('settings-') && name.endsWith('.js'))
 if (!runtimeAsset || !settingsAsset) throw new Error('Missing matching production build')
 const evaluate = (page, body) => bounded(page.evaluate(`(async () => { const stores = ${storeExpression}; ${body} })()`),'WebView evaluate',90000)
-const waitReady = page => page.waitForFunction(`() => { const s=${storeExpression}; return ['weight','debt','mood','schedule','todo'].every(k=>s.get(k)?.isDataLoaded) }`, null, { timeout:120000 })
+const waitState = (page, body, options) => waitForStoreState(page,storeExpression,body,options)
+const waitReady = page => waitState(page,"return ['weight','debt','mood','schedule','todo'].every(k=>stores.get(k)?.isDataLoaded)")
 const waitRestoreIdle = page => page.waitForFunction(async asset => {
   const entry = await import('/assets/'+asset)
   const state = Object.values(entry).find(x => x && Object.hasOwn(x,'blocked') && Object.hasOwn(x,'busy') && Object.hasOwn(x,'syncError'))
@@ -123,14 +125,14 @@ try {
   await checkpoint('Cold start and credentials checked')
   await evaluate(page,"stores.get('settings').switchView('passwords'); return true;")
   await verifyProtectedIdentity(page)
-  await page.waitForFunction(`() => ${storeExpression}.get('protectedAccess').status.passwords==='ready'`)
+  await waitState(page,"return stores.get('protectedAccess').status.passwords==='ready'")
   results.onlyRequestedModuleLoaded = await evaluate(page,"return stores.get('protectedAccess').status.chat==='idle';")
   await page.getByRole('button',{name:'添加',exact:true}).click()
   await page.getByPlaceholder('例如：微信、GitHub',{exact:true}).fill('合成原生密码记录')
   await page.getByPlaceholder('手机号、邮箱或用户名',{exact:true}).fill('synthetic-account')
   await page.getByPlaceholder('输入密码',{exact:true}).fill('Synthetic-vault-content-only')
   await page.getByRole('button',{name:'保存记录',exact:true}).click()
-  await page.waitForFunction(`() => ${storeExpression}.get('passwordVault').records.some(r=>r.appName==='合成原生密码记录')`)
+  await waitState(page,"return stores.get('passwordVault').records.some(r=>r.appName==='合成原生密码记录')")
   await evaluate(page,"await stores.get('passwordVault').flush();return true;")
   results.vaultUiCreate = true
   await checkpoint('Vault create checked')
@@ -138,17 +140,20 @@ try {
   await evaluate(page,"stores.get('settings').switchView('chat'); return true;")
   await page.waitForSelector('.chat-composer textarea')
   await page.locator('.chat-composer textarea').fill('合成原生测试消息'); await page.getByRole('button',{name:'发送消息',exact:true}).click()
-  await page.waitForFunction(`() => { const m=${storeExpression}.get('chat').messages,u=m.filter(x=>x.role==='user'&&x.content==='合成原生测试消息').slice(-1)[0];return u&&m.some(x=>x.role==='assistant'&&x.createdAt>u.createdAt&&x.status==='complete'&&x.content.includes('合成回复：原生验证')) }`, null,{timeout:120000})
+  await waitState(page,"const m=stores.get('chat').messages,index=m.findLastIndex(x=>x.role==='user'&&x.content==='合成原生测试消息');return index>=0&&m.slice(index+1).some(x=>x.role==='assistant'&&x.status==='complete'&&x.content.includes('合成回复：原生验证'))")
   results.chatSendReply = true; await page.screenshot({path:resolve(directory,'native-chat.png')})
   await checkpoint('Chat checked')
   const taskId = await evaluate(page,"await stores.get('todo').add({title:'合成深链待办',startDate:'2026-10-26',recurrence:{type:'none'}});return stores.get('todo').snapshot.tasks.find(t=>t.title==='合成深链待办').id;")
   await shell(`am start -n ${pkg}/.MainActivity -a android.intent.action.VIEW -d 'formyself://open/todo?item=${taskId}&date=2026-10-26'`)
-  await page.waitForFunction(`() => ${storeExpression}.get('settings').currentView==='todo'`)
+  await waitState(page,`return stores.get('settings').currentView==='todo'&&stores.get('settings').todoTarget.item==='${taskId}'`)
   results.nativeDeepLink = await evaluate(page,`return stores.get('settings').todoTarget.item==='${taskId}';`)
+  await checkpoint('Native deep link checked')
   await evaluate(page,"stores.get('settings').autoLockDelaySeconds=0;return true;")
   await shell('input keyevent 3')
+  await waitState(page,"return Object.values(stores.get('protectedAccess').status).every(x=>x==='idle')&&!stores.get('auth').savedMasterPwd&&stores.get('chat').messages.length===0",{polling:500})
+  await checkpoint('Sensitive state released while backgrounded')
   await shell(`am start -n ${pkg}/.MainActivity`)
-  await page.waitForFunction(`() => {const s=${storeExpression};return Object.values(s.get('protectedAccess').status).every(x=>x==='idle')&&!s.get('auth').savedMasterPwd&&s.get('chat').messages.length===0}`,null,{polling:500})
+  await waitState(page,"return Object.values(stores.get('protectedAccess').status).every(x=>x==='idle')&&!stores.get('auth').savedMasterPwd&&stores.get('chat').messages.length===0",{polling:500})
   results.backgroundReleasesSensitiveData = await evaluate(page,"return !stores.get('auth').isLocked&&!stores.get('auth').savedMasterPwd&&stores.get('chat').messages.length===0;")
   await evaluate(page,"stores.get('settings').switchView('chat');return true;")
   await verifyProtectedIdentity(page)
@@ -163,7 +168,7 @@ try {
   page=await coldStart(); await page.getByRole('button',{name:'验证并重试恢复',exact:true}).waitFor()
   results.pendingRestoreBlocksColdStart = await evaluate(page,"return !stores.get('auth').savedMasterPwd;")
   await verifyIdentity(page)
-  await page.waitForFunction(`() => ${storeExpression}.get('weight').weightRecords[0]?.id==='native-original'`)
+  await waitState(page,"return stores.get('weight').weightRecords[0]?.id==='native-original'")
   await waitRestoreIdle(page)
   results.uncommittedForceStopRollback = true
   await checkpoint('Uncommitted rollback checked')
@@ -176,7 +181,7 @@ try {
     try{await window.__qaRuntime.restore(target,'${password}')}catch{}
     if(!(await journal.inspect()).committed)throw Error('Missing durable commit');return true;`)
   page=await coldStart(); await page.getByRole('button',{name:'验证并重试恢复',exact:true}).waitFor(); await verifyIdentity(page)
-  await page.waitForFunction(`() => ${storeExpression}.get('weight').weightRecords[0]?.id==='native-committed'`)
+  await waitState(page,"return stores.get('weight').weightRecords[0]?.id==='native-committed'")
   await waitRestoreIdle(page)
   results.committedForceStopRetainsTarget = true
   await checkpoint('Committed restore checked')
@@ -197,7 +202,7 @@ try {
   results.passwordChangeColdStartPreservesChat = await evaluate(page,"return stores.get('chat').messages.some(m=>m.role==='user'&&m.content==='合成原生测试消息');")
   results.apiKeyAfterPasswordChange = await evaluate(page,"return stores.get('settings').aiApiKey==='synthetic-native-key-only';")
   await evaluate(page,"stores.get('settings').switchView('passwords');return true;")
-  await page.waitForFunction(`() => ${storeExpression}.get('protectedAccess').status.passwords==='ready'`)
+  await waitState(page,"return stores.get('protectedAccess').status.passwords==='ready'")
   results.passwordChangeColdStartPreservesVault = await evaluate(page,"return stores.get('passwordVault').records.some(r=>r.appName==='合成原生密码记录'&&r.password==='Synthetic-vault-content-only');")
   await evaluate(page,"stores.get('settings').switchView('home');return true;")
   await page.screenshot({path:resolve(directory,'native-home.png')})

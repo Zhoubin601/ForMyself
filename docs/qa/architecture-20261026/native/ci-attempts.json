@@ -58,6 +58,14 @@
       "result": "Job cancelled at the 20-minute limit; reached required/optional entry and API-key cold-start checks, but no final acceptance flags were returned",
       "observed": "The first required-entry cold start took several minutes; no Google font provider process kill was recorded in the available output",
       "fix": "Stop build JVMs after each command, limit workers, use 480x800/density160 and reduced-motion functional UI, bound ADB/evaluate operations, and persist asserted checkpoints"
+    },
+    {
+      "run_id": 40336388458,
+      "commit": "61ac786",
+      "result": "Native pipeline became responsive; initialization, entry modes, API-key cold start and vault UI reached asserted checkpoints; deep-link/background flags were false and the run failed",
+      "driver_error": "JS Playwright string function literals are expression values rather than invoked predicates; unlike the Python API, they were truthy without waiting",
+      "fix": "Use an explicitly invoked shared state predicate, verify false/pending/timeout/function rejection in a real browser, and wait for sensitive release before resuming the Activity",
+      "scope": "No failed/partial native run is counted as complete acceptance; browser Python wait semantics were independently checked"
     }
   ]
 }
