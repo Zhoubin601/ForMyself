@@ -1,4 +1,4 @@
-import { addDays, formatLocalDate, parseLocalDate } from '../schedule/scheduleCore.js'
+import { addDays, formatLocalDate, parseLocalDate } from '../../shared/date.js'
 
 export { addDays, formatLocalDate, parseLocalDate }
 export const TODO_DATA_VERSION = 1

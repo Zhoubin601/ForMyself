@@ -30,5 +30,19 @@ export default [
       'vue/first-attribute-linebreak': 'off',
       'vue/require-default-prop': 'off'
     }
+  },
+  {
+    files: ['src/shared/**/*.js', 'src/platform/ai/**/*.js', 'src/features/**/*Core.js'],
+    rules: { 'no-restricted-imports': ['error', { patterns: [
+      { group: ['pinia', '**/stores/**', '**/*Store.js'], message: 'Shared rules and transport must receive data explicitly, without global stores.' }
+    ] }] }
+  },
+  {
+    files: ['src/features/**/*Store.js'],
+    rules: { 'no-restricted-imports': ['error', { paths: [
+      { name: '@capacitor/preferences', message: 'Use the feature repository.' },
+      { name: '@capacitor/filesystem', message: 'Use a storage adapter.' }
+    ] }] }
   }
+
 ]

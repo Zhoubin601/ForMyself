@@ -70,7 +70,7 @@ export function normalizeFullBackupSettings(value = {}) {
 }
 
 const requireArray = (value, field) => {
-  if (!Array.isArray(value)) throw new Error(`INVALID_FULL_BACKUP_${field.toUpperCase()}`)
+  if (!Array.isArray(value) || value.some(item => !item || typeof item !== 'object' || Array.isArray(item))) throw new Error(`INVALID_FULL_BACKUP_${field.toUpperCase()}`)
   return cloneJson(value)
 }
 
@@ -133,6 +133,7 @@ export function buildFullBackupSnapshot({
   }
 }
 
+/** @param {unknown} value @returns {import('../application/contracts').FullBackupDTO} */
 export function normalizeFullBackupSnapshot(value) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error('INVALID_FULL_BACKUP')
   if (value.type !== FULL_BACKUP_TYPE) throw new Error('INVALID_FULL_BACKUP_TYPE')

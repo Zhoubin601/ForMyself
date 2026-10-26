@@ -1,0 +1,13 @@
+{
+  "stage": "P5",
+  "command": "npm run check",
+  "exit_code": 0,
+  "node_passed": 275,
+  "component_passed": 154,
+  "lint_errors": 0,
+  "lint_warnings": 47,
+  "vue_typecheck": "passed",
+  "strict_contract_typecheck": "passed",
+  "build": "passed",
+  "native": "deferred to P6"
+}

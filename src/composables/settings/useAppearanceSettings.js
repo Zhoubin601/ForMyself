@@ -83,12 +83,6 @@ export function useAppearanceSettings() {
   }
 
   const newScheduleCategoryColor = ref('#4fd5d7')
-  const moduleHealthForm = ref({
-    heightCm: settingsStore.heightCm ?? '',
-    targetWeight: settingsStore.targetWeight ?? '',
-    weightChangeReminderEnabled: settingsStore.weightChangeReminderEnabled,
-    weightChangeThreshold: settingsStore.weightChangeThreshold
-  })
   const scheduleColorHue = ref(181)
   const scheduleColorSaturation = ref(64)
   const scheduleColorValue = ref(84)
@@ -329,7 +323,6 @@ export function useAppearanceSettings() {
     chatStore,
     bgInputRef,
     newScheduleCategoryColor,
-    moduleHealthForm,
     scheduleColorHue,
     scheduleColorSaturation,
     scheduleColorValue,

@@ -1,12 +1,15 @@
+// @ts-check
+/** @param {import('./contracts').BackupParticipant[]} participants */
 export function createBackupRegistry(participants) {
+  /** @type {Map<string, import('./contracts').BackupParticipant>} */
   const entries = new Map()
   for (const p of participants) {
-    if (!p.id || entries.has(p.id) || ['export', 'restore', 'flush', 'ready'].some(key => typeof p[key] !== 'function')) throw new Error('INVALID_BACKUP_PARTICIPANT')
+    if (!p.id || entries.has(p.id) || [p.export, p.restore, p.flush, p.ready].some(method => typeof method !== 'function')) throw new Error('INVALID_BACKUP_PARTICIPANT')
     entries.set(p.id, p)
   }
   const list = Object.freeze([...entries.values()])
-  const get = id => { const p = entries.get(id); if (!p) throw new Error('UNKNOWN_BACKUP_PARTICIPANT'); return p }
-  const assertReady = id => { if (!get(id).ready()) throw new Error(`BACKUP_PARTICIPANT_NOT_READY:${id}`) }
+  const get = (/** @type {string} */ id) => { const p = entries.get(id); if (!p) throw new Error('UNKNOWN_BACKUP_PARTICIPANT'); return p }
+  const assertReady = (/** @type {string} */ id) => { if (!get(id).ready()) throw new Error(`BACKUP_PARTICIPANT_NOT_READY:${id}`) }
   const flush = async (ids = [...entries.keys()]) => {
     ids.forEach(assertReady)
     const results = await Promise.allSettled(ids.map(id => Promise.resolve().then(() => get(id).flush())))
@@ -25,7 +28,7 @@ export function createBackupRegistry(participants) {
       list.forEach(p => assertReady(p.id))
       return JSON.parse(JSON.stringify(Object.fromEntries(list.map(p => [p.id, p.export()]))))
     },
-    async restoreAll(parts) {
+    async restoreAll(/** @type {Record<string, import('./contracts').BackupPart>} */ parts) {
       Object.keys(parts).forEach(get)
       list.forEach(p => { if (!p.optional && !Object.hasOwn(parts, p.id)) throw new Error(`MISSING_BACKUP_PARTICIPANT:${p.id}`) })
       const selected = Object.keys(parts)
@@ -36,8 +39,8 @@ export function createBackupRegistry(participants) {
       const failure = [...results, ...flushed].find(result => result.status === 'rejected')
       if (failure) throw failure.reason
     },
-    singleExport(id) { assertReady(id); const p = get(id); return p.singleExport ? p.singleExport() : p.export().data },
-    async singleImport(id, value, options) {
+    singleExport(/** @type {string} */ id) { assertReady(id); const p = get(id); return p.singleExport ? p.singleExport() : p.export().data },
+    async singleImport(/** @type {string} */ id, /** @type {unknown} */ value, /** @type {{overwrite: boolean}} */ options) {
       assertReady(id); const p = get(id)
       if (!p.import) throw new Error('SINGLE_IMPORT_NOT_SUPPORTED')
       await p.import(value, options); await p.flush()

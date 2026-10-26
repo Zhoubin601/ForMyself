@@ -9,7 +9,7 @@ import AppFeedbackHost from './components/AppFeedbackHost.vue'
 import { ListChecks, House, ChartNoAxesColumn, Wallet, Scale, Heart, HouseHeart, CalendarDays, LockKeyhole, SlidersHorizontal, Menu, X, Settings2, ChevronLeft } from 'lucide-vue-next'
 const drawerIcons = { ListChecks, House, ChartNoAxesColumn, Wallet, Scale, Heart, HouseHeart, CalendarDays, LockKeyhole, SlidersHorizontal }
 const pageComponents = Object.fromEntries(moduleRegistry.list.map(module => [module.id,
-  module.id === 'home' ? HomeView : defineAsyncComponent(() => module.loadView().then(loaded => loaded.default || loaded))
+  module.id === 'home' ? HomeView : defineAsyncComponent(() => module.loadView().then(loaded => 'default' in loaded ? loaded.default : loaded))
 ]))
 
 const controller = useAppController()
@@ -45,7 +45,7 @@ const activeBindings = computed(() => activeModule.value?.bindings?.({
 }) || {})
 const excludedViews = computed(() => moduleRegistry.list.filter(module =>
   (module.access && protectedAccess.status[module.id] !== 'ready') || (module.id === 'chat' && settingsStore.warmHomeEnabled === false)
-).map(module => module.name))
+).flatMap(module => module.name ? [module.name] : []))
 const activeBackgroundStyle = computed(() => backgroundEffectStyle(
   settingsStore.backgroundEffects?.[authStore.isLocked ? 'lock' : 'pages']
 ))
@@ -224,7 +224,7 @@ const activeBackgroundStyle = computed(() => backgroundEffectStyle(
               @keydown.space.prevent="settingsStore.switchView(item.id)"
             >
               <span class="drawer-item-icon">
-                <component :is="drawerIcons[item.icon]" :size="21" :stroke-width="1.8" aria-hidden="true" />
+                <component :is="drawerIcons[item.icon || 'House']" :size="21" :stroke-width="1.8" aria-hidden="true" />
               </span>
               <span class="drawer-item-label">{{ item.label }}</span>
               <span

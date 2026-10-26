@@ -8,7 +8,7 @@ import {
   buildMoodEchoContext,
   buildMoodEchoPrompt,
   normalizeCompanionReply
-} from '../chat/companionPrompts'
+} from '../../application/companionContext.js'
 import { appAlert, appConfirm } from '../../services/uiFeedback'
 import { registerBackHandler } from '../../services/backNavigation'
 import AppDateField from '../../components/AppDateField.vue'

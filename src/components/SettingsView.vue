@@ -11,6 +11,7 @@ import SettingsBackup from './settings/SettingsBackup.vue'
 import SettingsAi from './settings/SettingsAi.vue'
 import SettingsPickers from './settings/SettingsPickers.vue'
 import { onBeforeUnmount, reactive } from 'vue'
+import { projectSettingsModel, SETTINGS_SECTION_FIELDS } from '../application/settingsModels.js'
 import { registerBackHandler } from '../services/backNavigation'
 import { useSettingsNavigation } from '../composables/settings/useSettingsNavigation.js'
 import { useHealthSettings } from '../composables/settings/useHealthSettings.js'
@@ -23,46 +24,46 @@ import { useReminderSettings } from '../composables/settings/useReminderSettings
 
 const navigation = useSettingsNavigation()
 const appearance = useAppearanceSettings()
-const context = reactive({
-  ...navigation,
-  ...appearance,
-  ...useHealthSettings(navigation),
-  ...useCatalogSettings(appearance),
-  ...useChatSettings(),
-  ...useSecuritySettings(),
-  ...useBackupSettings(),
-  ...useReminderSettings()
-})
+const health = useHealthSettings(navigation)
+const catalog = useCatalogSettings(appearance)
+const chat = useChatSettings()
+const security = useSecuritySettings()
+const backup = useBackupSettings()
+const reminders = useReminderSettings()
+const providers = [navigation, appearance, health, catalog, chat, security, backup, reminders]
+const models = Object.fromEntries(Object.entries(SETTINGS_SECTION_FIELDS).map(([section, keys]) =>
+  [section, reactive(projectSettingsModel(providers, keys))]
+))
 
 const unregisterBackHandler = registerBackHandler(() => {
-  if (context.backupPickerOpen) { context.backupPickerOpen = false; return true }
-  if (context.autoLockPickerOpen) { context.autoLockPickerOpen = false; return true }
-  if (context.isChangingPwd || context.isChangingPwdBio) {
-    context.isChangingPwd = false
-    context.isChangingPwdBio = false
+  if (backup.backupPickerOpen.value) { backup.backupPickerOpen.value = false; return true }
+  if (navigation.autoLockPickerOpen.value) { navigation.autoLockPickerOpen.value = false; return true }
+  if (security.isChangingPwd.value || security.isChangingPwdBio.value) {
+    security.isChangingPwd.value = false
+    security.isChangingPwdBio.value = false
     return true
   }
   return false
 }, {
   priority: 600,
-  isActive: () => context.backupPickerOpen || context.autoLockPickerOpen || context.isChangingPwd || context.isChangingPwdBio
+  isActive: () => backup.backupPickerOpen.value || navigation.autoLockPickerOpen.value || security.isChangingPwd.value || security.isChangingPwdBio.value
 })
 onBeforeUnmount(unregisterBackHandler)
 </script>
 
 <template>
   <div class="fade-in settings-container">
-    <SettingsOverview :model="context" />
-    <SettingsChat :model="context" />
-    <SettingsAppearance :model="context" />
-    <SettingsWidgets :model="context" />
-    <SettingsSecurity :model="context" />
-    <SettingsCatalogs :model="context" />
-    <SettingsHealth :model="context" />
-    <SettingsNotifications :model="context" />
-    <SettingsBackup :model="context" />
-    <SettingsAi :model="context" />
-    <SettingsPickers :model="context" />
+    <SettingsOverview :model="models.SettingsOverview" />
+    <SettingsChat :model="models.SettingsChat" />
+    <SettingsAppearance :model="models.SettingsAppearance" />
+    <SettingsWidgets :model="models.SettingsWidgets" />
+    <SettingsSecurity :model="models.SettingsSecurity" />
+    <SettingsCatalogs :model="models.SettingsCatalogs" />
+    <SettingsHealth :model="models.SettingsHealth" />
+    <SettingsNotifications :model="models.SettingsNotifications" />
+    <SettingsBackup :model="models.SettingsBackup" />
+    <SettingsAi :model="models.SettingsAi" />
+    <SettingsPickers :model="models.SettingsPickers" />
   </div>
 </template>
 

@@ -318,3 +318,9 @@ for (let version = 1; version <= FULL_BACKUP_VERSION; version++) {
     if (version < 10) assert.equal(Object.hasOwn(restored.data, 'todos'), false)
   })
 }
+
+test('完整备份拒绝原始值记录，防止保存后无法安全重载', () => {
+  const value = buildFixture()
+  value.data.weight = [42]
+  assert.throws(() => normalizeFullBackupSnapshot(value), /INVALID_FULL_BACKUP_WEIGHT/)
+})

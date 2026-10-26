@@ -3,15 +3,13 @@ import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
 import { readSourceContract } from './sourceContractReader.js'
 
-const appUrl = new URL('../src/App.vue', import.meta.url)
-const homeUrl = new URL('../src/components/HomeView.vue', import.meta.url)
 const reportUrl = new URL('../src/components/MonthlyReportView.vue', import.meta.url)
 const scheduleUrl = new URL('../src/features/schedule/ScheduleView.vue', import.meta.url)
 
 test('Galaxy 风格动效不依赖第三方运行时并覆盖核心界面', async () => {
   const [app, home, report, schedule] = await Promise.all([
     Promise.resolve(readSourceContract('App.vue')),
-    readFile(homeUrl, 'utf8'),
+    Promise.resolve(readSourceContract('components/HomeView.vue')),
     readFile(reportUrl, 'utf8'),
     readFile(scheduleUrl, 'utf8')
   ])
@@ -29,7 +27,7 @@ test('Galaxy 风格动效不依赖第三方运行时并覆盖核心界面', asyn
 test('动效遵循系统减少动态效果偏好', async () => {
   const [app, home, report] = await Promise.all([
     Promise.resolve(readSourceContract('App.vue')),
-    readFile(homeUrl, 'utf8'),
+    Promise.resolve(readSourceContract('components/HomeView.vue')),
     readFile(reportUrl, 'utf8')
   ])
 

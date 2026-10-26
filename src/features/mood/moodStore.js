@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { computed, ref, watch } from 'vue'
-import { preferenceStorage as driver } from '../../platform/storage/preferences.js'
+import { moodRepository as driver } from './moodRepository.js'
 import { createStorePersistence, parseStoredJson } from '../../platform/storage/storePersistence.js'
 import { STORAGE_KEYS } from '../../platform/storage/keys.js'
 import {

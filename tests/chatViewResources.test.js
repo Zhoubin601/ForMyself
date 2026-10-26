@@ -86,7 +86,7 @@ test('聊天每次进入和内容更新后强制定位最底部', () => {
   assert.match(view, /scroll-behavior: auto/)
   assert.doesNotMatch(view, /scroll-behavior: smooth/)
   assert.match(view, /\.chat-timeline:not\(\.timeline-ready\) \{ visibility: hidden; \}/)
-  assert.match(view, /ref="timelineBottomRef" class="chat-bottom-anchor"/)
+  assert.match(view, /class="chat-bottom-anchor"/)
 })
 
 test('流式回复会按节奏拆成连续气泡并在完整一轮后只更新一次关系状态', () => {

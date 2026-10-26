@@ -10,7 +10,7 @@
     "test": "node --test tests/*.test.js",
     "test:component": "vitest run",
     "lint": "eslint src tests scripts vite.config.js",
-    "typecheck": "vue-tsc --noEmit -p tsconfig.json",
+    "typecheck": "vue-tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.contracts.json",
     "check": "npm run lint && npm test && npm run test:component && npm run typecheck && npm run build",
     "preview": "vite preview"
   },

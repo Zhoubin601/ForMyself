@@ -762,3 +762,5 @@ P1已推送origin/main：29fb70a。P2完成：实际完整恢复协调、认证�
 P2已推送origin/main：ff4e0bc。P3模块清单/导航/生命周期完成，完整检查Node274/组件134/类型/构建通过，lint55既有警告。验收见docs/20261026-architecture-stage-3-verification-v1.md。下一步P4备份与敏感模块契约。
 
 P3已推送origin/main：f073039。P4备份/敏感模块契约完成，Node274/组件143/类型/构建通过，lint55警告；准备阶段Android assembleDebug通过。验收见docs/20261026-architecture-stage-4-verification-v1.md。下一步P5仓库、类型与职责治理。
+
+P4已推送origin/main：e92cf62。P5功能目录/仓库/类型/视图职责治理完成：Node275、组件154、Vue与strict契约检查、构建通过，lint警告55降至47。验收见docs/20261026-architecture-stage-5-verification-v1.md。下一步P6原生、CI、界面与性能综合验收。

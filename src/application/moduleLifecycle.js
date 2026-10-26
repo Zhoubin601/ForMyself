@@ -1,8 +1,13 @@
+// @ts-check
+/** @param {import('./contracts').LifecycleParticipant[]} participants */
 export function createModuleLifecycle(participants) {
   if (new Set(participants.map(p => p.id)).size !== participants.length) throw new Error('DUPLICATE_LIFECYCLE_MODULE')
-  let initialized, disposed = false
+  /** @type {Promise<PromiseSettledResult<unknown>[]> | undefined} */
+  let initialized
+  let disposed = false
+  /** @type {Array<() => void>} */
   const cleanups = []
-  const call = method => Promise.allSettled(participants.map(p => Promise.resolve().then(() => p[method]?.())))
+  const call = (/** @type {'initialize'|'resume'|'flush'} */ method) => Promise.allSettled(participants.map(p => Promise.resolve().then(() => p[method]?.())))
   return {
     initialize() {
       if (disposed) return Promise.reject(new Error('LIFECYCLE_DISPOSED'))
@@ -28,9 +33,10 @@ export function createModuleLifecycle(participants) {
 
 export function createListenerScope() {
   let disposed = false
+  /** @type {Set<import('./contracts').NativeListenerHandle>} */
   const handles = new Set()
   return {
-    async listen(plugin, event, listener) {
+    async listen(/** @type {import('./contracts').NativeListenerPlugin} */ plugin, /** @type {string} */ event, /** @type {(...args: any[]) => unknown} */ listener) {
       const handle = await plugin.addListener(event, listener)
       if (disposed) await handle.remove()
       else handles.add(handle)

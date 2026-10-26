@@ -1,6 +1,6 @@
 import { computed, ref, watch } from 'vue'
 import { defineStore } from 'pinia'
-import { preferenceStorage as driver } from '../../platform/storage/preferences.js'
+import { scheduleRepository as driver } from './scheduleRepository.js'
 import { createStorePersistence, parseStoredJson } from '../../platform/storage/storePersistence.js'
 import {
   BUILT_IN_SCHEDULE_CATEGORIES,
