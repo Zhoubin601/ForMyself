@@ -36,6 +36,21 @@
       "failed_step": "Standard CDP attachment asked WebView for unsupported Browser.setDownloadBehavior",
       "reason": "WebView supports page automation but not full browser context management",
       "fix": "Use connectOverCDP noDefaults:true and explicit socket/session cleanup"
+    },
+    {
+      "run_id": 40289684177,
+      "commit": "0800716",
+      "passed": "Web quality and Android instrumentation",
+      "failed_step": "WebView does not implement Browser.setDownloadBehavior; same protocol issue as ddceac8",
+      "fix": "The following candidate 7edce35 disables browser defaults for WebView"
+    },
+    {
+      "run_id": 40290110162,
+      "commit": "7edce35",
+      "passed": "Web quality and Android instrumentation; standard CDP WebView attached successfully",
+      "failed_step": "Android killed the app because its Google fonts provider process was dying",
+      "evidence": "ActivityManager: Killing com.yubin.formyself: depends on provider com.google.android.gms/.fonts.provider.FontsProvider in dying proc com.google.android.gms.persistent; see font-provider-process-kill.txt",
+      "fix": "Disable unrelated Google Play Services in the isolated CI emulator before installing the app; keep the actual WebView, storage, notification and authentication paths"
     }
   ]
 }
