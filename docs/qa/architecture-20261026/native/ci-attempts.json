@@ -21,6 +21,13 @@
       "failed_step": "WebView target closed while initial native AI settings were being saved, before the first test force-stop",
       "reason": "The run did not retain a device crash log, so unique cause is unconfirmed",
       "fix": "Pin Emulator33.1.24 with KVM, collect Android crash/progress details, and wait for old WebView removal before every cold start"
+    },
+    {
+      "run_id": 40288146339,
+      "commit": "49eea23",
+      "passed": "Web quality, Android build/instrumentation including actual widget completion/reversal, required-entry cold-start state",
+      "failed_step": "Experimental Android WebView page connection closed while waiting to click unlock; Android crash buffer supplied no cause",
+      "fix": "Use isolated ADB forwarding with standard Playwright Chromium CDP, retain process/activity diagnostics; no automatic application-crash retry"
     }
   ]
 }

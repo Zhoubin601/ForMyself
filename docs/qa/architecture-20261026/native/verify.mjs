@@ -3,14 +3,19 @@ import { writeFile, readdir, readFile } from 'node:fs/promises'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { createHash } from 'node:crypto'
+import { execFile } from 'node:child_process'
+import { promisify } from 'node:util'
 const modulePath = process.env.FORMYSELF_PLAYWRIGHT_MODULE || 'playwright-core'
-const { _android } = await import(modulePath)
+const { _android, chromium } = await import(modulePath)
 const directory = dirname(fileURLToPath(import.meta.url)), root = resolve(directory, '../../../..')
 const pkg = 'com.yubin.formyself'
 let password = 'Synthetic-P6-native-only'
 const storeExpression = "document.querySelector('#app').__vue_app__.config.globalProperties.$pinia._s"
 const results = { pageErrors: [] }
 let activePage
+const executeFile = promisify(execFile)
+const adb = process.env.ANDROID_HOME ? resolve(process.env.ANDROID_HOME,'platform-tools/adb') : 'adb'
+const forwardPorts = []
 const devices = await _android.devices({ omitDriverInstall: true })
 const device = devices.find(d => d.serial() === (process.env.FORMYSELF_DEVICE_SERIAL || 'emulator-5554'))
 if (!device || !device.serial().startsWith('emulator-')) throw new Error('Only the isolated task emulator is supported')
@@ -31,7 +36,13 @@ const attach = async () => {
   console.log('Attaching app WebView')
   await device.shell(`am start -n ${pkg}/.MainActivity`)
   const view = await device.webView({ pkg })
-  const page = await view.page()
+  const { stdout } = await executeFile(adb,['-s',device.serial(),'forward','tcp:0',`localabstract:webview_devtools_remote_${view.pid()}`])
+  const port = stdout.trim()
+  if (!/^\d+$/.test(port)) throw Error('Invalid isolated ADB forwarding port')
+  forwardPorts.push(port)
+  const browser = await chromium.connectOverCDP(`http://127.0.0.1:${port}`,{timeout:120000})
+  const context = browser.contexts()[0]
+  const page = context.pages()[0] || await context.waitForEvent('page')
   activePage = page
   page.setDefaultTimeout(120000)
   page.on('pageerror', error => results.pageErrors.push(error.message))
@@ -69,6 +80,7 @@ const verifyProtectedIdentity = async page => {
 const loadRuntime = page => evaluate(page, `const module=await import('/assets/${runtimeAsset}'); window.__qaRuntime=Object.values(module).find(x=>typeof x==='function')(); return true;`)
 try {
   results.deviceSerial = device.serial()
+  results.webviewTransport = 'Isolated ADB forward + Playwright Chromium CDP'
   results.scriptSha256 = createHash('sha256').update(await readFile(fileURLToPath(import.meta.url))).digest('hex')
   results.apkSha256 = createHash('sha256').update(await readFile(resolve(root,'android/app/build/outputs/apk/debug/app-debug.apk'))).digest('hex')
   results.api = (await device.shell('getprop ro.build.version.sdk')).toString().trim()
@@ -185,7 +197,12 @@ try {
   const summary = crash.split('\n').filter(line=>/Fatal signal|FATAL EXCEPTION|Abort message|AndroidRuntime:|Cmdline:|Renderer process/.test(line)).slice(-35).join('\n')
   await writeFile(resolve(directory,'playwright-crash-summary.txt'),summary+'\n')
   console.error('Native acceptance progress:',JSON.stringify(results))
+  const processState = (await device.shell(`pidof ${pkg}; logcat -d -t 250`).catch(()=>Buffer.from(''))).toString().split('\n').filter(line=>/^\d/.test(line)&&(!line.includes(' ' )||/ActivityManager.*Killing|ActivityManager.*has died|Finishing|Render process|chromium.*ERROR|Capacitor.*Error/.test(line))).slice(-20).join('\n')
+  console.error('Native process diagnostics:',processState)
   if(summary)console.error(summary)
   await writeFile(resolve(directory,'playwright-attempt.json'),JSON.stringify(results,null,2)+'\n')
   throw error
-} finally { await device.close() }
+} finally {
+  for (const port of forwardPorts) await executeFile(adb,['-s',device.serial(),'forward','--remove',`tcp:${port}`]).catch(()=>{})
+  await device.close()
+}
