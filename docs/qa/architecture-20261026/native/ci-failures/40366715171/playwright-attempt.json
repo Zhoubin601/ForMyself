@@ -1,0 +1,294 @@
+{
+  "pageErrors": [],
+  "startedAt": "2026-10-26T17:20:24.840Z",
+  "deviceSerial": "emulator-5554",
+  "uiInput": "Playwright Android coordinate touch mapped from DOM button bounds to actual native WebView bounds; CDP filling/inspection and state assertions",
+  "webviewTransport": "Isolated ADB forward + Playwright Chromium CDP",
+  "functionalTestDisplay": "480x800, density160, prefers-reduced-motion:reduce; browser QA separately uses normal motion",
+  "scriptSha256": "9076a9c3963c524fd939ddc4af30bf8885b4fccb5b6f9c38165a8c6009898243",
+  "apkSha256": "8a1b71f151319275c1f60971e95c7da2235ac2cfcd34dc15cc9d2af595209d65",
+  "api": "34",
+  "testWebViewFlags": "",
+  "webview": "Current WebView package (name, version): (com.android.webview, 113.0.5672.136)",
+  "hardwareDrawingEnabled": true,
+  "emulatorScreenOffTimeout": "2147483647",
+  "uiTapTargets": [
+    {
+      "name": "初始化并进入",
+      "point": {
+        "x": 240,
+        "y": 523
+      },
+      "webViewBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 480,
+        "height": 800
+      },
+      "viewport": {
+        "width": 480,
+        "height": 800,
+        "dpr": 1
+      }
+    },
+    {
+      "name": "解锁进入",
+      "point": {
+        "x": 240,
+        "y": 523
+      },
+      "webViewBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 480,
+        "height": 800
+      },
+      "viewport": {
+        "width": 480,
+        "height": 800,
+        "dpr": 1
+      }
+    },
+    {
+      "name": "验证",
+      "point": {
+        "x": 329,
+        "y": 522
+      },
+      "webViewBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 480,
+        "height": 800
+      },
+      "viewport": {
+        "width": 480,
+        "height": 800,
+        "dpr": 1
+      }
+    },
+    {
+      "name": "添加",
+      "point": {
+        "x": 425,
+        "y": 101
+      },
+      "webViewBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 480,
+        "height": 800
+      },
+      "viewport": {
+        "width": 480,
+        "height": 800,
+        "dpr": 1
+      }
+    },
+    {
+      "name": "保存记录",
+      "point": {
+        "x": 379,
+        "y": 666
+      },
+      "webViewBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 480,
+        "height": 800
+      },
+      "viewport": {
+        "width": 480,
+        "height": 800,
+        "dpr": 1
+      }
+    },
+    {
+      "name": "发送消息",
+      "point": {
+        "x": 438,
+        "y": 742
+      },
+      "webViewBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 480,
+        "height": 800
+      },
+      "viewport": {
+        "width": 480,
+        "height": 800,
+        "dpr": 1
+      }
+    },
+    {
+      "name": "验证",
+      "point": {
+        "x": 329,
+        "y": 522
+      },
+      "webViewBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 480,
+        "height": 800
+      },
+      "viewport": {
+        "width": 480,
+        "height": 800,
+        "dpr": 1
+      }
+    },
+    {
+      "name": "验证并重试恢复",
+      "point": {
+        "x": 240,
+        "y": 248
+      },
+      "webViewBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 480,
+        "height": 800
+      },
+      "viewport": {
+        "width": 480,
+        "height": 800,
+        "dpr": 1
+      }
+    },
+    {
+      "name": "验证",
+      "point": {
+        "x": 329,
+        "y": 522
+      },
+      "webViewBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 480,
+        "height": 800
+      },
+      "viewport": {
+        "width": 480,
+        "height": 800,
+        "dpr": 1
+      }
+    }
+  ],
+  "initialization": true,
+  "masterPasswordInitialSave": true,
+  "apiKeyInitialSave": true,
+  "requiredEntryColdStart": true,
+  "optionalEntryInitialSave": true,
+  "optionalEntryColdStart": true,
+  "apiKeyColdStart": true,
+  "onlyRequestedModuleLoaded": true,
+  "vaultUiCreate": true,
+  "renderedScreenshotCount": 2,
+  "chatSendReply": true,
+  "nativeAppProbe": {
+    "platform": "android",
+    "header": "present",
+    "listener": "registered"
+  },
+  "deepLinkCommand": "Starting: Intent { act=android.intent.action.VIEW dat=formyself://open/... cmp=com.yubin.formyself/.MainActivity }\nWarning: Activity not started, intent has been delivered to currently running top-most instance.",
+  "nativeDeepLink": true,
+  "backgroundTrigger": "Separate QaBackgroundActivity in instrumentation APK; actual Android task switch",
+  "backgroundReleasesSensitiveData": true,
+  "pendingRestoreBlocksColdStart": true,
+  "uncommittedForceStopRollback": true,
+  "error": "Error: page.evaluate: Error: Missing durable commit: {\"participants\":[],\"error\":{\"message\":\"RESTORE_RECOVERY_REQUIRED\"},\"recordPresent\":true,\"committed\":false}\n    at eval (eval at evaluate (:311:30), <anonymous>:12:33)\n    at async <anonymous>:337:30",
+  "failedView": {
+    "view": "home",
+    "requireAppUnlock": false,
+    "hasMasterPassword": true,
+    "authLoadError": "",
+    "locked": false,
+    "status": {
+      "passwords": "ready",
+      "chat": "ready"
+    },
+    "sessionRevision": 0,
+    "credentialPresent": true,
+    "apiKeyStatus": "saved",
+    "visibility": "visible",
+    "enteredPasswordMatches": false,
+    "unlockMarks": [],
+    "committedRestoreDiagnostics": {
+      "participants": [],
+      "error": {
+        "message": "RESTORE_RECOVERY_REQUIRED"
+      },
+      "recordPresent": true,
+      "committed": false
+    },
+    "nativeUrls": []
+  },
+  "nativeEventDiagnostics": {
+    "url": {
+      "protocol": "formyself:",
+      "host": "",
+      "path": "//open/todo"
+    },
+    "rootMounted": true,
+    "rootUnmounted": false,
+    "mountHooks": 1,
+    "header": {
+      "name": "App",
+      "methods": [
+        {
+          "name": "toggleBackButtonHandler",
+          "rtype": "promise"
+        },
+        {
+          "name": "getState",
+          "rtype": "promise"
+        },
+        {
+          "name": "getInfo",
+          "rtype": "promise"
+        },
+        {
+          "name": "removeAllListeners",
+          "rtype": "promise"
+        },
+        {
+          "name": "getLaunchUrl",
+          "rtype": "promise"
+        },
+        {
+          "name": "checkPermissions",
+          "rtype": "promise"
+        },
+        {
+          "name": "requestPermissions",
+          "rtype": "promise"
+        },
+        {
+          "name": "exitApp",
+          "rtype": "promise"
+        },
+        {
+          "name": "removeListener"
+        },
+        {
+          "name": "getAppLanguage",
+          "rtype": "promise"
+        },
+        {
+          "name": "addListener"
+        },
+        {
+          "name": "minimizeApp",
+          "rtype": "promise"
+        }
+      ]
+    }
+  },
+  "consoleWarnings": [
+    "Error injecting safe area CSS: TypeError: Cannot read properties of null (reading 'style')\n    at <anonymous>:2:28",
+    "Error injecting safe area CSS: TypeError: Cannot read properties of null (reading 'style')\n    at <anonymous>:2:28",
+    "Error injecting safe area CSS: TypeError: Cannot read properties of null (reading 'style')\n    at <anonymous>:2:28"
+  ]
+}
