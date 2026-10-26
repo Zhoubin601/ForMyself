@@ -79,11 +79,20 @@ const coldStart = async () => {
   return attach()
 }
 const tapButton = async (page, name) => {
+  name=name.trim()
   const button=page.getByRole('button',{name,exact:true})
   await button.waitFor({state:'visible'})
   await button.scrollIntoViewIfNeeded()
-  const aria=await button.getAttribute('aria-label')
-  await device.tap(aria?{pkg,desc:aria}:{pkg,text:name},{timeout:30000})
+  if (!await button.isEnabled()) throw Error('Disabled native test button: '+name)
+  const box=await button.boundingBox()
+  if(!box)throw Error('No visible button bounds: '+name)
+  const native=await bounded(device.info({pkg,clazz:'android.webkit.WebView'}),'Native WebView bounds',15000)
+  const viewport=await page.evaluate(()=>({width:innerWidth,height:innerHeight,dpr:devicePixelRatio}))
+  const scaleX=native.bounds.width/viewport.width,scaleY=native.bounds.height/viewport.height
+  if(Math.abs(scaleX-scaleY)>0.15)throw Error('Inconsistent WebView coordinate scale: '+JSON.stringify({native,viewport}))
+  const point={x:Math.round(native.bounds.x+(box.x+box.width/2)*scaleX),y:Math.round(native.bounds.y+(box.y+box.height/2)*scaleY)}
+  ;(results.uiTapTargets||=[]).push({name,point,webViewBounds:native.bounds,viewport})
+  await bounded(device.input.tap(point),'Native button touch '+name,30000)
 }
 const verifyIdentity = async page => {
   if (await page.locator('.lock-screen input').isVisible()) {
@@ -107,9 +116,9 @@ const verifyProtectedIdentity = async page => {
 }
 const loadRuntime = page => evaluate(page, `const module=await import('/assets/${runtimeAsset}'); window.__qaRuntime=Object.values(module).find(x=>typeof x==='function')(); return true;`)
 try {
-  for (const name of ['playwright-results.json','playwright-attempt.json','playwright-progress.json','playwright-failure.png','native-home.png','native-chat.png','native-vault.png']) await rm(resolve(directory,name),{force:true})
+  for (const name of ['playwright-results.json','playwright-attempt.json','playwright-progress.json','playwright-failure.png','native-home.png','native-chat.png','native-vault.png','android-display-failure.png']) await rm(resolve(directory,name),{force:true})
   results.deviceSerial = device.serial()
-  results.uiInput = 'Playwright Android UiAutomator touch; CDP DOM filling/inspection and state assertions'
+  results.uiInput = 'Playwright Android coordinate touch mapped from DOM button bounds to actual native WebView bounds; CDP filling/inspection and state assertions'
   results.webviewTransport = 'Isolated ADB forward + Playwright Chromium CDP'
   results.functionalTestDisplay = '480x800, density160, prefers-reduced-motion:reduce; browser QA separately uses normal motion'
   results.scriptSha256 = createHash('sha256').update(await readFile(fileURLToPath(import.meta.url))).digest('hex')
@@ -249,6 +258,7 @@ try {
     results.consoleWarnings = await activePage.consoleMessages().then(messages=>messages.filter(m=>['warning','error'].includes(m.type())).slice(-12).map(m=>m.text().slice(0,500))).catch(()=>[])
     await activePage.screenshot({path:resolve(directory,'playwright-failure.png'),timeout:5000}).catch(()=>{})
   }
+  await bounded(device.screenshot({path:resolve(directory,'android-display-failure.png')}),'Native display screenshot',10000).catch(()=>{})
   const appLog = (await shell('logcat -d -v brief').catch(()=>Buffer.from(''))).toString().split('\n').filter(line=>/Capacitor.*(?:App|Console|addListener|removeListener|appUrlOpen|appStateChange)|无法监听|无法处理应用|onMounted|onBeforeUnmount/.test(line)).slice(-220).join('\n')
   console.error('Native App startup diagnostics:',appLog)
   await writeFile(resolve(directory,'app-event-diagnostics.txt'),appLog+'\n')

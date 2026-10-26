@@ -95,7 +95,7 @@ jobs:
           source = Path('docs/qa/architecture-20261026/native')
           destination = source/'ci-failures'/os.environ['P6_RUN_ID']
           destination.mkdir(parents=True, exist_ok=True)
-          for name in ['playwright-attempt.json','playwright-failure.png','app-event-diagnostics.txt','playwright-crash-summary.txt']:
+          for name in ['playwright-attempt.json','playwright-failure.png','app-event-diagnostics.txt','playwright-crash-summary.txt','android-display-failure.png']:
               if (source/name).exists(): shutil.copyfile(source/name, destination/name)
           PYCODE
           git config user.name 'github-actions[bot]'

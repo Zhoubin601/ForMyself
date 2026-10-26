@@ -131,6 +131,13 @@
       "result": "Android package system service disappeared during Gradle instrumentation APK install; native Playwright was not reached",
       "evidence": "cmd: Can't find service: package; BUILD FAILED before test:e2e:android",
       "fix": "Fresh emulator run, require stable system_server/package service observations before app installation, and collect crash buffer inside the emulator script on failure; no automatic retry of failed app assertions"
+    },
+    {
+      "run_id": 40359471566,
+      "commit": "65a07c5",
+      "result": "Native text selector did not locate the initialization button; captured WebView image visibly contains the button and correct password field",
+      "evidence": "ci-failures/40359471566/playwright-failure.png and playwright-attempt.json",
+      "fix": "Use Playwright DOM role/button bounds, map through actual Android WebView bounds and send Android input touch; assert actual authentication as before; also capture physical Android display on failure"
     }
   ]
 }
