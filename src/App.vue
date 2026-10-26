@@ -1,22 +1,18 @@
 <script setup>
-import { computed, defineAsyncComponent } from 'vue'
+import { computed, defineAsyncComponent, unref } from 'vue'
+import { moduleRegistry } from './application/moduleRegistry.js'
 import { backgroundEffectStyle } from './services/backgroundSettings.js'
 import { useAppController } from './composables/useAppController.js'
 import HomeView from './components/HomeView.vue'
 import DataStatusBanner from './components/DataStatusBanner.vue'
 import AppFeedbackHost from './components/AppFeedbackHost.vue'
 import { ListChecks, House, ChartNoAxesColumn, Wallet, Scale, Heart, HouseHeart, CalendarDays, LockKeyhole, SlidersHorizontal, Menu, X, Settings2, ChevronLeft } from 'lucide-vue-next'
-const drawerIcons = { todo: ListChecks, home: House, reports: ChartNoAxesColumn, debts: Wallet, weight: Scale, mood: Heart, chat: HouseHeart, schedule: CalendarDays, passwords: LockKeyhole, settings: SlidersHorizontal }
-const MonthlyReportView = defineAsyncComponent(() => import('./components/MonthlyReportView.vue'))
-const DebtListView = defineAsyncComponent(() => import('./components/DebtListView.vue'))
-const WeightView = defineAsyncComponent(() => import('./components/WeightView.vue'))
-const MoodView = defineAsyncComponent(() => import('./features/mood/MoodView.vue'))
-const TodoView = defineAsyncComponent(() => import('./features/todo/TodoView.vue'))
-const ScheduleView = defineAsyncComponent(() => import('./features/schedule/ScheduleView.vue'))
-const ChatView = defineAsyncComponent(() => import('./features/chat/ChatView.vue'))
-const PasswordVaultView = defineAsyncComponent(() => import('./components/PasswordVaultView.vue'))
-const SettingsView = defineAsyncComponent(() => import('./components/SettingsView.vue'))
+const drawerIcons = { ListChecks, House, ChartNoAxesColumn, Wallet, Scale, Heart, HouseHeart, CalendarDays, LockKeyhole, SlidersHorizontal }
+const pageComponents = Object.fromEntries(moduleRegistry.list.map(module => [module.id,
+  module.id === 'home' ? HomeView : defineAsyncComponent(() => module.loadView().then(loaded => loaded.default || loaded))
+]))
 
+const controller = useAppController()
 const {
   restoreState, retryFullRecovery, retryRestoreSync,
   dataIssues,
@@ -25,12 +21,9 @@ const {
   authStore,
   chatUnreadCount,
   chatUnreadLabel,
-  dismissBiometricSetup,
   drawerItems,
-  enableBiometricUnlock,
   handleAppScroll,
   hasEnteredApp,
-  isEnablingBiometric,
   isUnlocking,
   moduleSettingsViews,
   protectedDataStatus,
@@ -40,11 +33,19 @@ const {
   pwdInput,
   setMasterPassword,
   settingsStore,
-  showBiometricSetup,
   showPassword,
   unlockApp,
   unlockWithBiometric
-} = useAppController()
+} = controller
+const activeModule = computed(() => moduleRegistry.get(settingsStore.currentView))
+const canRenderModule = computed(() => !protectedModule.value || protectedDataStatus.value === 'ready')
+const activeBindings = computed(() => activeModule.value?.bindings?.({
+  ...Object.fromEntries(Object.entries(controller).map(([key, value]) => [key, unref(value)])),
+  isVisible: !authStore.isLocked && settingsStore.currentView === activeModule.value?.id
+}) || {})
+const excludedViews = computed(() => moduleRegistry.list.filter(module =>
+  (module.access && protectedAccess.status[module.id] !== 'ready') || (module.id === 'chat' && settingsStore.warmHomeEnabled === false)
+).map(module => module.name))
 const activeBackgroundStyle = computed(() => backgroundEffectStyle(
   settingsStore.backgroundEffects?.[authStore.isLocked ? 'lock' : 'pages']
 ))
@@ -223,7 +224,7 @@ const activeBackgroundStyle = computed(() => backgroundEffectStyle(
               @keydown.space.prevent="settingsStore.switchView(item.id)"
             >
               <span class="drawer-item-icon">
-                <component :is="drawerIcons[item.id]" :size="21" :stroke-width="1.8" aria-hidden="true" />
+                <component :is="drawerIcons[item.icon]" :size="21" :stroke-width="1.8" aria-hidden="true" />
               </span>
               <span class="drawer-item-label">{{ item.label }}</span>
               <span
@@ -253,51 +254,24 @@ const activeBackgroundStyle = computed(() => backgroundEffectStyle(
         <DataStatusBanner :issues="dataIssues" />
         <p v-if="dataReady === false" class="protected-data-loading" role="status">数据尚未安全载入，请等待或重试读取。</p>
         <template v-if="dataReady !== false">
-        <KeepAlive :max="7" :exclude="settingsStore.warmHomeEnabled === false || protectedAccess?.status.chat !== 'ready' ? ['ChatView'] : []">
-          <HomeView
-            v-if="settingsStore.currentView === 'home'"
-            :chat-unread-count="chatUnreadCount"
-            :show-biometric-setup="showBiometricSetup"
-            :is-enabling-biometric="isEnablingBiometric"
-            @enable-biometric="enableBiometricUnlock"
-            @dismiss-biometric="dismissBiometricSetup"
-          />
-          <MonthlyReportView v-else-if="settingsStore.currentView === 'reports'" />
-          <DebtListView v-else-if="settingsStore.currentView === 'debts'" />
-          <WeightView v-else-if="settingsStore.currentView === 'weight'" />
-          <MoodView v-else-if="settingsStore.currentView === 'mood'" />
-          <TodoView v-else-if="settingsStore.currentView === 'todo'" />
-          <ScheduleView v-else-if="settingsStore.currentView === 'schedule'" />
-          <ChatView
-            v-else-if="settingsStore.currentView === 'chat' && protectedDataStatus === 'ready'"
-            :is-visible="!authStore.isLocked && settingsStore.currentView === 'chat'"
+        <KeepAlive :max="7" :exclude="excludedViews">
+          <component
+            :is="pageComponents[activeModule.id]"
+            v-if="activeModule?.cache && canRenderModule"
+            :key="activeModule.id"
+            v-bind="activeBindings"
           />
         </KeepAlive>
-        <div
-          v-if="settingsStore.currentView === 'chat' && protectedDataStatus !== 'ready'"
-          class="protected-data-loading"
-          role="status"
-        >
+        <component
+          :is="pageComponents[activeModule.id]"
+          v-if="activeModule && !activeModule.cache && canRenderModule"
+          :key="protectedModule || activeModule.id"
+          v-bind="activeBindings"
+        />
+        <div v-if="!canRenderModule" class="protected-data-loading" role="status">
           <span v-if="protectedDataStatus === 'loading'" class="unlock-spinner"></span>
-          <p>{{ protectedAccess?.recoveryRequired ? '数据恢复未完成，请保留应用数据并联系维护者。' : protectedDataStatus === 'loading' ? '正在安全载入温馨小家…' : '验证身份后进入温馨小家' }}</p>
-          <button v-if="protectedDataStatus !== 'loading' && !protectedAccess?.recoveryRequired" class="button-primary" @click="retryProtectedModule">验证并进入</button>
-          <button class="text-link" @click="settingsStore.switchView('home')">返回首页</button>
-        </div>
-        <div
-          v-if="settingsStore.currentView === 'passwords' && protectedDataStatus !== 'ready'"
-          class="protected-data-loading"
-          role="status"
-        >
-          <span v-if="protectedDataStatus === 'loading'" class="unlock-spinner"></span>
-          <p>{{ protectedAccess?.recoveryRequired ? '数据恢复未完成，请保留应用数据并联系维护者。' : protectedDataStatus === 'loading' ? '正在安全载入密码库…' : '验证身份后进入密码库' }}</p>
-          <button v-if="protectedDataStatus !== 'loading' && !protectedAccess?.recoveryRequired" class="button-primary" @click="retryProtectedModule">验证并进入</button>
-          <button class="text-link" @click="settingsStore.switchView('home')">返回首页</button>
-        </div>
-        <PasswordVaultView v-else-if="settingsStore.currentView === 'passwords'" />
-        <SettingsView v-if="settingsStore.currentView === 'settings' && (!protectedModule || protectedDataStatus === 'ready')" :key="protectedModule || 'general'" />
-        <div v-else-if="settingsStore.currentView === 'settings' && protectedModule" class="protected-data-loading" role="status">
-          <p>{{ protectedAccess?.recoveryRequired ? '数据恢复未完成，请保留应用数据并联系维护者。' : protectedDataStatus === 'loading' ? '正在安全载入设置…' : '此设置需要验证身份' }}</p>
-          <button v-if="protectedDataStatus !== 'loading' && !protectedAccess?.recoveryRequired" class="button-primary" @click="retryProtectedModule">验证并继续</button>
+          <p>{{ protectedAccess.recoveryRequired ? '数据恢复未完成，请保留应用数据并重试恢复。' : protectedDataStatus === 'loading' ? `正在安全载入${activeModule.label || activeModule.title}…` : '此功能需要验证身份' }}</p>
+          <button v-if="protectedDataStatus !== 'loading' && !protectedAccess.recoveryRequired" class="button-primary" @click="retryProtectedModule">验证并进入</button>
           <button class="text-link" @click="settingsStore.switchView('home')">返回首页</button>
         </div>
         </template>

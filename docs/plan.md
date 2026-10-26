@@ -758,3 +758,5 @@
 用户要求全部执行，并明确每阶段完成后推送一次远端。本轮沿用origin/main为阶段推送目标，不在阶段间重复询问实施授权。P1完成，npm run check通过：Node260、组件113、类型/构建通过，lint0错误/55警告。详见docs/20261026-architecture-stage-1-verification-v1.md。下一阶段P2完整恢复与中断保护。
 
 P1已推送origin/main：29fb70a。P2完成：实际完整恢复协调、认证加密恢复记录、启动门禁/回滚失败保护、Preferences原生commit补丁；npm run check通过Node274/组件127/类型/构建，lint55既有警告。详情docs/20261026-architecture-stage-2-verification-v1.md，下一步P3模块清单与生命周期。
+
+P2已推送origin/main：ff4e0bc。P3模块清单/导航/生命周期完成，完整检查Node274/组件134/类型/构建通过，lint55既有警告。验收见docs/20261026-architecture-stage-3-verification-v1.md。下一步P4备份与敏感模块契约。

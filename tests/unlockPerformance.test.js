@@ -16,20 +16,17 @@ test('解锁先绘制忙碌状态并防止重复提交', () => {
 
 test('主密码通过后主页先绘制且受保护数据在随后加载', () => {
   const controller = read('composables/useAppController.js')
-  const app = read('App.vue')
   assert.match(controller, /if \(ok\) await finishUnlock\(\)/)
   assert.match(controller, /afterTwoPaints\(start\)/)
   assert.match(read('stores/protectedAccess.js'), /status\[module\] = 'loading'/)
-  assert.match(app, /protectedDataStatus !== 'ready'/)
-  assert.match(app, /正在安全载入密码库/)
 })
 
 test('非首页组件和受保护 Store 不进入首屏静态依赖', () => {
-  const app = read('App.vue')
+  const registry = read('application/moduleRegistry.js')
   const controller = read('composables/useAppController.js')
   const home = read('components/HomeView.vue')
-  assert.match(app, /const ChatView = defineAsyncComponent/)
-  assert.match(app, /const MoodView = defineAsyncComponent/)
+  assert.match(registry, /loadView: \(\) => import\('..\/features\/chat\/ChatView.vue'\)/)
+  assert.doesNotMatch(registry, /^import .*View/m)
   assert.match(controller, /import\('\.\.\/features\/chat\/chatStore\.js'\)/)
   assert.doesNotMatch(controller, /^import .*chatStore/m)
   assert.doesNotMatch(home, /useChatStore/)

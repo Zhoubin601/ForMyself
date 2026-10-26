@@ -1,3 +1,4 @@
+import { moduleRegistry } from '../../application/moduleRegistry.js'
 import { Capacitor } from '@capacitor/core'
 import { computed, onBeforeUnmount, ref } from 'vue'
 import { useAuthStore } from '../../stores/auth'
@@ -27,14 +28,10 @@ export function useSettingsNavigation() {
   const settingsSection = computed(() => settingsStore.settingsSection || '')
   const isGeneralSection = section => settingsScope.value === 'general' && settingsSection.value === section
   const showGeneralSettingsHome = computed(() => settingsScope.value === 'general' && !settingsSection.value)
-  const scopeMeta = computed(() => ({
-    debts: { title: '省钱计划设置', description: '管理计划分组、目标回顾提醒与 AI 个性化鼓励。' },
-    weight: { title: '体重记录设置', description: '管理健康参数、变化提醒与每日记录提醒。' },
-    mood: { title: '心情日记设置', description: '管理心情等级、自定义标签与每日关怀提醒。' },
-    schedule: { title: '日程提醒设置', description: '管理日程标签、颜色和分类规则。' },
-    passwords: { title: '密码库设置', description: '管理密码分类；主密码仍在通用配置中管理。' },
-    chat: { title: '温馨小家设置', description: '管理女朋友名字、记忆和聊天数据。' }
-  })[settingsScope.value] || null)
+  const scopeMeta = computed(() => {
+    const module = moduleRegistry.get(settingsScope.value)
+    return module?.settings ? { title: `${module.label || module.title}设置`, description: module.settings } : null
+  })
 
   const autoLockPickerOpen = ref(false)
   const backupTypeOptions = [

@@ -1,17 +1,8 @@
+import { moduleRegistry } from '../application/moduleRegistry.js'
 const APP_DEEP_LINK_PROTOCOL = 'formyself:'
 const APP_DEEP_LINK_HOST = 'open'
 
-const VIEW_ALIASES = Object.freeze({
-  home: 'home',
-  mood: 'mood',
-  weight: 'weight',
-  savings: 'debts',
-  debts: 'debts',
-  reports: 'reports',
-  schedule: 'schedule',
-  todo: 'todo',
-  chat: 'chat'
-})
+const VIEW_ALIASES = Object.freeze({ ...Object.fromEntries(moduleRegistry.list.filter(m => !['settings', 'passwords'].includes(m.id)).map(m => [m.id, m.id])), savings: 'debts' })
 
 export const getRouteFromAppUrl = (url) => {
   if (typeof url !== 'string' || !url.trim()) return null

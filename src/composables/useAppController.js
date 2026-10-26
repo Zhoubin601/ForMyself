@@ -1,3 +1,6 @@
+import { moduleRegistry } from '../application/moduleRegistry.js'
+import { createModuleLifecycle, createListenerScope } from '../application/moduleLifecycle.js'
+import { ordinaryModuleRuntimes } from '../application/ordinaryModules.js'
 import { restoreState } from '../platform/storage/restoreState.js'
 import { computed, nextTick, onBeforeUnmount, ref, onMounted, watch, watchEffect } from 'vue'
 import { StatusBar } from '@capacitor/status-bar'
@@ -36,12 +39,15 @@ export function useAppController() {
   const weightStore = useWeightStore()
   const scheduleStore = useScheduleStore()
   const todoStore = useTodoStore()
-  const ordinaryData = [
-    { id: 'debts', title: '省钱计划', store: debtStore, load: () => debtStore.loadDebts() },
-    { id: 'weight', title: '体重记录', store: weightStore, load: () => weightStore.loadWeightRecords() },
-    { id: 'mood', title: '心情日记', store: moodStore, load: () => moodStore.loadMoodRecords() },
-    { id: 'schedule', title: '日程提醒', store: scheduleStore, load: () => scheduleStore.loadSchedules() }
-  ]
+  const runtimeModules = ordinaryModuleRuntimes({
+    debtStore, weightStore, moodStore, scheduleStore, todoStore, settingsStore,
+    onLifeChange: () => { queueReminderPersonalizationRefresh(); queueHomeWidgetRefresh() },
+    onScheduleChange: () => queueScheduleRefresh()
+  })
+  const ordinaryData = runtimeModules.filter(module => module.store).map(module => ({
+    id: module.id, title: moduleRegistry.get(module.id).label || moduleRegistry.get(module.id).title,
+    store: module.store, load: module.initialize
+  }))
   const aggregateReady = () => !restoreState.blocked && [moodStore, weightStore, debtStore].every(store => store.isDataLoaded && !store.saveError)
   const refreshSafeHomeWidget = data => aggregateReady() ? refreshHomeWidget(data) : Promise.resolve(false)
   const syncSafeScheduleNotifications = data => !restoreState.blocked && scheduleStore.isDataLoaded && !scheduleStore.saveError
@@ -65,9 +71,9 @@ export function useAppController() {
   const hasEnteredApp = ref(false)
   const protectedAccess = useProtectedAccessStore()
   const protectedModule = computed(() => {
-    if (['passwords', 'chat'].includes(settingsStore.currentView)) return settingsStore.currentView
+    if (moduleRegistry.get(settingsStore.currentView)?.access === 'protected') return settingsStore.currentView
     if (settingsStore.currentView === 'settings') {
-      if (['passwords', 'chat'].includes(settingsStore.settingsScope)) return settingsStore.settingsScope
+      if (moduleRegistry.get(settingsStore.settingsScope)?.access === 'protected') return settingsStore.settingsScope
       if (settingsStore.settingsSection === 'labels') return 'passwords'
     }
     return null
@@ -106,19 +112,8 @@ export function useAppController() {
 
   const pwdInput = ref('')
   const showPassword = ref(false)
-  const moduleSettingsViews = new Set(['debts', 'weight', 'mood', 'passwords', 'chat'])
-  const drawerItems = computed(() => [
-    { id: 'home', label: '首页总览', meta: '今天' },
-    { id: 'reports', label: '月度报告', meta: '回顾' },
-    { id: 'debts', label: '省钱计划', meta: '目标' },
-    { id: 'weight', label: '体重记录', meta: '健康' },
-    { id: 'mood', label: '心情日记', meta: '感受' },
-    { id: 'chat', label: '温馨小家', meta: '陪伴' },
-    { id: 'todo', label: '每日待办', meta: '计划' },
-    { id: 'schedule', label: '日程提醒', meta: '安排' },
-    { id: 'passwords', label: '密码库', meta: '安全' },
-    { id: 'settings', label: '通用配置', meta: '设置' }
-  ].filter(item => item.id !== 'chat' || settingsStore.warmHomeEnabled))
+  const moduleSettingsViews = moduleRegistry.settings
+  const drawerItems = computed(() => moduleRegistry.menu({ warmHomeEnabled: settingsStore.warmHomeEnabled }))
   let backgroundedAt = null
   let reminderRefreshTimer = null
   let reminderResumeTimer = null
@@ -126,7 +121,6 @@ export function useAppController() {
   let scheduleSyncTimer = null
   let startupIdleHandle = null
   let todoClockCleanup = () => {}
-  let todoChangeListener = null
 
   const resyncStoredReminders = () => syncReminderNotifications(settingsStore.notificationSettings, {
     personalizedBodies: getPersonalizedReminderBodies(settingsStore.notificationAiContent)
@@ -358,10 +352,12 @@ export function useAppController() {
     }
   }
 
+  const lifecycle = createModuleLifecycle(runtimeModules)
+  const listeners = createListenerScope()
   onMounted(async () => {
     try {
-      CapacitorApp.addListener('backButton', handleAppBack)
-      CapacitorApp.addListener('appUrlOpen', ({ url }) => openAppUrl(url))
+      await listeners.listen(CapacitorApp, 'backButton', handleAppBack)
+      await listeners.listen(CapacitorApp, 'appUrlOpen', ({ url }) => openAppUrl(url))
       const launchUrl = await CapacitorApp.getLaunchUrl()
       openAppUrl(launchUrl?.url)
     } catch (error) {
@@ -388,30 +384,16 @@ export function useAppController() {
     measureAppPerformance('app:boot-to-lock-ready', 'app:boot-start', 'app:lock-ready')
     authStore.refreshBiometricAvailability().catch(() => {})
 
-    await Promise.all([
-      settingsStore.loadSettings(),
-      debtStore.loadDebts(),
-      weightStore.loadWeightRecords(),
-      moodStore.loadMoodRecords(),
-      scheduleStore.loadSchedules(),
-      todoStore.load()
-    ])
-    if (Capacitor.getPlatform() === 'android') todoChangeListener = await TodoNative.addListener('changed', () => { void todoStore.load() })
-    moodStore.$subscribe(queueReminderPersonalizationRefresh)
-    weightStore.$subscribe(queueReminderPersonalizationRefresh)
-    debtStore.$subscribe(queueReminderPersonalizationRefresh)
-    moodStore.$subscribe(queueHomeWidgetRefresh)
-    weightStore.$subscribe(queueHomeWidgetRefresh)
-    debtStore.$subscribe(queueHomeWidgetRefresh)
-    scheduleStore.$subscribe(queueScheduleRefresh)
+    await lifecycle.initialize()
+    if (Capacitor.getPlatform() === 'android') await listeners.listen(TodoNative, 'changed', () => { void todoStore.load() })
     queueStartupSync()
 
     try {
-      LocalNotifications.addListener('localNotificationActionPerformed', ({ notification }) => {
+      await listeners.listen(LocalNotifications, 'localNotificationActionPerformed', ({ notification }) => {
         const url = notification?.extra?.url
         if (url) openAppUrl(url)
       })
-      LocalNotifications.addListener('localNotificationReceived', ({ extra }) => {
+      await listeners.listen(LocalNotifications, 'localNotificationReceived', ({ extra }) => {
         if (!chatStore || protectedAccess.status.chat !== 'ready') return
         if (extra?.followupId) chatStore.materializeDueFollowups(Date.now())
         else if (extra?.proactiveId) chatStore.materializeDueProactive(Date.now())
@@ -421,16 +403,14 @@ export function useAppController() {
     }
 
     try {
-      CapacitorApp.addListener('appStateChange', ({ isActive }) => {
+      await listeners.listen(CapacitorApp, 'appStateChange', ({ isActive }) => {
         if (!isActive) {
           const nativeActivityGuarded = isNativeActivityGuardActive()
           backgroundedAt = nativeActivityGuarded ? null : Date.now()
-          Promise.all([
-            chatStore?.flush() || Promise.resolve(),
-            ...ordinaryData.filter(({ store }) => store.isDataLoaded).map(({ store }) => store.flush()),
-            todoStore.flush(),
-            settingsStore.flushPendingSettingsWrites()
-          ]).catch(error => console.warn('进入后台时保存数据失败', error))
+          Promise.all([chatStore?.flush() || Promise.resolve(), lifecycle.flush().then(results => {
+            const failed = results.find(result => result.status === 'rejected')
+            if (failed) throw failed.reason
+          })]).catch(error => console.warn('进入后台时保存数据失败', error))
           if (!nativeActivityGuarded && shouldLockOnBackground(settingsStore.autoLockDelaySeconds)) {
             authStore.expireSession({ lockApp: settingsStore.requireAppUnlock })
           }
@@ -445,9 +425,7 @@ export function useAppController() {
           authStore.expireSession({ lockApp: settingsStore.requireAppUnlock })
         }
         backgroundedAt = null
-        if (moodStore.isDataLoaded) moodStore.autoFillMissingDays()
-        void todoStore.load().then(() => todoStore.syncReminders())
-        queueScheduleRefresh()
+        void lifecycle.resume()
         if (protectedAccess.status.chat === 'ready') {
           resyncChatProactive().catch(error => console.warn('恢复应用后同步温馨小家主动联系失败', error))
         }
@@ -467,10 +445,12 @@ export function useAppController() {
   })
 
   onBeforeUnmount(() => {
+    lifecycle.dispose()
+    listeners.dispose()
+    ;[reminderRefreshTimer, reminderResumeTimer, widgetRefreshTimer, scheduleSyncTimer].forEach(clearTimeout)
     window.removeEventListener('keydown', handleAppKeydown)
     stopUnreadWatch?.()
     todoClockCleanup()
-    void todoChangeListener?.remove()
     if (startupIdleHandle !== null) {
       if (typeof window.cancelIdleCallback === 'function') window.cancelIdleCallback(startupIdleHandle)
       else window.clearTimeout(startupIdleHandle)

@@ -1,5 +1,5 @@
-import { mount } from '@vue/test-utils'
-import { nextTick, reactive, ref } from 'vue'
+import { mount, flushPromises } from '@vue/test-utils'
+import { nextTick, reactive, ref, computed } from 'vue'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 let controller
@@ -8,6 +8,10 @@ vi.mock('../src/composables/useAppController.js', () => ({
   useAppController: () => controller
 }))
 
+vi.mock('../src/features/chat/ChatView.vue', () => ({ default: {
+  name: 'ChatView', props: ['isVisible'], data: () => ({ draft: 'initial' }),
+  template: '<section data-test="chat" :data-visible="isVisible"><input v-model="draft" /></section>'
+} }))
 import App from '../src/App.vue'
 
 describe('解锁反馈', () => {
@@ -30,6 +34,8 @@ describe('解锁反馈', () => {
       isUnlocking: ref(true),
       moduleSettingsViews: new Set(),
       protectedDataStatus: ref('idle'),
+      protectedModule: computed(() => ['passwords', 'chat'].includes(controller.settingsStore.currentView) ? controller.settingsStore.currentView : null),
+      protectedAccess: reactive({ status: { passwords: 'idle', chat: 'idle' }, recoveryRequired: false }),
       pwdInput: ref(''),
       setMasterPassword: vi.fn(),
       settingsStore: reactive({
@@ -139,4 +145,23 @@ describe('解锁反馈', () => {
     expect(wrapper.find('.lock-screen').exists()).toBe(true)
     expect(wrapper.find('.main-app').isVisible()).toBe(false)
   })
+  it('模块渲染保留会话内聊天状态，锁定隐藏可见性，失效后不复用敏感页面缓存', async () => {
+    controller.authStore.isLocked = false; controller.hasEnteredApp.value = true
+    controller.settingsStore.currentView = 'chat'; controller.protectedAccess.status.chat = 'ready'
+    controller.protectedDataStatus.value = 'ready'
+    const wrapper = mountApp(); await flushPromises()
+    await vi.waitFor(() => expect(wrapper.find('[data-test="chat"]').exists()).toBe(true))
+    await wrapper.find('[data-test="chat"] input').setValue('session draft')
+    controller.settingsStore.currentView = 'home'; await nextTick()
+    controller.settingsStore.currentView = 'chat'; await nextTick()
+    expect(wrapper.find('[data-test="chat"] input').element.value).toBe('session draft')
+    controller.authStore.isLocked = true; await nextTick()
+    expect(wrapper.find('[data-test="chat"]').attributes('data-visible')).toBe('false')
+    controller.authStore.isLocked = false; controller.protectedAccess.status.chat = 'idle'; controller.protectedDataStatus.value = 'loading'
+    await nextTick(); expect(wrapper.find('[data-test="chat"]').exists()).toBe(false)
+    controller.protectedAccess.status.chat = 'ready'; controller.protectedDataStatus.value = 'ready'; await nextTick()
+    expect(wrapper.find('[data-test="chat"] input').element.value).toBe('initial')
+    wrapper.unmount()
+  })
+
 })

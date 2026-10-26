@@ -1,3 +1,4 @@
+import { moduleRegistry } from '../src/application/moduleRegistry.js'
 import assert from 'node:assert/strict'
 import { readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
@@ -62,11 +63,9 @@ test('侧边栏包含统一图标导航、隐私说明和关闭控件', () => {
 })
 
 test('只有存在独立配置的模块显示设置入口', () => {
-  const appSource = readSourceContract('App.vue')
   const settingsStoreSource = readSourceContract('stores/settings.js')
   const settingsViewSource = readSourceContract('components/SettingsView.vue')
-  assert.match(appSource, /moduleSettingsViews = new Set\(\['debts', 'weight', 'mood', 'passwords', 'chat'\]\)/)
-  assert.doesNotMatch(appSource, /moduleSettingsViews = new Set\([^)]*'home'/)
+  assert.deepEqual([...moduleRegistry.settings].sort(), ['chat', 'debts', 'mood', 'passwords', 'schedule', 'weight'])
   assert.match(settingsStoreSource, /openModuleSettings/)
   assert.match(settingsViewSource, /settingsScope === 'passwords'/)
   assert.match(settingsViewSource, /settingsScope === 'chat'/)

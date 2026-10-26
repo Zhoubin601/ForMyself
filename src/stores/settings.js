@@ -1,3 +1,5 @@
+import { createAppNavigation } from '../application/appNavigation.js'
+import { moduleRegistry } from '../application/moduleRegistry.js'
 import { restoreState } from '../platform/storage/restoreState.js'
 import { normalizeCommonNotes } from '../services/commonNotes.js'
 import { normalizeBackgroundEffects } from '../services/backgroundSettings.js'
@@ -23,13 +25,7 @@ import {
   buildThemeCssVariables,
   normalizeThemeSettings
 } from '../services/themeSystem.js'
-import {
-  appRouteKey,
-  isSameAppRoute,
-  normalizeAppRoute,
-  popAppRoute,
-  pushAppRoute
-} from '../services/navigationHistory.js'
+
 
 export const useSettingsStore = defineStore('settings', () => {
   const bannerSettings = ref({ prefix: '你已经省下了', suffix: '元', subtitle: '可喜可贺，继续保持。✨', titleSize: 38 })
@@ -42,16 +38,14 @@ export const useSettingsStore = defineStore('settings', () => {
   const warmHomePausedAt = ref(0)
   const themeSettings = ref(normalizeThemeSettings())
   const themeCssVariables = computed(() => buildThemeCssVariables(themeSettings.value))
-  const currentView = ref('home')
-  const settingsScope = ref('general')
-  const settingsSection = ref('')
-  const settingsReturnView = ref('home')
-  const todoTarget = ref({ item: '', date: '' })
-  const scheduleTarget = ref({ item: '', occurrence: '' })
-  const isDrawerOpen = ref(false)
-  const navigationStack = ref([])
-  const navigationRevision = ref(0)
-  const routeScrollTop = ref(0)
+  const navigation = createAppNavigation({ filterRoute: route => {
+    if (!warmHomeEnabled.value && (route.view === 'chat' || (route.view === 'settings' && route.settingsScope === 'chat'))) {
+      appToast('温馨小家入口已关闭，可在设置中重新开启')
+      return { view: 'settings', settingsScope: 'general', settingsSection: 'appearance' }
+    }
+    return route
+  } })
+  const { currentView, settingsScope, settingsSection, settingsReturnView, todoTarget, scheduleTarget, isDrawerOpen, navigationStack, navigationRevision, currentRoute, currentRouteKey, canGoBack, navigate, replaceRoute, goBack, updateLastHistoryScroll, updateCurrentRouteScroll, switchView, openGeneralSettingsSection, closeGeneralSettingsSection, openModuleSettings, closeModuleSettings, openScheduleTarget } = navigation
   const isDataLoaded = ref(false)
 
   const cachedQuote = ref({ text: '早安！今天又是充满希望的一天，记得记录你的心情哦。', date: '' })
@@ -224,18 +218,7 @@ export const useSettingsStore = defineStore('settings', () => {
     }
   }
 
-  const viewLabels = {
-    home: '首页总览',
-    reports: '月度报告',
-    debts: '我的省钱计划',
-    weight: '体重记录',
-    mood: '心情日记',
-    chat: '温馨小家',
-    schedule: '日程提醒',
-    todo: '每日待办',
-    passwords: '我的密码库',
-    settings: '通用配置'
-  }
+  const viewLabels = Object.fromEntries(moduleRegistry.list.map(m => [m.id, m.title]))
   const generalSectionLabels = {
     appearance: '外观与首页',
     notifications: '通知与提醒',
@@ -255,16 +238,6 @@ export const useSettingsStore = defineStore('settings', () => {
     }
     return viewLabels[currentView.value]
   })
-  const currentRoute = computed(() => normalizeAppRoute({
-    view: currentView.value,
-    settingsScope: settingsScope.value,
-    settingsSection: settingsSection.value,
-    scheduleTarget: scheduleTarget.value,
-    todoTarget: todoTarget.value,
-    scrollTop: routeScrollTop.value
-  }))
-  const currentRouteKey = computed(() => appRouteKey(currentRoute.value))
-  const canGoBack = computed(() => navigationStack.value.length > 0)
 
   let appearanceLoadPromise = null
   const loadAppearanceSettings = () => {
@@ -388,87 +361,6 @@ export const useSettingsStore = defineStore('settings', () => {
   watch(dataFingerprint, () => persistHomeCache())
   watch(lastEncouragement, () => persistHomeCache())
 
-  const applyRoute = value => {
-    let route = normalizeAppRoute(value, currentView.value)
-    if (!warmHomeEnabled.value && (route.view === 'chat' || (route.view === 'settings' && route.settingsScope === 'chat'))) {
-      appToast('温馨小家入口已关闭，可在设置中重新开启')
-      route = normalizeAppRoute({ view: 'settings', settingsScope: 'general', settingsSection: 'appearance' })
-    }
-    currentView.value = route.view
-    settingsScope.value = route.settingsScope
-    settingsSection.value = route.settingsSection
-    scheduleTarget.value = route.scheduleTarget
-    todoTarget.value = route.todoTarget
-    routeScrollTop.value = route.scrollTop
-    isDrawerOpen.value = false
-    navigationRevision.value += 1
-    return route
-  }
-  const navigate = (value, options = {}) => {
-    const target = normalizeAppRoute(value, currentView.value)
-    if (isSameAppRoute(currentRoute.value, target)) {
-      isDrawerOpen.value = false
-      return false
-    }
-    if (!options.replace) {
-      navigationStack.value = pushAppRoute(
-        navigationStack.value,
-        {
-          ...currentRoute.value,
-          scrollTop: options.currentScrollTop ?? currentRoute.value.scrollTop
-        },
-        target
-      )
-    }
-    applyRoute(target)
-    return true
-  }
-  const replaceRoute = value => navigate(value, { replace: true })
-  const goBack = () => {
-    const popped = popAppRoute(navigationStack.value)
-    if (!popped.route) return null
-    navigationStack.value = popped.stack
-    return applyRoute(popped.route)
-  }
-  const updateLastHistoryScroll = value => {
-    if (!navigationStack.value.length) return
-    const index = navigationStack.value.length - 1
-    navigationStack.value[index] = {
-      ...navigationStack.value[index],
-      scrollTop: Math.max(0, Number(value) || 0)
-    }
-  }
-  const updateCurrentRouteScroll = value => {
-    routeScrollTop.value = Math.max(0, Number(value) || 0)
-  }
-  const switchView = view => navigate({ view, settingsScope: view === 'settings' ? 'general' : undefined })
-  const openGeneralSettingsSection = section => navigate({
-    view: 'settings',
-    settingsScope: 'general',
-    settingsSection: section
-  })
-  const closeGeneralSettingsSection = () => {
-    if (settingsScope.value !== 'general' || !settingsSection.value) return false
-    if (canGoBack.value) return !!goBack()
-    return replaceRoute({ view: 'settings', settingsScope: 'general' })
-  }
-  const openModuleSettings = scope => {
-    if (!['debts', 'weight', 'mood', 'schedule', 'passwords', 'chat'].includes(scope)) return
-    settingsReturnView.value = currentView.value
-    navigate({ view: 'settings', settingsScope: scope })
-  }
-  const closeModuleSettings = () => {
-    if (canGoBack.value) return goBack()
-    const target = settingsReturnView.value || settingsScope.value || 'home'
-    return replaceRoute({ view: target === 'settings' ? 'home' : target })
-  }
-  const openScheduleTarget = (target = {}) => {
-    const nextTarget = {
-      item: String(target.item || ''),
-      occurrence: String(target.occurrence || '')
-    }
-    navigate({ view: 'schedule', scheduleTarget: nextTarget })
-  }
   const updateBanner = async (v) => { bannerSettings.value = v; queuePreferenceWrite(STORAGE_KEYS.bannerSettings, JSON.stringify(v)) }
   const updateBg = async b => {
     if (b) await Preferences.set({ key: STORAGE_KEYS.customBackground, value: b })

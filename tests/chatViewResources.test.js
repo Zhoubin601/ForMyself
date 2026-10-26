@@ -1,3 +1,4 @@
+import { moduleRegistry } from '../src/application/moduleRegistry.js'
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import { readSourceContract as read } from './sourceContractReader.js'
@@ -5,13 +6,15 @@ import { readSourceContract as read } from './sourceContractReader.js'
 test('侧栏与首页陪伴卡都可以进入温馨小家', () => {
   const app = read('App.vue')
   const home = read('components/HomeView.vue')
-  const settings = read('stores/settings.js')
-
-  assert.match(app, /\{ id: 'chat', label: '温馨小家', meta: '陪伴'/)
-  assert.match(app, /const ChatView = defineAsyncComponent\(\(\) => import\('\.\/features\/chat\/ChatView\.vue'\)\)/)
-  assert.match(app, /<KeepAlive :max="7"[^>]*>[\s\S]*<ChatView[\s\S]*v-else-if="settingsStore\.currentView === 'chat' && protectedDataStatus === 'ready'"/)
+  const chat = moduleRegistry.get('chat')
+  assert.equal(chat.title, '温馨小家')
+  assert.equal(chat.cache, true)
+  assert.equal(chat.access, 'protected')
+  assert.equal(moduleRegistry.menu({ warmHomeEnabled: true }).some(m => m.id === 'chat'), true)
+  assert.equal(moduleRegistry.menu({ warmHomeEnabled: false }).some(m => m.id === 'chat'), false)
+  assert.match(app, /<KeepAlive/)
   assert.match(home, /@click="switchView\('chat'\)"/)
-  assert.match(settings, /chat: '温馨小家'/)
+
 })
 
 test('聊天界面包含全高布局、100 条分批加载、流式停止、重试和单条操作', () => {
@@ -118,8 +121,8 @@ test('切换应用页面或进入锁屏时保留聊天生成任务，并在进�
   const view = read('features/chat/ChatView.vue')
 
   assert.match(app, /v-if="hasEnteredApp" v-show="!authStore\.isLocked" class="main-app/)
-  assert.match(app, /<KeepAlive :max="7"[^>]*>[\s\S]*<ChatView/)
-  assert.match(app, /:is-visible="!authStore\.isLocked && settingsStore\.currentView === 'chat'"/)
+  assert.equal(moduleRegistry.get('chat').cache, true)
+  assert.equal(moduleRegistry.get('chat').bindings({ isVisible: false }).isVisible, false)
   assert.match(view, /const findRecentUnansweredUserMessages/)
   assert.match(view, /24 \* 60 \* 60 \* 1000/)
   assert.match(view, /if \(!resumeInterruptedReply\(\)\) initializeCompanionContinuity\(\)/)

@@ -1,25 +1,13 @@
-export const APP_VIEWS = Object.freeze([
-  'home',
-  'reports',
-  'debts',
-  'weight',
-  'mood',
-  'chat',
-  'schedule',
-  'todo',
-  'passwords',
-  'settings'
-])
+import { moduleRegistry } from '../application/moduleRegistry.js'
 
-const APP_VIEW_SET = new Set(APP_VIEWS)
-const SETTINGS_SCOPES = new Set(['general', 'debts', 'weight', 'mood', 'schedule', 'passwords', 'chat'])
+export const APP_VIEWS = Object.freeze(moduleRegistry.list.map(m => m.id))
 
 const cleanText = value => String(value || '').trim()
 
-export function normalizeAppRoute(value = {}, fallbackView = 'home') {
+export function normalizeAppRoute(value = {}, fallbackView = 'home', registry = moduleRegistry) {
   const source = typeof value === 'string' ? { view: value } : (value || {})
-  const view = APP_VIEW_SET.has(source.view) ? source.view : fallbackView
-  const settingsScope = view === 'settings' && SETTINGS_SCOPES.has(source.settingsScope)
+  const view = registry.has(source.view) ? source.view : fallbackView
+  const settingsScope = view === 'settings' && (source.settingsScope === 'general' || registry.settings.has(source.settingsScope))
     ? source.settingsScope
     : 'general'
 
@@ -40,8 +28,8 @@ export function normalizeAppRoute(value = {}, fallbackView = 'home') {
   }
 }
 
-export function appRouteKey(value) {
-  const route = normalizeAppRoute(value)
+export function appRouteKey(value, registry = moduleRegistry) {
+  const route = normalizeAppRoute(value, 'home', registry)
   return [
     route.view,
     route.settingsScope,
@@ -53,19 +41,19 @@ export function appRouteKey(value) {
   ].join('|')
 }
 
-export const isSameAppRoute = (left, right) => appRouteKey(left) === appRouteKey(right)
+export const isSameAppRoute = (left, right, registry = moduleRegistry) => appRouteKey(left, registry) === appRouteKey(right, registry)
 
-export function pushAppRoute(stack = [], current, target, maxEntries = 30) {
-  const next = Array.isArray(stack) ? stack.map(item => normalizeAppRoute(item)) : []
-  const normalizedCurrent = normalizeAppRoute(current)
-  const normalizedTarget = normalizeAppRoute(target, normalizedCurrent.view)
-  if (isSameAppRoute(normalizedCurrent, normalizedTarget)) return next
-  if (!next.length || !isSameAppRoute(next.at(-1), normalizedCurrent)) next.push(normalizedCurrent)
+export function pushAppRoute(stack = [], current, target, maxEntries = 30, registry = moduleRegistry) {
+  const next = Array.isArray(stack) ? stack.map(item => normalizeAppRoute(item, 'home', registry)) : []
+  const normalizedCurrent = normalizeAppRoute(current, 'home', registry)
+  const normalizedTarget = normalizeAppRoute(target, normalizedCurrent.view, registry)
+  if (isSameAppRoute(normalizedCurrent, normalizedTarget, registry)) return next
+  if (!next.length || !isSameAppRoute(next.at(-1), normalizedCurrent, registry)) next.push(normalizedCurrent)
   return next.slice(-Math.max(1, Number(maxEntries) || 30))
 }
 
-export function popAppRoute(stack = []) {
-  const next = Array.isArray(stack) ? stack.map(item => normalizeAppRoute(item)) : []
+export function popAppRoute(stack = [], registry = moduleRegistry) {
+  const next = Array.isArray(stack) ? stack.map(item => normalizeAppRoute(item, 'home', registry)) : []
   const route = next.pop() || null
   return { route, stack: next }
 }
