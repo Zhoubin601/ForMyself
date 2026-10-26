@@ -10,9 +10,17 @@
     {
       "run_id": 40285818837,
       "commit": "1b10632",
-      "passed": "Web quality, Android build/instrumentation, app initialization, optional-entry/API-key cold start, vault UI, chat, deep link and background release",
+      "passed": "Web quality, Android build/instrumentation, initialization, optional-entry/API-key cold start, vault UI and chat; reached post-background reauthentication",
       "failed_step": "Post-background protected entry test driver waited directly for password input",
       "fix": "Click the product verification CTA before waiting for its input; also test required-entry cold start and assert mocked reply content"
+    },
+    {
+      "run_id": 40287293626,
+      "commit": "5e118f0",
+      "passed": "Web quality, Android build and instrumentation",
+      "failed_step": "WebView target closed while initial native AI settings were being saved, before the first test force-stop",
+      "reason": "The run did not retain a device crash log, so unique cause is unconfirmed",
+      "fix": "Pin Emulator33.1.24 with KVM, collect Android crash/progress details, and wait for old WebView removal before every cold start"
     }
   ]
 }

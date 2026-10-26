@@ -59,4 +59,34 @@ public class ArchitectureContractTest {
             assertEquals(before, context.getSharedPreferences("CapacitorStorage", 0).getString(TodoRepository.KEY, null));
         } finally { assertTrue(marker.delete()); }
     }
+    @Test public void actualWidgetReceiverPersistsAndReversesCompletion() throws Exception {
+        Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
+        android.content.SharedPreferences preferences = context.getSharedPreferences("CapacitorStorage", 0);
+        String previous = preferences.getString(TodoRepository.KEY, null), date = TodoRepository.today();
+        JSONObject task = new JSONObject().put("id", "synthetic-widget-action").put("title", "Synthetic widget action")
+            .put("startDate", date).put("recurrence", new JSONObject().put("type", "none"));
+        JSONObject fixture = new JSONObject().put("version", 1).put("revision", 0)
+            .put("tasks", new JSONArray().put(task)).put("overrides", new JSONArray()).put("completions", new JSONArray());
+        try {
+            assertTrue(preferences.edit().putString(TodoRepository.KEY, fixture.toString()).commit());
+            for (boolean expected : new boolean[]{true, false}) {
+                java.util.concurrent.CountDownLatch finished = new java.util.concurrent.CountDownLatch(1);
+                android.content.Intent intent = new android.content.Intent(context, TodoWidgetProvider.class)
+                    .setAction(TodoWidgetProvider.ACTION).putExtra("action", "complete")
+                    .putExtra("taskId", "synthetic-widget-action").putExtra("date", date)
+                    .addFlags(android.content.Intent.FLAG_RECEIVER_FOREGROUND | android.content.Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
+                context.sendOrderedBroadcast(intent, null, new android.content.BroadcastReceiver() {
+                    @Override public void onReceive(Context c, android.content.Intent i) { finished.countDown(); }
+                }, new android.os.Handler(android.os.Looper.getMainLooper()), 0, null, null);
+                assertTrue("actual widget receiver must finish", finished.await(30, java.util.concurrent.TimeUnit.SECONDS));
+                assertEquals("completion is read back from canonical native storage", expected,
+                    TodoRepository.day(TodoRepository.read(context), date).get(0).getBoolean("completed"));
+            }
+        } finally {
+            if (previous == null) assertTrue(preferences.edit().remove(TodoRepository.KEY).commit());
+            else assertTrue(preferences.edit().putString(TodoRepository.KEY, previous).commit());
+            TodoReminderReceiver.reschedule(context);
+            TodoWidgetProvider.updateAll(context, false);
+        }
+    }
 }

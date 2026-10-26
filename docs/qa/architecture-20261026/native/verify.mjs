@@ -41,6 +41,11 @@ const attach = async () => {
 }
 const coldStart = async () => {
   await device.shell(`am force-stop ${pkg}`)
+  const deadline = Date.now()+20000
+  while (device.webViews().some(view=>view.pkg()===pkg)) {
+    if (Date.now()>deadline) throw Error('Previous process WebView was not removed after force-stop')
+    await new Promise(resolve=>setTimeout(resolve,100))
+  }
   return attach()
 }
 const verifyIdentity = async page => {
@@ -176,6 +181,11 @@ try {
     results.failedView = await evaluate(activePage,"return {view:stores.get('settings').currentView,locked:stores.get('auth').isLocked,status:stores.get('protectedAccess').status};").catch(()=>null)
     await activePage.screenshot({path:resolve(directory,'playwright-failure.png'),timeout:5000}).catch(()=>{})
   }
+  const crash = (await device.shell('logcat -b crash -d -t 120').catch(()=>Buffer.from(''))).toString()
+  const summary = crash.split('\n').filter(line=>/Fatal signal|FATAL EXCEPTION|Abort message|AndroidRuntime:|Cmdline:|Renderer process/.test(line)).slice(-35).join('\n')
+  await writeFile(resolve(directory,'playwright-crash-summary.txt'),summary+'\n')
+  console.error('Native acceptance progress:',JSON.stringify(results))
+  if(summary)console.error(summary)
   await writeFile(resolve(directory,'playwright-attempt.json'),JSON.stringify(results,null,2)+'\n')
   throw error
 } finally { await device.close() }
