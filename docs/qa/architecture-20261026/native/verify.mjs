@@ -183,7 +183,8 @@ try {
   await checkpoint('Native deep link checked')
   await evaluate(page,"await window.__qaNativeUrlProbe?.remove();return true;")
   await evaluate(page,"stores.get('settings').autoLockDelaySeconds=0;return true;")
-  await shell('input keyevent 3')
+  results.backgroundTrigger='Separate QaBackgroundActivity in instrumentation APK; actual Android task switch'
+  await shell('am start -n com.yubin.formyself.test/com.yubin.formyself.QaBackgroundActivity')
   await waitState(page,"return Object.values(stores.get('protectedAccess').status).every(x=>x==='idle')&&!stores.get('auth').savedMasterPwd&&stores.get('chat').messages.length===0",{polling:500})
   await checkpoint('Sensitive state released while backgrounded')
   await shell(`am start -n ${pkg}/.MainActivity`)

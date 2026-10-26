@@ -53,7 +53,7 @@ jobs:
         with:
           api-level: 34
           emulator-build: 11237101
-          target: google_apis
+          target: aosp_atd
           arch: x86_64
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -memory 2048 -cores 2 -accel on -skin 480x800

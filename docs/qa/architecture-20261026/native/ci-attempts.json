@@ -138,6 +138,14 @@
       "result": "Native text selector did not locate the initialization button; captured WebView image visibly contains the button and correct password field",
       "evidence": "ci-failures/40359471566/playwright-failure.png and playwright-attempt.json",
       "fix": "Use Playwright DOM role/button bounds, map through actual Android WebView bounds and send Android input touch; assert actual authentication as before; also capture physical Android display on failure"
+    },
+    {
+      "run_id": 40361060238,
+      "commit": "10ab8ff",
+      "result": "Native WebView not found in active accessibility window; physical screenshot shows System UI is not responding ANR dialog obscuring the still-rendering app",
+      "root_evidence": "ci-failures/40361060238/android-display-failure.png; WebView-only image omitted Android system overlay",
+      "fix": "Use lightweight API34 AOSP ATD image without unrelated Google services; actual background task switch uses a separate Activity only in instrumentation APK, avoiding launcher dependence. Main APK contains no test Activity. Keep verified authentication and real native touch assertions.",
+      "scope": "The overlay explains missing UI events/active-window selectors; no production authentication bypass or automatic app-assertion retry"
     }
   ]
 }
