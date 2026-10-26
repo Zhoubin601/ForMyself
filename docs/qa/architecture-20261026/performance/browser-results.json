@@ -1,0 +1,97 @@
+{
+  "browser": "154.0.8037.57",
+  "baseline_commit": "ff4e0bc",
+  "current": "P5 + P6 QA changes",
+  "warmup_runs": 1,
+  "measured_runs": 3,
+  "small_save_batches": 10,
+  "codec_batches": {
+    "100": 100,
+    "10000": 5
+  },
+  "scope": "Actual browser app boot-to-lock and weight Preferences saves; synthetic data, fresh contexts, baseline/current alternating. Not a native-device performance comparison.",
+  "samples": {
+    "before": [
+      {
+        "boot_to_lock": 384.69999999925494,
+        "save_100": 5.689999999850988,
+        "encode_decode_100": 0.315,
+        "bytes_100": 8691,
+        "save_10000": 391.0999999977648,
+        "encode_decode_10000": 32.88000000044703,
+        "bytes_10000": 888891
+      },
+      {
+        "boot_to_lock": 305.30000000074506,
+        "save_100": 5.210000000149011,
+        "encode_decode_100": 0.3189999999850988,
+        "bytes_100": 8691,
+        "save_10000": 408,
+        "encode_decode_10000": 36.32000000029802,
+        "bytes_10000": 888891
+      },
+      {
+        "boot_to_lock": 304,
+        "save_100": 6.269999999925494,
+        "encode_decode_100": 0.35,
+        "bytes_100": 8691,
+        "save_10000": 435,
+        "encode_decode_10000": 35.93999999985099,
+        "bytes_10000": 888891
+      }
+    ],
+    "after": [
+      {
+        "boot_to_lock": 340.8999999985099,
+        "save_100": 4.55,
+        "encode_decode_100": 0.38,
+        "bytes_100": 8691,
+        "save_10000": 312.80000000074506,
+        "encode_decode_10000": 37.139999999850986,
+        "bytes_10000": 888891
+      },
+      {
+        "boot_to_lock": 299.5,
+        "save_100": 5.170000000298023,
+        "encode_decode_100": 0.3019999999925494,
+        "bytes_100": 8691,
+        "save_10000": 271.6000000014901,
+        "encode_decode_10000": 30.260000000149013,
+        "bytes_10000": 888891
+      },
+      {
+        "boot_to_lock": 355.5,
+        "save_100": 5.35,
+        "encode_decode_100": 0.3180000000074506,
+        "bytes_100": 8691,
+        "save_10000": 274.6000000014901,
+        "encode_decode_10000": 32.23999999985099,
+        "bytes_10000": 888891
+      }
+    ]
+  },
+  "median_ms": {
+    "before": {
+      "boot_to_lock": 305.30000000074506,
+      "save_100": 5.689999999850988,
+      "save_10000": 408,
+      "encode_decode_100": 0.3189999999850988,
+      "encode_decode_10000": 35.93999999985099
+    },
+    "after": {
+      "boot_to_lock": 340.8999999985099,
+      "save_100": 5.170000000298023,
+      "save_10000": 274.6000000014901,
+      "encode_decode_100": 0.3180000000074506,
+      "encode_decode_10000": 32.23999999985099
+    }
+  },
+  "ratios": {
+    "boot_to_lock": 1.1166066164352373,
+    "save_100": 0.908611599373184,
+    "save_10000": 0.6730392156899268,
+    "encode_decode_100": 0.9968652038316773,
+    "encode_decode_10000": 0.8970506399550544
+  },
+  "investigate_over_20_percent": []
+}

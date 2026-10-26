@@ -16,12 +16,14 @@ npm run check
 npm run build
 npx cap sync android
 cd android
-./gradlew testDebugUnitTest assembleDebug
+./gradlew :app:testDebugUnitTest :app:assembleDebug
 # 隔离模拟器运行；不得指向真实用户设备数据
-./gradlew connectedDebugAndroidTest
+./gradlew :app:connectedDebugAndroidTest
 ```
 
 Android 需要 JDK 21、匹配的 SDK/build-tools。`postinstall` 对通知、生物凭据和 Preferences 插件应用可重复的原生修补；遇到不支持的依赖源码会明确失败，升级依赖时必须重新验证。不要将 `node_modules` 的手动修改当成可交付修复。
+
+JS/Java Todo 规则共用 `tests/fixtures/todo-contract.json`；Java 规则与真实通知/存储检查由 instrumentation 执行。P1–P6 的验收记录位于 `docs/20261026-architecture-stage-*-verification-v1.md`，Playwright 浏览器、实际 WebView 驱动及合成证据位于 `docs/qa/architecture-20261026/`；驱动不打入正式 APK，只能指向隔离测试资料。
 
 ## 目录与依赖边界
 

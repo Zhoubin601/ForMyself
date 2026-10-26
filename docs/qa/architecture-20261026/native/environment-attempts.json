@@ -1,0 +1,29 @@
+{
+  "scope": "Failed environment/test-driver attempts, excluded from passing acceptance",
+  "attempts": [
+    {
+      "environment": "API30 Google APIs, Emulator37.2.12, no KVM",
+      "result": "Framework restart/property timeouts; see first-device-timeout.xml"
+    },
+    {
+      "environment": "First direct instrumentation",
+      "result": "6 passed, 1 failed notification observation, 1 opt-in harness skipped; see first-instrumentation.txt; receiver completion synchronization subsequently added"
+    },
+    {
+      "environment": "API34 AOSP ATD, Emulator37.2.12, WebView113",
+      "result": "7 instrumentation tests passed; initial WebView renderer SIGTRAP before app flows; see first-webview-renderer-crash.txt"
+    },
+    {
+      "environment": "API34 Google APIs, Emulator37.2.12",
+      "result": "First boot framework initialization incomplete; early app installation encountered PackageManagerInternal unavailable; no app-flow pass recorded"
+    },
+    {
+      "environment": "Rebooted API34 ATD, Emulator37.2.12",
+      "result": "Host emulator crashed; cgroup oom_kill remained zero; not enough evidence to attribute unique cause"
+    },
+    {
+      "environment": "API34 ATD, Emulator33.1.24, software CPU, JITless, single CPU/multiprocess-disabled attempt",
+      "result": "WebView attachment timed out; Android system process reported Lost network stack; not an application acceptance pass"
+    }
+  ]
+}

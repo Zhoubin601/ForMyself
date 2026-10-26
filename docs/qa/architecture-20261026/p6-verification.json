@@ -1,0 +1,37 @@
+{
+  "stage": "P6",
+  "status": "native WebView acceptance in progress",
+  "command": "npm run check",
+  "exit_code": 0,
+  "node_passed": 283,
+  "component_passed": 154,
+  "lint_errors": 0,
+  "lint_warnings": 47,
+  "vue_typecheck": "passed",
+  "strict_contract_typecheck": "passed",
+  "build": "passed",
+  "android_build": {
+    "tasks": [
+      ":app:testDebugUnitTest",
+      ":app:assembleDebug",
+      ":app:assembleDebugAndroidTest"
+    ],
+    "result": "BUILD SUCCESSFUL",
+    "jvm_test_scope": "existing template arithmetic only; rule/storage tests use instrumentation"
+  },
+  "android_instrumentation": {
+    "api": 34,
+    "image": "aosp_atd/x86_64",
+    "passed": 7,
+    "shared_fixture_cases": 8,
+    "runner": "androidx.test.runner.AndroidJUnitRunner",
+    "evidence": "native/instrumentation-results.txt"
+  },
+  "browser_playwright": "web/results.json",
+  "browser_crud_single_backup_playwright": "web/crud-results.json",
+  "native_playwright": "pending",
+  "performance": "performance/browser-results.json",
+  "native_apk_assets": "native/apk-assets.json",
+  "ci": "configuration checked locally; remote result not yet observed",
+  "browser_storage_fault_playwright": "web/faults-results.json"
+}

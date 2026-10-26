@@ -1,0 +1,39 @@
+{
+  "initialization": true,
+  "home_rendered": true,
+  "debts_rendered": true,
+  "weight_rendered": true,
+  "mood_rendered": true,
+  "todo_rendered": true,
+  "schedule_rendered": true,
+  "settings_rendered": true,
+  "responsive": {
+    "320": true,
+    "390": true,
+    "1280": true
+  },
+  "chat_send_reply": true,
+  "passwords_protected_or_rendered": true,
+  "settings_protected_or_rendered": true,
+  "ai_settings_visible": true,
+  "encrypted_backup_download_decrypt_import": true,
+  "uncommitted_reload_rollback": true,
+  "committed_reload_retains_target": true,
+  "performance_marks": [
+    {
+      "name": "app:boot-to-lock-ready",
+      "duration": 105
+    },
+    {
+      "name": "unlock:verify",
+      "duration": 43.80000000074506
+    },
+    {
+      "name": "unlock:to-home-paint",
+      "duration": 56.70000000298023
+    }
+  ],
+  "browser": "154.0.8037.57",
+  "script_sha256": "671a41889d32debe9fa3ca9c7a4a9c1ee350900faca8ad357076482579a3eef8",
+  "executed_at": "2026-10-26T14:10:55.597895+08:00"
+}

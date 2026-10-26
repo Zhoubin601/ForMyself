@@ -892,3 +892,7 @@ raw/ 与 memory-bank/ 目录未提供；未读取私人备份，未引入外部�
 ## 2026-10-26 分阶段修复计划来源
 
 来源：用户当前修复与先规划指令；docs/20261026-architecture-extensibility-review-v1.md；docs/qa/architecture-20261026/verification-summary.json 与故障探针；src/stores/debt.js、weight.js、src/features/mood/moodStore.js、schedule/scheduleStore.js、src/services/fullBackup.js、src/composables/settings/useBackupSettings.js、src/components/WeightView.vue、src/features/schedule/ScheduleView.vue；tests/DebtStore.spec.js、ProtectedDataRecovery.spec.js；android/app/build.gradle、android/app/src/androidTest/java/com/yubin/formyself/TodoNativeTest.java。日期：2026-10-26（北京时间）。raw、memory-bank目录未提供，无私人数据或外部研究资料。既有260/99测试通过数来自上一轮实际结果，本次仅规划未重复运行。
+
+## 2026-10-26 P1–P6 实施与验收来源
+
+用户授权全部执行 P1–P6、每阶段完成后推送，并要求使用 Playwright。P1–P5 结论依据各阶段 verification 文档与 JSON，提交依次为 29fb70a、ff4e0bc、f073039、e92cf62、f3ced1c，均已推送 origin/main。P6 依据 tests/fixtures/todo-contract.json、JS/Java 实际执行输出、docs/qa/architecture-20261026/web/ 与 native/、performance/ 中的实际合成验收。Android SDK/系统镜像来自 Google 官方 SDK 下载，JDK 21 为 Temurin；没有导入私人备份、真实 API Key 或真实服务请求。原生 WebView 失败和最终通过的证据应分开阅读，构建成功不代替冷启动恢复验收。

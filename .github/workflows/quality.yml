@@ -19,6 +19,7 @@ jobs:
 
   android:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -30,8 +31,39 @@ jobs:
           distribution: temurin
           java-version: 21
           cache: gradle
+      - uses: android-actions/setup-android@v3
+      - name: Enable KVM for isolated device tests
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - run: sdkmanager "platforms;android-36" "build-tools;35.0.0"
       - run: npm ci
       - run: npm run build
       - run: npx cap sync android
-      - run: bash ./gradlew assembleDebug
+      - run: bash ./gradlew :app:testDebugUnitTest :app:assembleDebug :app:assembleDebugAndroidTest
         working-directory: android
+      - name: Run isolated Android instrumentation
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          target: google_apis
+          arch: x86_64
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -memory 2048 -cores 2 -accel on
+          script: |
+            adb install -r android/app/build/outputs/apk/debug/app-debug.apk
+            adb shell pm grant com.yubin.formyself android.permission.POST_NOTIFICATIONS
+            cd android && bash ./gradlew :app:connectedDebugAndroidTest && cd ..
+            adb install -r android/app/build/outputs/apk/debug/app-debug.apk
+            npm run test:e2e:android
+      - name: Preserve Android verification reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-test-reports
+          path: |
+            android/app/build/reports/tests/
+            android/app/build/outputs/androidTest-results/
+            docs/qa/architecture-20261026/native/
+            android/app/build/outputs/apk/debug/app-debug.apk

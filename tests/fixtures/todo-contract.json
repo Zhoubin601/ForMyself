@@ -1,0 +1,485 @@
+{
+  "version": 1,
+  "cases": [
+    {
+      "name": "one-off across month",
+      "data": {
+        "version": 1,
+        "revision": 0,
+        "tasks": [
+          {
+            "id": "once",
+            "title": "once",
+            "startDate": "2026-01-31",
+            "recurrenceAnchorDate": "2026-01-31",
+            "recurrence": {
+              "type": "none"
+            },
+            "createdAt": 1,
+            "time": "",
+            "note": "",
+            "reminder": false,
+            "archived": false
+          }
+        ],
+        "overrides": [],
+        "completions": []
+      },
+      "queries": [
+        {
+          "date": "2026-01-30",
+          "expected": []
+        },
+        {
+          "date": "2026-01-31",
+          "expected": [
+            {
+              "id": "once",
+              "key": "once@2026-01-31",
+              "title": "once",
+              "completed": false
+            }
+          ]
+        },
+        {
+          "date": "2026-02-01",
+          "expected": []
+        }
+      ]
+    },
+    {
+      "name": "daily across leap day with end date",
+      "data": {
+        "version": 1,
+        "revision": 0,
+        "tasks": [
+          {
+            "id": "daily",
+            "title": "daily",
+            "startDate": "2024-02-28",
+            "recurrenceAnchorDate": "2024-02-28",
+            "recurrence": {
+              "type": "daily"
+            },
+            "createdAt": 1,
+            "time": "",
+            "note": "",
+            "reminder": false,
+            "archived": false,
+            "endsOn": "2024-03-01"
+          }
+        ],
+        "overrides": [],
+        "completions": []
+      },
+      "queries": [
+        {
+          "date": "2024-02-28",
+          "expected": [
+            {
+              "id": "daily",
+              "key": "daily@2024-02-28",
+              "title": "daily",
+              "completed": false
+            }
+          ]
+        },
+        {
+          "date": "2024-02-29",
+          "expected": [
+            {
+              "id": "daily",
+              "key": "daily@2024-02-29",
+              "title": "daily",
+              "completed": false
+            }
+          ]
+        },
+        {
+          "date": "2024-03-01",
+          "expected": [
+            {
+              "id": "daily",
+              "key": "daily@2024-03-01",
+              "title": "daily",
+              "completed": false
+            }
+          ]
+        },
+        {
+          "date": "2024-03-02",
+          "expected": []
+        }
+      ]
+    },
+    {
+      "name": "weekly Monday Friday",
+      "data": {
+        "version": 1,
+        "revision": 0,
+        "tasks": [
+          {
+            "id": "weekly",
+            "title": "weekly",
+            "startDate": "2026-10-01",
+            "recurrenceAnchorDate": "2026-10-01",
+            "recurrence": {
+              "type": "weekly",
+              "weekdays": [
+                1,
+                5
+              ]
+            },
+            "createdAt": 1,
+            "time": "",
+            "note": "",
+            "reminder": false,
+            "archived": false
+          }
+        ],
+        "overrides": [],
+        "completions": []
+      },
+      "queries": [
+        {
+          "date": "2026-10-02",
+          "expected": [
+            {
+              "id": "weekly",
+              "key": "weekly@2026-10-02",
+              "title": "weekly",
+              "completed": false
+            }
+          ]
+        },
+        {
+          "date": "2026-10-03",
+          "expected": []
+        },
+        {
+          "date": "2026-10-05",
+          "expected": [
+            {
+              "id": "weekly",
+              "key": "weekly@2026-10-05",
+              "title": "weekly",
+              "completed": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "custom interval anchored before current version",
+      "data": {
+        "version": 1,
+        "revision": 0,
+        "tasks": [
+          {
+            "id": "custom",
+            "title": "custom",
+            "startDate": "2026-10-01",
+            "recurrenceAnchorDate": "2026-09-29",
+            "recurrence": {
+              "type": "custom",
+              "intervalDays": 3
+            },
+            "createdAt": 1,
+            "time": "",
+            "note": "",
+            "reminder": false,
+            "archived": false
+          }
+        ],
+        "overrides": [],
+        "completions": []
+      },
+      "queries": [
+        {
+          "date": "2026-10-01",
+          "expected": []
+        },
+        {
+          "date": "2026-10-02",
+          "expected": [
+            {
+              "id": "custom",
+              "key": "custom@2026-10-02",
+              "title": "custom",
+              "completed": false
+            }
+          ]
+        },
+        {
+          "date": "2026-10-05",
+          "expected": [
+            {
+              "id": "custom",
+              "key": "custom@2026-10-05",
+              "title": "custom",
+              "completed": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "single override cancel and completion",
+      "data": {
+        "version": 1,
+        "revision": 0,
+        "tasks": [
+          {
+            "id": "override",
+            "title": "override",
+            "startDate": "2026-10-01",
+            "recurrenceAnchorDate": "2026-10-01",
+            "recurrence": {
+              "type": "daily"
+            },
+            "createdAt": 1,
+            "time": "",
+            "note": "",
+            "reminder": false,
+            "archived": false
+          }
+        ],
+        "overrides": [
+          {
+            "taskId": "override",
+            "date": "2026-10-26",
+            "key": "override@2026-10-26",
+            "changes": {
+              "title": "edited title"
+            },
+            "cancelled": false
+          },
+          {
+            "taskId": "override",
+            "date": "2026-10-27",
+            "key": "override@2026-10-27",
+            "changes": {},
+            "cancelled": true
+          }
+        ],
+        "completions": [
+          {
+            "taskId": "override",
+            "date": "2026-10-26",
+            "key": "override@2026-10-26",
+            "completedAt": 1
+          }
+        ]
+      },
+      "queries": [
+        {
+          "date": "2026-10-26",
+          "expected": [
+            {
+              "id": "override",
+              "key": "override@2026-10-26",
+              "title": "edited title",
+              "completed": true
+            }
+          ]
+        },
+        {
+          "date": "2026-10-27",
+          "expected": []
+        },
+        {
+          "date": "2026-10-28",
+          "expected": [
+            {
+              "id": "override",
+              "key": "override@2026-10-28",
+              "title": "override",
+              "completed": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "archived task hidden",
+      "data": {
+        "version": 1,
+        "revision": 0,
+        "tasks": [
+          {
+            "id": "archived",
+            "title": "archived",
+            "startDate": "2026-10-01",
+            "recurrenceAnchorDate": "2026-10-01",
+            "recurrence": {
+              "type": "daily"
+            },
+            "createdAt": 1,
+            "time": "",
+            "note": "",
+            "reminder": false,
+            "archived": true
+          }
+        ],
+        "overrides": [],
+        "completions": []
+      },
+      "queries": [
+        {
+          "date": "2026-10-26",
+          "expected": []
+        }
+      ]
+    },
+    {
+      "name": "sort time then creation then id",
+      "data": {
+        "version": 1,
+        "revision": 0,
+        "tasks": [
+          {
+            "id": "last",
+            "title": "last",
+            "startDate": "2026-10-01",
+            "recurrenceAnchorDate": "2026-10-01",
+            "recurrence": {
+              "type": "daily"
+            },
+            "createdAt": 2,
+            "time": "",
+            "note": "",
+            "reminder": false,
+            "archived": false
+          },
+          {
+            "id": "first",
+            "title": "first",
+            "startDate": "2026-10-01",
+            "recurrenceAnchorDate": "2026-10-01",
+            "recurrence": {
+              "type": "daily"
+            },
+            "createdAt": 1,
+            "time": "09:00",
+            "note": "",
+            "reminder": false,
+            "archived": false
+          },
+          {
+            "id": "middle",
+            "title": "middle",
+            "startDate": "2026-10-01",
+            "recurrenceAnchorDate": "2026-10-01",
+            "recurrence": {
+              "type": "daily"
+            },
+            "createdAt": 1,
+            "time": "",
+            "note": "",
+            "reminder": false,
+            "archived": false
+          }
+        ],
+        "overrides": [],
+        "completions": []
+      },
+      "queries": [
+        {
+          "date": "2026-10-26",
+          "expected": [
+            {
+              "id": "first",
+              "key": "first@2026-10-26",
+              "title": "first",
+              "completed": false
+            },
+            {
+              "id": "middle",
+              "key": "middle@2026-10-26",
+              "title": "middle",
+              "completed": false
+            },
+            {
+              "id": "last",
+              "key": "last@2026-10-26",
+              "title": "last",
+              "completed": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "version split preserves completed history",
+      "data": {
+        "version": 1,
+        "revision": 0,
+        "tasks": [
+          {
+            "id": "old",
+            "title": "old",
+            "startDate": "2026-10-01",
+            "recurrenceAnchorDate": "2026-10-01",
+            "recurrence": {
+              "type": "daily"
+            },
+            "createdAt": 1,
+            "time": "",
+            "note": "",
+            "reminder": false,
+            "archived": false,
+            "endsOn": "2026-10-15"
+          },
+          {
+            "id": "new",
+            "title": "new",
+            "startDate": "2026-10-16",
+            "recurrenceAnchorDate": "2026-10-01",
+            "recurrence": {
+              "type": "daily"
+            },
+            "createdAt": 1,
+            "time": "",
+            "note": "",
+            "reminder": false,
+            "archived": false,
+            "parentTaskId": "old"
+          }
+        ],
+        "overrides": [],
+        "completions": [
+          {
+            "taskId": "old",
+            "date": "2026-10-10",
+            "key": "old@2026-10-10",
+            "completedAt": 1
+          }
+        ]
+      },
+      "queries": [
+        {
+          "date": "2026-10-10",
+          "expected": [
+            {
+              "id": "old",
+              "key": "old@2026-10-10",
+              "title": "old",
+              "completed": true
+            }
+          ]
+        },
+        {
+          "date": "2026-10-20",
+          "expected": [
+            {
+              "id": "new",
+              "key": "new@2026-10-20",
+              "title": "new",
+              "completed": false
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -16,6 +16,10 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    adbOptions { timeOutInMs = 120000 }
+
+    sourceSets { androidTest.assets.srcDirs += ["../../tests/fixtures"] }
+
     buildTypes {
         release {
             minifyEnabled false
