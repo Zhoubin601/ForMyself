@@ -87,6 +87,12 @@
       "passed": "Native entry modes, API-key persistence, vault GUI and actual chat reply; independent native App URL observer received exact intent URL",
       "failed_step": "Product navigation stayed on chat despite actual native appUrlOpen event",
       "fix": "Register back, URL and privacy events independently before data initialization; regress failure and delayed listener registration; verify the product route again on device"
+    },
+    {
+      "run_id": 40348159816,
+      "commit": "0eeae67",
+      "result": "Independent native event wiring did not resolve the deep-link failure; all preceding native checks and instrumentation still passed",
+      "next_probe": "Collect App startup registration logs and mounted lifecycle metadata; invoke an actual captured product callback only in the failing diagnostic path, which never generates accepted results"
     }
   ]
 }

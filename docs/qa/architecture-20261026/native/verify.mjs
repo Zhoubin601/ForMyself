@@ -150,7 +150,7 @@ try {
     const info={platform:cap?.getPlatform?.(),header:(cap?.PluginHeaders||[]).some(h=>h.name==='App')?'present':'missing'};
     try{window.__qaNativeUrlProbe=await app.addListener('appUrlOpen',event=>window.__qaNativeUrlEvents.push(event.url));info.listener='registered'}catch(error){info.listener=String(error)}return info;`)
   results.deepLinkCommand = (await shell(`am start -n ${pkg}/.MainActivity -a android.intent.action.VIEW -d 'formyself://open/todo?item=${taskId}&date=2026-10-26'`)).toString().trim()
-  await waitState(page,`return stores.get('settings').currentView==='todo'&&stores.get('settings').todoTarget.item==='${taskId}'`)
+  await waitState(page,`return stores.get('settings').currentView==='todo'&&stores.get('settings').todoTarget.item==='${taskId}'`,{timeout:30000})
   results.nativeDeepLink = await evaluate(page,`return stores.get('settings').todoTarget.item==='${taskId}';`)
   await checkpoint('Native deep link checked')
   await evaluate(page,"await window.__qaNativeUrlProbe?.remove();return true;")
@@ -222,9 +222,33 @@ try {
   results.error=String(error)
   if (activePage && !activePage.isClosed()) {
     results.failedView = await evaluate(activePage,"return {view:stores.get('settings').currentView,locked:stores.get('auth').isLocked,status:stores.get('protectedAccess').status,sessionRevision:stores.get('auth').sessionRevision,credentialPresent:Boolean(stores.get('auth').savedMasterPwd),apiKeyStatus:stores.get('settings').apiKeyStorageStatus,nativeUrls:window.__qaNativeUrlEvents||[]};").catch(()=>null)
+    results.nativeEventDiagnostics = await evaluate(activePage, `
+      const cap=window.Capacitor, root=document.querySelector('#app')._vnode?.component;
+      const parsed=new URL('formyself://open/todo?item=synthetic&date=2026-10-26');
+      const info={url:{protocol:parsed.protocol,host:parsed.hostname,path:parsed.pathname},rootMounted:root?.isMounted,rootUnmounted:root?.isUnmounted,mountHooks:root?.m?.length,header:cap.PluginHeaders?.find(x=>x.name==='App')};
+      return info;`).catch(error=>({error:String(error)}))
+    if (results.failedView?.nativeUrls?.length && !results.nativeDeepLink) {
+      // Failure diagnosis only: re-run actual mounted hooks and invoke the captured product callback.
+      // This path never writes passing results or produces an accepted APK.
+      results.productUrlCallbackProbe = await evaluate(activePage, `
+        const root=document.querySelector('#app')._vnode?.component,cap=window.Capacitor,original=cap.nativeCallback,callbacks=[];
+        const registration=[];cap.nativeCallback=(plugin,method,options,callback)=>{
+          const id=original(plugin,method,options,callback);
+          if(plugin==='App'&&method==='addListener'){registration.push({event:options.eventName,id});if(options.eventName==='appUrlOpen')callbacks.push(callback)}return id;
+        };
+        try{
+          await Promise.race([Promise.all((root?.m||[]).map(hook=>hook())),new Promise(resolve=>setTimeout(resolve,5000))]);
+          const before=stores.get('settings').currentView;
+          for(const callback of callbacks)callback({url:window.__qaNativeUrlEvents.at(-1)});
+          return {registration,before,after:stores.get('settings').currentView,target:stores.get('settings').todoTarget,callbackSources:callbacks.map(callback=>String(callback).slice(0,250))};
+        }finally{cap.nativeCallback=original;}`).catch(error=>({error:String(error)}))
+    }
     results.consoleWarnings = await activePage.consoleMessages().then(messages=>messages.filter(m=>['warning','error'].includes(m.type())).slice(-12).map(m=>m.text().slice(0,500))).catch(()=>[])
     await activePage.screenshot({path:resolve(directory,'playwright-failure.png'),timeout:5000}).catch(()=>{})
   }
+  const appLog = (await shell('logcat -d -v brief').catch(()=>Buffer.from(''))).toString().split('\n').filter(line=>/Capacitor.*(?:App|Console|addListener|removeListener|appUrlOpen|appStateChange)|无法监听|无法处理应用|onMounted|onBeforeUnmount/.test(line)).slice(-220).join('\n')
+  console.error('Native App startup diagnostics:',appLog)
+  await writeFile(resolve(directory,'app-event-diagnostics.txt'),appLog+'\n')
   const crash = (await shell('logcat -b crash -d -t 120').catch(()=>Buffer.from(''))).toString()
   const summary = crash.split('\n').filter(line=>/Fatal signal|FATAL EXCEPTION|Abort message|AndroidRuntime:|Cmdline:|Renderer process/.test(line)).slice(-35).join('\n')
   await writeFile(resolve(directory,'playwright-crash-summary.txt'),summary+'\n')
