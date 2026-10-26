@@ -3,6 +3,7 @@ import { computed, defineAsyncComponent } from 'vue'
 import { backgroundEffectStyle } from './services/backgroundSettings.js'
 import { useAppController } from './composables/useAppController.js'
 import HomeView from './components/HomeView.vue'
+import DataStatusBanner from './components/DataStatusBanner.vue'
 import AppFeedbackHost from './components/AppFeedbackHost.vue'
 import { ListChecks, House, ChartNoAxesColumn, Wallet, Scale, Heart, HouseHeart, CalendarDays, LockKeyhole, SlidersHorizontal, Menu, X, Settings2, ChevronLeft } from 'lucide-vue-next'
 const drawerIcons = { todo: ListChecks, home: House, reports: ChartNoAxesColumn, debts: Wallet, weight: Scale, mood: Heart, chat: HouseHeart, schedule: CalendarDays, passwords: LockKeyhole, settings: SlidersHorizontal }
@@ -17,6 +18,8 @@ const PasswordVaultView = defineAsyncComponent(() => import('./components/Passwo
 const SettingsView = defineAsyncComponent(() => import('./components/SettingsView.vue'))
 
 const {
+  dataIssues,
+  dataReady,
   appWrapperRef,
   authStore,
   chatUnreadCount,
@@ -239,6 +242,9 @@ const activeBackgroundStyle = computed(() => backgroundEffectStyle(
           'chat-content-area': settingsStore.currentView === 'chat'
         }"
       >
+        <DataStatusBanner :issues="dataIssues" />
+        <p v-if="dataReady === false" class="protected-data-loading" role="status">数据尚未安全载入，请等待或重试读取。</p>
+        <template v-if="dataReady !== false">
         <KeepAlive :max="7" :exclude="settingsStore.warmHomeEnabled === false || protectedAccess?.status.chat !== 'ready' ? ['ChatView'] : []">
           <HomeView
             v-if="settingsStore.currentView === 'home'"
@@ -286,6 +292,7 @@ const activeBackgroundStyle = computed(() => backgroundEffectStyle(
           <button v-if="protectedDataStatus !== 'loading' && !protectedAccess?.recoveryRequired" class="button-primary" @click="retryProtectedModule">验证并继续</button>
           <button class="text-link" @click="settingsStore.switchView('home')">返回首页</button>
         </div>
+        </template>
       </div>
     </div>
   </div>

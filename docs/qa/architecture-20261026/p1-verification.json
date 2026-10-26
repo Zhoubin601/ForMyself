@@ -1,0 +1,13 @@
+{
+  "stage": "P1",
+  "command": "npm run check",
+  "exit_code": 0,
+  "node_passed": 260,
+  "component_passed": 113,
+  "component_files": 14,
+  "lint_errors": 0,
+  "lint_warnings": 55,
+  "typecheck": "passed",
+  "build": "passed",
+  "native": "not run in P1"
+}

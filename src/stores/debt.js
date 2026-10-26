@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, watch } from 'vue'
-import { preferenceStorage as Preferences } from '../platform/storage/preferences.js'
+import { preferenceStorage as driver } from '../platform/storage/preferences.js'
+import { createStorePersistence, parseStoredJson } from '../platform/storage/storePersistence.js'
 import { STORAGE_KEYS } from '../platform/storage/keys.js'
 import { arrangeDebtRecords, DEFAULT_DEBT_GROUP, normalizeDebtGroups, reorderDebtRecords } from '../services/debtOrdering.js'
 
@@ -9,6 +10,8 @@ export const useDebtStore = defineStore('debt', () => {
   const debtGroups = ref([DEFAULT_DEBT_GROUP])
   const isDataLoaded = ref(false)
   const isReordering = ref(false)
+  const persistence = createStorePersistence(isDataLoaded, driver)
+  const Preferences = persistence.storage
   let revision = 0
   let silent = false
   let writeChain = Promise.resolve()
@@ -28,22 +31,13 @@ export const useDebtStore = defineStore('debt', () => {
     revision++
   }
 
-  const loadDebts = async () => {
-    try {
-      const [{ value }, groupResult] = await Promise.all([
-        Preferences.get({ key: STORAGE_KEYS.debtRecords }),
-        Preferences.get({ key: STORAGE_KEYS.debtGroups })
-      ])
-      if (value) {
-        assign(JSON.parse(value))
-      }
-      debtGroups.value = normalizeDebtGroups(groupResult.value ? JSON.parse(groupResult.value) : [], savedDebts.value)
-    } catch (e) {
-      console.error('读取省钱数据失败', e)
-    } finally {
-      isDataLoaded.value = true
-    }
-  }
+  const loadDebts = () => persistence.load(async () => {
+    const [records, groups] = await Promise.all([
+      Preferences.get({ key: STORAGE_KEYS.debtRecords }), Preferences.get({ key: STORAGE_KEYS.debtGroups })
+    ])
+    const parsed = parseStoredJson(records.value, [], 'records')
+    return { records: parsed, groups: normalizeDebtGroups(parseStoredJson(groups.value, []), parsed) }
+  }, data => { assign(data.records); debtGroups.value = data.groups })
 
   watch(
     savedDebts,
@@ -64,16 +58,19 @@ export const useDebtStore = defineStore('debt', () => {
   )
 
   const addDebt = (newDebt) => {
+    persistence.assertReady()
     savedDebts.value.push(newDebt)
   }
 
   const updateDebts = (newList) => {
+    persistence.assertReady()
     savedDebts.value = newList
     debtGroups.value = normalizeDebtGroups(debtGroups.value, newList)
     enqueue(() => writeGroups(JSON.stringify(debtGroups.value))).catch(() => console.error('保存省钱分组失败'))
   }
 
   const restoreDebts = async (newList, groups = []) => {
+    persistence.assertReady()
     assign(newList)
     debtGroups.value = normalizeDebtGroups(groups, newList)
     const value = JSON.stringify(newList)
@@ -85,6 +82,7 @@ export const useDebtStore = defineStore('debt', () => {
   }
 
   const addDebtGroup = async name => {
+    persistence.assertReady()
     const clean = String(name || '').trim().slice(0, 20)
     if (!clean || debtGroups.value.includes(clean) || debtGroups.value.length >= 51) throw new Error('INVALID_DEBT_GROUP')
     const next = [...debtGroups.value, clean]
@@ -94,6 +92,7 @@ export const useDebtStore = defineStore('debt', () => {
   }
 
   const renameDebtGroup = async (oldName, newName) => {
+    persistence.assertReady()
     const clean = String(newName || '').trim().slice(0, 20)
     if (oldName === DEFAULT_DEBT_GROUP || !debtGroups.value.includes(oldName) || !clean ||
       (clean !== oldName && debtGroups.value.includes(clean))) throw new Error('INVALID_DEBT_GROUP')
@@ -109,6 +108,7 @@ export const useDebtStore = defineStore('debt', () => {
   }
 
   const deleteDebtGroup = async name => {
+    persistence.assertReady()
     if (name === DEFAULT_DEBT_GROUP || !debtGroups.value.includes(name)) throw new Error('INVALID_DEBT_GROUP')
     const nextRecords = savedDebts.value.map(item => item.group === name ? { ...item, group: DEFAULT_DEBT_GROUP } : item)
     const nextGroups = debtGroups.value.filter(group => group !== name)
@@ -121,6 +121,7 @@ export const useDebtStore = defineStore('debt', () => {
   }
 
   const reorderDebtGroups = async orderedNames => {
+    persistence.assertReady()
     const before = [...debtGroups.value]
     if (!isDataLoaded.value || !Array.isArray(orderedNames) || orderedNames.length !== before.length ||
       new Set(orderedNames).size !== before.length || orderedNames.some(name => !before.includes(name))) {
@@ -135,6 +136,7 @@ export const useDebtStore = defineStore('debt', () => {
   }
 
   const arrangeDebts = async options => {
+    persistence.assertReady()
     if (!isDataLoaded.value || isReordering.value ||
       (options.targetGroup !== null && options.targetGroup !== undefined && !debtGroups.value.includes(options.targetGroup))) {
       throw new Error('DEBT_ORDER_BUSY')
@@ -154,6 +156,7 @@ export const useDebtStore = defineStore('debt', () => {
   }
 
   const reorderDebts = async options => {
+    persistence.assertReady()
     if (!isDataLoaded.value || isReordering.value) throw new Error('DEBT_ORDER_BUSY')
     isReordering.value = true
     try {
@@ -171,6 +174,7 @@ export const useDebtStore = defineStore('debt', () => {
   }
 
   const deleteDebt = (id) => {
+    persistence.assertReady()
     savedDebts.value = savedDebts.value.filter(d => d.id !== id)
   }
 
@@ -187,7 +191,12 @@ export const useDebtStore = defineStore('debt', () => {
     }, 0)
   }
 
+  const flush = async () => { await writeChain; await persistence.expose.flush() }
+
   return {
+    ...persistence.expose,
+    flush,
+    retrySave: flush,
     savedDebts,
     debtGroups,
     isDataLoaded,

@@ -40,7 +40,7 @@ test('体重跨月范围使用本地日期，周均先平均每天', () => {
   assert.equal(calculateWeeklyAverages(records)[0].average, 63.5)
 })
 test('体重按 ID 编辑保留其他记录，清空时间后按旧记录显示', () => {
-  setActivePinia(createPinia()); const store = useWeightStore()
+  setActivePinia(createPinia()); const store = useWeightStore(); store.isDataLoaded = true // Loaded in-memory fixture; persistence failures are covered separately.
   store.updateWeightRecords(weights.map(r => ({ ...r })))
   store.updateRecord('late', { date: '2026-08-31', time: '', note: '补录' })
   assert.equal(store.weightRecords.length, 4)
@@ -48,7 +48,7 @@ test('体重按 ID 编辑保留其他记录，清空时间后按旧记录显示'
   assert.equal(store.updateRecord('missing', {}), false)
 })
 test('心情显示优先级独立于等级，手动优先且同级最新在前', () => {
-  setActivePinia(createPinia()); const store = useMoodStore()
+  setActivePinia(createPinia()); const store = useMoodStore(); store.isDataLoaded = true // Loaded in-memory fixture; persistence failures are covered separately.
   store.updateMoodRecords([
     { id: 'auto', date: '2026-09-08', mood: 'normal', createdAt: 999, autoFilled: true },
     { id: 'a', date: '2026-09-08', mood: 'bad', createdAt: 1 },
@@ -67,7 +67,7 @@ test('心情显示优先级独立于等级，手动优先且同级最新在前',
   assert.deepEqual(normalizeMoodDefinitions().map(d => d.displayPriority), [50, 40, 30, 20, 10])
 })
 test('预设改名同步历史和默认勾选，清空默认不改旧日记', () => {
-  setActivePinia(createPinia()); const store = useMoodStore()
+  setActivePinia(createPinia()); const store = useMoodStore(); store.isDataLoaded = true // Loaded in-memory fixture; persistence failures are covered separately.
   store.addRecord('2026-09-08', 'normal', '正文保持')
   assert.equal(store.renameTag('学习', '成长'), true)
   assert.deepEqual(store.defaultTags, ['成长'])

@@ -878,3 +878,17 @@ Test_data/todo-v8-apiXX-spacing.json、-widget.json、-native.log、-restored.js
 链接或文件名：C:/Users/a3185/.agents/skills/ui-ux-pro-max/SKILL.md；tests/ApiKeyPersistence.spec.js；docs/qa/api-key-20261023/native-verification.mjs。
 引用日期：2026-10-23。
 用途：设置页提交状态、重试与role=status反馈；实际Store与原生驱动故障替身回归、隔离Android12用户原生测试。真实服务请求由测试响应替代，未使用真实Key或向服务商发送请求；未联网查资料，未读取raw私人备份。
+
+
+## 2026-10-26 架构扩展性检查
+
+用户授权：拉取远端最新更新，评估当前项目架构是否便于扩展；本轮仅同步、审查、运行现有检查和记录建议，不实施业务重构。
+来源：当前 ceda70f 提交中的 src/、tests/、android/、scripts/、package.json、tsconfig.json、eslint.config.js、.github/workflows/quality.yml、README.md；历史重构与修复记录 docs/20260904-maintainability-refactor-plan.md、docs/20261023-api-key-persistence-fix-v1.md。引用日期：2026-10-26。
+raw/ 与 memory-bank/ 目录未提供；未读取私人备份，未引入外部研究资料。以当前代码和本轮实际检查为依据，历史验收数据仅供背景。
+
+本轮新增证据：docs/qa/architecture-20261026/storage-faults.spec.js 与 storage-faults-results.json，实际调用 scheduleStore.loadSchedules、weightStore.loadWeightRecords/addRecord，在合成驱动读取异常、写入可用时复现覆盖。verification-summary.json记录实际常规检查结果；静态相对import分析未发现文件依赖环，不代表无运行时状态耦合。
+
+
+## 2026-10-26 分阶段修复计划来源
+
+来源：用户当前修复与先规划指令；docs/20261026-architecture-extensibility-review-v1.md；docs/qa/architecture-20261026/verification-summary.json 与故障探针；src/stores/debt.js、weight.js、src/features/mood/moodStore.js、schedule/scheduleStore.js、src/services/fullBackup.js、src/composables/settings/useBackupSettings.js、src/components/WeightView.vue、src/features/schedule/ScheduleView.vue；tests/DebtStore.spec.js、ProtectedDataRecovery.spec.js；android/app/build.gradle、android/app/src/androidTest/java/com/yubin/formyself/TodoNativeTest.java。日期：2026-10-26（北京时间）。raw、memory-bank目录未提供，无私人数据或外部研究资料。既有260/99测试通过数来自上一轮实际结果，本次仅规划未重复运行。

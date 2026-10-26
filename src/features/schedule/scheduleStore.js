@@ -1,6 +1,7 @@
 import { computed, ref, watch } from 'vue'
 import { defineStore } from 'pinia'
-import { preferenceStorage as Preferences } from '../../platform/storage/preferences.js'
+import { preferenceStorage as driver } from '../../platform/storage/preferences.js'
+import { createStorePersistence, parseStoredJson } from '../../platform/storage/storePersistence.js'
 import {
   BUILT_IN_SCHEDULE_CATEGORIES,
   SCHEDULE_STORAGE_KEY,
@@ -24,6 +25,8 @@ export const useScheduleStore = defineStore('schedule', () => {
   const occurrences = ref([])
   const categories = ref(BUILT_IN_SCHEDULE_CATEGORIES.map(item => ({ ...item })))
   const isDataLoaded = ref(false)
+  const persistence = createStorePersistence(isDataLoaded, driver)
+  const Preferences = persistence.storage
   let persistTimer = null
 
   const snapshot = computed(() => ({
@@ -35,7 +38,7 @@ export const useScheduleStore = defineStore('schedule', () => {
   const persist = async () => {
     if (persistTimer) globalThis.clearTimeout(persistTimer)
     persistTimer = null
-    if (!isDataLoaded.value) return
+    persistence.assertReady()
     const data = normalizeScheduleData(snapshot.value)
     await Promise.all([
       Preferences.set({ key: SCHEDULE_STORAGE_KEY, value: JSON.stringify(data) }),
@@ -53,20 +56,15 @@ export const useScheduleStore = defineStore('schedule', () => {
     }, 250)
   }
 
-  const loadSchedules = async () => {
-    try {
-      const { value } = await Preferences.get({ key: SCHEDULE_STORAGE_KEY })
-      const data = normalizeScheduleData(value ? JSON.parse(value) : {})
-      series.value = data.series
-      occurrences.value = data.occurrences
-      categories.value = data.categories
-    } catch (error) {
-      console.error('读取日程数据失败', error)
-    } finally {
-      isDataLoaded.value = true
-      await persist()
-    }
-  }
+  const loadSchedules = () => persistence.load(async () => {
+    const { value } = await Preferences.get({ key: SCHEDULE_STORAGE_KEY })
+    const parsed = parseStoredJson(value, {}, 'object')
+    if ((parsed.version !== undefined && parsed.version !== 2) ||
+      ['series', 'occurrences', 'categories'].some(key => parsed[key] !== undefined && (!Array.isArray(parsed[key]) || parsed[key].some(item => !item || typeof item !== 'object' || Array.isArray(item))))) throw new Error('INVALID_SCHEDULE_DATA')
+    return normalizeScheduleData(parsed)
+  }, data => {
+    series.value = data.series; occurrences.value = data.occurrences; categories.value = data.categories
+  }, persist)
 
   watch(snapshot, queuePersist, { deep: true, flush: 'sync' })
 
@@ -84,12 +82,14 @@ export const useScheduleStore = defineStore('schedule', () => {
   })
 
   const addSeries = input => {
+    persistence.assertReady()
     const item = createScheduleSeries(input)
     series.value.push(item)
     return item
   }
 
   const updateSeries = (seriesId, changes, scope = 'all', occurrenceDate = '') => {
+    persistence.assertReady()
     const index = series.value.findIndex(item => item.id === seriesId)
     if (index < 0) return null
     const current = series.value[index]
@@ -116,6 +116,7 @@ export const useScheduleStore = defineStore('schedule', () => {
   }
 
   const deleteSeries = (seriesId, scope = 'all', occurrenceDate = '') => {
+    persistence.assertReady()
     const index = series.value.findIndex(item => item.id === seriesId)
     if (index < 0) return false
     const current = series.value[index]
@@ -144,6 +145,7 @@ export const useScheduleStore = defineStore('schedule', () => {
   }
 
   const completeOccurrence = occurrence => {
+    persistence.assertReady()
     occurrences.value = upsertOccurrenceState(occurrences.value, {
       key: occurrence.key,
       seriesId: occurrence.seriesId,
@@ -155,10 +157,12 @@ export const useScheduleStore = defineStore('schedule', () => {
   }
 
   const reopenOccurrence = occurrence => {
+    persistence.assertReady()
     occurrences.value = occurrences.value.filter(item => item.key !== occurrence.key)
   }
 
   const addCategory = input => {
+    persistence.assertReady()
     const category = normalizeScheduleCategory({
       ...input,
       id: `custom-${Date.now().toString(36)}`,
@@ -170,6 +174,7 @@ export const useScheduleStore = defineStore('schedule', () => {
   }
 
   const deleteCategory = id => {
+    persistence.assertReady()
     if (BUILT_IN_SCHEDULE_CATEGORIES.some(item => item.id === id)) {
       return { ok: false, reason: 'PROTECTED', usageCount: 0 }
     }
@@ -185,6 +190,7 @@ export const useScheduleStore = defineStore('schedule', () => {
   const categoryUsageCount = id => countScheduleCategoryUsage(snapshot.value, id)
 
   const restoreScheduleData = async value => {
+    persistence.assertReady()
     const data = normalizeScheduleData(value)
     series.value = data.series
     occurrences.value = data.occurrences
@@ -194,7 +200,12 @@ export const useScheduleStore = defineStore('schedule', () => {
     return data
   }
 
+  const flush = async () => { await persist(); await persistence.expose.flush() }
+
   return {
+    ...persistence.expose,
+    flush,
+    retrySave: flush,
     series,
     occurrences,
     categories,

@@ -55,7 +55,7 @@ test('自定义标签从导入记录和已保存列表合并且不混入内置�
 
 test('Store 在同一天连续新增时保留两条独立事件', () => {
   setActivePinia(createPinia())
-  const store = useMoodStore()
+  const store = useMoodStore(); store.isDataLoaded = true // Loaded in-memory fixture; persistence failures are covered separately.
   store.addRecord('2026-07-18', 'good', '上午', ['学习'])
   store.addRecord('2026-07-18', 'bad', '晚上', ['家庭'])
 
@@ -66,7 +66,7 @@ test('Store 在同一天连续新增时保留两条独立事件', () => {
 
 test('用户补写真实事件时替换自动补记占位而不重复计数', () => {
   setActivePinia(createPinia())
-  const store = useMoodStore()
+  const store = useMoodStore(); store.isDataLoaded = true // Loaded in-memory fixture; persistence failures are covered separately.
   store.updateMoodRecords([{
     id: 'auto',
     date: '2026-07-17',
@@ -85,7 +85,7 @@ test('用户补写真实事件时替换自动补记占位而不重复计数', ()
 
 test('删除自定义标签时会同步清理历史记录并保留无标签记录', () => {
   setActivePinia(createPinia())
-  const store = useMoodStore()
+  const store = useMoodStore(); store.isDataLoaded = true // Loaded in-memory fixture; persistence failures are covered separately.
   store.updateMoodRecords([
     { id: 'a', date: '2026-07-18', mood: 'good', tags: ['旅行', '工作'] },
     { id: 'b', date: '2026-07-19', mood: 'normal', tags: ['旅行'] }
@@ -114,7 +114,7 @@ test('心情 Emoji 只接受单个完整字素并支持组合 Emoji', () => {
 
 test('Store 支持等级新增编辑排序、默认保护、归档恢复和安全删除', () => {
   setActivePinia(createPinia())
-  const store = useMoodStore()
+  const store = useMoodStore(); store.isDataLoaded = true // Loaded in-memory fixture; persistence failures are covered separately.
   const added = store.addMoodDefinition({ label: '期待', emoji: '🥳', color: '#123ABC' })
   assert.equal(added.ok, true)
   const id = added.definition.id
@@ -132,7 +132,7 @@ test('Store 支持等级新增编辑排序、默认保护、归档恢复和安�
 
 test('已使用心情等级只能归档，归档不会改写历史记录', () => {
   setActivePinia(createPinia())
-  const store = useMoodStore()
+  const store = useMoodStore(); store.isDataLoaded = true // Loaded in-memory fixture; persistence failures are covered separately.
   const added = store.addMoodDefinition({ label: '平静', emoji: '😌', color: '#55AA88' }).definition
   store.addRecord('2026-09-02', added.id, '安静的一天')
   assert.equal(store.deleteMoodDefinition(added.id).reason, 'IN_USE')

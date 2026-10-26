@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { computed, ref, watch } from 'vue'
-import { preferenceStorage as Preferences } from '../../platform/storage/preferences.js'
+import { preferenceStorage as driver } from '../../platform/storage/preferences.js'
+import { createStorePersistence, parseStoredJson } from '../../platform/storage/storePersistence.js'
 import { STORAGE_KEYS } from '../../platform/storage/keys.js'
 import {
   BUILT_IN_MOOD_TAGS,
@@ -26,6 +27,8 @@ import {
 export const useMoodStore = defineStore('mood', () => {
   const moodRecords = ref([])
   const isDataLoaded = ref(false)
+  const persistence = createStorePersistence(isDataLoaded, driver)
+  const Preferences = persistence.storage
   const trackingStartDate = ref('')
   const customTags = ref([])
   const builtInTags = ref([...BUILT_IN_MOOD_TAGS])
@@ -47,85 +50,66 @@ export const useMoodStore = defineStore('mood', () => {
     return `${year}-${month}-${day}`
   }
 
-  const loadMoodRecords = async () => {
-    try {
-      const [{ value }, startResult, customTagsResult, definitionsResult, tagSettingsResult] = await Promise.all([
-        Preferences.get({ key: STORAGE_KEY }),
-        Preferences.get({ key: START_DATE_KEY }),
-        Preferences.get({ key: CUSTOM_TAGS_KEY }),
-        Preferences.get({ key: MOOD_DEFINITIONS_KEY }),
-        Preferences.get({ key: STORAGE_KEYS.moodTagSettings })
-      ])
-      let parsed = []
-      if (value) {
-        parsed = JSON.parse(value)
-        moodRecords.value = normalizeMoodRecords(parsed)
-        if (JSON.stringify(parsed) !== JSON.stringify(moodRecords.value)) {
-          await Preferences.set({ key: STORAGE_KEY, value: JSON.stringify(moodRecords.value) })
-        }
-      }
-
-      const savedDefinitions = definitionsResult.value ? JSON.parse(definitionsResult.value) : []
-      moodDefinitions.value = normalizeMoodDefinitions(savedDefinitions, moodRecords.value)
-      await Preferences.set({ key: MOOD_DEFINITIONS_KEY, value: JSON.stringify(moodDefinitions.value) })
-
-      const tagSettings = tagSettingsResult.value ? JSON.parse(tagSettingsResult.value) : {}
-      builtInTags.value = normalizeMoodTagCatalog(tagSettings.builtInTags)
-      defaultTags.value = normalizeMoodTags(tagSettings.defaultTags)
-      const savedCustomTags = customTagsResult.value ? JSON.parse(customTagsResult.value) : []
-      customTags.value = getCustomMoodTags(moodRecords.value, savedCustomTags, builtInTags.value)
-
-      if (startResult.value) {
-        trackingStartDate.value = startResult.value
-      } else {
-        const existingDates = moodRecords.value.map(record => record.date).filter(Boolean).sort()
-        trackingStartDate.value = existingDates[0] || formatLocalDate(new Date())
-        await Preferences.set({ key: START_DATE_KEY, value: trackingStartDate.value })
-      }
-      // 数据加载完成后立即检查补齐缺失日期
-      await autoFillMissingDays()
-    } catch (e) {
-      console.error('读取心情数据失败', e)
-    } finally {
-      isDataLoaded.value = true
-    }
-  }
+  const loadMoodRecords = () => persistence.load(async () => {
+    const [records, start, tags, definitions, tagSettings] = await Promise.all([
+      Preferences.get({ key: STORAGE_KEY }), Preferences.get({ key: START_DATE_KEY }),
+      Preferences.get({ key: CUSTOM_TAGS_KEY }), Preferences.get({ key: MOOD_DEFINITIONS_KEY }),
+      Preferences.get({ key: STORAGE_KEYS.moodTagSettings })
+    ])
+    // Parse every key before any mutation or normalization writeback.
+    return { records: parseStoredJson(records.value, [], 'records'), start: start.value,
+      tags: parseStoredJson(tags.value, []), definitions: parseStoredJson(definitions.value, []),
+      tagSettings: parseStoredJson(tagSettings.value, {}, 'object') }
+  }, data => {
+    moodRecords.value = normalizeMoodRecords(data.records)
+    moodDefinitions.value = normalizeMoodDefinitions(data.definitions, moodRecords.value)
+    builtInTags.value = normalizeMoodTagCatalog(data.tagSettings.builtInTags)
+    defaultTags.value = normalizeMoodTags(data.tagSettings.defaultTags)
+    customTags.value = getCustomMoodTags(moodRecords.value, data.tags, builtInTags.value)
+    const existingDates = moodRecords.value.map(record => record.date).filter(Boolean).sort()
+    trackingStartDate.value = data.start || existingDates[0] || formatLocalDate(new Date())
+  }, async () => {
+    await Preferences.set({ key: MOOD_DEFINITIONS_KEY, value: JSON.stringify(moodDefinitions.value) })
+    await Preferences.set({ key: START_DATE_KEY, value: trackingStartDate.value })
+    await autoFillMissingDays()
+  })
 
   watch(
     moodRecords,
-    async (newVal) => {
+    (newVal) => {
       if (isDataLoaded.value) {
-        await Preferences.set({
+        void Preferences.set({
           key: STORAGE_KEY,
           value: JSON.stringify(newVal)
-        })
+        }).catch(() => {})
       }
     },
-    { deep: true }
+    { deep: true, flush: 'sync' }
   )
 
   watch(
     customTags,
-    async (newVal) => {
+    (newVal) => {
       if (isDataLoaded.value) {
-        await Preferences.set({ key: CUSTOM_TAGS_KEY, value: JSON.stringify(newVal) })
+        void Preferences.set({ key: CUSTOM_TAGS_KEY, value: JSON.stringify(newVal) }).catch(() => {})
       }
     },
-    { deep: true }
+    { deep: true, flush: 'sync' }
   )
 
   watch(
     moodDefinitions,
-    async (newVal) => {
+    (newVal) => {
       if (isDataLoaded.value) {
-        await Preferences.set({ key: MOOD_DEFINITIONS_KEY, value: JSON.stringify(newVal) })
+        void Preferences.set({ key: MOOD_DEFINITIONS_KEY, value: JSON.stringify(newVal) }).catch(() => {})
       }
     },
-    { deep: true }
+    { deep: true, flush: 'sync' }
   )
 
   // --- 自动补齐缺失日期的逻辑 ---
   const autoFillMissingDays = async () => {
+    if (!isDataLoaded.value) return
     if (!trackingStartDate.value) return
 
     // 计算"昨天"的日期（今天留给用户自己填）
@@ -170,6 +154,7 @@ export const useMoodStore = defineStore('mood', () => {
   }
 
   const addRecord = (date, mood = defaultMoodDefinition.value.id, note = '', tags = [...defaultTags.value]) => {
+    persistence.assertReady()
     const record = normalizeMoodRecord({
       id: `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
       date,
@@ -189,6 +174,7 @@ export const useMoodStore = defineStore('mood', () => {
   }
 
   const updateRecord = (id, updates) => {
+    persistence.assertReady()
     const idx = moodRecords.value.findIndex(r => r.id === id)
     if (idx !== -1) {
       moodRecords.value[idx] = normalizeMoodRecord({
@@ -203,10 +189,12 @@ export const useMoodStore = defineStore('mood', () => {
   }
 
   const deleteRecord = (id) => {
+    persistence.assertReady()
     moodRecords.value = moodRecords.value.filter(r => r.id !== id)
   }
 
   const updateMoodRecords = (newList, definitions = moodDefinitions.value) => {
+    persistence.assertReady()
     const baseDefinitions = normalizeMoodDefinitions(definitions)
     const defaultMoodId = getDefaultMoodDefinition(baseDefinitions).id
     moodRecords.value = normalizeMoodRecords(newList, undefined, defaultMoodId)
@@ -215,6 +203,7 @@ export const useMoodStore = defineStore('mood', () => {
   }
 
   const restoreMoodBackup = async (records, metadata = {}) => {
+    persistence.assertReady()
     const baseDefinitions = normalizeMoodDefinitions(metadata.definitions)
     const defaultMoodId = getDefaultMoodDefinition(baseDefinitions).id
     moodRecords.value = normalizeMoodRecords(records, undefined, defaultMoodId)
@@ -234,6 +223,7 @@ export const useMoodStore = defineStore('mood', () => {
   }
 
   const mergeMoodBackup = async (records, metadata = {}) => {
+    persistence.assertReady()
     const mergedRecords = normalizeMoodRecords(
       [...moodRecords.value, ...(Array.isArray(records) ? records : [])],
       undefined,
@@ -258,6 +248,7 @@ export const useMoodStore = defineStore('mood', () => {
   }
 
   const addCustomTag = (value) => {
+    persistence.assertReady()
     const tag = normalizeMoodTag(value)
     if (!tag || builtInTags.value.includes(tag) || customTags.value.includes(tag)) return tag
     customTags.value = [...customTags.value, tag].sort((a, b) => a.localeCompare(b, 'zh-CN'))
@@ -265,6 +256,7 @@ export const useMoodStore = defineStore('mood', () => {
   }
 
   const removeCustomTag = (value) => {
+    persistence.assertReady()
     const tag = normalizeMoodTag(value)
     if (!tag || builtInTags.value.includes(tag) || !customTags.value.includes(tag)) return false
 
@@ -282,8 +274,9 @@ export const useMoodStore = defineStore('mood', () => {
   }
 
   const persistTagSettings = () => Preferences.set({ key: STORAGE_KEYS.moodTagSettings, value: JSON.stringify({ builtInTags: builtInTags.value, defaultTags: defaultTags.value }) })
-  watch([builtInTags, defaultTags], () => { if (isDataLoaded.value) persistTagSettings().catch(error => console.error('保存心情标签失败', error)) }, { deep: true })
+  watch([builtInTags, defaultTags], () => { if (isDataLoaded.value) persistTagSettings().catch(error => console.error('保存心情标签失败', error)) }, { deep: true, flush: 'sync' })
   const renameTag = (oldName, value) => {
+    persistence.assertReady()
     const name = normalizeMoodTag(value)
     const all = [...builtInTags.value, ...customTags.value]
     if (!name || !all.includes(oldName) || (name !== oldName && all.includes(name))) return false
@@ -294,7 +287,7 @@ export const useMoodStore = defineStore('mood', () => {
     moodRecords.value = moodRecords.value.map(record => ({ ...record, tags: replace(record.tags) }))
     return true
   }
-  const setDefaultTags = tags => { defaultTags.value = normalizeMoodTags(tags).filter(tag => [...builtInTags.value, ...customTags.value].includes(tag)) }
+  const setDefaultTags = tags => { persistence.assertReady(); defaultTags.value = normalizeMoodTags(tags).filter(tag => [...builtInTags.value, ...customTags.value].includes(tag)) }
   const getDayDisplayRecords = date => moodRecords.value.filter(record => record.date === date).sort((a, b) => compareMoodDayRecords(a, b, moodDefinitions.value))
 
   const getMoodDefinition = id => resolveMoodDefinition(moodDefinitions.value, id)
@@ -315,6 +308,7 @@ export const useMoodStore = defineStore('mood', () => {
   }
 
   const addMoodDefinition = input => {
+    persistence.assertReady()
     const validated = validateMoodDefinitionInput(input)
     if (!validated.ok) return validated
     const id = `mood_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`
@@ -330,6 +324,7 @@ export const useMoodStore = defineStore('mood', () => {
   }
 
   const updateMoodDefinition = (id, input) => {
+    persistence.assertReady()
     const existing = moodDefinitions.value.find(item => item.id === id)
     if (!existing) return { ok: false, reason: 'NOT_FOUND' }
     const validated = validateMoodDefinitionInput(input, id)
@@ -341,6 +336,7 @@ export const useMoodStore = defineStore('mood', () => {
   }
 
   const reorderMoodDefinitions = orderedActiveIds => {
+    persistence.assertReady()
     const activeIds = activeMoodDefinitions.value.map(item => item.id)
     if (!Array.isArray(orderedActiveIds) || orderedActiveIds.length !== activeIds.length) return false
     if (new Set(orderedActiveIds).size !== activeIds.length || activeIds.some(id => !orderedActiveIds.includes(id))) return false
@@ -354,6 +350,7 @@ export const useMoodStore = defineStore('mood', () => {
   }
 
   const setDefaultMoodDefinition = id => {
+    persistence.assertReady()
     const target = moodDefinitions.value.find(item => item.id === id && !item.archived)
     if (!target) return false
     moodDefinitions.value = moodDefinitions.value.map(item => ({ ...item, isDefault: item.id === id }))
@@ -361,6 +358,7 @@ export const useMoodStore = defineStore('mood', () => {
   }
 
   const archiveMoodDefinition = id => {
+    persistence.assertReady()
     const target = moodDefinitions.value.find(item => item.id === id)
     if (!target) return { ok: false, reason: 'NOT_FOUND' }
     if (target.isDefault) return { ok: false, reason: 'DEFAULT' }
@@ -373,6 +371,7 @@ export const useMoodStore = defineStore('mood', () => {
   }
 
   const restoreMoodDefinition = id => {
+    persistence.assertReady()
     if (!moodDefinitions.value.some(item => item.id === id)) return false
     moodDefinitions.value = normalizeMoodDefinitions(moodDefinitions.value.map(item => (
       item.id === id ? { ...item, archived: false } : item
@@ -381,6 +380,7 @@ export const useMoodStore = defineStore('mood', () => {
   }
 
   const deleteMoodDefinition = id => {
+    persistence.assertReady()
     const target = moodDefinitions.value.find(item => item.id === id)
     if (!target) return { ok: false, reason: 'NOT_FOUND' }
     if (target.isDefault) return { ok: false, reason: 'DEFAULT' }
@@ -402,6 +402,7 @@ export const useMoodStore = defineStore('mood', () => {
   }
 
   return {
+    ...persistence.expose,
     moodRecords,
     moodDefinitions,
     activeMoodDefinitions,

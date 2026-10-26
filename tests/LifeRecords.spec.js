@@ -19,10 +19,11 @@ vi.mock('../src/services/notificationService.js', () => ({ notifyWeightChange: v
 vi.mock('../src/services/aiEngine', () => ({ askAI: vi.fn(async () => '今天也辛苦了') }))
 vi.mock('../src/services/uiFeedback', () => ({ appAlert: vi.fn(), appConfirm: vi.fn(async () => true), appToast: vi.fn() }))
 let wrappers
-beforeEach(() => {
+beforeEach(async () => {
   wrappers = []; setActivePinia(createPinia()); resetBackHandlersForTests(); vi.clearAllMocks()
   preferenceStorage.get.mockImplementation(async () => ({ value: null }))
   preferenceStorage.set.mockImplementation(async () => {})
+  await Promise.all([useWeightStore().loadWeightRecords(), useMoodStore().loadMoodRecords()])
 })
 afterEach(() => { wrappers.forEach(w => w.unmount()); document.body.innerHTML = ''; resetBackHandlersForTests() })
 const render = (component, props = {}) => { const w = mount(component, { props, attachTo: document.body }); wrappers.push(w); return w }

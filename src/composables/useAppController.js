@@ -35,6 +35,27 @@ export function useAppController() {
   const weightStore = useWeightStore()
   const scheduleStore = useScheduleStore()
   const todoStore = useTodoStore()
+  const ordinaryData = [
+    { id: 'debts', title: '省钱计划', store: debtStore, load: () => debtStore.loadDebts() },
+    { id: 'weight', title: '体重记录', store: weightStore, load: () => weightStore.loadWeightRecords() },
+    { id: 'mood', title: '心情日记', store: moodStore, load: () => moodStore.loadMoodRecords() },
+    { id: 'schedule', title: '日程提醒', store: scheduleStore, load: () => scheduleStore.loadSchedules() }
+  ]
+  const aggregateReady = () => [moodStore, weightStore, debtStore].every(store => store.isDataLoaded && !store.saveError)
+  const refreshSafeHomeWidget = data => aggregateReady() ? refreshHomeWidget(data) : Promise.resolve(false)
+  const syncSafeScheduleNotifications = data => scheduleStore.isDataLoaded && !scheduleStore.saveError
+    ? syncScheduleNotifications(data) : Promise.resolve(false)
+  const dataIssues = computed(() => ordinaryData.flatMap(({ id, title, store, load }) => {
+    if (store.loadError) return [{ id, title, message: store.loadError, action: '重试读取', retry: load }]
+    if (store.saveError) return [{ id, title, message: store.saveError, action: '重试保存', retry: () => store.retrySave() }]
+    if (store.saveStatus === 'saving') return [{ id, title, message: '正在保存…' }]
+    return []
+  }))
+  const dataReady = computed(() => {
+    const view = settingsStore.currentView === 'settings' ? settingsStore.settingsScope : settingsStore.currentView
+    if (['home', 'reports'].includes(view)) return ordinaryData.every(({ store }) => store.isDataLoaded)
+    return ordinaryData.find(item => item.id === view)?.store.isDataLoaded ?? true
+  })
   const chatUnreadCount = ref(0)
   const chatUnreadLabel = computed(() => (
     chatUnreadCount.value > 99 ? '99+' : String(chatUnreadCount.value || '')
@@ -110,6 +131,7 @@ export function useAppController() {
   })
 
   const refreshReminderPersonalization = async (force = false) => {
+    if (!aggregateReady()) return
     const result = await refreshPersonalizedReminderContent({
       settings: settingsStore.notificationSettings,
       cache: settingsStore.notificationAiContent,
@@ -138,7 +160,7 @@ export function useAppController() {
   const queueHomeWidgetRefresh = () => {
     clearTimeout(widgetRefreshTimer)
     widgetRefreshTimer = setTimeout(() => {
-      refreshHomeWidget({
+      refreshSafeHomeWidget({
         moodRecords: moodStore.moodRecords,
         moodDefinitions: moodStore.moodDefinitions,
         weightRecords: weightStore.weightRecords,
@@ -286,8 +308,8 @@ export function useAppController() {
     clearTimeout(scheduleSyncTimer)
     scheduleSyncTimer = setTimeout(() => {
       Promise.all([
-        syncScheduleNotifications(scheduleStore.snapshot),
-        refreshHomeWidget({
+        syncSafeScheduleNotifications(scheduleStore.snapshot),
+        refreshSafeHomeWidget({
           moodRecords: moodStore.moodRecords,
           moodDefinitions: moodStore.moodDefinitions,
           weightRecords: weightStore.weightRecords,
@@ -302,13 +324,13 @@ export function useAppController() {
   const runStartupSync = async () => {
     const tasks = [
       resyncChatProactive(),
-      refreshHomeWidget({
+      refreshSafeHomeWidget({
         moodRecords: moodStore.moodRecords,
         moodDefinitions: moodStore.moodDefinitions,
         weightRecords: weightStore.weightRecords,
         savedDebts: debtStore.savedDebts
       }),
-      syncScheduleNotifications(scheduleStore.snapshot),
+      syncSafeScheduleNotifications(scheduleStore.snapshot),
       todoStore.syncReminders(),
       resyncStoredReminders()
     ]
@@ -402,7 +424,7 @@ export function useAppController() {
           backgroundedAt = nativeActivityGuarded ? null : Date.now()
           Promise.all([
             chatStore?.flush() || Promise.resolve(),
-            scheduleStore.persist(),
+            ...ordinaryData.filter(({ store }) => store.isDataLoaded).map(({ store }) => store.flush()),
             todoStore.flush(),
             settingsStore.flushPendingSettingsWrites()
           ]).catch(error => console.warn('进入后台时保存数据失败', error))
@@ -544,6 +566,8 @@ export function useAppController() {
   }
 
   return {
+    dataIssues,
+    dataReady,
     appWrapperRef,
     authStore,
     chatUnreadCount,

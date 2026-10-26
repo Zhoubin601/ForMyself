@@ -217,6 +217,10 @@ export function useBackupSettings() {
       await todoStore.load()
       if (!todoStore.isDataLoaded) return appAlert('待办未能安全加载，请重试后导出')
     }
+    const required = { savings: debtStore, weight: weightStore, mood: moodStore, schedules: scheduleStore }
+    const targets = exportDataType.value === 'full' ? Object.values(required) : [required[exportDataType.value]].filter(Boolean)
+    if (targets.some(store => !store.isDataLoaded)) return appAlert('部分数据尚未安全读取，请重试读取后再备份')
+    for (const store of targets) await store.flush()
     const label = getDataTypeLabel()
     const isFullBackup = exportDataType.value === 'full'
     const data = isFullBackup ? createFullBackupSnapshot() : getDataArray()
@@ -279,7 +283,11 @@ export function useBackupSettings() {
         const decryptedData = bytes.toString(CryptoJS.enc.Utf8)
         if (!decryptedData) throw new Error('密码错误')
         const importedData = JSON.parse(decryptedData)
-        const label = getDataTypeLabel()
+        const required = { savings: debtStore, weight: weightStore, mood: moodStore, schedules: scheduleStore }
+    const targets = exportDataType.value === 'full' ? Object.values(required) : [required[exportDataType.value]].filter(Boolean)
+    if (targets.some(store => !store.isDataLoaded)) return appAlert('部分数据尚未安全读取，请重试读取后再备份')
+    for (const store of targets) await store.flush()
+    const label = getDataTypeLabel()
 
         if (exportDataType.value === 'todos') {
           const data = readTodoBackup(importedData)

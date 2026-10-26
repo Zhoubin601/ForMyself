@@ -1,0 +1,35 @@
+{
+  "date": "2026-10-26",
+  "commit": "ceda70f1e14e288c7b697b0e7123d6deee9cb895",
+  "remote": "origin/main",
+  "sync": "fetch succeeded; fast-forward-only merge reported already up to date",
+  "check": {
+    "command": "npm run check",
+    "exit_code": 0,
+    "lint_errors": 0,
+    "lint_warnings": 55,
+    "node_tests_passed": 260,
+    "component_test_files_passed": 13,
+    "component_tests_passed": 99,
+    "typecheck": "passed",
+    "production_build": "passed"
+  },
+  "review_probes": {
+    "command": "npx vitest run --config docs/qa/architecture-20261026/vitest.config.mjs",
+    "reproduced_unsafe_behaviors": 2,
+    "meaning": "Passing probes confirm unsafe overwrites, not successful fixes. Actual stores; synthetic storage driver."
+  },
+  "source_metrics": {
+    "js_vue_css_files": 106,
+    "lines_including_templates_and_styles": 23336,
+    "import_cycles_detected": 0,
+    "import_analysis_limit": "Static relative imports and literal dynamic imports in JS/Vue only"
+  },
+  "not_run": [
+    "Android build",
+    "native device tests",
+    "large dataset performance tests",
+    "real AI provider requests"
+  ],
+  "business_code_modified": false
+}
