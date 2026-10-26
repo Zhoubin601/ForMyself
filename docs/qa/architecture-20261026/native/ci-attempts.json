@@ -109,6 +109,14 @@
       "driver_issue": "verifyIdentity waited for ordinary store readiness, which may already be true while password setup/unlock PBKDF and verified persistence are still pending; force-stop could interrupt that operation",
       "fix": "Wait for actual unlocked authentication with a live master credential; assert initial verifier presence and committed optional-entry flag, then require verifier presence on both cold-start modes",
       "scope": "URL fix not yet verified by this device run; no failed native run accepted"
+    },
+    {
+      "run_id": 40354114558,
+      "commit": "5e490a4",
+      "passed": "Initial password was verified saved, initial API key saved, required-entry cold start retained the master verifier without auth load errors",
+      "failed_step": "Actual required-entry unlock did not complete within 120 seconds; the earlier driver had not waited for this condition",
+      "next_probe": "Keep the dedicated emulator awake and dismiss Android keyguard before each attach; submit through the supported password Enter action; capture display power, input equality, busy state, dialog and unlock marks if it still fails",
+      "scope": "The remaining cause is not uniquely confirmed; no acceptance APK produced"
     }
   ]
 }

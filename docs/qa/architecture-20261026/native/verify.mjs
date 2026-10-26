@@ -49,6 +49,8 @@ const waitRestoreIdle = page => page.waitForFunction(async asset => {
 }, settingsAsset, { polling:250 })
 const attach = async () => {
   console.log('Attaching app WebView')
+  await shell('input keyevent KEYCODE_WAKEUP')
+  await shell('wm dismiss-keyguard')
   await shell(`am start -n ${pkg}/.MainActivity`)
   const view = await device.webView({ pkg })
   const { stdout } = await executeFile(adb,['-s',device.serial(),'forward','tcp:0',`localabstract:webview_devtools_remote_${view.pid()}`])
@@ -78,7 +80,7 @@ const coldStart = async () => {
 }
 const verifyIdentity = async page => {
   if (await page.locator('.lock-screen input').isVisible()) {
-    await page.locator('.lock-screen input').fill(password); await page.locator('.lock-btn').click()
+    await page.locator('.lock-screen input').fill(password); await page.locator('.lock-screen input').press('Enter')
   } else if (await page.getByRole('button',{name:'验证并重试恢复',exact:true}).isVisible()) {
     await page.getByRole('button',{name:'验证并重试恢复',exact:true}).click()
     await page.locator('.feedback-input').fill(password)
@@ -106,6 +108,9 @@ try {
   results.testWebViewFlags = (await shell('cat /data/local/tmp/webview-command-line 2>/dev/null')).toString().trim()
   results.webview = (await shell('dumpsys webviewupdate')).toString().match(/Current WebView package[^\n]+/)?.[0] || 'see raw device diagnostics'
   // This emulator/app was created by the task; no real device or existing user profile is cleared.
+  await shell('settings put system screen_off_timeout 2147483647')
+  await shell('svc power stayon true')
+  results.emulatorScreenOffTimeout = (await shell('settings get system screen_off_timeout')).toString().trim()
   await shell(`pm clear ${pkg}`)
   if (Number(results.api) >= 33) await shell(`pm grant ${pkg} android.permission.POST_NOTIFICATIONS`)
   let page = await attach()
@@ -225,7 +230,7 @@ try {
 } catch(error) {
   results.error=String(error)
   if (activePage && !activePage.isClosed()) {
-    results.failedView = await evaluate(activePage,"return {view:stores.get('settings').currentView,requireAppUnlock:stores.get('settings').requireAppUnlock,hasMasterPassword:stores.get('auth').hasMasterPassword,authLoadError:stores.get('auth').loadError,locked:stores.get('auth').isLocked,status:stores.get('protectedAccess').status,sessionRevision:stores.get('auth').sessionRevision,credentialPresent:Boolean(stores.get('auth').savedMasterPwd),apiKeyStatus:stores.get('settings').apiKeyStorageStatus,nativeUrls:window.__qaNativeUrlEvents||[]};").catch(()=>null)
+    results.failedView = await evaluate(activePage,"return {view:stores.get('settings').currentView,requireAppUnlock:stores.get('settings').requireAppUnlock,hasMasterPassword:stores.get('auth').hasMasterPassword,authLoadError:stores.get('auth').loadError,locked:stores.get('auth').isLocked,status:stores.get('protectedAccess').status,sessionRevision:stores.get('auth').sessionRevision,credentialPresent:Boolean(stores.get('auth').savedMasterPwd),apiKeyStatus:stores.get('settings').apiKeyStorageStatus,visibility:document.visibilityState,unlockButtonDisabled:document.querySelector('.lock-btn')?.disabled,enteredPasswordMatches:document.querySelector('.lock-screen input')?.value==="+JSON.stringify(password)+",dialog:document.querySelector('[role=dialog]')?.textContent?.slice(0,250),unlockMarks:performance.getEntriesByType('mark').filter(x=>x.name.startsWith('unlock:')).map(x=>x.name),nativeUrls:window.__qaNativeUrlEvents||[]};").catch(()=>null)
     results.nativeEventDiagnostics = await evaluate(activePage, `
       const cap=window.Capacitor, root=document.querySelector('#app')._vnode?.component;
       const parsed=new URL('formyself://open/todo?item=synthetic&date=2026-10-26');
@@ -237,6 +242,8 @@ try {
   const appLog = (await shell('logcat -d -v brief').catch(()=>Buffer.from(''))).toString().split('\n').filter(line=>/Capacitor.*(?:App|Console|addListener|removeListener|appUrlOpen|appStateChange)|无法监听|无法处理应用|onMounted|onBeforeUnmount/.test(line)).slice(-220).join('\n')
   console.error('Native App startup diagnostics:',appLog)
   await writeFile(resolve(directory,'app-event-diagnostics.txt'),appLog+'\n')
+  const powerState=(await shell('dumpsys power').catch(()=>Buffer.from(''))).toString().split('\n').filter(line=>/mWakefulness=|mWakefulnessChanging=|Display Power:|mWakeLockSummary=/.test(line)).join('\n')
+  console.error('Native display power diagnostics:',powerState)
   const crash = (await shell('logcat -b crash -d -t 120').catch(()=>Buffer.from(''))).toString()
   const summary = crash.split('\n').filter(line=>/Fatal signal|FATAL EXCEPTION|Abort message|AndroidRuntime:|Cmdline:|Renderer process/.test(line)).slice(-35).join('\n')
   await writeFile(resolve(directory,'playwright-crash-summary.txt'),summary+'\n')
