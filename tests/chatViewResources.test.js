@@ -1,4 +1,4 @@
-import { moduleRegistry } from '../src/application/moduleRegistry.js'
+import { BACKUP_TYPE_OPTIONS, moduleRegistry } from '../src/application/moduleRegistry.js'
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import { readSourceContract as read } from './sourceContractReader.js'
@@ -167,7 +167,7 @@ test('进入页面使用六小时智能主动消息并持久化，反复进出�
 test('设置页提供名字、长期记忆、三种清理行为与独立备份入口', () => {
   const settings = read('components/SettingsView.vue')
 
-  assert.match(settings, /value: 'chat', label: '温馨小家数据'/)
+  assert.equal(BACKUP_TYPE_OPTIONS.find(option => option.value === 'chat').label, '温馨小家数据')
   assert.match(settings, /saveCompanionName/)
   assert.match(settings, /CHAT_MEMORY_CATEGORIES/)
   assert.match(settings, /clearChatMessages/)

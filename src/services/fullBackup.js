@@ -176,3 +176,23 @@ export function getFullBackupCounts(snapshot) {
     chatMemories: normalized.data.chat.memories.length
   }
 }
+
+// Legacy wire-format mapping stays here; application participants use uniform data/metadata parts.
+export function buildFullBackupFromParts(parts) {
+  const known = new Set(['savings', 'weight', 'mood', 'passwords', 'schedules', 'todos', 'chat', 'settings'])
+  if (Object.keys(parts).some(id => !known.has(id))) throw new Error('UNSUPPORTED_BACKUP_FORMAT_PART')
+  return buildFullBackupSnapshot({ savings: parts.savings.data, savingsMetadata: parts.savings.metadata,
+    weight: parts.weight.data, mood: parts.mood.data, moodMetadata: parts.mood.metadata,
+    passwords: parts.passwords.data, vaultMetadata: parts.passwords.metadata, schedules: parts.schedules.data,
+    todos: parts.todos?.data, chat: parts.chat.data, settings: parts.settings.data })
+}
+export function fullBackupParts(snapshot) {
+  return {
+    savings: { data: snapshot.data.savings, metadata: snapshot.metadata.savings },
+    weight: { data: snapshot.data.weight }, mood: { data: snapshot.data.mood, metadata: snapshot.metadata.mood },
+    passwords: { data: snapshot.data.passwords, metadata: snapshot.metadata.vault },
+    schedules: { data: snapshot.data.schedules }, chat: { data: snapshot.data.chat },
+    settings: { data: snapshot.settings },
+    ...(Object.hasOwn(snapshot.data, 'todos') ? { todos: { data: snapshot.data.todos } } : {})
+  }
+}

@@ -224,4 +224,22 @@ describe('实际加密存储：改密回滚与失败保存恢复', () => {
     expect(restoreState.blocked).toBe(false); expect(mock.files.has(RESTORE_PATH)).toBe(false)
   })
 
+  it('密码库保存持续失败后释放不保留明文，重试解锁先保存待写密文再读取', async () => {
+    await prepareVault()
+    const vault = usePasswordVaultStore()
+    mock.alwaysFailPreference = STORAGE_KEYS.passwordVault
+    vault.addRecord({ id: 'pending-vault', appName: 'Synthetic pending vault', password: 'fake' })
+    await preferenceStorage.flush()
+    await vi.waitFor(() => expect(vault.saveError).toContain('尚未保存'))
+    await expect(vault.flush()).rejects.toThrow()
+    auth.expireSession({ lockApp: false }); await nextTick()
+    await vi.waitFor(() => expect(vault.records).toHaveLength(0))
+    mock.alwaysFailPreference = null
+    await auth.unlockWithPassword(original, { unlockApp: false })
+    expect(await access.ensureModule('passwords')).toBe(true)
+    expect(vault.records.some(r => r.appName === 'Synthetic pending vault')).toBe(true)
+    expect(decode(mock.preferences.get(STORAGE_KEYS.passwordVault), original).some(r => r.appName === 'Synthetic pending vault')).toBe(true)
+    expect(vault.saveError).toBe('')
+  })
+
 })

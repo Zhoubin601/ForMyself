@@ -1,4 +1,4 @@
-import { moduleRegistry } from '../../application/moduleRegistry.js'
+import { BACKUP_TYPE_OPTIONS, moduleRegistry } from '../../application/moduleRegistry.js'
 import { Capacitor } from '@capacitor/core'
 import { computed, onBeforeUnmount, ref } from 'vue'
 import { useAuthStore } from '../../stores/auth'
@@ -34,15 +34,8 @@ export function useSettingsNavigation() {
   })
 
   const autoLockPickerOpen = ref(false)
-  const backupTypeOptions = [
-    { value: 'full', label: '完整数据（全部数据与设置）' },
-    { value: 'savings', label: '省钱数据' },
-    { value: 'weight', label: '体重数据' },
-    { value: 'mood', label: '心情数据' },
-    { value: 'passwords', label: '密码库数据' },
-    { value: 'schedules', label: '日程数据' },
-    { value: 'chat', label: '温馨小家数据' }
-  ]
+  const backupTypeOptions = BACKUP_TYPE_OPTIONS
+
   const autoLockOptions = [
     { value: 0, label: '立即锁定' },
     { value: 60, label: '1 分钟后' },

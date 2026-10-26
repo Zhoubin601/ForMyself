@@ -52,12 +52,12 @@ export function useAppController() {
   const refreshSafeHomeWidget = data => aggregateReady() ? refreshHomeWidget(data) : Promise.resolve(false)
   const syncSafeScheduleNotifications = data => !restoreState.blocked && scheduleStore.isDataLoaded && !scheduleStore.saveError
     ? syncScheduleNotifications(data) : Promise.resolve(false)
-  const dataIssues = computed(() => ordinaryData.flatMap(({ id, title, store, load }) => {
+  const dataIssues = computed(() => [...ordinaryData.flatMap(({ id, title, store, load }) => {
     if (store.loadError) return [{ id, title, message: store.loadError, action: '重试读取', retry: load }]
     if (store.saveError) return [{ id, title, message: store.saveError, action: '重试保存', retry: () => store.retrySave() }]
     if (store.saveStatus === 'saving') return [{ id, title, message: '正在保存…' }]
     return []
-  }))
+  }), ...protectedAccess.persistenceIssues.map(issue => ({ ...issue, title: moduleRegistry.get(issue.id).title }))])
   const dataReady = computed(() => {
     if (restoreState.blocked) return false
     const view = settingsStore.currentView === 'settings' ? settingsStore.settingsScope : settingsStore.currentView
@@ -80,7 +80,7 @@ export function useAppController() {
   })
   const protectedDataStatus = computed(() => protectedModule.value
     ? protectedAccess.status[protectedModule.value]
-    : (protectedAccess.status.passwords === 'ready' && protectedAccess.status.chat === 'ready' ? 'ready' : 'idle'))
+    : (protectedAccess.moduleIds.every(id => protectedAccess.status[id] === 'ready') ? 'ready' : 'idle'))
   const isUnlocking = ref(false)
   const showBiometricSetup = ref(false)
   const isEnablingBiometric = ref(false)
@@ -167,12 +167,10 @@ export function useAppController() {
 
   const loadProtectedRuntime = async modules => {
     if (modules.includes('passwords') && !vaultStore) {
-      const vaultModule = await import('../stores/passwordVault.js')
-      vaultStore = vaultModule.usePasswordVaultStore()
+      vaultStore = await protectedAccess.getRuntimeStore('passwords')
     }
     if (modules.includes('chat') && !chatStore) {
-      const chatModule = await import('../features/chat/chatStore.js')
-      chatStore = chatModule.useChatStore()
+      chatStore = await protectedAccess.getRuntimeStore('chat')
       stopUnreadWatch = watch(() => protectedAccess.status.chat === 'ready' ? chatStore.unreadCount : 0, value => {
         chatUnreadCount.value = value
       }, { immediate: true })
@@ -457,7 +455,7 @@ export function useAppController() {
     }
   })
 
-  const ensureProtectedDataReady = async (modules = ['passwords', 'chat']) => {
+  const ensureProtectedDataReady = async (modules = protectedAccess.moduleIds) => {
     const session = authStore.sessionRevision
     const ok = await protectedAccess.ensureModules(modules)
     if (!ok || session !== authStore.sessionRevision) return false
@@ -555,7 +553,7 @@ export function useAppController() {
       if (!await protectedAccess.prepareRecovery()) return
       const { createFullBackupRuntime } = await import('../application/fullBackupRuntime.js')
       const runtime = createFullBackupRuntime()
-      await protectedAccess.runOperation(['passwords', 'chat'], password => runtime.recover(password), { recovering: true })
+      await protectedAccess.runOperation(protectedAccess.moduleIds, password => runtime.recover(password), { recovering: true })
     } catch { appToast(restoreState.message || '恢复失败，请保留应用数据并重试', { tone: 'danger' }) }
   }
   const retryRestoreSync = async () => {

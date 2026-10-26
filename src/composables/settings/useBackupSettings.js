@@ -1,3 +1,4 @@
+import { BACKUP_TYPE_OPTIONS, moduleRegistry } from '../../application/moduleRegistry.js'
 import { restoreState } from '../../platform/storage/restoreState.js'
 import { createFullBackupRuntime } from '../../application/fullBackupRuntime.js'
 import { Capacitor } from '@capacitor/core'
@@ -21,7 +22,7 @@ import { useWeightStore } from '../../stores/weight'
 import { useMoodStore } from '../../features/mood/moodStore'
 import { useSettingsStore } from '../../stores/settings'
 import { usePasswordVaultStore } from '../../stores/passwordVault'
-import { buildTodoBackup, readTodoBackup } from '../../features/todo/todoCore.js'
+import { readTodoBackup } from '../../features/todo/todoCore.js'
 import { useTodoStore } from '../../features/todo/todoStore.js'
 import { useScheduleStore } from '../../features/schedule/scheduleStore'
 import { useChatStore } from '../../features/chat/chatStore'
@@ -33,8 +34,8 @@ export function useBackupSettings() {
 
   const authStore = useAuthStore()
   const protectedAccess = useProtectedAccessStore()
-  const backupModules = () => exportDataType.value === 'full' ? ['passwords', 'chat']
-      : ['passwords', 'chat'].includes(exportDataType.value) ? [exportDataType.value] : []
+  const backupModules = () => exportDataType.value === 'full' ? protectedAccess.moduleIds
+    : moduleRegistry.list.filter(m => m.access && m.backup?.id === exportDataType.value).map(m => m.id)
   const debtStore = useDebtStore()
   const weightStore = useWeightStore()
   const moodStore = useMoodStore()
@@ -49,82 +50,16 @@ export function useBackupSettings() {
   const exportDataType = ref('full')
   const backupPickerOpen = ref(false)
 
-  const backupTypeOptions = [
-    { value: 'full', label: '完整数据（全部数据与设置）' },
-    { value: 'savings', label: '省钱数据' },
-    { value: 'weight', label: '体重数据' },
-    { value: 'mood', label: '心情数据' },
-    { value: 'passwords', label: '密码库数据' },
-    { value: 'schedules', label: '日程数据' },
-    { value: 'todos', label: '每日待办数据' },
-    { value: 'chat', label: '温馨小家数据' }
-  ]
+  const backupTypeOptions = BACKUP_TYPE_OPTIONS
 
   // --- 数据导出/导入 ---
   const getDataTypeLabel = () => {
     return backupTypeOptions.find(item => item.value === exportDataType.value)?.label.replace('数据（全部数据与设置）', '数据') || '数据'
   }
 
-  const getDataArray = () => {
-    if (exportDataType.value === 'savings') return { records: debtStore.savedDebts, groups: debtStore.debtGroups }
-    if (exportDataType.value === 'weight') return weightStore.weightRecords
-    if (exportDataType.value === 'passwords') return vaultStore.records
-    if (exportDataType.value === 'todos') return buildTodoBackup(todoStore.snapshot)
-    if (exportDataType.value === 'schedules') return scheduleStore.snapshot
-    if (exportDataType.value === 'chat') return buildChatBackupSnapshot(chatStore.snapshot)
-    return buildMoodBackupSnapshot({
-      records: moodStore.moodRecords,
-      trackingStartDate: moodStore.trackingStartDate,
-      customTags: moodStore.customTags,
-      builtInTags: moodStore.builtInTags,
-      defaultTags: moodStore.defaultTags,
-      definitions: moodStore.moodDefinitions
-    })
-  }
-
-  const setDataArray = async (data, overwrite) => {
-    if (exportDataType.value === 'todos') {
-      await todoStore.restore(data)
-    } else if (exportDataType.value === 'savings') {
-      const records = overwrite ? data.records : [...debtStore.savedDebts, ...data.records]
-      const groups = overwrite ? data.groups : normalizeDebtGroups([...debtStore.debtGroups, ...data.groups], records)
-      await debtStore.restoreDebts(records, groups)
-    } else if (exportDataType.value === 'weight') {
-      weightStore.updateWeightRecords(overwrite ? data : [...weightStore.weightRecords, ...data])
-    } else if (exportDataType.value === 'passwords') {
-      if (overwrite) vaultStore.replaceRecords(data)
-      else vaultStore.appendRecords(data)
-    } else if (exportDataType.value === 'schedules') {
-      const imported = normalizeScheduleData(data)
-      const merged = overwrite ? imported : normalizeScheduleData({
-        series: [...scheduleStore.series, ...imported.series],
-        occurrences: [...scheduleStore.occurrences, ...imported.occurrences],
-        categories: [...scheduleStore.categories, ...imported.categories]
-      })
-      await scheduleStore.restoreScheduleData(merged)
-    } else if (exportDataType.value === 'chat') {
-      if (overwrite) await chatStore.replaceChatData(data)
-      else await chatStore.mergeChatSnapshot(data)
-      chatStore.materializeDueProactive(Date.now())
-      chatStore.materializeDueFollowups(Date.now())
-      await syncChatProactiveNotifications(
-        chatStore.proactiveOutbox,
-        chatStore.proactiveSettings,
-        { isFeatureEnabled: () => settingsStore.warmHomeEnabled, requestPermission: false, now: new Date() }
-      ).catch(error => console.warn('导入温馨小家后刷新主动联系失败', error))
-      await syncChatFollowupNotifications(
-        chatStore.followupOutbox,
-        chatStore.realismSettings,
-        { isFeatureEnabled: () => settingsStore.warmHomeEnabled, requestPermission: false, now: new Date() }
-      ).catch(error => console.warn('导入温馨小家后刷新补话失败', error))
-    } else {
-      moodStore.updateMoodRecords(overwrite ? data : [...moodStore.moodRecords, ...data])
-    }
-  }
-
-  const getFilePrefix = () => {
-    return { full: 'Full', savings: 'Savings', weight: 'Weight', mood: 'Mood', passwords: 'Passwords', schedules: 'Schedules', todos:'Todos', chat: 'WarmHome' }[exportDataType.value]
-  }
+  const getDataArray = () => fullBackup.registry.singleExport(exportDataType.value)
+  const setDataArray = (data, overwrite) => fullBackup.registry.singleImport(exportDataType.value, data, { overwrite })
+  const getFilePrefix = () => exportDataType.value === 'full' ? 'Full' : moduleRegistry.list.find(m => m.backup?.id === exportDataType.value)?.backup.prefix
 
   const fullBackup = createFullBackupRuntime()
   const { createFullBackupSnapshot, applyFullBackupSnapshot } = fullBackup
@@ -212,12 +147,14 @@ export function useBackupSettings() {
     if (!file) return
     const reader = new FileReader()
     reader.onload = async (e) => protectedAccess.runOperation(backupModules(), async (password, session) => {
+      let decoded = false
       try {
         const encryptedContent = e.target.result
         const bytes = CryptoJS.AES.decrypt(encryptedContent, password)
         const decryptedData = bytes.toString(CryptoJS.enc.Utf8)
         if (!decryptedData) throw new Error('密码错误')
         const importedData = JSON.parse(decryptedData)
+        decoded = true
         await ensureOrdinaryDataReady()
         const label = getDataTypeLabel()
 
@@ -225,8 +162,7 @@ export function useBackupSettings() {
           const data = readTodoBackup(importedData)
           if (!await appConfirm(`待办备份包含 ${data.tasks.length} 个任务版本和 ${data.completions.length} 条完成记录。继续将覆盖当前待办，其他模块保持不变。`, {title:'恢复每日待办？', confirmText:'覆盖并恢复',destructive:true})) return
           if (session !== authStore.sessionRevision) return
-          await todoStore.restore(data)
-          await todoStore.syncReminders()
+          await setDataArray(data, true)
           appToast('待办恢复成功')
           return
         }
@@ -252,7 +188,6 @@ export function useBackupSettings() {
           )
           if (session !== authStore.sessionRevision) return
           await setDataArray(normalized, overwrite)
-          await syncScheduleNotifications(scheduleStore.snapshot)
           appToast('日程数据恢复成功', { tone: 'success' })
           return
         }
@@ -276,8 +211,7 @@ export function useBackupSettings() {
             { title: '恢复心情日记', confirmText: '覆盖当前数据', cancelText: '合并数据' }
           )
           if (session !== authStore.sessionRevision) return
-          if (overwrite) await moodStore.restoreMoodBackup(snapshot.data.records, snapshot.metadata)
-          else await moodStore.mergeMoodBackup(snapshot.data.records, snapshot.metadata)
+          await setDataArray(snapshot, overwrite)
           appToast('心情日记数据恢复成功', { tone: 'success' })
           return
         }
@@ -311,6 +245,7 @@ export function useBackupSettings() {
         appToast(`${label}数据恢复成功`, { tone: 'success' })
       } catch (error) {
         if (restoreState.blocked) return appAlert(restoreState.message)
+        if (decoded && exportDataType.value !== 'full') return appAlert('备份已解密，但恢复或同步失败，请检查保存状态并重试：' + error.message)
         if (error?.rollbackFailed) return appAlert('完整恢复回滚失败，请保留应用数据并重试恢复')
         if (exportDataType.value === 'todos') {
           appAlert('待办恢复失败：文件格式、版本或主密码不匹配；原待办保留')

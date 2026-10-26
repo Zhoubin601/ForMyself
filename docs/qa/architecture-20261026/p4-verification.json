@@ -1,0 +1,12 @@
+{
+  "stage": "P4",
+  "command": "npm run check",
+  "exit_code": 0,
+  "node_passed": 274,
+  "component_passed": 143,
+  "lint_errors": 0,
+  "lint_warnings": 55,
+  "typecheck": "passed",
+  "build": "passed",
+  "android_preparation": "assembleDebug succeeded; not final Web assets or device acceptance"
+}

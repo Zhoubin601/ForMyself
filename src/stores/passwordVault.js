@@ -21,6 +21,26 @@ export const usePasswordVaultStore = defineStore('passwordVault', () => {
   const isDataLoaded = ref(false)
   const encryptionPassword = ref('')
   const loadError = ref('')
+  const saveError = ref('')
+  const pendingSaves = new Map()
+  let writes = Promise.resolve()
+  const write = options => {
+    const entry = { ...options }; pendingSaves.set(entry.key, entry)
+    let operation
+    try { operation = Preferences.set(entry) } catch (error) { operation = Promise.reject(error) }
+    const task = Promise.resolve(operation).then(() => {
+      if (pendingSaves.get(entry.key) === entry) pendingSaves.delete(entry.key)
+      if (!pendingSaves.size) saveError.value = ''
+    }).catch(error => { saveError.value = '密码库尚未保存，请重试保存，成功前请勿关闭应用'; throw error })
+    writes = Promise.allSettled([writes, task]).then(() => {})
+    return task
+  }
+  const flush = async () => {
+    await writes
+    for (const entry of [...pendingSaves.values()]) await write(entry)
+    await writes
+    if (pendingSaves.size) throw new Error(saveError.value)
+  }
   let loadRevision = 0
   let isReencrypting = false
   let changedDuringReencrypt = false
@@ -28,13 +48,13 @@ export const usePasswordVaultStore = defineStore('passwordVault', () => {
   const persistEncrypted = async (password = encryptionPassword.value) => {
     if (!password) return
     const encrypted = CryptoJS.AES.encrypt(JSON.stringify(records.value), password).toString()
-    await Preferences.set({ key: ENCRYPTED_KEY, value: encrypted })
+    await write({ key: ENCRYPTED_KEY, value: encrypted })
   }
 
   const persistCategoriesEncrypted = async (password = encryptionPassword.value) => {
     if (!password) return
     const encrypted = CryptoJS.AES.encrypt(JSON.stringify(categories.value), password).toString()
-    await Preferences.set({ key: CATEGORIES_ENCRYPTED_KEY, value: encrypted })
+    await write({ key: CATEGORIES_ENCRYPTED_KEY, value: encrypted })
   }
 
   const syncCategoriesFromRecords = () => {
@@ -49,6 +69,7 @@ export const usePasswordVaultStore = defineStore('passwordVault', () => {
     loadError.value = ''
 
     try {
+      await flush() // Pending entries contain ciphertext only and must win over older disk snapshots.
       const [encryptedResult, categoriesResult] = await Promise.all([
         Preferences.get({ key: ENCRYPTED_KEY }),
         Preferences.get({ key: CATEGORIES_ENCRYPTED_KEY })
@@ -87,7 +108,7 @@ export const usePasswordVaultStore = defineStore('passwordVault', () => {
     } catch (error) {
       if (revision !== loadRevision) return
       console.error('读取密码库失败', error)
-      loadError.value = '密码库解密失败，请确认主密码或恢复备份'
+      loadError.value = saveError.value || '密码库解密失败，请确认主密码或恢复备份'
       records.value = []
     } finally {
       if (revision === loadRevision) isDataLoaded.value = true
@@ -98,14 +119,14 @@ export const usePasswordVaultStore = defineStore('passwordVault', () => {
     if (isDataLoaded.value && !loadError.value && encryptionPassword.value) {
       syncCategoriesFromRecords()
       if (isReencrypting) { changedDuringReencrypt = true; return }
-      await persistEncrypted()
+      await persistEncrypted().catch(() => {})
     }
   }, { deep: true, flush: 'sync' })
 
   watch(categories, async () => {
     if (isDataLoaded.value && !loadError.value && encryptionPassword.value) {
       if (isReencrypting) { changedDuringReencrypt = true; return }
-      await persistCategoriesEncrypted()
+      await persistCategoriesEncrypted().catch(() => {})
     }
   }, { deep: true, flush: 'sync' })
 
@@ -116,7 +137,7 @@ export const usePasswordVaultStore = defineStore('passwordVault', () => {
     records.value = []
     categories.value = getVaultCategories()
     loadError.value = ''
-    await Preferences.flush()
+    await flush()
   }
 
   const addRecord = (record) => {
@@ -179,7 +200,7 @@ export const usePasswordVaultStore = defineStore('passwordVault', () => {
     if (isReencrypting) throw new Error('VAULT_REENCRYPT_IN_PROGRESS')
     isReencrypting = true
     try {
-      await Preferences.flush()
+      await flush()
       do {
         changedDuringReencrypt = false
         const results = await Promise.allSettled([persistEncrypted(newPassword), persistCategoriesEncrypted(newPassword)])
@@ -196,6 +217,7 @@ export const usePasswordVaultStore = defineStore('passwordVault', () => {
   }
 
   return {
+    saveError, flush,
     records,
     release,
     categories,

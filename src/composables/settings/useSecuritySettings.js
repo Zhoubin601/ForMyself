@@ -2,8 +2,6 @@ import { onBeforeUnmount, ref, watch } from 'vue'
 import { useAuthStore } from '../../stores/auth'
 import { useSettingsStore } from '../../stores/settings.js'
 import { useProtectedAccessStore } from '../../stores/protectedAccess.js'
-import { usePasswordVaultStore } from '../../stores/passwordVault'
-import { useChatStore } from '../../features/chat/chatStore'
 import { appAlert, appToast } from '../../services/uiFeedback'
 import { changeMasterPasswordTransaction } from '../../services/masterPasswordChange.js'
 
@@ -29,8 +27,6 @@ export function useSecuritySettings() {
       isUpdatingEntryVerification.value = false
     }
   }
-  const vaultStore = usePasswordVaultStore()
-  const chatStore = useChatStore()
 
   const isChangingPwd = ref(false)
   const isChangingPwdBio = ref(false)
@@ -46,11 +42,11 @@ export function useSecuritySettings() {
     passwordChangeBusy.value = true
     const requestedPassword = newPwdInput.value
     try {
-      return await protectedAccess.runOperation(['passwords', 'chat'], async (currentPassword, session) => {
+      return await protectedAccess.runOperation(protectedAccess.moduleIds, async (currentPassword, session) => {
         const result = await changeMasterPasswordTransaction({
           currentPassword,
           newPassword: requestedPassword,
-          reencryptors: [vaultStore.reencrypt, chatStore.reencrypt],
+          reencryptors: await protectedAccess.reencryptors(),
           commit: password => authStore.commitPasswordChange(password, session)
         })
         if (result.biometricAttempted && !result.biometricReady) {

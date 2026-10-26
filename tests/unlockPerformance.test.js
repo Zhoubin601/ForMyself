@@ -27,7 +27,7 @@ test('非首页组件和受保护 Store 不进入首屏静态依赖', () => {
   const home = read('components/HomeView.vue')
   assert.match(registry, /loadView: \(\) => import\('..\/features\/chat\/ChatView.vue'\)/)
   assert.doesNotMatch(registry, /^import .*View/m)
-  assert.match(controller, /import\('\.\.\/features\/chat\/chatStore\.js'\)/)
+  assert.match(read('application/protectedModules.js'), /import\('\.\.\/features\/chat\/chatStore\.js'\)/)
   assert.doesNotMatch(controller, /^import .*chatStore/m)
   assert.doesNotMatch(home, /useChatStore/)
 })

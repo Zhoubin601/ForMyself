@@ -1,3 +1,4 @@
+import { protectedModules } from '../application/protectedModules.js'
 import { assertOrdinaryWriteAllowed } from '../platform/storage/restoreState.js'
 import { computed, reactive, ref, watch } from 'vue'
 import { defineStore } from 'pinia'
@@ -5,9 +6,9 @@ import { useAuthStore } from './auth.js'
 import { appAlert, appChoose, appPrompt, resolveFeedbackDialog } from '../services/uiFeedback.js'
 import { markAppPerformance, measureAppPerformance } from '../services/appPerformance.js'
 
-export const useProtectedAccessStore = defineStore('protectedAccess', () => {
+export const createProtectedAccessStore = (registry = protectedModules, id = 'protectedAccess') => defineStore(id, () => {
   const auth = useAuthStore()
-  const status = reactive({ passwords: 'idle', chat: 'idle' })
+  const status = reactive(Object.fromEntries(registry.ids.map(id => [id, 'idle'])))
   const revision = ref(0)
   const recoveryRequired = ref(false)
   const releaseError = ref('')
@@ -57,19 +58,12 @@ export const useProtectedAccessStore = defineStore('protectedAccess', () => {
   }
 
   const runtime = async module => {
-    if (!stores[module]) {
-      if (module === 'passwords') {
-        const { usePasswordVaultStore } = await import('./passwordVault.js')
-        stores[module] = usePasswordVaultStore()
-      } else {
-        const { useChatStore } = await import('../features/chat/chatStore.js')
-        stores[module] = useChatStore()
-      }
-    }
+    if (!stores[module]) stores[module] = await registry.resolve(module)
     return stores[module]
   }
 
   const ensureModule = module => {
+    if (!registry.has(module)) return Promise.resolve(false)
     if (recoveryRequired.value) return Promise.resolve(false)
     if (authenticated.value && status[module] === 'ready') return Promise.resolve(true)
     if (pending[module]) return pending[module]
@@ -83,15 +77,14 @@ export const useProtectedAccessStore = defineStore('protectedAccess', () => {
       try {
         const target = await runtime(module)
         if (session !== auth.sessionRevision) return false
-        if (module === 'passwords') await target.loadRecords(auth.savedMasterPwd)
-        else await target.loadChatData(auth.savedMasterPwd)
+        await target.load(auth.savedMasterPwd)
         if (session !== auth.sessionRevision) return false
         if (target.loadError || !target.isDataLoaded) throw new Error('PROTECTED_DATA_LOAD_FAILED')
         status[module] = 'ready'
         if (Object.values(stores).every(target => !target.saveError)) releaseError.value = ''
         markAppPerformance(`protected:${module}:ready`)
         measureAppPerformance(`protected:${module}:load`, `protected:${module}:start`, `protected:${module}:ready`)
-        if (status.passwords === 'ready' && status.chat === 'ready') await auth.finalizeLegacyMigration()
+        if (registry.ids.every(id => status[id] === 'ready')) await auth.finalizeLegacyMigration()
         return session === auth.sessionRevision
       } catch {
         if (session === auth.sessionRevision) {
@@ -106,7 +99,7 @@ export const useProtectedAccessStore = defineStore('protectedAccess', () => {
     return task
   }
 
-  const ensureModules = async (modules = ['passwords', 'chat']) => {
+  const ensureModules = async (modules = registry.ids) => {
     if (!modules.length) return authenticate()
     const results = await Promise.all(modules.map(ensureModule))
     return results.every(Boolean)
@@ -127,8 +120,7 @@ export const useProtectedAccessStore = defineStore('protectedAccess', () => {
     } catch (error) {
       if (error.rollbackFailed) {
         recoveryRequired.value = true
-        status.passwords = 'error'
-        status.chat = 'error'
+        registry.ids.forEach(id => { status[id] = 'error' })
         Object.values(stores).forEach(target => target.suspendPersistence())
       }
       throw error
@@ -145,12 +137,10 @@ export const useProtectedAccessStore = defineStore('protectedAccess', () => {
 
   watch(() => auth.sessionRevision, () => {
     revision.value += 1
-    status.passwords = 'idle'
-    status.chat = 'idle'
+    registry.ids.forEach(id => { status[id] = 'idle' })
     if (dialogActive) resolveFeedbackDialog(null)
     authenticationPromise = null
-    delete pending.passwords
-    delete pending.chat
+    registry.ids.forEach(id => { delete pending[id] })
     const previous = releasePromise
     const targets = Object.values(stores)
     const finishRelease = results => {
@@ -176,5 +166,13 @@ export const useProtectedAccessStore = defineStore('protectedAccess', () => {
     return ensureModules()
   }
 
-  return { prepareRecovery, status, revision, recoveryRequired, releaseError, authenticated, authenticate, ensureModule, ensureModules, runOperation }
+  const reencryptors = async () => Promise.all(registry.ids.map(async id => (await runtime(id)).reencrypt))
+  const getRuntimeStore = async id => (await runtime(id)).store
+
+  const persistenceIssues = computed(() => registry.ids.flatMap(id => status[id] === 'ready' && stores[id]?.saveError
+    ? [{ id, message: stores[id].saveError, action: '重试保存', retry: () => stores[id].flush() }] : []))
+
+  return { persistenceIssues, moduleIds: registry.ids, reencryptors, getRuntimeStore, prepareRecovery, status, revision, recoveryRequired, releaseError, authenticated, authenticate, ensureModule, ensureModules, runOperation }
 })
+
+export const useProtectedAccessStore = createProtectedAccessStore()
