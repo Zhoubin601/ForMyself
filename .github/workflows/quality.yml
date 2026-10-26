@@ -57,14 +57,7 @@ jobs:
           arch: x86_64
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -memory 2048 -cores 2 -accel on -skin 480x800
-          script: |
-            adb shell pm disable-user --user 0 com.google.android.gms
-            adb shell wm density 160
-            adb install -r android/app/build/outputs/apk/debug/app-debug.apk
-            adb shell pm grant com.yubin.formyself android.permission.POST_NOTIFICATIONS
-            cd android && bash ./gradlew --no-daemon --max-workers=2 -Dorg.gradle.jvmargs=-Xmx1024m -Pkotlin.compiler.execution.strategy=in-process :app:connectedDebugAndroidTest && cd ..
-            adb install -r android/app/build/outputs/apk/debug/app-debug.apk
-            npm run test:e2e:android
+          script: bash docs/qa/architecture-20261026/native/run-ci.sh
       - name: Preserve accepted P6 evidence on the validation branch
         if: success() && github.ref == 'refs/heads/qa/architecture-p6'
         run: |

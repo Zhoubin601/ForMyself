@@ -124,6 +124,13 @@
       "result": "Visible awake app and correct DOM password, but Enter never triggered the product unlock handler (no unlock marks, button not busy)",
       "fix": "Install pinned Playwright Android driver; use actual Android UiAutomator button taps with CDP DOM inspection/filling, retain full authentication assertions; preserve failed device images under run-specific folders",
       "scope": "Screen-off alone did not explain failure; no production authentication change or bypass"
+    },
+    {
+      "run_id": 40358084779,
+      "commit": "aae1e9a",
+      "result": "Android package system service disappeared during Gradle instrumentation APK install; native Playwright was not reached",
+      "evidence": "cmd: Can't find service: package; BUILD FAILED before test:e2e:android",
+      "fix": "Fresh emulator run, require stable system_server/package service observations before app installation, and collect crash buffer inside the emulator script on failure; no automatic retry of failed app assertions"
     }
   ]
 }
