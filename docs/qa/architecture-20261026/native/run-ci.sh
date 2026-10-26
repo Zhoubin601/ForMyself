@@ -20,9 +20,9 @@ qa_deadline=$((SECONDS + 90))
 qa_stable=0
 qa_previous_pid=''
 while (( SECONDS < qa_deadline )); do
-  qa_current_pid=$(adb shell pidof system_server | tr -d '\r')
-  qa_package=$(adb shell service check package | tr -d '\r')
-  if [[ -n "$qa_current_pid" && "$qa_current_pid" == "$qa_previous_pid" && "$qa_package" == *found* ]]; then
+  qa_current_pid=$(timeout 10s adb shell pidof system_server | tr -d '\r' || true)
+  qa_package=$(timeout 10s adb shell service check package | tr -d '\r' || true)
+  if [[ -n "$qa_current_pid" && "$qa_current_pid" == "$qa_previous_pid" && "$qa_package" == 'Service package: found' ]]; then
     qa_stable=$((qa_stable + 1))
   else
     qa_stable=0
