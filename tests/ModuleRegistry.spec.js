@@ -47,4 +47,34 @@ describe('registered modules and lifecycle', () => {
     scope.dispose(); resolve({ remove }); await task; expect(remove).toHaveBeenCalledTimes(1)
     scope.dispose(); expect(remove).toHaveBeenCalledTimes(1)
   })
+  it('a failed native event does not disable URL or privacy events', async () => {
+    const callbacks = new Map(), remove = vi.fn(), scope = createListenerScope()
+    const plugin = { addListener: vi.fn(async (event, callback) => {
+      if (event === 'backButton') throw new Error('unsupported back event')
+      callbacks.set(event, callback)
+      return { remove }
+    }) }
+    const url = vi.fn(), state = vi.fn()
+    const results = await scope.listenMany(plugin, { backButton: vi.fn(), appUrlOpen: url, appStateChange: state })
+    callbacks.get('appUrlOpen')({ url: 'formyself://open/todo' })
+    callbacks.get('appStateChange')({ isActive: false })
+    expect(results.map(result => result.status)).toEqual(['rejected', 'fulfilled', 'fulfilled'])
+    expect(url).toHaveBeenCalledWith({ url: 'formyself://open/todo' })
+    expect(state).toHaveBeenCalledWith({ isActive: false })
+    scope.dispose(); expect(remove).toHaveBeenCalledTimes(2)
+  })
+  it('a pending native event does not delay the other event registrations', async () => {
+    let finish
+    const remove = vi.fn(), callbacks = new Map(), scope = createListenerScope()
+    const plugin = { addListener: (event, callback) => {
+      callbacks.set(event, callback)
+      return event === 'backButton' ? new Promise(resolve => { finish = resolve }) : Promise.resolve({ remove })
+    } }
+    const state = vi.fn(), task = scope.listenMany(plugin, { backButton: vi.fn(), appUrlOpen: vi.fn(), appStateChange: state })
+    callbacks.get('appStateChange')({ isActive: false })
+    expect(state).toHaveBeenCalledOnce()
+    expect([...callbacks.keys()]).toEqual(['backButton', 'appUrlOpen', 'appStateChange'])
+    await Promise.resolve(); scope.dispose(); finish({ remove }); await task
+    expect(remove).toHaveBeenCalledTimes(3)
+  })
 })

@@ -22,18 +22,18 @@
   "performance_marks": [
     {
       "name": "app:boot-to-lock-ready",
-      "duration": 105
+      "duration": 147.10000000149012
     },
     {
       "name": "unlock:verify",
-      "duration": 43.80000000074506
+      "duration": 49.79999999701977
     },
     {
       "name": "unlock:to-home-paint",
-      "duration": 56.70000000298023
+      "duration": 56.29999999701977
     }
   ],
   "browser": "154.0.8037.57",
   "script_sha256": "671a41889d32debe9fa3ca9c7a4a9c1ee350900faca8ad357076482579a3eef8",
-  "executed_at": "2026-10-26T14:10:55.597895+08:00"
+  "executed_at": "2026-10-26T23:18:47.235290+08:00"
 }

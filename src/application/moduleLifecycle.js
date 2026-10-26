@@ -35,11 +35,15 @@ export function createListenerScope() {
   let disposed = false
   /** @type {Set<import('./contracts').NativeListenerHandle>} */
   const handles = new Set()
+  const listen = async (/** @type {import('./contracts').NativeListenerPlugin} */ plugin, /** @type {string} */ event, /** @type {(...args: any[]) => unknown} */ listener) => {
+    const handle = await plugin.addListener(event, listener)
+    if (disposed) await handle.remove()
+    else handles.add(handle)
+  }
   return {
-    async listen(/** @type {import('./contracts').NativeListenerPlugin} */ plugin, /** @type {string} */ event, /** @type {(...args: any[]) => unknown} */ listener) {
-      const handle = await plugin.addListener(event, listener)
-      if (disposed) await handle.remove()
-      else handles.add(handle)
+    listen,
+    listenMany(/** @type {import('./contracts').NativeListenerPlugin} */ plugin, /** @type {Record<string, (...args: any[]) => unknown>} */ bindings) {
+      return Promise.allSettled(Object.entries(bindings).map(([event, listener]) => listen(plugin, event, listener)))
     },
     dispose() { disposed = true; handles.forEach(handle => { void handle.remove() }); handles.clear() }
   }

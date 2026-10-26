@@ -80,6 +80,13 @@
       "passed": "Native initialization, verified API-key save, both entry-mode cold starts, API-key readback, requested-only vault load/create, and mocked chat reply",
       "failed_step": "Native deep-link route never changed from chat before the 120s assertion deadline",
       "next_probe": "Retain am-start output, register an independent App URL event observer, and collect actual Activity intent plus application console warnings; do not replace product navigation with a test implementation"
+    },
+    {
+      "run_id": 40343740164,
+      "commit": "9bc7efc",
+      "passed": "Native entry modes, API-key persistence, vault GUI and actual chat reply; independent native App URL observer received exact intent URL",
+      "failed_step": "Product navigation stayed on chat despite actual native appUrlOpen event",
+      "fix": "Register back, URL and privacy events independently before data initialization; regress failure and delayed listener registration; verify the product route again on device"
     }
   ]
 }

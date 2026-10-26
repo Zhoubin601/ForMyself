@@ -19,11 +19,16 @@ cd android
 ./gradlew :app:testDebugUnitTest :app:assembleDebug
 # 隔离模拟器运行；不得指向真实用户设备数据
 ./gradlew :app:connectedDebugAndroidTest
+cd ..
+# 先在专用模拟器安装当前 Debug APK；此驱动会清除测试 App 的合成资料
+npm run test:e2e:android
 ```
 
 Android 需要 JDK 21、匹配的 SDK/build-tools。`postinstall` 对通知、生物凭据和 Preferences 插件应用可重复的原生修补；遇到不支持的依赖源码会明确失败，升级依赖时必须重新验证。不要将 `node_modules` 的手动修改当成可交付修复。
 
 JS/Java Todo 规则共用 `tests/fixtures/todo-contract.json`；Java 规则与真实通知/存储检查由 instrumentation 执行。P1–P6 的验收记录位于 `docs/20261026-architecture-stage-*-verification-v1.md`，Playwright 浏览器、实际 WebView 驱动及合成证据位于 `docs/qa/architecture-20261026/`；驱动不打入正式 APK，只能指向隔离测试资料。
+
+原生 Playwright 使用 ADB 转发连接实际 WebView，执行入口验证、API Key 冷启动、敏感会话释放、深链、强停恢复和改密回归。CI 固定 Emulator 33.1.24 并启用 KVM，专用模拟器停用 Google Play Services 以隔离其字体提供者退出对应用的影响。仅 `qa/architecture-p6` 验证分支在全部设备检查成功后保存截图、摘要及 `output/` 验收包，其他分支通过 Actions artifact 提供报告。
 
 ## 目录与依赖边界
 
