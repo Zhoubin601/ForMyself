@@ -84,6 +84,7 @@ const verifyIdentity = async page => {
     await page.locator('.feedback-input').fill(password)
     await page.getByRole('button',{name:'验证',exact:true}).click()
   }
+  await waitState(page,"return stores.get('auth').isDataLoaded&&!stores.get('auth').isLocked&&Boolean(stores.get('auth').savedMasterPwd)")
   await waitReady(page)
 }
 const verifyProtectedIdentity = async page => {
@@ -110,6 +111,7 @@ try {
   let page = await attach()
   console.log('App initialized')
   await verifyIdentity(page); results.initialization = true
+  results.masterPasswordInitialSave = await evaluate(page,`return stores.get('auth').hasMasterPassword&&stores.get('auth').savedMasterPwd==='${password}';`)
   await checkpoint('Initialization verified')
   await evaluate(page, `const s=stores.get('settings'); s.aiProviderUrl='https://synthetic.invalid'; s.aiApiKey='synthetic-native-key-only'; s.aiModel='synthetic'; await s.saveAiSettings();
     await stores.get('weight').restoreWeightRecords([{id:'native-original',date:'2026-10-26',weight:65}]); await s.flushPendingSettingsWrites(); return true;`)
@@ -118,11 +120,13 @@ try {
   await checkpoint('Native settings committed')
   page=await coldStart()
   await page.locator('.lock-screen input').waitFor()
-  results.requiredEntryColdStart = await evaluate(page,"return stores.get('auth').isLocked&&!stores.get('auth').savedMasterPwd;")
+  results.requiredEntryColdStart = await evaluate(page,"return stores.get('auth').isDataLoaded&&stores.get('auth').hasMasterPassword&&!stores.get('auth').loadError&&stores.get('auth').isLocked&&!stores.get('auth').savedMasterPwd;")
   await verifyIdentity(page)
   await evaluate(page,"await stores.get('settings').updateRequireAppUnlock(false);await stores.get('settings').flushPendingSettingsWrites();return true;")
+  results.optionalEntryInitialSave = await evaluate(page,"return stores.get('settings').requireAppUnlock===false&&stores.get('auth').hasMasterPassword;")
+  await checkpoint('Optional entry settings committed')
   page=await coldStart(); await waitReady(page)
-  results.optionalEntryColdStart = await evaluate(page, `return !stores.get('auth').isLocked && !stores.get('auth').savedMasterPwd && Object.values(stores.get('protectedAccess').status).every(s=>s==='idle');`)
+  results.optionalEntryColdStart = await evaluate(page, `return stores.get('settings').requireAppUnlock===false && stores.get('auth').hasMasterPassword && !stores.get('auth').isLocked && !stores.get('auth').savedMasterPwd && Object.values(stores.get('protectedAccess').status).every(s=>s==='idle');`)
   results.apiKeyColdStart = await evaluate(page,"return stores.get('settings').aiApiKey==='synthetic-native-key-only';")
   await checkpoint('Cold start and credentials checked')
   await evaluate(page,"stores.get('settings').switchView('passwords'); return true;")
@@ -221,7 +225,7 @@ try {
 } catch(error) {
   results.error=String(error)
   if (activePage && !activePage.isClosed()) {
-    results.failedView = await evaluate(activePage,"return {view:stores.get('settings').currentView,locked:stores.get('auth').isLocked,status:stores.get('protectedAccess').status,sessionRevision:stores.get('auth').sessionRevision,credentialPresent:Boolean(stores.get('auth').savedMasterPwd),apiKeyStatus:stores.get('settings').apiKeyStorageStatus,nativeUrls:window.__qaNativeUrlEvents||[]};").catch(()=>null)
+    results.failedView = await evaluate(activePage,"return {view:stores.get('settings').currentView,requireAppUnlock:stores.get('settings').requireAppUnlock,hasMasterPassword:stores.get('auth').hasMasterPassword,authLoadError:stores.get('auth').loadError,locked:stores.get('auth').isLocked,status:stores.get('protectedAccess').status,sessionRevision:stores.get('auth').sessionRevision,credentialPresent:Boolean(stores.get('auth').savedMasterPwd),apiKeyStatus:stores.get('settings').apiKeyStorageStatus,nativeUrls:window.__qaNativeUrlEvents||[]};").catch(()=>null)
     results.nativeEventDiagnostics = await evaluate(activePage, `
       const cap=window.Capacitor, root=document.querySelector('#app')._vnode?.component;
       const parsed=new URL('formyself://open/todo?item=synthetic&date=2026-10-26');

@@ -101,6 +101,14 @@
       "root_cause": "new URL(formyself://open/todo) returned hostname empty and pathname //open/todo on WebView113; current Chromium/Node return host open and pathname /todo",
       "fix": "Validate the custom scheme first, then parse its authority through standard HTTPS URL semantics; regress legacy parser behavior and Todo query/host/protocol contracts",
       "evidence": "legacy-url-diagnostics.json"
+    },
+    {
+      "run_id": 40352542151,
+      "commit": "653da43",
+      "failed_step": "Optional-entry cold start locked the app before reaching the deep-link check",
+      "driver_issue": "verifyIdentity waited for ordinary store readiness, which may already be true while password setup/unlock PBKDF and verified persistence are still pending; force-stop could interrupt that operation",
+      "fix": "Wait for actual unlocked authentication with a live master credential; assert initial verifier presence and committed optional-entry flag, then require verifier presence on both cold-start modes",
+      "scope": "URL fix not yet verified by this device run; no failed native run accepted"
     }
   ]
 }
