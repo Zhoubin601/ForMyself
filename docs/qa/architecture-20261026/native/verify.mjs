@@ -16,6 +16,7 @@ let activePage
 const executeFile = promisify(execFile)
 const adb = process.env.ANDROID_HOME ? resolve(process.env.ANDROID_HOME,'platform-tools/adb') : 'adb'
 const forwardPorts = []
+const browserConnections = []
 const devices = await _android.devices({ omitDriverInstall: true })
 const device = devices.find(d => d.serial() === (process.env.FORMYSELF_DEVICE_SERIAL || 'emulator-5554'))
 if (!device || !device.serial().startsWith('emulator-')) throw new Error('Only the isolated task emulator is supported')
@@ -40,7 +41,8 @@ const attach = async () => {
   const port = stdout.trim()
   if (!/^\d+$/.test(port)) throw Error('Invalid isolated ADB forwarding port')
   forwardPorts.push(port)
-  const browser = await chromium.connectOverCDP(`http://127.0.0.1:${port}`,{timeout:120000})
+  const browser = await chromium.connectOverCDP(`ws://127.0.0.1:${port}/devtools/browser`,{timeout:120000})
+  browserConnections.push(browser)
   const context = browser.contexts()[0]
   const page = context.pages()[0] || await context.waitForEvent('page')
   activePage = page
@@ -203,6 +205,7 @@ try {
   await writeFile(resolve(directory,'playwright-attempt.json'),JSON.stringify(results,null,2)+'\n')
   throw error
 } finally {
+  for (const browser of browserConnections) await browser.close().catch(()=>{})
   for (const port of forwardPorts) await executeFile(adb,['-s',device.serial(),'forward','--remove',`tcp:${port}`]).catch(()=>{})
   await device.close()
 }
