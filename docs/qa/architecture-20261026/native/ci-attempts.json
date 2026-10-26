@@ -93,6 +93,14 @@
       "commit": "0eeae67",
       "result": "Independent native event wiring did not resolve the deep-link failure; all preceding native checks and instrumentation still passed",
       "next_probe": "Collect App startup registration logs and mounted lifecycle metadata; invoke an actual captured product callback only in the failing diagnostic path, which never generates accepted results"
+    },
+    {
+      "run_id": 40350881145,
+      "commit": "844cfb2",
+      "result": "Diagnosed real WebView113 custom URL parsing; product callback is registered/mounted but still rejects the event when directly invoked in failure-only diagnostic",
+      "root_cause": "new URL(formyself://open/todo) returned hostname empty and pathname //open/todo on WebView113; current Chromium/Node return host open and pathname /todo",
+      "fix": "Validate the custom scheme first, then parse its authority through standard HTTPS URL semantics; regress legacy parser behavior and Todo query/host/protocol contracts",
+      "evidence": "legacy-url-diagnostics.json"
     }
   ]
 }

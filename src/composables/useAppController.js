@@ -390,6 +390,11 @@ export function useAppController() {
   }
 
   onMounted(async () => {
+    // Capacitor's Web factory creates an instance on first use; resolve it once
+    // before concurrent subscriptions so all events share that instance.
+    if (!Capacitor.isNativePlatform()) {
+      try { await CapacitorApp.getState() } catch (error) { console.warn('浏览器应用事件初始化失败', error) }
+    }
     const appEvents = {
       backButton: handleAppBack,
       appUrlOpen: ({ url }) => openAppUrl(url),

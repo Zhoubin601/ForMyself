@@ -227,22 +227,6 @@ try {
       const parsed=new URL('formyself://open/todo?item=synthetic&date=2026-10-26');
       const info={url:{protocol:parsed.protocol,host:parsed.hostname,path:parsed.pathname},rootMounted:root?.isMounted,rootUnmounted:root?.isUnmounted,mountHooks:root?.m?.length,header:cap.PluginHeaders?.find(x=>x.name==='App')};
       return info;`).catch(error=>({error:String(error)}))
-    if (results.failedView?.nativeUrls?.length && !results.nativeDeepLink) {
-      // Failure diagnosis only: re-run actual mounted hooks and invoke the captured product callback.
-      // This path never writes passing results or produces an accepted APK.
-      results.productUrlCallbackProbe = await evaluate(activePage, `
-        const root=document.querySelector('#app')._vnode?.component,cap=window.Capacitor,original=cap.nativeCallback,callbacks=[];
-        const registration=[];cap.nativeCallback=(plugin,method,options,callback)=>{
-          const id=original(plugin,method,options,callback);
-          if(plugin==='App'&&method==='addListener'){registration.push({event:options.eventName,id});if(options.eventName==='appUrlOpen')callbacks.push(callback)}return id;
-        };
-        try{
-          await Promise.race([Promise.all((root?.m||[]).map(hook=>hook())),new Promise(resolve=>setTimeout(resolve,5000))]);
-          const before=stores.get('settings').currentView;
-          for(const callback of callbacks)callback({url:window.__qaNativeUrlEvents.at(-1)});
-          return {registration,before,after:stores.get('settings').currentView,target:stores.get('settings').todoTarget,callbackSources:callbacks.map(callback=>String(callback).slice(0,250))};
-        }finally{cap.nativeCallback=original;}`).catch(error=>({error:String(error)}))
-    }
     results.consoleWarnings = await activePage.consoleMessages().then(messages=>messages.filter(m=>['warning','error'].includes(m.type())).slice(-12).map(m=>m.text().slice(0,500))).catch(()=>[])
     await activePage.screenshot({path:resolve(directory,'playwright-failure.png'),timeout:5000}).catch(()=>{})
   }
