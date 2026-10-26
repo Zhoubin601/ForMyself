@@ -1,0 +1,282 @@
+{
+  "pageErrors": [],
+  "startedAt": "2026-10-26T17:08:24.223Z",
+  "deviceSerial": "emulator-5554",
+  "uiInput": "Playwright Android coordinate touch mapped from DOM button bounds to actual native WebView bounds; CDP filling/inspection and state assertions",
+  "webviewTransport": "Isolated ADB forward + Playwright Chromium CDP",
+  "functionalTestDisplay": "480x800, density160, prefers-reduced-motion:reduce; browser QA separately uses normal motion",
+  "scriptSha256": "675c7757e7cd162ab8533b5fadd923625e5f79405ca4acb8a51dd56d2406f47e",
+  "apkSha256": "a86013e115c3955e4f362e68601b165c57aa51f65d36451f7fc50d13318aa017",
+  "api": "34",
+  "testWebViewFlags": "",
+  "webview": "Current WebView package (name, version): (com.android.webview, 113.0.5672.136)",
+  "hardwareDrawingEnabled": true,
+  "emulatorScreenOffTimeout": "2147483647",
+  "uiTapTargets": [
+    {
+      "name": "初始化并进入",
+      "point": {
+        "x": 240,
+        "y": 523
+      },
+      "webViewBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 480,
+        "height": 800
+      },
+      "viewport": {
+        "width": 480,
+        "height": 800,
+        "dpr": 1
+      }
+    },
+    {
+      "name": "解锁进入",
+      "point": {
+        "x": 240,
+        "y": 523
+      },
+      "webViewBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 480,
+        "height": 800
+      },
+      "viewport": {
+        "width": 480,
+        "height": 800,
+        "dpr": 1
+      }
+    },
+    {
+      "name": "验证",
+      "point": {
+        "x": 329,
+        "y": 522
+      },
+      "webViewBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 480,
+        "height": 800
+      },
+      "viewport": {
+        "width": 480,
+        "height": 800,
+        "dpr": 1
+      }
+    },
+    {
+      "name": "添加",
+      "point": {
+        "x": 425,
+        "y": 101
+      },
+      "webViewBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 480,
+        "height": 800
+      },
+      "viewport": {
+        "width": 480,
+        "height": 800,
+        "dpr": 1
+      }
+    },
+    {
+      "name": "保存记录",
+      "point": {
+        "x": 379,
+        "y": 666
+      },
+      "webViewBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 480,
+        "height": 800
+      },
+      "viewport": {
+        "width": 480,
+        "height": 800,
+        "dpr": 1
+      }
+    },
+    {
+      "name": "发送消息",
+      "point": {
+        "x": 438,
+        "y": 742
+      },
+      "webViewBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 480,
+        "height": 800
+      },
+      "viewport": {
+        "width": 480,
+        "height": 800,
+        "dpr": 1
+      }
+    },
+    {
+      "name": "验证",
+      "point": {
+        "x": 329,
+        "y": 522
+      },
+      "webViewBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 480,
+        "height": 800
+      },
+      "viewport": {
+        "width": 480,
+        "height": 800,
+        "dpr": 1
+      }
+    },
+    {
+      "name": "验证并重试恢复",
+      "point": {
+        "x": 240,
+        "y": 248
+      },
+      "webViewBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 480,
+        "height": 800
+      },
+      "viewport": {
+        "width": 480,
+        "height": 800,
+        "dpr": 1
+      }
+    },
+    {
+      "name": "验证",
+      "point": {
+        "x": 329,
+        "y": 522
+      },
+      "webViewBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 480,
+        "height": 800
+      },
+      "viewport": {
+        "width": 480,
+        "height": 800,
+        "dpr": 1
+      }
+    }
+  ],
+  "initialization": true,
+  "masterPasswordInitialSave": true,
+  "apiKeyInitialSave": true,
+  "requiredEntryColdStart": true,
+  "optionalEntryInitialSave": true,
+  "optionalEntryColdStart": true,
+  "apiKeyColdStart": true,
+  "onlyRequestedModuleLoaded": true,
+  "vaultUiCreate": true,
+  "renderedScreenshotCount": 2,
+  "chatSendReply": true,
+  "nativeAppProbe": {
+    "platform": "android",
+    "header": "present",
+    "listener": "registered"
+  },
+  "deepLinkCommand": "Starting: Intent { act=android.intent.action.VIEW dat=formyself://open/... cmp=com.yubin.formyself/.MainActivity }\nWarning: Activity not started, intent has been delivered to currently running top-most instance.",
+  "nativeDeepLink": true,
+  "backgroundTrigger": "Separate QaBackgroundActivity in instrumentation APK; actual Android task switch",
+  "backgroundReleasesSensitiveData": true,
+  "pendingRestoreBlocksColdStart": true,
+  "uncommittedForceStopRollback": true,
+  "error": "Error: page.evaluate: Error: Missing durable commit\n    at eval (eval at evaluate (:311:30), <anonymous>:7:51)\n    at async <anonymous>:337:30",
+  "failedView": {
+    "view": "home",
+    "requireAppUnlock": false,
+    "hasMasterPassword": true,
+    "authLoadError": "",
+    "locked": false,
+    "status": {
+      "passwords": "ready",
+      "chat": "ready"
+    },
+    "sessionRevision": 0,
+    "credentialPresent": true,
+    "apiKeyStatus": "saved",
+    "visibility": "visible",
+    "enteredPasswordMatches": false,
+    "unlockMarks": [],
+    "nativeUrls": []
+  },
+  "nativeEventDiagnostics": {
+    "url": {
+      "protocol": "formyself:",
+      "host": "",
+      "path": "//open/todo"
+    },
+    "rootMounted": true,
+    "rootUnmounted": false,
+    "mountHooks": 1,
+    "header": {
+      "name": "App",
+      "methods": [
+        {
+          "name": "toggleBackButtonHandler",
+          "rtype": "promise"
+        },
+        {
+          "name": "getState",
+          "rtype": "promise"
+        },
+        {
+          "name": "getInfo",
+          "rtype": "promise"
+        },
+        {
+          "name": "removeAllListeners",
+          "rtype": "promise"
+        },
+        {
+          "name": "getLaunchUrl",
+          "rtype": "promise"
+        },
+        {
+          "name": "checkPermissions",
+          "rtype": "promise"
+        },
+        {
+          "name": "requestPermissions",
+          "rtype": "promise"
+        },
+        {
+          "name": "exitApp",
+          "rtype": "promise"
+        },
+        {
+          "name": "removeListener"
+        },
+        {
+          "name": "getAppLanguage",
+          "rtype": "promise"
+        },
+        {
+          "name": "addListener"
+        },
+        {
+          "name": "minimizeApp",
+          "rtype": "promise"
+        }
+      ]
+    }
+  },
+  "consoleWarnings": []
+}
