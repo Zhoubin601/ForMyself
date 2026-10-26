@@ -17,6 +17,18 @@ const executeFile = promisify(execFile)
 const adb = process.env.ANDROID_HOME ? resolve(process.env.ANDROID_HOME,'platform-tools/adb') : 'adb'
 const forwardPorts = []
 const browserConnections = []
+const bounded = async (operation, label, timeout=60000) => {
+  let timer
+  try {
+    return await Promise.race([operation,new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error('Timed out: '+label)),timeout)})])
+  } finally { clearTimeout(timer) }
+}
+const shell = command => bounded(device.shell(command),'ADB '+command)
+const checkpoint = async label => {
+  console.log(label,JSON.stringify(results))
+  await writeFile(resolve(directory,'playwright-progress.json'),JSON.stringify({...results,checkpoint:label},null,2)+'\n')
+  if (Object.values(results).some(value=>value===false)) throw Error('Native acceptance failed at '+label)
+}
 const devices = await _android.devices({ omitDriverInstall: true })
 const device = devices.find(d => d.serial() === (process.env.FORMYSELF_DEVICE_SERIAL || 'emulator-5554'))
 if (!device || !device.serial().startsWith('emulator-')) throw new Error('Only the isolated task emulator is supported')
@@ -25,7 +37,7 @@ const files = await readdir(resolve(root, 'dist/assets'))
 const runtimeAsset = files.find(name => name.startsWith('fullBackupRuntime-') && name.endsWith('.js'))
 const settingsAsset = files.find(name => name.startsWith('settings-') && name.endsWith('.js'))
 if (!runtimeAsset || !settingsAsset) throw new Error('Missing matching production build')
-const evaluate = (page, body) => page.evaluate(`(async () => { const stores = ${storeExpression}; ${body} })()`)
+const evaluate = (page, body) => bounded(page.evaluate(`(async () => { const stores = ${storeExpression}; ${body} })()`),'WebView evaluate',90000)
 const waitReady = page => page.waitForFunction(`() => { const s=${storeExpression}; return ['weight','debt','mood','schedule','todo'].every(k=>s.get(k)?.isDataLoaded) }`, null, { timeout:120000 })
 const waitRestoreIdle = page => page.waitForFunction(async asset => {
   const entry = await import('/assets/'+asset)
@@ -35,7 +47,7 @@ const waitRestoreIdle = page => page.waitForFunction(async asset => {
 }, settingsAsset, { polling:250 })
 const attach = async () => {
   console.log('Attaching app WebView')
-  await device.shell(`am start -n ${pkg}/.MainActivity`)
+  await shell(`am start -n ${pkg}/.MainActivity`)
   const view = await device.webView({ pkg })
   const { stdout } = await executeFile(adb,['-s',device.serial(),'forward','tcp:0',`localabstract:webview_devtools_remote_${view.pid()}`])
   const port = stdout.trim()
@@ -47,13 +59,14 @@ const attach = async () => {
   const page = context.pages()[0] || await context.waitForEvent('page')
   activePage = page
   page.setDefaultTimeout(120000)
+  await page.emulateMedia({reducedMotion:'reduce'})
   page.on('pageerror', error => results.pageErrors.push(error.message))
   await page.route('https://synthetic.invalid/**', route => route.fulfill({ status:200,contentType:'application/json',body:JSON.stringify({choices:[{message:{content:'合成回复：原生验证已收到消息。'}}]}) }))
   await page.waitForFunction("document.querySelector('#app')?.__vue_app__", null, {timeout:120000})
   return page
 }
 const coldStart = async () => {
-  await device.shell(`am force-stop ${pkg}`)
+  await shell(`am force-stop ${pkg}`)
   const deadline = Date.now()+20000
   while (device.webViews().some(view=>view.pkg()===pkg)) {
     if (Date.now()>deadline) throw Error('Previous process WebView was not removed after force-stop')
@@ -83,19 +96,22 @@ const loadRuntime = page => evaluate(page, `const module=await import('/assets/$
 try {
   results.deviceSerial = device.serial()
   results.webviewTransport = 'Isolated ADB forward + Playwright Chromium CDP'
+  results.functionalTestDisplay = '480x800, density160, prefers-reduced-motion:reduce; browser QA separately uses normal motion'
   results.scriptSha256 = createHash('sha256').update(await readFile(fileURLToPath(import.meta.url))).digest('hex')
   results.apkSha256 = createHash('sha256').update(await readFile(resolve(root,'android/app/build/outputs/apk/debug/app-debug.apk'))).digest('hex')
-  results.api = (await device.shell('getprop ro.build.version.sdk')).toString().trim()
-  results.testWebViewFlags = (await device.shell('cat /data/local/tmp/webview-command-line 2>/dev/null')).toString().trim()
-  results.webview = (await device.shell('dumpsys webviewupdate')).toString().match(/Current WebView package[^\n]+/)?.[0] || 'see raw device diagnostics'
+  results.api = (await shell('getprop ro.build.version.sdk')).toString().trim()
+  results.testWebViewFlags = (await shell('cat /data/local/tmp/webview-command-line 2>/dev/null')).toString().trim()
+  results.webview = (await shell('dumpsys webviewupdate')).toString().match(/Current WebView package[^\n]+/)?.[0] || 'see raw device diagnostics'
   // This emulator/app was created by the task; no real device or existing user profile is cleared.
-  await device.shell(`pm clear ${pkg}`)
-  if (Number(results.api) >= 33) await device.shell(`pm grant ${pkg} android.permission.POST_NOTIFICATIONS`)
+  await shell(`pm clear ${pkg}`)
+  if (Number(results.api) >= 33) await shell(`pm grant ${pkg} android.permission.POST_NOTIFICATIONS`)
   let page = await attach()
   console.log('App initialized')
   await verifyIdentity(page); results.initialization = true
+  await checkpoint('Initialization verified')
   await evaluate(page, `const s=stores.get('settings'); s.aiProviderUrl='https://synthetic.invalid'; s.aiApiKey='synthetic-native-key-only'; s.aiModel='synthetic'; await s.saveAiSettings();
     await stores.get('weight').restoreWeightRecords([{id:'native-original',date:'2026-10-26',weight:65}]); await s.flushPendingSettingsWrites(); return true;`)
+  await checkpoint('Native settings committed')
   page=await coldStart()
   await page.locator('.lock-screen input').waitFor()
   results.requiredEntryColdStart = await evaluate(page,"return stores.get('auth').isLocked&&!stores.get('auth').savedMasterPwd;")
@@ -104,7 +120,7 @@ try {
   page=await coldStart(); await waitReady(page)
   results.optionalEntryColdStart = await evaluate(page, `return !stores.get('auth').isLocked && !stores.get('auth').savedMasterPwd && Object.values(stores.get('protectedAccess').status).every(s=>s==='idle');`)
   results.apiKeyColdStart = await evaluate(page,"return stores.get('settings').aiApiKey==='synthetic-native-key-only';")
-  console.log('Cold start and credentials checked')
+  await checkpoint('Cold start and credentials checked')
   await evaluate(page,"stores.get('settings').switchView('passwords'); return true;")
   await verifyProtectedIdentity(page)
   await page.waitForFunction(`() => ${storeExpression}.get('protectedAccess').status.passwords==='ready'`)
@@ -117,25 +133,27 @@ try {
   await page.waitForFunction(`() => ${storeExpression}.get('passwordVault').records.some(r=>r.appName==='合成原生密码记录')`)
   await evaluate(page,"await stores.get('passwordVault').flush();return true;")
   results.vaultUiCreate = true
+  await checkpoint('Vault create checked')
   await page.screenshot({path:resolve(directory,'native-vault.png')})
   await evaluate(page,"stores.get('settings').switchView('chat'); return true;")
   await page.waitForSelector('.chat-composer textarea')
   await page.locator('.chat-composer textarea').fill('合成原生测试消息'); await page.getByRole('button',{name:'发送消息',exact:true}).click()
   await page.waitForFunction(`() => { const m=${storeExpression}.get('chat').messages,u=m.filter(x=>x.role==='user'&&x.content==='合成原生测试消息').slice(-1)[0];return u&&m.some(x=>x.role==='assistant'&&x.createdAt>u.createdAt&&x.status==='complete'&&x.content.includes('合成回复：原生验证')) }`, null,{timeout:120000})
   results.chatSendReply = true; await page.screenshot({path:resolve(directory,'native-chat.png')})
-  console.log('Chat checked')
+  await checkpoint('Chat checked')
   const taskId = await evaluate(page,"await stores.get('todo').add({title:'合成深链待办',startDate:'2026-10-26',recurrence:{type:'none'}});return stores.get('todo').snapshot.tasks.find(t=>t.title==='合成深链待办').id;")
-  await device.shell(`am start -n ${pkg}/.MainActivity -a android.intent.action.VIEW -d 'formyself://open/todo?item=${taskId}&date=2026-10-26'`)
+  await shell(`am start -n ${pkg}/.MainActivity -a android.intent.action.VIEW -d 'formyself://open/todo?item=${taskId}&date=2026-10-26'`)
   await page.waitForFunction(`() => ${storeExpression}.get('settings').currentView==='todo'`)
   results.nativeDeepLink = await evaluate(page,`return stores.get('settings').todoTarget.item==='${taskId}';`)
   await evaluate(page,"stores.get('settings').autoLockDelaySeconds=0;return true;")
-  await device.shell('input keyevent 3')
-  await device.shell(`am start -n ${pkg}/.MainActivity`)
+  await shell('input keyevent 3')
+  await shell(`am start -n ${pkg}/.MainActivity`)
   await page.waitForFunction(`() => {const s=${storeExpression};return Object.values(s.get('protectedAccess').status).every(x=>x==='idle')&&!s.get('auth').savedMasterPwd&&s.get('chat').messages.length===0}`,null,{polling:500})
   results.backgroundReleasesSensitiveData = await evaluate(page,"return !stores.get('auth').isLocked&&!stores.get('auth').savedMasterPwd&&stores.get('chat').messages.length===0;")
   await evaluate(page,"stores.get('settings').switchView('chat');return true;")
   await verifyProtectedIdentity(page)
   await page.waitForSelector('.chat-composer textarea')
+  await checkpoint('Background release and reauthentication checked')
   await loadRuntime(page)
   await evaluate(page,`await stores.get('protectedAccess').ensureModules(); const target=window.__qaRuntime.createFullBackupSnapshot();target.data.weight=[{id:'native-partial',date:'2026-10-26',weight:60}];
     const participant=window.__qaRuntime.registry.get('weight'),original=participant.restore;
@@ -148,7 +166,7 @@ try {
   await page.waitForFunction(`() => ${storeExpression}.get('weight').weightRecords[0]?.id==='native-original'`)
   await waitRestoreIdle(page)
   results.uncommittedForceStopRollback = true
-  console.log('Uncommitted rollback checked')
+  await checkpoint('Uncommitted rollback checked')
   await loadRuntime(page)
   await evaluate(page,`const entry=await import(document.querySelector('script[type=module]').src);
     const journal=Object.values(entry).find(x=>x&&Object.hasOwn(x,'inspect')&&Object.hasOwn(x,'commit')&&Object.hasOwn(x,'prepare'));
@@ -161,7 +179,7 @@ try {
   await page.waitForFunction(`() => ${storeExpression}.get('weight').weightRecords[0]?.id==='native-committed'`)
   await waitRestoreIdle(page)
   results.committedForceStopRetainsTarget = true
-  console.log('Committed restore checked')
+  await checkpoint('Committed restore checked')
   await evaluate(page,"stores.get('settings').openGeneralSettingsSection('security');return true;")
   await page.getByRole('button',{name:'传统密码验证修改',exact:true}).click()
   await page.getByPlaceholder('原主密码',{exact:true}).fill(password)
@@ -195,17 +213,17 @@ try {
     results.failedView = await evaluate(activePage,"return {view:stores.get('settings').currentView,locked:stores.get('auth').isLocked,status:stores.get('protectedAccess').status};").catch(()=>null)
     await activePage.screenshot({path:resolve(directory,'playwright-failure.png'),timeout:5000}).catch(()=>{})
   }
-  const crash = (await device.shell('logcat -b crash -d -t 120').catch(()=>Buffer.from(''))).toString()
+  const crash = (await shell('logcat -b crash -d -t 120').catch(()=>Buffer.from(''))).toString()
   const summary = crash.split('\n').filter(line=>/Fatal signal|FATAL EXCEPTION|Abort message|AndroidRuntime:|Cmdline:|Renderer process/.test(line)).slice(-35).join('\n')
   await writeFile(resolve(directory,'playwright-crash-summary.txt'),summary+'\n')
   console.error('Native acceptance progress:',JSON.stringify(results))
-  const processState = (await device.shell(`pidof ${pkg}; logcat -d -t 250`).catch(()=>Buffer.from(''))).toString().split('\n').filter(line=>/^\d/.test(line)&&(!line.includes(' ' )||/ActivityManager.*Killing|ActivityManager.*has died|Finishing|Render process|chromium.*ERROR|Capacitor.*Error/.test(line))).slice(-20).join('\n')
+  const processState = (await shell(`pidof ${pkg}; logcat -d -t 250`).catch(()=>Buffer.from(''))).toString().split('\n').filter(line=>/^\d/.test(line)&&(!line.includes(' ' )||/ActivityManager.*Killing|ActivityManager.*has died|Finishing|Render process|chromium.*ERROR|Capacitor.*Error/.test(line))).slice(-20).join('\n')
   console.error('Native process diagnostics:',processState)
   if(summary)console.error(summary)
   await writeFile(resolve(directory,'playwright-attempt.json'),JSON.stringify(results,null,2)+'\n')
   throw error
 } finally {
-  for (const browser of browserConnections) await browser.close().catch(()=>{})
-  for (const port of forwardPorts) await executeFile(adb,['-s',device.serial(),'forward','--remove',`tcp:${port}`]).catch(()=>{})
-  await device.close()
+  for (const browser of browserConnections) await bounded(browser.close(),'CDP cleanup',20000).catch(()=>{})
+  for (const port of forwardPorts) await executeFile(adb,['-s',device.serial(),'forward','--remove',`tcp:${port}`],{timeout:20000}).catch(()=>{})
+  await bounded(device.close(),'Android device cleanup',20000).catch(()=>{})
 }
