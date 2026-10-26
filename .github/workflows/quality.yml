@@ -44,6 +44,7 @@ jobs:
       - run: sdkmanager "platforms;android-36" "build-tools;35.0.0"
       - run: npm ci
       - run: npm run build
+      - run: node node_modules/playwright-core/cli.js install android
       - run: npx cap sync android
       - run: bash ./gradlew --no-daemon --max-workers=2 -Dorg.gradle.jvmargs=-Xmx1024m -Pkotlin.compiler.execution.strategy=in-process :app:testDebugUnitTest :app:assembleDebug :app:assembleDebugAndroidTest
         working-directory: android
@@ -88,6 +89,27 @@ jobs:
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add docs/qa/architecture-20261026/native/playwright-results.json docs/qa/architecture-20261026/native/apk-assets-ci.json docs/qa/architecture-20261026/native/native-home.png docs/qa/architecture-20261026/native/native-chat.png docs/qa/architecture-20261026/native/native-vault.png output/20261026-ForMyself-architecture-p6-debug-v1.apk
           git commit -m 'test: preserve accepted P6 Android evidence [skip ci]'
+          git push origin HEAD:qa/architecture-p6
+      - name: Preserve failed device diagnostics on the validation branch
+        if: failure() && github.ref == 'refs/heads/qa/architecture-p6'
+        env:
+          P6_RUN_ID: ${{ github.run_id }}
+        run: |
+          if [ ! -f docs/qa/architecture-20261026/native/playwright-attempt.json ]; then exit 0; fi
+          python3 - <<'PYCODE'
+          import os, shutil
+          from pathlib import Path
+          source = Path('docs/qa/architecture-20261026/native')
+          destination = source/'ci-failures'/os.environ['P6_RUN_ID']
+          destination.mkdir(parents=True, exist_ok=True)
+          for name in ['playwright-attempt.json','playwright-failure.png','app-event-diagnostics.txt','playwright-crash-summary.txt']:
+              if (source/name).exists(): shutil.copyfile(source/name, destination/name)
+          PYCODE
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add docs/qa/architecture-20261026/native/ci-failures
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'test: preserve failed P6 device diagnostics [skip ci]'
           git push origin HEAD:qa/architecture-p6
       - name: Preserve Android verification reports
         if: always()

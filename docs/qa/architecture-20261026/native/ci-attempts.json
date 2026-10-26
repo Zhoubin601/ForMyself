@@ -117,6 +117,13 @@
       "failed_step": "Actual required-entry unlock did not complete within 120 seconds; the earlier driver had not waited for this condition",
       "next_probe": "Keep the dedicated emulator awake and dismiss Android keyguard before each attach; submit through the supported password Enter action; capture display power, input equality, busy state, dialog and unlock marks if it still fails",
       "scope": "The remaining cause is not uniquely confirmed; no acceptance APK produced"
+    },
+    {
+      "run_id": 40355907451,
+      "commit": "38cdd71",
+      "result": "Visible awake app and correct DOM password, but Enter never triggered the product unlock handler (no unlock marks, button not busy)",
+      "fix": "Install pinned Playwright Android driver; use actual Android UiAutomator button taps with CDP DOM inspection/filling, retain full authentication assertions; preserve failed device images under run-specific folders",
+      "scope": "Screen-off alone did not explain failure; no production authentication change or bypass"
     }
   ]
 }

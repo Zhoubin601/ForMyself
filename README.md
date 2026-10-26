@@ -21,6 +21,7 @@ cd android
 ./gradlew :app:connectedDebugAndroidTest
 cd ..
 # 先在专用模拟器安装当前 Debug APK；此驱动会清除测试 App 的合成资料
+npx playwright-core install android
 npm run test:e2e:android
 ```
 

@@ -1,5 +1,5 @@
 // Playwright's Android API drives the real app WebView. Only the task-created emulator is eligible.
-import { writeFile, readdir, readFile } from 'node:fs/promises'
+import { writeFile, readdir, readFile, rm } from 'node:fs/promises'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { createHash } from 'node:crypto'
@@ -12,7 +12,7 @@ const directory = dirname(fileURLToPath(import.meta.url)), root = resolve(direct
 const pkg = 'com.yubin.formyself'
 let password = 'Synthetic-P6-native-only'
 const storeExpression = "document.querySelector('#app').__vue_app__.config.globalProperties.$pinia._s"
-const results = { pageErrors: [] }
+const results = { pageErrors: [], startedAt: new Date().toISOString() }
 let activePage
 const executeFile = promisify(execFile)
 const adb = process.env.ANDROID_HOME ? resolve(process.env.ANDROID_HOME,'platform-tools/adb') : 'adb'
@@ -30,7 +30,7 @@ const checkpoint = async label => {
   await writeFile(resolve(directory,'playwright-progress.json'),JSON.stringify({...results,checkpoint:label},null,2)+'\n')
   if (Object.values(results).some(value=>value===false)) throw Error('Native acceptance failed at '+label)
 }
-const devices = await _android.devices({ omitDriverInstall: true })
+const devices = await _android.devices()
 const device = devices.find(d => d.serial() === (process.env.FORMYSELF_DEVICE_SERIAL || 'emulator-5554'))
 if (!device || !device.serial().startsWith('emulator-')) throw new Error('Only the isolated task emulator is supported')
 device.setDefaultTimeout(120000)
@@ -78,13 +78,21 @@ const coldStart = async () => {
   }
   return attach()
 }
+const tapButton = async (page, name) => {
+  const button=page.getByRole('button',{name,exact:true})
+  await button.waitFor({state:'visible'})
+  await button.scrollIntoViewIfNeeded()
+  const aria=await button.getAttribute('aria-label')
+  await device.tap(aria?{pkg,desc:aria}:{pkg,text:name},{timeout:30000})
+}
 const verifyIdentity = async page => {
   if (await page.locator('.lock-screen input').isVisible()) {
-    await page.locator('.lock-screen input').fill(password); await page.locator('.lock-screen input').press('Enter')
+    await page.locator('.lock-screen input').fill(password)
+    await tapButton(page,await page.locator('.lock-btn').innerText())
   } else if (await page.getByRole('button',{name:'验证并重试恢复',exact:true}).isVisible()) {
-    await page.getByRole('button',{name:'验证并重试恢复',exact:true}).click()
+    await tapButton(page,'验证并重试恢复')
     await page.locator('.feedback-input').fill(password)
-    await page.getByRole('button',{name:'验证',exact:true}).click()
+    await tapButton(page,'验证')
   }
   await waitState(page,"return stores.get('auth').isDataLoaded&&!stores.get('auth').isLocked&&Boolean(stores.get('auth').savedMasterPwd)")
   await waitReady(page)
@@ -93,13 +101,15 @@ const verifyProtectedIdentity = async page => {
   const input = page.locator('.feedback-input')
   const retry = page.getByRole('button',{name:'验证并进入',exact:true})
   await input.or(retry).first().waitFor()
-  if (!await input.isVisible()) await retry.click()
+  if (!await input.isVisible()) await tapButton(page,'验证并进入')
   await input.fill(password)
-  await page.getByRole('button',{name:'验证',exact:true}).click()
+  await tapButton(page,'验证')
 }
 const loadRuntime = page => evaluate(page, `const module=await import('/assets/${runtimeAsset}'); window.__qaRuntime=Object.values(module).find(x=>typeof x==='function')(); return true;`)
 try {
+  for (const name of ['playwright-results.json','playwright-attempt.json','playwright-progress.json','playwright-failure.png','native-home.png','native-chat.png','native-vault.png']) await rm(resolve(directory,name),{force:true})
   results.deviceSerial = device.serial()
+  results.uiInput = 'Playwright Android UiAutomator touch; CDP DOM filling/inspection and state assertions'
   results.webviewTransport = 'Isolated ADB forward + Playwright Chromium CDP'
   results.functionalTestDisplay = '480x800, density160, prefers-reduced-motion:reduce; browser QA separately uses normal motion'
   results.scriptSha256 = createHash('sha256').update(await readFile(fileURLToPath(import.meta.url))).digest('hex')
@@ -138,11 +148,11 @@ try {
   await verifyProtectedIdentity(page)
   await waitState(page,"return stores.get('protectedAccess').status.passwords==='ready'")
   results.onlyRequestedModuleLoaded = await evaluate(page,"return stores.get('protectedAccess').status.chat==='idle';")
-  await page.getByRole('button',{name:'添加',exact:true}).click()
+  await tapButton(page,'添加')
   await page.getByPlaceholder('例如：微信、GitHub',{exact:true}).fill('合成原生密码记录')
   await page.getByPlaceholder('手机号、邮箱或用户名',{exact:true}).fill('synthetic-account')
   await page.getByPlaceholder('输入密码',{exact:true}).fill('Synthetic-vault-content-only')
-  await page.getByRole('button',{name:'保存记录',exact:true}).click()
+  await tapButton(page,'保存记录')
   await waitState(page,"return stores.get('passwordVault').records.some(r=>r.appName==='合成原生密码记录')")
   await evaluate(page,"await stores.get('passwordVault').flush();return true;")
   results.vaultUiCreate = true
@@ -150,7 +160,7 @@ try {
   await page.screenshot({path:resolve(directory,'native-vault.png')})
   await evaluate(page,"stores.get('settings').switchView('chat'); return true;")
   await page.waitForSelector('.chat-composer textarea')
-  await page.locator('.chat-composer textarea').fill('合成原生测试消息'); await page.getByRole('button',{name:'发送消息',exact:true}).click()
+  await page.locator('.chat-composer textarea').fill('合成原生测试消息'); await tapButton(page,'发送消息')
   await waitState(page,"const m=stores.get('chat').messages,index=m.findLastIndex(x=>x.role==='user'&&x.content==='合成原生测试消息');return index>=0&&m.slice(index+1).some(x=>x.role==='assistant'&&x.status==='complete'&&x.content.includes('合成回复：原生验证'))")
   results.chatSendReply = true; await page.screenshot({path:resolve(directory,'native-chat.png')})
   await checkpoint('Chat checked')
@@ -201,12 +211,12 @@ try {
   results.committedForceStopRetainsTarget = true
   await checkpoint('Committed restore checked')
   await evaluate(page,"stores.get('settings').openGeneralSettingsSection('security');return true;")
-  await page.getByRole('button',{name:'传统密码验证修改',exact:true}).click()
+  await tapButton(page,'传统密码验证修改')
   await page.getByPlaceholder('原主密码',{exact:true}).fill(password)
   const nextPassword = 'Synthetic-P6-native-changed'
   await page.getByPlaceholder('新主密码',{exact:true}).fill(nextPassword)
   await page.getByPlaceholder('确认新主密码',{exact:true}).fill(nextPassword)
-  await page.getByRole('button',{name:'保存',exact:true}).click()
+  await tapButton(page,'保存')
   await page.getByPlaceholder('原主密码',{exact:true}).waitFor({state:'hidden'})
   await page.getByText(/主密码已重设|主密码已更新；生物/).waitFor()
   password = nextPassword
