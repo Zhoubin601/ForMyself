@@ -94,6 +94,14 @@ const tapButton = async (page, name) => {
   ;(results.uiTapTargets||=[]).push({name,point,webViewBounds:native.bounds,viewport})
   await bounded(device.input.tap(point),'Native button touch '+name,30000)
 }
+const captureNative = async name => {
+  const png=await bounded(device.screenshot(),'Android display screenshot '+name,15000)
+  await writeFile(resolve(directory,name),png)
+  const {default:sharp}=await import('sharp')
+  const {channels}=await sharp(png).stats()
+  if(channels.slice(0,3).every(channel=>channel.max-channel.min<16))throw Error('Native screenshot contains no rendered UI: '+name)
+  results.renderedScreenshotCount=(results.renderedScreenshotCount||0)+1
+}
 const verifyIdentity = async page => {
   if (await page.locator('.lock-screen input').isVisible()) {
     await page.locator('.lock-screen input').fill(password)
@@ -129,6 +137,8 @@ try {
   // This emulator/app was created by the task; no real device or existing user profile is cleared.
   await shell('settings put system screen_off_timeout 2147483647')
   await shell('svc power stayon true')
+  await shell('setprop debug.hwui.drawing_enabled true')
+  results.hardwareDrawingEnabled=(await shell('getprop debug.hwui.drawing_enabled')).toString().trim()==='true'
   results.emulatorScreenOffTimeout = (await shell('settings get system screen_off_timeout')).toString().trim()
   await shell(`pm clear ${pkg}`)
   if (Number(results.api) >= 33) await shell(`pm grant ${pkg} android.permission.POST_NOTIFICATIONS`)
@@ -166,12 +176,12 @@ try {
   await evaluate(page,"await stores.get('passwordVault').flush();return true;")
   results.vaultUiCreate = true
   await checkpoint('Vault create checked')
-  await page.screenshot({path:resolve(directory,'native-vault.png')})
+  await captureNative('native-vault.png')
   await evaluate(page,"stores.get('settings').switchView('chat'); return true;")
   await page.waitForSelector('.chat-composer textarea')
   await page.locator('.chat-composer textarea').fill('合成原生测试消息'); await tapButton(page,'发送消息')
   await waitState(page,"const m=stores.get('chat').messages,index=m.findLastIndex(x=>x.role==='user'&&x.content==='合成原生测试消息');return index>=0&&m.slice(index+1).some(x=>x.role==='assistant'&&x.status==='complete'&&x.content.includes('合成回复：原生验证'))")
-  results.chatSendReply = true; await page.screenshot({path:resolve(directory,'native-chat.png')})
+  results.chatSendReply = true; await captureNative('native-chat.png')
   await checkpoint('Chat checked')
   const taskId = await evaluate(page,"await stores.get('todo').add({title:'合成深链待办',startDate:'2026-10-26',recurrence:{type:'none'}});return stores.get('todo').snapshot.tasks.find(t=>t.title==='合成深链待办').id;")
   results.nativeAppProbe = await evaluate(page,`window.__qaNativeUrlEvents=[];const cap=window.Capacitor,app=cap?.Plugins?.App;
@@ -240,7 +250,8 @@ try {
   await waitState(page,"return stores.get('protectedAccess').status.passwords==='ready'")
   results.passwordChangeColdStartPreservesVault = await evaluate(page,"return stores.get('passwordVault').records.some(r=>r.appName==='合成原生密码记录'&&r.password==='Synthetic-vault-content-only');")
   await evaluate(page,"stores.get('settings').switchView('home');return true;")
-  await page.screenshot({path:resolve(directory,'native-home.png')})
+  await captureNative('native-home.png')
+  results.nativeScreenshotsRendered=results.renderedScreenshotCount===3
   results.measurements = await page.evaluate("performance.getEntriesByType('measure').map(x=>({name:x.name,duration:x.duration}))")
   results.executedAt = new Date().toISOString()
   if(Object.entries(results).some(([,value])=>value===false))throw Error('Native acceptance failed')

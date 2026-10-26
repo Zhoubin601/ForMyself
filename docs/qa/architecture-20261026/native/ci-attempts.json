@@ -146,6 +146,15 @@
       "root_evidence": "ci-failures/40361060238/android-display-failure.png; WebView-only image omitted Android system overlay",
       "fix": "Use lightweight API34 AOSP ATD image without unrelated Google services; actual background task switch uses a separate Activity only in instrumentation APK, avoiding launcher dependence. Main APK contains no test Activity. Keep verified authentication and real native touch assertions.",
       "scope": "The overlay explains missing UI events/active-window selectors; no production authentication bypass or automatic app-assertion retry"
+    },
+    {
+      "run_id": 40362977741,
+      "commit": "b2ae89d",
+      "passed": "Actual initialization and verified master save, both entry-mode cold starts, API key persistence, requested-only vault load and GUI create",
+      "failed_step": "CDP page screenshot timed out; Android physical screenshot was all black",
+      "root_evidence": "Local official AOSP ATD34 system.img contains debug.hwui.drawing_enabled=0; AOSP Android14 Properties.h defines this flag and Properties.cpp uses it for DrawingEnabled",
+      "fix": "Enable actual HWUI drawing on the dedicated emulator before launching the cleared app; capture real Android screenshots through Playwright device API and reject images without rendered pixel variation",
+      "scope": "Functional checks were not failed; no full acceptance package until screenshot and all later behavior checks complete"
     }
   ]
 }
