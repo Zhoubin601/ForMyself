@@ -1,0 +1,100 @@
+{
+  "pageErrors": [],
+  "startedAt": "2026-10-26T16:35:23.814Z",
+  "deviceSerial": "emulator-5554",
+  "uiInput": "Playwright Android UiAutomator touch; CDP DOM filling/inspection and state assertions",
+  "webviewTransport": "Isolated ADB forward + Playwright Chromium CDP",
+  "functionalTestDisplay": "480x800, density160, prefers-reduced-motion:reduce; browser QA separately uses normal motion",
+  "scriptSha256": "f738b95dd7fb38dad6cb17355c6a97f208d19060597af698b2ece0bf17f928bb",
+  "apkSha256": "236a5653ae9822cc9134b009e6be1395e7a9ab0d8491fd70ff71540cee64fd11",
+  "api": "34",
+  "testWebViewFlags": "",
+  "webview": "Current WebView package (name, version): (com.google.android.webview, 113.0.5672.136)",
+  "emulatorScreenOffTimeout": "2147483647",
+  "error": "Error: androidDevice.tap: java.lang.RuntimeException: Timed out waiting for selector",
+  "failedView": {
+    "view": "home",
+    "requireAppUnlock": true,
+    "hasMasterPassword": false,
+    "authLoadError": "",
+    "locked": true,
+    "status": {
+      "passwords": "idle",
+      "chat": "idle"
+    },
+    "sessionRevision": 0,
+    "credentialPresent": false,
+    "apiKeyStatus": "empty",
+    "visibility": "visible",
+    "unlockButtonDisabled": false,
+    "enteredPasswordMatches": true,
+    "unlockMarks": [],
+    "nativeUrls": []
+  },
+  "nativeEventDiagnostics": {
+    "url": {
+      "protocol": "formyself:",
+      "host": "",
+      "path": "//open/todo"
+    },
+    "rootMounted": true,
+    "rootUnmounted": false,
+    "mountHooks": 1,
+    "header": {
+      "name": "App",
+      "methods": [
+        {
+          "name": "toggleBackButtonHandler",
+          "rtype": "promise"
+        },
+        {
+          "name": "getState",
+          "rtype": "promise"
+        },
+        {
+          "name": "getInfo",
+          "rtype": "promise"
+        },
+        {
+          "name": "removeAllListeners",
+          "rtype": "promise"
+        },
+        {
+          "name": "getLaunchUrl",
+          "rtype": "promise"
+        },
+        {
+          "name": "checkPermissions",
+          "rtype": "promise"
+        },
+        {
+          "name": "requestPermissions",
+          "rtype": "promise"
+        },
+        {
+          "name": "exitApp",
+          "rtype": "promise"
+        },
+        {
+          "name": "removeListener"
+        },
+        {
+          "name": "getAppLanguage",
+          "rtype": "promise"
+        },
+        {
+          "name": "addListener"
+        },
+        {
+          "name": "minimizeApp",
+          "rtype": "promise"
+        }
+      ]
+    }
+  },
+  "consoleWarnings": [
+    "Error injecting safe area CSS: TypeError: Cannot read properties of null (reading 'style')\n    at <anonymous>:2:28",
+    "Error injecting safe area CSS: TypeError: Cannot read properties of null (reading 'style')\n    at <anonymous>:2:28",
+    "Error injecting safe area CSS: TypeError: Cannot read properties of null (reading 'style')\n    at <anonymous>:2:28"
+  ]
+}
