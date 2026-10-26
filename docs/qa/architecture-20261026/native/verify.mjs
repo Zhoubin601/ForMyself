@@ -146,10 +146,14 @@ try {
   results.chatSendReply = true; await page.screenshot({path:resolve(directory,'native-chat.png')})
   await checkpoint('Chat checked')
   const taskId = await evaluate(page,"await stores.get('todo').add({title:'合成深链待办',startDate:'2026-10-26',recurrence:{type:'none'}});return stores.get('todo').snapshot.tasks.find(t=>t.title==='合成深链待办').id;")
-  await shell(`am start -n ${pkg}/.MainActivity -a android.intent.action.VIEW -d 'formyself://open/todo?item=${taskId}&date=2026-10-26'`)
+  results.nativeAppProbe = await evaluate(page,`window.__qaNativeUrlEvents=[];const cap=window.Capacitor,app=cap?.Plugins?.App;
+    const info={platform:cap?.getPlatform?.(),header:(cap?.PluginHeaders||[]).some(h=>h.name==='App')?'present':'missing'};
+    try{window.__qaNativeUrlProbe=await app.addListener('appUrlOpen',event=>window.__qaNativeUrlEvents.push(event.url));info.listener='registered'}catch(error){info.listener=String(error)}return info;`)
+  results.deepLinkCommand = (await shell(`am start -n ${pkg}/.MainActivity -a android.intent.action.VIEW -d 'formyself://open/todo?item=${taskId}&date=2026-10-26'`)).toString().trim()
   await waitState(page,`return stores.get('settings').currentView==='todo'&&stores.get('settings').todoTarget.item==='${taskId}'`)
   results.nativeDeepLink = await evaluate(page,`return stores.get('settings').todoTarget.item==='${taskId}';`)
   await checkpoint('Native deep link checked')
+  await evaluate(page,"await window.__qaNativeUrlProbe?.remove();return true;")
   await evaluate(page,"stores.get('settings').autoLockDelaySeconds=0;return true;")
   await shell('input keyevent 3')
   await waitState(page,"return Object.values(stores.get('protectedAccess').status).every(x=>x==='idle')&&!stores.get('auth').savedMasterPwd&&stores.get('chat').messages.length===0",{polling:500})
@@ -217,7 +221,8 @@ try {
 } catch(error) {
   results.error=String(error)
   if (activePage && !activePage.isClosed()) {
-    results.failedView = await evaluate(activePage,"return {view:stores.get('settings').currentView,locked:stores.get('auth').isLocked,status:stores.get('protectedAccess').status};").catch(()=>null)
+    results.failedView = await evaluate(activePage,"return {view:stores.get('settings').currentView,locked:stores.get('auth').isLocked,status:stores.get('protectedAccess').status,sessionRevision:stores.get('auth').sessionRevision,credentialPresent:Boolean(stores.get('auth').savedMasterPwd),apiKeyStatus:stores.get('settings').apiKeyStorageStatus,nativeUrls:window.__qaNativeUrlEvents||[]};").catch(()=>null)
+    results.consoleWarnings = await activePage.consoleMessages().then(messages=>messages.filter(m=>['warning','error'].includes(m.type())).slice(-12).map(m=>m.text().slice(0,500))).catch(()=>[])
     await activePage.screenshot({path:resolve(directory,'playwright-failure.png'),timeout:5000}).catch(()=>{})
   }
   const crash = (await shell('logcat -b crash -d -t 120').catch(()=>Buffer.from(''))).toString()
@@ -226,6 +231,8 @@ try {
   console.error('Native acceptance progress:',JSON.stringify(results))
   const processState = (await shell(`pidof ${pkg}; logcat -d -t 250`).catch(()=>Buffer.from(''))).toString().split('\n').filter(line=>/^\d/.test(line)&&(!line.includes(' ' )||/ActivityManager.*Killing|ActivityManager.*has died|Finishing|Render process|chromium.*ERROR|Capacitor.*Error/.test(line))).slice(-20).join('\n')
   console.error('Native process diagnostics:',processState)
+  const intents = (await shell('dumpsys activity activities').catch(()=>Buffer.from(''))).toString().split('\n').filter(line=>line.includes(pkg)||line.includes('mIntent')).slice(-15).join('\n')
+  console.error('Native intent diagnostics:',intents)
   if(summary)console.error(summary)
   await writeFile(resolve(directory,'playwright-attempt.json'),JSON.stringify(results,null,2)+'\n')
   throw error

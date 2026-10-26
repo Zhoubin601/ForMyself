@@ -73,6 +73,13 @@
       "result": "The corrected waits exposed an API-key cold-start assertion failure, so no acceptance package was produced",
       "driver_issue": "The fixture waited for ordinary stores but not settings initialization; API-key loading could still overwrite an early direct fixture assignment",
       "fix": "Include settings.isDataLoaded in startup readiness and verify native API-key saved status before any force-stop; retain the cold-start value assertion"
+    },
+    {
+      "run_id": 40340942664,
+      "commit": "941291d",
+      "passed": "Native initialization, verified API-key save, both entry-mode cold starts, API-key readback, requested-only vault load/create, and mocked chat reply",
+      "failed_step": "Native deep-link route never changed from chat before the 120s assertion deadline",
+      "next_probe": "Retain am-start output, register an independent App URL event observer, and collect actual Activity intent plus application console warnings; do not replace product navigation with a test implementation"
     }
   ]
 }
