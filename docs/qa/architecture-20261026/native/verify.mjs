@@ -41,7 +41,7 @@ const attach = async () => {
   const port = stdout.trim()
   if (!/^\d+$/.test(port)) throw Error('Invalid isolated ADB forwarding port')
   forwardPorts.push(port)
-  const browser = await chromium.connectOverCDP(`ws://127.0.0.1:${port}/devtools/browser`,{timeout:120000})
+  const browser = await chromium.connectOverCDP(`ws://127.0.0.1:${port}/devtools/browser`,{timeout:120000,noDefaults:true})
   browserConnections.push(browser)
   const context = browser.contexts()[0]
   const page = context.pages()[0] || await context.waitForEvent('page')

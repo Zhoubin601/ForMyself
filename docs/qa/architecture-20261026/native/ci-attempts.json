@@ -28,6 +28,14 @@
       "passed": "Web quality, Android build/instrumentation including actual widget completion/reversal, required-entry cold-start state",
       "failed_step": "Experimental Android WebView page connection closed while waiting to click unlock; Android crash buffer supplied no cause",
       "fix": "Use isolated ADB forwarding with standard Playwright Chromium CDP, retain process/activity diagnostics; no automatic application-crash retry"
+    },
+    {
+      "run_id": 40289457400,
+      "commit": "ddceac8",
+      "passed": "Web quality and Android instrumentation",
+      "failed_step": "Standard CDP attachment asked WebView for unsupported Browser.setDownloadBehavior",
+      "reason": "WebView supports page automation but not full browser context management",
+      "fix": "Use connectOverCDP noDefaults:true and explicit socket/session cleanup"
     }
   ]
 }
