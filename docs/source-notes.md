@@ -1045,3 +1045,12 @@ F：原稿八条验收各丢首字，JSON示例语法不合法，裸feature路�
 原PR修订提交 `f13dee7e849dadcf1cd1520d95334bf6ae138f0a` 已普通推送到原head分支，仅修改技术设计文档。Kanata本地快进纳入原PR及修订，main未改动。完整发现、核对方法、命令、合并建议与未覆盖项见 [审查记录](20261027-kanata-pr2-review-v1.md)。本轮新增了该报告和技术设计入口，未重新生成P0–P7计划。
 
 补充格式核对：三份原始TXT纳入暂存后，全量 `git diff --cached --check` 报告原文CRLF、尾空格及尾空行，未修改raw来消除提示；修订Markdown和忽略规则范围单独检查通过。原PR修订仍仅一份文档，GitHub实时确认head=f13dee7、open、merged=false、base/main未变。
+
+
+## 2026-10-28 Kanata 决策覆盖与远端文档工作记录
+
+- **用户直接确认**：旧「温馨小家」数据处理选 **B（永久废弃并清理旧业务数据）**；内置预设选 **A（完整阿拜多斯对策委员会五人：小鸟游星野、砂狼白子、十六夜野宫、黑见芹香、奥空绫音，附群聊、世界书、初始关系）**；要求“制定方案写入 kanata 分支”。这些是新产品范围决定，不是当次允许擦除设备的实时操作指令。
+- **远端检查**：2026-10-28 读取 Zhoubin601/ForMyself 的 Kanata 分支，提交基线 e4a54cca5ebc4c28129613cf5dbde3b081883be0；审查根目录 AGENTS/架构规范、docs/plan、docs/questions、docs/analysis-notes 和 src/features/chat/chatRecords.js/chatStorage.js/chatPersistence.js、src/platform/storage/keys.js、src/features/chat/chatProactive.js、src/services/fullBackup.js、src/application/backupParticipants.js 等当前源码。未访问个人真实聊天或备份。
+- **静态事实**：旧 chat v4、旧 warm-home-v1.enc/.tmp/.bak、my_chat_recovery_encrypted_v1、旧通知频道、完整备份 v12 实际仍存在；新清理协调器/五人预设尚未实现。旧恢复协调器、全局配置与其他模块须保护。
+- **新产物**：[技术设计 v2](20261028-kanata-clean-start-and-abydos-preset-v2.md)；同步补记分析/问题/计划入口。raw/ 三份用户材料和 2026-10-27 P0 原始记录保留，历史“旧迁移”要求由新决策覆盖。
+- **执行范围**：此次仅通过 GitHub 写入 Kanata 的文档；不修改 src、依赖、锁文件或 Android，不删除设备数据，不合并或推送 main，不声称 P1 及 Android 测试通过。
