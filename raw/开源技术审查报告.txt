@@ -1,0 +1,1011 @@
+# 《彼方 · Kanata》开源技术审查报告 
+
+**审查日期：2026 年 10 月 27 日**
+
+**目标项目：** [Zhoubin601/ForMyself](https://github.com/Zhoubin601/ForMyself?utm_source=chatgpt.com)
+
+**审查方式：** 获取仓库实际目录树、源码文件和关键函数，检查功能实现、技术栈及许可证。
+
+**审查边界：** 这次完成的是静态源码审查，尚未在 Android 中移植这些项目，也没有执行它们的完整测试。因此，“技术上可行”和“已经完成兼容性测试”必须区分。
+
+## 一、项目整体审查结果
+
+| 项目 | 主要能力 | 技术栈 | 许可证 | 采用建议 |
+|---|---|---|---|---|
+| SillyTavern | 角色卡、世界书、群聊 | JavaScript、Node.js | AGPL-3.0 | 参考设计，自主实现 |
+| MaiBot | 发言决策、主动互动、记忆 | Python | GPL-3.0 | 参考算法，自主实现 |
+| Mem0 | 记忆提取、检索、更新 | Python | Apache-2.0 | 参考记忆机制 |
+| LumiMuse | 角色管理、记忆队列、检索、溯源 | TypeScript、Next.js | MIT | 优先参考部分实现 |
+| HerAndHim | 虚拟生活、日程、情绪、关系 | Python | AGPL-3.0 | 参考业务规则 |
+| MIRROW | 行为调度、记忆与世界认知 | Python 为主 | MIT | 选择性研究 |
+| MoFox_Bot | 互动决策、记忆图谱、关系 | Python | GPL-3.0 | 辅助参考，低优先级 |
+
+上述许可证来自当前 GitHub 仓库元数据。**直接复制 GPL/AGPL 代码与借鉴算法思路后独立实现，涉及不同的许可证义务**；如果以后要发布应用，需要按实际使用方式和依赖进行许可证审查。
+
+其中，我最推荐重点研究的是 **SillyTavern、MaiBot、LumiMuse 和 HerAndHim**。
+
+---
+
+# 二、SillyTavern：角色卡、世界书与群聊
+
+**仓库：** [SillyTavern](https://github.com/SillyTavern/SillyTavern?utm_source=chatgpt.com)
+
+**审查版本：** `06bde939`
+
+**结论：非常值得参考，但不建议整体移植。**
+
+## 2.1 角色卡导入确实有完整实现
+
+找到了三个关键源码位置。
+
+### ① 角色卡解析
+
+**文件：**
+
+`src/character-card-parser.js`
+
+**关键函数：**
+
+```javascript
+read(image)
+write(image, data)
+parse(cardUrl, format)
+```
+
+实际实现了 PNG 图片中角色卡元数据的读取和写入。
+
+其中：
+
+- 读取 PNG 的 `tEXt` 数据块。
+- 支持 `chara` 和 `ccv3` 元数据标识。
+- 同时存在时优先读取 `ccv3`。
+- 对 Base64 编码的数据进行解码。
+- 写入时可以生成 V2 和 V3 角色元数据。
+
+[查看解析器源码](https://github.com/SillyTavern/SillyTavern/blob/06bde939fb1e9c4c8d8641d810f0a916b5bce127/src/character-card-parser.js?utm_source=chatgpt.com)
+
+**对彼方的价值：**
+
+这证明我们想要的“导入酒馆 PNG 角色卡”有明确的技术实现路径。
+
+但 SillyTavern 的这个文件使用 Node.js 的 `fs` 和 `Buffer`，并不是可以直接塞进 Capacitor WebView 的浏览器代码。
+
+所以建议：
+
+**参考 PNG 元数据解析方式，在彼方中使用兼容浏览器和 Android 的实现。**
+
+### ② 角色卡格式验证
+
+**文件：**
+
+`src/validator/TavernCardValidator.js`
+
+**关键函数：**
+
+```javascript
+validate()
+validateV1()
+validateV2()
+validateV3()
+```
+
+源码中有针对 V1、V2、V3 的格式检查。
+
+能够看到对以下字段的验证：
+
+```text
+name
+description
+personality
+scenario
+first_mes
+mes_example
+alternate_greetings
+system_prompt
+post_history_instructions
+character_book
+extensions
+```
+
+[查看角色卡验证器](https://github.com/SillyTavern/SillyTavern/blob/06bde939fb1e9c4c8d8641d810f0a916b5bce127/src/validator/TavernCardValidator.js?utm_source=chatgpt.com)
+
+**对彼方的价值：**
+
+我们可以明确建立角色卡标准化模型，而不是简单读取几个字段后，把剩下的数据全部丢掉。
+
+建议为每张卡同时保留：
+
+```text
+原始角色卡
+    ↓
+格式识别与验证
+    ↓
+标准化角色设定
+    ↓
+彼方角色库
+```
+
+**原始数据必须保留。**
+
+这样以后即使支持更多字段，也可以重新解析，不必重新导入角色卡。
+
+### ③ 多格式导入
+
+**文件：**
+
+`src/endpoints/characters.js`
+
+**关键实现：**
+
+```javascript
+importFromJson()
+importFromPng()
+importFromYaml()
+importFromCharX()
+importFromByaf()
+```
+
+对应的导入路由：
+
+```javascript
+router.post('/import', ...)
+```
+
+其格式分派支持：
+
+```text
+json
+png
+yaml
+yml
+charx
+byaf
+```
+
+[查看导入实现](https://github.com/SillyTavern/SillyTavern/blob/06bde939fb1e9c4c8d8641d810f0a916b5bce127/src/endpoints/characters.js?utm_source=chatgpt.com)
+
+不过，我不建议彼方第一版就把所有格式做完。
+
+**第一版支持常见的 PNG 和 JSON 角色卡即可。**
+
+其他格式可以等基础功能稳定后再扩展。
+
+---
+
+## 2.2 世界书功能确实值得借鉴
+
+**文件：**
+
+`public/scripts/world-info.js`
+
+这是一个体量很大的源码文件，包含世界书的激活、检索、排序和注入逻辑。
+
+我找到了两个关键函数：
+
+```javascript
+getWorldInfoPrompt(...)
+checkWorldInfo(...)
+```
+
+尤其值得研究：
+
+```javascript
+checkWorldInfo(chat, maxContext, isDryRun, ...)
+```
+
+实际源码中会根据模型上下文大小计算世界书预算：
+
+```javascript
+budget = Math.round(world_info_budget * maxContext / 100)
+```
+
+如果配置了世界书 Token 上限，还会进一步限制预算。
+
+它还会检查世界书条目的激活条件，而不是每次把所有世界书内容加入提示词。
+
+[查看世界书核心源码](https://github.com/SillyTavern/SillyTavern/blob/06bde939fb1e9c4c8d8641d810f0a916b5bce127/public/scripts/world-info.js?utm_source=chatgpt.com)
+
+官方文档也明确说明了按关键词激活、递归激活、上下文预算，以及角色和会话专属世界书。[GitHub](https://github.com/SillyTavern/SillyTavern-Docs/blob/main/Usage/worldinfo.md?utm_source=chatgpt.com)
+
+### 适用于彼方的设计
+
+假设世界书有以下内容：
+
+```text
+阿拜多斯高中
+├── 学校历史
+├── 对策委员会
+├── 星野的背景
+├── 白子的背景
+└── 某次重要事件
+```
+
+当你与星野聊到阿拜多斯时：
+
+系统不应该无条件加载所有条目。
+
+更合理的流程是：
+
+```text
+当前聊天
+    ↓
+识别涉及的人物、地点、事件
+    ↓
+检索相关世界书
+    ↓
+检查角色知情范围
+    ↓
+按照 Token 预算选择条目
+    ↓
+加入 DeepSeek 上下文
+```
+
+但这里必须补充彼方自己的规则：
+
+**世界书条目匹配成功，不代表当前角色有权限知道它。**
+
+例如，白子知道的私人秘密，不能因为星野聊天时提到了关键词，就自动暴露给星野。
+
+这部分属于彼方独有的角色知识边界，需要自主实现。
+
+### 审查结论
+
+| 项目 | 结论 |
+|---|---|
+| 关键词激活 | 可以参考 |
+| 优先级和排序 | 可以参考 |
+| Token 预算 | 可以参考 |
+| 递归激活 | 后续再考虑 |
+| 角色专属世界书 | 可以参考 |
+| 世界间数据隔离 | 需要自主实现 |
+| 角色知情权限 | 需要自主实现 |
+
+---
+
+## 2.3 群聊机制确实存在，而且比简单轮流回复复杂
+
+**文件：**
+
+`public/scripts/group-chats.js`
+
+找到以下重要实现：
+
+```javascript
+group_activation_strategy
+activateListOrder()
+activatePooledOrder()
+activateNaturalOrder()
+generateGroupWrapper()
+```
+
+其中：
+
+```javascript
+activateNaturalOrder(...)
+```
+
+就是我们最应该研究的部分。
+
+它会综合：
+
+1. 当前消息是否提到了角色姓名。
+2. 角色是否允许连续发言。
+3. 角色自身的 `talkativeness` 参数。
+4. 随机激活与去重规则。
+
+例如：
+
+你在群聊中说：
+
+> 白子，你觉得星野今天怎么了？
+
+系统可以优先考虑白子，而不是让所有角色同时回答。
+
+[查看群聊发言策略](https://github.com/SillyTavern/SillyTavern/blob/06bde939fb1e9c4c8d8641d810f0a916b5bce127/public/scripts/group-chats.js?utm_source=chatgpt.com)
+
+**但有一个重要区别：**
+
+SillyTavern 的自然发言策略包含明确的规则和随机机制，并不能直接等同于我们之前设想的“角色根据自己的生活状态和关系自主决定是否参与”。
+
+彼方还需要结合：
+
+- 当前角色是否在场。
+- 当前活动是否允许聊天。
+- 与发言对象的关系。
+- 最近是否已经频繁发言。
+- 是否被用户 @。
+- 群聊当前是否适合插话。
+
+因此，它适合作为**群聊基础规则的参考**，而不是完整的虚拟社会决策系统。
+
+---
+
+# 三、MaiBot：群聊发言决策
+
+**仓库：** [MaiBot](https://github.com/Mai-with-u/MaiBot?utm_source=chatgpt.com)
+
+**审查版本：** `062d45cf`
+
+**许可证：** GPL-3.0
+
+**结论：非常值得研究发言调度机制，但不建议移植整个运行时。**
+
+这一部分比我原先预想的更有价值。
+
+## 3.1 找到了明确的消息触发调度器
+
+**文件：**
+
+`src/maisaka/turn_trigger/scheduler.py`
+
+**关键类：**
+
+```python
+class MessageTurnScheduler:
+```
+
+**关键方法：**
+
+```python
+schedule_message_turn()
+_evaluate()
+```
+
+源码实际实现了多阶段判定：
+
+```text
+收到消息
+   ↓
+消息防抖
+   ↓
+检查等待状态
+   ↓
+检查是否需要静默处理
+   ↓
+检查 @ 强制触发
+   ↓
+检查空闲退避
+   ↓
+动态发言门控
+   ↓
+进入回复流程或继续等待
+```
+
+[查看 MaiBot 消息调度器](https://github.com/Mai-with-u/MaiBot/blob/062d45cf8bd4272ac57d7ec03fcf405e5a458211/src/maisaka/turn_trigger/scheduler.py?utm_source=chatgpt.com)
+
+这与我们要求的群聊体验非常接近。
+
+尤其是两个设计很值得参考：
+
+**第一：不要每收到一条消息就立即调用 AI。**
+
+用户连续发送：
+
+> 星野
+
+> 你今天去哪了
+
+> 怎么这么晚才回来？
+
+系统应该把短时间内的连续消息作为一批处理。
+
+**第二：决定是否回复，与生成回复内容是两个不同阶段。**
+
+这个设计能显著改善群聊体验。
+
+---
+
+## 3.2 动态回复概率确实有源码
+
+**文件：**
+
+`src/maisaka/turn_trigger/reply_likelihood.py`
+
+**关键函数：**
+
+```python
+estimate_reply_probability(...)
+```
+
+我检查了实际输入参数。
+
+它会考虑：
+
+- 是否提及机器人。
+- 是否 @ 了其他人。
+- 是否包含问号。
+- 最近机器人自身的发言比例。
+- 最近消息数量。
+- 距离上次发言的时间。
+- 待处理消息数量。
+
+最终计算一个回复概率。
+
+[查看回复概率实现](https://github.com/Mai-with-u/MaiBot/blob/062d45cf8bd4272ac57d7ec03fcf405e5a458211/src/maisaka/turn_trigger/reply_likelihood.py?utm_source=chatgpt.com)
+
+**但这里不能照搬数值。**
+
+源码中的概率权重是根据 MaiBot 的特定数据拟合出来的。
+
+彼方的场景完全不同：
+
+MaiBot 主要处理机器人参与聊天流的情况，而彼方包含多个具有独立人格的角色。
+
+所以我们可以参考这些影响因素，但应自行定义并测试角色发言策略，不能认为直接复制概率公式就能实现自然群聊。
+
+---
+
+## 3.3 找到了真正的动态门控逻辑
+
+**文件：**
+
+`src/maisaka/turn_trigger/gates.py`
+
+**关键类：**
+
+```python
+DynamicReplyTurnGate
+```
+
+其 `evaluate()` 方法会判断是否触发 Planner。
+
+源码里有个值得注意的规则：
+
+**私聊不使用群聊的动态发言门控。**
+
+原因很合理：私聊里的用户消息通常就是直接发给当前角色的。
+
+这也适合彼方。
+
+### 对彼方的具体建议
+
+私聊：
+
+默认进入回复流程。
+
+如果开启自主生活模式，才额外检查角色是否需要延迟回复。
+
+群聊：
+
+先运行发言决策器，确定角色是否参与，再调用 DeepSeek 生成内容。
+
+角色间自主对话：
+
+另外使用世界事件调度器触发，不和普通用户群聊共用所有发言规则。
+
+这三种情况应该区分实现。
+
+---
+
+## 3.4 MaiBot 还有两个值得研究的模块
+
+**上下文压缩：**
+
+`src/maisaka/context/compaction.py`
+
+关键函数：
+
+```python
+build_context_summary(...)
+```
+
+可以看到它会保留前一次摘要、近期消息，并检查新的压缩结果是否有效。
+
+**记忆检索：**
+
+`src/maisaka/memory/heuristic_injector.py`
+
+关键方法：
+
+```python
+build_injection_message(...)
+```
+
+它会检查消息数量、触发间隔、缓存及相关记忆，在合适的时机向上下文注入记忆参考。
+
+### MaiBot 最终结论
+
+**采用方式：参考算法，使用 JavaScript 自主实现。**
+
+不建议在 ForMyself 中直接启动一套 MaiBot Python 服务。
+
+因为这会引入额外的服务运行、进程生命周期、数据同步和部署复杂度，而且不符合我们希望尽量依靠手机本地存储的目标。
+
+---
+
+# 四、长期记忆：Mem0 与 LumiMuse 对比
+
+这一部分，我反而发现 **LumiMuse 对 ForMyself 更直接有用**。
+
+原因是它采用 TypeScript，并且已经实现了不少与我们需求高度重合的记忆管理逻辑。
+
+## 4.1 Mem0：适合学习记忆操作模型
+
+**仓库：** [Mem0](https://github.com/mem0ai/mem0?utm_source=chatgpt.com)
+
+**审查版本：** `26cdefb4`
+
+**许可证：** Apache-2.0
+
+实际源码：
+
+`mem0/memory/main.py`
+
+关键类和方法：
+
+```python
+class Memory
+
+add(...)
+search(...)
+update(...)
+delete(...)
+history(...)
+```
+
+其中 `add()` 可以通过模型从消息中提取信息，并决定新增、更新或删除相关记忆。
+
+`search()` 提供查询、过滤和相关性检索能力。
+
+[查看 Mem0 记忆核心源码](https://github.com/mem0ai/mem0/blob/26cdefb46600c0fa5953c4b5ee5003c125539fc4/mem0/memory/main.py?utm_source=chatgpt.com)
+
+它非常适合参考：
+
+```text
+新增事实
+   ↓
+检索类似记忆
+   ↓
+判断是否重复或冲突
+   ↓
+ADD / UPDATE / DELETE / NOOP
+   ↓
+保存新版本
+```
+
+但我不建议第一版直接集成 Mem0。
+
+**原因：** 它的完整实现依赖 Python 运行环境、向量存储和嵌入模型等基础设施。
+
+而你已经确定所有 AI 生成任务使用 DeepSeek。我们不能默认 DeepSeek 的聊天模型同时提供所需的向量嵌入接口。
+
+因此，第一版可以先使用本地文本检索和结构化记忆筛选，之后再评估是否确实需要向量搜索。
+
+---
+
+## 4.2 LumiMuse：很适合参考彼方的记忆架构
+
+**仓库：** [LumiMuse](https://github.com/in30mn1a/LumiMuse?utm_source=chatgpt.com)
+
+**审查版本：** `313e6dee`
+
+**许可证：** MIT
+
+我找到了三个很有价值的文件。
+
+### ① 记忆提取队列
+
+`src/lib/memory-queue.ts`
+
+关键函数：
+
+```typescript
+enqueueExtraction(...)
+recoverStaleTasks()
+```
+
+源码采用持久化任务队列。
+
+它会检查正在处理的消息，避免重复排队，并支持恢复异常中断的任务。
+
+[查看记忆任务队列](https://github.com/in30mn1a/LumiMuse/blob/313e6dee58a00e747c4867c37818752a2a3aea35/src/lib/memory-queue.ts?utm_source=chatgpt.com)
+
+这个设计很适合我们的智能混合压缩。
+
+比如：
+
+```text
+聊天完成
+    ↓
+创建记忆提取任务
+    ↓
+保存任务状态
+    ↓
+调用 DeepSeek
+    ↓
+校验提取结果
+    ↓
+提交长期记忆
+```
+
+如果应用中途关闭：
+
+下次恢复时检查未完成任务。
+
+**不能因为一轮 AI 处理被打断，就永久丢失应该提取的记忆。**
+
+### ② 记忆来源追溯
+
+`src/lib/memory-source-tracking.ts`
+
+关键函数：
+
+```typescript
+invalidateMemoriesForSourceMessage(...)
+```
+
+这项实现尤其值得注意。
+
+当一条原始消息被修改或删除时，系统可以查找从这条消息生成的记忆，并将相关记忆标记为已被取代。
+
+[查看记忆溯源实现](https://github.com/in30mn1a/LumiMuse/blob/313e6dee58a00e747c4867c37818752a2a3aea35/src/lib/memory-source-tracking.ts?utm_source=chatgpt.com)
+
+这几乎就是我们之前要求的：
+
+> 原始聊天变更后，不能留下错误的长期记忆。
+
+不过，LumiMuse 这里解决的是**记忆来源失效**，不代表已经实现了彼方所要求的完整世界事件因果回滚。
+
+我们可以借鉴这个机制，进一步建立事件、消息和关系状态的依赖关联。
+
+### ③ 工作记忆检索
+
+`src/lib/memory-retrieval.ts`
+
+关键函数：
+
+```typescript
+retrieveWorkingMemoryPackage(...)
+```
+
+它会根据记忆配置决定使用哪种检索方式，并具有超时后的回退逻辑。
+
+这个设计很符合我们之前确定的：
+
+**记忆检索失败时，不能让正常聊天完全不可用。**
+
+### 一个需要注意的限制
+
+LumiMuse 的 `character-card-import.ts` 虽然也支持解析部分角色卡字段，但会把输入映射为自身的 `CharacterDraft`。
+
+这不等于它能完整无损保留所有酒馆角色卡元数据。
+
+因此：
+
+**角色卡兼容性优先参考 SillyTavern，长期记忆工程实现优先参考 LumiMuse。**
+
+这是我目前比较明确的技术判断。
+
+---
+
+# 五、HerAndHim：虚拟生活与动态关系
+
+**仓库：** [HerAndHim](https://github.com/ericwang915/HerAndHim?utm_source=chatgpt.com)
+
+**审查版本：** `08bb1c27`
+
+**许可证：** AGPL-3.0
+
+这一项目确实有我们需要的部分机制。
+
+## 5.1 角色每日生活计划
+
+**文件：**
+
+`herandhim/scheduler/planner.py`
+
+**关键函数：**
+
+```python
+generate_daily_plan(...)
+```
+
+实际实现会结合角色设定、个人资料和时间等上下文生成当日计划，并保存下来影响之后的聊天。
+
+[查看每日生活计划实现](https://github.com/ericwang915/HerAndHim/blob/08bb1c2740eba1e7cfe25378ea1adca34a9b5568/herandhim/scheduler/planner.py?utm_source=chatgpt.com)
+
+这比每次聊天都随机编造一句“我今天出门了”更有连续性。
+
+对于彼方，我建议参考这种思路：
+
+```text
+角色核心人格
+      +
+世界规则
+      +
+最近经历
+      +
+当前情绪
+      +
+现实日期
+      ↓
+生成当天的合理日程
+```
+
+但彼方有多个角色，因此还要增加角色活动之间的协调。
+
+例如，星野和白子约定下午四点一起训练，不能在她们各自的日程中产生冲突。
+
+---
+
+## 5.2 关系状态不是只有好感度
+
+**文件：**
+
+`herandhim/core/memory/emotional_graph.py`
+
+**关键类：**
+
+```python
+RelationshipStore
+```
+
+源码将关系拆分为几个维度：
+
+```text
+relationship_temperature
+trust
+intimacy
+understanding
+```
+
+而不是只有一个简单的好感度数值。
+
+[查看关系状态实现](https://github.com/ericwang915/HerAndHim/blob/08bb1c2740eba1e7cfe25378ea1adca34a9b5568/herandhim/core/memory/emotional_graph.py?utm_source=chatgpt.com)
+
+这是值得参考的。
+
+但是对于彼方，我建议：
+
+**数值只作为内部辅助状态，不要让数值直接决定关系名称。**
+
+例如，信任度提高，不意味着角色一定会发展恋爱关系。
+
+关系类型还必须结合角色背景、互动经历及双方意愿。
+
+---
+
+## 5.3 主动消息
+
+**文件：**
+
+`herandhim/scheduler/proactive.py`
+
+**关键类：**
+
+```python
+ProactiveMessenger
+```
+
+实际存在免打扰、每日上限、情绪相关的主动消息判断等机制。
+
+不过，它依赖服务器端的定时调度方式。
+
+**这部分不能直接照搬到手机应用。**
+
+彼方之前已经确定：
+
+手机不运行时不要求 AI 持续生成内容；恢复运行后才进行适度补算。
+
+所以我们只参考它的主动消息判断规则，不采用必须常驻运行的架构。
+
+---
+
+# 六、MIRROW 和 MoFox_Bot：作为辅助参考
+
+## MIRROW
+
+**仓库：** [MIRROW](https://github.com/EvelynnYu/MIRROW?utm_source=chatgpt.com)
+
+**许可证：** MIT
+
+找到了两个相关文件：
+
+`ai-chat-backend/behavior_scheduler/scheduler.py`
+
+存在：
+
+```python
+class BehaviorScheduler
+```
+
+`ai-chat-backend/cognition/world_evolution.py`
+
+存在：
+
+```python
+isolate(...)
+```
+
+后者值得研究：它会为世界认知候选内容保留证据来源，不直接把模型生成的候选内容提升为已确认事实。
+
+这与我们要求的“世界事件不能无依据地自动改写设定”比较一致。
+
+但 MIRROW 的系统规模和依赖较复杂，当前不适合作为彼方的基础框架。
+
+**建议只研究行为调度和认知证据处理。**
+
+## MoFox_Bot
+
+**仓库：** [MoFox_Bot](https://github.com/MoFox-Studio/MoFox_Bot?utm_source=chatgpt.com)
+
+当前仓库已归档。
+
+能看到的相关源码包括：
+
+`src/person_info/relationship_manager.py`
+
+`src/chat/interest_system/interest_manager.py`
+
+`src/plugins/built_in/affinity_flow_chatter/`
+
+这些是关系管理、聊天兴趣和主动互动的研究候选。
+
+但考虑到它已归档、使用 Python 且采用 GPL-3.0，我不建议将其作为彼方的核心依赖。
+
+---
+
+# 七、结合 ForMyself，最终采用什么方案？
+
+现在可以把模块与参考项目真正对应起来了。
+
+| 彼方模块 | 首选参考项目 | 具体源码依据 | 采用方式 |
+|---|---|---|---|
+| 酒馆角色卡导入 | SillyTavern | `character-card-parser.js`、`TavernCardValidator.js` | 自主实现兼容解析 |
+| 世界书 | SillyTavern | `world-info.js` | 参考算法 |
+| 群聊发言 | MaiBot + SillyTavern | `scheduler.py`、`group-chats.js` | 自主实现 |
+| 记忆提取与更新 | Mem0 | `memory/main.py` | 参考算法 |
+| 记忆任务与恢复 | LumiMuse | `memory-queue.ts` | 参考实现 |
+| 记忆溯源 | LumiMuse | `memory-source-tracking.ts` | 参考实现 |
+| 记忆检索 | LumiMuse | `memory-retrieval.ts` | 参考实现 |
+| 每日生活 | HerAndHim | `scheduler/planner.py` | 参考业务逻辑 |
+| 主动私聊 | HerAndHim + ForMyself | `scheduler/proactive.py`、现有 `chatProactive.js` | 扩展现有实现 |
+| 动态关系 | HerAndHim | `emotional_graph.py` | 参考状态模型 |
+| 世界认知证据 | MIRROW | `cognition/world_evolution.py` | 参考规则 |
+| 多世界隔离 | ForMyself 自主设计 | 现有模块与存储架构 | 自主实现 |
+| 离线世界补算 | ForMyself 自主设计 | 生命周期与本地存储基础 | 自主实现 |
+| 事件因果与回滚 | ForMyself 自主设计 | 现有恢复协调器作为基础参考 | 自主实现 |
+| 生活模块权限 | ForMyself 自主设计 | `application/companionContext.js` | 扩展现有能力 |
+| AI 使用统计 | ForMyself | `platform/ai/client.js` | 扩展现有实现 |
+
+### 这里有个特别重要的结论
+
+**彼方真正需要自主开发的核心，不是聊天窗口，而是“多角色、多世界的状态与事件协调系统”。**
+
+因为：
+
+SillyTavern 有群聊，但不负责彼方那样的长期自主虚拟生活。
+
+MaiBot 有发言决策，但不直接提供每个世界中多个独立角色的生活模拟。
+
+Mem0 有长期记忆，但不负责完整的世界历史、角色间知识权限和事件回滚。
+
+HerAndHim 有虚拟生活，但不是我们这种原生移动端多世界架构。
+
+所以不能把这些开源项目简单拼接起来，就宣称彼方完成了。
+
+---
+
+# 八、对现有 ForMyself 的三个直接修改建议
+
+通过这次源码检查，我认为应该优先确认以下三个问题。
+
+### 1. 先抽离单角色专属逻辑
+
+当前 `chatCompanion.js` 的提示词和 `chatRecords.js` 的数据结构仍明显围绕单个陪伴角色设计。
+
+正式开发时，需要将：
+
+- 角色核心人格
+- 当前世界设定
+- 角色实例状态
+- 会话类型
+- 相关记忆
+- 回复风格
+
+分别组织，再统一构建 DeepSeek 的上下文。
+
+**不要直接在现有的“小暖女朋友”提示词外面再套一层多角色提示词。**
+
+这样很容易出现角色设定相互覆盖、错误称呼和群聊人格混乱。
+
+### 2. 先确定消息与事件存储模型
+
+现有 `chatRecords.js` 的消息结构主要以 `user` 和 `assistant` 区分发言方，还不能直接表达多个独立角色的发言身份。
+
+而现有 `virtualEvents` 更偏向近期事件摘要。
+
+因此，应优先完成：
+
+```text
+世界
+ ├── 角色实例
+ ├── 会话
+ │    └── 消息
+ ├── 长期记忆
+ └── 世界事件
+      └── 事件之间的依赖关系
+```
+
+并让消息、记忆和事件都有稳定的关联标识。
+
+这是后续历史修正、记忆溯源和角色自主互动的基础。
+
+### 3. 先解决长期数据增长问题
+
+当前聊天存储采用完整加密数据快照。
+
+对于原本的单角色聊天，它可以继续使用；但彼方预计会产生大量私聊、群聊、角色间交流和世界历史。
+
+如果继续让所有聊天和世界事件都进入同一个不断增长的 JSON 快照，可能造成性能和存储压力。
+
+建议在设计阶段明确：
+
+- 会话与消息分页方案。
+- 世界与角色的独立存储边界。
+- 数据加密与索引如何兼容。
+- 备份恢复如何覆盖新增数据。
+- 旧聊天如何无损迁移。
+- Android 强制结束后如何恢复未提交的任务。
+
+现有的备份版本兼容和受保护会话机制必须保留。
+
+---
+
+# 九、进入开发前还需要验证什么？
+
+虽然主要源码已经找到了，但我们还不能宣称这些技术方案已经通过实机验证。
+
+我建议下一步先做一轮**独立技术验证**，而不是立即开始全功能开发。
+
+| 验证项目 | 预期结果 |
+|---|---|
+| 角色卡导入 | PNG、JSON 常见 V2/V3 样例正确解析 |
+| 字段完整性 | 导入导出后，未知扩展字段不丢失 |
+| 多世界隔离 | 同一角色卡在两个世界中记忆完全独立 |
+| 群聊发言 | @角色优先，其他角色根据规则参与或沉默 |
+| 记忆提取 | 同一消息不会重复提取 |
+| 记忆溯源 | 删除来源后，相关记忆能够正确失效 |
+| 长聊天 | 数千条消息不必全部加载到页面或提示词 |
+| 离线补算 | 关闭数日后重新打开，不重复生成事件 |
+| 中断恢复 | 模拟应用强制结束，待处理任务不会破坏数据 |
+| DeepSeek 统计 | 非流式和流式调用正确记录 Token |
+| 备份兼容 | 既有备份仍可导入，新增数据能够完整恢复 |
+
+这些验证要使用合成数据和隔离测试环境，不得操作真实用户资料。
+
+---
+
+# 十、最终技术结论
+
+老师，大叔现在的判断比之前更明确了。
+
+### ✅ 确定可以沿用的
+
+ForMyself 的 Vue 3、Pinia、Capacitor、现有 AI 客户端、聊天界面组件、模块注册和安全基础设施。
+
+### ✅ 值得重点吸收的
+
+**SillyTavern：** 角色卡与世界书。
+
+**MaiBot：** 群聊发言时机与动态门控。
+
+**LumiMuse：** 记忆任务队列、检索和溯源。
+
+**Mem0：** 记忆新增、更新、去重的规则。
+
+**HerAndHim：** 每日生活、主动交互和多维关系。
+
+### ❌ 不建议的
+
+直接把 SillyTavern 的 Node.js 后端、MaiBot 的 Python 机器人运行时、Mem0 的整套 Python 向量记忆服务或 HerAndHim 的常驻定时服务塞进 ForMyself。
+
+这会增加部署复杂度，也可能破坏我们已经建立的数据和安全架构。
+
+### ⭐ 最重要的决定
+
+**不移植完整项目，而是基于 ForMyself 原生实现「彼方」，以审查过的开源算法和数据模型作为参考。**
+
+这条路线既符合我们前面确定的产品需求，也更适合你现有的 Android/Web 应用。
+
+**本轮审查结论：方案有明确的源码参考和可行实现路径；还没有进行移植测试，因此不能认定已完成兼容性验证。**

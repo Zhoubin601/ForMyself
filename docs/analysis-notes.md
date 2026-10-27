@@ -1022,3 +1022,138 @@ P1修复普通Store读取失败覆盖旧数据；P2补齐加密日志与跨重�
 交付验证完成：70个本地链接、2段JS示例语法、47项源码符号和Git白名单通过；脚本不执行示例或产品写入。首次检查的摘要自链接尚未生成，检查器已调整为写出后确认自身报告，最终全部通过。规范明确生命周期allSettled不等于全成功、load可能返回false或reject、exportAll不自动flush、页面注册不自动实现设置/备份，以及旧finally加载建议已失效。已有安装包删除与其他模拟器验收资料保留；本轮没有运行设备或改动业务实现。
 
 用户后续指定说明书位于根目录，按长期开发规范维护。采用现有中文文件名作为唯一当前入口，调整内部链接和示例为根目录相对路径，清除旧output白名单并明确其他正式文件仍遵循output规则。原output同名副本未删除，历史来源与v1检查不改写；当前根目录核验写入v2，避免将历史路径证据伪装为新位置实测。
+
+
+## 2026-10-27 彼方 · Kanata P0：架构基线与拟议迁移
+
+**状态：仅审查和规划，所有新增模型、接口、v5/v13 均为设计建议，尚未实现。** 当前事实以 [本轮来源证据](source-notes.md#2026-10-27-彼方--kanata-p0本轮来源与检查证据) 的 F01–F20 为准；待决事项见 [questions](questions.md)，后续实施见 [plan](plan.md)。以下章节不改写此前历史阶段状态。
+
+### 1. 目标、资料关系及可复用边界
+
+R：需求清单要求多世界、多角色、仅文字、世界隔离、长期记忆、私聊/群聊/角色间会话、现实生活权限、事件修正、DeepSeek 统一调用与统计。不要求常驻后台、多模型路由、语音或图片 AI。角色卡头像和 PNG 元数据属于导入资料，不等于新增图片生成/理解。
+
+R/D：技术设计的 P0–P7 是工程顺序；完整需求清单的“阶段0–7”是产品功能分组，两者不是同一阶段编号。本计划采用技术设计的顺序，并明确补上生活授权、统计、普通/上帝视角等完整需求，不能以 P7 字样推定已经覆盖。
+
+F：Vue/Pinia/Capacitor 模块化单体、配置注入 AI、文件密文队列、受保护会话、备份参与者及恢复协调器有明确复用基础。已有聊天具备行为计划、记忆 upsert、轻量情绪、主动联系、延迟补话和本地通知；不能把“有基础”写成“已具备多角色自治世界”。
+
+D：继续在现有 chat 领域渐进演进，不另建与旧聊天无关的平行数据源。不把旧女朋友提示词套在任意角色外层。旧人格只作为默认小暖实例的兼容 persona，新角色人格来自卡与实例覆盖；世界规则、模式、权限和相关记忆独立组合。
+
+### 2. 缺口与风险（源码事实 + 影响 + 建议分开）
+
+| 风险 | F：已证实 | 影响 / D：拟议处理 | 验证位置 |
+| --- | --- | --- | --- |
+| K01 版本和字段损失 | F01/F05：数据 normalize 无版本分派，encrypt/decrypt 都先规范化固定字段 | 新世界/关系经过旧读写会丢失。先做严格版本入口和纯迁移，禁止用 normalizeChatData(v5) 兼容新格式；未知未来版本报错保留原字节 | P1/P2 |
+| K02 加载与恢复门禁 | F04：load 失败 finally 仍设 loaded；很多修改动作无 Store 自身 assert | canPersist=false、loadError 和外部 protectedAccess 当前提供部分保护，但不符合规范、不能供新增异步任务信赖。统一 ready=成功读取且校验、动作自身校验恢复状态；内部恢复能力分开 | P2 |
+| K03 辅助副本损坏处理 | F05：无主文件时辅助读取异常可能最终返回默认空 | 不证明用户已丢数据；需故障回归后修复“全部确实不存在”和“存在但均坏”区别，失败零写入 | P2 |
+| K04 来源和历史 | F02/F04：事件按日压缩、删消息无记忆失效联动 | 不把旧摘要还原成虚构因果；新事件账本与来源修订机制独立建立 | P1/P5 |
+| K05 单角色身份/关系 | F01/F07/F09/F10：role、scope、单头像、恋爱提示词、连续 role 折叠 | 多人可能合并发言或套错关系；新增实际 speaker 身份、定向关系、turn/generation，并让历史默认私聊保留原义 | P1/P4/P5 |
+| K06 数据增长 | F04/F10：整包快照、100 条仅 UI 切片 | 渲染切片不解决解密全量占用；先仓库契约与样本测量，真分页/分世界或数据库须另设计，不能宣称当前 JSON 已满足完整需求 | P2/P7 |
+| K07 备份协议 | F14/F15/F18：显式映射、v4 规范化、chat 判空仅消息/记忆、队列剔除 | 新实体可能丢失、空世界不能单独导出、任务重复恢复。升级格式/类型/判空/认证/说明并单独决定任务策略 | P2 |
+| K08 后台和恢复 | F08/F10/F11：部分流程仅内存链，旧 outbox 物化按计划时间 | 新任务须持久化去重、水位和真实 generatedAt/deliveredAt；恢复不全发过期问候，关闭自治期间不补算 | P4–P6 |
+| K09 权限边界 | F19：现有生活上下文无逐模块×实例三权限 | 普通/上帝视角只能影响用户查询，不能授予角色知识；检索、任务、分享都校验授权链 | P3/P4/P5/P6 |
+| K10 AI 统计与取消 | F12：只返回字符串，无 usage；ask 无 signal；回退/截断重试多次请求 | 保持旧字符串 API，增加可选 observer/元数据通道，按 attempt 统计；超时实际取消、结果核验世界/会话/权限/版本 | P4/P5 |
+| K11 外部借鉴 | R：附件报告提供固定版本/路径，但本轮未下载复核 | 自主实现为默认；直接复制或引依赖前核对实际固定源码、许可证及 WebView API，不能把附件审查当本轮通过 | P3/P5/P6 |
+
+上述是静态发现或设计缺口，P0 不新增故障探针、不修复业务、不对风险发生概率作无证据推断。
+
+### 3. D：逻辑数据模型
+
+字段为建议清单，不是当前代码签名。全局用户身份唯一；世界内的用户投影/角色认知、实例情绪、记忆和关系彼此隔离。全局角色卡共享静态定义，不共享经历。
+
+| 实体 | 拟议字段 / 所属范围 | 不变量 |
+| --- | --- | --- |
+| World | id、name、rules、revision、timeZone、lastSimulatedAt、autonomyEnabled、autonomyEnabledSince、freedom、defaultChatMode、proactive/notificationSettings | 时间水位只在事件批次持久化成功后推进；自治重开从当前时间开始，关闭区间不补算 |
+| UserProfile / WorldUserPersona | 全局真实 profile；世界内 worldId/userId、角色对用户身份理解 | 角色设定不能重写真实身份；数据访问要另外授权 |
+| CharacterCard / CardRevision | id、format/version、immutable revision、rawData/rawAssetRef、rawHash、normalizedData、extensions | 保留原始字节/未知字段；更新有差异预览；不执行卡脚本或扩展 |
+| CharacterInstance | id、worldId、cardId、cardRevision、overrides、state、personaRevision、settings | 固定引用卡版本；同步更新不覆盖实例覆盖和经历；跨世界同卡不同实例 |
+| Conversation | id、worldId、type=private/group/character、participantIds、membershipRevision、modeOverride、readState | group 只允许当前世界实例；character 会话不要求用户参与；退群后按时间和知情范围控制内容 |
+| Message | id、worldId、conversationId、role、senderType、senderId、senderNameSnapshot、content、createdAt、revision/status/type/replyTo/reactions/origin | role 供模型传输、senderId 供真实身份；引用和表情保留实际参与者；稳定排序以时间+ID |
+| Generation / Turn | id、worldId、conversationId、inputMessageIds、selectedSpeakerIds、attemptIds、bubbleIds、status、generatedAt/deliveredAt | 一次回复多个气泡是同一 turn，记忆不重复提取；重试/立即展示不产生第二次已提交发言 |
+| Memory / Summary | id、worldId、ownerType/ownerId、scope、content、semanticKey、sourceRefs[{messageId,revision}]、coveredRange、version、status、confidence/provenance、ACL、supersedes | 区分角色陈述/推测/事实；缺来源显式 unknown/legacy；语义去重至少按 world+owner+key，不跨角色合并 |
+| Relationship | id、worldId、fromEntityId、toEntityId、dimensions、type/status、revision、sourceEventIds | 有向、多维，用户端点显式类型；不因分数达到阈值强制恋爱；投影可由有效 effects 重建 |
+| LorebookEntry | id、worldId/characterInstanceId、originCardRevision、keys、content、priority、budget、visibility、revision、conflictState | 静态设定独立于动态记忆；先过滤知识权限再匹配/预算；重名冲突不覆盖 |
+| WorldEvent / EventRevision / Effect | id、worldId、participants、visibility、sourceMessageRefs、causedByEventIds、effects、status、version、effectiveAt、recordedAt、supersedes | 候选先验证再提交；依赖同世界且无环；effect 有唯一 ID 和规则版本，可审计/重放 |
+| BackgroundTask | id、worldId、instanceId/conversationId、kind、idempotencyKey、sourceRevision、state、attempt、notBefore、lease、cancelReason、resultEventIds | pending/running/succeeded/failed/cancelled；重启回收过期 lease；提交去重；恢复不直接运行未经重验任务 |
+| LifeGrant / Disclosure | moduleId、worldId、instanceId、read/remember/share、permissionRevision、recipient/scope、sourceRef、expiry、forwarding | 三权限独立，默认不分享；撤权停止新读取传播，旧记忆清理单独决定；接收方不自动有转授权 |
+| AIUsageAttempt | requestId、attemptId、parentTask/turnId、category、modelConfigId、timestamps、usage/cache、usageSource、status、priceVersion/costEstimate | 不保存 Key/完整提示词；缺 usage 不能算 0 或真实账单；失败/重试独立记录，无应用费用硬上限 |
+
+D：建议新实体主键全局唯一；所有世界实体同时带 worldId，仓库查询必须要求它，引用校验要求 worldId 一致。不要仅靠前端当前世界变量过滤。全球卡数据受同一敏感会话保护；跨世界复制只复制显式设定，不带动态数据。世界/卡/实例删除前显示引用与级联范围，使用 tombstone 或归档；卡仍有实例引用时先阻止破坏式删除，实际产品策略见 Q。
+
+### 4. D：模块职责与兼容边界
+
+- `src/features/chat/`：保留已有聊天 Store/视图/格式入口，逐步添加 world、cards、conversations、memory、lorebook、events、tasks、permissions 领域子目录及可注入 repository；这些目录均尚不存在于本次交付。
+- `src/application/`：组合世界运行时、生活模块角色解析与权限投影、AI任务归因；页面注册、受保护能力、备份、生命周期各自注册。建议保留路由 ID/Store ID/备份 ID `chat` 和旧 WarmHome 文件前缀，UI 名称可后续升级为彼方，避免旧深链失效。
+- `src/platform/storage/`：旧文件驱动与未来分片/分页接口；`src/platform/ai/` 仅处理协议、可选 usage/attempt 观测、取消和错误，不导入业务 Store。
+- `src/shared/`：稳定的日期/纯校验规则，不持有角色或全局 Store。新接口同步 `contracts.d.ts`、真实类型入口与负向类型样例。
+- D：旧 `useChatStore` 动作可在过渡期代理默认世界/默认私聊，必须只读写该投影，不能把整个新世界包降级成 v4 再保存。按需支持旧消息 role、quote/reaction、stopped、poke、unread、proactive 深链映射。
+- F：`services/aiEngine.js` 是 AI 薄转发；聊天业务已经位于 features，无 `stores/chat.js` 兼容入口。不能为不存在的旧入口发明兼容承诺。
+- D：`askAI(prompt)`、`streamAIChat(...)` 原字符串返回值保留；扩展可选 usage observer/新详细结果接口，不把调用方突然改成解构对象。一次 turn 的多次网络 attempt 分别记录，避免只计最后回复。
+
+### 5. D：v4 → 候选 v5 的逐字段迁移
+
+候选版本：聊天数据 v5、单项聊天备份 v5、完整备份 v13；三个版本空间独立。只有 P2 实际落地格式映射、类型和测试后才能称升级完成。聊天文件名中的 v1 目前是历史路径，与 payload v4 不是同一版本。
+
+| 旧字段 | 拟议映射 | 保全/来源规则 |
+| --- | --- | --- |
+| profile.companionName/Avatar | 默认“温馨小家”世界、小暖内置卡版本、默认实例；默认 private 会话 | 名称用用户现有值，不强制改回小暖；头像原数据和哈希保持 |
+| messages | 原 ID/正文/时间/status/type/origin/proactiveId → 默认会话；user 为真实用户端点，assistant 为默认实例 | 保留消息次序、replyTo 内容快照及引用、reactions actor 原语义；迁移不推断历史气泡共用 turn，标记 legacyTurnUnknown |
+| memories.scope=user/companion/relationship | 默认世界中默认实例已知的用户记忆/角色设定/两人共同经历 | 不提升到全局所有角色可读；原 key/ID/时间保留；sourceMessageId → 一条 sourceRef，原指向 assistant 时保留“旧引用”，不冒充用户事实证据 |
+| selfProfile/companionState | 默认实例稳定资料与动态状态 | 保留情绪弧、更新时间；不对旧虚拟经历赋予现实事实地位 |
+| socialCast | 默认世界 LegacySocialCast 辅助资料 | 不自动把最多三名背景人物升级为完整可聊天实例；保留 ID/traits/relationship/notes，等待显式转建 |
+| virtualEvents | 默认世界 legacySummary 记录，包括 event-archive | 保留现存摘要与人物引用，不补造已被合并的消息/原始事件/因果边/effects，不作为关系回滚依据 |
+| evolutionLog/Candidates | 默认实例演化日志/候选附来源 | 保留字段、证据日期、消息 ID、revertedAt；不是通用世界撤销 |
+| openLoops | 默认会话/实例未完话题 | 保留 ID/key/type/source/时间，不在迁移时再次按新规则清理 |
+| proactiveOutbox/followupOutbox | 仅“本机升级”保留旧任务正文、时间、ID/notificationId 与绑定 | 已过期的按升级后策略重验；通知无权限不丢正文；任务不跨世界。备份导入原本无这些任务，不凭空重建 |
+| proactiveSettings/realismSettings/readState | 默认世界/实例/会话对应配置 | 原未读边界保留，不把旧消息变成新未读；warmHomeEnabled/PausedAt 原值独立保留，映射规则见 Q |
+
+完整性针对**升级前实际可读取的原始记录**，不承诺恢复已经被历史规范化丢掉的内容。D：迁移前保留原始密文和解密后只在受保护内存中的原始结构，不能先套有截断/去重副作用的 v4 normalize 再宣称无损。
+
+### 6. D：迁移执行与失败恢复协议
+
+1. **只读识别**：检查全量恢复日志门禁、会话与旧 pending 保存；有未完成恢复先按旧兼容协议 recover，不在混合状态启动迁移。识别明确不存在、合法 v1–v4、当前 v5、未知版本、坏密文/坏 JSON；未知/损坏失败零写入。
+2. **纯变换**：在内存建立目标、migrationVersion/sourceDigest/ID 映射/校验摘要。已有 ID 一律保留；缺 ID 用稳定源内容+原序号和固定迁移命名空间产生，不用 Date.now/Math.random。相同来源重复运行目标一致；跨不同备份冲突必须另分命名空间，不按姓名合并。
+3. **语义核验**：校验各集合条数、字段投影、正文哈希、ID/引用/时间/已读边界/设置；合法旧字段不裁剪。重复 ID、非法时间、孤儿引用、未知扩展进入迁移诊断/保留区并中止自动提交或供用户决定，不静默删记录凑成功。
+4. **可恢复提交**：继续使用文件临时读回与密文队列。建议 P2 将迁移包装进可辨认的加密恢复操作；existing restoreCoordinator 的 validate/capture 会规范化旧数据，不能原样直接拿来保存“原始 v4 回滚副本”。需显式保留 source 格式/密文、目标格式、阶段标记与摘要，设计兼容日志适配后才实现；不把 P0 描述成已经可调用的接口。
+5. **阶段标记**：prepared → targetWrittenAndVerified → committed → cleanup。目标主文件读回、解密、全量引用校验通过后写提交标记；各持久化步骤故障注入。提交前重启能恢复旧 source，提交后重启坚持 target；无法判定或回滚失败维持 blocked，保留材料。原始源副本不因滚动 bak 被立即覆盖，只在确认目标稳定后按保留政策清理。
+6. **幂等和竞态**：全程阻止普通编辑/改密/其他恢复/任务提交；重启按 sourceDigest 与 operationId 续作或回退，不再创建默认实体；密文恢复副本的 baseFingerprint、目标版本与主文件一致后方可重放。需要真实产品适配器测试，不能只验证纯函数。
+7. **发布回退**：新应用读旧数据/备份是目标；旧应用不具备读取 v5/v13 的能力，尤其会被旧规范化剥掉新字段。因此不承诺安装旧版后安全编辑新数据。回退前先用支持新格式的版本导出并核验旧源恢复点、结清恢复日志；不通过降级/删除日志/卸载修复。
+
+### 7. D：备份兼容矩阵与任务策略
+
+| 输入/路径 | 拟议行为 | 必须保留的语义 |
+| --- | --- | --- |
+| 聊天单项 v1–v4 | 保留旧解密封装 → 严格旧格式解析 → 同一纯迁移 → 新实体校验 | overwrite 与 merge 分别验收；不直接过新旧通吃且丢字段的 normalize |
+| 聊天候选 v5 | 包含所有世界、卡原文/头像、实例、消息、记忆、关系、世界书、事件、授权和必要索引 | 不能仅消息/记忆数量判断“空”；schema 拒绝未知未来版本 |
+| 完整 v1–v12 | 继续由版本适配器处理其余模块，chat 存在时迁移 | v1/v2 没 chat 是当前覆盖恢复的空聊天语义；缺 todos 不恢复它；不能趁升级静默保留/删除其他模块 |
+| 完整候选 v13 | 在 data.chat 包含完整新领域，优先保留单 chat 参与者以降低遗漏风险 | build/normalize/counts/parts、DTO、注册器 validate、设置映射/文案一起更新，不假设注册自动升级文件格式 |
+| 恢复日志旧 v1 / 新候选 | 先解析并恢复旧未完成操作，再进入迁移；新日志显式版本/操作类型 | AES-GCM 日志与旧 CryptoJS 备份各自兼容；不得共用版本号含义 |
+| 世界导入合并 | 按来源 ID/迁移来源摘要去重；同 ID 异内容有冲突预览或显式新世界映射 | 全图重映射消息/来源/effect/task/授权引用，不按同名角色误合并 |
+| 单项/完整备份中的任务 | 建议保留审计/已提交结果与必要恢复描述，丢弃运行 lease；主动/延迟发送默认不重放，需重验后用户启用 | 本机升级保任务，跨设备恢复不自动发送。任务具体备份范围仍为 Q04；不得把建议写成用户已确认 |
+
+备份会包含敏感角色原始资料/生活授权，应沿既有加密与租约。全量恢复由产品实际协调器负责，先验证全部输入、flush/capture 后应用；单项复杂多实体恢复也需自己的可恢复操作或复用协调能力，不能沿旧 singleImport 的局部覆盖直接假定事务。API Key 仅沿现有设置备份加密路径，不进入角色卡、消息、事件或统计。
+
+### 8. D：记忆、权限、事件与自治的一致性
+
+- L0=原始消息（默认不自动删除）；L1=近期原文窗口；L2=带覆盖范围和版本的情节摘要；L3=可编辑/去重/冲突的长期事实候选；L4=从有效事件与 effects 生成的世界状态。世界书是另一路静态设定，不以模型经历改写它。
+- 所有检索先以 worldId、角色身份、source visibility、LifeGrant 过滤，再相关性排序与 Token 预算。检索失败退回已授权近期消息，不能以“兜底”加载全部历史。摘要/提取失败保留原文和旧有效结果。
+- 消息修订/删除使依赖该 revision 的记忆、摘要、任务和事件进入 stale/needsReview；不是把所有旧来源永久当真实。原文手动清理前说明衍生内容的保留与失效；完整删除语义待确认。
+- event candidate → 校验来源/参与者/权限/依赖无环/expectedRevision → 单批提交 event+effects+关联 message/memory/task 结果。AI 只提出内容；关系更新由版本化规则执行，不由模型任意写数值。
+- 撤销前计算依赖闭包并展示影响；以 tombstone/修订保留审计，基于未撤销 effects 重建相应投影，再评估后续依赖。不能减回旧关系数值覆盖后来合法互动；依赖不明确的事件 needsReview，暂停依赖它的任务，等待用户决定。
+- 普通视角查询只能返回公开摘要、用户参与消息及授权分享；上帝视角可管理隐藏记录，不能将这些内容自动写入角色提示词。分享带来源和接收范围，不默认允许再转发。
+- 世界自治、角色主动私聊、本地通知三开关独立。离线推进有上限、稳定时间窗去重键、批量提交后推进水位；时区/时钟倒退不重复生成，跨度过长做有限摘要，不伪造实时发送时间。自主对话上限0只生成事件、不生成完整对话场次。
+- 自治关闭时记录停止区间，重开以当前时间建立新水位；主动联系保持独立。角色日程冲突、地点互斥和共同活动需代码约束，不仅依赖 prompt。
+
+### 9. D/Q：规模路线与待决策
+
+先沿现有加密文件建立 repository/版本入口并量测，不在 P0 选择 SQLite 或更改加密封装。UI 切片、提示词窗口控制、磁盘分页是三件不同的事。完整需求明确要求分页/查询/归档；若整包 JSON 不能达到接受指标，必须独立设计分世界/分会话分片或加密数据库、索引泄露边界、改密和全备迁移，再完成规模验收，不能以“以后优化”宣布需求完成。
+
+拟测合成规模：1/5/20 世界，1k/10k/100k 消息，加入卡原文/头像/事件/记忆，分别测冷启动解密、保存、检索、分页、全备、改密峰值内存与耗时，记录设备/WebView/样本/中位数/p95。数量和允许阈值是建议，真实使用规模与验收上限资料未提供。
+
+尚待决定：卡版本同步/删除政策、权限与旧开关映射、任务备份政策、删除与衍生内容清理、历史冲突确认流程、性能及 Token/群聊/自治默认值、DeepSeek 旧自定义配置迁移。P0 可在这些未知下完成规划，后续仅在对应阻塞点前确认，不在本轮实施猜测。
+
+
+## 2026-10-27 Kanata PR #2 审查结论更新
+
+本轮按现有 [技术设计](20261027-kanata-technical-design-v1.md) 与原TXT逐段核对，没有另写计划。八条验收缺字、JSON及占位符格式已修正；原七章和六组总控提示词内容保留。补充版本候选、能力分别注册、严格版本迁移、恢复与事件撤销区分、旧outbox及AI字符串接口边界后，未发现与当前架构规范的直接冲突。
+
+建议可将修订版作为纯文档PR交由用户决定合并；不等于确认全部实现细节或应用测试通过。已有P0模型/迁移分析和Q01–Q12保留，P1未开始。用户已授权本轮文档提交推送，原PR和Kanata同步，main不合并。证据见 [PR审查记录](20261027-kanata-pr2-review-v1.md)。

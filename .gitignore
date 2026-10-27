@@ -38,3 +38,8 @@ __pycache__/
 *.sw?
 
 .json
+
+# Kanata P0: user-provided reference documents only; other raw data stays local.
+!/raw/完整需求清单.txt
+!/raw/彼方 · Kanata 技术设计.txt
+!/raw/开源技术审查报告.txt

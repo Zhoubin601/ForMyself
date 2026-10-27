@@ -927,3 +927,121 @@ raw仅确认存在，不读取私人备份内容；memory-bank在本轮开始时
 正式交付：output/20261027-agent-development-manual-v1.md；强制规范写入AGENTS，README与历史HANDOFF指向新入口，memory-bank/development-context.md保存稳定索引。精准Git白名单允许本版手册追踪。检查依据与结果见docs/qa/agent-manual-20261027/verify-manual.mjs、verification-v1.json，非运行时业务验证。
 
 位置更新（用户后续指令）：用户已将说明书放到根目录并命名为架构接口与Agent开发说明书.md。该位置约定取代前述output交付位置，仅适用于本说明书。已更新AGENTS、README、HANDOFF、长期索引、说明书内70个链接及示例相对路径，移除不再使用的output白名单；output中的现有副本保留原样，不删除用户文件。根目录版本检查见verification-v2.json：70个链接、2段语法、5项示例本地导入、47项符号及Git忽略规则通过，保留v1检查作为历史记录。
+
+
+## 2026-10-27 彼方 · Kanata P0：本轮来源与检查证据
+
+本节仅描述本轮静态检查和文档工作。此前章节中的实施、测试、提交和推送授权属于历史任务，不适用于 Kanata。P1 未开始。日期采用北京时间。
+
+### 授权、基线与文档保全
+
+- 用户本轮只授权 P0 检查、规划、创建 `Kanata` 分支，以及保存三份附件；禁止改业务源码、依赖、锁文件和 Android 配置，禁止 reset/clean/提交/推送/发布。
+- 先读根目录 [AGENTS](../AGENTS.md)、[架构说明书](../架构接口与Agent开发说明书.md)、[开发背景](../memory-bank/development-context.md)，再检查 Git，之后读取实际业务实现。未调用子 Agent。
+- 初始分支 `work`；HEAD：`41cbb66053bd5b9995b358c0c4846669e626bcc0`；`git status --short --branch` 仅输出 `## work`；工作区及暂存区 diff stat 均为空。初始无已有修改、删除项或未跟踪文件。创建前 `git branch --list Kanata` 无输出；`git switch -c Kanata` 成功，HEAD 不变。
+- 四份目标 docs 已存在，原始行数依次为 source 929、analysis 1024、questions 77、plan 794。本轮只追加独立专节，保留原字节前缀；未将历史结论重写为本轮事实。全仓扫描只找到根 AGENTS。
+- 检索 `docs/**/*.md` 中 Kanata、彼方、世界书、角色卡、事件账本，追加前无命中。已读相关历史架构计划及前后对比，用于理解约束；未将历史测试数字计入本轮结果。
+- 初始 `raw/` 不存在。三份材料按目录规范放入 raw；它们不是业务实现，也不提供进入 P1 的授权。
+
+### 本轮原始材料（原样保存）
+
+| 材料 | 字节数 | SHA-256 |
+| --- | ---: | --- |
+| [完整需求清单](../raw/完整需求清单.txt) | 26638 | `9af5206a3190b151cb599e7e4fc04c029e2767d144949f364d8726a421b8f7a7` |
+| [彼方 · Kanata 技术设计](<../raw/彼方 · Kanata 技术设计.txt>) | 15317 | `da0ee3216239779cebc9b1737b8ff6952bf3b6ae053b286d1bbcf1ece1e80cc5` |
+| [开源技术审查报告](../raw/开源技术审查报告.txt) | 28248 | `facac3f5a5b14bbf70ef81f2de1854abbf409a5e3f01a090d6b29693e055dd03` |
+
+附件通过文件下载工具取得，与仓库副本逐字节相等。原 `.gitignore` 的 `/raw/*` 会忽略附件；为落实“上传文档”，本轮仅追加这三个文件名的精确例外，其他原始资料仍被忽略。未 stage、commit 或 push；“保存”仅指当前分支工作区可被 Git 识别，不代表已上传远端。
+
+材料中技术设计和开源报告含有既往审查结论及 Agent 提示词。本轮将其视为需求输入或待核实主张，执行范围以用户当前请求为准。未联网复查外部仓库、许可证或 DeepSeek 官方接口；下表外部引用均是“附件报告称”，并非本轮独立证实。
+
+### 证据分级
+
+- **F：源码证实**：在本轮 HEAD 的实际文件/符号中直接可见；静态事实，不等于故障已动态复现。
+- **R：需求材料**：用户提供材料中的目标或报告主张，不代表本仓库已实现。
+- **D：设计建议**：本轮提出的接口、迁移、阶段方案，未实现。
+- **Q：待确认/验证**：需要产品决定、独立验证或平台测量。
+
+### F：实际检查的代码及关键证据
+
+路径后的数字为本轮源码行号，符号便于以后 HEAD 变化时重定位。
+
+| 编号 | 源码与位置 | 已证实的现状 |
+| --- | --- | --- |
+| F01 | [chatRecords.js](../src/features/chat/chatRecords.js)，1–11、129、171、567、598、612 | 数据版本 4，单项备份版本 4；消息只有 user/assistant 模型角色，缺少 worldId/conversationId/senderId；记忆有 scope/key 与单一 sourceMessageId。normalizeChatData 重建固定字段，未按输入 data.version 分派。 |
+| F02 | 同文件 246、259、278 | socialCast 按姓名去重、最多 3 人；virtualEvents 按日期仅保留一条，最近 30 天明细、更早归为 event-archive；没有完整因果边和 effect 记录。日期缺省用 UTC 截断，不能直接用于新的现实本地日期推进。 |
+| F03 | 同文件 555、598、621、680 | 默认旧消息已读；备份清空 proactiveOutbox/followupOutbox；合并消息依 ID、记忆依 scope+key，保留本地运行队列和设置；创建消息缺少稳定 generation/turn 关联。 |
+| F04 | [chatStore.js](../src/features/chat/chatStore.js)，26、55、78、84、138、166、436、459、482、508 | 单例 Pinia chat、全量 computed snapshot、同步 deep watch 入队；load 失败设 loadError/canPersist=false，但 finally 仍令 isDataLoaded=true。append 主要检查 warmHomeEnabled，delete/update 等没有自身加载/恢复 assert；deleteMessage 不级联处理记忆。release 清明文和密码后等密文队列；flush/retry 保留失败语义。 |
+| F05 | [chatStorage.js](../src/features/chat/chatStorage.js)，5–35、55–123 | 原文件 warm-home-v1.enc/.tmp/.bak；CryptoJS AES 加密整个规范化 JSON；load 按主/备/临时尝试，saveEncrypted 临时读回、主转 bak、重命名。encrypt/decrypt 都经过旧规范化，新增字段会被剥离；没有数据版本拒绝。只有备份/临时文件损坏且主文件不存在时，当前循环未保存这些错误，最终可能返回空默认值（静态风险，未动态复现）。 |
+| F06 | [chatPersistence.js](../src/features/chat/chatPersistence.js)，7–92；[keys.js](../src/platform/storage/keys.js)，31 | 待写只存密文，串行重试、主文件指纹关联恢复副本，恢复键 my_chat_recovery_encrypted_v1。主文件更新后不会无条件接受旧恢复副本；所有介质失败时仅进程内副本不能保证强杀后恢复。 |
+| F07 | [chatRelationship.js](../src/features/chat/chatRelationship.js)，95、164、209、282 | 已有每日状态/事件候选生成、每轮最多两条记忆和未完话题更新，情绪弧最多三轮后缓和；关系主要是两人共同记忆和状态，并非多角色定向关系图。 |
+| F08 | [chatRealism.js](../src/features/chat/chatRealism.js)，58、132、176、189、345 | 行为计划校验允许的记忆/人物/事件 ID，有 5 秒等待超时及本地计划；自我演化须多消息跨日证据；世界草案生成可分块/降级。此 timeout 不取消底层 askAI，不能等同传输取消或持久化任务。 |
+| F09 | [chatCompanion.js](../src/features/chat/chatCompanion.js)，113、217、290、444、703、755、870、880 | 已有本地相关性检索、8 条记忆/3 未完话题、24→12 消息窗口缩减、气泡拆分、输出完整性与截断重试。提示词硬编码虚拟女朋友与称呼；连续 assistant 按 role 折叠会混淆多角色身份。没有世界书引擎和 L0–L4 持久化分层。 |
+| F10 | [ChatView.vue](../src/features/chat/ChatView.vue)，88、135、382、543、695、1080；[ChatTimeline.vue](../src/features/chat/ChatTimeline.vue) | visibleCount 初始 100，只是从完整 messages 内存切片；不是存储分页。请求有 AbortController/generationRun 和卸载清理；关系整理在页面进程内 Promise 链，未见可重启任务日志。界面以单一 companionName/avatar 解释 assistant。 |
+| F11 | [chatProactive.js](../src/features/chat/chatProactive.js)，100、256、356；[chatFollowup.js](../src/features/chat/chatFollowup.js)，14、48；chatStore 336、388 | 已有主动计划、持久化正文 outbox、按 proactiveId 去重、提前本地通知和恢复时物化。ID/通知范围按旧单角色设计；过期消息 createdAt 使用 scheduledAt，新需求要求不能冒充离线时实时发送。无多世界时间水位和通用任务恢复。 |
+| F12 | [client.js](../src/platform/ai/client.js)，1、19、114、141、190、247；[aiClient.js](../src/application/aiClient.js)；[aiEngine.js](../src/services/aiEngine.js) | createAIClient(configuration) 显式注入配置；askAI(prompt) / streamAIChat 返回字符串；SSE/JSON/非流式回退、错误分类与流式 signal 可复用。未收集 usage/cache Token，未有任务归因账本；askAI 无 signal；旧重试可能产生多次收费请求。 |
+| F13 | [preferences.js](../src/platform/storage/preferences.js)；[preferenceRepository.js](../src/platform/storage/preferenceRepository.js)；[storePersistence.js](../src/platform/storage/storePersistence.js) | 普通存储有可注入驱动、键白名单、成功加载门禁和最新待写重试；底层 flush 仅等待串行链，不能替 Store 判断保存成功。聊天使用专用文件路径，并非已经使用通用仓库。 |
+| F14 | [backupParticipants.js](../src/application/backupParticipants.js)，10–49；[backupRegistry.js](../src/application/backupRegistry.js)，3–50 | chat 独立参与者；ready 检查 loaded 且无 loadError；注册器检查就绪/flush/未知参与者，restoreAll 先调用可选 validate 再等待恢复和 flush 全部结算。当前 chat 未提供 validate 回调；注册器本身不保证跨重启事务。 |
+| F15 | [fullBackup.js](../src/services/fullBackup.js)，23、78、136、183；[contracts.d.ts](../src/application/contracts.d.ts)，71 | 完整备份 type 为 formyself-full-backup、版本 12，接受 v1–v12；旧 v1/v2 无聊天时补空，缺 todos 时不创建此参与者。parts 显式映射八种 ID，不能注册后自动覆盖新实体；内部 chat 仍走 v4 规范化；备份排除两种 outbox。 |
+| F16 | [fullBackupRuntime.js](../src/application/fullBackupRuntime.js)，24–59；[restoreCoordinator.js](../src/application/restoreCoordinator.js)，5–75；[restoreJournal.js](../src/platform/storage/restoreJournal.js) | 产品实际组合根：prepare/flush/capture → 加密日志读回 → apply → commit → clear → 同步；提交前恢复 previous，提交后恢复 target，回滚失败保留门禁。日志 PBKDF2 + AES-GCM 与聊天 CryptoJS 格式不同；不是世界历史撤销协议。 |
+| F17 | [protectedModules.js](../src/application/protectedModules.js)；[protectedAccess.js](../src/stores/protectedAccess.js)，64、120、142；[masterPasswordChange.js](../src/services/masterPasswordChange.js)；[main.js](../src/main.js)，16 | chat/passwords 懒解析，要求 release/reencrypt/suspendPersistence/flush 与状态；受保护操作租约及会话版本、改密失败逆序补偿、启动恢复探测可沿用。普通写入门禁不能仅靠 UI。 |
+| F18 | [useBackupSettings.js](../src/composables/settings/useBackupSettings.js)，37、60、87、166、195 | 实际设置页完整导入调用协调器；单项分派、readiness、判空、数量提示及认证映射仍存在显式分支。当前 chat 单项判空只看消息和记忆，新世界/角色但无消息时会被误判空，后续必须演进。文件包仍用 CryptoJS AES。 |
+| F19 | [moduleRegistry.js](../src/application/moduleRegistry.js)；[ordinaryModules.js](../src/application/ordinaryModules.js)；[companionContext.js](../src/application/companionContext.js)；[settings.js](../src/stores/settings.js)，54、159、322 | chat 页面 ID/backup ID 保留；页面、生命周期、安全、备份分别组合。生活上下文纯函数可复用，但人格单一，无逐模块×实例的读/记忆/分享授权；AI 默认 DeepSeek但 URL/model 可配置，尚非产品强制只用 DeepSeek。Web Key 与原生安全存储路径不同，不能宣称全平台都用 Keystore。 |
+| F20 | [package.json](../package.json)；[chatRecords.test.js](../tests/chatRecords.test.js)；[chatStorage.test.js](../tests/chatStorage.test.js)；[fullBackup.test.js](../tests/fullBackup.test.js)；[RestoreCoordinator.spec.js](../tests/RestoreCoordinator.spec.js)；[ProtectedDataRecovery.spec.js](../tests/ProtectedDataRecovery.spec.js) | 已读相关测试结构/关键用例：旧格式、文件替换失败、全备 v1–v12、恢复中断/回滚/改密。仅确认测试存在及其意图，本轮未执行它们；不能作为 Kanata 已通过证据。 |
+
+### R：开源参考登记（附件提供，未独立复查）
+
+| 项目 / 附件版本 | 附件所指路径 | 本轮拟采用方式 / 待验事项 |
+| --- | --- | --- |
+| SillyTavern / 06bde939 | src/character-card-parser.js、src/validator/TavernCardValidator.js、public/scripts/world-info.js、group-chats.js | 参考 PNG/JSON V2/V3 格式及算法，自主实现；WebView 无 Node fs/Buffer；字段往返与许可证待核实。附件称 AGPL-3.0。 |
+| MaiBot / 062d45cf | src/maisaka/turn_trigger/scheduler.py、reply_likelihood.py、gates.py | 参考群聊门控因素，不移植 Python 服务、不照搬概率权重。附件称 GPL-3.0。 |
+| LumiMuse / 313e6dee | src/lib/memory-queue.ts、memory-source-tracking.ts、memory-retrieval.ts | 参考可恢复队列、来源失效、检索回退；不是已经具备世界因果撤销。附件称 MIT。 |
+| Mem0 / 26cdefb4 | mem0/memory/main.py | 参考 ADD/UPDATE/DELETE/NOOP，自主本地文本检索；不假定 DeepSeek 提供 embedding。附件称 Apache-2.0。 |
+| HerAndHim / 08bb1c27 | herandhim/scheduler/planner.py、proactive.py、core/memory/emotional_graph.py | 参考日程和多维关系，不依赖常驻调度。附件称 AGPL-3.0。 |
+| MIRROW / 附件未给固定提交 | ai-chat-backend/behavior_scheduler/scheduler.py、cognition/world_evolution.py | 参考候选与事实区分；固定版本和许可证待复核，附件称 MIT。 |
+| MoFox_Bot / 附件未给固定提交 | src/person_info/relationship_manager.py、src/chat/interest_system/interest_manager.py | 仅候选；附件称归档/GPL-3.0，未独立证实。 |
+
+外部源码和许可证复核安排在实际引用/复制/加依赖前，P0 不下载外部工程或引入依赖。
+
+### 实际命令与结果索引
+
+所有仓库命令工作目录为 `/workspace/ForMyself`，定位命令除外。本轮没有安装依赖、跑 App 或调用真实 AI。
+
+| 实际命令/操作 | 结果和边界 |
+| --- | --- |
+| 云环境状态工具、wait_for_environment | 初次 exec_command 因环境 starting 未执行；等待后 ready。运行技能只用于环境检查，无网络请求。 |
+| `pwd; rg --files --hidden -g AGENTS.md -g '架构接口与Agent开发说明书.md' -g development-context.md -g '!.git' -g '!node_modules' /workspace` | 定位唯一仓库 /workspace/ForMyself 及三份规范。 |
+| `cat AGENTS.md; cat 架构接口与Agent开发说明书.md; cat memory-bank/development-context.md` | 读取规范；工具长输出截断处随后以 sed 90–175、175–225 等范围补读。 |
+| `git branch --show-current; git rev-parse HEAD; git status --short --branch; git diff --stat; git diff --cached --stat; git branch --list Kanata` | 初始 work、完整 HEAD 如上、干净、Kanata 不存在。 |
+| `git switch -c Kanata` | 成功；未变 HEAD，未用 stash/reset/clean。 |
+| `rg --files raw docs memory-bank \| sort`；`wc -l docs/source-notes.md docs/analysis-notes.md docs/questions.md docs/plan.md`；head/tail/cat 四份 docs | 确认已有文档，raw 缺失导致该次 rg 提示 No such file；未创建或恢复历史 raw。 |
+| `rg -n 'Kanata\|彼方\|世界书\|角色卡\|事件账本' docs --glob '*.md'` | 追加前无命中（单独 rg 的无命中语义为退出 1）。 |
+| 三次 download_file；`cat` 三份附件；开源报告按 head/sed/rg 补读 | 下载成功，大小和哈希见上；未执行附件中的总控提示词。 |
+| `rg --files src/features/chat`；`wc -l src/features/chat/* ...`；`cat` F01–F20 中相关 .js；`sed -n` 分段读长 Store、ChatView、chatCompanion、说明书和历史架构文档；`rg -n` 定位导出符号/版本/usage/门禁/测试 | 静态证据如上；目录与定义优先于历史路径。部分长工具输出截断，关键判断以补读函数范围为准，不声称全文逐行审阅所有测试和 UI。 |
+| 对 useAiSettings.js、services/companionPrompts.js、stores/chat.js、services/chat*.js、useBackupData.js 的探索读取/检索 | 路径不存在，出现 No such file；后续以 rg --files、实际 useBackupSettings/companionContext/aiClient 定位，不以猜测路径作证。 |
+| Python 标准库脚本 | 在仓库外 /workspace/work/kanata-p0 保存原文件摘要/四份 docs 原字节，复制三份附件且拒绝覆盖；SHA-256/逐字节检查成功；只追加 docs 与三个 raw 精确忽略例外。 |
+| 最终文档验证、`git diff --check`、状态/diff/忽略规则检查 | 最终结果补记于本节末尾；不把静态文档检查写成业务测试通过。 |
+
+未运行：npm ci、npm run check、Node/Vitest、生产构建、Android Gradle/Capacitor sync、设备或 E2E、真实 API/性能测试。依据 AGENTS 第14条，纯文档修改仅核对链接、接口、忽略规则与差异；P1–P7 的测试要求另见计划。
+
+### P0最终核对结果（2026-10-27 北京时间）
+
+- 实际执行 `python3 /workspace/work/kanata-p0/verify_p0.py` 返回0：对初始842个已跟踪文件逐一计算SHA-256，仅 `.gitignore` 与四份目标docs改变；所有业务源码、测试、依赖/锁文件、Android配置、规范和memory-bank均未改动，无删除。
+- 四份docs原始字节前缀分别为76118、113789、6793、65567字节，均完整保留；新增52个本地链接及18个关键源码符号核对通过。
+- 三附件的大小、SHA-256、逐字节原样复制均通过；`git check-ignore --no-index -q` 对三附件返回1（未忽略），对其他raw占位路径返回0（仍忽略），占位文件未创建。
+- `git diff --check` 返回0；`git diff --numstat` 的删除列全部为0；暂存区为空，HEAD仍为 `41cbb66053bd5b9995b358c0c4846669e626bcc0`，分支 `Kanata`。
+- 最终状态为5个已跟踪文件修改（四份docs和精确忽略例外）及3个未跟踪raw附件。`git status --short --branch` 将附件目录聚合显示为 `?? raw/`；验证脚本用 `git ls-files --others --exclude-standard -z` 确认仅这三附件。Git尚未跟踪新附件，未提交或推送。
+- 本轮未运行任何业务测试、构建、设备/性能验证或外部源码复查；测试通过数不引用历史结果。P1未开始，待决事项Q01–Q12明确保留在questions中。
+- 复核脚本/原文件摘要位于仓库外 `work/kanata-p0`，只是本轮临时检查资料，不作为业务实现或正式产物；本节和四文档为可审阅过程记录。
+
+
+## 2026-10-27 Kanata PR #2 文档审查与远端更新
+
+来源：[PR #2](https://github.com/Zhoubin601/ForMyself/pull/2)、其原HEAD `19fd232790a1ea9022fd25eeb2d3d8418a43e638` 的技术设计文档、原始 `raw/彼方 · Kanata 技术设计.txt`、根架构规范及现有源码。本轮GitHub实时读取确认原PR open/未合并，main为 `41cbb66053bd5b9995b358c0c4846669e626bcc0`，原PR只新增一份文档。
+
+用户授权更新：先审查现有PR，不重建计划；审查完成后明确要求提交远端。本节取代“当前禁止提交/推送”的适用范围，但不改写原P0历史，也不授权P1或合并main。先前5份已跟踪修改和3份未跟踪附件均保留。
+
+F：原稿八条验收各丢首字，JSON示例语法不合法，裸feature路径存在渲染问题；七个主体章节和六组提示词没有整段遗漏。已恢复TXT原文验收、修正示例和排版，增加候选版本/恢复边界等说明。修订后的七章经格式归一一致，8条验收逐字一致，1段JSON和10个本地链接通过。未执行应用测试。
+
+原PR修订提交 `f13dee7e849dadcf1cd1520d95334bf6ae138f0a` 已普通推送到原head分支，仅修改技术设计文档。Kanata本地快进纳入原PR及修订，main未改动。完整发现、核对方法、命令、合并建议与未覆盖项见 [审查记录](20261027-kanata-pr2-review-v1.md)。本轮新增了该报告和技术设计入口，未重新生成P0–P7计划。
+
+补充格式核对：三份原始TXT纳入暂存后，全量 `git diff --cached --check` 报告原文CRLF、尾空格及尾空行，未修改raw来消除提示；修订Markdown和忽略规则范围单独检查通过。原PR修订仍仅一份文档，GitHub实时确认head=f13dee7、open、merged=false、base/main未变。
