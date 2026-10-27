@@ -1,12 +1,12 @@
 {
   "pageErrors": [],
-  "startedAt": "2026-10-27T04:54:53.432Z",
+  "startedAt": "2026-10-27T05:03:34.644Z",
   "deviceSerial": "emulator-5554",
   "uiInput": "Playwright Android coordinate touch mapped from DOM button bounds to actual native WebView bounds; CDP filling/inspection and state assertions",
   "webviewTransport": "Isolated ADB forward + Playwright Chromium CDP",
   "functionalTestDisplay": "480x800, density160, prefers-reduced-motion:reduce; browser QA separately uses normal motion",
-  "scriptSha256": "dc2d17b02362621fd902820371b58c2f0849f625b3129ff89d877f9b91d85bfb",
-  "apkSha256": "29e103522db40b8f25225f14b473df704c51d0412f680477baf270eee2079b43",
+  "scriptSha256": "1e6fc32754ae8a97c9bdfe22a8b469a676891a6f3c207072ae16496818560b7c",
+  "apkSha256": "52b8bc93877d497d3d7b7d121d154d36c7bbf0d5c23cc919cf29cdcbec890bda",
   "api": "34",
   "testWebViewFlags": "",
   "webview": "Current WebView package (name, version): (com.android.webview, 113.0.5672.136)",
@@ -275,6 +275,11 @@
   "apiKeyColdStart": true,
   "onlyRequestedModuleLoaded": true,
   "vaultUiCreate": true,
+  "screenshotSha256": {
+    "native-vault.png": "97e548f71146c8dd9fed3f62154cdd07de8512cc89ce3fd9b6fb6421efc306d4",
+    "native-chat.png": "b3c86c8db0266d6ee7a328aaf6c9efabb254fb83e002e0fac249fc55f24d45b2",
+    "native-home.png": "40b55e8d08f7ced7db46446f3eb25431d01afb9fef72f77f3bbc0a52463a0b86"
+  },
   "renderedScreenshotCount": 3,
   "chatSendReply": true,
   "nativeAppProbe": {
@@ -296,16 +301,16 @@
   "measurements": [
     {
       "name": "app:boot-to-lock-ready",
-      "duration": 178.29999999998836
+      "duration": 188.5
     },
     {
       "name": "protected:chat:load",
-      "duration": 55.10000000000582
+      "duration": 318.19999999998254
     },
     {
       "name": "protected:passwords:load",
-      "duration": 16.10000000000582
+      "duration": 117.39999999999418
     }
   ],
-  "executedAt": "2026-10-27T04:56:03.509Z"
+  "executedAt": "2026-10-27T05:04:46.102Z"
 }
