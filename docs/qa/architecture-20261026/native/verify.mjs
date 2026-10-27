@@ -99,13 +99,24 @@ const tapButton = async (page, name) => {
   await bounded(device.input.tap(point),'Native button touch '+name,30000)
 }
 const captureNative = async name => {
-  const png=await bounded(device.screenshot(),'Android display screenshot '+name,15000)
-  await writeFile(resolve(directory,name),png)
+  const selector={'native-vault.png':'.vault-view','native-chat.png':'.chat-composer textarea','native-home.png':'.home-dashboard'}[name]
+  if(!selector)throw Error('Unknown screenshot view: '+name)
+  await pageForCapture().locator(selector).waitFor({state:'visible'})
   const {default:sharp}=await import('sharp')
-  const {channels}=await sharp(png).stats()
-  if(channels.slice(0,3).every(channel=>channel.max-channel.min<16))throw Error('Native screenshot contains no rendered UI: '+name)
-  results.renderedScreenshotCount=(results.renderedScreenshotCount||0)+1
+  for(let attempt=0;attempt<5;attempt++){
+    await bounded(pageForCapture().evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)))),'Wait for rendered '+name,10000)
+    const png=await bounded(device.screenshot(),'Android display screenshot '+name,15000)
+    await writeFile(resolve(directory,name),png)
+    const {channels}=await sharp(png).stats()
+    const digest=createHash('sha256').update(png).digest('hex')
+    const hashes=results.screenshotSha256||={}
+    if(channels.slice(0,3).some(channel=>channel.max-channel.min>=16)&&!Object.values(hashes).includes(digest)){
+      hashes[name]=digest;results.renderedScreenshotCount=(results.renderedScreenshotCount||0)+1;return
+    }
+  }
+  throw Error('Native screenshot is blank or repeats another view: '+name)
 }
+const pageForCapture=()=>{if(!activePage)throw Error('No active capture page');return activePage}
 const verifyIdentity = async page => {
   if (await page.locator('.lock-screen input').isVisible()) {
     await page.locator('.lock-screen input').fill(password)

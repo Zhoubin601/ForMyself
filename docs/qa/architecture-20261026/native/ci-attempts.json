@@ -177,6 +177,13 @@
       "result": "All actual Android assertions, both force-stop recoveries, password-change cold start, API key/chat/vault preservation and three rendered device screenshots passed at 17:31:49 UTC. Job reached 20-minute limit after that because the standalone SDK process retained open cleanup/polling handles.",
       "evidence": "Complete passing payload in job 121732009617 logs; not counted as a green CI or delivered APK",
       "fix": "Bound independent CDP/forwarding cleanup in parallel, await evidence writes and stdout/stderr drain, then explicitly exit this one-shot CLI with the primary test outcome. Never exit zero after a failed assertion."
+    },
+    {
+      "run_id": 40451891180,
+      "commit": "7ce4ad3",
+      "result": "Web and Android CI green; all 19 required Native checks, cleanup and APK publication passed. APK SHA256 29e103522db40b8f25225f14b473df704c51d0412f680477baf270eee2079b43 matched 54 production assets.",
+      "review_issue": "Manual screenshot review found native-home.png duplicated the vault image because device capture happened before Vue/Android painted the requested home view. Functional states and APK were valid; visual evidence label was premature.",
+      "fix": "Wait for the actual target DOM and rendered frames, reject blank/duplicated view captures, then recapture the exact accepted package in CI. Final delivery filename uses current client date 20261027."
     }
   ]
 }
