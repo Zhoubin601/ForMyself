@@ -80,7 +80,7 @@ jobs:
           PY
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add docs/qa/architecture-20261026/native/playwright-results.json docs/qa/architecture-20261026/native/apk-assets-ci.json docs/qa/architecture-20261026/native/native-home.png docs/qa/architecture-20261026/native/native-chat.png docs/qa/architecture-20261026/native/native-vault.png output/20261026-ForMyself-architecture-p6-debug-v1.apk
+          git add docs/qa/architecture-20261026/native/playwright-results.json docs/qa/architecture-20261026/native/playwright-cleanup.json docs/qa/architecture-20261026/native/apk-assets-ci.json docs/qa/architecture-20261026/native/native-home.png docs/qa/architecture-20261026/native/native-chat.png docs/qa/architecture-20261026/native/native-vault.png output/20261026-ForMyself-architecture-p6-debug-v1.apk
           git commit -m 'test: preserve accepted P6 Android evidence [skip ci]'
           git push origin HEAD:qa/architecture-p6
       - name: Preserve failed device diagnostics on the validation branch

@@ -14,6 +14,7 @@ let password = 'Synthetic-P6-native-only'
 const storeExpression = "document.querySelector('#app').__vue_app__.config.globalProperties.$pinia._s"
 const results = { pageErrors: [], startedAt: new Date().toISOString() }
 let activePage
+let exitStatus=1
 const executeFile = promisify(execFile)
 const adb = process.env.ANDROID_HOME ? resolve(process.env.ANDROID_HOME,'platform-tools/adb') : 'adb'
 const forwardPorts = []
@@ -268,6 +269,7 @@ try {
   if(results.pageErrors.length)throw Error('Native page errors: '+results.pageErrors.join('; '))
   await writeFile(resolve(directory,'playwright-results.json'),JSON.stringify(results,null,2)+'\n')
   console.log(JSON.stringify(results))
+  exitStatus=0
 } catch(error) {
   results.error=String(error)
   if (activePage && !activePage.isClosed()) {
@@ -296,9 +298,17 @@ try {
   console.error('Native intent diagnostics:',intents)
   if(summary)console.error(summary)
   await writeFile(resolve(directory,'playwright-attempt.json'),JSON.stringify(results,null,2)+'\n')
-  throw error
-} finally {
-  for (const browser of browserConnections) await bounded(browser.close(),'CDP cleanup',20000).catch(()=>{})
-  for (const port of forwardPorts) await executeFile(adb,['-s',device.serial(),'forward','--remove',`tcp:${port}`],{timeout:20000}).catch(()=>{})
-  await bounded(device.close(),'Android device cleanup',20000).catch(()=>{})
+  console.error(error.stack||error)
+ } finally {
+  const cleanup={forcedCliExit:true,primaryExitStatus:exitStatus}
+  cleanup.cdp=await Promise.allSettled(browserConnections.map(browser=>bounded(browser.close(),'CDP cleanup',10000)))
+  cleanup.forwarding=await Promise.allSettled(forwardPorts.map(port=>executeFile(adb,['-s',device.serial(),'forward','--remove',`tcp:${port}`],{timeout:10000})))
+  try{await bounded(device.close(),'Android device cleanup',10000);cleanup.device='closed'}catch(error){cleanup.device=String(error)}
+  await writeFile(resolve(directory,'playwright-cleanup.json'),JSON.stringify(cleanup,null,2)+'\n')
+  console.log('Native test cleanup complete; exiting with status',exitStatus)
+  await bounded(new Promise(resolve=>process.stdout.write('',resolve)),'stdout drain',2000).catch(()=>{})
+  await bounded(new Promise(resolve=>process.stderr.write('',resolve)),'stderr drain',2000).catch(()=>{})
+  // The CLI owns the SDK connections; detached/closed Android transports may
+  // retain polling handles. Exit only after awaited evidence writes and cleanup.
+  process.exit(exitStatus)
 }

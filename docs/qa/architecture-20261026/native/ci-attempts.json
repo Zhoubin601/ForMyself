@@ -170,6 +170,13 @@
       "fix": "Import the actual restore state once, then synchronously poll blocked/busy through the checked helper; assert the prior journal is absent before starting the committed scenario; reject Promise predicates in the helper",
       "regression": "Real Chromium confirms raw async false resolves a false handle; false remains pending, true resolves, false times out, function/Promise return values are rejected; wait-contract-results.json",
       "scope": "Keep all real native recovery assertions; previous partial flags are not complete acceptance"
+    },
+    {
+      "run_id": 40368336258,
+      "commit": "af35a40",
+      "result": "All actual Android assertions, both force-stop recoveries, password-change cold start, API key/chat/vault preservation and three rendered device screenshots passed at 17:31:49 UTC. Job reached 20-minute limit after that because the standalone SDK process retained open cleanup/polling handles.",
+      "evidence": "Complete passing payload in job 121732009617 logs; not counted as a green CI or delivered APK",
+      "fix": "Bound independent CDP/forwarding cleanup in parallel, await evidence writes and stdout/stderr drain, then explicitly exit this one-shot CLI with the primary test outcome. Never exit zero after a failed assertion."
     }
   ]
 }
