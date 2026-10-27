@@ -1,0 +1,8 @@
+{
+  "page_errors": [],
+  "widths": {},
+  "passed": false,
+  "error": "Page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4173/\nCall log:\n  - navigating to \"http://127.0.0.1:4173/\", waiting until \"load\"\n",
+  "script_sha256": "032c9d5fa9fc3adca52a58aa57e5921b679193c593311f7f95c4ad2422b94425",
+  "executed_at": "2026-10-27T05:09:44.003169+00:00"
+}

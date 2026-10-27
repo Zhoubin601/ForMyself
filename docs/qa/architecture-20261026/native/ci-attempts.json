@@ -184,6 +184,14 @@
       "result": "Web and Android CI green; all 19 required Native checks, cleanup and APK publication passed. APK SHA256 29e103522db40b8f25225f14b473df704c51d0412f680477baf270eee2079b43 matched 54 production assets.",
       "review_issue": "Manual screenshot review found native-home.png duplicated the vault image because device capture happened before Vue/Android painted the requested home view. Functional states and APK were valid; visual evidence label was premature.",
       "fix": "Wait for the actual target DOM and rendered frames, reject blank/duplicated view captures, then recapture the exact accepted package in CI. Final delivery filename uses current client date 20261027."
+    },
+    {
+      "run_id": 40452757273,
+      "commit": "65375c2",
+      "result": "Web/Android CI and rendered-view screenshots passed, but manual Home screenshot review showed off-screen card layout in reduced-motion mode",
+      "root_cause": "Existing Home CSS reduced-motion block repeated decorative pseudo-element absolute positioning, negative inset, transform and pointer-events:none onto every direct dashboard child. The same malformed block exists in pre-refactor ff4e0bc HomeView.vue.",
+      "reproduction": "Real browser before-fix screenshot and reduced-motion-before-fix.json show absolute, non-clickable cards with negative bounds. The first preview-not-started attempt is retained separately.",
+      "fix": "Reduced-motion override now disables animation only, preserving normal layout and pointer events. Real Playwright verifies normal-flow panels at widths 320/390/480/1280 and actual mood-entry click. Native capture adds the same layout gate. npm run check passed Node285/components156/type/build, lint47 warnings."
     }
   ]
 }

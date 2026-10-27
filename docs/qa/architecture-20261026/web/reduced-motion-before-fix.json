@@ -1,0 +1,86 @@
+{
+  "page_errors": [],
+  "widths": {
+    "320": {
+      "valid": false,
+      "panels": [
+        {
+          "left": -610.379638671875,
+          "right": 141.9171142578125,
+          "top": -695.5548706054688,
+          "bottom": 1539.5549926757812,
+          "height": 2235.10986328125,
+          "position": "absolute",
+          "pointerEvents": "none"
+        },
+        {
+          "left": -610.379638671875,
+          "right": 141.9171142578125,
+          "top": -695.5548706054688,
+          "bottom": 1539.5549926757812,
+          "height": 2235.10986328125,
+          "position": "absolute",
+          "pointerEvents": "none"
+        },
+        {
+          "left": -305.6536560058594,
+          "right": 3.578643798828125,
+          "top": 63.937007904052734,
+          "bottom": 344.25048446655273,
+          "height": 280.3134765625,
+          "position": "relative",
+          "pointerEvents": "none"
+        },
+        {
+          "left": -440.611083984375,
+          "right": 69.423583984375,
+          "top": -684.957275390625,
+          "bottom": 1528.957275390625,
+          "height": 2213.91455078125,
+          "position": "absolute",
+          "pointerEvents": "none"
+        },
+        {
+          "left": -440.611083984375,
+          "right": 69.423583984375,
+          "top": -684.957275390625,
+          "bottom": 1528.957275390625,
+          "height": 2213.91455078125,
+          "position": "absolute",
+          "pointerEvents": "none"
+        },
+        {
+          "left": -610.379638671875,
+          "right": 141.9171142578125,
+          "top": -695.5548706054688,
+          "bottom": 1539.5549926757812,
+          "height": 2235.10986328125,
+          "position": "absolute",
+          "pointerEvents": "none"
+        },
+        {
+          "left": -610.3360595703125,
+          "right": 141.87353515625,
+          "top": -694.5567626953125,
+          "bottom": 1539.5567626953125,
+          "height": 2234.113525390625,
+          "position": "absolute",
+          "pointerEvents": "none"
+        },
+        {
+          "left": -440.611083984375,
+          "right": 69.423583984375,
+          "top": -684.957275390625,
+          "bottom": 1528.957275390625,
+          "height": 2213.91455078125,
+          "position": "absolute",
+          "pointerEvents": "none"
+        }
+      ]
+    }
+  },
+  "passed": false,
+  "error": "Home panels outside normal flow at 320: [{'left': -610.379638671875, 'right': 141.9171142578125, 'top': -695.5548706054688, 'bottom': 1539.5549926757812, 'height': 2235.10986328125, 'position': 'absolute', 'pointerEvents': 'none'}, {'left': -610.379638671875, 'right': 141.9171142578125, 'top': -695.5548706054688, 'bottom': 1539.5549926757812, 'height': 2235.10986328125, 'position': 'absolute', 'pointerEvents': 'none'}, {'left': -305.6536560058594, 'right': 3.578643798828125, 'top': 63.937007904052734, 'bottom': 344.25048446655273, 'height': 280.3134765625, 'position': 'relative', 'pointerEvents': 'none'}, {'left': -440.611083984375, 'right': 69.423583984375, 'top': -684.957275390625, 'bottom': 1528.957275390625, 'height': 2213.91455078125, 'position': 'absolute', 'pointerEvents': 'none'}, {'left': -440.611083984375, 'right': 69.423583984375, 'top': -684.957275390625, 'bottom': 1528.957275390625, 'height': 2213.91455078125, 'position': 'absolute', 'pointerEvents': 'none'}, {'left': -610.379638671875, 'right': 141.9171142578125, 'top': -695.5548706054688, 'bottom': 1539.5549926757812, 'height': 2235.10986328125, 'position': 'absolute', 'pointerEvents': 'none'}, {'left': -610.3360595703125, 'right': 141.87353515625, 'top': -694.5567626953125, 'bottom': 1539.5567626953125, 'height': 2234.113525390625, 'position': 'absolute', 'pointerEvents': 'none'}, {'left': -440.611083984375, 'right': 69.423583984375, 'top': -684.957275390625, 'bottom': 1528.957275390625, 'height': 2213.91455078125, 'position': 'absolute', 'pointerEvents': 'none'}]",
+  "script_sha256": "032c9d5fa9fc3adca52a58aa57e5921b679193c593311f7f95c4ad2422b94425",
+  "executed_at": "2026-10-27T05:10:08.381287+00:00"
+}

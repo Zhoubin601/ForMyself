@@ -102,6 +102,13 @@ const captureNative = async name => {
   const selector={'native-vault.png':'.vault-view','native-chat.png':'.chat-composer textarea','native-home.png':'.home-dashboard'}[name]
   if(!selector)throw Error('Unknown screenshot view: '+name)
   await pageForCapture().locator(selector).waitFor({state:'visible'})
+  if(name==='native-home.png'){
+    results.homeReducedMotionLayout=await pageForCapture().locator(selector).evaluate(element=>{
+      const panels=Array.from(element.children).filter(el=>el.getClientRects().length).map(el=>({box:el.getBoundingClientRect(),style:getComputedStyle(el)}))
+      return panels.length>=4&&panels.every(({box,style})=>box.height>0&&box.left>=-1&&box.right<=innerWidth+1&&style.position!=='absolute'&&style.pointerEvents!=='none')&&panels.every((item,index)=>!index||item.box.top>=panels[index-1].box.bottom-1)
+    })
+    if(!results.homeReducedMotionLayout)throw Error('Reduced-motion home panels are not usable in normal layout')
+  }
   const {default:sharp}=await import('sharp')
   for(let attempt=0;attempt<5;attempt++){
     await bounded(pageForCapture().evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)))),'Wait for rendered '+name,10000)
