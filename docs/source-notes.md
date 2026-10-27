@@ -1054,3 +1054,13 @@ F：原稿八条验收各丢首字，JSON示例语法不合法，裸feature路�
 - **静态事实**：旧 chat v4、旧 warm-home-v1.enc/.tmp/.bak、my_chat_recovery_encrypted_v1、旧通知频道、完整备份 v12 实际仍存在；新清理协调器/五人预设尚未实现。旧恢复协调器、全局配置与其他模块须保护。
 - **新产物**：[技术设计 v2](20261028-kanata-clean-start-and-abydos-preset-v2.md)；同步补记分析/问题/计划入口。raw/ 三份用户材料和 2026-10-27 P0 原始记录保留，历史“旧迁移”要求由新决策覆盖。
 - **执行范围**：此次仅通过 GitHub 写入 Kanata 的文档；不修改 src、依赖、锁文件或 Android，不删除设备数据，不合并或推送 main，不声称 P1 及 Android 测试通过。
+
+## 2026-10-28 五人预设来源核查与连续执行资料补充
+
+- 用户明确要求：完善阿拜多斯完整五人预设，并提供能够一次性按 P1–P7 连续完成项目的 AI Agent 提示词；本轮只做文档和版本化计划修改，不执行实现/真实旧数据清理。
+- 官方角色列表与身份：https://sh-anime.shochiku.co.jp/bluearchive-anime/character/ （核对五人名单）。
+- 学校和「五人面临废校困境」的基本背景：https://sh-anime.shochiku.co.jp/bluearchive-anime/story/ 。
+- 各人物公开性格与兴趣：星野 https://sh-anime.shochiku.co.jp/bluearchive-anime/character/takanashi-hoshino/ ；白子 https://sh-anime.shochiku.co.jp/bluearchive-anime/character/sunaokami-shiroko/ ；野宫 https://sh-anime.shochiku.co.jp/bluearchive-anime/character/izayoi-nonomi/ ；芹香 https://sh-anime.shochiku.co.jp/bluearchive-anime/character/kuromi-serika/ ；绫音 https://sh-anime.shochiku.co.jp/bluearchive-anime/character/okusora-ayane/ 。查阅日期 2026-10-28。
+- 公开资料核对的是基础身份与概括特质；预设中文性格摘要、全部初始团队关系解释、关键词、测试场景为工程建议/原创改写，不宣称全部来自官方原文，也不获得商业分发授权。
+- 新的 Kanata 执行入口为 [连续开发 v3](20261028-kanata-continuous-execution-plan-v3.md)、[五人预设规格](20261028-kanata-abydos-preset-spec-v1.md)、[Agent 总控提示词](20261028-kanata-agent-master-prompt-v1.md)。旧 `docs/plan.md` Kanata v4 迁移条款保留为历史，但已被新方案显式覆盖。
+- 本轮 P1–P7 仍未实施。文档修改不代表任何 Android/Web 运行、备份恢复、旧 chat 清理或 API 真实计费测试已通过。
