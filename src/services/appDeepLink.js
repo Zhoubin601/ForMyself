@@ -8,8 +8,12 @@ export const getRouteFromAppUrl = (url) => {
   if (typeof url !== 'string' || !url.trim()) return null
 
   try {
-    const parsedUrl = new URL(url)
-    if (parsedUrl.protocol !== APP_DEEP_LINK_PROTOCOL || parsedUrl.hostname !== APP_DEEP_LINK_HOST) {
+    const input = url.trim()
+    if (!/^formyself:\/\//i.test(input)) return null
+    // Older Android WebViews treat custom schemes as opaque paths (empty host).
+    // Validate our scheme first, then use the standard HTTPS authority parser.
+    const parsedUrl = new URL(`https:${input.slice(APP_DEEP_LINK_PROTOCOL.length)}`)
+    if (parsedUrl.hostname !== APP_DEEP_LINK_HOST) {
       return null
     }
 

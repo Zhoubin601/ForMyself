@@ -1,0 +1,93 @@
+{
+  "run_id": 40350881145,
+  "source_commit": "844cfb2e50cede39c5b467c1bfca31b264dccb24",
+  "webview": "Current WebView package (name, version): (com.google.android.webview, 113.0.5672.136)",
+  "nativeEventDiagnostics": {
+    "url": {
+      "protocol": "formyself:",
+      "host": "",
+      "path": "//open/todo"
+    },
+    "rootMounted": true,
+    "rootUnmounted": false,
+    "mountHooks": 1,
+    "header": {
+      "name": "App",
+      "methods": [
+        {
+          "name": "toggleBackButtonHandler",
+          "rtype": "promise"
+        },
+        {
+          "name": "getState",
+          "rtype": "promise"
+        },
+        {
+          "name": "getInfo",
+          "rtype": "promise"
+        },
+        {
+          "name": "removeAllListeners",
+          "rtype": "promise"
+        },
+        {
+          "name": "getLaunchUrl",
+          "rtype": "promise"
+        },
+        {
+          "name": "checkPermissions",
+          "rtype": "promise"
+        },
+        {
+          "name": "requestPermissions",
+          "rtype": "promise"
+        },
+        {
+          "name": "exitApp",
+          "rtype": "promise"
+        },
+        {
+          "name": "removeListener"
+        },
+        {
+          "name": "getAppLanguage",
+          "rtype": "promise"
+        },
+        {
+          "name": "addListener"
+        },
+        {
+          "name": "minimizeApp",
+          "rtype": "promise"
+        }
+      ]
+    }
+  },
+  "productUrlCallbackProbe": {
+    "registration": [
+      {
+        "event": "backButton",
+        "id": "36258463"
+      },
+      {
+        "event": "appUrlOpen",
+        "id": "36258464"
+      },
+      {
+        "event": "appStateChange",
+        "id": "36258465"
+      }
+    ],
+    "before": "chat",
+    "after": "chat",
+    "target": {
+      "item": "",
+      "date": ""
+    },
+    "callbackSources": [
+      "({url:e})=>le(e)"
+    ]
+  },
+  "observedNativeUrl": "formyself://open/todo?item=99ad9bb5-f31a-40a9-bc65-33b2e981554f&date=2026-10-26",
+  "result": "Failed candidate; isolated actual custom-scheme URL authority parsing difference, never counted as acceptance"
+}

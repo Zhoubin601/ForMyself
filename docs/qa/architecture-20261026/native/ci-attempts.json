@@ -1,0 +1,197 @@
+{
+  "attempts": [
+    {
+      "run_id": 40285681136,
+      "commit": "3d35ee3",
+      "failed_step": "android-actions/setup-android@v3",
+      "reason": "Default action packages requested obsolete SDK package tools, which is no longer available",
+      "fix": "Request platform-tools explicitly; SDK/platform/build-tools remain explicit"
+    },
+    {
+      "run_id": 40285818837,
+      "commit": "1b10632",
+      "passed": "Web quality, Android build/instrumentation, initialization, optional-entry/API-key cold start, vault UI and chat; reached post-background reauthentication",
+      "failed_step": "Post-background protected entry test driver waited directly for password input",
+      "fix": "Click the product verification CTA before waiting for its input; also test required-entry cold start and assert mocked reply content"
+    },
+    {
+      "run_id": 40287293626,
+      "commit": "5e118f0",
+      "passed": "Web quality, Android build and instrumentation",
+      "failed_step": "WebView target closed while initial native AI settings were being saved, before the first test force-stop",
+      "reason": "The run did not retain a device crash log, so unique cause is unconfirmed",
+      "fix": "Pin Emulator33.1.24 with KVM, collect Android crash/progress details, and wait for old WebView removal before every cold start"
+    },
+    {
+      "run_id": 40288146339,
+      "commit": "49eea23",
+      "passed": "Web quality, Android build/instrumentation including actual widget completion/reversal, required-entry cold-start state",
+      "failed_step": "Experimental Android WebView page connection closed while waiting to click unlock; Android crash buffer supplied no cause",
+      "fix": "Use isolated ADB forwarding with standard Playwright Chromium CDP, retain process/activity diagnostics; no automatic application-crash retry"
+    },
+    {
+      "run_id": 40289457400,
+      "commit": "ddceac8",
+      "passed": "Web quality and Android instrumentation",
+      "failed_step": "Standard CDP attachment asked WebView for unsupported Browser.setDownloadBehavior",
+      "reason": "WebView supports page automation but not full browser context management",
+      "fix": "Use connectOverCDP noDefaults:true and explicit socket/session cleanup"
+    },
+    {
+      "run_id": 40289684177,
+      "commit": "0800716",
+      "passed": "Web quality and Android instrumentation",
+      "failed_step": "WebView does not implement Browser.setDownloadBehavior; same protocol issue as ddceac8",
+      "fix": "The following candidate 7edce35 disables browser defaults for WebView"
+    },
+    {
+      "run_id": 40290110162,
+      "commit": "7edce35",
+      "passed": "Web quality and Android instrumentation; standard CDP WebView attached successfully",
+      "failed_step": "Android killed the app because its Google fonts provider process was dying",
+      "evidence": "ActivityManager: Killing com.yubin.formyself: depends on provider com.google.android.gms/.fonts.provider.FontsProvider in dying proc com.google.android.gms.persistent; see font-provider-process-kill.txt",
+      "fix": "Disable unrelated Google Play Services in the isolated CI emulator before installing the app; keep the actual WebView, storage, notification and authentication paths"
+    },
+    {
+      "run_id": 40291655521,
+      "commit": "febea47",
+      "result": "Job cancelled at the 20-minute limit; reached required/optional entry and API-key cold-start checks, but no final acceptance flags were returned",
+      "observed": "The first required-entry cold start took several minutes; no Google font provider process kill was recorded in the available output",
+      "fix": "Stop build JVMs after each command, limit workers, use 480x800/density160 and reduced-motion functional UI, bound ADB/evaluate operations, and persist asserted checkpoints"
+    },
+    {
+      "run_id": 40336388458,
+      "commit": "61ac786",
+      "result": "Native pipeline became responsive; initialization, entry modes, API-key cold start and vault UI reached asserted checkpoints; deep-link/background flags were false and the run failed",
+      "driver_error": "JS Playwright string function literals are expression values rather than invoked predicates; unlike the Python API, they were truthy without waiting",
+      "fix": "Use an explicitly invoked shared state predicate, verify false/pending/timeout/function rejection in a real browser, and wait for sensitive release before resuming the Activity",
+      "scope": "No failed/partial native run is counted as complete acceptance; browser Python wait semantics were independently checked"
+    },
+    {
+      "run_id": 40339155771,
+      "commit": "189de71",
+      "result": "The corrected waits exposed an API-key cold-start assertion failure, so no acceptance package was produced",
+      "driver_issue": "The fixture waited for ordinary stores but not settings initialization; API-key loading could still overwrite an early direct fixture assignment",
+      "fix": "Include settings.isDataLoaded in startup readiness and verify native API-key saved status before any force-stop; retain the cold-start value assertion"
+    },
+    {
+      "run_id": 40340942664,
+      "commit": "941291d",
+      "passed": "Native initialization, verified API-key save, both entry-mode cold starts, API-key readback, requested-only vault load/create, and mocked chat reply",
+      "failed_step": "Native deep-link route never changed from chat before the 120s assertion deadline",
+      "next_probe": "Retain am-start output, register an independent App URL event observer, and collect actual Activity intent plus application console warnings; do not replace product navigation with a test implementation"
+    },
+    {
+      "run_id": 40343740164,
+      "commit": "9bc7efc",
+      "passed": "Native entry modes, API-key persistence, vault GUI and actual chat reply; independent native App URL observer received exact intent URL",
+      "failed_step": "Product navigation stayed on chat despite actual native appUrlOpen event",
+      "fix": "Register back, URL and privacy events independently before data initialization; regress failure and delayed listener registration; verify the product route again on device"
+    },
+    {
+      "run_id": 40348159816,
+      "commit": "0eeae67",
+      "result": "Independent native event wiring did not resolve the deep-link failure; all preceding native checks and instrumentation still passed",
+      "next_probe": "Collect App startup registration logs and mounted lifecycle metadata; invoke an actual captured product callback only in the failing diagnostic path, which never generates accepted results"
+    },
+    {
+      "run_id": 40350881145,
+      "commit": "844cfb2",
+      "result": "Diagnosed real WebView113 custom URL parsing; product callback is registered/mounted but still rejects the event when directly invoked in failure-only diagnostic",
+      "root_cause": "new URL(formyself://open/todo) returned hostname empty and pathname //open/todo on WebView113; current Chromium/Node return host open and pathname /todo",
+      "fix": "Validate the custom scheme first, then parse its authority through standard HTTPS URL semantics; regress legacy parser behavior and Todo query/host/protocol contracts",
+      "evidence": "legacy-url-diagnostics.json"
+    },
+    {
+      "run_id": 40352542151,
+      "commit": "653da43",
+      "failed_step": "Optional-entry cold start locked the app before reaching the deep-link check",
+      "driver_issue": "verifyIdentity waited for ordinary store readiness, which may already be true while password setup/unlock PBKDF and verified persistence are still pending; force-stop could interrupt that operation",
+      "fix": "Wait for actual unlocked authentication with a live master credential; assert initial verifier presence and committed optional-entry flag, then require verifier presence on both cold-start modes",
+      "scope": "URL fix not yet verified by this device run; no failed native run accepted"
+    },
+    {
+      "run_id": 40354114558,
+      "commit": "5e490a4",
+      "passed": "Initial password was verified saved, initial API key saved, required-entry cold start retained the master verifier without auth load errors",
+      "failed_step": "Actual required-entry unlock did not complete within 120 seconds; the earlier driver had not waited for this condition",
+      "next_probe": "Keep the dedicated emulator awake and dismiss Android keyguard before each attach; submit through the supported password Enter action; capture display power, input equality, busy state, dialog and unlock marks if it still fails",
+      "scope": "The remaining cause is not uniquely confirmed; no acceptance APK produced"
+    },
+    {
+      "run_id": 40355907451,
+      "commit": "38cdd71",
+      "result": "Visible awake app and correct DOM password, but Enter never triggered the product unlock handler (no unlock marks, button not busy)",
+      "fix": "Install pinned Playwright Android driver; use actual Android UiAutomator button taps with CDP DOM inspection/filling, retain full authentication assertions; preserve failed device images under run-specific folders",
+      "scope": "Screen-off alone did not explain failure; no production authentication change or bypass"
+    },
+    {
+      "run_id": 40358084779,
+      "commit": "aae1e9a",
+      "result": "Android package system service disappeared during Gradle instrumentation APK install; native Playwright was not reached",
+      "evidence": "cmd: Can't find service: package; BUILD FAILED before test:e2e:android",
+      "fix": "Fresh emulator run, require stable system_server/package service observations before app installation, and collect crash buffer inside the emulator script on failure; no automatic retry of failed app assertions"
+    },
+    {
+      "run_id": 40359471566,
+      "commit": "65a07c5",
+      "result": "Native text selector did not locate the initialization button; captured WebView image visibly contains the button and correct password field",
+      "evidence": "ci-failures/40359471566/playwright-failure.png and playwright-attempt.json",
+      "fix": "Use Playwright DOM role/button bounds, map through actual Android WebView bounds and send Android input touch; assert actual authentication as before; also capture physical Android display on failure"
+    },
+    {
+      "run_id": 40361060238,
+      "commit": "10ab8ff",
+      "result": "Native WebView not found in active accessibility window; physical screenshot shows System UI is not responding ANR dialog obscuring the still-rendering app",
+      "root_evidence": "ci-failures/40361060238/android-display-failure.png; WebView-only image omitted Android system overlay",
+      "fix": "Use lightweight API34 AOSP ATD image without unrelated Google services; actual background task switch uses a separate Activity only in instrumentation APK, avoiding launcher dependence. Main APK contains no test Activity. Keep verified authentication and real native touch assertions.",
+      "scope": "The overlay explains missing UI events/active-window selectors; no production authentication bypass or automatic app-assertion retry"
+    },
+    {
+      "run_id": 40362977741,
+      "commit": "b2ae89d",
+      "passed": "Actual initialization and verified master save, both entry-mode cold starts, API key persistence, requested-only vault load and GUI create",
+      "failed_step": "CDP page screenshot timed out; Android physical screenshot was all black",
+      "root_evidence": "Local official AOSP ATD34 system.img contains debug.hwui.drawing_enabled=0; AOSP Android14 Properties.h defines this flag and Properties.cpp uses it for DrawingEnabled",
+      "fix": "Enable actual HWUI drawing on the dedicated emulator before launching the cleared app; capture real Android screenshots through Playwright device API and reject images without rendered pixel variation",
+      "scope": "Functional checks were not failed; no full acceptance package until screenshot and all later behavior checks complete"
+    },
+    {
+      "run_id": 40364891108,
+      "commit": "e257403",
+      "passed": "Real rendering with two non-black Android screenshots; initialization, entry modes, API key, vault, actual chat reply, actual native deep-link route, true Android background release/reauthentication, force-stop uncommitted rollback",
+      "failed_step": "Second restore had a prepared journal but no durable commit marker; original caught error was not retained",
+      "next_probe": "Retain and rethrow actual participant restore/flush errors and the coordinator error, assert the only expected post-commit failure is the injected journal cleanup failure; do not relax the durable commit requirement"
+    },
+    {
+      "run_id": 40366715171,
+      "commit": "83328c6",
+      "diagnosis": "No participant failed. The next restore was rejected with RESTORE_RECOVERY_REQUIRED while an uncommitted journal still existed. The async waitRestoreIdle returned a false handle rather than polling: Playwright accepts its Promise as truthy, then resolves its false value. Cleanup injection could therefore interfere with the previous recovery still finishing.",
+      "fix": "Import the actual restore state once, then synchronously poll blocked/busy through the checked helper; assert the prior journal is absent before starting the committed scenario; reject Promise predicates in the helper",
+      "regression": "Real Chromium confirms raw async false resolves a false handle; false remains pending, true resolves, false times out, function/Promise return values are rejected; wait-contract-results.json",
+      "scope": "Keep all real native recovery assertions; previous partial flags are not complete acceptance"
+    },
+    {
+      "run_id": 40368336258,
+      "commit": "af35a40",
+      "result": "All actual Android assertions, both force-stop recoveries, password-change cold start, API key/chat/vault preservation and three rendered device screenshots passed at 17:31:49 UTC. Job reached 20-minute limit after that because the standalone SDK process retained open cleanup/polling handles.",
+      "evidence": "Complete passing payload in job 121732009617 logs; not counted as a green CI or delivered APK",
+      "fix": "Bound independent CDP/forwarding cleanup in parallel, await evidence writes and stdout/stderr drain, then explicitly exit this one-shot CLI with the primary test outcome. Never exit zero after a failed assertion."
+    },
+    {
+      "run_id": 40451891180,
+      "commit": "7ce4ad3",
+      "result": "Web and Android CI green; all 19 required Native checks, cleanup and APK publication passed. APK SHA256 29e103522db40b8f25225f14b473df704c51d0412f680477baf270eee2079b43 matched 54 production assets.",
+      "review_issue": "Manual screenshot review found native-home.png duplicated the vault image because device capture happened before Vue/Android painted the requested home view. Functional states and APK were valid; visual evidence label was premature.",
+      "fix": "Wait for the actual target DOM and rendered frames, reject blank/duplicated view captures, then recapture the exact accepted package in CI. Final delivery filename uses current client date 20261027."
+    },
+    {
+      "run_id": 40452757273,
+      "commit": "65375c2",
+      "result": "Web/Android CI and rendered-view screenshots passed, but manual Home screenshot review showed off-screen card layout in reduced-motion mode",
+      "root_cause": "Existing Home CSS reduced-motion block repeated decorative pseudo-element absolute positioning, negative inset, transform and pointer-events:none onto every direct dashboard child. The same malformed block exists in pre-refactor ff4e0bc HomeView.vue.",
+      "reproduction": "Real browser before-fix screenshot and reduced-motion-before-fix.json show absolute, non-clickable cards with negative bounds. The first preview-not-started attempt is retained separately.",
+      "fix": "Reduced-motion override now disables animation only, preserving normal layout and pointer events. Real Playwright verifies normal-flow panels at widths 320/390/480/1280 and actual mood-entry click. Native capture adds the same layout gate. npm run check passed Node285/components156/type/build, lint47 warnings."
+    }
+  ]
+}

@@ -1,0 +1,69 @@
+{
+  "forcedCliExit": true,
+  "primaryExitStatus": 0,
+  "cdp": [
+    {
+      "status": "fulfilled"
+    },
+    {
+      "status": "fulfilled"
+    },
+    {
+      "status": "fulfilled"
+    },
+    {
+      "status": "fulfilled"
+    },
+    {
+      "status": "fulfilled"
+    },
+    {
+      "status": "fulfilled"
+    }
+  ],
+  "forwarding": [
+    {
+      "status": "fulfilled",
+      "value": {
+        "stdout": "",
+        "stderr": ""
+      }
+    },
+    {
+      "status": "fulfilled",
+      "value": {
+        "stdout": "",
+        "stderr": ""
+      }
+    },
+    {
+      "status": "fulfilled",
+      "value": {
+        "stdout": "",
+        "stderr": ""
+      }
+    },
+    {
+      "status": "fulfilled",
+      "value": {
+        "stdout": "",
+        "stderr": ""
+      }
+    },
+    {
+      "status": "fulfilled",
+      "value": {
+        "stdout": "",
+        "stderr": ""
+      }
+    },
+    {
+      "status": "fulfilled",
+      "value": {
+        "stdout": "",
+        "stderr": ""
+      }
+    }
+  ],
+  "device": "closed"
+}

@@ -1,0 +1,9 @@
+{
+  "pageErrors": [],
+  "deviceSerial": "emulator-5554",
+  "scriptSha256": "190852dee4e30c4c595081b28bca7ba346b0b49fa2ba605970f6428eeaf72ed6",
+  "api": "34",
+  "testWebViewFlags": "webview --js-flags=--jitless --disable-gpu",
+  "webview": "Current WebView package (name, version): (com.android.webview, 113.0.5672.136)",
+  "error": "TimeoutError: androidDevice.webView: Timeout 120000ms exceeded while waiting for event \"webview\""
+}

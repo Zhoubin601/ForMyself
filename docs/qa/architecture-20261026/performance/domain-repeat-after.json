@@ -1,0 +1,49 @@
+{
+  "node": "v24.19.0",
+  "platform": "linux",
+  "cpuArchitecture": "x64",
+  "scope": "Actual domain backup encode/decode and Todo generation; synthetic in-process data. Not native startup, disk durability or UI memory.",
+  "results": [
+    {
+      "size": 100,
+      "jsonBytes": 10748,
+      "samples": [
+        {
+          "ms": 8.531152000000006,
+          "heapDeltaBytes": 1234696
+        },
+        {
+          "ms": 4.365768000000003,
+          "heapDeltaBytes": 1268160
+        },
+        {
+          "ms": 4.3535579999999925,
+          "heapDeltaBytes": 1234784
+        }
+      ],
+      "medianMs": 4.365768000000003,
+      "medianHeapDeltaBytes": 1234784
+    },
+    {
+      "size": 10000,
+      "jsonBytes": 772148,
+      "samples": [
+        {
+          "ms": 1196.5091850000001,
+          "heapDeltaBytes": 13075016
+        },
+        {
+          "ms": 625.5999850000003,
+          "heapDeltaBytes": 34074744
+        },
+        {
+          "ms": 687.867139,
+          "heapDeltaBytes": 12704024
+        }
+      ],
+      "medianMs": 687.867139,
+      "medianHeapDeltaBytes": 13075016
+    }
+  ],
+  "productionJavaScriptBytes": 820212
+}

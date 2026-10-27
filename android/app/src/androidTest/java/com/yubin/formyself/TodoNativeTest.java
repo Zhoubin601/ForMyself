@@ -104,6 +104,14 @@ public class TodoNativeTest {
         for(StatusBarNotification n:manager.getActiveNotifications()) if(key.equals(n.getTag()))return true;
         return false;
     }
+    private static void sendAndWait(Context context, Intent intent) throws Exception {
+        java.util.concurrent.CountDownLatch finished = new java.util.concurrent.CountDownLatch(1);
+        intent.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES | Intent.FLAG_RECEIVER_FOREGROUND);
+        context.sendOrderedBroadcast(intent, null, new android.content.BroadcastReceiver() {
+            @Override public void onReceive(Context c, Intent i) { finished.countDown(); }
+        }, new android.os.Handler(android.os.Looper.getMainLooper()), 0, null, null);
+        assertTrue("actual receiver must finish before checking notifications", finished.await(30, java.util.concurrent.TimeUnit.SECONDS));
+    }
     @Test public void receiverRechecksCompletionAndCancelsVisibleReminder() throws Exception {
         Context c=InstrumentationRegistry.getInstrumentation().getTargetContext();
         String existing=c.getSharedPreferences("CapacitorStorage",0).getString(TodoRepository.KEY,null);
@@ -115,15 +123,15 @@ public class TodoNativeTest {
             c.getSharedPreferences("CapacitorStorage",0).edit().putString(TodoRepository.KEY,fixture.toString()).commit();
             TodoReminderReceiver.reschedule(c);
             Intent reminder=new Intent(c,TodoReminderReceiver.class).setAction("com.yubin.formyself.TODO_REMINDER").putExtra("taskId","qa-reminder").putExtra("date",today);
-            c.sendBroadcast(reminder);
+            assertTrue("test app notifications are enabled", manager.areNotificationsEnabled());
+            sendAndWait(c,reminder);
             for(int n=0;n<40 && !notificationVisible(manager,key);n++)Thread.sleep(100);
             assertTrue("actual Android notification must appear",notificationVisible(manager,key));
             TodoRepository.setCompleted(c,"qa-reminder",today,true);
             TodoReminderReceiver.reschedule(c);
             for(int n=0;n<40 && notificationVisible(manager,key);n++)Thread.sleep(50);
             assertFalse("completion cancels visible reminder",notificationVisible(manager,key));
-            c.sendBroadcast(reminder);
-            Thread.sleep(400);
+            sendAndWait(c,reminder);
             assertFalse("stale alarm may not notify a completed task",notificationVisible(manager,key));
         } finally {
             manager.cancel(key,0);

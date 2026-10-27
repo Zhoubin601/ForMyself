@@ -1,0 +1,13 @@
+Source: https://github.com/Zhoubin601/ForMyself/actions/runs/40453981333
+Source commit: 1fa44d184bb2e5a6c804b35704da5d1e7a3b8d9c
+Android job: 122022903245 (success)
+Device: API34 AOSP ATD x86_64, Emulator33.1.24 with KVM
+Source declares 8 regular instrumentation methods and 1 opt-in launcher fixture; launcherFixture is skipped by design. Raw Gradle progress counts are preserved below.
+
+2026-10-27T05:13:48.6466883Z BUILD SUCCESSFUL in 44s
+2026-10-27T05:15:57.5696121Z Starting 9 tests on emulator-5554 - 14
+2026-10-27T05:15:58.3677493Z com.yubin.formyself.TodoWidgetHarness > launcherFixture[emulator-5554 - 14] SKIPPED
+2026-10-27T05:15:58.9675429Z Finished 10 tests on emulator-5554 - 14
+2026-10-27T05:15:59.8675603Z BUILD SUCCESSFUL in 26s
+2026-10-27T05:17:07.8695160Z Native test cleanup complete; exiting with status 0
+2026-10-27T05:17:12.1988490Z Accepted APK SHA256: e020dc65c24fef390807ed647998327169ca2dc70c1ef1e1c72368e89b863abd

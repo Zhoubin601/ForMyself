@@ -1,0 +1,10 @@
+{
+  "page_errors": [],
+  "scope": "Actual production controller + Capacitor AppWeb instance; synthetic platform events, not native Android evidence",
+  "authenticated_sensitive_modules_loaded_before_background": true,
+  "app_url_event_routes_actual_controller": true,
+  "same_web_adapter_delivers_privacy_event": true,
+  "browser": "154.0.8037.57",
+  "script_sha256": "7ecc99f242c57282927af02214d07ac16dc9c96d5589eec6965020fd92ab1ad7",
+  "executed_at": "2026-10-27T05:12:03.842473+00:00"
+}

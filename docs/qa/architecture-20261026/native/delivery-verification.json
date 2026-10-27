@@ -1,0 +1,16 @@
+{
+  "apk": "output/20261027-ForMyself-architecture-p6-debug-v1.apk",
+  "apk_sha256": "e020dc65c24fef390807ed647998327169ca2dc70c1ef1e1c72368e89b863abd",
+  "bytes": 11070300,
+  "accepted_script_sha256": "14f71a8b9c167e52be784518ad7acef80b4e83de83c055e3da8bd414c1dc9bcf",
+  "required_native_checks": 20,
+  "production_asset_count": 54,
+  "mismatches": [],
+  "packaged_qa_literals": [],
+  "instrumentation_classes_in_main_apk": [],
+  "signature_verified": true,
+  "signature_scheme": "v2",
+  "certificate_dn": "C=US, O=Android, CN=Android Debug",
+  "certificate_sha256": "1d6a010d7fa944323b5f23c96e5396400e4d14707dbcfb5fd8f6ebf18960a9f5",
+  "user_device_signing_compatibility": "not provided or verified"
+}

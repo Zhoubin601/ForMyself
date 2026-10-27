@@ -1,0 +1,12 @@
+Current WebView Update Service state
+  Multiprocess enabled: true
+  Current WebView package (name, version): (com.android.webview, 113.0.5672.136)
+  Minimum targetSdkVersion: 33
+  Minimum WebView version code: 567263606
+  Number of relros started: 1
+  Number of relros finished: 1
+  WebView package dirty: false
+  Any WebView package installed: true
+  Preferred WebView package (name, version): (com.android.webview, 113.0.5672.136)
+  WebView packages:
+    Valid package com.android.webview (versionName: 113.0.5672.136, versionCode: 567263606, targetSdkVersion: 34) is  installed/enabled for all users

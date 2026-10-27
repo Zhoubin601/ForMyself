@@ -352,10 +352,61 @@ export function useAppController() {
 
   const lifecycle = createModuleLifecycle(runtimeModules)
   const listeners = createListenerScope()
+  const handleAppStateChange = ({ isActive }) => {
+    if (!isActive) {
+      const nativeActivityGuarded = isNativeActivityGuardActive()
+      backgroundedAt = nativeActivityGuarded ? null : Date.now()
+      Promise.all([chatStore?.flush() || Promise.resolve(), lifecycle.flush().then(results => {
+        const failed = results.find(result => result.status === 'rejected')
+        if (failed) throw failed.reason
+      })]).catch(error => console.warn('进入后台时保存数据失败', error))
+      if (!nativeActivityGuarded && shouldLockOnBackground(settingsStore.autoLockDelaySeconds)) {
+        authStore.expireSession({ lockApp: settingsStore.requireAppUnlock })
+      }
+      return
+    }
+
+    const nativeActivityGuarded = consumeNativeActivityGuard()
+    if (
+      !nativeActivityGuarded &&
+      shouldLockOnResume(settingsStore.autoLockDelaySeconds, backgroundedAt, Date.now())
+    ) {
+      authStore.expireSession({ lockApp: settingsStore.requireAppUnlock })
+    }
+    backgroundedAt = null
+    void lifecycle.resume()
+    if (protectedAccess.status.chat === 'ready') {
+      resyncChatProactive().catch(error => console.warn('恢复应用后同步温馨小家主动联系失败', error))
+    }
+
+    // Android 从“闹钟和提醒”权限页返回时，权限状态传播可能稍晚于 Activity 恢复。
+    // 延迟重新调度，确保旧的非精确任务被 exact alarm 替换，无需用户重启应用。
+    clearTimeout(reminderResumeTimer)
+    reminderResumeTimer = setTimeout(() => {
+      resyncStoredReminders().catch(error => {
+        if (error.code !== 'NOTIFICATION_PERMISSION_DENIED') console.warn('恢复应用后同步通知提醒失败', error)
+      })
+    }, 500)
+  }
+
   onMounted(async () => {
+    // Capacitor's Web factory creates an instance on first use; resolve it once
+    // before concurrent subscriptions so all events share that instance.
+    if (!Capacitor.isNativePlatform()) {
+      try { await CapacitorApp.getState() } catch (error) { console.warn('浏览器应用事件初始化失败', error) }
+    }
+    const appEvents = {
+      backButton: handleAppBack,
+      appUrlOpen: ({ url }) => openAppUrl(url),
+      appStateChange: handleAppStateChange
+    }
+    // A pending or failed registration must not disable other native events.
+    void listeners.listenMany(CapacitorApp, appEvents).then(results => {
+      results.forEach((result, index) => {
+        if (result.status === 'rejected') console.warn(`无法监听应用事件 ${Object.keys(appEvents)[index]}`, result.reason)
+      })
+    })
     try {
-      await listeners.listen(CapacitorApp, 'backButton', handleAppBack)
-      await listeners.listen(CapacitorApp, 'appUrlOpen', ({ url }) => openAppUrl(url))
       const launchUrl = await CapacitorApp.getLaunchUrl()
       openAppUrl(launchUrl?.url)
     } catch (error) {
@@ -398,47 +449,6 @@ export function useAppController() {
       })
     } catch (error) {
       console.warn('无法监听通知点击或接收', error)
-    }
-
-    try {
-      await listeners.listen(CapacitorApp, 'appStateChange', ({ isActive }) => {
-        if (!isActive) {
-          const nativeActivityGuarded = isNativeActivityGuardActive()
-          backgroundedAt = nativeActivityGuarded ? null : Date.now()
-          Promise.all([chatStore?.flush() || Promise.resolve(), lifecycle.flush().then(results => {
-            const failed = results.find(result => result.status === 'rejected')
-            if (failed) throw failed.reason
-          })]).catch(error => console.warn('进入后台时保存数据失败', error))
-          if (!nativeActivityGuarded && shouldLockOnBackground(settingsStore.autoLockDelaySeconds)) {
-            authStore.expireSession({ lockApp: settingsStore.requireAppUnlock })
-          }
-          return
-        }
-
-        const nativeActivityGuarded = consumeNativeActivityGuard()
-        if (
-          !nativeActivityGuarded &&
-          shouldLockOnResume(settingsStore.autoLockDelaySeconds, backgroundedAt, Date.now())
-        ) {
-          authStore.expireSession({ lockApp: settingsStore.requireAppUnlock })
-        }
-        backgroundedAt = null
-        void lifecycle.resume()
-        if (protectedAccess.status.chat === 'ready') {
-          resyncChatProactive().catch(error => console.warn('恢复应用后同步温馨小家主动联系失败', error))
-        }
-
-        // Android 从“闹钟和提醒”权限页返回时，权限状态传播可能稍晚于 Activity 恢复。
-        // 延迟重新调度，确保旧的非精确任务被 exact alarm 替换，无需用户重启应用。
-        clearTimeout(reminderResumeTimer)
-        reminderResumeTimer = setTimeout(() => {
-          resyncStoredReminders().catch(error => {
-            if (error.code !== 'NOTIFICATION_PERMISSION_DENIED') console.warn('恢复应用后同步通知提醒失败', error)
-          })
-        }, 500)
-      })
-    } catch (e) {
-      console.warn('浏览器环境中无法监听 App 状态', e)
     }
   })
 

@@ -1,0 +1,11 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<testsuite name="" tests="1" failures="1" errors="0" skipped="0" time="0.0" timestamp="2026-10-26T02:20:34" hostname="localhost">
+  <properties>
+    <property name="device" value="TestRunner" />
+    <property name="flavor" value="" />
+    <property name="project" value=":app" />
+  </properties>
+  <testcase name=": No compatible devices connected." classname="" time="0.001">
+    <failure>Found 1 connected device(s), 0 of which were compatible.</failure>
+  </testcase>
+</testsuite>

@@ -1,0 +1,100 @@
+{
+  "pageErrors": [],
+  "startedAt": "2026-10-26T16:45:06.938Z",
+  "deviceSerial": "emulator-5554",
+  "uiInput": "Playwright Android coordinate touch mapped from DOM button bounds to actual native WebView bounds; CDP filling/inspection and state assertions",
+  "webviewTransport": "Isolated ADB forward + Playwright Chromium CDP",
+  "functionalTestDisplay": "480x800, density160, prefers-reduced-motion:reduce; browser QA separately uses normal motion",
+  "scriptSha256": "d8d2b3ba5ad5c24e337d6a5f1dbabe13a4870e51ce63f46d2d9d8ce48b958bcb",
+  "apkSha256": "375dced8caaa76afa5045c888a5e7127211eb40c466562266fdda988974213d8",
+  "api": "34",
+  "testWebViewFlags": "",
+  "webview": "Current WebView package (name, version): (com.google.android.webview, 113.0.5672.136)",
+  "emulatorScreenOffTimeout": "2147483647",
+  "error": "Error: androidDevice.info: java.lang.NullPointerException: Attempt to invoke virtual method 'java.lang.String androidx.test.uiautomator.UiObject2.getClassName()' on a null object reference",
+  "failedView": {
+    "view": "home",
+    "requireAppUnlock": true,
+    "hasMasterPassword": false,
+    "authLoadError": "",
+    "locked": true,
+    "status": {
+      "passwords": "idle",
+      "chat": "idle"
+    },
+    "sessionRevision": 0,
+    "credentialPresent": false,
+    "apiKeyStatus": "empty",
+    "visibility": "visible",
+    "unlockButtonDisabled": false,
+    "enteredPasswordMatches": true,
+    "unlockMarks": [],
+    "nativeUrls": []
+  },
+  "nativeEventDiagnostics": {
+    "url": {
+      "protocol": "formyself:",
+      "host": "",
+      "path": "//open/todo"
+    },
+    "rootMounted": true,
+    "rootUnmounted": false,
+    "mountHooks": 1,
+    "header": {
+      "name": "App",
+      "methods": [
+        {
+          "name": "toggleBackButtonHandler",
+          "rtype": "promise"
+        },
+        {
+          "name": "getState",
+          "rtype": "promise"
+        },
+        {
+          "name": "getInfo",
+          "rtype": "promise"
+        },
+        {
+          "name": "removeAllListeners",
+          "rtype": "promise"
+        },
+        {
+          "name": "getLaunchUrl",
+          "rtype": "promise"
+        },
+        {
+          "name": "checkPermissions",
+          "rtype": "promise"
+        },
+        {
+          "name": "requestPermissions",
+          "rtype": "promise"
+        },
+        {
+          "name": "exitApp",
+          "rtype": "promise"
+        },
+        {
+          "name": "removeListener"
+        },
+        {
+          "name": "getAppLanguage",
+          "rtype": "promise"
+        },
+        {
+          "name": "addListener"
+        },
+        {
+          "name": "minimizeApp",
+          "rtype": "promise"
+        }
+      ]
+    }
+  },
+  "consoleWarnings": [
+    "Error injecting safe area CSS: TypeError: Cannot read properties of null (reading 'style')\n    at <anonymous>:2:28",
+    "Error injecting safe area CSS: TypeError: Cannot read properties of null (reading 'style')\n    at <anonymous>:2:28",
+    "Error injecting safe area CSS: TypeError: Cannot read properties of null (reading 'style')\n    at <anonymous>:2:28"
+  ]
+}

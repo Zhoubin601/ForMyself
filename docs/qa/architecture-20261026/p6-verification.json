@@ -1,0 +1,58 @@
+{
+  "stage": "P6",
+  "status": "passed",
+  "command": "npm run check",
+  "exit_code": 0,
+  "node_passed": 285,
+  "component_passed": 156,
+  "lint_errors": 0,
+  "lint_warnings": 47,
+  "vue_typecheck": "passed",
+  "strict_contract_typecheck": "passed",
+  "build": "passed",
+  "android_build": {
+    "tasks": [
+      ":app:testDebugUnitTest",
+      ":app:assembleDebug",
+      ":app:assembleDebugAndroidTest"
+    ],
+    "result": "BUILD SUCCESSFUL",
+    "jvm_test_scope": "existing template arithmetic only; rule/storage tests use instrumentation"
+  },
+  "android_instrumentation": {
+    "api": 34,
+    "image": "aosp_atd/x86_64",
+    "emulator": "33.1.24, KVM",
+    "passed": 8,
+    "opt_in_fixture_skipped": 1,
+    "shared_fixture_cases": 8,
+    "runner": "androidx.test.runner.AndroidJUnitRunner",
+    "evidence": "native/instrumentation-ci-results.txt",
+    "scope": "Real Android Context/SharedPreferences, shared Todo rules, actual widget receiver completion/reversal, pending-restore guard, reminder observation; not pure JVM domain tests"
+  },
+  "browser_playwright": "web/results.json",
+  "browser_crud_single_backup_playwright": "web/crud-results.json",
+  "native_playwright": "native/playwright-results.json",
+  "performance": "performance/browser-results.json",
+  "native_apk_assets": "native/apk-assets-ci.json",
+  "ci": {
+    "run_id": 40453981333,
+    "source_commit": "1fa44d184bb2e5a6c804b35704da5d1e7a3b8d9c",
+    "web": "success",
+    "android": "success",
+    "url": "https://github.com/Zhoubin601/ForMyself/actions/runs/40453981333"
+  },
+  "browser_storage_fault_playwright": "web/faults-results.json",
+  "browser_controller_events_playwright": "web/events-results.json",
+  "completed_at": "2026-10-27 (Asia/Shanghai)",
+  "native_required_checks": 20,
+  "delivery": "native/delivery-verification.json",
+  "browser_populated_vault_recovery": "web/with-vault/results.json",
+  "browser_reduced_motion": "web/reduced-motion-results.json",
+  "manual_boundaries": [
+    "No private backup provided or imported",
+    "No real AI-provider request; synthetic mocked replies",
+    "Physical-device signing compatibility, biometrics and vendor launcher interaction not verified",
+    "Native performance marker is not full process startup or before/after native disk performance"
+  ]
+}

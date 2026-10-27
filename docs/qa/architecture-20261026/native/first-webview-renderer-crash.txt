@@ -1,0 +1,10 @@
+10-26 06:42:15.664  2739  2739 D Capacitor: Starting BridgeActivity
+10-26 06:43:20.376  2831  2853 F DEBUG   : Build fingerprint: 'Android/sdk_slim_x86_64/emulator64_x86_64:14/UE1A.230829.036.A1/11228894:userdebug/test-keys'
+10-26 06:43:20.406  2831  2853 F DEBUG   : Cmdline: com.android.webview:sandboxed_process0:org.chromium.content.app.SandboxedProcessService0:0
+10-26 06:43:21.412  2739  2739 E chromium: [ERROR:aw_browser_terminator.cc(156)] Renderer process (2831) crash detected (code 5).
+10-26 06:43:21.450  2739  2739 F chromium: [FATAL:crashpad_client_linux.cc(732)] Render process (2831)'s crash wasn't handled by all associated  webviews, triggering application crash.
+10-26 06:43:21.469  2739  2739 F libc    : Fatal signal 5 (SIGTRAP), code 128 (SI_KERNEL), fault addr 0x0 in tid 2739 (yubin.formyself), pid 2739 (yubin.formyself)
+10-26 06:43:28.911  3137  3137 F DEBUG   : Build fingerprint: 'Android/sdk_slim_x86_64/emulator64_x86_64:14/UE1A.230829.036.A1/11228894:userdebug/test-keys'
+10-26 06:43:28.919  3137  3137 F DEBUG   : Cmdline: com.yubin.formyself
+10-26 06:43:28.923  3137  3137 F DEBUG   : signal 5 (SIGTRAP), code 128 (SI_KERNEL), fault addr 0x0000000000000000
+10-26 06:43:28.923  3137  3137 F DEBUG   : Abort message: '[FATAL:crashpad_client_linux.cc(732)] Render process (2831)'s crash wasn't handled by all associated  webviews, triggering application crash.'

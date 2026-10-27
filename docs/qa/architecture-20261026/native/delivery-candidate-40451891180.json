@@ -1,0 +1,13 @@
+{
+  "apk": "output/20261026-ForMyself-architecture-p6-debug-v1.apk",
+  "apk_sha256": "29e103522db40b8f25225f14b473df704c51d0412f680477baf270eee2079b43",
+  "bytes": 11070240,
+  "accepted_script_sha256": "dc2d17b02362621fd902820371b58c2f0849f625b3129ff89d877f9b91d85bfb",
+  "required_native_checks": 19,
+  "production_asset_count": 54,
+  "mismatches": [],
+  "packaged_qa_literals": [],
+  "instrumentation_classes_in_main_apk": [],
+  "status": "Superseded candidate: exact package verified, screenshot home label required recapture; final delivery uses a later CI run",
+  "source_ref": "a1644b0"
+}

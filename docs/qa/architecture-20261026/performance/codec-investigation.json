@@ -1,0 +1,10 @@
+{
+  "first_run": "browser-results-url-first.json",
+  "first_encode_10000_ratio": 1.2476572958525372,
+  "investigation": "The same benchmark expression and identical restore function/data sizes were compared; five codec iterations showed inconsistent direction across preserved runs. Increase codec batch size to 50 and repeat all alternating warmup + 3 sample profiles. A stable >20% regression was not reproduced; no unique GC/host cause is asserted.",
+  "restore_function_sha256": "0ee3ead71a29548e7839d387fb3fef0eb35c6f01ca9d00c60d3eca3ea623bffa",
+  "retest": "browser-results-before-reduced-motion-fix.json",
+  "retest_ratio": 0.8556238311538713,
+  "remaining_over_line": [],
+  "final_retest": "browser-results.json"
+}

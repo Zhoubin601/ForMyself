@@ -1,5 +1,7 @@
 # 架构扩展性检查
 
+2026-10-27进度更新：下文保留修复前审查。P1–P6现已完成，实际实现和边界见[分阶段计划](20261026-architecture-remediation-plan-v1.md)及[P6最终验收](20261026-architecture-stage-6-verification-v1.md)。
+
 日期：2026-10-26。基线：`ceda70f1e14e288c7b697b0e7123d6deee9cb895`。本轮为检查与建议，未修改业务代码，未执行提交或推送。
 
 ## 结论

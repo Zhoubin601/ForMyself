@@ -1,0 +1,10 @@
+{
+  "falseRemainsPending": true,
+  "trueResolves": true,
+  "falseTimesOut": true,
+  "functionValueRejected": true,
+  "promiseValueRejected": true,
+  "rawAsyncFalseReturnsFalseHandle": true,
+  "browser": "154.0.8037.57",
+  "executedAt": "2026-10-26T17:24:13.043Z"
+}
