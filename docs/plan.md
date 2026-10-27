@@ -768,3 +768,27 @@ P4已推送origin/main：e92cf62。P5功能目录/仓库/类型/视图职责治�
 P6验收中：最终本地npm run check通过（Node283、组件154、类型/构建、lint47警告）；浏览器Playwright完整/单项备份、四模块增删改、读写故障重试与恢复中断通过；原生instrumentation 7项通过。无KVM的本机软件模拟器持续发生框架/WebView异常，不能作为原生强停验收通过证据。将实际Android WebView Playwright驱动及固定版本测试依赖接入CI，在qa/architecture-p6验证分支使用KVM完成后，再将本阶段推送main；阶段6仍未勾选完成。
 
 2026-10-27 P6完成：Node285/组件156/类型/构建通过，lint47项既有警告；Android14 AOSP ATD instrumentation常规8项通过、显式夹具1项跳过，真实Android Playwright20项必需检查通过，Web多组流程及减少动效布局/点击通过，最终性能无超20%调查线。远端验证运行40453981333的Web/Android均成功。最终APK为output/20261027-ForMyself-architecture-p6-debug-v1.apk，54资源一致、签名有效、无主包测试入口；阶段记录已完成，随P6独立提交推送origin/main。真机签名兼容/生物识别/厂商桌面复核不由本次模拟器替代。
+
+## 2026-10-27 拉取并对比架构计划前后
+
+- [x] 固定原基线ceda70f，保留工作区，核对raw/docs/memory-bank。
+- [x] 获取远端main并快进到995a37e；六阶段提交同步，无raw或AGENTS.md差异。
+- [x] 对照六阶段计划、验收、真实源码与测试，形成docs/20261027-architecture-before-after-v1.md。
+- [x] 核对历史CI实际状态及候选与main产品代码树一致性，限定性能比较基线。
+- [x] 执行新版postinstall依赖补丁，成功。
+- [x] 完成本轮npm run check：Node285、组件156、Vue与strict契约、生产构建通过，lint0错误/47警告；raw文件数与SHA256未变。交付前复查远端main仍为995a37e。
+
+## 2026-10-27 后续Agent开发说明书
+
+- [x] 核对raw/docs/memory-bank、Git已有变更与当前架构接口。
+- [x] 核对生命周期allSettled、Store加载布尔/异常语义、备份固定格式、敏感操作租约、AI参数和原生验证边界。
+- [x] 生成output/20261027-agent-development-manual-v1.md，并仅对白名单中的本版说明书开放Git追踪。
+- [x] 更新AGENTS规范、README入口、旧HANDOFF历史提示及memory-bank/development-context.md稳定索引。
+- [x] 文档检查通过：70个本地链接、2段JavaScript示例语法、47项源码符号及忽略规则；核对工作区和文档差异。纯文档任务未重复业务/设备测试。
+- [x] 按用户后续指定采用根目录架构接口与Agent开发说明书.md，修复入口、70个链接和示例路径，移除旧output白名单；根目录v2检查通过，保留原副本与历史证据。
+
+## 2026-10-27 说明书与规范推送范围
+
+用户已明确要求完成后推送远端。本次提交根目录说明书、AGENTS/README/HANDOFF入口、长期规范索引、Git忽略规则、本线程架构前后对比及核验摘要，并纳入相关过程记录。四份共享过程文件仅暂存本线程对应段落；另一轮模拟器资料、相关段落和原安装包删除项继续保留在本地，不恢复或清理。
+
+推送前文档校验通过：70个链接、2段JS语法、5项示例导入、47项符号及忽略规则；差异检查通过。当前仅文档与规范配置变更，不重复业务或设备测试。使用正常main快进推送，具体提交及远端同步结果以Git历史和本次交付回复为准。

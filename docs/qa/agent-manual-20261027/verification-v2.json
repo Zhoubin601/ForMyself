@@ -1,0 +1,25 @@
+{
+  "date": "2026-10-27",
+  "scope": "Root manual relocation and documentation validation only; no business or device tests",
+  "documents": [
+    "架构接口与Agent开发说明书.md",
+    "AGENTS.md",
+    "README.md",
+    "HANDOFF.md",
+    "memory-bank/development-context.md"
+  ],
+  "linksChecked": 70,
+  "javascriptExamplesChecked": 2,
+  "exampleLocalImportsChecked": 5,
+  "sourceSymbolsChecked": 47,
+  "ignoreRules": {
+    "manualEligibleForTracking": true,
+    "otherOutputIgnored": true,
+    "rawIgnored": true,
+    "createdProbeFiles": false
+  },
+  "sourceSymbolCheckScope": "Presence and manually reviewed signatures; not a runtime behavior test",
+  "businessTestsRerun": false,
+  "deviceOperations": false,
+  "status": "passed"
+}

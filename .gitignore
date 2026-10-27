@@ -15,7 +15,8 @@ dist-ssr
 # Local encrypted test data
 /Test_data/
 /raw/*
-/Output/
+# Generated outputs stay local; the development manual lives at repository root.
+/[Oo]utput/*
 
 # Local emulator captures; keep the reviewed synthetic widget preview
 /docs/qa/todo/*

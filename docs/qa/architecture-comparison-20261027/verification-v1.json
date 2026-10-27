@@ -1,0 +1,91 @@
+{
+  "date": "2026-10-27",
+  "timezone": "Asia/Shanghai",
+  "task": "拉取main并对比架构计划实施前后",
+  "before": "ceda70f1e14e288c7b697b0e7123d6deee9cb895",
+  "after": "995a37e41f1835f75025fb3ca24bd9b745a94311",
+  "remote_rechecked_same_head": true,
+  "sync": {
+    "fetch": "origin refs/heads/main:refs/remotes/origin/main",
+    "integration": "git merge --ff-only origin/main",
+    "commits": 6,
+    "files_changed": 222,
+    "insertions": 12184,
+    "deletions": 4668,
+    "raw_changed_in_range": false,
+    "agents_changed_in_range": false,
+    "persistent_git_configuration_changed": false
+  },
+  "environment": {
+    "os": "Windows",
+    "node": "24.14.1",
+    "npm": "11.11.0",
+    "vite": "8.0.16",
+    "vitest": "3.2.4",
+    "typescript": "5.9.2",
+    "vue_tsc": "3.0.6",
+    "uses_existing_node_modules": true,
+    "playwright_core_local": "not installed; native E2E was not run in this comparison"
+  },
+  "local": {
+    "postinstall": {
+      "command": "npm.cmd run postinstall",
+      "exit_code": 0
+    },
+    "check": {
+      "command": "npm.cmd run check",
+      "exit_code": 0,
+      "node_passed": 285,
+      "node_failed": 0,
+      "vitest_files_passed": 18,
+      "vitest_tests_passed": 156,
+      "lint_errors": 0,
+      "lint_warnings": 47,
+      "vue_typecheck": "passed",
+      "strict_contract_typecheck": "passed",
+      "production_build": "passed",
+      "log": "local-check-v1.log"
+    },
+    "raw_file_count_unchanged": true,
+    "raw_sha256_unchanged": true,
+    "raw_backup_contents_parsed": false,
+    "product_source_edited": false,
+    "new_apk_built": false
+  },
+  "historical_ci": {
+    "run": "https://github.com/Zhoubin601/ForMyself/actions/runs/40453981333",
+    "source_commit": "1fa44d184bb2e5a6c804b35704da5d1e7a3b8d9c",
+    "jobs_live_checked": {
+      "web": "success",
+      "android": "success"
+    },
+    "complete_git_trees_checked": true,
+    "blob_sha_comparison": {
+      "src_files": 148,
+      "android_files": 124,
+      "test_files": 65,
+      "script_files": 38,
+      "workflow_files": 1,
+      "differing_files_in_these_scopes": 0,
+      "root_build_and_lock_configuration_same": true,
+      "native_playwright_driver_same": true
+    },
+    "instrumentation_passed": 8,
+    "opt_in_fixture_skipped": 1,
+    "native_playwright_required_passed": 20,
+    "native_checks_rerun_locally": false
+  },
+  "pulled_apk": {
+    "path": "output/20261027-ForMyself-architecture-p6-debug-v1.apk",
+    "bytes": 11070300,
+    "sha256": "e020dc65c24fef390807ed647998327169ca2dc70c1ef1e1c72368e89b863abd",
+    "matches_committed_acceptance": true
+  },
+  "performance": {
+    "baseline": "ff4e0bc",
+    "scope": "模块拆分前后，非整个P1-P6计划实施前后",
+    "source": "../architecture-20261026/performance/browser-results.json",
+    "remeasured_locally": false
+  },
+  "report": "../../20261027-architecture-before-after-v1.md"
+}

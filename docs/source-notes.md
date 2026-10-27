@@ -905,3 +905,25 @@ raw/ 与 memory-bank/ 目录未提供；未读取私人备份，未引入外部�
 引用目的：专用 ATD 模拟器启用实际渲染以取得可审阅截图，不修改产品认证或恢复流程。
 
 P6最终来源：QA源码1fa44d1、CI运行40453981333（Web及Android成功）、native/playwright-results.json/cleanup、签名与交付核验JSON、web常规/CRUD/故障/事件/非空密码库/减少动效记录，以及最终performance/browser-results.json。完成日期2026-10-27（北京时间）。未使用私人备份或真实AI服务请求。
+
+## 2026-10-27 架构计划前后对比来源
+
+用户要求：拉取远端最新更新，对比架构拓展性计划实施前后的差异。基线为 ceda70f，完成版本为 995a37e；main 快进同步六个阶段提交，业务差异统计为222个文件、12184行新增、4668行删除，包含测试、文档及验收素材，不能将此统计单独解释为复杂度变化。
+来源文件：docs/20261026-architecture-extensibility-review-v1.md、20261026-architecture-remediation-plan-v1.md、六份stage验证文档；docs/qa/architecture-20261026/verification-summary.json、p6-verification.json、performance/browser-results.json；基线与当前src、tests、android、scripts、package.json及CI配置。
+来源名称：GitHub / Zhoubin601/ForMyself。
+链接或文件名：https://github.com/Zhoubin601/ForMyself；https://github.com/Zhoubin601/ForMyself/actions/runs/40453981333。
+引用日期：2026-10-27（北京时间）。
+额外核对：通过GitHub实时确认历史CI成功，并读取候选1fa44d1和完成版本995a37e的完整Git tree，逐文件blob SHA确认src/android/tests/scripts/.github及根工程配置相同；验收资料变化与产品代码变化分开处理。原生结果来自对应历史验收，本轮只重跑本地质量检查。
+raw仅核对目录及前后文件摘要，不读取私人备份内容；memory-bank资料未提供。本轮未引入第三方研究资料。详细对比见docs/20261027-architecture-before-after-v1.md，本地检查证据位于docs/qa/architecture-comparison-20261027/。
+
+## 2026-10-27 后续 Agent 开发说明书与规范来源
+
+用户要求：将当前架构和接口生成说明书，规定后续agent开发规范。采用仓库可检索Markdown，正式说明书放output，AGENTS/README/HANDOFF提供入口，memory-bank仅保存稳定的规范索引。
+源码基线：995a37e41f1835f75025fb3ca24bd9b745a94311；工作区已有过程文档、模拟器验收资料和安装包删除项予以保留，本轮不恢复或清理这些已有变更。
+主要来源：src/application/contracts.d.ts、moduleRegistry.js、moduleLifecycle.js、ordinaryModules.js、appNavigation.js、settingsModels.js、backupRegistry.js、backupParticipants.js、protectedModules.js、fullBackupRuntime.js、restoreCoordinator.js；src/platform/storage与security、src/platform/ai/client.js；src/stores/protectedAccess.js；src/features/weight/weightStore.js、weightRepository.js；Todo仓库、chatPersistence；src/main.js、App.vue、useAppController；完整备份/改密/返回与深链服务；package.json、tsconfig.contracts.json、eslint.config.js、quality.yml、Android变量及相关行为/类型测试。
+现有README、旧HANDOFF、AGENTS和P1–P6计划/验收用于背景与规则衔接。旧HANDOFF的finally打开加载闸门、导航/目录及凭据描述不能作为当前实现依据。
+raw仅确认存在，不读取私人备份内容；memory-bank在本轮开始时未提供。未联网引入外部资料，无真实密码、API Key或私人数据写入文档。
+
+正式交付：output/20261027-agent-development-manual-v1.md；强制规范写入AGENTS，README与历史HANDOFF指向新入口，memory-bank/development-context.md保存稳定索引。精准Git白名单允许本版手册追踪。检查依据与结果见docs/qa/agent-manual-20261027/verify-manual.mjs、verification-v1.json，非运行时业务验证。
+
+位置更新（用户后续指令）：用户已将说明书放到根目录并命名为架构接口与Agent开发说明书.md。该位置约定取代前述output交付位置，仅适用于本说明书。已更新AGENTS、README、HANDOFF、长期索引、说明书内70个链接及示例相对路径，移除不再使用的output白名单；output中的现有副本保留原样，不删除用户文件。根目录版本检查见verification-v2.json：70个链接、2段语法、5项示例本地导入、47项符号及Git忽略规则通过，保留v1检查作为历史记录。
