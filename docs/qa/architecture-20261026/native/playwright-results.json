@@ -1,12 +1,12 @@
 {
   "pageErrors": [],
-  "startedAt": "2026-10-27T05:03:34.644Z",
+  "startedAt": "2026-10-27T05:16:01.074Z",
   "deviceSerial": "emulator-5554",
   "uiInput": "Playwright Android coordinate touch mapped from DOM button bounds to actual native WebView bounds; CDP filling/inspection and state assertions",
   "webviewTransport": "Isolated ADB forward + Playwright Chromium CDP",
   "functionalTestDisplay": "480x800, density160, prefers-reduced-motion:reduce; browser QA separately uses normal motion",
-  "scriptSha256": "1e6fc32754ae8a97c9bdfe22a8b469a676891a6f3c207072ae16496818560b7c",
-  "apkSha256": "52b8bc93877d497d3d7b7d121d154d36c7bbf0d5c23cc919cf29cdcbec890bda",
+  "scriptSha256": "14f71a8b9c167e52be784518ad7acef80b4e83de83c055e3da8bd414c1dc9bcf",
+  "apkSha256": "e020dc65c24fef390807ed647998327169ca2dc70c1ef1e1c72368e89b863abd",
   "api": "34",
   "testWebViewFlags": "",
   "webview": "Current WebView package (name, version): (com.android.webview, 113.0.5672.136)",
@@ -277,8 +277,8 @@
   "vaultUiCreate": true,
   "screenshotSha256": {
     "native-vault.png": "97e548f71146c8dd9fed3f62154cdd07de8512cc89ce3fd9b6fb6421efc306d4",
-    "native-chat.png": "b3c86c8db0266d6ee7a328aaf6c9efabb254fb83e002e0fac249fc55f24d45b2",
-    "native-home.png": "40b55e8d08f7ced7db46446f3eb25431d01afb9fef72f77f3bbc0a52463a0b86"
+    "native-chat.png": "64493f5db4cde47f6aa9ff1053c5fd0579a657d3c088a2df88ff62c641ee5967",
+    "native-home.png": "b5213f4a7f5402bc9794eb6791a52f58928375e7b3ad37456b3c3a9900c70465"
   },
   "renderedScreenshotCount": 3,
   "chatSendReply": true,
@@ -297,20 +297,21 @@
   "passwordChangeColdStartPreservesChat": true,
   "apiKeyAfterPasswordChange": true,
   "passwordChangeColdStartPreservesVault": true,
+  "homeReducedMotionLayout": true,
   "nativeScreenshotsRendered": true,
   "measurements": [
     {
       "name": "app:boot-to-lock-ready",
-      "duration": 188.5
+      "duration": 168.90000000000873
     },
     {
       "name": "protected:chat:load",
-      "duration": 318.19999999998254
+      "duration": 405.19999999998254
     },
     {
       "name": "protected:passwords:load",
-      "duration": 117.39999999999418
+      "duration": 138.29999999998836
     }
   ],
-  "executedAt": "2026-10-27T05:04:46.102Z"
+  "executedAt": "2026-10-27T05:17:07.840Z"
 }
