@@ -1,0 +1,108 @@
+✔ P1-01 五人预设精确计数，无旧小暖、伪历史、任务或默认生活授权 (38.059821ms)
+✔ P1-02 重复seed三次不增，重试不重新取ID且初始化键冲突拒绝 (23.274995ms)
+✔ P1-03 同卡手动第二世界重用五卡但实例、私聊、关系、记忆及水位独立 (18.377939ms)
+✔ P1-04 卡版本更新不覆盖既有实例引用、预设原文或用户身份 (10.91564ms)
+✔ P1-05 人格、知情边界与动机五份独立数据，不执行隐式时钟/随机或AI (12.439706ms)
+✔ P1-06 拒绝未知未来版本 (9.474923ms)
+✔ P1-06 拒绝旧v4不是彼方 (18.30416ms)
+✔ P1-06 拒绝缺少集合 (7.904378ms)
+✔ P1-06 拒绝重复实体ID (8.111145ms)
+✔ P1-06 拒绝孤儿世界 (9.659347ms)
+✔ P1-06 拒绝跨世界群成员 (17.341039ms)
+✔ P1-06 拒绝孤儿成员 (10.545756ms)
+✔ P1-06 拒绝重复群成员 (7.106289ms)
+✔ P1-06 拒绝私聊不允许多人 (8.529457ms)
+✔ P1-06 拒绝角色会话不能含用户 (11.189884ms)
+✔ P1-06 拒绝未知模型role (7.252758ms)
+✔ P1-06 拒绝用户不能伪装assistant (17.125677ms)
+✔ P1-06 拒绝非成员不能发言 (9.844155ms)
+✔ P1-06 拒绝孤儿卡版本 (9.926713ms)
+✔ P1-06 拒绝不同卡的版本 (4.718392ms)
+✔ P1-06 拒绝关系边重复 (8.683684ms)
+✔ P1-06 拒绝事件因果环 (4.568468ms)
+✔ P1-06 拒绝候选事件不可挂正式effect (6.505506ms)
+✔ P1-06 拒绝effect禁止原型路径 (8.837442ms)
+✔ P1-06 拒绝任务幂等键重复 (6.12815ms)
+✔ P1-06 拒绝三权限不能使用字符串 (7.337625ms)
+✔ P1-06 拒绝授权重复 (5.228013ms)
+✔ P1-06 拒绝来源引用孤儿 (4.418318ms)
+✔ P1-06 拒绝来源未来版本 (17.3778ms)
+✔ P1-06 拒绝无效时区 (6.585741ms)
+✔ P1-06 拒绝时间水位错误 (4.776916ms)
+✔ P1-06 拒绝不统一的真实用户 (5.437887ms)
+✔ P1-06 拒绝伪角色身份 (4.713932ms)
+✔ P1-07 跨世界拒绝 memory-owner (9.695123ms)
+✔ P1-07 跨世界拒绝 memory-source (10.177445ms)
+✔ P1-07 跨世界拒绝 event-participant (12.675334ms)
+✔ P1-07 跨世界拒绝 event-cause (9.745124ms)
+✔ P1-07 跨世界拒绝 relationship (11.552046ms)
+✔ P1-07 跨世界拒绝 lore (8.210717ms)
+✔ P1-07 跨世界拒绝 effect (20.147091ms)
+✔ P1-07 跨世界拒绝 task-instance (10.109605ms)
+✔ P1-07 跨世界拒绝 task-conversation (12.088646ms)
+✔ P1-07 跨世界拒绝 grant (17.637633ms)
+✔ P1-08 保留新数据所有字段及安全扩展，不截断或套v4归一化 (4.796972ms)
+✔ P1-09 JSON恶意输入拒绝且不调用getter；无敏感输入回显 (25.105094ms)
+✔ P1-10 验证预设版本、身份、重复角色、孤儿/重复关系和私有知识 (4.377323ms)
+✔ P1-11 三权限独立，不通过字段耦合暗中授予其他权限 (5.790031ms)
+✔ P1-R1 自查：卡版本缺原文、关系维度缺字段和重复模板卡必须拒绝 (22.557844ms)
+✔ P1-R1 自查：任务角色必须在目标会话内，稀疏数组不可补null后冒充原文 (10.561934ms)
+✖ P1-R2 预设结构：五人都有提示词层次，私有条目仅归属本角色 (7.618587ms)
+✖ P1-R2 归档卡不会因再次创建预设世界被静默重新启用 (11.483639ms)
+ℹ tests 51
+ℹ suites 0
+ℹ pass 49
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 744.660569
+
+✖ failing tests:
+
+test at tests/kanataDomain.test.js:185:1
+✖ P1-R2 预设结构：五人都有提示词层次，私有条目仅归属本角色 (7.618587ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+
+  + Set(0) {}
+  - Set(5) {
+  -   'core',
+  -   'knowledge',
+  -   'style',
+  -   'worldIdentity',
+  -   'worldRules'
+  - }
+
+      at TestContext.<anonymous> (file:///workspace/ForMyself/tests/kanataDomain.test.js:187:53)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1382:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:960:18)
+      at Test.postRun (node:internal/test_runner/test:1522:19)
+      at Test.run (node:internal/test_runner/test:1447:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: Set(0) {},
+    expected: Set(5) { 'worldRules', 'core', 'worldIdentity', 'knowledge', 'style' },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at tests/kanataDomain.test.js:196:1
+✖ P1-R2 归档卡不会因再次创建预设世界被静默重新启用 (11.483639ms)
+  AssertionError [ERR_ASSERTION]: Missing expected exception.
+      at TestContext.<anonymous> (file:///workspace/ForMyself/tests/kanataDomain.test.js:198:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1382:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:960:18)
+      at Test.postRun (node:internal/test_runner/test:1522:19)
+      at Test.run (node:internal/test_runner/test:1447:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: /ARCHIVED_PRESET_CARD/,
+    operator: 'throws',
+    diff: 'simple'
+  }

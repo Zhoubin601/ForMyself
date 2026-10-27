@@ -1064,3 +1064,8 @@ F：原稿八条验收各丢首字，JSON示例语法不合法，裸feature路�
 - 公开资料核对的是基础身份与概括特质；预设中文性格摘要、全部初始团队关系解释、关键词、测试场景为工程建议/原创改写，不宣称全部来自官方原文，也不获得商业分发授权。
 - 新的 Kanata 执行入口为 [连续开发 v3](20261028-kanata-continuous-execution-plan-v3.md)、[五人预设规格](20261028-kanata-abydos-preset-spec-v1.md)、[Agent 总控提示词](20261028-kanata-agent-master-prompt-v1.md)。旧 `docs/plan.md` Kanata v4 迁移条款保留为历史，但已被新方案显式覆盖。
 - 本轮 P1–P7 仍未实施。文档修改不代表任何 Android/Web 运行、备份恢复、旧 chat 清理或 API 真实计费测试已通过。
+
+## Kanata P1 实际实现来源与执行结果
+
+本轮用户明确授权P1–P7连续执行及本地阶段提交，禁止自动推送/PR/发布。先检查Git（e4a54cc干净），仅快进远端Kanata文档至47f7bfa，再按AGENTS/架构规范、v3计划、五人规格、clean-start-v2、raw需求及四份过程入口复核。
+实际源码依据：chatRecords/chatStorage/chatPersistence、restoreState、contracts、类型样例、FeatureBoundaries测试和npm/scripts配置。实现新增chat/domain纯模型/校验/预设实例化与独立JSON五人定义；没有旧数据迁移或实际清理。51项新增定向、全部Node336、Vitest156、类型和构建实际通过，过程失败与两轮修正见 [P1验收](20261028-kanata-stage-p1-verification-v1.md)。原始材料/其他模块/旧安全运行时未改，未请求真实AI。

@@ -1,4 +1,7 @@
 import type { Component } from 'vue'
+export type { KanataData, World, CharacterCard, CharacterCardVersion, CharacterInstance,
+  WorldPreset, WorldUserIdentity, Conversation, Message, LorebookEntry, Memory,
+  Relationship, WorldEvent, WorldEffect, BackgroundTask, LifeGrant, SeedOptions } from '../features/chat/domain/kanataTypes'
 
 export interface ModuleDescriptor {
   id: string
