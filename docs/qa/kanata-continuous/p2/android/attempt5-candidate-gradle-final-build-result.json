@@ -1,0 +1,20 @@
+{
+  "command": [
+    "bash",
+    "./gradlew",
+    "--no-daemon",
+    "--max-workers=1",
+    "-Dorg.gradle.jvmargs=-Xmx1536m -Dfile.encoding=UTF-8 -Djavax.net.ssl.trustStore=/etc/ssl/certs/java/cacerts",
+    "-Djavax.net.ssl.trustStore=/etc/ssl/certs/java/cacerts",
+    "-Dhttps.proxyHost=proxy",
+    "-Dhttps.proxyPort=8080",
+    "-Dhttp.proxyHost=proxy",
+    "-Dhttp.proxyPort=8080",
+    ":app:testDebugUnitTest",
+    ":app:assembleDebug",
+    ":app:assembleDebugAndroidTest"
+  ],
+  "started": "2026-10-28T03:00:58.434019+00:00",
+  "ended": "2026-10-28T03:05:30.327349+00:00",
+  "exit_code": 0
+}

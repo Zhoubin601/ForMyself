@@ -1,0 +1,104 @@
+{
+  "status": "NOT_READY",
+  "sdkRoot": "/workspace/work/kanata-android/sdk",
+  "avdHome": "/workspace/work/kanata-android/avds",
+  "avdName": "KanataP2Synthetic34",
+  "serial": "emulator-5580",
+  "adbServerPort": 5589,
+  "isolation": "Fresh task-owned AVD; no user data imported; no product APK installed by android_env agent",
+  "kvmAvailable": false,
+  "jdk": "21.0.12.1",
+  "softwareTCG": "Enabled only via documented ANDROID_I_WANT_MY_TCG=yes; unsupported-performance warning retained",
+  "image": "system-images;android-34;default;x86_64",
+  "platform": "android-36",
+  "buildTools": "36.0.0",
+  "firstBoot": "ADB reached device but parent observed sys.boot_completed empty after about 15 minutes; stopped gracefully by parent",
+  "retry1": "Diagnostic flags -show-kernel and -logcat conflicted on serial stdio; failed exit1",
+  "retry2": "Reduced resolution and single core; rebooting same task-owned data without wiping",
+  "downloadManifestSource": "https://dl.google.com/android/repository/repository2-3.xml and sys-img/android/sys-img2-3.xml",
+  "files": [
+    {
+      "name": "buildtools36.zip",
+      "bytes": 63737259,
+      "sha256": "5d9ac77fb6ff43d9da518a337b4fcf8f9097113df531d99ccefe80ef7ce8250b"
+    },
+    {
+      "name": "commandline.zip",
+      "bytes": 181052239,
+      "sha256": "0877a1d048fe4a24efe2eff536ca4223f7adeb58648bb81909d33c446918cfa8"
+    },
+    {
+      "name": "emulator.zip",
+      "bytes": 353538566,
+      "sha256": "f18c9e1f7ca8173809f253560a9b3b0c1f1bdbe97e0e80dc1c37cf4f52aee93d"
+    },
+    {
+      "name": "platform-tools.zip",
+      "bytes": 9054187,
+      "sha256": "d230f13842f60f782a8645f9c813f8f845bf36089ea7289f28c48f17979313f1"
+    },
+    {
+      "name": "platform36.zip",
+      "bytes": 65878410,
+      "sha256": "37607369a28c5b640b3a7998868d45898ebcb777565a0e85f9acf36f29631d2e"
+    },
+    {
+      "name": "systemimage.zip",
+      "bytes": 720747116,
+      "sha256": "b57f6386af25b0fe5488e77196b43c03778c6760e6f4311611d090391b9cb2b3"
+    }
+  ],
+  "updated": "2026-10-28T03:02:09.944339+00:00",
+  "latest_status": {
+    "emulator": "BLOCKED; task AVD stopped normally after failed boot/pm checks",
+    "avd": "KanataP2ATD34",
+    "serial": "emulator-5580",
+    "adb_server_port": 5589,
+    "reason": "No /dev/kvm; emulator37.3.5 marks TCG unsupported; observed APEX dm creation timeouts and unstable/incomplete framework boot",
+    "emulator_log": "/workspace/work/kanata-android/emulator-atd34-timeout10.log",
+    "invalid_override": "ro.hw_timeout_multiplier flag did not set target property; vendor-prefixed write rejected by SELinux",
+    "native_build": "RUNNING attempt5 with full Temurin JDK21 and system Java CA truststore; candidate dist may be superseded by parent fix",
+    "repository_mutations_by_environment_agent": false,
+    "product_apk_installed_by_environment_agent": false,
+    "instrumentation_or_e2e_executed": false
+  },
+  "observed_failures": [
+    {
+      "attempt": "ATD first initialization",
+      "log": "emulator-atd34-restart.log",
+      "facts": [
+        "apexd com.android.art dm-device creation wait timed out",
+        "zygote exited status1 repeatedly",
+        "boot_completed not observed"
+      ]
+    },
+    {
+      "attempt": "Gradle first isolated snapshot",
+      "log": "gradle-build-attempt1-missing-generated-cordova.log",
+      "exit_code": 1,
+      "cause": "cap copy lacks generated cordova.variables.gradle; fixed isolated prep via copying Capacitor core and cap sync"
+    }
+  ],
+  "full_jdk": {
+    "url": "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.13%2B9/OpenJDK21U-jdk_x64_linux_hotspot_21.0.13_9.tar.gz",
+    "bytes": 207858352,
+    "sha256": "d7f5d5cf865a2902b70ff549b97586a7d3f234e016f041ab447ea740c7d66d1c",
+    "directory": "/workspace/work/kanata-android/jdk",
+    "oracle_latest_sha256_error": "404; switched to official Eclipse Adoptium Temurin21 GitHub release with SHA256"
+  },
+  "full_jdk_verification": {
+    "java": {
+      "exit_code": 0,
+      "output": "openjdk version \"21.0.13\" 2026-10-20 LTS\nOpenJDK Runtime Environment Temurin-21.0.13+9 (build 21.0.13+9-LTS)\nOpenJDK 64-Bit Server VM Temurin-21.0.13+9 (build 21.0.13+9-LTS, mixed mode, sharing)\n"
+    },
+    "javac": {
+      "exit_code": 0,
+      "output": "javac 21.0.13\n"
+    }
+  },
+  "additional_buildtools35": {
+    "url": "https://dl.google.com/android/repository/build-tools_r35_linux.zip",
+    "bytes": 61958799,
+    "sha1": "2cfaa0bbb2336e9ec18ed3ecea84fa2e2af607bc"
+  }
+}

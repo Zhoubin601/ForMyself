@@ -1,0 +1,63 @@
+
+ RUN  v3.2.4 /workspace/ForMyself
+
+ ❯ tests/KanataSetupView.spec.js (16 tests | 2 failed) 423ms
+   ✓ Kanata protected setup view > opens read-only, describes empty history and never initializes or confirms automatically 200ms
+   ✓ Kanata protected setup view > declining the destructive confirmation produces no mutations 19ms
+   ✓ Kanata protected setup view > shows persisted counts only after explicit confirmation and successful initialization 25ms
+   ✓ Kanata protected setup view > does not offer a second initialization for existing worlds 9ms
+   ✓ Kanata protected setup view > deduplicates clicks while a confirmation is unresolved 20ms
+   ✓ Kanata protected setup view > keeps unreadable and unsaved drafts distinct from successful initialization 33ms
+   ✓ Kanata protected setup view > does not report failed initialization as success and allows retry 14ms
+   ✓ Kanata protected setup view > blocks ordinary setup while restore is blocked, without invoking the runtime 4ms
+   ✓ Kanata protected setup view > cancels a page-owned confirmation on unmount and refuses a late affirmative result 8ms
+   ✓ Kanata protected setup view > refuses confirmation after the sensitive view becomes hidden 12ms
+   ✓ Kanata protected setup view > shows probe errors and interrupted preparation without exposing checkpoint internals 10ms
+   ✓ Kanata protected setup view > does not treat failed authentication or an unsupported result as initialization success 5ms
+   ✓ Kanata protected setup view > retains the chat route and protected unloading policy without exposing the old page 1ms
+   ✓ Kanata protected setup view > old chat settings only navigate to Kanata and never read or invoke legacy actions 4ms
+   × review 2: a completed cleanup checkpoint is not an interrupted preparation 45ms
+     → expected '彼在现实之外，共同成长彼方 · Kanata从阿拜多斯开始五位成员，各自的…' not to contain '上次准备尚未完成'
+   × review 2: pending cleanup alone does not claim old files were detected 9ms
+     → expected '彼在现实之外，共同成长彼方 · Kanata从阿拜多斯开始五位成员，各自的…' not to contain '检测到旧温馨小家资料'
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/KanataSetupView.spec.js > review 2: a completed cleanup checkpoint is not an interrupted preparation
+AssertionError: expected '彼在现实之外，共同成长彼方 · Kanata从阿拜多斯开始五位成员，各自的…' not to contain '上次准备尚未完成'
+
+Expected: "上次准备尚未完成"
+Received: "彼在现实之外，共同成长彼方 · Kanata从阿拜多斯开始五位成员，各自的私聊与共同群聊，从没有历史消息的新世界开始。上次准备尚未完成，验证后可以继续。准备过程不会生成聊天、长期记忆或已发生事件，也不会发起 AI 请求。开始准备彼方这是非官方同人文字预设，不含官方图像或完整台词。"
+
+ ❯ tests/KanataSetupView.spec.js:221:30
+    219|   mocked.probe.mockResolvedValue({ pending: false, checkpoint: { phase…
+    220|   const wrapper = await mountReady()
+    221|   expect(wrapper.text()).not.toContain('上次准备尚未完成')
+       |                              ^
+    222|   expect(wrapper.text()).not.toContain('检测到旧温馨小家资料')
+    223|   wrapper.unmount()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/KanataSetupView.spec.js > review 2: pending cleanup alone does not claim old files were detected
+AssertionError: expected '彼在现实之外，共同成长彼方 · Kanata从阿拜多斯开始五位成员，各自的…' not to contain '检测到旧温馨小家资料'
+
+Expected: "检测到旧温馨小家资料"
+Received: "彼在现实之外，共同成长彼方 · Kanata从阿拜多斯开始五位成员，各自的私聊与共同群聊，从没有历史消息的新世界开始。检测到旧温馨小家资料。准备前会请你确认清理范围。上次准备尚未完成，验证后可以继续。准备过程不会生成聊天、长期记忆或已发生事件，也不会发起 AI 请求。开始准备彼方这是非官方同人文字预设，不含官方图像或完整台词。"
+
+ ❯ tests/KanataSetupView.spec.js:229:30
+    227|   const wrapper = await mountReady()
+    228|   expect(wrapper.text()).toContain('上次准备尚未完成')
+    229|   expect(wrapper.text()).not.toContain('检测到旧温馨小家资料')
+       |                              ^
+    230|   wrapper.unmount()
+    231| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 14 passed (16)
+   Start at  17:18:07
+   Duration  2.78s (transform 920ms, setup 0ms, collect 1.25s, tests 423ms, environment 681ms, prepare 138ms)
+

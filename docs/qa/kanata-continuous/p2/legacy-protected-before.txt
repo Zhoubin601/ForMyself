@@ -1,0 +1,400 @@
+
+ RUN  v3.2.4 /workspace/ForMyself
+
+ ❯ tests/ProtectedDataRecovery.spec.js (13 tests | 12 failed) 2368ms
+   × 实际加密存储：改密回滚与失败保存恢复 > 一份密文写入失败，另一份也回滚且原密码可重载：my_password_vault_encrypted 209ms
+     → promise resolved "false" instead of rejecting
+   × 实际加密存储：改密回滚与失败保存恢复 > 一份密文写入失败，另一份也回滚且原密码可重载：my_password_vault_categories_encrypted 145ms
+     → promise resolved "false" instead of rejecting
+   × 实际加密存储：改密回滚与失败保存恢复 > 失败返回前等待迟到写入完成，防止它在回滚之后覆盖密文 191ms
+     → expected undefined to be 'INJECTED_PREFERENCE_FAILURE' // Object.is equality
+   × 实际加密存储：改密回滚与失败保存恢复 > 重加密过程中有新记录时，最终两份密文都采用新密码并保留新记录 187ms
+     → Malformed UTF-8 data
+   × 实际加密存储：改密回滚与失败保存恢复 > 真正回滚失败时标记故障并阻止后续受保护写操作 122ms
+     → promise resolved "false" instead of rejecting
+   × 实际加密存储：改密回滚与失败保存恢复 > 聊天在重加密途中新增消息，所有消息最终用新密码保存 202ms
+     → CHAT_DECRYPT_FAILED
+   × 实际加密存储：改密回滚与失败保存恢复 > 保存失败后锁定清除明文和密码，保留加密副本及错误，重新验证后恢复 196ms
+     → promise resolved "undefined" instead of rejecting
+   × 实际加密存储：改密回滚与失败保存恢复 > 模拟进程重建，仍能用原密码从持久化恢复副本找回未保存消息 161ms
+     → promise resolved "undefined" instead of rejecting
+   × 实际加密存储：改密回滚与失败保存恢复 > 两个存储都失败时保留进程内密文，提示勿强退，同进程解锁后可恢复 129ms
+     → promise resolved "undefined" instead of rejecting
+   × 实际加密存储：改密回滚与失败保存恢复 > 存储仍失败时可恢复消息并继续显示保存警告，手动重试后落盘 115ms
+     → promise resolved "undefined" instead of rejecting
+   × 实际加密存储：改密回滚与失败保存恢复 > 恢复副本清理及后续副本写入失败，旧副本不能覆盖更新的主文件 260ms
+     → expected false to be true // Object.is equality
+   × 实际加密存储：改密回滚与失败保存恢复 > 产品完整恢复协调器使用实际全部Store，参与者失败后原数据与加密资料均回滚 180ms
+     → LEGACY_CHAT_DISCARD_CONFIRMATION_REQUIRED
+   ✓ 实际加密存储：改密回滚与失败保存恢复 > 密码库保存持续失败后释放不保留明文，重试解锁先保存待写密文再读取 233ms
+stderr | tests/ProtectedAccess.spec.js > 受保护会话与独立加载 > 解密失败不写入空数据，保留密文并允许重试
+读取密码库失败 Error: DECRYPT_FAILED
+    at Proxy.loadRecords (/workspace/ForMyself/src/features/vault/vaultStore.js:81:31)
+    at /workspace/ForMyself/src/stores/protectedAccess.js:80:9
+
+ ❯ tests/ProtectedAccess.spec.js (12 tests | 6 failed) 4320ms
+   ✓ 受保护会话与独立加载 > 仅打开密码库不会解密聊天，重复调用复用加载任务 204ms
+   × 受保护会话与独立加载 > 统一解锁可以并行加载两个模块，不弹额外入口验证 172ms
+     → expected false to be true // Object.is equality
+   × 受保护会话与独立加载 > 免进入验证不等于有解密权限；一次有效会话复用认证 156ms
+     → expected false to be true // Object.is equality
+   × 受保护会话与独立加载 > 取消或错误密码不解密，随后允许重试 450ms
+     → expected false to be true // Object.is equality
+   × 受保护会话与独立加载 > 后台会话失效清空敏感数据而保留普通页面访问 214ms
+     → expected [ { …(10) } ] to deeply equal []
+   × 受保护会话与独立加载 > 解密途中锁定阻止异步结果重新填入聊天数据 1120ms
+     → expected undefined to be type of 'function'
+   ✓ 受保护会话与独立加载 > 解密失败不写入空数据，保留密文并允许重试  368ms
+   × 受保护会话与独立加载 > 锁定途中已开始的写事务使用原密码完成后才释放数据 248ms
+     → expected false to be true // Object.is equality
+   ✓ 受保护会话与独立加载 > 过期的指纹结果不能恢复会话  388ms
+   ✓ 受保护会话与独立加载 > 启动偏好默认开启，损坏时也保持开启 264ms
+   ✓ 受保护会话与独立加载 > 保存开关失败保留内存和持久化旧值  389ms
+   ✓ 受保护会话与独立加载 > v12备份保存开关，v11缺少字段默认开启  338ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 18 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/ProtectedAccess.spec.js > 受保护会话与独立加载 > 统一解锁可以并行加载两个模块，不弹额外入口验证
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/ProtectedAccess.spec.js:65:42
+     63| 
+     64|   it('统一解锁可以并行加载两个模块，不弹额外入口验证', async () => {
+     65|     expect(await access.ensureModules()).toBe(true)
+       |                                          ^
+     66|     expect(access.status).toEqual({ passwords: 'ready', chat: 'ready' …
+     67|     expect(mocks.prompt).not.toHaveBeenCalled()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/18]⎯
+
+ FAIL  tests/ProtectedAccess.spec.js > 受保护会话与独立加载 > 免进入验证不等于有解密权限；一次有效会话复用认证
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/ProtectedAccess.spec.js:74:47
+     72|     expect(auth.isLocked).toBe(false)
+     73|     expect(access.authenticated).toBe(false)
+     74|     expect(await access.ensureModule('chat')).toBe(true)
+       |                                               ^
+     75|     expect(access.status.passwords).toBe('idle')
+     76|     expect(await access.ensureModule('passwords')).toBe(true)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/18]⎯
+
+ FAIL  tests/ProtectedAccess.spec.js > 受保护会话与独立加载 > 取消或错误密码不解密，随后允许重试
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/ProtectedAccess.spec.js:86:47
+     84|     expect(await access.ensureModule('chat')).toBe(false)
+     85|     expect(mocks.chatLoad).not.toHaveBeenCalled()
+     86|     expect(await access.ensureModule('chat')).toBe(true)
+       |                                               ^
+     87|   })
+     88| 
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/18]⎯
+
+ FAIL  tests/ProtectedAccess.spec.js > 受保护会话与独立加载 > 后台会话失效清空敏感数据而保留普通页面访问
+AssertionError: expected [ { …(10) } ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   {
++     "content": "synthetic message",
++     "createdAt": 1793121633864,
++     "id": "msg-mvqybnm0-wb7irj9",
++     "origin": "chat",
++     "proactiveId": "",
++     "reactions": [],
++     "replyTo": null,
++     "role": "user",
++     "status": "complete",
++     "type": "text",
++   },
++ ]
+
+ ❯ tests/ProtectedAccess.spec.js:99:27
+     97|     expect(auth.isLocked).toBe(false)
+     98|     expect(vault.records).toEqual([])
+     99|     expect(chat.messages).toEqual([])
+       |                           ^
+    100|     expect(access.status).toEqual({ passwords: 'idle', chat: 'idle' })
+    101|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/18]⎯
+
+ FAIL  tests/ProtectedAccess.spec.js > 受保护会话与独立加载 > 解密途中锁定阻止异步结果重新填入聊天数据
+AssertionError: expected undefined to be type of 'function'
+
+Expected: "function"
+Received: "undefined"
+
+ ❯ tests/ProtectedAccess.spec.js:107:44
+    105|     mocks.chatLoad.mockImplementationOnce(() => new Promise(r => { res…
+    106|     const task = access.ensureModule('chat')
+    107|     await vi.waitFor(() => expect(resolve).toBeTypeOf('function'))
+       |                                            ^
+    108|     auth.lockApp()
+    109|     resolve({ data: normalizeChatData({ messages: [{ id: 'late', role:…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/18]⎯
+
+ FAIL  tests/ProtectedAccess.spec.js > 受保护会话与独立加载 > 锁定途中已开始的写事务使用原密码完成后才释放数据
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/ProtectedAccess.spec.js:135:43
+    133|       await new Promise(r => { finish = r })
+    134|       expect(password).toBe('Synthetic-QA-2026')
+    135|       expect(useChatStore().isDataLoaded).toBe(true)
+       |                                           ^
+    136|       return true
+    137|     })
+ ❯ performOperation src/stores/protectedAccess.js:119:14
+ ❯ tests/ProtectedAccess.spec.js:142:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/18]⎯
+
+ FAIL  tests/ProtectedDataRecovery.spec.js > 实际加密存储：改密回滚与失败保存恢复 > 一份密文写入失败，另一份也回滚且原密码可重载：my_password_vault_encrypted
+ FAIL  tests/ProtectedDataRecovery.spec.js > 实际加密存储：改密回滚与失败保存恢复 > 一份密文写入失败，另一份也回滚且原密码可重载：my_password_vault_categories_encrypted
+AssertionError: promise resolved "false" instead of rejecting
+
+- Expected: 
+Error {
+  "message": "rejected promise",
+}
+
++ Received: 
+false
+
+ ❯ tests/ProtectedDataRecovery.spec.js:93:35
+     91|     await prepareVault()
+     92|     mock.failPreference = key
+     93|     await expect(changePassword()).rejects.toThrow('INJECTED_PREFERENC…
+       |                                   ^
+     94|     await expectOriginalVaultReadable()
+     95|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/18]⎯
+
+ FAIL  tests/ProtectedDataRecovery.spec.js > 实际加密存储：改密回滚与失败保存恢复 > 失败返回前等待迟到写入完成，防止它在回滚之后覆盖密文
+AssertionError: expected undefined to be 'INJECTED_PREFERENCE_FAILURE' // Object.is equality
+
+- Expected: 
+"INJECTED_PREFERENCE_FAILURE"
+
++ Received: 
+undefined
+
+ ❯ tests/ProtectedDataRecovery.spec.js:106:34
+    104|     expect(settled).toBe(false)
+    105|     unblock(); mock.delayPreference = null
+    106|     expect((await task).message).toBe('INJECTED_PREFERENCE_FAILURE')
+       |                                  ^
+    107|     await expectOriginalVaultReadable()
+    108|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/18]⎯
+
+ FAIL  tests/ProtectedDataRecovery.spec.js > 实际加密存储：改密回滚与失败保存恢复 > 重加密过程中有新记录时，最终两份密文都采用新密码并保留新记录
+Error: Malformed UTF-8 data
+ ❯ Object.stringify node_modules/crypto-js/core.js:523:24
+ ❯ WordArray.init.toString node_modules/crypto-js/core.js:278:38
+ ❯ decode tests/ProtectedDataRecovery.spec.js:56:96
+     54| 
+     55| const original = 'Synthetic-recovery-original', updated = 'Synthetic-r…
+     56| const decode = (ciphertext, password) => JSON.parse(CryptoJS.AES.decry…
+       |                                                                                                ^
+     57| 
+     58| describe('实际加密存储：改密回滚与失败保存恢复', () => {
+ ❯ tests/ProtectedDataRecovery.spec.js:118:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/18]⎯
+
+ FAIL  tests/ProtectedDataRecovery.spec.js > 实际加密存储：改密回滚与失败保存恢复 > 真正回滚失败时标记故障并阻止后续受保护写操作
+AssertionError: promise resolved "false" instead of rejecting
+
+- Expected: 
+Error {
+  "message": "rejected promise",
+}
+
++ Received: 
+false
+
+ ❯ tests/ProtectedDataRecovery.spec.js:124:35
+    122|     await prepareVault()
+    123|     mock.alwaysFailPreference = STORAGE_KEYS.passwordVaultCategories
+    124|     await expect(changePassword()).rejects.toMatchObject({ rollbackFai…
+       |                                   ^
+    125|     expect(access.recoveryRequired).toBe(true)
+    126|     expect(access.status).toEqual({ passwords: 'error', chat: 'error' …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/18]⎯
+
+ FAIL  tests/ProtectedDataRecovery.spec.js > 实际加密存储：改密回滚与失败保存恢复 > 聊天在重加密途中新增消息，所有消息最终用新密码保存
+Error: CHAT_DECRYPT_FAILED
+ ❯ Module.decryptChatData src/features/chat/chatStorage.js:25:25
+     23|     throw new Error('CHAT_DECRYPT_FAILED')
+     24|   }
+     25|   if (!plaintext) throw new Error('CHAT_DECRYPT_FAILED')
+       |                         ^
+     26|   try {
+     27|     return normalizeChatData(JSON.parse(plaintext))
+ ❯ tests/ProtectedDataRecovery.spec.js:140:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/18]⎯
+
+ FAIL  tests/ProtectedDataRecovery.spec.js > 实际加密存储：改密回滚与失败保存恢复 > 保存失败后锁定清除明文和密码，保留加密副本及错误，重新验证后恢复
+AssertionError: promise resolved "undefined" instead of rejecting
+
+- Expected: 
+Error {
+  "message": "rejected promise",
+}
+
++ Received: 
+undefined
+
+ ❯ failChatSave tests/ProtectedDataRecovery.spec.js:148:31
+    146|     mock.failFiles = true
+    147|     chat.appendMessage('user', 'Synthetic pending message')
+    148|     await expect(chat.flush()).rejects.toThrow('INJECTED_FILESYSTEM_FA…
+       |                               ^
+    149|     return chat
+    150|   }
+ ❯ tests/ProtectedDataRecovery.spec.js:152:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/18]⎯
+
+ FAIL  tests/ProtectedDataRecovery.spec.js > 实际加密存储：改密回滚与失败保存恢复 > 模拟进程重建，仍能用原密码从持久化恢复副本找回未保存消息
+AssertionError: promise resolved "undefined" instead of rejecting
+
+- Expected: 
+Error {
+  "message": "rejected promise",
+}
+
++ Received: 
+undefined
+
+ ❯ failChatSave tests/ProtectedDataRecovery.spec.js:148:31
+    146|     mock.failFiles = true
+    147|     chat.appendMessage('user', 'Synthetic pending message')
+    148|     await expect(chat.flush()).rejects.toThrow('INJECTED_FILESYSTEM_FA…
+       |                               ^
+    149|     return chat
+    150|   }
+ ❯ tests/ProtectedDataRecovery.spec.js:167:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/18]⎯
+
+ FAIL  tests/ProtectedDataRecovery.spec.js > 实际加密存储：改密回滚与失败保存恢复 > 两个存储都失败时保留进程内密文，提示勿强退，同进程解锁后可恢复
+AssertionError: promise resolved "undefined" instead of rejecting
+
+- Expected: 
+Error {
+  "message": "rejected promise",
+}
+
++ Received: 
+undefined
+
+ ❯ failChatSave tests/ProtectedDataRecovery.spec.js:148:31
+    146|     mock.failFiles = true
+    147|     chat.appendMessage('user', 'Synthetic pending message')
+    148|     await expect(chat.flush()).rejects.toThrow('INJECTED_FILESYSTEM_FA…
+       |                               ^
+    149|     return chat
+    150|   }
+ ❯ tests/ProtectedDataRecovery.spec.js:179:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/18]⎯
+
+ FAIL  tests/ProtectedDataRecovery.spec.js > 实际加密存储：改密回滚与失败保存恢复 > 存储仍失败时可恢复消息并继续显示保存警告，手动重试后落盘
+AssertionError: promise resolved "undefined" instead of rejecting
+
+- Expected: 
+Error {
+  "message": "rejected promise",
+}
+
++ Received: 
+undefined
+
+ ❯ failChatSave tests/ProtectedDataRecovery.spec.js:148:31
+    146|     mock.failFiles = true
+    147|     chat.appendMessage('user', 'Synthetic pending message')
+    148|     await expect(chat.flush()).rejects.toThrow('INJECTED_FILESYSTEM_FA…
+       |                               ^
+    149|     return chat
+    150|   }
+ ❯ tests/ProtectedDataRecovery.spec.js:190:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/18]⎯
+
+ FAIL  tests/ProtectedDataRecovery.spec.js > 实际加密存储：改密回滚与失败保存恢复 > 恢复副本清理及后续副本写入失败，旧副本不能覆盖更新的主文件
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/ProtectedDataRecovery.spec.js:209:47
+    207|     auth = useAuthStore(); await auth.loadAuthData({ checkBiometric: f…
+    208|     access = useProtectedAccessStore()
+    209|     expect(await access.ensureModule('chat')).toBe(true)
+       |                                               ^
+    210|     expect(useChatStore().messages.some(x => x.content === 'Synthetic …
+    211|     expect((await createChatStorage().load(original)).data.messages).t…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/18]⎯
+
+ FAIL  tests/ProtectedDataRecovery.spec.js > 实际加密存储：改密回滚与失败保存恢复 > 产品完整恢复协调器使用实际全部Store，参与者失败后原数据与加密资料均回滚
+Error: LEGACY_CHAT_DISCARD_CONFIRMATION_REQUIRED
+ ❯ requireValue src/features/chat/backup/kanataBackup.js:21:67
+     19|  * @param {unknown} condition @param {string} code
+     20|  */
+     21| const requireValue = (condition, code) => { if (!condition) throw new …
+       |                                                                   ^
+     22| /** @param {unknown} input @param {string} code @returns {Record<strin…
+     23| const record = (input, code) => {
+ ❯ prepareKanataFullRestore src/features/chat/backup/kanataBackup.js:124:3
+ ❯ Object.restore src/application/kanataBackupRuntime.js:61:46
+ ❯ tests/ProtectedDataRecovery.spec.js:220:26
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/18]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  18 failed | 7 passed (25)
+   Start at  17:20:25
+   Duration  11.60s (transform 787ms, setup 0ms, collect 1.80s, tests 6.69s, environment 1.99s, prepare 358ms)
+

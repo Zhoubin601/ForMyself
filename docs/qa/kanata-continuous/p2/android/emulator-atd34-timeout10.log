@@ -1,0 +1,1703 @@
+
+TASK restart timeout multiplier 2026-10-28T02:52:57.452227+00:00
+INFO         | Android emulator version 37.3.5.0 (build_id 16632760) (CL:N/A)
+INFO         | Graphics backend: gfxstream
+INFO         | Found systemPath /workspace/work/kanata-android/sdk/system-images/android-34/aosp_atd/x86_64/
+INFO         | Changing default hw.initialOrientation to portrait
+
+INFO         | Feature 'Vulkan' (21) is overridden to 'disabled'
+INFO         | Increasing RAM size to 2560MB
+INFO         | Guest GLES Driver: Auto (ext controls)
+INFO         | emuglConfig_init: vulkan_mode_selected:swiftshader gles_mode_selected:swiftshader
+INFO         | Checking system compatibility:
+INFO         |   Checking: hasSufficientDiskSpace
+INFO         |      Ok: Disk space requirements to run avd: `KanataP2ATD34` are met
+INFO         |   Checking: hasSufficientHwGpu
+INFO         |      Ok: Hardware GPU compatibility checks are not required
+INFO         |   Checking: hasSufficientSystem
+INFO         |      Warning: AVD 'KanataP2ATD34' will run more smoothly with 4 CPU cores (currently using 3)
+USER_WARNING | AVD 'KanataP2ATD34' will run more smoothly with 4 CPU cores (currently using 3).
+WARNING      | File System is not ext4, disable QuickbootFileBacked feature
+WARNING      | unexpected '-prop' value ('debug.hwui.drawing_enabled=1'), only 'qemu.*' properties are supported
+WARNING      | unexpected '-prop' value ('ro.hw_timeout_multiplier=10'), only 'qemu.*' properties are supported
+WARNING      | x86_64 emulation may not work without hardware acceleration!
+WARNING      | Downloaded protobuf file is corrupt.
+INFO         | Storing crashdata in: /tmp/android-agent/emu-crash-37.3.5.db, detection is enabled for process: 5009
+INFO         | Initializing gfxstream backend
+INFO         | startOpenglesRendererImpl: gpu info
+INFO         | 
+INFO         | SharedLibrary::open for [libX11]
+WARNING      | Could not open libX11.so, try libX11.so.6
+INFO         | SharedLibrary::open for [libX11.so.6]
+INFO         | SharedLibrary::open for [libX11-xcb]
+WARNING      | Could not open libX11-xcb.so, try libX11-xcb.so.1
+INFO         | SharedLibrary::open for [libX11-xcb.so.1]
+INFO         | Graphics Adapter Vendor Google (Google Inc.)
+INFO         | Graphics Adapter Android Emulator OpenGL ES Translator (Google SwiftShader)
+INFO         | Graphics API Version OpenGL ES 3.0 (OpenGL ES 3.0 SwiftShader 4.0.0.1)
+INFO         | Graphics API Extensions GL_OES_EGL_sync GL_OES_EGL_image GL_OES_EGL_image_external GL_OES_depth24 GL_OES_depth32 GL_OES_element_index_uint GL_OES_texture_float GL_OES_texture_float_linear GL_OES_compressed_paletted_texture GL_OES_compressed_ETC1_RGB8_texture GL_OES_depth_texture GL_OES_texture_half_float GL_OES_texture_half_float_linear GL_OES_packed_depth_stencil GL_OES_vertex_half_float GL_OES_standard_derivatives GL_OES_texture_npot GL_OES_rgb8_rgba8 GL_EXT_color_buffer_float GL_EXT_color_buffer_half_float GL_EXT_texture_format_BGRA8888 GL_APPLE_texture_format_BGRA8888 
+INFO         | Graphics Device Extensions N/A
+INFO         | Sending adb public key [QAAAAE/n8PdRMBiuTn0fIK7UPJi3JikT7SnKUXPcRbrScoX/al/HHQo51jm4ICunmjfX2N73hgdK7t/y09xIyNA2wA9mhiqqbrc17pkEbHSoen4E9ru727SFQVS5j0iH6kECipgIF6/lVT6xIUbIVOr9sb3R5DR/IHcWLiEft6ggFxI130nlyfbP0IciwRR+YQrN1Q12lpoNvu8kdUFOU8+IADAdRfDEEPM2UxDPkCJvBkjGglrEh3X4C733b3V5HsevVXHGAYIOSseREUdfm6VvmEyCFhG4jyABzMvY3n3MpEAEIBHo4op7dP3TOarsVpI3a36cMnOHm2oHBRoMIQlnvzjHBMTpcVFUn/EfnESdXuYd6VLAhGXGPeR5Xpgbg6XKwukFQGJwK3UKPAY/OteatNtsCuTVS30c/KlLe0ZXF+LDt216nPHvIa87zbk2xvVY5XHr6pcgl7U7tBw0Oj69FOT89J8PR17e9NYkJaPe+A/GyX/nlC8FDGs4djFqjqpdYhhHhVfubfCdaMltwSm0UgKJJbqwHUNkbdH4f3mrMwXQDAQbUHZ+txnb7gMXxgxlMCBiaeDSAp0oUfo9z+eRmDINtxgxRRIN+pUe+Uxt8NejMTTwXlrz4bWIwJTZoCnvVqkHLhGXhxnDO0oyWRCDnFWrbYBHV0ftbfMCfPapkMd29gbWgwEAAQA= @unknown]
+INFO         | Userspace boot properties:
+INFO         |   androidboot.boot_devices=pci0000:00/0000:00:03.0 pci0000:00/0000:00:06.0
+INFO         |   androidboot.dalvik.vm.heapsize=576m
+INFO         |   androidboot.debug.hwui.renderer=skiagl
+INFO         |   androidboot.debug.sf.nobootanimation=1
+INFO         |   androidboot.hardware=ranchu
+INFO         |   androidboot.hardware.gltransport=pipe
+INFO         |   androidboot.logcat=*:V
+INFO         |   androidboot.opengles.version=196608
+INFO         |   androidboot.qemu=1
+INFO         |   androidboot.qemu.adb.pubkey=QAAAAE/n8PdRMBiuTn0fIK7UPJi3JikT7SnKUXPcRbrScoX/al/HHQo51jm4ICunmjfX2N73hgdK7t/y09xIyNA2wA9mhiqqbrc17pkEbHSoen4E9ru727SFQVS5j0iH6kECipgIF6/lVT6xIUbIVOr9sb3R5DR/IHcWLiEft6ggFxI130nlyfbP0IciwRR+YQrN1Q12lpoNvu8kdUFOU8+IADAdRfDEEPM2UxDPkCJvBkjGglrEh3X4C733b3V5HsevVXHGAYIOSseREUdfm6VvmEyCFhG4jyABzMvY3n3MpEAEIBHo4op7dP3TOarsVpI3a36cMnOHm2oHBRoMIQlnvzjHBMTpcVFUn/EfnESdXuYd6VLAhGXGPeR5Xpgbg6XKwukFQGJwK3UKPAY/OteatNtsCuTVS30c/KlLe0ZXF+LDt216nPHvIa87zbk2xvVY5XHr6pcgl7U7tBw0Oj69FOT89J8PR17e9NYkJaPe+A/GyX/nlC8FDGs4djFqjqpdYhhHhVfubfCdaMltwSm0UgKJJbqwHUNkbdH4f3mrMwXQDAQbUHZ+txnb7gMXxgxlMCBiaeDSAp0oUfo9z+eRmDINtxgxRRIN+pUe+Uxt8NejMTTwXlrz4bWIwJTZoCnvVqkHLhGXhxnDO0oyWRCDnFWrbYBHV0ftbfMCfPapkMd29gbWgwEAAQA= @unknown
+INFO         |   androidboot.qemu.avd_name=KanataP2ATD34
+INFO         |   androidboot.qemu.camera_hq_edge_processing=0
+INFO         |   androidboot.qemu.camera_protocol_ver=1
+INFO         |   androidboot.qemu.cpuvulkan.version=4206592
+INFO         |   androidboot.qemu.gltransport.drawFlushInterval=800
+INFO         |   androidboot.qemu.gltransport.name=pipe
+INFO         |   androidboot.qemu.hwcodec.avcdec=2
+INFO         |   androidboot.qemu.hwcodec.hevcdec=2
+INFO         |   androidboot.qemu.hwcodec.vpxdec=2
+INFO         |   androidboot.qemu.settings.system.screen_off_timeout=2147483647
+INFO         |   androidboot.qemu.skin=360x640
+INFO         |   androidboot.qemu.virtiowifi=1
+INFO         |   androidboot.qemu.vsync=60
+INFO         |   androidboot.serialno=EMULATOR37X3X5X0
+INFO         |   androidboot.vbmeta.digest=de2e3763053c074eec1bb4238806b9c27684a362b2c40956fdaf5f6baf549ea3
+INFO         |   androidboot.vbmeta.hash_alg=sha256
+INFO         |   androidboot.vbmeta.size=6720
+INFO         |   androidboot.veritymode=enforcing
+TCG doesn't support requested feature: CPUID.01H:ECX.avx [bit 28]
+TCG doesn't support requested feature: CPUID.01H:ECX.f16c [bit 29]
+WARNING: cannnot unmap ptr 0x7fcbc5c01000 as it is in the protected range from 0x7fcb25c00000 to 0x7fcbc5e00000
+INFO         | Monitoring duration of emulator setup.
+INFO         | Activated packet streamer for bluetooth emulation
+INFO         | Successfully initialized netsim WiFi
+WARNING      | The -dpi-device flag is obsolete and will be ignored.
+INFO         | Setting display: 0 configuration to: 360x640, dpi: 160x160 
+INFO         | setDisplayActiveConfig: id:0, 360x640
+INFO         | emulatorSetupEnvironment: Environment scene is not required
+WARNING      | Failed to process .ini file /workspace/work/kanata-android/user/emu-update-last-check.ini for reading.
+WARNING      | UpdateCheck: Failure: Error
+WARNING      | UpdateCheck: failed to get the latest version, skipping check (current version '37.3.5-16632760')
+No EFI environment detected.
+early console in extract_kernel
+input_data: 0x0000000002c1e2e0
+input_len: 0x0000000001086214
+output: 0x0000000001000000
+output_len: 0x0000000002c57a98
+kernel_total_size: 0x0000000002a2c000
+needed_size: 0x0000000002e00000
+trampoline_32bit: 0x000000000009d000
+Physical KASLR using RDTSC...
+Virtual KASLR using RDTSC...
+
+Decompressing Linux... Parsing ELF... Performing relocations... done.
+Booting the kernel.
+[    0.000000] Linux version 6.1.23-android14-4-00257-g7e35917775b8-ab9964412 (build-user@build-host) (Android (9796371, based on r487747) clang version 17.0.0 (https://android.googlesource.com/toolchain/llvm-project d9f89f4d16663d5012e5c09495f3b30ece3d2362), LLD 17.0.0) #1 SMP PREEMPT Mon Apr 17 20:50:58 UTC 2023
+[    0.000000] Command line: 8250.nr_uarts=1 clocksource=pit no_timer_check console=ttyS0,38400 earlyprintk=ttyS0 loop.max_part=7 ramoops.mem_address=0xff018000 ramoops.mem_size=0x10000 memmap=0x10000$0xff018000 printk.devkmsg=on bootconfig mac80211_hwsim.radios=0
+[    0.000000] x86/fpu: x87 FPU will use FXSAVE
+[    0.000000] signal: max sigframe size: 1440
+[    0.000000] BIOS-provided physical RAM map:
+[    0.000000] BIOS-e820: [mem 0x0000000000000000-0x000000000009fbff] usable
+[    0.000000] BIOS-e820: [mem 0x000000000009fc00-0x000000000009ffff] reserved
+[    0.000000] BIOS-e820: [mem 0x00000000000f0000-0x00000000000fffff] reserved
+[    0.000000] BIOS-e820: [mem 0x0000000000100000-0x000000009ffd5fff] usable
+[    0.000000] BIOS-e820: [mem 0x000000009ffd6000-0x000000009fffffff] reserved
+[    0.000000] BIOS-e820: [mem 0x00000000fffc0000-0x00000000ffffffff] reserved
+[    0.000000] Stack Depot is disabled
+[    0.000000] printk: bootconsole [earlyser0] enabled
+[    0.000000] NX (Execute Disable) protection: active
+[    0.000000] user-defined physical RAM map:
+[    0.000000] user: [mem 0x0000000000000000-0x000000000009fbff] usable
+[    0.000000] user: [mem 0x000000000009fc00-0x000000000009ffff] reserved
+[    0.000000] user: [mem 0x00000000000f0000-0x00000000000fffff] reserved
+[    0.000000] user: [mem 0x0000000000100000-0x000000009ffd5fff] usable
+[    0.000000] user: [mem 0x000000009ffd6000-0x000000009fffffff] reserved
+[    0.000000] user: [mem 0x00000000ff018000-0x00000000ff027fff] reserved
+[    0.000000] user: [mem 0x00000000fffc0000-0x00000000ffffffff] reserved
+[    0.000000] SMBIOS 2.8 present.
+[    0.000000] DMI: QEMU Standard PC (i440FX + PIIX, 1996), BIOS rel-1.11.1-0-g0551a4be2c-prebuilt.qemu-project.org 04/01/2014
+[    0.000000] last_pfn = 0x9ffd6 max_arch_pfn = 0x400000000
+[    0.000000] x86/PAT: PAT not supported by the CPU.
+[    0.000000] x86/PAT: Configuration [0-7]: WB  WT  UC- UC  WB  WT  UC- UC  
+Memory KASLR using RDTSC...
+[    0.000000] found SMP MP-table at [mem 0x000f5ac0-0x000f5acf]
+[    0.000000] RAMDISK: [mem 0x7fe43000-0x7fffffff]
+[    0.000000] ACPI: Early table checksum verification disabled
+[    0.000000] ACPI: RSDP 0x00000000000F58C0 000014 (v00 BOCHS )
+[    0.000000] ACPI: RSDT 0x000000009FFE1AEC 000030 (v01 BOCHS  BXPCRSDT 00000001 BXPC 00000001)
+[    0.000000] ACPI: FACP 0x000000009FFE19C8 000074 (v01 BOCHS  BXPCFACP 00000001 BXPC 00000001)
+[    0.000000] ACPI: DSDT 0x000000009FFE0040 001988 (v01 BOCHS  BXPCDSDT 00000001 BXPC 00000001)
+[    0.000000] ACPI: FACS 0x000000009FFE0000 000040
+[    0.000000] ACPI: APIC 0x000000009FFE1A3C 000078 (v01 BOCHS  BXPCAPIC 00000001 BXPC 00000001)
+[    0.000000] ACPI: HPET 0x000000009FFE1AB4 000038 (v01 BOCHS  BXPCHPET 00000001 BXPC 00000001)
+[    0.000000] ACPI: Reserving FACP table memory at [mem 0x9ffe19c8-0x9ffe1a3b]
+[    0.000000] ACPI: Reserving DSDT table memory at [mem 0x9ffe0040-0x9ffe19c7]
+[    0.000000] ACPI: Reserving FACS table memory at [mem 0x9ffe0000-0x9ffe003f]
+[    0.000000] ACPI: Reserving APIC table memory at [mem 0x9ffe1a3c-0x9ffe1ab3]
+[    0.000000] ACPI: Reserving HPET table memory at [mem 0x9ffe1ab4-0x9ffe1aeb]
+[    0.000000] Zone ranges:
+[    0.000000]   DMA32    [mem 0x0000000000001000-0x000000009ffd5fff]
+[    0.000000]   Normal   empty
+[    0.000000]   Device   empty
+[    0.000000] Movable zone start for each node
+[    0.000000] Early memory node ranges
+[    0.000000]   node   0: [mem 0x0000000000001000-0x000000000009efff]
+[    0.000000]   node   0: [mem 0x0000000000100000-0x000000009ffd5fff]
+[    0.000000] Initmem setup node 0 [mem 0x0000000000001000-0x000000009ffd5fff]
+[    0.000000] On node 0, zone DMA32: 1 pages in unavailable ranges
+[    0.000000] On node 0, zone DMA32: 97 pages in unavailable ranges
+[    0.000000] On node 0, zone DMA32: 42 pages in unavailable ranges
+[    0.000000] ACPI: LAPIC_NMI (acpi_id[0xff] dfl dfl lint[0x1])
+[    0.000000] IOAPIC[0]: apic_id 0, version 32, address 0xfec00000, GSI 0-23
+[    0.000000] ACPI: INT_SRC_OVR (bus 0 bus_irq 0 global_irq 2 dfl dfl)
+[    0.000000] ACPI: INT_SRC_OVR (bus 0 bus_irq 5 global_irq 5 high level)
+[    0.000000] ACPI: INT_SRC_OVR (bus 0 bus_irq 9 global_irq 9 high level)
+[    0.000000] ACPI: INT_SRC_OVR (bus 0 bus_irq 10 global_irq 10 high level)
+[    0.000000] ACPI: INT_SRC_OVR (bus 0 bus_irq 11 global_irq 11 high level)
+[    0.000000] ACPI: Using ACPI (MADT) for SMP configuration information
+[    0.000000] ACPI: HPET id: 0x8086a201 base: 0xfed00000
+[    0.000000] smpboot: Allowing 1 CPUs, 0 hotplug CPUs
+[    0.000000] [mem 0xa0000000-0xff017fff] available for PCI devices
+[    0.000000] Booting paravirtualized kernel on bare hardware
+[    0.000000] clocksource: refined-jiffies: mask: 0xffffffff max_cycles: 0xffffffff, max_idle_ns: 7645519600211568 ns
+[    0.000000] Load bootconfig: 1861 bytes 70 nodes
+[    0.000000] setup_percpu: NR_CPUS:32 nr_cpumask_bits:1 nr_cpu_ids:1 nr_node_ids:1
+[    0.000000] percpu: Embedded 54 pages/cpu s181352 r8192 d31640 u2097152
+[    0.000000] Built 1 zonelists, mobility grouping on.  Total pages: 644822
+[    0.000000] Kernel command line: console=ttynull stack_depot_disable=on cgroup_disable=pressure bootconfig 8250.nr_uarts=1 clocksource=pit no_timer_check console=ttyS0,38400 earlyprintk=ttyS0 loop.max_part=7 ramoops.mem_address=0xff018000 ramoops.mem_size=0x10000 memmap=0x10000$0xff018000 printk.devkmsg=on bootconfig mac80211_hwsim.radios=0
+[    0.000000] cgroup: Disabling pressure control group feature
+[    0.000000] Dentry cache hash table entries: 524288 (order: 10, 4194304 bytes, linear)
+[    0.000000] Inode-cache hash table entries: 262144 (order: 9, 2097152 bytes, linear)
+[    0.000000] mem auto-init: stack:all(zero), heap alloc:on, heap free:off
+[    0.000000] Memory: 2527180K/2620880K available (20492K kernel code, 1988K rwdata, 12356K rodata, 1480K init, 2476K bss, 93440K reserved, 0K cma-reserved)
+[    0.000000] SLUB: HWalign=64, Order=0-3, MinObjects=0, CPUs=1, Nodes=1
+[    0.000000] Kernel/User page tables isolation: enabled
+[    0.000000] rcu: Preemptible hierarchical RCU implementation.
+[    0.000000] rcu: 	RCU event tracing is enabled.
+[    0.000000] rcu: 	RCU restricting CPUs from NR_CPUS=32 to nr_cpu_ids=1.
+[    0.000000] rcu: 	RCU priority boosting: priority 1 delay 500 ms.
+[    0.000000] 	Trampoline variant of Tasks RCU enabled.
+[    0.000000] 	Tracing variant of Tasks RCU enabled.
+[    0.000000] rcu: RCU calculated value of scheduler-enlistment delay is 25 jiffies.
+[    0.000000] rcu: Adjusting geometry for rcu_fanout_leaf=16, nr_cpu_ids=1
+[    0.000000] NR_IRQS: 4352, nr_irqs: 256, preallocated irqs: 16
+[    0.000000] rcu: srcu_init: Setting srcu_struct sizes based on contention.
+[    0.000000] kfence: initialized - using 524288 bytes for 63 objects at 0x(____ptrval____)-0x(____ptrval____)
+[    0.000000] printk: console [ttyS0] enabled
+[    0.000000] printk: console [ttyS0] enabled
+[    0.000000] printk: bootconsole [earlyser0] disabled
+[    0.000000] printk: bootconsole [earlyser0] disabled
+[    0.000000] ACPI: Core revision 20220331
+[    0.000000] clocksource: hpet: mask: 0xffffffff max_cycles: 0xffffffff, max_idle_ns: 19112604467 ns
+[    0.012000] APIC: Switch to symmetric I/O mode setup
+[    0.024000] ..TIMER: vector=0x30 apic1=0 pin1=2 apic2=-1 pin2=-1
+[    0.044000] tsc: Unable to calibrate against PIT
+[    0.044000] tsc: using HPET reference calibration
+[    0.044000] tsc: Detected 2297.011 MHz processor
+[    0.014183] clocksource: tsc-early: mask: 0xffffffffffffffff max_cycles: 0x211c2d8ca12, max_idle_ns: 440795292538 ns
+[    0.015376] Calibrating delay loop (skipped), value calculated using timer frequency.. 4594.02 BogoMIPS (lpj=9188044)
+[    0.019284] pid_max: default: 32768 minimum: 301
+[    0.035647] LSM: Security Framework initializing
+[    0.049296] SELinux:  Initializing.
+[    0.061829] Mount-cache hash table entries: 8192 (order: 4, 65536 bytes, linear)
+[    0.062097] Mountpoint-cache hash table entries: 8192 (order: 4, 65536 bytes, linear)
+Poking KASLR using RDTSC...
+[    0.139304] CPU: CPU feature xsave disabled, no CPUID level 0xd
+[    0.140227] Last level iTLB entries: 4KB 0, 2MB 0, 4MB 0
+[    0.140320] Last level dTLB entries: 4KB 0, 2MB 0, 4MB 0, 1GB 0
+[    0.140578] Spectre V1 : Mitigation: usercopy/swapgs barriers and __user pointer sanitization
+[    0.140965] Spectre V2 : Mitigation: Retpolines
+[    0.141037] Spectre V2 : Spectre v2 / SpectreRSB mitigation: Filling RSB on context switch
+[    0.141154] Spectre V2 : Spectre v2 / SpectreRSB : Filling RSB on VMEXIT
+[    0.141302] Speculative Store Bypass: Vulnerable
+[    0.143201] MDS: Vulnerable: Clear CPU buffers attempted, no microcode
+[    0.143312] MMIO Stale Data: Unknown: No mitigations
+[    1.241202] Freeing SMP alternatives memory: 56K
+[    1.456821] smpboot: CPU0: Intel Android virtual processor (family: 0x6, model: 0x6, stepping: 0x3)
+[    1.472456] cblist_init_generic: Setting adjustable number of callback queues.
+[    1.472802] cblist_init_generic: Setting shift to 0 and lim to 1.
+[    1.473538] cblist_init_generic: Setting shift to 0 and lim to 1.
+[    1.474305] Performance Events: PMU not available due to virtualization, using software events only.
+[    1.476796] rcu: Hierarchical SRCU implementation.
+[    1.476928] rcu: 	Max phase no-delay instances is 1000.
+[    1.492898] dyndbg: Ignore empty _ddebug table in a CONFIG_DYNAMIC_DEBUG_CORE build
+[    1.495327] smp: Bringing up secondary CPUs ...
+[    1.495623] smp: Brought up 1 node, 1 CPU
+[    1.495718] smpboot: Max logical packages: 1
+[    1.495935] smpboot: Total of 1 processors activated (4594.02 BogoMIPS)
+[    1.508266] x86/mm: Memory block size: 128MB
+[    1.518073] clocksource: jiffies: mask: 0xffffffff max_cycles: 0xffffffff, max_idle_ns: 7645041785100000 ns
+[    1.518362] futex hash table entries: 256 (order: 2, 16384 bytes, linear)
+[    1.541054] NET: Registered PF_NETLINK/PF_ROUTE protocol family
+[    1.545684] audit: initializing netlink subsys (disabled)
+[    1.549716] ramoops: using module parameters
+[    1.551820] audit: type=2000 audit(1793155980.584:1): state=initialized audit_enabled=0 res=1
+[    1.559493] printk: console [ramoops-1] enabled
+[    1.561131] pstore: Registered ramoops as persistent store backend
+[    1.561390] ramoops: using 0x10000@0xff018000, ecc: 0
+[    1.567470] thermal_sys: Registered thermal governor 'step_wise'
+[    1.567540] thermal_sys: Registered thermal governor 'user_space'
+[    1.570666] cpuidle: using governor menu
+[    1.579543] PCI: Using configuration type 1 for base access
+[    1.630807] kprobes: kprobe jump-optimization is enabled. All kprobes are optimized if possible.
+[    1.662999] cryptd: max_cpu_qlen set to 1000
+[    1.671684] ACPI: Added _OSI(Module Device)
+[    1.671899] ACPI: Added _OSI(Processor Device)
+[    1.671965] ACPI: Added _OSI(3.0 _SCP Extensions)
+[    1.672103] ACPI: Added _OSI(Processor Aggregator Device)
+[    1.712832] ACPI: 1 ACPI AML tables successfully acquired and loaded
+[    1.756509] ACPI: Interpreter enabled
+[    1.757687] ACPI: PM: (supports S0 S3 S5)
+[    1.757810] ACPI: Using IOAPIC for interrupt routing
+[    1.758447] PCI: Using host bridge windows from ACPI; if necessary, use "pci=nocrs" and report a bug
+[    1.758622] PCI: Using E820 reservations for host bridge windows
+[    1.762861] ACPI: Enabled 2 GPEs in block 00 to 0F
+[    1.867825] ACPI: PCI Root Bridge [PCI0] (domain 0000 [bus 00-ff])
+[    1.868944] acpi PNP0A03:00: _OSC: OS supports [ASPM ClockPM Segments MSI HPX-Type3]
+[    1.869351] acpi PNP0A03:00: _OSC: not requesting OS control; OS requires [ExtendedConfig ASPM ClockPM MSI]
+[    1.870598] acpi PNP0A03:00: fail to add MMCONFIG information, can't access extended PCI configuration space under this bridge.
+[    1.875326] PCI host bridge to bus 0000:00
+[    1.875677] pci_bus 0000:00: root bus resource [io  0x0000-0x0cf7 window]
+[    1.875981] pci_bus 0000:00: root bus resource [io  0x0d00-0xffff window]
+[    1.876123] pci_bus 0000:00: root bus resource [mem 0x000a0000-0x000bffff window]
+[    1.876308] pci_bus 0000:00: root bus resource [mem 0xa0000000-0xfebfffff window]
+[    1.876452] pci_bus 0000:00: root bus resource [mem 0x400000000-0x80005bfff window]
+[    1.876806] pci_bus 0000:00: root bus resource [bus 00-ff]
+[    1.881354] pci 0000:00:00.0: [8086:1237] type 00 class 0x060000
+[    1.886879] pci 0000:00:01.0: [8086:7000] type 00 class 0x060100
+[    1.888533] pci 0000:00:01.1: [8086:7010] type 00 class 0x010180
+[    1.897742] pci 0000:00:01.1: reg 0x20: [io  0xc260-0xc26f]
+[    1.900034] pci 0000:00:01.1: legacy IDE quirk: reg 0x10: [io  0x01f0-0x01f7]
+[    1.900310] pci 0000:00:01.1: legacy IDE quirk: reg 0x14: [io  0x03f6]
+[    1.900474] pci 0000:00:01.1: legacy IDE quirk: reg 0x18: [io  0x0170-0x0177]
+[    1.900708] pci 0000:00:01.1: legacy IDE quirk: reg 0x1c: [io  0x0376]
+[    1.905237] pci 0000:00:01.3: [8086:7113] type 00 class 0x068000
+[    1.905965] pci 0000:00:01.3: quirk: [io  0x0600-0x063f] claimed by PIIX4 ACPI
+[    1.906216] pci 0000:00:01.3: quirk: [io  0x0700-0x070f] claimed by PIIX4 SMB
+[    1.907993] pci 0000:00:02.0: [1af4:1019] type 00 class 0x040100
+[    1.911155] pci 0000:00:02.0: reg 0x10: [io  0xc1c0-0xc1df]
+[    1.920008] pci 0000:00:02.0: reg 0x20: [mem 0x800000000-0x800003fff 64bit pref]
+[    1.928555] pci 0000:00:03.0: [1af4:1001] type 00 class 0x010000
+[    1.931101] pci 0000:00:03.0: reg 0x10: [io  0xc000-0xc03f]
+[    1.935162] pci 0000:00:03.0: reg 0x14: [mem 0xfebc0000-0xfebc0fff]
+[    1.939101] pci 0000:00:03.0: reg 0x18: [io  0xc270-0xc273]
+[    1.947101] pci 0000:00:03.0: reg 0x20: [mem 0x800004000-0x800007fff 64bit pref]
+[    1.954033] pci 0000:00:04.0: [1af4:1001] type 00 class 0x010000
+[    1.955101] pci 0000:00:04.0: reg 0x10: [io  0xc040-0xc07f]
+[    1.961758] pci 0000:00:04.0: reg 0x14: [mem 0xfebc1000-0xfebc1fff]
+[    1.963150] pci 0000:00:04.0: reg 0x18: [io  0xc274-0xc277]
+[    1.975119] pci 0000:00:04.0: reg 0x20: [mem 0x800008000-0x80000bfff 64bit pref]
+[    1.991101] pci 0000:00:05.0: [1af4:1001] type 00 class 0x010000
+[    1.991162] pci 0000:00:05.0: reg 0x10: [io  0xc080-0xc0bf]
+[    1.995101] pci 0000:00:05.0: reg 0x14: [mem 0xfebc2000-0xfebc2fff]
+[    2.005562] pci 0000:00:05.0: reg 0x18: [io  0xc278-0xc27b]
+[    2.007176] pci 0000:00:05.0: reg 0x20: [mem 0x80000c000-0x80000ffff 64bit pref]
+[    2.013325] pci 0000:00:06.0: [1af4:1001] type 00 class 0x010000
+[    2.015101] pci 0000:00:06.0: reg 0x10: [io  0xc0c0-0xc0ff]
+[    2.017199] pci 0000:00:06.0: reg 0x14: [mem 0xfebc3000-0xfebc3fff]
+[    2.027151] pci 0000:00:06.0: reg 0x18: [io  0xc27c-0xc27f]
+[    2.036471] pci 0000:00:06.0: reg 0x20: [mem 0x800010000-0x800013fff 64bit pref]
+[    2.040787] pci 0000:00:07.0: [1af4:1001] type 00 class 0x010000
+[    2.046210] pci 0000:00:07.0: reg 0x10: [io  0xc100-0xc13f]
+[    2.047101] pci 0000:00:07.0: reg 0x14: [mem 0xfebc4000-0xfebc4fff]
+[    2.051167] pci 0000:00:07.0: reg 0x18: [io  0xc280-0xc283]
+[    2.061824] pci 0000:00:07.0: reg 0x20: [mem 0x800014000-0x800017fff 64bit pref]
+[    2.068924] pci 0000:00:08.0: [1af4:1000] type 00 class 0x020000
+[    2.071149] pci 0000:00:08.0: reg 0x10: [io  0xc1e0-0xc1ff]
+[    2.075148] pci 0000:00:08.0: reg 0x14: [mem 0xfebc5000-0xfebc5fff]
+[    2.087101] pci 0000:00:08.0: reg 0x20: [mem 0x800018000-0x80001bfff 64bit pref]
+[    2.087149] pci 0000:00:08.0: reg 0x30: [mem 0xfeb80000-0xfebbffff pref]
+[    2.092486] pci 0000:00:09.0: [1af4:1003] type 00 class 0x078000
+[    2.096911] pci 0000:00:09.0: reg 0x10: [io  0xc140-0xc17f]
+[    2.100535] pci 0000:00:09.0: reg 0x14: [mem 0xfebc6000-0xfebc6fff]
+[    2.111138] pci 0000:00:09.0: reg 0x20: [mem 0x80001c000-0x80001ffff 64bit pref]
+[    2.115669] pci 0000:00:0a.0: [1af4:1003] type 00 class 0x078000
+[    2.118398] pci 0000:00:0a.0: reg 0x10: [io  0xc180-0xc1bf]
+[    2.123275] pci 0000:00:0a.0: reg 0x14: [mem 0xfebc7000-0xfebc7fff]
+[    2.133269] pci 0000:00:0a.0: reg 0x20: [mem 0x800020000-0x800023fff 64bit pref]
+[    2.136468] pci 0000:00:0b.0: [607d:f153] type 00 class 0x00ff00
+[    2.143145] pci 0000:00:0b.0: reg 0x10: [mem 0xfebc8000-0xfebc8fff]
+[    2.144680] pci 0000:00:0b.0: reg 0x14: [mem 0x400000000-0x7ffffffff 64bit]
+[    2.156253] pci 0000:00:0c.0: [1af4:1005] type 00 class 0x00ff00
+[    2.163244] pci 0000:00:0c.0: reg 0x10: [io  0xc200-0xc21f]
+[    2.171617] pci 0000:00:0c.0: reg 0x20: [mem 0x800024000-0x800027fff 64bit pref]
+[    2.177565] pci 0000:00:0d.0: [1af4:1052] type 00 class 0x098000
+[    2.183149] pci 0000:00:0d.0: reg 0x14: [mem 0xfebc9000-0xfebc9fff]
+[    2.197547] pci 0000:00:0d.0: reg 0x20: [mem 0x800028000-0x80002bfff 64bit pref]
+[    2.200902] pci 0000:00:0e.0: [1af4:1052] type 00 class 0x098000
+[    2.211161] pci 0000:00:0e.0: reg 0x14: [mem 0xfebca000-0xfebcafff]
+[    2.223101] pci 0000:00:0e.0: reg 0x20: [mem 0x80002c000-0x80002ffff 64bit pref]
+[    2.223101] pci 0000:00:0f.0: [1af4:1052] type 00 class 0x098000
+[    2.225168] pci 0000:00:0f.0: reg 0x14: [mem 0xfebcb000-0xfebcbfff]
+[    2.231832] pci 0000:00:0f.0: reg 0x20: [mem 0x800030000-0x800033fff 64bit pref]
+[    2.234792] pci 0000:00:10.0: [1af4:1052] type 00 class 0x098000
+[    2.239179] pci 0000:00:10.0: reg 0x14: [mem 0xfebcc000-0xfebccfff]
+[    2.245015] pci 0000:00:10.0: reg 0x20: [mem 0x800034000-0x800037fff 64bit pref]
+[    2.249253] pci 0000:00:11.0: [1af4:1052] type 00 class 0x098000
+[    2.253170] pci 0000:00:11.0: reg 0x14: [mem 0xfebcd000-0xfebcdfff]
+[    2.260494] pci 0000:00:11.0: reg 0x20: [mem 0x800038000-0x80003bfff 64bit pref]
+[    2.267611] pci 0000:00:12.0: [1af4:1052] type 00 class 0x098000
+[    2.272563] pci 0000:00:12.0: reg 0x14: [mem 0xfebce000-0xfebcefff]
+[    2.277642] pci 0000:00:12.0: reg 0x20: [mem 0x80003c000-0x80003ffff 64bit pref]
+[    2.283445] pci 0000:00:13.0: [1af4:1052] type 00 class 0x098000
+[    2.287847] pci 0000:00:13.0: reg 0x14: [mem 0xfebcf000-0xfebcffff]
+[    2.297064] pci 0000:00:13.0: reg 0x20: [mem 0x800040000-0x800043fff 64bit pref]
+[    2.300253] pci 0000:00:14.0: [1af4:1052] type 00 class 0x098000
+[    2.303842] pci 0000:00:14.0: reg 0x14: [mem 0xfebd0000-0xfebd0fff]
+[    2.311148] pci 0000:00:14.0: reg 0x20: [mem 0x800044000-0x800047fff 64bit pref]
+[    2.324865] pci 0000:00:15.0: [1af4:1052] type 00 class 0x098000
+[    2.327101] pci 0000:00:15.0: reg 0x14: [mem 0xfebd1000-0xfebd1fff]
+[    2.331101] pci 0000:00:15.0: reg 0x20: [mem 0x800048000-0x80004bfff 64bit pref]
+[    2.338239] pci 0000:00:16.0: [1af4:1052] type 00 class 0x098000
+[    2.339797] pci 0000:00:16.0: reg 0x14: [mem 0xfebd2000-0xfebd2fff]
+[    2.347148] pci 0000:00:16.0: reg 0x20: [mem 0x80004c000-0x80004ffff 64bit pref]
+[    2.352634] pci 0000:00:17.0: [1af4:1052] type 00 class 0x098000
+[    2.357802] pci 0000:00:17.0: reg 0x14: [mem 0xfebd3000-0xfebd3fff]
+[    2.363971] pci 0000:00:17.0: reg 0x20: [mem 0x800050000-0x800053fff 64bit pref]
+[    2.366492] pci 0000:00:18.0: [1af4:1052] type 00 class 0x090000
+[    2.371053] pci 0000:00:18.0: reg 0x14: [mem 0xfebd4000-0xfebd4fff]
+[    2.371101] pci 0000:00:18.0: reg 0x20: [mem 0x800054000-0x800057fff 64bit pref]
+[    2.377500] pci 0000:00:19.0: [1af4:100a] type 00 class 0x020000
+[    2.379101] pci 0000:00:19.0: reg 0x10: [io  0xc220-0xc23f]
+[    2.380832] pci 0000:00:19.0: reg 0x14: [mem 0xfebd5000-0xfebd5fff]
+[    2.395690] pci 0000:00:1a.0: [1af4:1012] type 00 class 0x078000
+[    2.399101] pci 0000:00:1a.0: reg 0x10: [io  0xc240-0xc25f]
+[    2.401762] pci 0000:00:1a.0: reg 0x14: [mem 0xfebd6000-0xfebd6fff]
+[    2.411146] pci 0000:00:1a.0: reg 0x20: [mem 0x800058000-0x80005bfff 64bit pref]
+[    2.425062] ACPI: PCI: Interrupt link LNKA configured for IRQ 10
+[    2.427286] ACPI: PCI: Interrupt link LNKB configured for IRQ 10
+[    2.428206] ACPI: PCI: Interrupt link LNKC configured for IRQ 11
+[    2.428867] ACPI: PCI: Interrupt link LNKD configured for IRQ 11
+[    2.429318] ACPI: PCI: Interrupt link LNKS configured for IRQ 9
+[    2.443405] iommu: Default domain type: Translated 
+[    2.443546] iommu: DMA domain TLB invalidation policy: lazy mode 
+[    2.449160] SCSI subsystem initialized
+[    2.449913] ACPI: bus type USB registered
+[    2.451923] usbcore: registered new interface driver usbfs
+[    2.452279] usbcore: registered new interface driver hub
+[    2.452627] usbcore: registered new device driver usb
+[    2.455557] mc: Linux media interface: v0.10
+[    2.455747] videodev: Linux video capture interface: v2.00
+[    2.456315] pps_core: LinuxPPS API ver. 1 registered
+[    2.456399] pps_core: Software ver. 5.3.6 - Copyright 2005-2007 Rodolfo Giometti <giometti@linux.it>
+[    2.457351] PTP clock support registered
+[    2.457657] EDAC MC: Ver: 3.0.0
+[    2.462325] Advanced Linux Sound Architecture Driver Initialized.
+[    2.469163] PCI: Using ACPI for IRQ routing
+[    2.472636] vgaarb: loaded
+[    2.475449] hpet: 3 channels of 0 reserved for per-cpu timers
+[    2.475717] hpet0: at MMIO 0xfed00000, IRQs 2, 8, 0
+[    2.475859] hpet0: 3 comparators, 64-bit 100.000000 MHz counter
+[    2.480536] clocksource: Switched to clocksource tsc-early
+[    2.760152] VFS: Disk quotas dquot_6.6.0
+[    2.760551] VFS: Dquot-cache hash table entries: 512 (order 0, 4096 bytes)
+[    2.762280] pnp: PnP ACPI init
+[    2.776333] pnp: PnP ACPI: found 5 devices
+[    2.781926] NET: Registered PF_INET protocol family
+[    2.784113] IP idents hash table entries: 65536 (order: 7, 524288 bytes, linear)
+[    2.834660] tcp_listen_portaddr_hash hash table entries: 2048 (order: 3, 32768 bytes, linear)
+[    2.835011] Table-perturb hash table entries: 65536 (order: 6, 262144 bytes, linear)
+[    2.835526] TCP established hash table entries: 32768 (order: 6, 262144 bytes, linear)
+[    2.836630] TCP bind hash table entries: 32768 (order: 8, 1048576 bytes, linear)
+[    2.837357] TCP: Hash tables configured (established 32768 bind 32768)
+[    2.840180] UDP hash table entries: 2048 (order: 4, 65536 bytes, linear)
+[    2.840620] UDP-Lite hash table entries: 2048 (order: 4, 65536 bytes, linear)
+[    2.841743] NET: Registered PF_UNIX/PF_LOCAL protocol family
+[    2.843380] NET: Registered PF_XDP protocol family
+[    2.844113] pci_bus 0000:00: resource 4 [io  0x0000-0x0cf7 window]
+[    2.844113] pci_bus 0000:00: resource 5 [io  0x0d00-0xffff window]
+[    2.844113] pci_bus 0000:00: resource 6 [mem 0x000a0000-0x000bffff window]
+[    2.844113] pci_bus 0000:00: resource 7 [mem 0xa0000000-0xfebfffff window]
+[    2.844113] pci_bus 0000:00: resource 8 [mem 0x400000000-0x80005bfff window]
+[    2.844113] pci 0000:00:01.0: PIIX3: Enabling Passive Release
+[    2.844113] pci 0000:00:00.0: Limiting direct PCI/PCI transfers
+[    2.844113] PCI: CLS 0 bytes, default 64
+[    2.857103] Trying to unpack rootfs image as initramfs...
+[    2.877075] kvm: no hardware support for 'kvm_intel'
+[    2.877227] has_svm: not amd or hygon
+[    2.877291] kvm: no hardware support for 'kvm_amd'
+[    2.902767] Initialise system trusted keyrings
+[    2.933886] workingset: timestamp_bits=46 max_order=20 bucket_order=0
+[    2.970006] fuse: init (API version 7.37)
+[    3.065787] Freeing initrd memory: 1780K
+[    3.085062] Key type asymmetric registered
+[    3.085302] Asymmetric key parser 'x509' registered
+[    3.085699] Block layer SCSI generic (bsg) driver version 0.4 loaded (major 238)
+[    3.086497] io scheduler mq-deadline registered
+[    3.086656] io scheduler kyber registered
+[    3.087285] io scheduler bfq registered
+[    3.092422] input: Power Button as /devices/LNXSYSTM:00/LNXPWRBN:00/input/input0
+[    3.101259] ACPI: button: Power Button [PWRF]
+[    3.134653] Serial: 8250/16550 driver, 1 ports, IRQ sharing disabled
+[    3.137333] 00:04: ttyS0 at I/O 0x3f8 (irq = 4, base_baud = 115200) is a 16550A
+[    3.141894] printk: console [ttynull0] enabled
+[    3.143945] ACPI: bus type drm_connector registered
+[    3.183000] brd: module loaded
+[    3.255039] loop: module loaded
+[    3.263278] wireguard: WireGuard 1.0.0 loaded. See www.wireguard.com for information.
+[    3.263431] wireguard: Copyright (C) 2015-2019 Jason A. Donenfeld <Jason@zx2c4.com>. All Rights Reserved.
+[    3.266059] MACsec IEEE 802.1AE
+[    3.268246] tun: Universal TUN/TAP device driver, 1.6
+[    3.268652] usbcore: registered new interface driver rtl8150
+[    3.269097] usbcore: registered new interface driver r8152
+[    3.269267] usbcore: registered new interface driver asix
+[    3.269400] usbcore: registered new interface driver ax88179_178a
+[    3.269593] usbcore: registered new interface driver cdc_ether
+[    3.269720] usbcore: registered new interface driver cdc_eem
+[    3.270047] usbcore: registered new interface driver cdc_ncm
+[    3.270204] usbcore: registered new interface driver aqc111
+[    3.270328] usbcore: registered new interface driver r8153_ecm
+[    3.274339] usbcore: registered new interface driver uas
+[    3.274963] usbcore: registered new interface driver usb-storage
+[    3.279156] i8042: PNP: PS/2 Controller [PNP0303:KBD,PNP0f13:MOU] at 0x60,0x64 irq 1,12
+[    3.282350] serio: i8042 KBD port at 0x60,0x64 irq 1
+[    3.284124] serio: i8042 AUX port at 0x60,0x64 irq 12
+[    3.288518] input: AT Translated Set 2 keyboard as /devices/platform/i8042/serio0/input/input1
+[    3.291416] usbcore: registered new interface driver xpad
+[    3.291940] rtc_cmos 00:00: RTC can wake from S4
+[    3.294856] rtc_cmos 00:00: registered as rtc0
+[    3.296239] rtc_cmos 00:00: alarms up to one day, y3k, 114 bytes nvram, hpet irqs
+[    3.296750] gspca_main: v2.14.0 registered
+[    3.297022] usbcore: registered new interface driver uvcvideo
+[    3.297144] fail to initialize ptp_kvm
+[    3.333594] hpet: Lost 1 RTC interrupts
+[    3.334058] device-mapper: uevent: version 1.0.3
+[    3.336497] device-mapper: ioctl: 4.47.0-ioctl (2022-07-28) initialised: dm-devel@redhat.com
+[    3.339397] intel_pstate: CPU model not supported
+[    3.339889] sdhci: Secure Digital Host Controller Interface driver
+[    3.340063] sdhci: Copyright(c) Pierre Ossman
+[    3.340164] sdhci-pltfm: SDHCI platform and OF driver helper
+[    3.341062] hid: raw HID events driver (C) Jiri Kosina
+[    3.344637] usbcore: registered new interface driver usbhid
+[    3.344761] usbhid: USB HID core driver
+[    3.345740] ashmem: initialized
+[    3.347133] gnss: GNSS driver registered with major 507
+[    3.348834] usbcore: registered new interface driver snd-usb-audio
+[    3.351638] GACT probability NOT on
+[    3.351966] Mirror/redirect action on
+[    3.352384] netem: version 1.3
+[    3.352841] u32 classifier
+[    3.352899]     input device check on
+[    3.352949]     Actions configured
+[    3.535446] xt_time: kernel timezone is -0000
+[    3.535925] ipip: IPv4 and MPLS over IPv4 tunneling driver
+[    3.538676] gre: GRE over IPv4 demultiplexor driver
+[    3.538808] ip_gre: GRE over IPv4 tunneling driver
+[    3.542869] IPv4 over IPsec tunneling driver
+[    3.545664] Initializing XFRM netlink socket
+[    3.545891] IPsec XFRM device driver
+[    3.549786] NET: Registered PF_INET6 protocol family
+[    3.559723] Segment Routing with IPv6
+[    3.559964] In-situ OAM (IOAM) with IPv6
+[    3.560914] mip6: Mobile IPv6
+[    3.565128] sit: IPv6, IPv4 and MPLS over IPv4 tunneling driver
+[    3.569333] ip6_gre: GRE over IPv6 tunneling driver
+[    3.571955] NET: Registered PF_PACKET protocol family
+[    3.572128] NET: Registered PF_KEY protocol family
+[    3.573095] NET: Registered PF_VSOCK protocol family
+[    3.573757] IPI shorthand broadcast: enabled
+[    3.573992] SSE version of gcm_enc/dec engaged.
+[    3.577171] sched_clock: Marking stable (3612253887, -36898625)->(4737942157, -1162586895)
+[    3.581742] registered taskstats version 1
+[    3.582095] Loading compiled-in X.509 certificates
+[    3.636871] cryptomgr_probe (45) used greatest stack depth: 15416 bytes left
+[    3.641981] Loaded X.509 cert 'Build time autogenerated kernel key: 9576c156fc46547e7a3beb7f8a78bf60d63a56c0'
+[    3.642565] page_owner is disabled
+[    3.643083] Key type .fscrypt registered
+[    3.643195] Key type fscrypt-provisioning registered
+[    3.645547] pstore: Using crash dump compression: deflate
+[    3.654472] ALSA device list:
+[    3.654610]   No soundcards found.
+[    3.690178] Freeing unused kernel image (initmem) memory: 1480K
+[    3.691399] Write protecting the kernel read-only data: 36864k
+[    3.694520] Freeing unused kernel image (text/rodata gap) memory: 2032K
+[    3.698920] Freeing unused kernel image (rodata/data gap) memory: 1980K
+[    3.735375] Run /init as init process
+[    3.899545] tsc: Refined TSC clocksource calibration: 2300.102 MHz
+[    3.899914] clocksource: tsc: mask: 0xffffffffffffffff max_cycles: 0x212795bdcaf, max_idle_ns: 440795322023 ns
+[    3.900362] clocksource: Switched to clocksource tsc
+[    5.268288] random: crng init done
+[    5.377650] init: init first stage started!
+[    5.391010] init: Loading module /lib/modules/virtio_blk.ko with args ''
+[    5.394057] virtio_blk: module verification failed: signature and/or required key missing - tainting kernel
+[    5.402015] Kernel module BTF mismatch detected, BTF debug info may be unavailable for some modules
+[    5.404130] init: Loaded kernel module /lib/modules/virtio_blk.ko
+[    5.435653] init: Loading module /lib/modules/virtio_console.ko with args ''
+[    5.442698] init: Loaded kernel module /lib/modules/virtio_console.ko
+[    5.444959] init: Loading module /lib/modules/virtio_dma_buf.ko with args ''
+[    5.450012] init: Loaded kernel module /lib/modules/virtio_dma_buf.ko
+[    5.450850] init: Loading module /lib/modules/virtio_pci_modern_dev.ko with args ''
+[    5.453140] init: Loaded kernel module /lib/modules/virtio_pci_modern_dev.ko
+[    5.453824] init: Loading module /lib/modules/virtio_pci_legacy_dev.ko with args ''
+[    5.455049] init: Loaded kernel module /lib/modules/virtio_pci_legacy_dev.ko
+[    5.455981] init: Loading module /lib/modules/virtio_pci.ko with args ''
+[    5.884266] ACPI: \_SB_.LNKB: Enabled at IRQ 10
+[    6.267197] ACPI: \_SB_.LNKC: Enabled at IRQ 11
+[    6.272109] virtio_blk virtio1: 1/0/0 default/read/poll queues
+[    6.279764] virtio_blk virtio1: [vda] 16799744 512-byte logical blocks (8.60 GB/8.01 GiB)
+[    6.298484]  vda: vda1 vda2
+[    6.665338] ACPI: \_SB_.LNKD: Enabled at IRQ 11
+[    6.668427] virtio_blk virtio2: 1/0/0 default/read/poll queues
+[    6.670277] virtio_blk virtio2: [vdb] 135168 512-byte logical blocks (69.2 MB/66.0 MiB)
+[    7.061491] ACPI: \_SB_.LNKA: Enabled at IRQ 10
+[    7.062753] virtio_blk virtio3: 1/0/0 default/read/poll queues
+[    7.064423] virtio_blk virtio3: [vdc] 12582912 512-byte logical blocks (6.44 GB/6.00 GiB)
+[    7.597321] virtio_blk virtio4: 1/0/0 default/read/poll queues
+[    7.600412] virtio_blk virtio4: [vdd] 36864 512-byte logical blocks (18.9 MB/18.0 MiB)
+[    7.649244]  vdd: vdd1
+[    7.958156] virtio_blk virtio5: 1/0/0 default/read/poll queues
+[    7.959865] virtio_blk virtio5: [vde] 192512 512-byte logical blocks (98.6 MB/94.0 MiB)
+[    7.972667]  vde: vde1
+[   13.536351] virtio-pci 0000:00:19.0: virtio_pci: leaving for legacy driver
+[   13.790024] init: Loaded kernel module /lib/modules/virtio_pci.ko
+[   13.791075] init: Loading module /lib/modules/virtio-rng.ko with args ''
+[   13.798122] init: Loaded kernel module /lib/modules/virtio-rng.ko
+[   13.804261] init: Loading module /lib/modules/vmw_vsock_virtio_transport.ko with args ''
+[   13.810945] init: Loaded kernel module /lib/modules/vmw_vsock_virtio_transport.ko
+[   13.813642] init: Loaded 8 kernel modules took 8432 ms
+[   13.819260] init: Copied ramdisk prop to /second_stage_resources/system/etc/ramdisk/build.prop
+[   13.840142] init: [libfs_mgr] ReadFstabFromDt(): failed to read fstab from dt
+[   13.864365] init: Using Android DT directory /proc/device-tree/firmware/android/
+[   14.142474] init: [libfs_mgr] superblock s_max_mnt_count:65535,/dev/block/pci/pci0000:00/0000:00:06.0/by-name/metadata
+[   14.144173] init: [libfs_mgr] Filesystem on /dev/block/pci/pci0000:00/0000:00:06.0/by-name/metadata was not cleanly shutdown; state flags: 0x1, incompat feature flags: 0x46
+[   14.145469] EXT4-fs: Ignoring removed nomblk_io_submit option
+[   14.197383] EXT4-fs (vdd1): recovery complete
+[   14.198740] EXT4-fs (vdd1): mounted filesystem with ordered data mode. Quota mode: none.
+[   14.199362] init: [libfs_mgr] check_fs(): mount(/dev/block/pci/pci0000:00/0000:00:06.0/by-name/metadata,/metadata,ext4)=0: Success
+[   14.236282] EXT4-fs (vdd1): unmounting filesystem.
+[   14.239526] ext4-rsv-conver (50) used greatest stack depth: 15376 bytes left
+[   14.245633] init: [libfs_mgr] umount_retry(): unmount(/metadata) succeeded
+[   14.249363] init: [libfs_mgr] Not running /system/bin/e2fsck on /dev/block/vdd1 (executable not in system image)
+[   14.269649] EXT4-fs (vdd1): mounted filesystem with ordered data mode. Quota mode: none.
+[   14.270316] init: [libfs_mgr] __mount(source=/dev/block/pci/pci0000:00/0000:00:06.0/by-name/metadata,target=/metadata,type=ext4)=0: Success
+[   14.278345] init: Failed to copy /avb into /metadata/gsi/dsu/avb/: No such file or directory
+[   14.302814] init: [libfs_mgr] Created logical partition system on device /dev/block/dm-0
+[   14.306883] init: [libfs_mgr] Created logical partition system_dlkm on device /dev/block/dm-1
+[   14.335848] init: [libfs_mgr] Created logical partition system_ext on device /dev/block/dm-2
+[   14.340597] init: [libfs_mgr] Created logical partition product on device /dev/block/dm-3
+[   14.344442] init: [libfs_mgr] Created logical partition vendor on device /dev/block/dm-4
+[   14.345899] init: DSU not detected, proceeding with normal boot
+[   15.398361] init: [libfs_avb] Device path not found: /dev/block/by-name/system
+[   16.423112] init: [libfs_avb] Device path not found: /dev/block/by-name/system
+[   16.438596] init: [libfs_avb] Returning avb_handle with status: Success
+[   16.444612] init: [libfs_avb] Built verity table: '1 /dev/block/dm-0 /dev/block/dm-0 4096 4096 208732 208732 sha256 7757c3f950c2c06b43804d4ae48849606354da00f36892714442564fcdc1730e 2060d1a37aae5bf39996926ecdd8801d783bcf25baca91094dc1a41df5105478 10 use_fec_from_device /dev/block/dm-0 fec_roots 2 fec_blocks 210377 fec_start 210377 restart_on_corruption ignore_zero_blocks'
+[   16.448833] device-mapper: verity: sha256 using implementation "sha256-ssse3"
+[   16.479951] init: [libfs_mgr] superblock s_max_mnt_count:65535,/dev/block/dm-5
+[   16.541228] EXT4-fs (dm-5): mounted filesystem without journal. Quota mode: none.
+[   16.541774] init: [libfs_mgr] __mount(source=/dev/block/dm-5,target=/system,type=ext4)=0: Success
+[   16.550932] init: Switching root to '/system'
+[   16.636123] init: [libfs_mgr] superblock s_max_mnt_count:65535,/dev/block/dm-4
+[   16.642676] EXT4-fs (dm-4): mounted filesystem without journal. Quota mode: none.
+[   16.643127] init: [libfs_mgr] __mount(source=/dev/block/dm-4,target=/vendor,type=ext4)=0: Success
+[   16.651922] init: [libfs_mgr] superblock s_max_mnt_count:65535,/dev/block/dm-3
+[   16.656933] EXT4-fs (dm-3): mounted filesystem without journal. Quota mode: none.
+[   16.657381] init: [libfs_mgr] __mount(source=/dev/block/dm-3,target=/product,type=ext4)=0: Success
+[   16.666872] erofs: (device dm-1): mounted with root inode @ nid 38.
+[   16.667649] init: [libfs_mgr] __mount(source=/dev/block/dm-1,target=/system_dlkm,type=erofs)=0: Success
+[   16.672533] init: [libfs_mgr] superblock s_max_mnt_count:65535,/dev/block/dm-2
+[   16.682204] EXT4-fs (dm-2): mounted filesystem without journal. Quota mode: none.
+[   16.682549] init: [libfs_mgr] __mount(source=/dev/block/dm-2,target=/system_ext,type=ext4)=0: Success
+[   16.876501] init: Skipped setting INIT_AVB_VERSION (not in recovery mode)
+[   18.240076] ext4lazyinit (51) used greatest stack depth: 14248 bytes left
+[   19.704135] init: Opening SELinux policy
+[   19.768649] init: Falling back to standard signature check. TODO implement support for fsverity SEPolicy.
+[   19.769842] init: Error: Apex SEPolicy failed signature check
+[   19.773584] init: Loading APEX Sepolicy from /system/etc/selinux/apex/SEPolicy.zip
+[   19.775050] init: Failed to open package /system/etc/selinux/apex/SEPolicy.zip: No such file or directory
+[   19.848292] init: Loading SELinux policy
+[   19.889442] SELinux:  Permission bpf in class capability2 not defined in policy.
+[   19.889630] SELinux:  Permission checkpoint_restore in class capability2 not defined in policy.
+[   19.889897] SELinux:  Permission bpf in class cap2_userns not defined in policy.
+[   19.889977] SELinux:  Permission checkpoint_restore in class cap2_userns not defined in policy.
+[   19.890264] SELinux:  Class mctp_socket not defined in policy.
+[   19.890354] SELinux:  Class user_namespace not defined in policy.
+[   19.890430] SELinux: the above unknown classes and permissions will be denied
+[   19.946591] SELinux:  policy capability network_peer_controls=1
+[   19.946796] SELinux:  policy capability open_perms=1
+[   19.949044] SELinux:  policy capability extended_socket_class=1
+[   19.949251] SELinux:  policy capability always_check_network=0
+[   19.949649] SELinux:  policy capability cgroup_seclabel=0
+[   19.949766] SELinux:  policy capability nnp_nosuid_transition=1
+[   19.949835] SELinux:  policy capability genfs_seclabel_symlinks=0
+[   19.949901] SELinux:  policy capability ioctl_skip_cloexec=0
+[   20.335364] audit: type=1403 audit(1793155999.369:2): auid=4294967295 ses=4294967295 lsm=selinux res=1
+[   20.375594] selinux: SELinux: Loaded file context from:
+[   20.376046] selinux: 		/system/etc/selinux/plat_file_contexts
+[   20.376210] selinux: 		/vendor/etc/selinux/vendor_file_contexts
+[   20.380355] selinux: SELinux:  Could not stat /dev/selinux: No such file or directory.
+[   20.383980] audit: type=1404 audit(1793155999.417:3): enforcing=1 old_enforcing=0 auid=4294967295 ses=4294967295 enabled=1 old-enabled=1 lsm=selinux res=1
+[   21.551089] init: init second stage started!
+[   22.236707] selinux: SELinux: Loaded file context from:
+[   22.237061] selinux: 		/system/etc/selinux/plat_file_contexts
+[   22.237208] selinux: 		/vendor/etc/selinux/vendor_file_contexts
+[   22.653906] init: Using Android DT directory /proc/device-tree/firmware/android/
+[   22.772758] init: Overriding previous property 'ro.control_privapp_permissions':'disable' with new value 'enforce'
+[   22.874357] init: Setting product property ro.product.brand to 'Android' (from ro.product.product.brand)
+[   22.874946] init: Setting product property ro.product.device to 'emulator64_x86_64' (from ro.product.product.device)
+[   22.875498] init: Setting product property ro.product.manufacturer to 'unknown' (from ro.product.product.manufacturer)
+[   22.875917] init: Setting product property ro.product.model to 'Android SDK built for x86_64' (from ro.product.product.model)
+[   22.876255] init: Setting product property ro.product.name to 'sdk_slim_x86_64' (from ro.product.product.name)
+[   22.877170] init: Setting property 'ro.build.fingerprint' to 'Android/sdk_slim_x86_64/emulator64_x86_64:14/UE1A.230829.036.A1/11228894:userdebug/test-keys'
+[   22.878667] init: Setting property 'ro.product.cpu.abilist' to 'x86_64'
+[   22.879358] init: Setting property 'ro.product.cpu.abilist32' to ''
+[   22.879744] init: Setting property 'ro.product.cpu.abilist64' to 'x86_64'
+[   22.897016] selinux: SELinux: Loaded file context from:
+[   22.897192] selinux: 		/system/etc/selinux/plat_file_contexts
+[   22.897317] selinux: 		/vendor/etc/selinux/vendor_file_contexts
+[   22.897580] init: Running restorecon...
+[   23.075745] init: Created socket '/dev/socket/property_service', mode 666, user 0, group 0
+[   23.152296] init: SetupMountNamespaces done
+[   23.163570] init: Forked subcontext for 'u:r:vendor_init:s0' with pid 66
+[   23.173283] init: Parsing file /system/etc/init/hw/init.rc...
+[   23.183030] init: Added '/init.environ.rc' to import list
+[   23.184128] init: Added '/system/etc/init/hw/init.usb.rc' to import list
+[   23.184934] init: Added '/init.ranchu.rc' to import list
+[   23.185383] init: Added '/vendor/etc/init/hw/init.ranchu.rc' to import list
+[   23.185602] init: Added '/system/etc/init/hw/init.usb.configfs.rc' to import list
+[   23.185953] init: Added '/system/etc/init/hw/init.zygote64.rc' to import list
+[   23.262510] init: Parsing file /init.environ.rc...
+[   23.266110] init: Parsing file /system/etc/init/hw/init.usb.rc...
+[   23.270924] init: Parsing file /init.ranchu.rc...
+[   23.276026] init: Unable to read config file '/init.ranchu.rc': open() failed: No such file or directory
+[   23.284001] init: Parsing file /vendor/etc/init/hw/init.ranchu.rc...
+[   23.349881] init: Parsing file /system/etc/init/hw/init.usb.configfs.rc...
+[   23.356941] init: Parsing file /system/etc/init/hw/init.zygote64.rc...
+[   23.362029] init: Parsing directory /system/etc/init...
+[   23.366932] init: Parsing file /system/etc/init/android.hidl.allocator@1.0-service.rc...
+[   23.372179] init: Parsing file /system/etc/init/android.system.suspend-service.rc...
+[   23.374735] init: Parsing file /system/etc/init/apexd.rc...
+[   23.381098] init: Parsing file /system/etc/init/atrace.rc...
+[   23.392719] init: Parsing file /system/etc/init/atrace_userdebug.rc...
+[   23.395875] init: Parsing file /system/etc/init/audioserver.rc...
+[   23.400321] init: Parsing file /system/etc/init/blank_screen.rc...
+[   23.473359] init: Parsing file /system/etc/init/bootanim.rc...
+[   23.476204] init: Parsing file /system/etc/init/bootstat-debug.rc...
+[   23.480884] init: Parsing file /system/etc/init/bootstat.rc...
+[   23.488418] init: Parsing file /system/etc/init/bpfloader.rc...
+[   23.494773] init: Parsing file /system/etc/init/cameraserver.rc...
+[   23.543999] init: Parsing file /system/etc/init/clean_scratch_files.rc...
+[   23.548920] init: Parsing file /system/etc/init/cppreopts.rc...
+[   23.552491] init: Parsing file /system/etc/init/credstore.rc...
+[   23.555506] init: Parsing file /system/etc/init/dmesgd.rc...
+[   23.562031] init: Parsing file /system/etc/init/drmserver.rc...
+[   23.564679] init: Parsing file /system/etc/init/dumpstate.rc...
+[   23.568565] init: Parsing file /system/etc/init/flags_health_check.rc...
+[   23.571627] init: Parsing file /system/etc/init/gatekeeperd.rc...
+[   23.574515] init: Parsing file /system/etc/init/gpuservice.rc...
+[   23.581735] init: Parsing file /system/etc/init/gsid.rc...
+[   23.586299] init: Parsing file /system/etc/init/heapprofd.rc...
+[   23.589523] init: Parsing file /system/etc/init/hwservicemanager.rc...
+[   23.592735] init: Parsing file /system/etc/init/idmap2d.rc...
+[   23.595557] init: Parsing file /system/etc/init/incidentd.rc...
+[   23.598135] init: Parsing file /system/etc/init/init-debug.rc...
+[   23.636180] init: Parsing file /system/etc/init/installd.rc...
+[   23.641072] init: Parsing file /system/etc/init/keystore2.rc...
+[   23.643631] init: Parsing file /system/etc/init/llkd-debuggable.rc...
+[   23.649804] init: Parsing file /system/etc/init/llkd.rc...
+[   23.656151] init: Parsing file /system/etc/init/lmkd.rc...
+[   23.659438] init: Parsing file /system/etc/init/logcatd.rc...
+[   23.662634] init: Parsing file /system/etc/init/logd.rc...
+[   23.666007] init: Parsing file /system/etc/init/logtagd.rc...
+[   23.668441] init: Parsing file /system/etc/init/lpdumpd.rc...
+[   23.670967] init: Parsing file /system/etc/init/mdnsd.rc...
+[   23.674344] init: Parsing file /system/etc/init/mediaextractor.rc...
+[   23.676677] init: Parsing file /system/etc/init/mediametrics.rc...
+[   23.679549] init: Parsing file /system/etc/init/mediaserver.rc...
+[   23.682096] init: Parsing file /system/etc/init/mtectrl.rc...
+[   23.684345] init: Parsing file /system/etc/init/mtpd.rc...
+[   23.686379] init: Parsing file /system/etc/init/netd.rc...
+[   23.690022] init: Parsing file /system/etc/init/odsign.rc...
+[   23.692916] init: Parsing file /system/etc/init/otapreopt.rc...
+[   23.696238] init: Parsing file /system/etc/init/perfetto.rc...
+[   23.700707] init: Parsing file /system/etc/init/prng_seeder.rc...
+[   23.738370] init: Parsing file /system/etc/init/profcollectd.rc...
+[   23.743996] init: Parsing file /system/etc/init/racoon.rc...
+[   23.747034] init: Parsing file /system/etc/init/recovery-persist.rc...
+[   23.753107] init: Parsing file /system/etc/init/recovery-refresh.rc...
+[   23.756883] init: Parsing file /system/etc/init/rss_hwm_reset.rc...
+[   23.762378] init: Parsing file /system/etc/init/servicemanager.rc...
+[   23.766859] init: Parsing file /system/etc/init/simpleperf.rc...
+[   23.769447] init: Parsing file /system/etc/init/snapuserd.rc...
+[   23.772231] init: Parsing file /system/etc/init/storaged.rc...
+[   23.776618] init: Parsing file /system/etc/init/surfaceflinger.rc...
+[   23.786681] init: Parsing file /system/etc/init/tombstoned.rc...
+[   23.791564] init: Parsing file /system/etc/init/traced_perf.rc...
+[   23.794895] init: Parsing file /system/etc/init/uncrypt.rc...
+[   23.853108] init: Parsing file /system/etc/init/update_engine.rc...
+[   23.860979] init: Parsing file /system/etc/init/update_verifier.rc...
+[   23.863914] init: Parsing file /system/etc/init/usbd.rc...
+[   23.866251] init: Parsing file /system/etc/init/vold.rc...
+[   23.873079] init: Parsing file /system/etc/init/wifi.rc...
+[   23.877575] init: Parsing file /system/etc/init/wificond.rc...
+[   23.882719] init: Parsing directory /system_ext/etc/init...
+[   23.887588] init: Parsing file /system_ext/etc/init/init.system_ext.rc...
+[   23.889641] init: Parsing directory /vendor/etc/init...
+[   23.890915] init: Parsing file /vendor/etc/init/android.hardware.atrace@1.0-service.rc...
+[   23.897317] init: Parsing file /vendor/etc/init/android.hardware.audio.service.rc...
+[   23.937733] init: Parsing file /vendor/etc/init/android.hardware.authsecret-service.example.rc...
+[   23.939714] init: Parsing file /vendor/etc/init/android.hardware.biometrics.fingerprint-service.ranchu.rc...
+[   23.941789] init: Parsing file /vendor/etc/init/android.hardware.camera.provider.ranchu.rc...
+[   23.944293] init: Parsing file /vendor/etc/init/android.hardware.camera.provider@2.7-service-google.rc...
+[   23.946549] init: Parsing file /vendor/etc/init/android.hardware.drm-service-lazy.clearkey.rc...
+[   23.948265] init: Parsing file /vendor/etc/init/android.hardware.gatekeeper@1.0-service.software.rc...
+[   23.950817] init: Parsing file /vendor/etc/init/android.hardware.gnss-service.ranchu.rc...
+[   23.953440] init: Parsing file /vendor/etc/init/android.hardware.graphics.allocator@3.0-service.ranchu.rc...
+[   23.955520] init: Parsing file /vendor/etc/init/android.hardware.health-service.example.rc...
+[   23.957655] init: Parsing file /vendor/etc/init/android.hardware.media.c2@1.0-service-goldfish.rc...
+[   23.959793] init: Parsing file /vendor/etc/init/android.hardware.neuralnetworks-service-sample-all.rc...
+[   23.961806] init: Parsing file /vendor/etc/init/android.hardware.neuralnetworks-service-sample-limited.rc...
+[   23.964013] init: Parsing file /vendor/etc/init/android.hardware.neuralnetworks-shim-service-sample.rc...
+[   23.965825] init: Parsing file /vendor/etc/init/android.hardware.security.keymint-service.rc...
+[   23.967777] init: Parsing file /vendor/etc/init/android.hardware.sensors-service-multihal.rc...
+[   23.969437] init: Parsing file /vendor/etc/init/android.hardware.thermal@2.0-service.rc...
+[   23.971029] init: Parsing file /vendor/etc/init/android.hardware.usb-service.example.rc...
+[   23.972720] init: Parsing file /vendor/etc/init/android.hardware.wifi-service.rc...
+[   23.974616] init: Parsing file /vendor/etc/init/bluetooth-service-default.rc...
+[   23.976304] init: Parsing file /vendor/etc/init/boringssl_self_test.rc...
+[   23.978954] init: Parsing file /vendor/etc/init/cas-default.rc...
+[   23.980937] init: Parsing file /vendor/etc/init/contexthub-default.rc...
+[   23.982910] init: Parsing file /vendor/etc/init/dumpstate-default.rc...
+[   23.986108] init: Parsing file /vendor/etc/init/face-default.rc...
+[   23.987982] init: Parsing file /vendor/etc/init/health-storage-default.rc...
+[   23.989730] init: Parsing file /vendor/etc/init/hostapd.android.rc...
+[   23.992410] init: Parsing file /vendor/etc/init/hwc3.rc...
+[   23.994231] init: Parsing file /vendor/etc/init/identity-default.rc...
+[   23.997664] init: Parsing file /vendor/etc/init/lights-default.rc...
+[   24.035073] init: Parsing file /vendor/etc/init/power-default.rc...
+[   24.037033] init: Parsing file /vendor/etc/init/power.stats-default.rc...
+[   24.040089] init: Parsing file /vendor/etc/init/rebootescrow-default.rc...
+[   24.042632] init: Parsing file /vendor/etc/init/rild_goldfish.rc...
+[   24.045032] init: Parsing file /vendor/etc/init/vibrator-default.rc...
+[   24.046962] init: Parsing file /odm/etc/init...
+[   24.048670] init: Unable to read config file '/odm/etc/init': open() failed: No such file or directory
+[   24.049830] init: Parsing file /product/etc/init...
+[   24.050176] init: Unable to read config file '/product/etc/init': open() failed: No such file or directory
+[   24.097263] init: processing action (SetupCgroups) from (<Builtin Action>:0)
+[   24.756088] init: Command 'SetupCgroups' action=SetupCgroups (<Builtin Action>:0) took 656ms and succeeded
+[   24.881205] init: processing action (SetKptrRestrict) from (<Builtin Action>:0)
+[   24.889327] init: processing action (TestPerfEventSelinux) from (<Builtin Action>:0)
+[   24.897239] init: processing action (ConnectEarlyStageSnapuserd) from (<Builtin Action>:0)
+[   24.935788] init: processing action (early-init) from (/system/etc/init/hw/init.rc:15)
+[   24.969045] init: Command 'mkdir /acct/uid' action=early-init (/system/etc/init/hw/init.rc:30) took 3ms and failed: mkdir() failed on /acct/uid: Read-only file system
+[   25.041190] init: starting service 'ueventd'...
+[   25.185597] init: ... started service 'ueventd' has pid 67
+[   25.186254] init: Command 'start ueventd' action=early-init (/system/etc/init/hw/init.rc:71) took 147ms and succeeded
+[   25.201937] init: starting service 'apexd-bootstrap'...
+[   25.299883] init: ... started service 'apexd-bootstrap' has pid 68
+[   25.301059] init: SVC_EXEC service 'apexd-bootstrap' pid 68 (uid 0 gid 1000+0 context default) started; waiting...
+[   25.302531] init: Command 'exec_start apexd-bootstrap' action=early-init (/system/etc/init/hw/init.rc:76) took 114ms and succeeded
+[   26.351546] ueventd: ueventd started!
+[   26.378854] selinux: SELinux: Loaded file context from:
+[   26.379469] selinux: 		/system/etc/selinux/plat_file_contexts
+[   26.379640] selinux: 		/vendor/etc/selinux/vendor_file_contexts
+[   26.384723] ueventd: Parsing file /system/etc/ueventd.rc...
+[   26.388394] ueventd: Added '/vendor/etc/ueventd.rc' to import list
+[   26.388931] ueventd: Added '/odm/etc/ueventd.rc' to import list
+[   26.394747] ueventd: Parsing file /vendor/etc/ueventd.rc...
+[   26.397091] ueventd: Parsing file /odm/etc/ueventd.rc...
+[   26.398020] ueventd: Unable to read config file '/odm/etc/ueventd.rc': open() failed: No such file or directory
+[   28.937151] ueventd: Coldboot took 2.496 seconds
+[   28.939510] ueventd (69) used greatest stack depth: 13072 bytes left
+[   29.192615] apexd: Bootstrap subcommand detected
+[   29.200035] cutils-trace: Error opening trace file: No such file or directory (2)
+[   29.246288] apexd-bootstrap: Scanning /system/apex for pre-installed ApexFiles
+[   29.254517] apexd-bootstrap: Found pre-installed APEX /system/apex/com.android.media.swcodec.capex
+[   29.289779] apexd-bootstrap: Found pre-installed APEX /system/apex/com.android.btservices.apex
+[   29.352656] apexd-bootstrap: Found pre-installed APEX /system/apex/com.android.adbd.capex
+[   29.374142] apexd-bootstrap: Found pre-installed APEX /system/apex/com.android.neuralnetworks.capex
+[   29.396187] apexd-bootstrap: Found pre-installed APEX /system/apex/com.android.virt.apex
+[   29.447050] apexd-bootstrap: Found pre-installed APEX /system/apex/com.android.extservices.capex
+[   29.473099] apexd-bootstrap: Found pre-installed APEX /system/apex/com.android.rkpd.apex
+[   29.490892] apexd-bootstrap: Found pre-installed APEX /system/apex/com.android.apex.cts.shim.apex
+[   29.553369] apexd-bootstrap: Found pre-installed APEX /system/apex/com.android.os.statsd.apex
+[   29.577612] apexd-bootstrap: Found pre-installed APEX /system/apex/com.android.media.capex
+[   29.600138] apexd-bootstrap: Found pre-installed APEX /system/apex/com.android.resolv.capex
+[   29.658436] apexd-bootstrap: Found pre-installed APEX /system/apex/com.android.permission.capex
+[   29.685115] apexd-bootstrap: Found pre-installed APEX /system/apex/com.android.art.capex
+[   29.748077] apexd-bootstrap: Found pre-installed APEX /system/apex/com.android.tethering.capex
+[   29.776398] apexd-bootstrap: Found pre-installed APEX /system/apex/com.android.configinfrastructure.capex
+[   29.803041] apexd-bootstrap: Found pre-installed APEX /system/apex/com.android.sdkext.apex
+[   29.856660] apexd-bootstrap: Found pre-installed APEX /system/apex/com.android.mediaprovider.capex
+[   29.878644] apexd-bootstrap: Found pre-installed APEX /system/apex/com.android.vndk.current.apex
+[   29.895600] apexd-bootstrap: Found pre-installed APEX /system/apex/com.android.tzdata.apex
+[   29.955888] apexd-bootstrap: Found pre-installed APEX /system/apex/com.android.devicelock.apex
+[   29.974488] apexd-bootstrap: Found pre-installed APEX /system/apex/com.android.ondevicepersonalization.capex
+[   29.995936] apexd-bootstrap: Found pre-installed APEX /system/apex/com.android.cellbroadcast.capex
+[   30.048858] apexd-bootstrap: Found pre-installed APEX /system/apex/com.android.ipsec.capex
+[   30.076242] apexd-bootstrap: Found pre-installed APEX /system/apex/com.android.adservices.capex
+[   30.093520] apexd-bootstrap: Found pre-installed APEX /system/apex/com.android.healthfitness.apex
+[   30.172922] apexd-bootstrap: Found pre-installed APEX /system/apex/com.android.conscrypt.capex
+[   30.199961] apexd-bootstrap: Found pre-installed APEX /system/apex/com.android.scheduling.capex
+[   30.347768] apexd-bootstrap: Found pre-installed APEX /system/apex/com.android.wifi.capex
+[   30.397032] apexd-bootstrap: Found pre-installed APEX /system/apex/com.android.i18n.apex
+[   30.455541] apexd-bootstrap: Found pre-installed APEX /system/apex/com.android.appsearch.capex
+[   30.495436] apexd-bootstrap: Found pre-installed APEX /system/apex/com.android.runtime.apex
+[   30.566481] apexd-bootstrap: Found pre-installed APEX /system/apex/com.android.uwb.capex
+[   30.657905] apexd-bootstrap: Scanning /system_ext/apex for pre-installed ApexFiles
+[   30.658503] apexd-bootstrap: /system_ext/apex does not exist. Skipping
+[   30.660295] apexd-bootstrap: Scanning /product/apex for pre-installed ApexFiles
+[   30.667783] apexd-bootstrap: /product/apex does not exist. Skipping
+[   30.668029] apexd-bootstrap: Scanning /vendor/apex for pre-installed ApexFiles
+[   30.668354] apexd-bootstrap: /vendor/apex does not exist. Skipping
+[   30.673274] apexd-bootstrap: Found bootstrap APEX /system/apex/com.android.runtime.apex
+[   30.673647] apexd-bootstrap: Found bootstrap APEX /system/apex/com.android.i18n.apex
+[   30.673996] apexd-bootstrap: Found bootstrap APEX /system/apex/com.android.vndk.current.apex
+[   30.674191] apexd-bootstrap: Found bootstrap APEX /system/apex/com.android.tzdata.apex
+[   30.675615] apexd-bootstrap: Need to pre-allocate 36 loop devices for 32 APEX packages
+[   30.677207] apexd-bootstrap: No block apex metadata partition found, not adding block apexes
+[   30.897276] apexd-bootstrap: Found 16 idle loopback devices that were pre-allocated by kernel. Allocated 20 more.
+[   31.075439] loop0: detected capacity change from 0 to 8944
+[   31.083073] loop1: detected capacity change from 0 to 1616
+[   31.090630] loop2: detected capacity change from 0 to 52360
+[   31.142083] loop3: detected capacity change from 0 to 71872
+[   31.367242] EXT4-fs (loop0): mounted filesystem without journal. Quota mode: none.
+[   31.372146] EXT4-fs (loop3): mounted filesystem without journal. Quota mode: none.
+[   31.381200] apexd-bootstrap: Successfully mounted package /system/apex/com.android.i18n.apex on /apex/com.android.i18n@1 duration=311
+[   31.385195] apexd-bootstrap: Successfully mounted package /system/apex/com.android.runtime.apex on /apex/com.android.runtime@1 duration=335
+[   31.389232] EXT4-fs (loop2): mounted filesystem without journal. Quota mode: none.
+[   31.389781] apexd-bootstrap: Successfully mounted package /system/apex/com.android.vndk.current.apex on /apex/com.android.vndk.v34@1 duration=331
+[   31.666976] EXT4-fs (loop1): mounted filesystem without journal. Quota mode: none.
+[   31.684479] apexd-bootstrap: Successfully mounted package /system/apex/com.android.tzdata.apex on /apex/com.android.tzdata@342090000 duration=622
+[   31.704091] apexd (105) used greatest stack depth: 12656 bytes left
+[   31.790665] apexd-bootstrap: Activated 4 packages.
+[   32.060805] apexd-bootstrap: OnBootstrap done, duration=2819
+[   32.139820] init: Service 'apexd-bootstrap' (pid 68) exited with status 0 waiting took 6.898000 seconds
+[   32.140308] init: Sending signal 9 to service 'apexd-bootstrap' (pid 68) process group...
+[   32.142597] libprocessgroup: Successfully killed process cgroup uid 0 pid 68 in 1ms
+[   32.970941] init: linkerconfig generated /linkerconfig with mounted APEX modules info
+[   32.972173] init: Command 'update_linker_config' action=early-init (/system/etc/init/hw/init.rc:79) took 818ms and succeeded
+[   33.009254] init: processing action (early-init) from (/init.environ.rc:2)
+[   33.013340] init: processing action (early-init) from (/vendor/etc/init/hw/init.ranchu.rc:11)
+[   33.033467] init: Command 'setprop ro.config.low_ram ${ro.boot.config.low_ram}' action=early-init (/vendor/etc/init/hw/init.ranchu.rc:15) took 6ms and failed: property 'ro.boot.config.low_ram' doesn't exist while expanding '${ro.boot.config.low_ram}'
+[   33.052898] init: Command 'setprop dalvik.vm.checkjni ${ro.boot.dalvik.vm.checkjni}' action=early-init (/vendor/etc/init/hw/init.ranchu.rc:20) took 1ms and failed: property 'ro.boot.dalvik.vm.checkjni' doesn't exist while expanding '${ro.boot.dalvik.vm.checkjni}'
+[   33.057306] init: Command 'setprop debug.stagefright.ccodec ${ro.boot.debug.stagefright.ccodec}' action=early-init (/vendor/etc/init/hw/init.ranchu.rc:22) took 0ms and failed: property 'ro.boot.debug.stagefright.ccodec' doesn't exist while expanding '${ro.boot.debug.stagefright.ccodec}'
+[   33.070959] init: starting service 'vendor.dlkm_loader'...
+[   33.126012] init: ... started service 'vendor.dlkm_loader' has pid 112
+[   33.126458] init: Command 'start vendor.dlkm_loader' action=early-init (/vendor/etc/init/hw/init.ranchu.rc:26) took 60ms and succeeded
+[   33.134519] init: starting service 'exec 1 (/system/bin/modprobe -a -d /system/lib/modules zram.ko)'...
+[   33.184891] init: ... started service 'exec 1 (/system/bin/modprobe -a -d /system/lib/modules zram.ko)' has pid 113
+[   33.185784] init: SVC_EXEC service 'exec 1 (/system/bin/modprobe -a -d /system/lib/modules zram.ko)' pid 113 (uid 0 gid 0+0 context u:r:modprobe:s0) started; waiting...
+[   33.186978] init: Command 'exec u:r:modprobe:s0 -- /system/bin/modprobe -a -d /system/lib/modules zram.ko' action=early-init (/vendor/etc/init/hw/init.ranchu.rc:27) took 59ms and succeeded
+[   33.564480] dlkm_loader: dlkm loader successfully initialized
+[   33.744960] dlkm_loader: Loading module /system/lib/modules/rfkill.ko with args ''
+[   33.796366] dlkm_loader: Loaded kernel module /system/lib/modules/rfkill.ko
+[   33.805851] dlkm_loader: Loading module /system/lib/modules/bluetooth.ko with args ''
+[   33.966948] zram: Added device: zram0
+[   33.997136] init: Service 'exec 1 (/system/bin/modprobe -a -d /system/lib/modules zram.ko)' (pid 113) exited with status 0 waiting took 0.846000 seconds
+[   33.997489] init: Sending signal 9 to service 'exec 1 (/system/bin/modprobe -a -d /system/lib/modules zram.ko)' (pid 113) process group...
+[   33.998774] libprocessgroup: Successfully killed process cgroup uid 0 pid 113 in 0ms
+[   33.999731] modprobe (113) used greatest stack depth: 12328 bytes left
+[   34.002198] init: processing action (ro.product.debugfs_restrictions.enabled=true && early-init) from (/system/etc/init/init-debug.rc:10)
+[   34.037782] Bluetooth: Core ver 2.22
+[   34.042107] NET: Registered PF_BLUETOOTH protocol family
+[   34.042240] Bluetooth: HCI device and connection manager initialized
+[   34.042424] Bluetooth: HCI socket layer initialized
+[   34.042526] Bluetooth: L2CAP socket layer initialized
+[   34.042816] Bluetooth: SCO socket layer initialized
+[   34.047742] dlkm_loader: Loaded kernel module /system/lib/modules/bluetooth.ko
+[   34.048399] dlkm_loader: Loading module /vendor/lib/modules/btintel.ko with args ''
+[   34.056547] dlkm_loader: Loaded kernel module /vendor/lib/modules/btintel.ko
+[   34.057959] dlkm_loader: Loading module /vendor/lib/modules/btrtl.ko with args ''
+[   34.059105] init: processing action (early-init) from (/system/etc/init/prng_seeder.rc:5)
+[   34.061831] init: starting service 'prng_seeder'...
+[   34.068857] dlkm_loader: Loaded kernel module /vendor/lib/modules/btrtl.ko
+[   34.070895] dlkm_loader: Loading module /system/lib/modules/btbcm.ko with args ''
+[   34.082048] init: Created socket '/dev/socket/prng_seeder', mode 666, user 1092, group 1092
+[   34.100656] dlkm_loader: Loaded kernel module /system/lib/modules/btbcm.ko
+[   34.101236] dlkm_loader: Loading module /vendor/lib/modules/btusb.ko with args ''
+[   34.122782] usbcore: registered new interface driver btusb
+[   34.126100] dlkm_loader: Loaded kernel module /vendor/lib/modules/btusb.ko
+[   34.128050] dlkm_loader: Loading module /vendor/lib/modules/dummy-cpufreq.ko with args ''
+[   34.147088] dlkm_loader: Loaded kernel module /vendor/lib/modules/dummy-cpufreq.ko
+[   34.153058] dlkm_loader: Loading module /vendor/lib/modules/dummy_hcd.ko with args ''
+[   34.167031] dummy_hcd dummy_hcd.0: USB Host+Gadget Emulator, driver 02 May 2005
+[   34.172929] dummy_hcd dummy_hcd.0: Dummy host controller
+[   34.173562] dummy_hcd dummy_hcd.0: new USB bus registered, assigned bus number 1
+[   34.178630] usb usb1: New USB device found, idVendor=1d6b, idProduct=0002, bcdDevice= 6.01
+[   34.178820] usb usb1: New USB device strings: Mfr=3, Product=2, SerialNumber=1
+[   34.178915] usb usb1: Product: Dummy host controller
+[   34.178984] usb usb1: Manufacturer: Linux 6.1.23-android14-4-00257-g7e35917775b8-ab9964412 dummy_hcd
+[   34.179081] usb usb1: SerialNumber: dummy_hcd.0
+[   34.202820] hub 1-0:1.0: USB hub found
+[   34.206072] init: ... started service 'prng_seeder' has pid 115
+[   34.206627] init: Command 'start prng_seeder' action=early-init (/system/etc/init/prng_seeder.rc:6) took 146ms and succeeded
+[   34.216066] hub 1-0:1.0: 1 port detected
+[   34.218849] init: processing action (ro.product.cpu.abilist64=* && early-init) from (/vendor/etc/init/boringssl_self_test.rc:4)
+[   34.225937] init: starting service 'boringssl_self_test64_vendor'...
+[   34.258369] dlkm_loader: Loaded kernel module /vendor/lib/modules/dummy_hcd.ko
+[   34.272041] dlkm_loader: Loading module /vendor/lib/modules/failover.ko with args ''
+[   34.293190] dlkm_loader: Loaded kernel module /vendor/lib/modules/failover.ko
+[   34.294468] dlkm_loader: Loading module /vendor/lib/modules/goldfish_address_space.ko with args ''
+[   34.297509] goldfish_address_space: loading out-of-tree module taints kernel.
+[   34.369204] init: ... started service 'boringssl_self_test64_vendor' has pid 117
+[   34.369647] init: SVC_EXEC service 'boringssl_self_test64_vendor' pid 117 (uid 0 gid 0+0 context default) started; waiting...
+[   34.370089] init: Command 'exec_start boringssl_self_test64_vendor' action=ro.product.cpu.abilist64=* && early-init (/vendor/etc/init/boringssl_self_test.rc:5) took 150ms and succeeded
+[   35.436180] dlkm_loader: Loaded kernel module /vendor/lib/modules/goldfish_address_space.ko
+[   35.437705] dlkm_loader: Loading module /vendor/lib/modules/goldfish_battery.ko with args ''
+[   35.495830] dlkm_loader: Loaded kernel module /vendor/lib/modules/goldfish_battery.ko
+[   35.497211] dlkm_loader: Loading module /vendor/lib/modules/goldfish_pipe.ko with args ''
+[   35.543733] dlkm_loader: Loaded kernel module /vendor/lib/modules/goldfish_pipe.ko
+[   35.545257] dlkm_loader: Loading module /vendor/lib/modules/goldfish_sync.ko with args ''
+[   35.579707] dlkm_loader: Loaded kernel module /vendor/lib/modules/goldfish_sync.ko
+[   35.596467] dlkm_loader: Loading module /system/lib/modules/can-dev.ko with args ''
+[   35.649412] init: Service 'boringssl_self_test64_vendor' (pid 117) exited with status 0 waiting took 1.386000 seconds
+[   35.650038] init: Sending signal 9 to service 'boringssl_self_test64_vendor' (pid 117) process group...
+[   35.651580] libprocessgroup: Successfully killed process cgroup uid 0 pid 117 in 0ms
+[   35.678909] init: processing action (wait_for_coldboot_done) from (<Builtin Action>:0)
+[   35.686553] CAN device driver interface
+[   35.688809] init: start_waiting_for_property("ro.cold_boot_done", "true"): already set
+[   35.689789] init: processing action (SetMmapRndBits) from (<Builtin Action>:0)
+[   35.692269] dlkm_loader: Loaded kernel module /system/lib/modules/can-dev.ko
+[   35.693097] dlkm_loader: Loading module /vendor/lib/modules/gs_usb.ko with args ''
+[   35.709466] init: processing action (KeychordInit) from (<Builtin Action>:0)
+[   35.714126] usbcore: registered new interface driver gs_usb
+[   35.717513] dlkm_loader: Loaded kernel module /vendor/lib/modules/gs_usb.ko
+[   35.733444] init: EVIOCSMASK not supported: Invalid argument
+[   35.737219] dlkm_loader: Loading module /vendor/lib/modules/hci_vhci.ko with args ''
+[   35.753613] init: processing action (init) from (/system/etc/init/hw/init.rc:97)
+[   35.757067] dlkm_loader: Loaded kernel module /vendor/lib/modules/hci_vhci.ko
+[   35.778157] dlkm_loader: Loading module /system/lib/modules/cfg80211.ko with args ''
+[   35.787563] init: Command 'copy /system/etc/prop.default /dev/urandom' action=init (/system/etc/init/hw/init.rc:102) took 0ms and failed: Could not read input file '/system/etc/prop.default': open() failed: No such file or directory
+[   35.957918] init: Command 'mkdir /dev/stune/top-app' action=init (/system/etc/init/hw/init.rc:111) took 121ms and succeeded
+[   36.041395] init: Command 'write /dev/blkio/blkio.weight 1000' action=init (/system/etc/init/hw/init.rc:238) took 2ms and failed: Unable to write to file '/dev/blkio/blkio.weight': open() failed: Permission denied
+[   36.044135] init: Command 'write /dev/blkio/background/blkio.weight 200' action=init (/system/etc/init/hw/init.rc:239) took 2ms and failed: Unable to write to file '/dev/blkio/background/blkio.weight': open() failed: Permission denied
+[   36.049328] init: Command 'write /dev/blkio/blkio.group_idle 0' action=init (/system/etc/init/hw/init.rc:241) took 2ms and failed: Unable to write to file '/dev/blkio/blkio.group_idle': open() failed: Permission denied
+[   36.052271] init: Command 'write /dev/blkio/background/blkio.group_idle 0' action=init (/system/etc/init/hw/init.rc:242) took 1ms and failed: Unable to write to file '/dev/blkio/background/blkio.group_idle': open() failed: Permission denied
+[   36.367235] cfg80211: Loading compiled-in X.509 certificates for regulatory database
+[   36.370576] cfg80211: Loaded X.509 cert 'sforshee: 00b28ddf47aef9cea7'
+[   36.376194] init: Command 'copy /dev/cpuset/mems /dev/cpuset/system-background/mems' action=init (/system/etc/init/hw/init.rc:354) took 61ms and succeeded
+[   36.380743] platform regulatory.0: Direct firmware load for regulatory.db failed with error -2
+[   36.385216] cfg80211: failed to load regulatory.db
+[   36.391153] dlkm_loader: Loaded kernel module /system/lib/modules/cfg80211.ko
+[   36.393757] dlkm_loader: Loading module /system/lib/modules/libarc4.ko with args ''
+[   36.425041] dlkm_loader: Loaded kernel module /system/lib/modules/libarc4.ko
+[   36.427037] dlkm_loader: Loading module /system/lib/modules/mac80211.ko with args ''
+[   37.051005] init: Command 'mkdir /dev/cpuset/camera-daemon' action=init (/system/etc/init/hw/init.rc:367) took 595ms and succeeded
+[   37.091636] init: Command 'write /dev/cpu_variant:${ro.bionic.arch} ${ro.bionic.cpu_variant}' action=init (/system/etc/init/hw/init.rc:453) took 0ms and failed: property 'ro.bionic.cpu_variant' doesn't exist while expanding '${ro.bionic.cpu_variant}'
+[   37.092594] init: Command 'write /dev/cpu_variant:${ro.bionic.2nd_arch} ${ro.bionic.2nd_cpu_variant}' action=init (/system/etc/init/hw/init.rc:455) took 0ms and failed: property 'ro.bionic.2nd_arch' doesn't exist while expanding '/dev/cpu_variant:${ro.bionic.2nd_arch}'
+[   37.093745] init: Command 'chmod 0444 /dev/cpu_variant:${ro.bionic.2nd_arch}' action=init (/system/etc/init/hw/init.rc:456) took 0ms and failed: property 'ro.bionic.2nd_arch' doesn't exist while expanding '/dev/cpu_variant:${ro.bionic.2nd_arch}'
+[   37.099611] init: starting service 'logd'...
+[   37.102646] init: Created socket '/dev/socket/logd', mode 666, user 1036, group 1036
+[   37.106305] init: Created socket '/dev/socket/logdr', mode 666, user 1036, group 1036
+[   37.109781] init: Created socket '/dev/socket/logdw', mode 222, user 1036, group 1036
+[   37.172208] init: ... started service 'logd' has pid 121
+[   37.173148] init: Command 'start logd' action=init (/system/etc/init/hw/init.rc:469) took 75ms and succeeded
+[   37.197038] init: starting service 'lmkd'...
+[   37.204551] init: Created socket '/dev/socket/lmkd', mode 660, user 1000, group 1000
+[   37.305128] init: ... started service 'lmkd' has pid 122
+[   37.305605] init: Command 'start lmkd' action=init (/system/etc/init/hw/init.rc:476) took 114ms and succeeded
+[   37.320171] init: starting service 'servicemanager'...
+[   37.474265] init: ... started service 'servicemanager' has pid 123
+[   37.474994] init: Command 'start servicemanager' action=init (/system/etc/init/hw/init.rc:479) took 168ms and succeeded
+[   37.543593] init: starting service 'hwservicemanager'...
+[   37.568429] dlkm_loader: Loaded kernel module /system/lib/modules/mac80211.ko
+[   37.569157] dlkm_loader: Loading module /vendor/lib/modules/mac80211_hwsim.ko with args 'radios=0
+[   37.569340] dlkm_loader: '
+[   37.603649] mac80211_hwsim: initializing netlink
+[   37.662189] init: ... started service 'hwservicemanager' has pid 124
+[   37.662814] init: Command 'start hwservicemanager' action=init (/system/etc/init/hw/init.rc:480) took 177ms and succeeded
+[   37.663652] init: Command 'start vndservicemanager' action=init (/system/etc/init/hw/init.rc:481) took 0ms and failed: service vndservicemanager not found
+[   37.712632] init: processing action (ro.product.cpu.abilist64=* && init) from (/system/etc/init/hw/init.rc:486)
+[   37.741376] dlkm_loader: Loaded kernel module /vendor/lib/modules/mac80211_hwsim.ko
+[   37.800060] init: starting service 'boringssl_self_test64'...
+[   37.925282] dlkm_loader: Loading module /vendor/lib/modules/mt76.ko with args ''
+[   38.957602] init: ... started service 'boringssl_self_test64' has pid 125
+[   38.959359] init: SVC_EXEC service 'boringssl_self_test64' pid 125 (uid 9999 gid 0+0 context default) started; waiting...
+[   39.012743] init: Command 'exec_start boringssl_self_test64' action=ro.product.cpu.abilist64=* && init (/system/etc/init/hw/init.rc:487) took 1245ms and succeeded
+[   43.989268] dlkm_loader: Loaded kernel module /vendor/lib/modules/mt76.ko
+[   43.990005] dlkm_loader: Loading module /vendor/lib/modules/mt76-usb.ko with args ''
+[   44.545009] dlkm_loader: Loaded kernel module /vendor/lib/modules/mt76-usb.ko
+[   44.558994] dlkm_loader: Loading module /vendor/lib/modules/mt76x02-lib.ko with args ''
+[   47.178930] servicemanager: Starting sm instance on /dev/binder
+[   47.352546] dlkm_loader: Loaded kernel module /vendor/lib/modules/mt76x02-lib.ko
+[   47.353859] dlkm_loader: Loading module /vendor/lib/modules/mt76x0-common.ko with args ''
+[   47.449280] SELinux: SELinux: Loaded service context from:
+[   47.450770] SELinux: 		/system/etc/selinux/plat_service_contexts
+[   47.451410] SELinux: 		/vendor/etc/selinux/vendor_service_contexts
+[   47.672460] dlkm_loader: Loaded kernel module /vendor/lib/modules/mt76x0-common.ko
+[   47.674895] dlkm_loader: Loading module /vendor/lib/modules/mt76x02-usb.ko with args ''
+[   47.690615] dlkm_loader: Loaded kernel module /vendor/lib/modules/mt76x02-usb.ko
+[   47.701167] dlkm_loader: Loading module /vendor/lib/modules/mt76x0u.ko with args ''
+[   47.793249] usbcore: registered new interface driver mt76x0u
+[   47.794219] dlkm_loader: Loaded kernel module /vendor/lib/modules/mt76x0u.ko
+[   47.835850] dlkm_loader: Loading module /vendor/lib/modules/mt76x2-common.ko with args ''
+[   47.856137] dlkm_loader: Loaded kernel module /vendor/lib/modules/mt76x2-common.ko
+[   47.857715] dlkm_loader: Loading module /vendor/lib/modules/mt76x2u.ko with args ''
+[   47.877896] usbcore: registered new interface driver mt76x2u
+[   47.882890] dlkm_loader: Loaded kernel module /vendor/lib/modules/mt76x2u.ko
+[   47.889075] dlkm_loader: Loading module /vendor/lib/modules/nd_virtio.ko with args ''
+[   47.896211] dlkm_loader: Loaded kernel module /vendor/lib/modules/nd_virtio.ko
+[   47.897579] dlkm_loader: Loading module /vendor/lib/modules/net_failover.ko with args ''
+[   48.736282] dlkm_loader: Loaded kernel module /vendor/lib/modules/net_failover.ko
+[   50.013201] dlkm_loader: Loading module /vendor/lib/modules/pulse8-cec.ko with args ''
+[   52.944498] dlkm_loader: Loaded kernel module /vendor/lib/modules/pulse8-cec.ko
+[   52.945965] dlkm_loader: Loading module /vendor/lib/modules/rtc-test.ko with args ''
+[   52.959078] rtc-test rtc-test.0: registered as rtc1
+[   52.967056] rtc-test rtc-test.1: registered as rtc2
+[   52.976622] rtc-test rtc-test.2: registered as rtc3
+[   53.003884] dlkm_loader: Loaded kernel module /vendor/lib/modules/rtc-test.ko
+[   53.005597] dlkm_loader: Loading module /vendor/lib/modules/system_heap.ko with args ''
+[   53.055822] dlkm_loader: Loaded kernel module /vendor/lib/modules/system_heap.ko
+[   53.058569] dlkm_loader: Loading module /vendor/lib/modules/test_meminit.ko with args ''
+[   53.266534] test_meminit: all 10 tests in test_pages passed
+[   53.353499] test_meminit: all 40 tests in test_kvmalloc passed
+[   54.086971] init: Service 'boringssl_self_test64' (pid 125) exited with status 0 waiting took 16.039000 seconds
+[   54.088452] init: Sending signal 9 to service 'boringssl_self_test64' (pid 125) process group...
+[   54.091142] libprocessgroup: Successfully killed process cgroup uid 9999 pid 125 in 2ms
+[   54.144365] init: processing action (ro.debuggable=1 && init) from (/system/etc/init/hw/init.rc:1315)
+[   54.148770] init: starting service 'console'...
+[   54.770199] init: ... started service 'console' has pid 130
+[   54.771225] init: Command 'start console' action=ro.debuggable=1 && init (/system/etc/init/hw/init.rc:1316) took 625ms and succeeded
+[   54.772088] init: processing action (init) from (/system/etc/init/hw/init.usb.rc:27)
+[   54.787751] init: processing action (init) from (/vendor/etc/init/hw/init.ranchu.rc:29)
+[   54.953187] init: Command 'write /sys/block/zram0/comp_algorithm lz4' action=init (/vendor/etc/init/hw/init.ranchu.rc:30) took 164ms and succeeded
+[   55.150984] init: starting service 'qemu-props'...
+[   56.500866] init: ... started service 'qemu-props' has pid 131
+[   56.501984] init: Command 'start qemu-props' action=init (/vendor/etc/init/hw/init.ranchu.rc:56) took 1434ms and succeeded
+[   56.503503] init: processing action (init) from (/system/etc/init/audioserver.rc:58)
+[   56.682961] init: Command 'mkdir /dev/socket/audioserver 0775 audioserver audioserver' action=init (/system/etc/init/audioserver.rc:59) took 148ms and succeeded
+[   56.794695] init: processing action (late-init) from (/system/etc/init/hw/init.rc:532)
+[   57.462461] init: processing action (late-init) from (/system/etc/init/atrace.rc:3)
+[   57.660811] init: Command 'chmod 0222 /sys/kernel/tracing/trace_marker' action=late-init (/system/etc/init/atrace.rc:7) took 159ms and succeeded
+[   57.734384] init: Command 'write /proc/sys/kernel/sched_schedstats 1' action=late-init (/system/etc/init/atrace.rc:10) took 51ms and succeeded
+console:/ $ [   57.941316] init: Command 'chmod 0666 /sys/kernel/debug/tracing/events/vmscan/mm_vmscan_kswapd_wake/enable' action=late-init (/system/etc/init/atrace.rc:76) took 69ms and succeeded
+[   58.148362] init: Command 'chmod 0666 /sys/kernel/debug/tracing/events/oom/oom_score_adj_update/enable' action=late-init (/system/etc/init/atrace.rc:140) took 147ms and succeeded
+[   58.403057] test_meminit: all 70 tests in test_kmemcache passed
+[   58.462356] init: Command 'copy /system/etc/ftrace_synthetic_events.conf /sys/kernel/tracing/synthetic_events' action=late-init (/system/etc/init/atrace.rc:294) took 73ms and succeeded
+[   58.464684] test_meminit: all 10 tests in test_rcu_persistent passed
+[   58.464993] test_meminit: all 130 tests passed!
+[   58.474619] dlkm_loader: Loaded kernel module /vendor/lib/modules/test_meminit.ko
+[   58.477481] dlkm_loader: Loading module /vendor/lib/modules/usbip-core.ko with args ''
+[   58.559997] dlkm_loader: Loaded kernel module /vendor/lib/modules/usbip-core.ko
+[   58.562708] dlkm_loader: Loading module /vendor/lib/modules/vhci-hcd.ko with args ''
+[   58.576564] vhci_hcd vhci_hcd.0: USB/IP Virtual Host Controller
+[   58.576782] vhci_hcd vhci_hcd.0: new USB bus registered, assigned bus number 2
+[   58.577256] vhci_hcd: created sysfs vhci_hcd.0
+[   58.582787] usb usb2: New USB device found, idVendor=1d6b, idProduct=0002, bcdDevice= 6.01
+[   58.582947] usb usb2: New USB device strings: Mfr=3, Product=2, SerialNumber=1
+[   58.583031] usb usb2: Product: USB/IP Virtual Host Controller
+[   58.583097] usb usb2: Manufacturer: Linux 6.1.23-android14-4-00257-g7e35917775b8-ab9964412 vhci_hcd
+[   58.583187] usb usb2: SerialNumber: vhci_hcd.0
+[   58.591116] hub 2-0:1.0: USB hub found
+[   58.634993] hub 2-0:1.0: 8 ports detected
+[   58.651838] vhci_hcd vhci_hcd.0: USB/IP Virtual Host Controller
+[   58.652228] vhci_hcd vhci_hcd.0: new USB bus registered, assigned bus number 3
+[   58.653033] usb usb3: We don't know the algorithms for LPM for this host, disabling LPM.
+[   58.654042] usb usb3: New USB device found, idVendor=1d6b, idProduct=0003, bcdDevice= 6.01
+[   58.654165] usb usb3: New USB device strings: Mfr=3, Product=2, SerialNumber=1
+[   58.654246] usb usb3: Product: USB/IP Virtual Host Controller
+[   58.654310] usb usb3: Manufacturer: Linux 6.1.23-android14-4-00257-g7e35917775b8-ab9964412 vhci_hcd
+[   58.654506] usb usb3: SerialNumber: vhci_hcd.0
+[   58.655499] hub 3-0:1.0: USB hub found
+[   58.656540] hub 3-0:1.0: 8 ports detected
+[   58.675405] init: Unable to set property 'vendor.debug.hwui.drawing_enabled' from uid:0 gid:0 pid:131: SELinux permission check failed
+[   58.676090] audit: type=1107 audit(1793156037.705:4): pid=1 uid=0 auid=4294967295 ses=4294967295 subj=u:r:init:s0 msg='avc:  denied  { set } for property=vendor.debug.hwui.drawing_enabled pid=131 uid=0 gid=0 scontext=u:r:qemu_props:s0 tcontext=u:object_r:vendor_default_prop:s0 tclass=property_service permissive=0'
+[   58.682709] init: Unable to set property 'vendor.ro.hw_timeout_multiplier' from uid:0 gid:0 pid:131: SELinux permission check failed
+[   58.683201] audit: type=1107 audit(1793156037.713:5): pid=1 uid=0 auid=4294967295 ses=4294967295 subj=u:r:init:s0 msg='avc:  denied  { set } for property=vendor.ro.hw_timeout_multiplier pid=131 uid=0 gid=0 scontext=u:r:qemu_props:s0 tcontext=u:object_r:vendor_default_prop:s0 tclass=property_service permissive=0'
+[   58.688013] init: Command 'chmod 0666 /sys/kernel/tracing/events/power/suspend_resume/trigger' action=late-init (/system/etc/init/atrace.rc:306) took 150ms and succeeded
+[   58.690914] init: processing action (late-init) from (/vendor/etc/init/android.hardware.atrace@1.0-service.rc:1)
+[   58.699963] dlkm_loader: Loaded kernel module /vendor/lib/modules/vhci-hcd.ko
+[   58.745167] init: Command 'chmod 0666 /sys/kernel/debug/tracing/events/sde/enable' action=late-init (/vendor/etc/init/android.hardware.atrace@1.0-service.rc:3) took 53ms and succeeded
+[   58.764758] init: processing action (queue_property_triggers) from (<Builtin Action>:0)
+[   58.765916] init: processing action (early-fs) from (/system/etc/init/hw/init.rc:565)
+[   58.768671] init: starting service 'vold'...
+[   58.862410] dlkm_loader: Loading module /vendor/lib/modules/virt_wifi.ko with args ''
+[   58.886395] dlkm_loader: Loaded kernel module /vendor/lib/modules/virt_wifi.ko
+[   58.897367] dlkm_loader: Loading module /vendor/lib/modules/virtio-gpu.ko with args ''
+[   58.962898] dlkm_loader: Loaded kernel module /vendor/lib/modules/virtio-gpu.ko
+[   58.965454] dlkm_loader: Loading module /vendor/lib/modules/virtio_balloon.ko with args ''
+[   58.981473] init: ... started service 'vold' has pid 133
+[   58.982373] init: Command 'start vold' action=early-fs (/system/etc/init/hw/init.rc:567) took 216ms and succeeded
+[   58.982830] init: processing action (early-fs) from (/vendor/etc/init/hw/init.ranchu.rc:1)
+[   58.995949] init: service 'vold' requested start, but it is already running (flags: 2052)
+[   58.997019] init: processing action (fs) from (/vendor/etc/init/hw/init.ranchu.rc:4)
+[   59.150118] dlkm_loader: Loaded kernel module /vendor/lib/modules/virtio_balloon.ko
+[   59.167166] dlkm_loader: Loading module /vendor/lib/modules/virtio_input.ko with args ''
+[   59.184318] input: virtio_input_multi_touch_1 as /devices/pci0000:00/0000:00:0d.0/virtio10/input/input3
+[   59.238562] input: virtio_input_multi_touch_2 as /devices/pci0000:00/0000:00:0e.0/virtio11/input/input4
+[   59.266591] input: virtio_input_multi_touch_3 as /devices/pci0000:00/0000:00:0f.0/virtio12/input/input5
+[   59.346030] input: virtio_input_multi_touch_4 as /devices/pci0000:00/0000:00:10.0/virtio13/input/input6
+[   59.350958] input: virtio_input_multi_touch_5 as /devices/pci0000:00/0000:00:11.0/virtio14/input/input7
+[   59.363789] input: virtio_input_multi_touch_6 as /devices/pci0000:00/0000:00:12.0/virtio15/input/input8
+[   59.366882] input: virtio_input_multi_touch_7 as /devices/pci0000:00/0000:00:13.0/virtio16/input/input9
+[   59.371617] init: Command 'mount_all /vendor/etc/fstab.ranchu --early' action=fs (/vendor/etc/init/hw/init.ranchu.rc:5) took 373ms and succeeded
+[   59.373694] init: processing action (fs) from (/system/etc/init/logd.rc:29)
+[   59.387006] input: virtio_input_multi_touch_8 as /devices/pci0000:00/0000:00:14.0/virtio17/input/input10
+[   59.394937] input: virtio_input_multi_touch_9 as /devices/pci0000:00/0000:00:15.0/virtio18/input/input11
+[   59.437557] input: virtio_input_multi_touch_10 as /devices/pci0000:00/0000:00:16.0/virtio19/input/input12
+[   59.450223] input: virtio_input_multi_touch_11 as /devices/pci0000:00/0000:00:17.0/virtio20/input/input13
+[   59.454614] input: qwerty2 as /devices/pci0000:00/0000:00:18.0/virtio21/input/input14
+[   59.461066] dlkm_loader: Loaded kernel module /vendor/lib/modules/virtio_input.ko
+[   59.462779] dlkm_loader: Loading module /vendor/lib/modules/virtio_net.ko with args ''
+[   59.560801] init: Command 'write /dev/event-log-tags # content owned by logd
+[   59.561075] init: ' action=fs (/system/etc/init/logd.rc:30) took 153ms and succeeded
+[   59.590291] dlkm_loader: Loaded kernel module /vendor/lib/modules/virtio_net.ko
+[   59.593002] dlkm_loader: Loading module /vendor/lib/modules/virtio_pmem.ko with args ''
+[   59.641809] dlkm_loader: Loaded kernel module /vendor/lib/modules/virtio_pmem.ko
+[   59.649854] init: processing action (fs) from (/system/etc/init/wifi.rc:25)
+[   59.653031] dlkm_loader: Loading module /vendor/lib/modules/virtio_snd.ko with args ''
+[   59.661937] init: processing action (post-fs) from (/system/etc/init/hw/init.rc:569)
+[   59.673247] init: starting service 'exec 2 (/system/bin/vdc checkpoint markBootAttempt)'...
+[   59.694577] dlkm_loader: Loaded kernel module /vendor/lib/modules/virtio_snd.ko
+[   59.695391] dlkm_loader: module vkms is blocklisted
+[   59.695606] dlkm_loader: LoadWithAliases was unable to load vkms
+[   59.696405] dlkm_loader: module load count is 43
+[   59.899966] dlkm_loader (112) used greatest stack depth: 10752 bytes left
+[   60.178584] init: ... started service 'exec 2 (/system/bin/vdc checkpoint markBootAttempt)' has pid 134
+[   60.179433] init: SVC_EXEC service 'exec 2 (/system/bin/vdc checkpoint markBootAttempt)' pid 134 (uid 1000 gid 1000+0 context default) started; waiting...
+[   60.182543] init: Command 'exec - system system -- /system/bin/vdc checkpoint markBootAttempt' action=post-fs (/system/etc/init/hw/init.rc:570) took 520ms and succeeded
+[   60.183931] init: Service 'vendor.dlkm_loader' (pid 112) exited with status 0 oneshot service took 27.100000 seconds in background
+[   60.184522] init: Sending signal 9 to service 'vendor.dlkm_loader' (pid 112) process group...
+[   60.185815] libprocessgroup: Successfully killed process cgroup uid 0 pid 112 in 0ms
+[   62.467974] cutils-trace: Error opening trace file: Permission denied (13)
+[   64.263092] init: Service 'exec 2 (/system/bin/vdc checkpoint markBootAttempt)' (pid 134) exited with status 0 waiting took 4.378000 seconds
+[   64.272694] init: Sending signal 9 to service 'exec 2 (/system/bin/vdc checkpoint markBootAttempt)' (pid 134) process group...
+[   64.273793] libprocessgroup: Successfully killed process cgroup uid 1000 pid 134 in 0ms
+[   64.575012] init: Command 'restorecon --recursive --cross-filesystems /sys/kernel/debug' action=post-fs (/system/etc/init/hw/init.rc:582) took 184ms and succeeded
+[   64.576271] init: Command 'chown system cache /cache' action=post-fs (/system/etc/init/hw/init.rc:585) took 0ms and failed: lchown() failed: Read-only file system
+[   64.578587] init: Command 'chmod 0770 /cache' action=post-fs (/system/etc/init/hw/init.rc:586) took 1ms and failed: fchmodat() failed: Read-only file system
+[   64.584592] selinux: SELinux:  setxattr failed: /cache:  Read-only file system
+[   64.586365] init: Command 'mkdir /cache/recovery 0770 system cache' action=post-fs (/system/etc/init/hw/init.rc:592) took 1ms and failed: mkdir() failed on /cache/recovery: Read-only file system
+[   64.589563] init: Command 'mkdir /cache/backup_stage 0700 system system' action=post-fs (/system/etc/init/hw/init.rc:595) took 2ms and failed: mkdir() failed on /cache/backup_stage: Read-only file system
+[   64.591464] init: Command 'mkdir /cache/backup 0700 system system' action=post-fs (/system/etc/init/hw/init.rc:596) took 1ms and failed: mkdir() failed on /cache/backup: Read-only file system
+[   64.653526] init: Command 'mkdir /cache/lost+found 0770 root root' action=post-fs (/system/etc/init/hw/init.rc:620) took 1ms and failed: mkdir() failed on /cache/lost+found: Read-only file system
+[   64.660555] selinux: SELinux: Skipping restorecon on directory(/metadata)
+[   64.735659] init: Command 'mkdir /metadata/apex/sessions 0700 root system' action=post-fs (/system/etc/init/hw/init.rc:633) took 51ms and succeeded
+[   64.743703] selinux: SELinux: Skipping restorecon on directory(/metadata/apex)
+[   64.748583] init: processing action (post-fs) from (/system/etc/init/atrace_userdebug.rc:7)
+[   64.761478] init: processing action (post-fs) from (/system/etc/init/gsid.rc:8)
+[   64.768516] init: processing action (post-fs) from (/system/etc/init/recovery-refresh.rc:1)
+[   64.774171] init: starting service 'exec 3 (/system/bin/recovery-refresh)'...
+[   66.101988] init: ... started service 'exec 3 (/system/bin/recovery-refresh)' has pid 140
+[   66.265193] init: Command 'exec_background - system log -- /system/bin/recovery-refresh' action=post-fs (/system/etc/init/recovery-refresh.rc:2) took 1333ms and succeeded
+[   66.266008] init: processing action (late-fs) from (/system/etc/init/hw/init.rc:643)
+[   66.568124] init: Command 'chmod 0755 /sys/kernel/debug/tracing' action=late-fs (/system/etc/init/hw/init.rc:647) took 271ms and succeeded
+[   66.639013] init: starting service 'system_suspend'...
+[   66.765060] init: ... started service 'system_suspend' has pid 141
+[   66.768822] init: starting service 'keystore2'...
+[   67.449332] init: ... started service 'keystore2' has pid 142
+[   67.478417] init: starting service 'vendor.atrace-hal-1-0'...
+[   67.860512] init: ... started service 'vendor.atrace-hal-1-0' has pid 143
+[   67.885345] init: starting service 'vendor.keymint-default'...
+[   68.385377] init: ... started service 'vendor.keymint-default' has pid 144
+[   68.385976] init: Command 'class_start early_hal' action=late-fs (/system/etc/init/hw/init.rc:650) took 1817ms and succeeded
+[   68.438381] init: starting service 'exec 4 (/system/bin/fsverity_init --load-verified-keys)'...
+[   68.860929] init: ... started service 'exec 4 (/system/bin/fsverity_init --load-verified-keys)' has pid 145
+[   68.862012] init: SVC_EXEC service 'exec 4 (/system/bin/fsverity_init --load-verified-keys)' pid 145 (uid 0 gid 0+0 context default) started; waiting...
+[   68.862848] init: Command 'exec -- /system/bin/fsverity_init --load-verified-keys' action=late-fs (/system/etc/init/hw/init.rc:653) took 476ms and succeeded
+[   68.888912] init: Service 'exec 3 (/system/bin/recovery-refresh)' (pid 140) exited with status 254 oneshot service took 4.008000 seconds in background
+[   68.891082] init: Sending signal 9 to service 'exec 3 (/system/bin/recovery-refresh)' (pid 140) process group...
+[   68.937065] libprocessgroup: Successfully killed process cgroup uid 1000 pid 140 in 45ms
+[   71.169279] servicemanager: getDeviceHalManifest: Reading VINTF information.
+[   71.381097] init: Service 'exec 4 (/system/bin/fsverity_init --load-verified-keys)' (pid 145) exited with status 0 waiting took 2.889000 seconds
+[   71.381476] init: Sending signal 9 to service 'exec 4 (/system/bin/fsverity_init --load-verified-keys)' (pid 145) process group...
+[   71.382341] libprocessgroup: Successfully killed process cgroup uid 0 pid 145 in 0ms
+[   71.384802] init: processing action (late-fs) from (/system/etc/init/hw/init.rc:664)
+[   71.397500] init: processing action (late-fs) from (/vendor/etc/init/hw/init.ranchu.rc:7)
+[   71.752367] init: [libfs_mgr] Invalid ext4 superblock on '/dev/block/vdc'
+[   71.754849] init: [libfs_mgr] mount_with_alternatives(): skipping mount due to invalid magic, mountpoint=/data blk_dev=/dev/block/vdc rec[5].fs_type=ext4
+[   71.773577] init: Calling: /system/bin/vdc cryptfs mountFstab /dev/block/vdc /data 
+[   72.269654] servicemanager: getDeviceHalManifest: Successfully processed VINTF information
+[   72.270052] servicemanager: getFrameworkHalManifest: Reading VINTF information.
+[   72.537314] servicemanager: getFrameworkHalManifest: Successfully processed VINTF information
+[   72.538354] servicemanager: Found android.system.suspend.ISystemSuspend/default in framework VINTF manifest.
+[   72.885417] servicemanager: Found android.hardware.security.keymint.IKeyMintDevice/default in device VINTF manifest.
+[   72.938242] servicemanager: Found android.hardware.security.secureclock.ISecureClock/default in device VINTF manifest.
+[   72.946901] servicemanager: Found android.hardware.security.sharedsecret.ISharedSecret/default in device VINTF manifest.
+[   72.955813] servicemanager: Found android.hardware.security.keymint.IRemotelyProvisionedComponent/default in device VINTF manifest.
+[   73.758319] servicemanager: Since 'android.system.keystore2.IKeystoreService/default' could not be found, trying to start it as a lazy AIDL service. (if it's not configured to be a lazy service, it may be stuck starting or still starting).
+[   73.993277] servicemanager: Found android.system.keystore2.IKeystoreService/default in framework VINTF manifest.
+[   74.087602] BpBinder: onLastStrongRef automatically unlinking death recipients: 
+[   74.476360] servicemanager: Could not find android.hardware.boot.IBootControl/default in the VINTF manifest.
+[   74.495125] vold: Error getting bootctrl v1.0 module.
+[   74.540426] EXT4-fs: Ignoring removed nomblk_io_submit option
+[   74.543463] EXT4-fs (dm-38): Using encoding defined by superblock: utf8-12.1.0 with flags 0x0
+[   76.047849] EXT4-fs (dm-38): recovery complete
+[   76.053456] EXT4-fs (dm-38): mounted filesystem with ordered data mode. Quota mode: journalled.
+[   76.065516] EXT4-fs (dm-38): unmounting filesystem.
+[   76.574766] logd.auditd: start
+[   76.584481] logd.klogd: 76611996136
+[   76.975560] logd: Loaded bug_map file: /vendor/etc/selinux/selinux_denial_metadata
+[   77.038776] logd: Loaded bug_map file: /system/etc/selinux/bug_map
+[   77.457263] e2fsck: e2fsck 1.46.6 (1-Feb-2023)
+[   77.867068] e2fsck: Pass 1: Checking inodes, blocks, and sizes
+[   78.336641] e2fsck: Pass 2: Checking directory structure
+[   78.575797] e2fsck: Pass 3: Checking directory connectivity
+[   78.656341] e2fsck: Pass 4: Checking reference counts
+[   78.744196] e2fsck: Pass 5: Checking group summary information
+[   78.966033] e2fsck: /dev/block/dm-38: 319/393216 files (0.6% non-contiguous), 103684/1572864 blocks
+[   78.994228] vold: [libfs_mgr] Reserved blocks 32768 is too large; capping to 31457
+[   78.996963] EXT4-fs: Ignoring removed nomblk_io_submit option
+[   78.998014] EXT4-fs (dm-38): Using encoding defined by superblock: utf8-12.1.0 with flags 0x0
+[   79.044081] EXT4-fs (dm-38): mounted filesystem with ordered data mode. Quota mode: journalled.
+[   79.157703] init: Userdata mounted using /vendor/etc/fstab.ranchu result : 7
+[   79.158803] init: Keyring created with id 126344737 in process 1
+[   79.162408] init: Command 'mount_all /vendor/etc/fstab.ranchu --late' action=late-fs (/vendor/etc/init/hw/init.ranchu.rc:9) took 7764ms and succeeded
+[   79.180876] init: Control message: Could not find 'aidl/android.system.keystore2.IKeystoreService/default' for ctl.interface_start from pid: 123 (/system/bin/servicemanager)
+[   79.185839] servicemanager: Tried to start aidl service android.system.keystore2.IKeystoreService/default as a lazy service, but was unable to. Usually this happens when a service is not installed, but if the service is intended to be used as a lazy service, then it may be configured incorrectly.
+[   79.188526] init: processing action (post-fs-data) from (/system/etc/init/hw/init.rc:678)
+[   79.190475] init: starting service 'exec 5 (/system/bin/vdc checkpoint prepareCheckpoint)'...
+[   79.268116] init: ... started service 'exec 5 (/system/bin/vdc checkpoint prepareCheckpoint)' has pid 171
+[   79.271077] init: SVC_EXEC service 'exec 5 (/system/bin/vdc checkpoint prepareCheckpoint)' pid 171 (uid 1000 gid 1000+0 context default) started; waiting...
+[   79.279794] init: Command 'exec - system system -- /system/bin/vdc checkpoint prepareCheckpoint' action=post-fs-data (/system/etc/init/hw/init.rc:683) took 90ms and succeeded
+[   79.666081] init: Service 'exec 5 (/system/bin/vdc checkpoint prepareCheckpoint)' (pid 171) exited with status 0 waiting took 0.467000 seconds
+[   79.666853] init: Sending signal 9 to service 'exec 5 (/system/bin/vdc checkpoint prepareCheckpoint)' (pid 171) process group...
+[   79.669091] libprocessgroup: Successfully killed process cgroup uid 1000 pid 171 in 1ms
+[   79.683072] init: starting service 'exec 6 (/system/bin/vdc --wait cryptfs enablefilecrypto)'...
+[   79.760016] init: ... started service 'exec 6 (/system/bin/vdc --wait cryptfs enablefilecrypto)' has pid 172
+[   79.760572] init: SVC_EXEC service 'exec 6 (/system/bin/vdc --wait cryptfs enablefilecrypto)' pid 172 (uid 0 gid 0+0 context default) started; waiting...
+[   79.761296] init: Command 'installkey /data' action=post-fs-data (/system/etc/init/hw/init.rc:692) took 84ms and succeeded
+[   80.272928] init: Service 'exec 6 (/system/bin/vdc --wait cryptfs enablefilecrypto)' (pid 172) exited with status 0 waiting took 0.578000 seconds
+[   80.273366] init: Sending signal 9 to service 'exec 6 (/system/bin/vdc --wait cryptfs enablefilecrypto)' (pid 172) process group...
+[   80.274842] libprocessgroup: Successfully killed process cgroup uid 0 pid 172 in 1ms
+[   80.284686] init: Verified that /data/bootchart has the encryption policy c0318e2d9be7391299a1d571eb5b46a1 v2 modes 1/4 flags 0x2
+[   80.287033] fscrypt: AES-256-CTS-CBC using implementation "cts-cbc-aes-aesni"
+[   80.294319] init: Command 'copy /data/system/entropy.dat /dev/urandom' action=post-fs-data (/system/etc/init/hw/init.rc:700) took 4ms and failed: Could not read input file '/data/system/entropy.dat': open() failed: No such file or directory
+[   80.337990] init: Verified that /data/vendor has the encryption policy c0318e2d9be7391299a1d571eb5b46a1 v2 modes 1/4 flags 0x2
+[   80.346238] init: Verified that /data/anr has the encryption policy c0318e2d9be7391299a1d571eb5b46a1 v2 modes 1/4 flags 0x2
+[   80.352025] init: Verified that /data/tombstones has the encryption policy c0318e2d9be7391299a1d571eb5b46a1 v2 modes 1/4 flags 0x2
+[   80.358683] init: starting service 'tombstoned'...
+[   80.362798] init: Created socket '/dev/socket/tombstoned_crash', mode 666, user 1000, group 1000
+[   80.365893] init: Created socket '/dev/socket/tombstoned_intercept', mode 666, user 1000, group 1000
+[   80.369377] init: Created socket '/dev/socket/tombstoned_java_trace', mode 666, user 1000, group 1000
+[   80.446863] init: ... started service 'tombstoned' has pid 175
+[   80.447715] init: Command 'start tombstoned' action=post-fs-data (/system/etc/init/hw/init.rc:710) took 90ms and succeeded
+[   80.459923] init: Switched to default mount namespace
+[   80.479944] init: Failed to set encryption policy of /data/misc to c0318e2d9be7391299a1d571eb5b46a1 v2 modes 1/4 flags 0x2: Directory not empty
+[   80.548972] type=1400 audit(1793156059.577:6): avc:  denied  { execute_no_trans } for  comm="init" path="/vendor/bin/toybox_vendor" dev="dm-4" ino=222 scontext=u:r:init:s0 tcontext=u:object_r:vendor_toolbox_exec:s0 tclass=file permissive=0 bug=b/183668221
+[   80.557475] ls: executing ls failed: Permission denied
+[   80.560428] logwrapper: executing ls failed: Permission denied
+[   80.560640] logwrapper: 
+[   80.578822] ls: ls terminated by exit(255)
+[   80.579063] ls: 
+[   80.581902] init: ls -laZ /data/misc returned failure: 255
+[   80.582460] init: Setting c0318e2d9be7391299a1d571eb5b46a1 policy on /data/misc failed!
+[   80.588275] init: Rebooting into recovery
+[   80.678417] init: Command 'mkdir /data/misc 01771 system misc encryption=Require' action=post-fs-data (/system/etc/init/hw/init.rc:717) took 217ms and failed: Failed to set bootloader message: failed to find /misc partition
+[   80.739891] init: starting service 'exec 7 (/system/bin/vdc keymaster earlyBootEnded)'...
+[   80.788220] init: ... started service 'exec 7 (/system/bin/vdc keymaster earlyBootEnded)' has pid 177
+[   80.788930] init: SVC_EXEC service 'exec 7 (/system/bin/vdc keymaster earlyBootEnded)' pid 177 (uid 1000 gid 1000+0 context default) started; waiting...
+[   80.789530] init: Command 'exec - system system -- /system/bin/vdc keymaster earlyBootEnded' action=post-fs-data (/system/etc/init/hw/init.rc:732) took 51ms and succeeded
+[   81.770385] vold: keystore2 Keystore earlyBootEnded returned service specific error: -68
+[   81.784881] init: Service 'exec 7 (/system/bin/vdc keymaster earlyBootEnded)' (pid 177) exited with status 0 waiting took 1.022000 seconds
+[   81.785426] init: Sending signal 9 to service 'exec 7 (/system/bin/vdc keymaster earlyBootEnded)' (pid 177) process group...
+[   81.786917] libprocessgroup: Successfully killed process cgroup uid 1000 pid 177 in 0ms
+[   81.794520] init: Verified that /data/property has the encryption policy c0318e2d9be7391299a1d571eb5b46a1 v2 modes 1/4 flags 0x2
+[   81.800255] init: Could not set 'ro.logd.size' to '2M' in /data/local.prop: Read-only property was already set
+[   81.839935] fscrypt: AES-256-XTS using implementation "xts-aes-aesni"
+[   81.854082] init: start_waiting_for_property("ro.persistent_properties.ready", "true"): already set
+[   81.855044] init: Command 'load_persist_props' action=post-fs-data (/system/etc/init/hw/init.rc:739) took 59ms and succeeded
+[   81.856518] init: service 'logd' requested start, but it is already running (flags: 4)
+[   81.858680] init: starting service 'logd-reinit'...
+[   81.903975] init: ... started service 'logd-reinit' has pid 180
+[   81.944533] init: Not setting encryption policy on: /data/apex
+[   81.956638] init: Verified that /data/apex/decompressed has the encryption policy c0318e2d9be7391299a1d571eb5b46a1 v2 modes 1/4 flags 0x2
+[   81.964363] init: Verified that /data/app-staging has the encryption policy c0318e2d9be7391299a1d571eb5b46a1 v2 modes 1/4 flags 0x2
+[   81.971869] init: Verified that /data/apex/ota_reserved has the encryption policy c0318e2d9be7391299a1d571eb5b46a1 v2 modes 1/4 flags 0x2
+[   81.977362] init: starting service 'apexd'...
+[   82.255671] init: ... started service 'apexd' has pid 181
+[   82.256648] init: Command 'restart apexd' action=post-fs-data (/system/etc/init/hw/init.rc:770) took 280ms and succeeded
+[   82.462831] init: Verified that /data/local has the encryption policy c0318e2d9be7391299a1d571eb5b46a1 v2 modes 1/4 flags 0x2
+[   82.572035] init: starting service 'exec 8 (/bin/rm -rf /data/misc/virtualizationservice)'...
+[   82.770174] init: ... started service 'exec 8 (/bin/rm -rf /data/misc/virtualizationservice)' has pid 182
+[   82.770800] init: SVC_EXEC service 'exec 8 (/bin/rm -rf /data/misc/virtualizationservice)' pid 182 (uid 1081 gid 1000+0 context default) started; waiting...
+[   82.776427] init: Command 'exec - virtualizationservice system -- /bin/rm -rf /data/misc/virtualizationservice' action=post-fs-data (/system/etc/init/hw/init.rc:854) took 207ms and succeeded
+[   83.100647] logd: logd reinit
+[   83.294917] logd: FrameworkListener: read() failed (Connection reset by peer)
+[   83.337558] init: Service 'logd-reinit' (pid 180) exited with status 0 oneshot service took 1.469000 seconds in background
+[   83.337984] init: Sending signal 9 to service 'logd-reinit' (pid 180) process group...
+[   83.341514] libprocessgroup: Successfully killed process cgroup uid 1036 pid 180 in 3ms
+[   83.994147] init: Service 'exec 8 (/bin/rm -rf /data/misc/virtualizationservice)' (pid 182) exited with status 1 waiting took 1.357000 seconds
+[   83.994756] init: Sending signal 9 to service 'exec 8 (/bin/rm -rf /data/misc/virtualizationservice)' (pid 182) process group...
+[   83.997381] libprocessgroup: Successfully killed process cgroup uid 1081 pid 182 in 2ms
+[   84.036878] init: Not setting encryption policy on: /data/preloads
+[   84.060304] init: Verified that /data/app-private has the encryption policy c0318e2d9be7391299a1d571eb5b46a1 v2 modes 1/4 flags 0x2
+[   84.072872] apexd: Scanning /system/apex for pre-installed ApexFiles
+[   84.076332] init: Verified that /data/app-ephemeral has the encryption policy c0318e2d9be7391299a1d571eb5b46a1 v2 modes 1/4 flags 0x2
+[   84.080234] init: Verified that /data/app-asec has the encryption policy c0318e2d9be7391299a1d571eb5b46a1 v2 modes 1/4 flags 0x2
+[   84.084106] init: Verified that /data/app-lib has the encryption policy c0318e2d9be7391299a1d571eb5b46a1 v2 modes 1/4 flags 0x2
+[   84.092975] init: Verified that /data/app has the encryption policy c0318e2d9be7391299a1d571eb5b46a1 v2 modes 1/4 flags 0x2
+[   84.097667] apexd: Found pre-installed APEX /system/apex/com.android.media.swcodec.capex
+[   84.103870] init: Verified that /data/fonts has the encryption policy c0318e2d9be7391299a1d571eb5b46a1 v2 modes 1/4 flags 0x2
+[   84.146281] apexd: Found pre-installed APEX /system/apex/com.android.btservices.apex
+[   84.160658] apexd: Found pre-installed APEX /system/apex/com.android.adbd.capex
+[   84.164982] apexd: Found pre-installed APEX /system/apex/com.android.neuralnetworks.capex
+[   84.169048] apexd: Found pre-installed APEX /system/apex/com.android.virt.apex
+[   84.174499] init: Command 'mkdir /data/fonts/files 0771 system system' action=post-fs-data (/system/etc/init/hw/init.rc:873) took 70ms and succeeded
+[   84.177378] apexd: Found pre-installed APEX /system/apex/com.android.extservices.capex
+[   84.181847] apexd: Found pre-installed APEX /system/apex/com.android.rkpd.apex
+[   84.193066] apexd: Found pre-installed APEX /system/apex/com.android.apex.cts.shim.apex
+[   84.198031] init: Verified that /data/dalvik-cache has the encryption policy c0318e2d9be7391299a1d571eb5b46a1 v2 modes 1/4 flags 0x2
+[   84.237421] init: Verified that /data/ota has the encryption policy c0318e2d9be7391299a1d571eb5b46a1 v2 modes 1/4 flags 0x2
+[   84.241667] init: Verified that /data/ota_package has the encryption policy c0318e2d9be7391299a1d571eb5b46a1 v2 modes 1/4 flags 0x2
+[   84.246340] apexd: Found pre-installed APEX /system/apex/com.android.os.statsd.apex
+[   84.248812] init: Verified that /data/resource-cache has the encryption policy c0318e2d9be7391299a1d571eb5b46a1 v2 modes 1/4 flags 0x2
+[   84.258278] init: Not setting encryption policy on: /data/lost+found
+[   84.262673] apexd: Found pre-installed APEX /system/apex/com.android.media.capex
+[   84.267699] apexd: Found pre-installed APEX /system/apex/com.android.resolv.capex
+[   84.274162] init: Verified that /data/drm has the encryption policy c0318e2d9be7391299a1d571eb5b46a1 v2 modes 1/4 flags 0x2
+[   84.278051] init: Verified that /data/mediadrm has the encryption policy c0318e2d9be7391299a1d571eb5b46a1 v2 modes 1/4 flags 0x2
+[   84.280849] apexd: Found pre-installed APEX /system/apex/com.android.permission.capex
+[   84.287773] init: Verified that /data/nfc has the encryption policy c0318e2d9be7391299a1d571eb5b46a1 v2 modes 1/4 flags 0x2
+[   84.293922] apexd: Found pre-installed APEX /system/apex/com.android.art.capex
+[   84.296101] init: Verified that /data/backup has the encryption policy c0318e2d9be7391299a1d571eb5b46a1 v2 modes 1/4 flags 0x2
+[   84.335757] apexd: Found pre-installed APEX /system/apex/com.android.tethering.capex
+[   84.341743] apexd: Found pre-installed APEX /system/apex/com.android.configinfrastructure.capex
+[   84.349478] apexd: Found pre-installed APEX /system/apex/com.android.sdkext.apex
+[   84.357864] apexd: Found pre-installed APEX /system/apex/com.android.mediaprovider.capex
+[   84.362331] apexd: Found pre-installed APEX /system/apex/com.android.vndk.current.apex
+[   84.366584] apexd: Found pre-installed APEX /system/apex/com.android.tzdata.apex
+[   84.371705] apexd: Found pre-installed APEX /system/apex/com.android.devicelock.apex
+[   84.374462] apexd: Found pre-installed APEX /system/apex/com.android.ondevicepersonalization.capex
+[   84.377225] init: Verified that /data/ss has the encryption policy c0318e2d9be7391299a1d571eb5b46a1 v2 modes 1/4 flags 0x2
+[   84.377681] init: Command 'mkdir /data/ss 0700 system system encryption=Require' action=post-fs-data (/system/etc/init/hw/init.rc:922) took 81ms and succeeded
+[   84.382343] apexd: Found pre-installed APEX /system/apex/com.android.cellbroadcast.capex
+[   84.383878] init: Verified that /data/system has the encryption policy c0318e2d9be7391299a1d571eb5b46a1 v2 modes 1/4 flags 0x2
+[   84.389845] apexd: Found pre-installed APEX /system/apex/com.android.ipsec.capex
+[   84.397479] apexd: Found pre-installed APEX /system/apex/com.android.adservices.capex
+[   84.444915] selinux: SELinux: Skipping restorecon on directory(/data/system/shutdown-checkpoints)
+[   84.445983] init: Not setting encryption policy on: /data/media
+[   84.449705] init: Not setting encryption policy on: /data/misc_ce
+[   84.453137] init: Not setting encryption policy on: /data/misc_de
+[   84.456031] init: Not setting encryption policy on: /data/system_ce
+[   84.457891] init: Not setting encryption policy on: /data/system_de
+[   84.460811] init: Not setting encryption policy on: /data/user
+[   84.462166] init: Not setting encryption policy on: /data/user_de
+[   84.464227] init: Not setting encryption policy on: /data/vendor_ce
+[   84.466780] apexd: Found pre-installed APEX /system/apex/com.android.healthfitness.apex
+[   84.469665] init: Not setting encryption policy on: /data/vendor_de
+[   84.478265] apexd: Found pre-installed APEX /system/apex/com.android.conscrypt.capex
+[   84.479881] init: starting service 'exec 9 (/system/bin/chattr +F /data/media)'...
+[   84.491740] apexd: Found pre-installed APEX /system/apex/com.android.scheduling.capex
+[   84.499788] apexd: Found pre-installed APEX /system/apex/com.android.wifi.capex
+[   84.539513] apexd: Found pre-installed APEX /system/apex/com.android.i18n.apex
+[   84.548336] apexd: Found pre-installed APEX /system/apex/com.android.appsearch.capex
+[   84.556254] apexd: Found pre-installed APEX /system/apex/com.android.runtime.apex
+[   84.563987] apexd: Found pre-installed APEX /system/apex/com.android.uwb.capex
+[   84.574437] apexd: Scanning /system_ext/apex for pre-installed ApexFiles
+[   84.574855] apexd: /system_ext/apex does not exist. Skipping
+[   84.575057] apexd: Scanning /product/apex for pre-installed ApexFiles
+[   84.576527] apexd: /product/apex does not exist. Skipping
+[   84.576857] apexd: Scanning /vendor/apex for pre-installed ApexFiles
+[   84.577151] apexd: /vendor/apex does not exist. Skipping
+[   84.578043] apexd: No block apex metadata partition found, not adding block apexes
+[   84.578405] apexd: Populating APEX database from mounts...
+[   84.585412] init: ... started service 'exec 9 (/system/bin/chattr +F /data/media)' has pid 183
+[   84.585950] init: SVC_EXEC service 'exec 9 (/system/bin/chattr +F /data/media)' pid 183 (uid 1023 gid 1023+0 context default) started; waiting...
+[   84.586954] init: Command 'exec - media_rw media_rw -- /system/bin/chattr +F /data/media' action=post-fs-data (/system/etc/init/hw/init.rc:955) took 113ms and succeeded
+[   84.588364] apexd: 0 packages restored.
+[   84.593354] apexd: Marking APEXd as starting
+[   84.676805] apexd: Scanning /metadata/apex/sessions looking for sessions to be activated.
+[   84.684088] apexd: Scanning /data/apex/active for data ApexFiles
+[   84.693541] apexd: Selecting APEX for activation
+[   84.694390] apexd: Processing compressed APEX
+[   84.694690] apexd: Processing compressed APEX /system/apex/com.android.wifi.capex
+[   84.784320] apexd: Skipping decompression for /system/apex/com.android.wifi.capex
+[   84.784807] apexd: Processing compressed APEX /system/apex/com.android.media.swcodec.capex
+[   84.868124] apexd: Skipping decompression for /system/apex/com.android.media.swcodec.capex
+[   84.868915] apexd: Processing compressed APEX /system/apex/com.android.adbd.capex
+[   84.935419] apexd: Skipping decompression for /system/apex/com.android.adbd.capex
+[   84.936299] apexd: Processing compressed APEX /system/apex/com.android.tethering.capex
+[   84.964265] apexd: Skipping decompression for /system/apex/com.android.tethering.capex
+[   84.964826] apexd: Processing compressed APEX /system/apex/com.android.extservices.capex
+[   85.042418] apexd: Skipping decompression for /system/apex/com.android.extservices.capex
+[   85.042782] apexd: Processing compressed APEX /system/apex/com.android.uwb.capex
+[   85.078862] apexd: Skipping decompression for /system/apex/com.android.uwb.capex
+[   85.083737] apexd: Processing compressed APEX /system/apex/com.android.permission.capex
+[   85.180042] apexd: Skipping decompression for /system/apex/com.android.permission.capex
+[   85.180531] apexd: Processing compressed APEX /system/apex/com.android.art.capex
+[   85.279705] init: Service 'exec 9 (/system/bin/chattr +F /data/media)' (pid 183) exited with status 0 waiting took 0.782000 seconds
+[   85.280084] init: Sending signal 9 to service 'exec 9 (/system/bin/chattr +F /data/media)' (pid 183) process group...
+[   85.281289] libprocessgroup: Successfully killed process cgroup uid 1023 pid 183 in 0ms
+[   85.337481] apexd: Skipping decompression for /system/apex/com.android.art.capex
+[   85.337848] apexd: Processing compressed APEX /system/apex/com.android.conscrypt.capex
+[   85.378378] apexd: Skipping decompression for /system/apex/com.android.conscrypt.capex
+[   85.378727] apexd: Processing compressed APEX /system/apex/com.android.media.capex
+[   85.439702] apexd: Skipping decompression for /system/apex/com.android.media.capex
+[   85.440039] apexd: Processing compressed APEX /system/apex/com.android.mediaprovider.capex
+[   85.472100] apexd: Skipping decompression for /system/apex/com.android.mediaprovider.capex
+[   85.472410] apexd: Processing compressed APEX /system/apex/com.android.resolv.capex
+[   85.535802] apexd: Skipping decompression for /system/apex/com.android.resolv.capex
+[   85.536121] apexd: Processing compressed APEX /system/apex/com.android.configinfrastructure.capex
+[   85.569237] apexd: Skipping decompression for /system/apex/com.android.configinfrastructure.capex
+[   85.569654] apexd: Processing compressed APEX /system/apex/com.android.adservices.capex
+[   85.676717] apexd: Skipping decompression for /system/apex/com.android.adservices.capex
+[   85.677152] apexd: Processing compressed APEX /system/apex/com.android.appsearch.capex
+[   85.749739] init: Verified that /data/cache has the encryption policy c0318e2d9be7391299a1d571eb5b46a1 v2 modes 1/4 flags 0x2
+[   85.780047] init: Verified that /data/rollback has the encryption policy c0318e2d9be7391299a1d571eb5b46a1 v2 modes 1/4 flags 0x2
+[   85.788010] init: Verified that /data/rollback-observer has the encryption policy c0318e2d9be7391299a1d571eb5b46a1 v2 modes 1/4 flags 0x2
+[   85.794467] apexd: Skipping decompression for /system/apex/com.android.appsearch.capex
+[   85.794861] apexd: Processing compressed APEX /system/apex/com.android.neuralnetworks.capex
+[   85.796299] init: Verified that /data/rollback-history has the encryption policy c0318e2d9be7391299a1d571eb5b46a1 v2 modes 1/4 flags 0x2
+[   85.838907] init: Verified that /data/incremental has the encryption policy c0318e2d9be7391299a1d571eb5b46a1 v2 modes 1/4 flags 0x2
+[   85.868287] apexd: Skipping decompression for /system/apex/com.android.neuralnetworks.capex
+[   85.868722] apexd: Processing compressed APEX /system/apex/com.android.cellbroadcast.capex
+[   85.890936] apexd: Skipping decompression for /system/apex/com.android.cellbroadcast.capex
+[   85.891224] apexd: Processing compressed APEX /system/apex/com.android.ondevicepersonalization.capex
+[   85.946353] apexd: Skipping decompression for /system/apex/com.android.ondevicepersonalization.capex
+[   85.948123] apexd: Processing compressed APEX /system/apex/com.android.ipsec.capex
+[   85.965438] apexd: Skipping decompression for /system/apex/com.android.ipsec.capex
+[   85.965835] apexd: Processing compressed APEX /system/apex/com.android.scheduling.capex
+[   85.984364] apexd: Skipping decompression for /system/apex/com.android.scheduling.capex
+[   86.041185] loop4: detected capacity change from 0 to 648
+[   86.053819] loop5: detected capacity change from 0 to 50960
+[   86.057117] loop6: detected capacity change from 0 to 1616
+[   86.060199] loop7: detected capacity change from 0 to 6288
+[   86.064005] loop8: detected capacity change from 0 to 2192
+[   86.069241] loop9: detected capacity change from 0 to 536
+[   86.088401] loop10: detected capacity change from 0 to 11672
+[   86.097401] loop11: detected capacity change from 0 to 52360
+[   86.141890] loop12: detected capacity change from 0 to 21688
+[   86.173643] loop13: detected capacity change from 0 to 71872
+[   86.180295] loop14: detected capacity change from 0 to 8944
+[   86.241964] loop15: detected capacity change from 0 to 17152
+[   86.245960] loop16: detected capacity change from 0 to 55672
+[   86.291717] loop17: detected capacity change from 0 to 12792
+[   86.377399] loop18: detected capacity change from 0 to 36000
+[   86.542586] loop19: detected capacity change from 0 to 19224
+[   86.583927] loop20: detected capacity change from 0 to 7696
+[   86.586889] loop21: detected capacity change from 0 to 36680
+[   86.590650] loop22: detected capacity change from 0 to 64992
+[   86.870942] EXT4-fs (loop11): mounted filesystem without journal. Quota mode: none.
+[   86.884359] apexd: Successfully mounted package /system/apex/com.android.vndk.current.apex on /apex/com.android.vndk.v34@1 duration=834
+[   86.886152] EXT4-fs (loop6): mounted filesystem without journal. Quota mode: none.
+[   86.886743] apexd: Successfully mounted package /system/apex/com.android.tzdata.apex on /apex/com.android.tzdata@342090000 duration=884
+[   86.892094] EXT4-fs (loop14): mounted filesystem without journal. Quota mode: none.
+[   86.892868] apexd: Successfully mounted package /system/apex/com.android.runtime.apex on /apex/com.android.runtime@1 duration=734
+[   86.897293] EXT4-fs (loop10): mounted filesystem without journal. Quota mode: none.
+[   86.897801] apexd: Successfully mounted package /system/apex/com.android.devicelock.apex on /apex/com.android.devicelock@1 duration=849
+[   86.901228] EXT4-fs (loop4): mounted filesystem without journal. Quota mode: none.
+[   86.901757] apexd: Successfully mounted package /system/apex/com.android.virt.apex on /apex/com.android.virt@2 duration=904
+[   86.941872] device-mapper: verity: sha256 using implementation "sha256-ssse3"
+[   86.953913] device-mapper: verity: sha256 using implementation "sha256-ssse3"
+[   86.969540] loop23: detected capacity change from 0 to 11344
+[   86.972891] EXT4-fs (loop5): mounted filesystem without journal. Quota mode: none.
+[   86.973592] device-mapper: verity: sha256 using implementation "sha256-ssse3"
+[   87.058868] apexd: Successfully mounted package /system/apex/com.android.btservices.apex on /apex/com.android.btservices@342090000 duration=972
+[   87.166029] loop24: detected capacity change from 0 to 19784
+[   87.237341] loop25: detected capacity change from 0 to 8872
+[   87.243089] loop26: detected capacity change from 0 to 9104
+[   87.246896] loop27: detected capacity change from 0 to 536
+[   87.250217] loop28: detected capacity change from 0 to 45144
+[   87.253274] loop29: detected capacity change from 0 to 31552
+[   87.255041] loop30: detected capacity change from 0 to 1544
+[   87.263646] loop31: detected capacity change from 0 to 4600
+[   87.271506] loop32: detected capacity change from 0 to 1624
+[   87.279827] loop33: detected capacity change from 0 to 10520
+[   87.285184] loop34: detected capacity change from 0 to 7424
+[   87.935069] EXT4-fs (dm-33): mounted filesystem without journal. Quota mode: none.
+[   87.950473] device-mapper: verity: sha256 using implementation "sha256-ssse3"
+[   87.972031] apexd: Successfully mounted package /data/apex/decompressed/com.android.adbd@342090000.decompressed.apex on /apex/com.android.adbd@342090000 duration=1695
+[   87.974308] device-mapper: verity: sha256 using implementation "sha256-ssse3"
+[   88.035129] loop35: detected capacity change from 0 to 536
+[   88.097777] device-mapper: verity: sha256 using implementation "sha256-ssse3"
+[   88.229330] device-mapper: verity: sha256 using implementation "sha256-ssse3"
+[   88.232107] device-mapper: verity: sha256 using implementation "sha256-ssse3"
+[   88.233928] device-mapper: verity: sha256 using implementation "sha256-ssse3"
+[   88.236338] device-mapper: verity: sha256 using implementation "sha256-ssse3"
+[   88.259070] device-mapper: verity: sha256 using implementation "sha256-ssse3"
+[   88.265962] device-mapper: verity: sha256 using implementation "sha256-ssse3"
+[   88.304803] device-mapper: verity: sha256 using implementation "sha256-ssse3"
+[   88.352231] device-mapper: verity: sha256 using implementation "sha256-ssse3"
+[   88.364979] device-mapper: verity: sha256 using implementation "sha256-ssse3"
+[   88.552970] EXT4-fs (loop7): mounted filesystem without journal. Quota mode: none.
+[   88.553923] apexd: Successfully mounted package /system/apex/com.android.os.statsd.apex on /apex/com.android.os.statsd@342090000 duration=2518
+[   88.574957] EXT4-fs (loop8): mounted filesystem without journal. Quota mode: none.
+[   88.578454] apexd: Successfully mounted package /system/apex/com.android.rkpd.apex on /apex/com.android.rkpd@1 duration=2542
+[   88.754376] device-mapper: verity: sha256 using implementation "sha256-ssse3"
+[   88.779920] EXT4-fs (loop13): mounted filesystem without journal. Quota mode: none.
+[   88.781904] apexd: Successfully mounted package /system/apex/com.android.i18n.apex on /apex/com.android.i18n@1 duration=2728
+[   88.783755] EXT4-fs (loop9): mounted filesystem without journal. Quota mode: none.
+[   88.784936] apexd: Successfully mounted package /system/apex/com.android.apex.cts.shim.apex on /apex/com.android.apex.cts.shim@1 duration=2746
+[   88.855173] device-mapper: verity: sha256 using implementation "sha256-ssse3"
+[   88.889436] device-mapper: verity: sha256 using implementation "sha256-ssse3"
+[   88.971187] device-mapper: verity: sha256 using implementation "sha256-ssse3"
+[   88.990173] EXT4-fs (loop12): mounted filesystem without journal. Quota mode: none.
+[   88.991006] apexd: Successfully mounted package /system/apex/com.android.healthfitness.apex on /apex/com.android.healthfitness@342090000 duration=2940
+[   89.085305] EXT4-fs (dm-34): mounted filesystem without journal. Quota mode: none.
+[   89.086136] apexd: Successfully mounted package /data/apex/decompressed/com.android.media.swcodec@342090000.decompressed.apex on /apex/com.android.media.swcodec@342090000 duration=2899
+[   89.146544] EXT4-fs (loop30): mounted filesystem without journal. Quota mode: none.
+[   89.148992] device-mapper: verity: sha256 using implementation "sha256-ssse3"
+[   89.150539] apexd: Successfully mounted package /system/apex/com.android.sdkext.apex on /apex/com.android.sdkext@342090000 duration=3143
+[   89.281902] EXT4-fs (dm-35): mounted filesystem without journal. Quota mode: none.
+[   89.285195] apexd: Successfully mounted package /data/apex/decompressed/com.android.wifi@342090000.decompressed.apex on /apex/com.android.wifi@342090000 duration=3120
+[   89.562700] EXT4-fs (dm-28): mounted filesystem without journal. Quota mode: none.
+[   89.563900] apexd: Successfully mounted package /data/apex/decompressed/com.android.art@342090000.decompressed.apex on /apex/com.android.art@342090000 duration=3195
+[   89.651846] EXT4-fs (dm-29): mounted filesystem without journal. Quota mode: none.
+[   89.652532] apexd: Successfully mounted package /data/apex/decompressed/com.android.permission@342090000.decompressed.apex on /apex/com.android.permission@342090000 duration=3312
+[   89.681116] apexd: Failed waiting for device path: /dev/block/mapper/by-uuid/8de3ab03-807b-40c3-adea-a87846b30127
+[   89.685676] apexd: Failed waiting for device path: /dev/block/mapper/by-uuid/c8dc7642-66d2-49fc-8391-be97a4d0ff03
+[   89.738422] apexd: Failed waiting for device path: /dev/block/mapper/by-uuid/b463263e-883a-4aed-83fb-7c8ae09a8bfa
+[   89.741858] apexd: Failed waiting for device path: /dev/block/mapper/by-uuid/a4101950-a527-4110-98c2-bcd9129c1bdd
+[   89.745491] ueventd: Failed to find device dev: 254:16: No such device or address
+[   89.752108] ueventd: Failed to find device dev: 254:16: No such device or address
+[   89.758512] apexd: Failed waiting for device path: /dev/block/mapper/by-uuid/311721ab-5930-418a-a143-7ed2808928ce
+[   89.763813] apexd: Failed waiting for device path: /dev/block/mapper/by-uuid/6585f7f2-b9fa-4c4c-9d5a-027e5cdaa2aa
+[   89.765123] apexd: Failed waiting for device path: /dev/block/mapper/by-uuid/0c9694b6-020f-44d8-800a-77557e86996d
+[   89.765803] apexd: Failed waiting for device path: /dev/block/mapper/by-uuid/10f56ce7-7611-40df-b44f-f6c0c1058e4e
+[   89.766321] apexd: Failed waiting for device path: /dev/block/mapper/by-uuid/4049f07d-3ff8-4e9b-a58b-ff83617cb789
+[   89.772667] ueventd: Failed to find device dev: 254:14: No such device or address
+[   89.778326] ueventd: Failed to find device dev: 254:14: No such device or address
+[   89.786260] ueventd: Failed to find device dev: 254:14: No such device or address
+[   89.858384] apexd: Failed waiting for device path: /dev/block/mapper/by-uuid/0380d8e1-1892-4e4e-b70c-34612344996f
+[   89.872926] apexd: Failed to get device path: com.android.ondevicepersonalization: No such device or address
+[   89.873265] apexd: Failed to get unique path for device com.android.ondevicepersonalization
+[   89.877406] apexd: Failed to get device path: com.android.media: No such device or address
+[   89.877713] apexd: Failed to get unique path for device com.android.media
+[   89.877984] apexd: DM_DEV_REMOVE failed for [com.android.media]: No such device or address
+[   89.880089] apexd: Failed to get device path: com.android.neuralnetworks: No such device or address
+[   89.880344] apexd: Failed to get unique path for device com.android.neuralnetworks
+[   89.880734] apexd: DM_DEV_REMOVE failed for [com.android.neuralnetworks]: No such device or address
+[   89.883591] apexd: Failed to get device path: com.android.extservices: No such device or address
+[   89.883897] apexd: Failed to get unique path for device com.android.extservices
+[   89.884328] apexd: DM_DEV_REMOVE failed for [com.android.extservices]: No such device or address
+[   89.886849] apexd: Failed to get device path: com.android.resolv: No such device or address
+[   89.888678] apexd: Failed to get device path: com.android.tethering: No such device or address
+[   89.889092] apexd: Failed to get unique path for device com.android.tethering
+[   89.889499] apexd: DM_DEV_REMOVE failed for [com.android.tethering]: No such device or address
+[   89.890215] apexd: Failed to get device path: com.android.mediaprovider: No such device or address
+[   89.890440] apexd: Failed to get unique path for device com.android.mediaprovider
+[   89.890788] apexd: DM_DEV_REMOVE failed for [com.android.mediaprovider]: No such device or address
+[   89.892491] apexd: Failed to get device path: com.android.appsearch: No such device or address
+[   89.892981] apexd: Failed to get unique path for device com.android.appsearch
+[   89.893501] apexd: DM_DEV_REMOVE failed for [com.android.appsearch]: No such device or address
+[   89.896114] ueventd: Failed to find device dev: 254:13: No such device or address
+[   89.899861] ueventd: Failed to find device dev: 254:13: No such device or address
+[   89.902237] ueventd: Failed to find device dev: 254:13: No such device or address
+[   89.935593] apexd: Failed waiting for device path: /dev/block/mapper/by-uuid/ffc2a794-bef7-44ab-8ee6-55cea3298868
+[   89.940429] apexd: Failed to get unique path for device com.android.resolv
+[   89.940904] apexd: DM_DEV_REMOVE failed for [com.android.resolv]: No such device or address
+[   89.943216] apexd: Failed to get device path: com.android.ipsec: No such device or address
+[   89.943703] apexd: Failed to get unique path for device com.android.ipsec
+[   89.949444] apexd: DM_DEV_REMOVE failed for [com.android.ipsec]: No such device or address
+[   89.950206] apexd: DM_DEV_REMOVE failed for [com.android.ondevicepersonalization]: No such device or address
+[   89.975300] apexd: Failed to get device path: com.android.adservices: No such device or address
+[   89.975702] apexd: Failed to get unique path for device com.android.adservices
+[   89.979018] apexd: DM_DEV_REMOVE failed for [com.android.adservices]: No such device or address
+[   89.986002] apexd: Failed waiting for device path: /dev/block/mapper/by-uuid/f3f37327-5ed2-4936-89df-8b34c9d680b8
+[   89.987159] apexd: Failed waiting for device path: /dev/block/mapper/by-uuid/052445ee-f760-4591-b615-cca10e412919
+[   89.991440] apexd: Failed to activate /data/apex/decompressed/com.android.tethering@342090000.decompressed.apex(com.android.tethering): Failed to create Apex Verity device /data/apex/decompressed/com.android.tethering@342090000.decompressed.apex: Failed waiting for dm device com.android.tethering
+[   89.991950] apexd: Failed to activate /data/apex/decompressed/com.android.extservices@342090000.decompressed.apex(com.android.extservices): Failed to create Apex Verity device /data/apex/decompressed/com.android.extservices@342090000.decompressed.apex: Failed waiting for dm device com.android.extservices
+[   90.034798] apexd: Failed waiting for device path: /dev/block/mapper/by-uuid/6c7f64f5-00aa-45b6-8ea1-4d4a661fa652
+[   90.042435] apexd: Failed to get device path: com.android.uwb: No such device or address
+[   90.042741] apexd: Failed to get unique path for device com.android.uwb
+[   90.042981] apexd: DM_DEV_REMOVE failed for [com.android.uwb]: No such device or address
+[   90.045391] apexd: Failed to get device path: com.android.cellbroadcast: No such device or address
+[   90.045705] apexd: Failed to get unique path for device com.android.cellbroadcast
+[   90.045965] apexd: DM_DEV_REMOVE failed for [com.android.cellbroadcast]: No such device or address
+[   90.066216] apexd: Failed to activate /data/apex/decompressed/com.android.uwb@342090000.decompressed.apex(com.android.uwb): Failed to create Apex Verity device /data/apex/decompressed/com.android.uwb@342090000.decompressed.apex: Failed waiting for dm device com.android.uwb
+[   90.066824] apexd: Failed to activate /data/apex/decompressed/com.android.mediaprovider@342090000.decompressed.apex(com.android.mediaprovider): Failed to create Apex Verity device /data/apex/decompressed/com.android.mediaprovider@342090000.decompressed.apex: Failed waiting for dm device com.android.mediaprovider
+[   90.075229] ueventd: Failed to find device dev: 254:32: No such device or address
+[   90.079160] ueventd: Failed to find device dev: 254:32: No such device or address
+[   90.083467] ueventd: Failed to find device dev: 254:32: No such device or address
+[   90.085668] ueventd: Failed to find device dev: 254:25: No such device or address
+[   90.093974] ueventd: Failed to find device dev: 254:20: No such device or address
+[   90.152629] apexd: Failed to get device path: com.android.scheduling: No such device or address
+[   90.153181] apexd: Failed to get unique path for device com.android.scheduling
+[   90.153469] apexd: DM_DEV_REMOVE failed for [com.android.scheduling]: No such device or address
+[   90.172320] apexd: Failed to get device path: com.android.conscrypt: No such device or address
+[   90.195949] apexd: Failed waiting for device path: /dev/block/mapper/by-uuid/746e96de-9b65-4d6d-be87-13a6d7c0e856
+[   90.234821] apexd: Failed to get unique path for device com.android.conscrypt
+[   90.235279] apexd: DM_DEV_REMOVE failed for [com.android.conscrypt]: No such device or address
+[   90.236505] ueventd: Failed to find device dev: 254:20: No such device or address
+[   90.273469] ueventd: Failed to find device dev: 254:20: No such device or address
+[   90.276710] ueventd: Failed to find device dev: 254:25: No such device or address
+[   90.284115] apexd: Failed to activate /data/apex/decompressed/com.android.conscrypt@342090000.decompressed.apex(com.android.conscrypt): Failed to create Apex Verity device /data/apex/decompressed/com.android.conscrypt@342090000.decompressed.apex: Failed waiting for dm device com.android.conscrypt
+[   90.286444] apexd: Failed to activate /data/apex/decompressed/com.android.media@342090000.decompressed.apex(com.android.media): Failed to create Apex Verity device /data/apex/decompressed/com.android.media@342090000.decompressed.apex: Failed waiting for dm device com.android.media
+[   90.289025] apexd: Failed to activate /data/apex/decompressed/com.android.resolv@342090000.decompressed.apex(com.android.resolv): Failed to create Apex Verity device /data/apex/decompressed/com.android.resolv@342090000.decompressed.apex: Failed waiting for dm device com.android.resolv
+[   90.340507] ueventd: Failed to find device dev: 254:25: No such device or address
+[   90.352319] ueventd: Failed to find device dev: 254:11: No such device or address
+[   90.375246] ueventd: Failed to find device dev: 254:11: No such device or address
+[   90.377854] ueventd: Failed to find device dev: 254:11: No such device or address
+[   90.379738] ueventd: Failed to find device dev: 254:21: No such device or address
+[   90.398657] ueventd: Failed to find device dev: 254:21: No such device or address
+[   90.400553] ueventd: Failed to find device dev: 254:21: No such device or address
+[   90.436081] apexd: Failed to get device path: com.android.configinfrastructure: No such device or address
+[   90.436349] apexd: Failed to get unique path for device com.android.configinfrastructure
+[   90.437869] apexd: DM_DEV_REMOVE failed for [com.android.configinfrastructure]: No such device or address
+[   90.442061] ueventd: Failed to find device dev: 254:31: No such device or address
+[   90.449352] ueventd: Failed to find device dev: 254:31: No such device or address
+[   90.451810] ueventd: Failed to find device dev: 254:31: No such device or address
+[   90.459821] ueventd: Failed to find device dev: 254:10: No such device or address
+[   90.478563] ueventd: Failed to find device dev: 254:10: No such device or address
+[   90.535120] ueventd: Failed to find device dev: 254:10: No such device or address
+[   90.547864] ueventd: Failed to find device dev: 254:12: No such device or address
+[   90.568486] ueventd: Failed to find device dev: 254:12: No such device or address
+[   90.575632] ueventd: Failed to find device dev: 254:12: No such device or address
+[   90.586486] apexd: Failed to activate /data/apex/decompressed/com.android.configinfrastructure@342090000.decompressed.apex(com.android.configinfrastructure): Failed to create Apex Verity device /data/apex/decompressed/com.android.configinfrastructure@342090000.decompressed.apex: Failed waiting for dm device com.android.configinfrastructure
+[   90.594632] apexd: Failed to activate /data/apex/decompressed/com.android.adservices@342090000.decompressed.apex(com.android.adservices): Failed to create Apex Verity device /data/apex/decompressed/com.android.adservices@342090000.decompressed.apex: Failed waiting for dm device com.android.adservices
+[   90.595422] apexd: Failed to activate /data/apex/decompressed/com.android.appsearch@342090000.decompressed.apex(com.android.appsearch): Failed to create Apex Verity device /data/apex/decompressed/com.android.appsearch@342090000.decompressed.apex: Failed waiting for dm device com.android.appsearch
+[   90.649316] ueventd: Failed to find device dev: 254:30: No such device or address
+[   90.685294] apexd: Failed to activate /data/apex/decompressed/com.android.neuralnetworks@342090000.decompressed.apex(com.android.neuralnetworks): Failed to create Apex Verity device /data/apex/decompressed/com.android.neuralnetworks@342090000.decompressed.apex: Failed waiting for dm device com.android.neuralnetworks
+[   90.686197] apexd: Failed to activate /data/apex/decompressed/com.android.cellbroadcast@342090000.decompressed.apex(com.android.cellbroadcast): Failed to create Apex Verity device /data/apex/decompressed/com.android.cellbroadcast@342090000.decompressed.apex: Failed waiting for dm device com.android.cellbroadcast
+[   90.686760] apexd: Failed to activate /data/apex/decompressed/com.android.ipsec@342090000.decompressed.apex(com.android.ipsec): Failed to create Apex Verity device /data/apex/decompressed/com.android.ipsec@342090000.decompressed.apex: Failed waiting for dm device com.android.ipsec
+[   90.744217] apexd: Failed to activate /data/apex/decompressed/com.android.ondevicepersonalization@342090000.decompressed.apex(com.android.ondevicepersonalization): Failed to create Apex Verity device /data/apex/decompressed/com.android.ondevicepersonalization@342090000.decompressed.apex: Failed waiting for dm device com.android.ondevicepersonalization
+[   90.744866] apexd: Failed to activate /data/apex/decompressed/com.android.scheduling@342090000.decompressed.apex(com.android.scheduling): Failed to create Apex Verity device /data/apex/decompressed/com.android.scheduling@342090000.decompressed.apex: Failed waiting for dm device com.android.scheduling
+[   90.745831] apexd: Failed to activate packages: Failed to activate 15 APEX packages. One of the errors: Failed to activate /data/apex/decompressed/com.android.tethering@342090000.decompressed.apex(com.android.tethering): Failed to create Apex Verity device /data/apex/decompressed/com.android.tethering@342090000.decompressed.apex: Failed waiting for dm device com.android.tethering
+[   90.747120] apexd: Failed to revert : Revert requested, when there are no active sessions.
+[   90.765513] apexd: Trying to activate pre-installed versions of missing apexes
+[   90.850729] ueventd: Failed to find device dev: 254:26: No such device or address
+[   90.900109] ueventd: Failed to find device dev: 254:26: No such device or address
+[   91.242045] ueventd: Failed to find device dev: 254:26: No such device or address
+[   91.342305] ueventd: Failed to find device dev: 254:30: No such device or address
+[   91.354719] ueventd: Failed to find device dev: 254:30: No such device or address
+[   91.361192] ueventd: Failed to find device dev: 254:8: No such device or address
+[   91.381239] ueventd: Failed to find device dev: 254:8: No such device or address
+[   91.383118] ueventd: Failed to find device dev: 254:8: No such device or address
+[   91.389489] ueventd: Failed to find device dev: 254:18: No such device or address
+[   91.392348] ueventd: Failed to find device dev: 254:18: No such device or address
+[   91.442750] ueventd: Failed to find device dev: 254:18: No such device or address
+[   91.889544] apexd: Activated 0 packages.
+[   92.067833] apexd: OnStart done, duration=7463
+[   92.173181] AidlLazyServiceRegistrar: Registering service apexservice
+[   96.262069] apexd: Marking APEXd as activated
+[   96.270334] init: Wait for property 'apexd.status=activated' took 10412ms
+[   97.286910] init: Parsing file /apex/com.android.adbd/etc/init.rc...
+[   97.336877] init: Parsing file /apex/com.android.art/etc/init.rc...
+[   97.350289] init: Parsing file /apex/com.android.media.swcodec/etc/mediaswcodec.32rc...
+[   97.358696] init: Parsing file /apex/com.android.os.statsd/etc/init.rc...
+[   97.366977] init: Parsing file /apex/com.android.sdkext/etc/derive_classpath.rc...
+[   97.376277] init: Parsing file /apex/com.android.sdkext/etc/derive_sdk.rc...
+[  100.954903] init: linkerconfig generated /linkerconfig with mounted APEX modules info
+[  100.956493] init: Command 'perform_apex_config' action=post-fs-data (/system/etc/init/hw/init.rc:1010) took 4683ms and succeeded
+[  100.969018] init: Verified that /data/bootanim has the encryption policy c0318e2d9be7391299a1d571eb5b46a1 v2 modes 1/4 flags 0x2
+[  100.977246] init: starting service 'derive_sdk'...
+[  101.158462] init: ... started service 'derive_sdk' has pid 258
+[  101.159094] init: SVC_EXEC service 'derive_sdk' pid 258 (uid 9999 gid 9999+0 context default) started; waiting...
+[  101.164200] init: Command 'exec_start derive_sdk' action=post-fs-data (/system/etc/init/hw/init.rc:1015) took 194ms and succeeded
+[  101.767964] init: Service 'derive_sdk' (pid 258) exited with status 0 waiting took 0.725000 seconds
+[  101.768360] init: Sending signal 9 to service 'derive_sdk' (pid 258) process group...
+[  101.769926] libprocessgroup: Successfully killed process cgroup uid 9999 pid 258 in 0ms
+[  101.780734] init: starting service 'exec 10 (/system/bin/vdc --wait cryptfs init_user0)'...
+[  101.838172] init: ... started service 'exec 10 (/system/bin/vdc --wait cryptfs init_user0)' has pid 259
+[  101.838794] init: SVC_EXEC service 'exec 10 (/system/bin/vdc --wait cryptfs init_user0)' pid 259 (uid 0 gid 0+0 context default) started; waiting...
+[  101.840328] init: Command 'init_user0' action=post-fs-data (/system/etc/init/hw/init.rc:1017) took 62ms and succeeded
+[  102.211719] vold: Failed to set encryption policy of /data/data to 63752f5dd9b133804b3d3e16a6c22b4f v2 modes 1/4 flags 0x2: The directory already has a different encryption policy.
+[  102.869176] init: Service 'exec 10 (/system/bin/vdc --wait cryptfs init_user0)' (pid 259) exited with status 0 waiting took 1.079000 seconds
+[  102.869547] init: Sending signal 9 to service 'exec 10 (/system/bin/vdc --wait cryptfs init_user0)' (pid 259) process group...
+[  102.870670] libprocessgroup: Successfully killed process cgroup uid 0 pid 259 in 0ms
+[  102.877079] selinux: SELinux: Skipping restorecon on directory(/data)
+[  102.879686] init: starting service 'derive_classpath'...
+[  102.944014] init: ... started service 'derive_classpath' has pid 262
+[  102.944758] init: SVC_EXEC service 'derive_classpath' pid 262 (uid 1000 gid 1000+1 context default) started; waiting...
+[  102.945274] init: Command 'exec_start derive_classpath' action=post-fs-data (/system/etc/init/hw/init.rc:1024) took 67ms and succeeded
+[  103.300071] init: Service 'derive_classpath' (pid 262) exited with status 0 waiting took 0.409000 seconds
+[  103.300458] init: Sending signal 9 to service 'derive_classpath' (pid 262) process group...
+[  103.301481] libprocessgroup: Successfully killed process cgroup uid 1000 pid 262 in 0ms
+[  103.318852] init: starting service 'art_boot'...
+[  103.376965] init: ... started service 'art_boot' has pid 263
+[  103.377319] init: SVC_EXEC service 'art_boot' pid 263 (uid 0 gid 0+0 context default) started; waiting...
+[  103.377862] init: Command 'exec_start art_boot' action=post-fs-data (/system/etc/init/hw/init.rc:1030) took 64ms and succeeded
+[  103.776803] init: Service 'art_boot' (pid 263) exited with status 0 waiting took 0.448000 seconds
+[  103.777318] init: Sending signal 9 to service 'art_boot' (pid 263) process group...
+[  103.778391] libprocessgroup: Successfully killed process cgroup uid 0 pid 263 in 0ms
+[  103.789076] init: starting service 'odsign'...
+[  103.854718] init: ... started service 'odsign' has pid 264
+[  103.858738] init: Command 'start odsign' action=post-fs-data (/system/etc/init/hw/init.rc:1035) took 68ms and succeeded
+INFO         | Wait for emulator (pid 5009) 20 seconds to shutdown gracefully before kill;you can set environment variable ANDROID_EMULATOR_WAIT_TIME_BEFORE_KILL(in seconds) to change the default value (20 seconds)
+
+USER_INFO    | Snapshots have been disabled by the user, save request is ignored.
+INFO         | Saving snapshot 'default_boot' took 1 ms
+WARNING      | Emulator client has not yet been configured.. Call configure me first!

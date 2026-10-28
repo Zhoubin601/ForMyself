@@ -1,0 +1,18 @@
+
+ RUN  v3.2.4 /workspace/ForMyself
+
+stderr | tests/ProtectedAccess.spec.js > 历史旧聊天兼容回归：受保护会话与独立加载（非Kanata产品验收） > 解密失败不写入空数据，保留密文并允许重试
+读取密码库失败 Error: DECRYPT_FAILED
+    at Proxy.loadRecords (/workspace/ForMyself/src/features/vault/vaultStore.js:81:31)
+    at /workspace/ForMyself/src/stores/protectedAccess.js:80:9
+
+ ✓ tests/ProtectedAccess.spec.js (12 tests) 3190ms
+   ✓ 历史旧聊天兼容回归：受保护会话与独立加载（非Kanata产品验收） > 免进入验证不等于有解密权限；一次有效会话复用认证  392ms
+   ✓ 历史旧聊天兼容回归：受保护会话与独立加载（非Kanata产品验收） > 取消或错误密码不解密，随后允许重试  804ms
+ ✓ tests/ProtectedDataRecovery.spec.js (13 tests) 1885ms
+
+ Test Files  2 passed (2)
+      Tests  25 passed (25)
+   Start at  17:20:55
+   Duration  10.69s (transform 1.09s, setup 0ms, collect 2.14s, tests 5.08s, environment 1.94s, prepare 476ms)
+

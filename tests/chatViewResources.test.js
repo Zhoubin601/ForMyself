@@ -3,12 +3,13 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 import { readSourceContract as read } from './sourceContractReader.js'
 
-test('侧栏与首页陪伴卡都可以进入温馨小家', () => {
+test('侧栏与首页陪伴卡复用 chat 路由进入受保护的彼方入口', () => {
   const app = read('App.vue')
   const home = read('components/HomeView.vue')
   const chat = moduleRegistry.get('chat')
-  assert.equal(chat.title, '温馨小家')
-  assert.equal(chat.cache, true)
+  assert.equal(chat.title, '彼方 · Kanata')
+  assert.equal(chat.name, 'KanataSetupView')
+  assert.equal(chat.cache, false)
   assert.equal(chat.access, 'protected')
   assert.equal(moduleRegistry.menu({ warmHomeEnabled: true }).some(m => m.id === 'chat'), true)
   assert.equal(moduleRegistry.menu({ warmHomeEnabled: false }).some(m => m.id === 'chat'), false)
@@ -116,12 +117,13 @@ test('用户发送新消息后会使尚未落地的智能开场失效', () => {
   assert.match(view, /smartEntryRun \+= 1/)
 })
 
-test('切换应用页面或进入锁屏时保留聊天生成任务，并在进程重建后恢复未回复消息', () => {
+test('彼方入口不缓存；历史聊天的中断恢复实现保留但不作为产品入口', () => {
   const app = read('App.vue')
   const view = read('features/chat/ChatView.vue')
 
   assert.match(app, /v-if="hasEnteredApp" v-show="!authStore\.isLocked" class="main-app/)
-  assert.equal(moduleRegistry.get('chat').cache, true)
+  assert.equal(moduleRegistry.get('chat').cache, false)
+  assert.notEqual(moduleRegistry.get('chat').name, 'ChatView')
   assert.equal(moduleRegistry.get('chat').bindings({ isVisible: false }).isVisible, false)
   assert.match(view, /const findRecentUnansweredUserMessages/)
   assert.match(view, /24 \* 60 \* 60 \* 1000/)
@@ -164,26 +166,14 @@ test('进入页面使用六小时智能主动消息并持久化，反复进出�
   assert.doesNotMatch(view, /sessionWelcome/)
 })
 
-test('设置页提供名字、长期记忆、三种清理行为与独立备份入口', () => {
-  const settings = read('components/SettingsView.vue')
-
-  assert.equal(BACKUP_TYPE_OPTIONS.find(option => option.value === 'chat').label, '温馨小家数据')
-  assert.match(settings, /saveCompanionName/)
-  assert.match(settings, /CHAT_MEMORY_CATEGORIES/)
-  assert.match(settings, /clearChatMessages/)
-  assert.match(settings, /clearChatMemories/)
-  assert.match(settings, /resetChatHome/)
-  assert.match(settings, /prepareCompanionAvatar/)
-  assert.match(settings, /setCompanionAvatar/)
-  assert.match(settings, /const MEMORY_PAGE_SIZE = 3/)
-  assert.match(settings, /v-for="memory in pagedChatMemories"/)
-  assert.match(settings, /第 \{\{ memoryPage \}\} \/ \{\{ memoryPageCount \}\} 页/)
-  assert.match(settings, /聊天与长期记忆/)
-  assert.match(settings, /根据已有聊天建立她的自我/)
-  assert.match(settings, /最近 200 个合并角色消息/)
-  assert.match(settings, /每天期望最少/)
-  assert.match(settings, /每天期望最多/)
-  assert.match(settings, /允许偶尔延迟补一句/)
+test('彼方设置通过统一导航进入受保护入口，备份保留独立选项', () => {
+  assert.equal(BACKUP_TYPE_OPTIONS.find(option => option.value === 'chat').label, '彼方数据')
+  const section = read('components/settings/SettingsChat.vue')
+  assert.match(section, /switchView\('chat'\)/)
+  assert.match(section, /@click="openKanata"/)
+  assert.match(section, /旧温馨小家不会被导入新世界/)
+  assert.doesNotMatch(section, /@click="(?:saveCompanionName|clearChatMessages|clearChatMemories|resetChatHome)/)
+  assert.equal(moduleRegistry.get('chat').backup.prefix, 'Kanata')
 })
 
 test('聊天上下文只组合生活 Store，不读取密码库、主密码或 API Key 内容', () => {

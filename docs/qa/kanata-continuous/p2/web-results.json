@@ -1,0 +1,41 @@
+{
+  "startedAt": "2026-10-28T03:02:47.344Z",
+  "browser": "154.0.8037.57",
+  "pageErrors": [],
+  "samples": [
+    {
+      "count": 1000,
+      "jsonBytes": 908561,
+      "ciphertextBytes": 1211456,
+      "saveMs": 807.6999999999534,
+      "coldReadMs": 303.5999999998603,
+      "backupMs": 57.60000000009313,
+      "backupMessages": 1000,
+      "heapAfter": 67357555
+    },
+    {
+      "count": 10000,
+      "jsonBytes": 8819562,
+      "ciphertextBytes": 11759448,
+      "saveMs": 4002,
+      "coldReadMs": 4512.199999999953,
+      "backupMs": 528.6999999999534,
+      "backupMessages": 10000,
+      "heapAfter": 119662793
+    }
+  ],
+  "cancelZeroSeed": true,
+  "seed": {
+    "worlds": 1,
+    "instances": 5,
+    "private": 5,
+    "group": 1,
+    "messages": 0,
+    "memories": 0,
+    "events": 0
+  },
+  "cleanupWhitelist": true,
+  "coldReload": true,
+  "layout": true,
+  "status": "PASS"
+}

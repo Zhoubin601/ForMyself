@@ -1,0 +1,22 @@
+{
+  "commandsAndResults": [
+    [
+      "git status --short --branch",
+      "## Kanata\n M docs/analysis-notes.md\n M docs/plan.md\n M docs/questions.md\n M docs/source-notes.md\n M memory-bank/development-context.md\n M src/application/contracts.d.ts\n M src/application/fullBackupRuntime.js\n M src/application/moduleRegistry.js\n M src/application/protectedModules.js\n M src/application/restoreCoordinator.js\n M src/components/settings/SettingsChat.vue\n M src/composables/settings/useBackupSettings.js\n M src/composables/useAppController.js\n M src/features/chat/chatStore.js\n M src/platform/storage/keys.js\n M tests/ProtectedAccess.spec.js\n M tests/ProtectedDataRecovery.spec.js\n M tests/UnlockFeedback.spec.js\n M tests/chatViewResources.test.js\n M tests/types/kanata.ts\n M tests/unlockPerformance.test.js\n M \"\\346\\236\\266\\346\\236\\204\\346\\216\\245\\345\\217\\243\\344\\270\\216Agent\\345\\274\\200\\345\\217\\221\\350\\257\\264\\346\\230\\216\\344\\271\\246.md\"\n?? docs/20261028-kanata-stage-p2-verification-v1.md\n?? docs/qa/kanata-continuous/p2/\n?? src/application/kanataBackupRuntime.js\n?? src/application/kanataRuntime.js\n?? src/features/chat/KanataSetupView.vue\n?? src/features/chat/backup/\n?? src/features/chat/domain/initializationGate.js\n?? src/features/chat/kanataStore.js\n?? src/features/chat/legacy/\n?? src/features/chat/storage/\n?? tests/KanataBackupRuntime.spec.js\n?? tests/KanataInitialization.spec.js\n?? tests/KanataProductRecovery.spec.js\n?? tests/KanataSetupView.spec.js\n?? tests/KanataStore.spec.js\n?? tests/kanataBackup.test.js\n?? tests/kanataRepository.test.js\n?? tests/legacyChatCleanup.test.js\n"
+    ],
+    [
+      "git log -3 --oneline",
+      "dd9c912 feat(kanata): validate isolated domain graphs and deterministic five-character presets\n47f7bfa docs(kanata): define five-character Abydos preset and gated continuous P1-P7 execution\nd23d48a docs(kanata): adopt clean start and complete Abydos five-character preset plan\n"
+    ],
+    [
+      "git diff --stat",
+      " docs/analysis-notes.md                             |  10 +\n docs/plan.md                                       |   8 +\n docs/questions.md                                  |  10 +\n docs/source-notes.md                               |  12 +\n memory-bank/development-context.md                 |   2 +\n src/application/contracts.d.ts                     |   6 +\n src/application/fullBackupRuntime.js               |  82 +++---\n src/application/moduleRegistry.js                  |   4 +-\n src/application/protectedModules.js                |   2 +-\n src/application/restoreCoordinator.js              |   4 +-\n src/components/settings/SettingsChat.vue           | 302 +--------------------\n src/composables/settings/useBackupSettings.js      |  43 ++-\n src/composables/useAppController.js                |  41 +--\n src/features/chat/chatStore.js                     |  10 +\n src/platform/storage/keys.js                       |   2 +\n tests/ProtectedAccess.spec.js                      |  10 +-\n tests/ProtectedDataRecovery.spec.js                |  51 +++-\n tests/UnlockFeedback.spec.js                       |  15 +-\n tests/chatViewResources.test.js                    |  40 +--\n tests/types/kanata.ts                              |  31 +++\n tests/unlockPerformance.test.js                    |   4 +-\n ...217\\221\\350\\257\\264\\346\\230\\216\\344\\271\\246.md\" |  21 +-\n 22 files changed, 294 insertions(+), 416 deletions(-)\n"
+    ],
+    [
+      "git diff --check",
+      0
+    ]
+  ],
+  "noCommitPushMainMergeOrRelease": true,
+  "snapshotNote": "Historical workspace snapshot before user-authorized P2 checkpoint commit/push. Not the post-push Git state."
+}

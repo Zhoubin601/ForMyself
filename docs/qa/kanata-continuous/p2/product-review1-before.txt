@@ -1,0 +1,38 @@
+
+ RUN  v3.2.4 /workspace/ForMyself
+
+ ❯ tests/KanataProductRecovery.spec.js (8 tests | 1 failed) 2520ms
+   ✓ Kanata P2 product runtime: actual stores, encrypted files and restore journal > exports v13 from the product and rejects direct internal apply outside the coordinator  361ms
+   ✓ Kanata P2 product runtime: actual stores, encrypted files and restore journal > legacy v12 explicitly restores nonchat modules and AI config, without any legacy chat write 266ms
+   × Kanata P2 product runtime: actual stores, encrypted files and restore journal > single-import adapters also pause untrusted raw-domain sending tasks rather than relying on UI parsing 184ms
+     → expected 'pending' to be 'cancelled' // Object.is equality
+   ✓ Kanata P2 product runtime: actual stores, encrypted files and restore journal > target participant failure compensates actual stores and the complete encrypted Kanata graph  348ms
+   ✓ Kanata P2 product runtime: actual stores, encrypted files and restore journal > rollback failure keeps the real encrypted journal and barrier, then recovers after the fault is fixed  509ms
+   ✓ Kanata P2 product runtime: actual stores, encrypted files and restore journal > old encrypted journal committed=false restores only its chosen nonchat snapshot 253ms
+   ✓ Kanata P2 product runtime: actual stores, encrypted files and restore journal > old encrypted journal committed=true restores only its chosen nonchat snapshot 255ms
+   ✓ Kanata P2 product runtime: actual stores, encrypted files and restore journal > master password transaction reencrypts actual new Kanata and vault stores and releases plaintext on expiry  340ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/KanataProductRecovery.spec.js > Kanata P2 product runtime: actual stores, encrypted files and restore journal > single-import adapters also pause untrusted raw-domain sending tasks rather than relying on UI parsing
+AssertionError: expected 'pending' to be 'cancelled' // Object.is equality
+
+Expected: "cancelled"
+Received: "pending"
+
+ ❯ tests/KanataProductRecovery.spec.js:130:42
+    128|       instanceId: incoming.instances[0].id, conversationId: incoming.c…
+    129|     await runtime.registry.singleImport('chat', incoming, { overwrite:…
+    130|     expect(chat.snapshot.tasks[0].state).toBe('cancelled')
+       |                                          ^
+    131|     expect(chat.snapshot.tasks[0].leaseUntil).toBe(0)
+    132|     expect(incoming.tasks[0].state).toBe('pending')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 7 passed (8)
+   Start at  17:21:26
+   Duration  5.03s (transform 686ms, setup 0ms, collect 1.32s, tests 2.52s, environment 733ms, prepare 151ms)
+

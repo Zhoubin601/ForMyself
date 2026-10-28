@@ -959,3 +959,15 @@ P1执行清单：新增chat/domain纯领域类型与校验、preset实例化纯�
 ### Kanata P1 放行记录
 
 P1：PASS/Go，51新增领域用例，Node336/Vitest156及npm run check实际通过。两轮自查有失败复现和修复，见 [P1验收](20261028-kanata-stage-p1-verification-v1.md)。本地提交后直接进入P2，P2–P7尚未验收；不推送。旧迁移规划不再生效，本轮没有新增普通计划。
+
+## Kanata P2 执行检查点（非重新制定计划）
+
+继续严格以v3为唯一阶段验收依据。P1已PASS，本地dd9c912；P2已实现独立仓库/Store、确认清理、首启、备份/实际协调器与设置适配。最终候选check退出0（Node407/Vitest219），Web首启与冷重载和增长基线通过。Android匹配构建/设备链/增长实测尚待完成，因此P2暂为未验收/No-Go，P3–P7未开始。
+
+用户最新授权：从P2起每个完成阶段普通提交并推送Kanata；不推送main、强推、建PR或发布。未通过门禁不能以阶段完成提交误导。完整记录见 [P2检查点](20261028-kanata-stage-p2-verification-v1.md)，下一步直接补齐P2原生验证及容量限制，再判Go/No-Go；无需重复P0或P1。
+
+P2最终编译补记：匹配安全修复dist的Android JVM/debug/test APK构建退出0，APK内55资源SHA256一致；JVM仅现有算术样例。设备无KVM且APEX超时未启动，原生instrumentation/强停恢复/改密/增长未运行，P2仍BLOCKED，P3–P7未开始。详见 [P2证据](20261028-kanata-stage-p2-verification-v1.md)。
+
+### 用户最新授权：提交未验收检查点用于本地接续
+
+用户明确要求立即推送远端并转本地开发，因此本次将P2 BLOCKED状态普通提交推送Kanata，不再等待本地设备验收才推送；该Git授权不改变阶段Go/No-Go。下一步按 [本地交接](20261028-kanata-local-handoff-v1.md) 补P2设备门禁，完成后继续P3–P7。

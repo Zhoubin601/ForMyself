@@ -1,0 +1,19 @@
+{
+  "startedAt": "2026-10-28T02:45:42.007Z",
+  "browser": "154.0.8037.57",
+  "pageErrors": [],
+  "samples": [],
+  "cancelZeroSeed": true,
+  "seed": {
+    "worlds": 1,
+    "instances": 5,
+    "private": 5,
+    "group": 1,
+    "messages": 0,
+    "memories": 0,
+    "events": 0
+  },
+  "layout": true,
+  "status": "FAIL",
+  "error": "page.evaluate: KanataValidationError: INVALID_SENDER:message\n    at requireKanata (http://127.0.0.1:4173/src/features/chat/domain/kanataValidation.js:10:25)\n    at http://127.0.0.1:4173/src/features/chat/domain/kanataValidation.js:179:5\n    at Array.forEach (<anonymous>)\n    at validateKanataData (http://127.0.0.1:4173/src/features/chat/domain/kanataValidation.js:175:17)\n    at encryptKanataData (http://127.0.0.1:4173/src/features/chat/storage/kanataRepository.js:31:16)\n    at Object.write (http://127.0.0.1:4173/src/features/chat/storage/kanataRepository.js:217:28)\n    at eval (eval at evaluate (:311:30), <anonymous>:11:49)\n    at async <anonymous>:337:30"
+}

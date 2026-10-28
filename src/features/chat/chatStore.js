@@ -52,6 +52,7 @@ export const useChatStore = defineStore('chat', () => {
   let loadRevision = 0
   let isReencrypting = false
   let changedDuringReencrypt = false
+  let retiredForKanata = false
 
   const snapshot = computed(() => normalizeChatData({
     profile: profile.value,
@@ -82,6 +83,7 @@ export const useChatStore = defineStore('chat', () => {
   }
 
   const loadChatData = async password => {
+    if (retiredForKanata) throw new Error('LEGACY_CHAT_RETIRED')
     if (!password) throw new Error('CHAT_PASSWORD_REQUIRED')
     const revision = ++loadRevision
     isDataLoaded.value = false
@@ -516,9 +518,17 @@ export const useChatStore = defineStore('chat', () => {
     loadError.value = '主密码修改回滚未完成，请保留应用数据并联系维护者。'
   }
 
+  // Internal cleanup capability. No file deletion occurs here; the protected coordinator owns it.
+  const retireForKanata = async () => {
+    retiredForKanata = true
+    await release()
+  }
+
   return {
     profile,
     release,
+    retireForKanata,
+    isRetiredForKanata: () => retiredForKanata && !canPersist.value && !isDataLoaded.value && !encryptionPassword.value,
     messages,
     memories,
     selfProfile,

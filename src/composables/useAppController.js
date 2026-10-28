@@ -171,7 +171,7 @@ export function useAppController() {
     }
     if (modules.includes('chat') && !chatStore) {
       chatStore = await protectedAccess.getRuntimeStore('chat')
-      stopUnreadWatch = watch(() => protectedAccess.status.chat === 'ready' ? chatStore.unreadCount : 0, value => {
+      stopUnreadWatch = watch(() => protectedAccess.status.chat === 'ready' ? (chatStore.unreadCount || 0) : 0, value => {
         chatUnreadCount.value = value
       }, { immediate: true })
     }
@@ -181,9 +181,7 @@ export function useAppController() {
   const applyPendingChatRoute = () => {
     if (!settingsStore.warmHomeEnabled) { pendingChatRoute = null; return }
     if (!chatStore || protectedAccess.status.chat !== 'ready' || !pendingChatRoute) return
-    chatStore.materializeDueProactive(Date.now())
-    chatStore.materializeDueFollowups(Date.now())
-    chatStore.setPendingFocusProactiveId(pendingChatRoute.proactive)
+    // Old notification IDs only open the new protected entry; never replay legacy content.
     pendingChatRoute = null
   }
 
@@ -258,37 +256,15 @@ export function useAppController() {
 
   const resyncChatProactive = async () => {
     if (restoreState.blocked) return
-    if (settingsStore.warmHomeEnabled && (protectedAccess.status.chat !== 'ready' || !chatStore)) return
-    const [{ syncChatProactiveNotifications }, { syncChatFollowupNotifications }] = await Promise.all([
-      import('../features/chat/chatProactive.js'),
-      import('../features/chat/chatFollowup.js')
-    ])
-    if (settingsStore.warmHomeEnabled && (protectedAccess.status.chat !== 'ready' || !chatStore)) return
-    if (settingsStore.warmHomeEnabled) {
-      chatStore.materializeDueProactive(Date.now())
-      chatStore.materializeDueFollowups(Date.now())
-    } else {
-      pendingChatRoute = null
-      chatStore?.pauseWarmHome()
-    }
-    await Promise.all([
-      syncChatProactiveNotifications(
-        chatStore?.proactiveOutbox || [],
-        chatStore?.proactiveSettings || {},
-        { requestPermission: false, now: new Date(), isFeatureEnabled: () => settingsStore.warmHomeEnabled }
-      ),
-      syncChatFollowupNotifications(
-        chatStore?.followupOutbox || [],
-        chatStore?.realismSettings || {},
-        { requestPermission: false, now: new Date(), isFeatureEnabled: () => settingsStore.warmHomeEnabled }
-      )
-    ])
+    // Legacy notifications are removed only by the confirmed cleanup coordinator.
+    // New notification scheduling is supplied by the Kanata task runtime in P6.
+    if (chatStore?.syncNotifications) await chatStore.syncNotifications()
   }
 
   watch(() => settingsStore.warmHomeEnabled, enabled => {
     if (!enabled) {
       pendingChatRoute = null
-      chatStore?.pauseWarmHome()
+      chatStore?.pauseWarmHome?.()
       if (settingsStore.currentView === 'chat' || (settingsStore.currentView === 'settings' && settingsStore.settingsScope === 'chat')) {
         settingsStore.replaceRoute({ view: 'settings', settingsScope: 'general', settingsSection: 'appearance' })
       }
@@ -442,10 +418,9 @@ export function useAppController() {
         const url = notification?.extra?.url
         if (url) openAppUrl(url)
       })
-      await listeners.listen(LocalNotifications, 'localNotificationReceived', ({ extra }) => {
+      await listeners.listen(LocalNotifications, 'localNotificationReceived', async ({ extra }) => {
         if (!chatStore || protectedAccess.status.chat !== 'ready') return
-        if (extra?.followupId) chatStore.materializeDueFollowups(Date.now())
-        else if (extra?.proactiveId) chatStore.materializeDueProactive(Date.now())
+        if (extra?.kanataTaskId) await chatStore.onNotificationReceived?.(extra.kanataTaskId)
       })
     } catch (error) {
       console.warn('无法监听通知点击或接收', error)

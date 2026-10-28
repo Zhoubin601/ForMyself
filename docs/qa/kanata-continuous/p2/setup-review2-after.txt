@@ -1,0 +1,10 @@
+
+ RUN  v3.2.4 /workspace/ForMyself
+
+ ✓ tests/KanataSetupView.spec.js (16 tests) 272ms
+
+ Test Files  1 passed (1)
+      Tests  16 passed (16)
+   Start at  17:18:16
+   Duration  7.11s (transform 760ms, setup 0ms, collect 1.89s, tests 272ms, environment 4.11s, prepare 266ms)
+

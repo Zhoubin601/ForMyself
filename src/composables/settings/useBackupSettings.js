@@ -9,9 +9,9 @@ import CryptoJS from 'crypto-js'
 import { syncReminderNotifications } from '../../services/notificationService'
 import { getPersonalizedReminderBodies } from '../../services/reminderSchedule'
 import { beginNativeActivityGuard } from '../../services/nativeActivityGuard'
-import { buildFullBackupSnapshot, getFullBackupCounts, normalizeFullBackupSnapshot } from '../../services/fullBackup'
+import { buildFullBackupSnapshot } from '../../services/fullBackup'
+import { prepareKanataFullRestore, buildKanataChatBackupSnapshot as buildChatBackupSnapshot, readKanataChatBackupSnapshot as normalizeChatBackupSnapshot } from '../../features/chat/backup/kanataBackup.js'
 import { buildMoodBackupSnapshot, normalizeMoodBackupSnapshot } from '../../features/mood/moodRecords'
-import { buildChatBackupSnapshot, normalizeChatBackupSnapshot } from '../../features/chat/chatRecords'
 import { syncChatProactiveNotifications } from '../../features/chat/chatProactive'
 import { syncChatFollowupNotifications } from '../../features/chat/chatFollowup'
 import { useAuthStore } from '../../stores/auth'
@@ -25,7 +25,7 @@ import { usePasswordVaultStore } from '../../stores/passwordVault'
 import { readTodoBackup } from '../../features/todo/todoCore.js'
 import { useTodoStore } from '../../features/todo/todoStore.js'
 import { useScheduleStore } from '../../features/schedule/scheduleStore'
-import { useChatStore } from '../../features/chat/chatStore'
+import { useKanataStore as useChatStore } from '../../features/chat/kanataStore.js'
 import { syncScheduleNotifications } from '../../features/schedule/scheduleNotificationService'
 import { normalizeScheduleData } from '../../features/schedule/scheduleCore'
 import { appAlert, appConfirm, appToast } from '../../services/uiFeedback'
@@ -63,7 +63,16 @@ export function useBackupSettings() {
 
   const fullBackup = createFullBackupRuntime()
   const { createFullBackupSnapshot, applyFullBackupSnapshot } = fullBackup
-  const restoreFullBackup = snapshot => fullBackup.restore(snapshot, authStore.savedMasterPwd)
+  const restoreFullBackup = (snapshot, options = {}) => fullBackup.restore(snapshot, authStore.savedMasterPwd, options)
+  const normalizeFullBackupSnapshot = input => { prepareKanataFullRestore(input, { legacyChat: 'discard' }); return input }
+  const getFullBackupCounts = input => {
+    const value = prepareKanataFullRestore(input, { legacyChat: 'discard' })
+    const data = value.backup.data
+    return { savings: data.savings.length, weight: data.weight.length, mood: data.mood.length,
+      passwords: data.passwords.length, schedules: data.schedules.series.length, todos: data.todos?.tasks.length || 0,
+      chatMessages: value.kanata?.messages.length || 0, chatMemories: value.kanata?.memories.length || 0,
+      worlds: value.kanata?.worlds.length || 0 }
+  }
 
   const downloadAsFile = (content, filename) => {
     const blob = new Blob([content], { type: 'application/json' })
@@ -77,11 +86,11 @@ export function useBackupSettings() {
     URL.revokeObjectURL(url)
   }
 
-  const ensureOrdinaryDataReady = async () => {
+  const ensureOrdinaryDataReady = async (flush = true) => {
     const required = { savings: debtStore, weight: weightStore, mood: moodStore, schedules: scheduleStore }
     const targets = exportDataType.value === 'full' ? Object.values(required) : [required[exportDataType.value]].filter(Boolean)
     if (targets.some(store => !store.isDataLoaded)) throw new Error('部分数据尚未安全读取，请重试读取后再备份或导入')
-    for (const store of targets) await store.flush()
+    if (flush) for (const store of targets) await store.flush()
   }
 
   const exportJSONAuthenticated = async (password, session) => {
@@ -91,14 +100,15 @@ export function useBackupSettings() {
       if (!todoStore.isDataLoaded) return appAlert('待办未能安全加载，请重试后导出')
     }
     await ensureOrdinaryDataReady()
+    if (exportDataType.value === 'chat') await chatStore.flush()
     const label = getDataTypeLabel()
     const isFullBackup = exportDataType.value === 'full'
-    const data = isFullBackup ? createFullBackupSnapshot() : getDataArray()
+    const data = isFullBackup ? await fullBackup.exportFull() : getDataArray()
 
     const isEmpty = exportDataType.value === 'schedules'
       ? !data.series.length
       : exportDataType.value === 'chat'
-        ? !data.data.messages.length && !data.data.memories.length
+        ? !data.data.worlds.length && !data.data.cards.length && !data.data.messages.length && !data.data.memories.length
       : exportDataType.value === 'mood'
         ? !data.data.records.length
         : Array.isArray(data) && data.length === 0
@@ -155,7 +165,8 @@ export function useBackupSettings() {
         if (!decryptedData) throw new Error('密码错误')
         const importedData = JSON.parse(decryptedData)
         decoded = true
-        await ensureOrdinaryDataReady()
+        // Preview/cancellation must not cause writes. Confirmed full restore flushes through its coordinator.
+        await ensureOrdinaryDataReady(false)
         const label = getDataTypeLabel()
 
         if (exportDataType.value === 'todos') {
@@ -169,13 +180,14 @@ export function useBackupSettings() {
         if (exportDataType.value === 'full') {
           const snapshot = normalizeFullBackupSnapshot(importedData)
           const counts = getFullBackupCounts(snapshot)
+          const legacy = Number(snapshot.version) <= 12
           const confirmed = await appConfirm(
-        `完整备份包含：\n省钱 ${counts.savings} 项、体重 ${counts.weight} 条、心情 ${counts.mood} 条、密码 ${counts.passwords} 项、日程 ${counts.schedules} 项、待办 ${counts.todos} 个版本、聊天 ${counts.chatMessages} 条、长期记忆 ${counts.chatMemories} 条，以及女朋友头像。\n\n继续将覆盖以上全部数据和应用设置。主密码与设备生物识别凭据不会改变。`,
+        `完整备份包含：\n省钱 ${counts.savings} 项、体重 ${counts.weight} 条、心情 ${counts.mood} 条、密码 ${counts.passwords} 项、日程 ${counts.schedules} 项、待办 ${counts.todos} 个版本。\n${legacy ? '这是旧版备份：旧温馨小家的聊天、记忆、关系和事件不会导入彼方；现有彼方世界保留。' : '彼方世界 ' + counts.worlds + ' 个、聊天 ' + counts.chatMessages + ' 条、长期记忆 ' + counts.chatMemories + ' 条，将覆盖当前彼方资料。'}\n\n继续将恢复上述模块与应用设置。主密码与设备生物识别凭据不会改变。`,
             { title: '恢复完整备份？', confirmText: '覆盖并恢复', destructive: true }
           )
           if (!confirmed) return
           if (session !== authStore.sessionRevision) return
-          await restoreFullBackup(snapshot)
+          await restoreFullBackup(snapshot, legacy ? { legacyChat: 'discard' } : {})
           appToast('完整数据恢复成功', { tone: 'success', duration: 3200 })
           return
         }
@@ -195,12 +207,13 @@ export function useBackupSettings() {
         if (exportDataType.value === 'chat') {
           const snapshot = normalizeChatBackupSnapshot(importedData)
           const overwrite = await appConfirm(
-        `成功解密出 ${snapshot.data.messages.length} 条聊天和 ${snapshot.data.memories.length} 条长期记忆。\n选择“覆盖”会替换名字、头像、聊天和记忆；取消则合并数据并保留当前名字与头像。`,
-            { title: '恢复温馨小家', confirmText: '覆盖当前数据', cancelText: '合并数据' }
+        `备份包含 ${snapshot.data.worlds.length} 个世界、${snapshot.data.cards.length} 张角色卡、${snapshot.data.messages.length} 条聊天。继续将覆盖当前全部彼方资料，不影响其他模块。待发送任务不会自动重发。`,
+            { title: '恢复彼方', confirmText: '覆盖彼方资料', cancelText: '取消', destructive: true }
           )
+          if (!overwrite) return
           if (session !== authStore.sessionRevision) return
           await setDataArray(snapshot.data, overwrite)
-          appToast('温馨小家数据恢复成功', { tone: 'success' })
+          appToast('彼方资料恢复成功', { tone: 'success' })
           return
         }
 
@@ -293,7 +306,7 @@ export function useBackupSettings() {
     settingsStore,
     vaultStore,
     scheduleStore,
-    chatStore,
+    kanataStore: chatStore,
     fileInputRef,
     exportDataType,
     backupPickerOpen,

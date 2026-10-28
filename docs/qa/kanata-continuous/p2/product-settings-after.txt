@@ -1,0 +1,55 @@
+
+ RUN  v3.2.4 /workspace/ForMyself
+
+ ❯ tests/KanataProductRecovery.spec.js (21 tests | 1 failed) 3697ms
+   ✓ Kanata P2 product runtime: actual stores, encrypted files and restore journal > exports v13 from the product and rejects direct internal apply outside the coordinator  446ms
+   ✓ Kanata P2 product runtime: actual stores, encrypted files and restore journal > legacy v1 explicitly restores nonchat modules and AI config, without any legacy chat write 167ms
+   ✓ Kanata P2 product runtime: actual stores, encrypted files and restore journal > legacy v2 explicitly restores nonchat modules and AI config, without any legacy chat write 165ms
+   ✓ Kanata P2 product runtime: actual stores, encrypted files and restore journal > legacy v3 explicitly restores nonchat modules and AI config, without any legacy chat write 148ms
+   ✓ Kanata P2 product runtime: actual stores, encrypted files and restore journal > legacy v4 explicitly restores nonchat modules and AI config, without any legacy chat write 136ms
+   ✓ Kanata P2 product runtime: actual stores, encrypted files and restore journal > legacy v5 explicitly restores nonchat modules and AI config, without any legacy chat write 153ms
+   ✓ Kanata P2 product runtime: actual stores, encrypted files and restore journal > legacy v6 explicitly restores nonchat modules and AI config, without any legacy chat write 140ms
+   ✓ Kanata P2 product runtime: actual stores, encrypted files and restore journal > legacy v7 explicitly restores nonchat modules and AI config, without any legacy chat write 150ms
+   ✓ Kanata P2 product runtime: actual stores, encrypted files and restore journal > legacy v8 explicitly restores nonchat modules and AI config, without any legacy chat write 142ms
+   ✓ Kanata P2 product runtime: actual stores, encrypted files and restore journal > legacy v9 explicitly restores nonchat modules and AI config, without any legacy chat write 151ms
+   ✓ Kanata P2 product runtime: actual stores, encrypted files and restore journal > legacy v10 explicitly restores nonchat modules and AI config, without any legacy chat write 146ms
+   ✓ Kanata P2 product runtime: actual stores, encrypted files and restore journal > legacy v11 explicitly restores nonchat modules and AI config, without any legacy chat write 135ms
+   ✓ Kanata P2 product runtime: actual stores, encrypted files and restore journal > legacy v12 explicitly restores nonchat modules and AI config, without any legacy chat write 164ms
+   × Kanata P2 product runtime: actual stores, encrypted files and restore journal > settings file import previews legacy exclusion; cancellation writes nothing and confirmation uses the coordinator 103ms
+     → expected 42 to be 40 // Object.is equality
+   ✓ Kanata P2 product runtime: actual stores, encrypted files and restore journal > settings rejects old single chat before asking and does not turn cancellation into a graph merge 146ms
+   ✓ Kanata P2 product runtime: actual stores, encrypted files and restore journal > single-import adapters also pause untrusted raw-domain sending tasks rather than relying on UI parsing 85ms
+   ✓ Kanata P2 product runtime: actual stores, encrypted files and restore journal > target participant failure compensates actual stores and the complete encrypted Kanata graph 226ms
+   ✓ Kanata P2 product runtime: actual stores, encrypted files and restore journal > rollback failure keeps the real encrypted journal and barrier, then recovers after the fault is fixed  319ms
+   ✓ Kanata P2 product runtime: actual stores, encrypted files and restore journal > old encrypted journal committed=false restores only its chosen nonchat snapshot 181ms
+   ✓ Kanata P2 product runtime: actual stores, encrypted files and restore journal > old encrypted journal committed=true restores only its chosen nonchat snapshot 192ms
+   ✓ Kanata P2 product runtime: actual stores, encrypted files and restore journal > master password transaction reencrypts actual new Kanata and vault stores and releases plaintext on expiry 196ms
+ ✓ tests/FeatureBoundaries.spec.js (11 tests) 158ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/KanataProductRecovery.spec.js > Kanata P2 product runtime: actual stores, encrypted files and restore journal > settings file import previews legacy exclusion; cancellation writes nothing and confirmation uses the coordinator
+AssertionError: expected 42 to be 40 // Object.is equality
+
+- Expected
++ Received
+
+- 40
++ 42
+
+ ❯ tests/KanataProductRecovery.spec.js:149:33
+    147|     const firstCall = driver.calls.length
+    148|     await importThroughSettings(settings, oldBackup('target-from-setti…
+    149|     expect(driver.calls.length).toBe(firstCall)
+       |                                 ^
+    150|     expect(appConfirm.mock.calls[0][0]).toContain('旧温馨小家的聊天、记忆、关系和事件不会…
+    151|     expect(appToast).not.toHaveBeenCalled()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  1 failed | 31 passed (32)
+   Start at  02:45:18
+   Duration  7.15s (transform 933ms, setup 0ms, collect 1.84s, tests 3.85s, environment 893ms, prepare 163ms)
+

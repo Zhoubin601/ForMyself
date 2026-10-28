@@ -19,5 +19,5 @@ export function createProtectedModuleRegistry(modules) {
 }
 export const protectedModules = createProtectedModuleRegistry([
   { id: 'passwords', resolve: async () => (await import('../stores/passwordVault.js')).usePasswordVaultStore(), load: (store, password) => store.loadRecords(password) },
-  { id: 'chat', resolve: async () => (await import('../features/chat/chatStore.js')).useChatStore(), load: (store, password) => store.loadChatData(password) }
+  { id: 'chat', resolve: async () => (await import('../features/chat/kanataStore.js')).useKanataStore(), load: (store, password) => store.load(password) }
 ])

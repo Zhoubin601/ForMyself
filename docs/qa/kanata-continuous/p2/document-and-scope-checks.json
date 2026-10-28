@@ -1,0 +1,12 @@
+{
+  "localLinks": 105,
+  "missingLinks": [],
+  "protectedPathsUnchanged": true,
+  "trackedFileDeletions": false,
+  "head": "dd9c912771419bb791a6c132b50a4663ec3f2507",
+  "branch": "Kanata",
+  "distIndexSha256": "8a82423d74bfb93b932dbda31bcc66f5308e75e29dc9135169bafe4ded04de27",
+  "changedFilesCount": 115,
+  "checkpointPushAuthorized": true,
+  "rawAndroidLogFilesExplicitlyTracked": 8
+}

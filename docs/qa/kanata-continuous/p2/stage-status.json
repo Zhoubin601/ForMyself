@@ -1,0 +1,33 @@
+{
+  "branch": "Kanata",
+  "head": "dd9c912771419bb791a6c132b50a4663ec3f2507",
+  "stages": {
+    "P1": "PASS, local dd9c912",
+    "P2": "BLOCKED, Android device unavailable after task AVD boot failures",
+    "P3": "NOT STARTED",
+    "P4": "NOT STARTED",
+    "P5": "NOT STARTED",
+    "P6": "NOT STARTED",
+    "P7": "NOT STARTED"
+  },
+  "automatedCheck": {
+    "command": "npm run check",
+    "exitCode": 0,
+    "nodePass": 407,
+    "vitestPass": 219,
+    "vitestFiles": 23,
+    "lintErrors": 0,
+    "lintWarnings": 33,
+    "types": "PASS",
+    "build": "PASS",
+    "evidence": "check-final-security.txt"
+  },
+  "web": "PASS, real synthetic Filesystem/Preferences and fresh context; cancellation/whitelist/seed/cold reload; growth 1k and10k",
+  "androidDevice": "BLOCKED: no KVM, APEX/dm timeouts; no usable AVD; instrumentation/UI/force-stop/recovery/growth NOT RUN",
+  "androidBuild": "PASS: testDebugUnitTest/assembleDebug/assembleDebugAndroidTest exit0; final APK matches all55 dist files; existing arithmetic JVM sample only, not product feature/device validation",
+  "git": "User explicitly authorized immediate commit/push of the BLOCKED P2 checkpoint for local continuation; no stage PASS, main merge, force push or release. Exact checkpoint commit is recorded by Git.",
+  "realUserData": "NOT ACCESSED; no actual device cleanup or real AI call",
+  "capacity": "whole-file JSON only, no true pagination or peak-memory/100k acceptance",
+  "distIndexSha256": "8a82423d74bfb93b932dbda31bcc66f5308e75e29dc9135169bafe4ded04de27",
+  "headNote": "head is the implementation baseline before the P2 checkpoint commit"
+}

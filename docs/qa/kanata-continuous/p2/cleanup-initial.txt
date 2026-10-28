@@ -1,0 +1,36 @@
+✔ P2-cleanup-01 缺少当次确认函数拒绝；取消不停止旧运行时、不写checkpoint、不删除 (5.10503ms)
+✔ P2-cleanup-02 未认证或租约拒绝时零删除，确认弹窗不被调用 (1.721019ms)
+✔ P2-cleanup-03 恢复门禁拒绝 blocked (0.367728ms)
+✔ P2-cleanup-03 恢复门禁拒绝 busy (0.301598ms)
+✔ P2-cleanup-03 恢复门禁拒绝 restorePending (0.370066ms)
+✔ P2-cleanup-04 确认等待期间会话失效不得清理或持久化旧授权 (1.179057ms)
+✔ P2-cleanup-05 只删除源码白名单旧文件、恢复键、独占通知与频道；完整恢复日志保留 (8.489898ms)
+✔ P2-cleanup-06 幂等重试也必须取得新的当次确认，checkpoint不能当授权token (5.160421ms)
+✔ P2-cleanup-07 停止与通知失败前不删除任何文件/旧恢复键：stop (1.674553ms)
+✔ P2-cleanup-07 停止与通知失败前不删除任何文件/旧恢复键：cancel (0.349675ms)
+✔ P2-cleanup-07 停止与通知失败前不删除任何文件/旧恢复键：listChannels (0.551359ms)
+✔ P2-cleanup-07 停止与通知失败前不删除任何文件/旧恢复键：deleteChannel (0.607694ms)
+✔ P2-cleanup-08 无法确认旧writer停止、取消通知/频道返回假成功均阻断删除 (0.831895ms)
+✔ P2-cleanup-09 任何文件或恢复键预读失败零删除，不把权限错误当不存在 (16.189139ms)
+✔ P2-cleanup-10 仅明确缺失可视为成功：Android错误码和Web精确缺失消息 (2.056288ms)
+✔ P2-cleanup-11 删除假成功必须读回核验；旧恢复键删除假成功也不标done (3.269408ms)
+✔ P2-cleanup-12 checkpoint写入断点 1 重建协调器可安全恢复且只删白名单 (1.897327ms)
+✔ P2-cleanup-12 checkpoint写入断点 2 重建协调器可安全恢复且只删白名单 (4.662618ms)
+✔ P2-cleanup-12 checkpoint写入断点 3 重建协调器可安全恢复且只删白名单 (1.190368ms)
+✔ P2-cleanup-12 checkpoint写入断点 4 重建协调器可安全恢复且只删白名单 (0.943669ms)
+✔ P2-cleanup-12 checkpoint写入断点 5 重建协调器可安全恢复且只删白名单 (1.006496ms)
+✔ P2-cleanup-12 checkpoint写入断点 6 重建协调器可安全恢复且只删白名单 (0.817325ms)
+✔ P2-cleanup-12 checkpoint写入断点 7 重建协调器可安全恢复且只删白名单 (1.19177ms)
+✔ P2-cleanup-13 删除已发生但checkpoint未记录时，重建不能复活旧文件或误删其他模块 (2.704771ms)
+✔ P2-cleanup-14 malformed/未来checkpoint或白名单外completed项拒绝，零删除 (0.629875ms)
+✔ P2-cleanup-15 写后读回不一致在删除前阻断 (0.650694ms)
+✔ P2-cleanup-16 清理并发拒绝，不共享等待中的确认 (0.981748ms)
+✔ P2-cleanup-17 等待迟到旧持久化结算再删除，清理期间恢复门禁变动中止 (2.502115ms)
+ℹ tests 28
+ℹ suites 0
+ℹ pass 28
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 441.069022

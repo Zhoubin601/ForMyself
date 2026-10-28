@@ -1069,3 +1069,17 @@ F：原稿八条验收各丢首字，JSON示例语法不合法，裸feature路�
 
 本轮用户明确授权P1–P7连续执行及本地阶段提交，禁止自动推送/PR/发布。先检查Git（e4a54cc干净），仅快进远端Kanata文档至47f7bfa，再按AGENTS/架构规范、v3计划、五人规格、clean-start-v2、raw需求及四份过程入口复核。
 实际源码依据：chatRecords/chatStorage/chatPersistence、restoreState、contracts、类型样例、FeatureBoundaries测试和npm/scripts配置。实现新增chat/domain纯模型/校验/预设实例化与独立JSON五人定义；没有旧数据迁移或实际清理。51项新增定向、全部Node336、Vitest156、类型和构建实际通过，过程失败与两轮修正见 [P1验收](20261028-kanata-stage-p1-verification-v1.md)。原始材料/其他模块/旧安全运行时未改，未请求真实AI。
+
+## Kanata P2 运行时实现与验证来源（2026-10-28）
+
+用户后续明确授权“从P2开始每个P提交和推送”，覆盖此前“不推送”的限制；只在Kanata完成阶段验收后普通提交/推送，不授权main/强推/PR/发布或真实设备擦除。
+
+实际核对：protectedModules/protectedAccess、backupParticipants/backupRegistry/fullBackupRuntime/restoreCoordinator/restoreJournal、SettingsView/settingsModels/useBackupSettings/useAppController、旧chatStore/release/notification范围、Capacitor Filesystem Web实现、独立新仓库/Store/清理/首启/备份适配器。P2只使用合成数据，未读取真实备份、密码或Key。
+
+已复现并修复：改密后bak残留旧密码、失败seed重进误报成功、未补偿改密仍可恢复/flush、原生missing错误识别、单项raw导入待发任务未暂停、设置字段投影重名、取消旧全备预览触发日程flush、Web已存在目录导致后续保存失败。失败/修复与真实命令见 [P2检查点](20261028-kanata-stage-p2-verification-v1.md) 和 qa/kanata-continuous/p2。
+
+最终候选 npm run check 实际退出0：Node407、Vitest219、lint0errors/33warnings、类型与构建通过。Web隔离Chromium首启取消/确认/冷重载通过，精确计数1世界5实例5私聊1群聊、消息/记忆/事件0；1k/10k真实IndexedDB文件读写量测已保存。Android尚需单独证据，不以这些自动化结果代替设备验收；P2当前未放行。
+
+P2最终编译补记：匹配安全修复dist的Android JVM/debug/test APK构建退出0，APK内55资源SHA256一致；JVM仅现有算术样例。设备无KVM且APEX超时未启动，原生instrumentation/强停恢复/改密/增长未运行，P2仍BLOCKED，P3–P7未开始。详见 [P2证据](20261028-kanata-stage-p2-verification-v1.md)。
+
+用户随后明确授权“推送远端，我转到本地开发”。本次提交P2 BLOCKED接续检查点（含之前P1提交），不声称P2验收或Android设备通过，不合并main、不发布APK。[本地交接](20261028-kanata-local-handoff-v1.md)列明安装、测试和剩余原生门禁。

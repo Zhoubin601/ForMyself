@@ -1,0 +1,11 @@
+
+ RUN  v3.2.4 /workspace/ForMyself
+
+ ✓ tests/KanataStore.spec.js (16 tests) 1383ms
+   ✓ P2-store real repository: release/reauthentication recovers pending ciphertext and resaves latest draft  551ms
+
+ Test Files  1 passed (1)
+      Tests  16 passed (16)
+   Start at  17:17:37
+   Duration  4.02s (transform 324ms, setup 0ms, collect 732ms, tests 1.38s, environment 1.12s, prepare 297ms)
+

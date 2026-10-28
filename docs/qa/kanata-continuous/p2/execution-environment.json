@@ -1,0 +1,9 @@
+{
+  "utc": "2026-10-28T02:53:57Z",
+  "platform": "Linux-6.18.55-x86_64-with-glibc2.41",
+  "cpuQuota": "200000 100000",
+  "memoryLimitBytes": "8589934592",
+  "node": "v24.19.0",
+  "nativeStatus": "NOT_READY; see Android evidence before phase acceptance",
+  "webSampleNotes": "Chromium isolated context, real Capacitor Web IndexedDB filesystem + Preferences localStorage. Two counts, one sample per run; concurrent test/emulator load possible; heapAfter is not peak memory; dev Vite modules, not production APK."
+}

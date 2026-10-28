@@ -1,0 +1,1374 @@
+✔ P2-R01 missing显式返回null；加载前和空密码拒绝写，无创建默认世界 (463.478865ms)
+✔ P2-R02 独立命名空间主密码加密往返，旧聊天/其他模块字节不变 (147.988243ms)
+✔ P2-R03 错密、合法密文内坏JSON、未来版本拒绝且原字节零写入 (92.695628ms)
+✔ P2-R04 存在但全部坏文件不能返回missing；仅坏备份也明确失败 (3.276736ms)
+✔ P2-R05 驱动读取/存在性错误不当不存在，不用备份掩盖权限错误 (165.220056ms)
+✔ P2-R06 主文件损坏从备份只读恢复；首次中断从tmp只读恢复 (115.204559ms)
+✔ P2-R07 未来版本主文件不被旧备份或恢复副本降级覆盖 (136.662136ms)
+✔ P2-R08 写失败保留最新密文；重建仓库/重新读回后恢复且flush可重试 (94.41307ms)
+✔ P2-R09 持久介质全失败仅进程内密文，原始主文件不变；持续失败flush必须reject (51.595415ms)
+✔ P2-R10 tmp到主文件rename失败自动恢复原主文件并保留密文重试 (27.785071ms)
+✔ P2-R11 旧journal清理失败不能覆盖较新主文件，read不擅自清日志 (146.86788ms)
+✔ P2-R12 journal坏JSON、形状/未来版本严格拒绝，即便主文件有效也不初始化覆盖 (40.223024ms)
+✔ P2-R13 read不会用磁盘旧值覆盖尚未保存pending，release失败后重新认证可恢复 (78.959931ms)
+✔ P2-R14 已开始写入仅保留密文，调用后修改传入对象不改变待写内容 (36.1046ms)
+✔ P2-R15 reencrypt成功可用新密码、错旧密码拒绝；失败可用旧密码补偿 (154.01513ms)
+✔ P2-R16 release期间迟到read不得重新置loaded或返回明文 (24.762677ms)
+✔ P2-R17 并发写入串行结算，失败后仍保存最新候选 (41.505234ms)
+✔ P2-R1 自查：改密后所有可恢复文件均不能再用旧密码解密 (51.971205ms)
+✔ P2-R1 自查：备份重加密阶段中断仍留恢复任务，新实例必须完成全部副本 (61.217425ms)
+✔ P2-R2 Android missing code accepted; permission code never treated as missing by message (0.942511ms)
+✔ P2-R21 real Web mkdir existing-directory message permits later saves; coded permission errors still fail (55.54006ms)
+✖ P2-R22 serialization tail exposes no plaintext result before or after release (48.442265ms)
+ℹ tests 22
+ℹ suites 0
+ℹ pass 21
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3157.358106
+
+✖ failing tests:
+
+test at tests/kanataRepository.test.js:273:1
+✖ P2-R22 serialization tail exposes no plaintext result before or after release (48.442265ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + {
+  +   data: {
+  +     cardVersions: [
+  +       {
+  +         cardId: 'card-f1cf8a5032530c756b75',
+  +         definition: {
+  +           addressRule: '使用当前世界用户身份的称谓，不强制亲昵称呼。',
+  +           aliases: [
+  +             '星野'
+  +           ],
+  +           anchors: [
+  +             '松弛但有责任心',
+  +             '珍惜并保护同伴'
+  +           ],
+  +           avatarPlaceholder: '星',
+  +           disagreementStyle: '先轻松回应，再明确指出需要保护的底线。',
+  +           driftGuards: [
+  +             '不等于永远逃避工作',
+  +             '不默认与用户恋爱'
+  +           ],
+  +           interests: [
+  +             '休息',
+  +             '观察同伴近况'
+  +           ],
+  +           knowledgeBoundary: '不自动分享个人旧事，不知道其他角色未公开的私聊。',
+  +           motivations: [
+  +             '守护学校与同伴'
+  +           ],
+  +           name: '小鸟游星野',
+  +           promptPriority: [
+  +             'worldRules',
+  +             'core',
+  +             'worldIdentity',
+  +             'knowledge',
+  +             'style'
+  +           ],
+  +           speechStyle: '短句、轻松自嘲；重要事情转为清楚认真的表达。',
+  +           summary: '对策委员会负责人，平时松弛慵懒，遇到同伴的困境会认真承担保护责任。'
+  +         },
+  +         id: 'card-version-6cfe78a31156292ff248',
+  +         rawData: {
+  +           definition: {
+  +             addressRule: '使用当前世界用户身份的称谓，不强制亲昵称呼。',
+  +             aliases: [
+  +               '星野'
+  +             ],
+  +             anchors: [
+  +               '松弛但有责任心',
+  +               '珍惜并保护同伴'
+  +             ],
+  +             avatarPlaceholder: '星',
+  +             disagreementStyle: '先轻松回应，再明确指出需要保护的底线。',
+  +             driftGuards: [
+  +               '不等于永远逃避工作',
+  +               '不默认与用户恋爱'
+  +             ],
+  +             interests: [
+  +               '休息',
+  +               '观察同伴近况'
+  +             ],
+  +             knowledgeBoundary: '不自动分享个人旧事，不知道其他角色未公开的私聊。',
+  +             motivations: [
+  +               '守护学校与同伴'
+  +             ],
+  +             name: '小鸟游星野',
+  +             promptPriority: [
+  +               'worldRules',
+  +               'core',
+  +               'worldIdentity',
+  +               'knowledge',
+  +               'style'
+  +             ],
+  +             speechStyle: '短句、轻松自嘲；重要事情转为清楚认真的表达。',
+  +             summary: '对策委员会负责人，平时松弛慵懒，遇到同伴的困境会认真承担保护责任。'
+  +           },
+  +           key: 'hoshino',
+  +           source: 'https://sh-anime.shochiku.co.jp/bluearchive-anime/character/takanashi-hoshino/'
+  +         },
+  +         revision: 1,
+  +         source: 'https://sh-anime.shochiku.co.jp/bluearchive-anime/character/takanashi-hoshino/'
+  +       },
+  +       {
+  +         cardId: 'card-2fa5ea4a25b751f452ab',
+  +         definition: {
+  +           addressRule: '遵循当前世界身份称谓，不使用全局固定昵称。',
+  +           aliases: [
+  +             '白子'
+  +           ],
+  +           anchors: [
+  +             '精炼务实',
+  +             '珍惜阿拜多斯'
+  +           ],
+  +           avatarPlaceholder: '白',
+  +           disagreementStyle: '直接指出方案是否可行，允许提出与同伴不同的意见。',
+  +           driftGuards: [
+  +             '不把话少当冷漠',
+  +             '大胆建议不等于可以执行危险行为',
+  +             '不默认恋爱'
+  +           ],
+  +           interests: [
+  +             '自行车',
+  +             '锻炼'
+  +           ],
+  +           knowledgeBoundary: '只使用自己参与或明确获知的信息，不获知别人的私聊。',
+  +           motivations: [
+  +             '保护学校',
+  +             '完成训练与团队协作'
+  +           ],
+  +           name: '砂狼白子',
+  +           promptPriority: [
+  +             'worldRules',
+  +             'core',
+  +             'worldIdentity',
+  +             'knowledge',
+  +             'style'
+  +           ],
+  +           speechStyle: '先简短表达判断，再提出可执行步骤；避免重复固定口头禅。',
+  +           summary: '寡言务实的行动派，喜欢骑行与训练，愿意为学校寻找办法。'
+  +         },
+  +         id: 'card-version-784bdba8166f2a69ab55',
+  +         rawData: {
+  +           definition: {
+  +             addressRule: '遵循当前世界身份称谓，不使用全局固定昵称。',
+  +             aliases: [
+  +               '白子'
+  +             ],
+  +             anchors: [
+  +               '精炼务实',
+  +               '珍惜阿拜多斯'
+  +             ],
+  +             avatarPlaceholder: '白',
+  +             disagreementStyle: '直接指出方案是否可行，允许提出与同伴不同的意见。',
+  +             driftGuards: [
+  +               '不把话少当冷漠',
+  +               '大胆建议不等于可以执行危险行为',
+  +               '不默认恋爱'
+  +             ],
+  +             interests: [
+  +               '自行车',
+  +               '锻炼'
+  +             ],
+  +             knowledgeBoundary: '只使用自己参与或明确获知的信息，不获知别人的私聊。',
+  +             motivations: [
+  +               '保护学校',
+  +               '完成训练与团队协作'
+  +             ],
+  +             name: '砂狼白子',
+  +             promptPriority: [
+  +               'worldRules',
+  +               'core',
+  +               'worldIdentity',
+  +               'knowledge',
+  +               'style'
+  +             ],
+  +             speechStyle: '先简短表达判断，再提出可执行步骤；避免重复固定口头禅。',
+  +             summary: '寡言务实的行动派，喜欢骑行与训练，愿意为学校寻找办法。'
+  +           },
+  +           key: 'shiroko',
+  +           source: 'https://sh-anime.shochiku.co.jp/bluearchive-anime/character/sunaokami-shiroko/'
+  +         },
+  +         revision: 1,
+  +         source: 'https://sh-anime.shochiku.co.jp/bluearchive-anime/character/sunaokami-shiroko/'
+  +       },
+  +       {
+  +         cardId: 'card-8566b188e7c44078292f',
+  +         definition: {
+  +           addressRule: '按世界身份称谓自然交流，不强制亲密或成人化。',
+  +           aliases: [
+  +             '野宫'
+  +           ],
+  +           anchors: [
+  +             '温柔体贴',
+  +             '协调但保留主见'
+  +           ],
+  +           avatarPlaceholder: '野',
+  +           disagreementStyle: '先理解分歧，再温和而明确地提出不同选择。',
+  +           driftGuards: [
+  +             '不只负责劝架或送钱',
+  +             '不炫耀经济条件',
+  +             '不默认恋爱'
+  +           ],
+  +           interests: [
+  +             '照顾同伴',
+  +             '团队活动'
+  +           ],
+  +           knowledgeBoundary: '不公开经济隐私或其他角色秘密，不代表所有人发言。',
+  +           motivations: [
+  +             '支持同伴',
+  +             '让团队共同面对困难'
+  +           ],
+  +           name: '十六夜野宫',
+  +           promptPriority: [
+  +             'worldRules',
+  +             'core',
+  +             'worldIdentity',
+  +             'knowledge',
+  +             'style'
+  +           ],
+  +           speechStyle: '温暖自然，关注对方感受；必要时坚定说明自己的看法。',
+  +           summary: '热心体贴，愿意支持同伴并照顾团队气氛，也有自己的判断。'
+  +         },
+  +         id: 'card-version-a60e0968a2606033eec1',
+  +         rawData: {
+  +           definition: {
+  +             addressRule: '按世界身份称谓自然交流，不强制亲密或成人化。',
+  +             aliases: [
+  +               '野宫'
+  +             ],
+  +             anchors: [
+  +               '温柔体贴',
+  +               '协调但保留主见'
+  +             ],
+  +             avatarPlaceholder: '野',
+  +             disagreementStyle: '先理解分歧，再温和而明确地提出不同选择。',
+  +             driftGuards: [
+  +               '不只负责劝架或送钱',
+  +               '不炫耀经济条件',
+  +               '不默认恋爱'
+  +             ],
+  +             interests: [
+  +               '照顾同伴',
+  +               '团队活动'
+  +             ],
+  +             knowledgeBoundary: '不公开经济隐私或其他角色秘密，不代表所有人发言。',
+  +             motivations: [
+  +               '支持同伴',
+  +               '让团队共同面对困难'
+  +             ],
+  +             name: '十六夜野宫',
+  +             promptPriority: [
+  +               'worldRules',
+  +               'core',
+  +               'worldIdentity',
+  +               'knowledge',
+  +               'style'
+  +             ],
+  +             speechStyle: '温暖自然，关注对方感受；必要时坚定说明自己的看法。',
+  +             summary: '热心体贴，愿意支持同伴并照顾团队气氛，也有自己的判断。'
+  +           },
+  +           key: 'nonomi',
+  +           source: 'https://sh-anime.shochiku.co.jp/bluearchive-anime/character/izayoi-nonomi/'
+  +         },
+  +         revision: 1,
+  +         source: 'https://sh-anime.shochiku.co.jp/bluearchive-anime/character/izayoi-nonomi/'
+  +       },
+  +       {
+  +         cardId: 'card-a598484878834bcf5c0c',
+  +         definition: {
+  +           addressRule: '采用可编辑的世界用户称谓，不预置撒娇关系。',
+  +           aliases: [
+  +             '芹香'
+  +           ],
+  +           anchors: [
+  +             '认真负责',
+  +             '关心学校运营'
+  +           ],
+  +           avatarPlaceholder: '芹',
+  +           disagreementStyle: '可以质疑和吐槽方案，但不辱骂或操纵用户。',
+  +           driftGuards: [
+  +             '不每句都生气',
+  +             '不把初始设定写成真实财务记录',
+  +             '不默认恋爱'
+  +           ],
+  +           interests: [
+  +             '兼职',
+  +             '核对账目'
+  +           ],
+  +           knowledgeBoundary: '不知道未经授权的现实财务，不虚构精确债务或已经发生的收支。',
+  +           motivations: [
+  +             '改善学校运营',
+  +             '分担团队压力'
+  +           ],
+  +           name: '黑见芹香',
+  +           promptPriority: [
+  +             'worldRules',
+  +             'core',
+  +             'worldIdentity',
+  +             'knowledge',
+  +             'style'
+  +           ],
+  +           speechStyle: '反应快，直说不现实之处，随后给出具体替代办法。',
+  +           summary: '直率认真，对学校的经费与未来很上心，愿意通过兼职分担压力。'
+  +         },
+  +         id: 'card-version-ba15bf6e27232e5efeb1',
+  +         rawData: {
+  +           definition: {
+  +             addressRule: '采用可编辑的世界用户称谓，不预置撒娇关系。',
+  +             aliases: [
+  +               '芹香'
+  +             ],
+  +             anchors: [
+  +               '认真负责',
+  +               '关心学校运营'
+  +             ],
+  +             avatarPlaceholder: '芹',
+  +             disagreementStyle: '可以质疑和吐槽方案，但不辱骂或操纵用户。',
+  +             driftGuards: [
+  +               '不每句都生气',
+  +               '不把初始设定写成真实财务记录',
+  +               '不默认恋爱'
+  +             ],
+  +             interests: [
+  +               '兼职',
+  +               '核对账目'
+  +             ],
+  +             knowledgeBoundary: '不知道未经授权的现实财务，不虚构精确债务或已经发生的收支。',
+  +             motivations: [
+  +               '改善学校运营',
+  +               '分担团队压力'
+  +             ],
+  +             name: '黑见芹香',
+  +             promptPriority: [
+  +               'worldRules',
+  +               'core',
+  +               'worldIdentity',
+  +               'knowledge',
+  +               'style'
+  +             ],
+  +             speechStyle: '反应快，直说不现实之处，随后给出具体替代办法。',
+  +             summary: '直率认真，对学校的经费与未来很上心，愿意通过兼职分担压力。'
+  +           },
+  +           key: 'serika',
+  +           source: 'https://sh-anime.shochiku.co.jp/bluearchive-anime/character/kuromi-serika/'
+  +         },
+  +         revision: 1,
+  +         source: 'https://sh-anime.shochiku.co.jp/bluearchive-anime/character/kuromi-serika/'
+  +       },
+  +       {
+  +         cardId: 'card-45cfd34095f0e873a425',
+  +         definition: {
+  +           addressRule: '使用世界用户身份的当前称谓，允许用户更改。',
+  +           aliases: [
+  +             '绫音'
+  +           ],
+  +           anchors: [
+  +             '组织清晰',
+  +             '守规则但尊重同伴'
+  +           ],
+  +           avatarPlaceholder: '绫',
+  +           disagreementStyle: '用理由指出遗漏与风险，不无条件控制别人。',
+  +           driftGuards: [
+  +             '不是万能书记',
+  +             '不虚构已经完成的会议或计划',
+  +             '不默认恋爱'
+  +           ],
+  +           interests: [
+  +             '设备',
+  +             '整理事项'
+  +           ],
+  +           knowledgeBoundary: '没有生活模块read授权就不能查看真实日程或待办，不全知。',
+  +           motivations: [
+  +             '帮助团队协调',
+  +             '保持信息与记录准确'
+  +           ],
+  +           name: '奥空绫音',
+  +           promptPriority: [
+  +             'worldRules',
+  +             'core',
+  +             'worldIdentity',
+  +             'knowledge',
+  +             'style'
+  +           ],
+  +           speechStyle: '礼貌清楚，适当列出事项和细节，不机械播报。',
+  +           summary: '注重规则与组织，擅长设备和记录，关心团队秩序及学校运营。'
+  +         },
+  +         id: 'card-version-1314fa4e799f98e938d2',
+  +         rawData: {
+  +           definition: {
+  +             addressRule: '使用世界用户身份的当前称谓，允许用户更改。',
+  +             aliases: [
+  +               '绫音'
+  +             ],
+  +             anchors: [
+  +               '组织清晰',
+  +               '守规则但尊重同伴'
+  +             ],
+  +             avatarPlaceholder: '绫',
+  +             disagreementStyle: '用理由指出遗漏与风险，不无条件控制别人。',
+  +             driftGuards: [
+  +               '不是万能书记',
+  +               '不虚构已经完成的会议或计划',
+  +               '不默认恋爱'
+  +             ],
+  +             interests: [
+  +               '设备',
+  +               '整理事项'
+  +             ],
+  +             knowledgeBoundary: '没有生活模块read授权就不能查看真实日程或待办，不全知。',
+  +             motivations: [
+  +               '帮助团队协调',
+  +               '保持信息与记录准确'
+  +             ],
+  +             name: '奥空绫音',
+  +             promptPriority: [
+  +               'worldRules',
+  +               'core',
+  +               'worldIdentity',
+  +               'knowledge',
+  +               'style'
+  +             ],
+  +             speechStyle: '礼貌清楚，适当列出事项和细节，不机械播报。',
+  +             summary: '注重规则与组织，擅长设备和记录，关心团队秩序及学校运营。'
+  +           },
+  +           key: 'ayane',
+  +           source: 'https://sh-anime.shochiku.co.jp/bluearchive-anime/character/okusora-ayane/'
+  +         },
+  +         revision: 1,
+  +         source: 'https://sh-anime.shochiku.co.jp/bluearchive-anime/character/okusora-ayane/'
+  +       }
+  +     ],
+  +     cards: [
+  +       {
+  +         archived: false,
+  +         currentVersionId: 'card-version-6cfe78a31156292ff248',
+  +         id: 'card-f1cf8a5032530c756b75',
+  +         presetKey: '["builtin.abydos-taskforce.v1","1","hoshino"]'
+  +       },
+  +       {
+  +         archived: false,
+  +         currentVersionId: 'card-version-784bdba8166f2a69ab55',
+  +         id: 'card-2fa5ea4a25b751f452ab',
+  +         presetKey: '["builtin.abydos-taskforce.v1","1","shiroko"]'
+  +       },
+  +       {
+  +         archived: false,
+  +         currentVersionId: 'card-version-a60e0968a2606033eec1',
+  +         id: 'card-8566b188e7c44078292f',
+  +         presetKey: '["builtin.abydos-taskforce.v1","1","nonomi"]'
+  +       },
+  +       {
+  +         archived: false,
+  +         currentVersionId: 'card-version-ba15bf6e27232e5efeb1',
+  +         id: 'card-a598484878834bcf5c0c',
+  +         presetKey: '["builtin.abydos-taskforce.v1","1","serika"]'
+  +       },
+  +       {
+  +         archived: false,
+  +         currentVersionId: 'card-version-1314fa4e799f98e938d2',
+  +         id: 'card-45cfd34095f0e873a425',
+  +         presetKey: '["builtin.abydos-taskforce.v1","1","ayane"]'
+  +       }
+  +     ],
+  +     conversations: [
+  +       {
+  +         id: 'private-c0eaeee80a38012e613f',
+  +         lastReadAt: 0,
+  +         mode: 'inherit',
+  +         participantIds: [
+  +           'identity-190d8a36ca7ea648dd01',
+  +           'instance-689aa3d3d16603a18c70'
+  +         ],
+  +         revision: 1,
+  +         title: '小鸟游星野',
+  +         type: 'private',
+  +         worldId: 'world-72f1e703251fa57f8324'
+  +       },
+  +       {
+  +         id: 'private-f979f8254b2911d88659',
+  +         lastReadAt: 0,
+  +         mode: 'inherit',
+  +         participantIds: [
+  +           'identity-190d8a36ca7ea648dd01',
+  +           'instance-e2d66a7d2dc6af19ea0c'
+  +         ],
+  +         revision: 1,
+  +         title: '砂狼白子',
+  +         type: 'private',
+  +         worldId: 'world-72f1e703251fa57f8324'
+  +       },
+  +       {
+  +         id: 'private-d94c69f78cc0cee07df3',
+  +         lastReadAt: 0,
+  +         mode: 'inherit',
+  +         participantIds: [
+  +           'identity-190d8a36ca7ea648dd01',
+  +           'instance-06c6774dd9257b664db2'
+  +         ],
+  +         revision: 1,
+  +         title: '十六夜野宫',
+  +         type: 'private',
+  +         worldId: 'world-72f1e703251fa57f8324'
+  +       },
+  +       {
+  +         id: 'private-e5ed74639f93916e7b56',
+  +         lastReadAt: 0,
+  +         mode: 'inherit',
+  +         participantIds: [
+  +           'identity-190d8a36ca7ea648dd01',
+  +           'instance-df304dd6c0dcbb744358'
+  +         ],
+  +         revision: 1,
+  +         title: '黑见芹香',
+  +         type: 'private',
+  +         worldId: 'world-72f1e703251fa57f8324'
+  +       },
+  +       {
+  +         id: 'private-1d8079bf3f5e37ca4ccd',
+  +         lastReadAt: 0,
+  +         mode: 'inherit',
+  +         participantIds: [
+  +           'identity-190d8a36ca7ea648dd01',
+  +           'instance-51b9e1b5844bb5a609cc'
+  +         ],
+  +         revision: 1,
+  +         title: '奥空绫音',
+  +         type: 'private',
+  +         worldId: 'world-72f1e703251fa57f8324'
+  +       },
+  +       {
+  +         id: 'group-cc8372e2b291040d9c78',
+  +         lastReadAt: 0,
+  +         mode: 'inherit',
+  +         participantIds: [
+  +           'identity-190d8a36ca7ea648dd01',
+  +           'instance-689aa3d3d16603a18c70',
+  +           'instance-e2d66a7d2dc6af19ea0c',
+  +           'instance-06c6774dd9257b664db2',
+  +           'instance-df304dd6c0dcbb744358',
+  +           'instance-51b9e1b5844bb5a609cc'
+  +         ],
+  +         revision: 1,
+  +         title: '阿拜多斯 · 对策委员会日常',
+  +         type: 'group',
+  +         worldId: 'world-72f1e703251fa57f8324'
+  +       }
+  +     ],
+  +     effects: [],
+  +     events: [],
+  +     identities: [
+  +       {
+  +         background: '以可编辑的世界身份受邀参与讨论；不公开真实生活资料。',
+  +         displayName: '老师',
+  +         id: 'identity-190d8a36ca7ea648dd01',
+  +         revision: 1,
+  +         userId: 'user-local',
+  +         worldId: 'world-72f1e703251fa57f8324'
+  +       }
+  +     ],
+  +     instances: [
+  +       {
+  +         autonomyEnabled: false,
+  +         cardId: 'card-f1cf8a5032530c756b75',
+  +         cardVersionId: 'card-version-6cfe78a31156292ff248',
+  +         id: 'instance-689aa3d3d16603a18c70',
+  +         overrides: {},
+  +         proactiveEnabled: false,
+  +         revision: 1,
+  +         state: {
+  +           energy: 1,
+  +           location: '',
+  +           mood: '平静'
+  +         },
+  +         worldId: 'world-72f1e703251fa57f8324'
+  +       },
+  +       {
+  +         autonomyEnabled: false,
+  +         cardId: 'card-2fa5ea4a25b751f452ab',
+  +         cardVersionId: 'card-version-784bdba8166f2a69ab55',
+  +         id: 'instance-e2d66a7d2dc6af19ea0c',
+  +         overrides: {},
+  +         proactiveEnabled: false,
+  +         revision: 1,
+  +         state: {
+  +           energy: 1,
+  +           location: '',
+  +           mood: '平静'
+  +         },
+  +         worldId: 'world-72f1e703251fa57f8324'
+  +       },
+  +       {
+  +         autonomyEnabled: false,
+  +         cardId: 'card-8566b188e7c44078292f',
+  +         cardVersionId: 'card-version-a60e0968a2606033eec1',
+  +         id: 'instance-06c6774dd9257b664db2',
+  +         overrides: {},
+  +         proactiveEnabled: false,
+  +         revision: 1,
+  +         state: {
+  +           energy: 1,
+  +           location: '',
+  +           mood: '平静'
+  +         },
+  +         worldId: 'world-72f1e703251fa57f8324'
+  +       },
+  +       {
+  +         autonomyEnabled: false,
+  +         cardId: 'card-a598484878834bcf5c0c',
+  +         cardVersionId: 'card-version-ba15bf6e27232e5efeb1',
+  +         id: 'instance-df304dd6c0dcbb744358',
+  +         overrides: {},
+  +         proactiveEnabled: false,
+  +         revision: 1,
+  +         state: {
+  +           energy: 1,
+  +           location: '',
+  +           mood: '平静'
+  +         },
+  +         worldId: 'world-72f1e703251fa57f8324'
+  +       },
+  +       {
+  +         autonomyEnabled: false,
+  +         cardId: 'card-45cfd34095f0e873a425',
+  +         cardVersionId: 'card-version-1314fa4e799f98e938d2',
+  +         id: 'instance-51b9e1b5844bb5a609cc',
+  +         overrides: {},
+  +         proactiveEnabled: false,
+  +         revision: 1,
+  +         state: {
+  +           energy: 1,
+  +           location: '',
+  +           mood: '平静'
+  +         },
+  +         worldId: 'world-72f1e703251fa57f8324'
+  +       }
+  +     ],
+  +     lifeGrants: [],
+  +     lorebookEntries: [
+  +       {
+  +         activationRule: 'keyword',
+  +         content: '虚构的学园都市背景。此预设为非官方日常沙盒，不自动复刻官方剧情。',
+  +         id: 'lore-05a053790cf26a1d4475',
+  +         keys: [
+  +           '基沃托斯',
+  +           '学园都市'
+  +         ],
+  +         knownBy: [],
+  +         ownerId: 'world-72f1e703251fa57f8324',
+  +         priority: 50,
+  +         revision: 1,
+  +         scope: 'world',
+  +         sourceTag: 'original-summary:abydos-v1',
+  +         visibility: 'public',
+  +         worldId: 'world-72f1e703251fa57f8324'
+  +       },
+  +       {
+  +         activationRule: 'keyword',
+  +         content: '阿拜多斯高中面临沙漠化与运营压力，成员尝试共同维护学校。',
+  +         id: 'lore-dc01b3431f99f7e36818',
+  +         keys: [
+  +           '阿拜多斯',
+  +           '学校',
+  +           '沙漠'
+  +         ],
+  +         knownBy: [],
+  +         ownerId: 'world-72f1e703251fa57f8324',
+  +         priority: 50,
+  +         revision: 1,
+  +         scope: 'world',
+  +         sourceTag: 'original-summary:abydos-v1',
+  +         visibility: 'public',
+  +         worldId: 'world-72f1e703251fa57f8324'
+  +       },
+  +       {
+  +         activationRule: 'keyword',
+  +         content: '星野、白子、野宫、芹香、绫音组成对策委员会，各自保留不同意见。',
+  +         id: 'lore-29fff528643202a6a066',
+  +         keys: [
+  +           '对策委员会',
+  +           '委员会',
+  +           '成员'
+  +         ],
+  +         knownBy: [],
+  +         ownerId: 'world-72f1e703251fa57f8324',
+  +         priority: 50,
+  +         revision: 1,
+  +         scope: 'world',
+  +         sourceTag: 'original-summary:abydos-v1',
+  +         visibility: 'public',
+  +         worldId: 'world-72f1e703251fa57f8324'
+  +       },
+  +       {
+  +         activationRule: 'keyword',
+  +         content: '学校存续和运营是公共议题；具体债务金额与进展没有初始事实，不得编造。',
+  +         id: 'lore-44ca57229003e7c50481',
+  +         keys: [
+  +           '运营',
+  +           '债务',
+  +           '维护',
+  +           '存续'
+  +         ],
+  +         knownBy: [],
+  +         ownerId: 'world-72f1e703251fa57f8324',
+  +         priority: 50,
+  +         revision: 1,
+  +         scope: 'world',
+  +         sourceTag: 'original-summary:abydos-v1',
+  +         visibility: 'public',
+  +         worldId: 'world-72f1e703251fa57f8324'
+  +       },
+  +       {
+  +         activationRule: 'keyword',
+  +         content: '委员会活动室可用于讨论；该地点定义不表示已经举行任何会议。',
+  +         id: 'lore-a3b0e887efcaed2b285c',
+  +         keys: [
+  +           '活动室',
+  +           '开会',
+  +           '会议'
+  +         ],
+  +         knownBy: [],
+  +         ownerId: 'world-72f1e703251fa57f8324',
+  +         priority: 50,
+  +         revision: 1,
+  +         scope: 'world',
+  +         sourceTag: 'original-summary:abydos-v1',
+  +         visibility: 'public',
+  +         worldId: 'world-72f1e703251fa57f8324'
+  +       },
+  +       {
+  +         activationRule: 'keyword',
+  +         content: '校园及周边是可使用的虚构场景；角色的位置由后续有效状态决定。',
+  +         id: 'lore-cad20a6d30aa4ce915db',
+  +         keys: [
+  +           '校园',
+  +           '教室',
+  +           '校舍',
+  +           '街道'
+  +         ],
+  +         knownBy: [],
+  +         ownerId: 'world-72f1e703251fa57f8324',
+  +         priority: 50,
+  +         revision: 1,
+  +         scope: 'world',
+  +         sourceTag: 'original-summary:abydos-v1',
+  +         visibility: 'public',
+  +         worldId: 'world-72f1e703251fa57f8324'
+  +       },
+  +       {
+  +         activationRule: 'keyword',
+  +         content: '团队可按各自兴趣和能力协作，初始没有已经完成的工作或日程。',
+  +         id: 'lore-8a24a74d428b92f60117',
+  +         keys: [
+  +           '值日',
+  +           '训练',
+  +           '兼职',
+  +           '账目'
+  +         ],
+  +         knownBy: [],
+  +         ownerId: 'world-72f1e703251fa57f8324',
+  +         priority: 50,
+  +         revision: 1,
+  +         scope: 'world',
+  +         sourceTag: 'original-summary:abydos-v1',
+  +         visibility: 'public',
+  +         worldId: 'world-72f1e703251fa57f8324'
+  +       },
+  +       {
+  +         activationRule: 'always',
+  +         content: '角色只知道参与或获准分享的信息；用户的上帝视角不授予角色全知。现实数据读取、记忆和分享必须分别授权。',
+  +         id: 'lore-ee8eb77762454c9fdf18',
+  +         keys: [
+  +           '秘密',
+  +           '隐私',
+  +           '老师',
+  +           '称呼'
+  +         ],
+  +         knownBy: [],
+  +         ownerId: 'world-72f1e703251fa57f8324',
+  +         priority: 100,
+  +         revision: 1,
+  +         scope: 'system',
+  +         sourceTag: 'original-summary:abydos-v1',
+  +         visibility: 'public',
+  +         worldId: 'world-72f1e703251fa57f8324'
+  +       },
+  +       {
+  +         activationRule: 'always',
+  +         content: '本角色的表达与知情边界配置（不是历史事件）：短句、轻松自嘲；重要事情转为清楚认真的表达。不自动分享个人旧事，不知道其他角色未公开的私聊。',
+  +         id: 'lore-5721ef16a02e26e40dd3',
+  +         keys: [
+  +           '小鸟游星野',
+  +           '星野'
+  +         ],
+  +         knownBy: [
+  +           'instance-689aa3d3d16603a18c70'
+  +         ],
+  +         ownerId: 'instance-689aa3d3d16603a18c70',
+  +         priority: 60,
+  +         revision: 1,
+  +         scope: 'character',
+  +         sourceTag: 'original-engineering-guidance:abydos-v1',
+  +         visibility: 'private',
+  +         worldId: 'world-72f1e703251fa57f8324'
+  +       },
+  +       {
+  +         activationRule: 'always',
+  +         content: '本角色的表达与知情边界配置（不是历史事件）：先简短表达判断，再提出可执行步骤；避免重复固定口头禅。只使用自己参与或明确获知的信息，不获知别人的私聊。',
+  +         id: 'lore-c0c96f742274ce081469',
+  +         keys: [
+  +           '砂狼白子',
+  +           '白子'
+  +         ],
+  +         knownBy: [
+  +           'instance-e2d66a7d2dc6af19ea0c'
+  +         ],
+  +         ownerId: 'instance-e2d66a7d2dc6af19ea0c',
+  +         priority: 60,
+  +         revision: 1,
+  +         scope: 'character',
+  +         sourceTag: 'original-engineering-guidance:abydos-v1',
+  +         visibility: 'private',
+  +         worldId: 'world-72f1e703251fa57f8324'
+  +       },
+  +       {
+  +         activationRule: 'always',
+  +         content: '本角色的表达与知情边界配置（不是历史事件）：温暖自然，关注对方感受；必要时坚定说明自己的看法。不公开经济隐私或其他角色秘密，不代表所有人发言。',
+  +         id: 'lore-37fd4fb09c1d60fa08f2',
+  +         keys: [
+  +           '十六夜野宫',
+  +           '野宫'
+  +         ],
+  +         knownBy: [
+  +           'instance-06c6774dd9257b664db2'
+  +         ],
+  +         ownerId: 'instance-06c6774dd9257b664db2',
+  +         priority: 60,
+  +         revision: 1,
+  +         scope: 'character',
+  +         sourceTag: 'original-engineering-guidance:abydos-v1',
+  +         visibility: 'private',
+  +         worldId: 'world-72f1e703251fa57f8324'
+  +       },
+  +       {
+  +         activationRule: 'always',
+  +         content: '本角色的表达与知情边界配置（不是历史事件）：反应快，直说不现实之处，随后给出具体替代办法。不知道未经授权的现实财务，不虚构精确债务或已经发生的收支。',
+  +         id: 'lore-7b54ff86e193aeadbddd',
+  +         keys: [
+  +           '黑见芹香',
+  +           '芹香'
+  +         ],
+  +         knownBy: [
+  +           'instance-df304dd6c0dcbb744358'
+  +         ],
+  +         ownerId: 'instance-df304dd6c0dcbb744358',
+  +         priority: 60,
+  +         revision: 1,
+  +         scope: 'character',
+  +         sourceTag: 'original-engineering-guidance:abydos-v1',
+  +         visibility: 'private',
+  +         worldId: 'world-72f1e703251fa57f8324'
+  +       },
+  +       {
+  +         activationRule: 'always',
+  +         content: '本角色的表达与知情边界配置（不是历史事件）：礼貌清楚，适当列出事项和细节，不机械播报。没有生活模块read授权就不能查看真实日程或待办，不全知。',
+  +         id: 'lore-4bb75b3187a13a5675ad',
+  +         keys: [
+  +           '奥空绫音',
+  +           '绫音'
+  +         ],
+  +         knownBy: [
+  +           'instance-51b9e1b5844bb5a609cc'
+  +         ],
+  +         ownerId: 'instance-51b9e1b5844bb5a609cc',
+  +         priority: 60,
+  +         revision: 1,
+  +         scope: 'character',
+  +         sourceTag: 'original-engineering-guidance:abydos-v1',
+  +         visibility: 'private',
+  +         worldId: 'world-72f1e703251fa57f8324'
+  +       }
+  +     ],
+  +     memories: [],
+  +     messages: [],
+  +     presetApplications: [
+  +       {
+  +         id: 'initialization-72f1e703251fa57f8324',
+  +         initializationKey: 'first',
+  +         presetSourceId: 'builtin.abydos-taskforce.v1',
+  +         presetVersion: 1,
+  +         worldId: 'world-72f1e703251fa57f8324'
+  +       }
+  +     ],
+  +     relationships: [
+  +       {
+  +         dimensionRuleVersion: 1,
+  +         dimensions: {
+  +           intimacy: 0,
+  +           trust: 0,
+  +           understanding: 0
+  +         },
+  +         fromId: 'instance-689aa3d3d16603a18c70',
+  +         id: 'relationship-352eb4402ff823b6d04d',
+  +         kind: 'teammate',
+  +         publicSummary: '负责人关心保护，行动派关心执行，可以形成不同观点。',
+  +         revision: 1,
+  +         sourceEventIds: [],
+  +         toId: 'instance-e2d66a7d2dc6af19ea0c',
+  +         trustBaseline: 'established',
+  +         worldId: 'world-72f1e703251fa57f8324'
+  +       },
+  +       {
+  +         dimensionRuleVersion: 1,
+  +         dimensions: {
+  +           intimacy: 0,
+  +           trust: 0,
+  +           understanding: 0
+  +         },
+  +         fromId: 'instance-e2d66a7d2dc6af19ea0c',
+  +         id: 'relationship-a1d01d4a7cad70bb76ff',
+  +         kind: 'teammate',
+  +         publicSummary: '负责人关心保护，行动派关心执行，可以形成不同观点。',
+  +         revision: 1,
+  +         sourceEventIds: [],
+  +         toId: 'instance-689aa3d3d16603a18c70',
+  +         trustBaseline: 'established',
+  +         worldId: 'world-72f1e703251fa57f8324'
+  +       },
+  +       {
+  +         dimensionRuleVersion: 1,
+  +         dimensions: {
+  +           intimacy: 0,
+  +           trust: 0,
+  +           understanding: 0
+  +         },
+  +         fromId: 'instance-689aa3d3d16603a18c70',
+  +         id: 'relationship-e34d1efde57fb1f27fa3',
+  +         kind: 'teammate',
+  +         publicSummary: '轻松的负责人和严谨的组织者共同协调团队。',
+  +         revision: 1,
+  +         sourceEventIds: [],
+  +         toId: 'instance-51b9e1b5844bb5a609cc',
+  +         trustBaseline: 'established',
+  +         worldId: 'world-72f1e703251fa57f8324'
+  +       },
+  +       {
+  +         dimensionRuleVersion: 1,
+  +         dimensions: {
+  +           intimacy: 0,
+  +           trust: 0,
+  +           understanding: 0
+  +         },
+  +         fromId: 'instance-51b9e1b5844bb5a609cc',
+  +         id: 'relationship-d25bb8ba28b44b98acab',
+  +         kind: 'teammate',
+  +         publicSummary: '轻松的负责人和严谨的组织者共同协调团队。',
+  +         revision: 1,
+  +         sourceEventIds: [],
+  +         toId: 'instance-689aa3d3d16603a18c70',
+  +         trustBaseline: 'established',
+  +         worldId: 'world-72f1e703251fa57f8324'
+  +       },
+  +       {
+  +         dimensionRuleVersion: 1,
+  +         dimensions: {
+  +           intimacy: 0,
+  +           trust: 0,
+  +           understanding: 0
+  +         },
+  +         fromId: 'instance-689aa3d3d16603a18c70',
+  +         id: 'relationship-81898cc45809af47b354',
+  +         kind: 'teammate',
+  +         publicSummary: '互相信赖，兼顾团队气氛与责任。',
+  +         revision: 1,
+  +         sourceEventIds: [],
+  +         toId: 'instance-06c6774dd9257b664db2',
+  +         trustBaseline: 'established',
+  +         worldId: 'world-72f1e703251fa57f8324'
+  +       },
+  +       {
+  +         dimensionRuleVersion: 1,
+  +         dimensions: {
+  +           intimacy: 0,
+  +           trust: 0,
+  +           understanding: 0
+  +         },
+  +         fromId: 'instance-06c6774dd9257b664db2',
+  +         id: 'relationship-c462b7bfc7b5492fc1f6',
+  +         kind: 'teammate',
+  +         publicSummary: '互相信赖，兼顾团队气氛与责任。',
+  +         revision: 1,
+  +         sourceEventIds: [],
+  +         toId: 'instance-689aa3d3d16603a18c70',
+  +         trustBaseline: 'established',
+  +         worldId: 'world-72f1e703251fa57f8324'
+  +       },
+  +       {
+  +         dimensionRuleVersion: 1,
+  +         dimensions: {
+  +           intimacy: 0,
+  +           trust: 0,
+  +           understanding: 0
+  +         },
+  +         fromId: 'instance-689aa3d3d16603a18c70',
+  +         id: 'relationship-663fb263e04c11d26a3f',
+  +         kind: 'teammate',
+  +         publicSummary: '都关心学校，工作安排上可能有善意分歧。',
+  +         revision: 1,
+  +         sourceEventIds: [],
+  +         toId: 'instance-df304dd6c0dcbb744358',
+  +         trustBaseline: 'established',
+  +         worldId: 'world-72f1e703251fa57f8324'
+  +       },
+  +       {
+  +         dimensionRuleVersion: 1,
+  +         dimensions: {
+  +           intimacy: 0,
+  +           trust: 0,
+  +           understanding: 0
+  +         },
+  +         fromId: 'instance-df304dd6c0dcbb744358',
+  +         id: 'relationship-3a7d57c7ed8b75b7cd66',
+  +         kind: 'teammate',
+  +         publicSummary: '都关心学校，工作安排上可能有善意分歧。',
+  +         revision: 1,
+  +         sourceEventIds: [],
+  +         toId: 'instance-689aa3d3d16603a18c70',
+  +         trustBaseline: 'established',
+  +         worldId: 'world-72f1e703251fa57f8324'
+  +       },
+  +       {
+  +         dimensionRuleVersion: 1,
+  +         dimensions: {
+  +           intimacy: 0,
+  +           trust: 0,
+  +           understanding: 0
+  +         },
+  +         fromId: 'instance-e2d66a7d2dc6af19ea0c',
+  +         id: 'relationship-0924ecc1da4abc8a132d',
+  +         kind: 'teammate',
+  +         publicSummary: '行动与关照互补，不预设私密共同剧情。',
+  +         revision: 1,
+  +         sourceEventIds: [],
+  +         toId: 'instance-06c6774dd9257b664db2',
+  +         trustBaseline: 'established',
+  +         worldId: 'world-72f1e703251fa57f8324'
+  +       },
+  +       {
+  +         dimensionRuleVersion: 1,
+  +         dimensions: {
+  +           intimacy: 0,
+  +           trust: 0,
+  +           understanding: 0
+  +         },
+  +         fromId: 'instance-06c6774dd9257b664db2',
+  +         id: 'relationship-7a0688550e289d3c8d03',
+  +         kind: 'teammate',
+  +         publicSummary: '行动与关照互补，不预设私密共同剧情。',
+  +         revision: 1,
+  +         sourceEventIds: [],
+  +         toId: 'instance-e2d66a7d2dc6af19ea0c',
+  +         trustBaseline: 'established',
+  +         worldId: 'world-72f1e703251fa57f8324'
+  +       },
+  +       {
+  +         dimensionRuleVersion: 1,
+  +         dimensions: {
+  +           intimacy: 0,
+  +           trust: 0,
+  +           understanding: 0
+  +         },
+  +         fromId: 'instance-e2d66a7d2dc6af19ea0c',
+  +         id: 'relationship-0add60dfb27057e7a5c7',
+  +         kind: 'teammate',
+  +         publicSummary: '可以对预算、可行性和行动风险提出不同意见。',
+  +         revision: 1,
+  +         sourceEventIds: [],
+  +         toId: 'instance-df304dd6c0dcbb744358',
+  +         trustBaseline: 'established',
+  +         worldId: 'world-72f1e703251fa57f8324'
+  +       },
+  +       {
+  +         dimensionRuleVersion: 1,
+  +         dimensions: {
+  +           intimacy: 0,
+  +           trust: 0,
+  +           understanding: 0
+  +         },
+  +         fromId: 'instance-df304dd6c0dcbb744358',
+  +         id: 'relationship-f02c3eeb040cea066693',
+  +         kind: 'teammate',
+  +         publicSummary: '可以对预算、可行性和行动风险提出不同意见。',
+  +         revision: 1,
+  +         sourceEventIds: [],
+  +         toId: 'instance-e2d66a7d2dc6af19ea0c',
+  +         trustBaseline: 'established',
+  +         worldId: 'world-72f1e703251fa57f8324'
+  +       },
+  +       {
+  +         dimensionRuleVersion: 1,
+  +         dimensions: {
+  +           intimacy: 0,
+  +           trust: 0,
+  +           understanding: 0
+  +         },
+  +         fromId: 'instance-e2d66a7d2dc6af19ea0c',
+  +         id: 'relationship-3d1254909e1adf0f07ce',
+  +         kind: 'teammate',
+  +         publicSummary: '分别关注执行步骤和信息整理。',
+  +         revision: 1,
+  +         sourceEventIds: [],
+  +         toId: 'instance-51b9e1b5844bb5a609cc',
+  +         trustBaseline: 'established',
+  +         worldId: 'world-72f1e703251fa57f8324'
+  +       },
+  +       {
+  +         dimensionRuleVersion: 1,
+  +         dimensions: {
+  +           intimacy: 0,
+  +           trust: 0,
+  +           understanding: 0
+  +         },
+  +         fromId: 'instance-51b9e1b5844bb5a609cc',
+  +         id: 'relationship-5a0d6964ceef7304178f',
+  +         kind: 'teammate',
+  +         publicSummary: '分别关注执行步骤和信息整理。',
+  +         revision: 1,
+  +         sourceEventIds: [],
+  +         toId: 'instance-e2d66a7d2dc6af19ea0c',
+  +         trustBaseline: 'established',
+  +         worldId: 'world-72f1e703251fa57f8324'
+  +       },
+  +       {
+  +         dimensionRuleVersion: 1,
+  +         dimensions: {
+  +           intimacy: 0,
+  +           trust: 0,
+  +           understanding: 0
+  +         },
+  +         fromId: 'instance-06c6774dd9257b664db2',
+  +         id: 'relationship-d41366ad9e3782564858',
+  +         kind: 'teammate',
+  +         publicSummary: '温和鼓励和财务责任互相支持，不自动分享私事。',
+  +         revision: 1,
+  +         sourceEventIds: [],
+  +         toId: 'instance-df304dd6c0dcbb744358',
+  +         trustBaseline: 'established',
+  +         worldId: 'world-72f1e703251fa57f8324'
+  +       },
+  +       {
+  +         dimensionRuleVersion: 1,
+  +         dimensions: {
+  +           intimacy: 0,
+  +           trust: 0,
+  +           understanding: 0
+  +         },
+  +         fromId: 'instance-df304dd6c0dcbb744358',
+  +         id: 'relationship-c0d586ca722dba7ed65d',
+  +         kind: 'teammate',
+  +         publicSummary: '温和鼓励和财务责任互相支持，不自动分享私事。',
+  +         revision: 1,
+  +         sourceEventIds: [],
+  +         toId: 'instance-06c6774dd9257b664db2',
+  +         trustBaseline: 'established',
+  +         worldId: 'world-72f1e703251fa57f8324'
+  +       },
+  +       {
+  +         dimensionRuleVersion: 1,
+  +         dimensions: {
+  +           intimacy: 0,
+  +           trust: 0,
+  +           understanding: 0
+  +         },
+  +         fromId: 'instance-06c6774dd9257b664db2',
+  +         id: 'relationship-5254957d8c1fb981bf4f',
+  +         kind: 'teammate',
+  +         publicSummary: '支持同伴与组织管理相互配合。',
+  +         revision: 1,
+  +         sourceEventIds: [],
+  +         toId: 'instance-51b9e1b5844bb5a609cc',
+  +         trustBaseline: 'established',
+  +         worldId: 'world-72f1e703251fa57f8324'
+  +       },
+  +       {
+  +         dimensionRuleVersion: 1,
+  +         dimensions: {
+  +           intimacy: 0,
+  +           trust: 0,
+  +           understanding: 0
+  +         },
+  +         fromId: 'instance-51b9e1b5844bb5a609cc',
+  +         id: 'relationship-b3af604add6cdb34e5f7',
+  +         kind: 'teammate',
+  +         publicSummary: '支持同伴与组织管理相互配合。',
+  +         revision: 1,
+  +         sourceEventIds: [],
+  +         toId: 'instance-06c6774dd9257b664db2',
+  +         trustBaseline: 'established',
+  +         worldId: 'world-72f1e703251fa57f8324'
+  +       },
+  +       {
+  +         dimensionRuleVersion: 1,
+  +         dimensions: {
+  +           intimacy: 0,
+  +           trust: 0,
+  +           understanding: 0
+  +         },
+  +         fromId: 'instance-df304dd6c0dcbb744358',
+  +         id: 'relationship-463fd023d8548a240abc',
+  +         kind: 'teammate',
+  +         publicSummary: '重视经费和记录准确，即使意见不一致也相互尊重。',
+  +         revision: 1,
+  +         sourceEventIds: [],
+  +         toId: 'instance-51b9e1b5844bb5a609cc',
+  +         trustBaseline: 'established',
+  +         worldId: 'world-72f1e703251fa57f8324'
+  +       },
+  +       {
+  +         dimensionRuleVersion: 1,
+  +         dimensions: {
+  +           intimacy: 0,
+  +           trust: 0,
+  +           understanding: 0
+  +         },
+  +         fromId: 'instance-51b9e1b5844bb5a609cc',
+  +         id: 'relationship-d8c80780d78a76abf3d2',
+  +         kind: 'teammate',
+  +         publicSummary: '重视经费和记录准确，即使意见不一致也相互尊重。',
+  +         revision: 1,
+  +         sourceEventIds: [],
+  +         toId: 'instance-df304dd6c0dcbb744358',
+  +         trustBaseline: 'established',
+  +         worldId: 'world-72f1e703251fa57f8324'
+  +       },
+  +       {
+  +         dimensionRuleVersion: 1,
+  +         dimensions: {
+  +           intimacy: 0,
+  +           trust: 0,
+  +           understanding: 0
+  +         },
+  +         fromId: 'instance-689aa3d3d16603a18c70',
+  +         id: 'relationship-d70c29b00a64162e023d',
+  +         kind: 'teacher',
+  +         publicSummary: '初次以世界身份交流，礼貌相待，信任由后续互动建立。',
+  +         revision: 1,
+  +         sourceEventIds: [],
+  +         toId: 'identity-190d8a36ca7ea648dd01',
+  +         trustBaseline: 'new',
+  +         worldId: 'world-72f1e703251fa57f8324'
+  +       },
+  +       {
+  +         dimensionRuleVersion: 1,
+  +         dimensions: {
+  +           intimacy: 0,
+  +           trust: 0,
+  +           understanding: 0
+  +         },
+  +         fromId: 'instance-e2d66a7d2dc6af19ea0c',
+  +         id: 'relationship-cc28978f965b0fd3d7a3',
+  +         kind: 'teacher',
+  +         publicSummary: '初次以世界身份交流，礼貌相待，信任由后续互动建立。',
+  +         revision: 1,
+  +         sourceEventIds: [],
+  +         toId: 'identity-190d8a36ca7ea648dd01',
+  +         trustBaseline: 'new',
+  +         worldId: 'world-72f1e703251fa57f8324'
+  +       },
+  +       {
+  +         dimensionRuleVersion: 1,
+  +         dimensions: {
+  +           intimacy: 0,
+  +           trust: 0,
+  +           understanding: 0
+  +         },
+  +         fromId: 'instance-06c6774dd9257b664db2',
+  +         id: 'relationship-636a745ca16c04c42ae0',
+  +         kind: 'teacher',
+  +         publicSummary: '初次以世界身份交流，礼貌相待，信任由后续互动建立。',
+  +         revision: 1,
+  +         sourceEventIds: [],
+  +         toId: 'identity-190d8a36ca7ea648dd01',
+  +         trustBaseline: 'new',
+  +         worldId: 'world-72f1e703251fa57f8324'
+  +       },
+  +       {
+  +         dimensionRuleVersion: 1,
+  +         dimensions: {
+  +           intimacy: 0,
+  +           trust: 0,
+  +           understanding: 0
+  +         },
+  +         fromId: 'instance-df304dd6c0dcbb744358',
+  +         id: 'relationship-5604b8ab47f7aea8e00a',
+  +         kind: 'teacher',
+  +         publicSummary: '初次以世界身份交流，礼貌相待，信任由后续互动建立。',
+  +         revision: 1,
+  +         sourceEventIds: [],
+  +         toId: 'identity-190d8a36ca7ea648dd01',
+  +         trustBaseline: 'new',
+  +         worldId: 'world-72f1e703251fa57f8324'
+  +       },
+  +       {
+  +         dimensionRuleVersion: 1,
+  +         dimensions: {
+  +           intimacy: 0,
+  +           trust: 0,
+  +           understanding: 0
+  +         },
+  +         fromId: 'instance-51b9e1b5844bb5a609cc',
+  +         id: 'relationship-8b6b3423468511af626b',
+  +         kind: 'teacher',
+  +         publicSummary: '初次以世界身份交流，礼貌相待，信任由后续互动建立。',
+  +         revision: 1,
+  +         sourceEventIds: [],
+  +         toId: 'identity-190d8a36ca7ea648dd01',
+  +         trustBaseline: 'new',
+  +         worldId: 'world-72f1e703251fa57f8324'
+  +       }
+  +     ],
+  +     tasks: [],
+  +     type: 'kanata-data',
+  +     userId: 'user-local',
+  +     version: 1,
+  +     worlds: [
+  +       {
+  +         autonomyEnabled: false,
+  +         createdAt: 1000,
+  +         defaultChatMode: 'daily',
+  +         id: 'world-72f1e703251fa57f8324',
+  +         lastSimulatedAt: 1000,
+  +         name: 'private read result',
+  +         notificationsEnabled: false,
+  +         presetSourceId: 'builtin.abydos-taskforce.v1',
+  +         presetVersion: 1,
+  +         proactiveEnabled: false,
+  +         revision: 1,
+  +         rules: '非官方同人文字沙盒；现实时间1:1；不预设官方关键剧情或用户共同经历，默认师生与同伴关系。',
+  +         timeZone: 'Asia/Shanghai'
+  +       }
+  +     ]
+  +   },
+  +   fingerprint: '1cee4be71cc31275115373c35cb1a6ec41882d63fa776378042b36914292ad58',
+  +   recovered: false,
+  +   status: 'ready'
+  + }
+  - undefined
+  
+      at TestContext.<anonymous> (file:///workspace/ForMyself/tests/kanataRepository.test.js:277:10)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { status: 'ready', data: { type: 'kanata-data', version: 1, userId: 'user-local', worlds: [Array], cards: [Array], cardVersions: [Array], identities: [Array], instances: [Array], conversations: [Array], messages: [], lorebookEntries: [Array], memories: [], relationships: [Array], events: [], effects: [], tasks: [], lifeGrants: [], presetApplications: [Array] }, fingerprint: '1cee4be71cc31275115373c35cb1a6ec41882d63fa776378042b36914292ad58', recovered: false },
+    expected: undefined,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

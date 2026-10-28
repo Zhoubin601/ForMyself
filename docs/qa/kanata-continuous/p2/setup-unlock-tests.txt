@@ -1,0 +1,11 @@
+
+ RUN  v3.2.4 /workspace/ForMyself
+
+ ✓ tests/UnlockFeedback.spec.js (8 tests) 851ms
+ ✓ tests/KanataSetupView.spec.js (16 tests) 388ms
+
+ Test Files  2 passed (2)
+      Tests  24 passed (24)
+   Start at  17:20:29
+   Duration  8.80s (transform 1.51s, setup 0ms, collect 2.55s, tests 1.24s, environment 3.40s, prepare 464ms)
+

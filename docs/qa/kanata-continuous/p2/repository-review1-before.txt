@@ -1,0 +1,55 @@
+✔ P2-R01 missing显式返回null；加载前和空密码拒绝写，无创建默认世界 (91.123891ms)
+✔ P2-R02 独立命名空间主密码加密往返，旧聊天/其他模块字节不变 (304.190782ms)
+✔ P2-R03 错密、合法密文内坏JSON、未来版本拒绝且原字节零写入 (93.147001ms)
+✔ P2-R04 存在但全部坏文件不能返回missing；仅坏备份也明确失败 (10.013594ms)
+✔ P2-R05 驱动读取/存在性错误不当不存在，不用备份掩盖权限错误 (221.151988ms)
+✔ P2-R06 主文件损坏从备份只读恢复；首次中断从tmp只读恢复 (208.457348ms)
+✔ P2-R07 未来版本主文件不被旧备份或恢复副本降级覆盖 (60.46224ms)
+✔ P2-R08 写失败保留最新密文；重建仓库/重新读回后恢复且flush可重试 (133.21082ms)
+✔ P2-R09 持久介质全失败仅进程内密文，原始主文件不变；持续失败flush必须reject (100.378791ms)
+✔ P2-R10 tmp到主文件rename失败自动恢复原主文件并保留密文重试 (99.596273ms)
+✔ P2-R11 旧journal清理失败不能覆盖较新主文件，read不擅自清日志 (332.388983ms)
+✔ P2-R12 journal坏JSON、形状/未来版本严格拒绝，即便主文件有效也不初始化覆盖 (66.720227ms)
+✔ P2-R13 read不会用磁盘旧值覆盖尚未保存pending，release失败后重新认证可恢复 (147.250337ms)
+✔ P2-R14 已开始写入仅保留密文，调用后修改传入对象不改变待写内容 (101.264494ms)
+✔ P2-R15 reencrypt成功可用新密码、错旧密码拒绝；失败可用旧密码补偿 (522.90903ms)
+✔ P2-R16 release期间迟到read不得重新置loaded或返回明文 (71.614382ms)
+✔ P2-R17 并发写入串行结算，失败后仍保存最新候选 (51.925615ms)
+✖ P2-R1 自查：改密后所有可恢复文件均不能再用旧密码解密 (146.381084ms)
+✖ P2-R1 自查：备份重加密阶段中断仍留恢复任务，新实例必须完成全部副本 (49.892889ms)
+ℹ tests 19
+ℹ suites 0
+ℹ pass 17
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3245.919799
+
+✖ failing tests:
+
+test at tests/kanataRepository.test.js:230:1
+✖ P2-R1 自查：改密后所有可恢复文件均不能再用旧密码解密 (146.381084ms)
+  AssertionError [ERR_ASSERTION]: Missing expected exception.
+      at TestContext.<anonymous> (file:///workspace/ForMyself/tests/kanataRepository.test.js:235:12)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    operator: 'throws',
+    diff: 'simple'
+  }
+
+test at tests/kanataRepository.test.js:239:1
+✖ P2-R1 自查：备份重加密阶段中断仍留恢复任务，新实例必须完成全部副本 (49.892889ms)
+  AssertionError [ERR_ASSERTION]: Missing expected rejection.
+      at async TestContext.<anonymous> (file:///workspace/ForMyself/tests/kanataRepository.test.js:243:3)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    operator: 'rejects',
+    diff: 'simple'
+  }

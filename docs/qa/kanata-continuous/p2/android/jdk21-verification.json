@@ -1,0 +1,10 @@
+{
+  "java": {
+    "exit_code": 0,
+    "output": "openjdk version \"21.0.13\" 2026-10-20 LTS\nOpenJDK Runtime Environment Temurin-21.0.13+9 (build 21.0.13+9-LTS)\nOpenJDK 64-Bit Server VM Temurin-21.0.13+9 (build 21.0.13+9-LTS, mixed mode, sharing)\n"
+  },
+  "javac": {
+    "exit_code": 0,
+    "output": "javac 21.0.13\n"
+  }
+}

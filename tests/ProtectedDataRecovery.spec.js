@@ -1,8 +1,15 @@
-import { createFullBackupRuntime } from '../src/application/fullBackupRuntime.js'
-import { buildFullBackupSnapshot } from '../src/services/fullBackup.js'
+import { backupParticipants } from '../src/application/backupParticipants.js'
+import { createBackupRegistry } from '../src/application/backupRegistry.js'
+import { createRestoreCoordinator } from '../src/application/restoreCoordinator.js'
+import { buildFullBackupSnapshot, buildFullBackupFromParts, fullBackupParts, normalizeFullBackupSnapshot } from '../src/services/fullBackup.js'
 import { restoreState } from '../src/platform/storage/restoreState.js'
-import { RESTORE_PATH } from '../src/platform/storage/restoreJournal.js'
+import { RESTORE_PATH, restoreJournal } from '../src/platform/storage/restoreJournal.js'
 import { useWeightStore } from '../src/stores/weight.js'
+import { useDebtStore } from '../src/stores/debt.js'
+import { useMoodStore } from '../src/features/mood/moodStore.js'
+import { useScheduleStore } from '../src/features/schedule/scheduleStore.js'
+import { useTodoStore } from '../src/features/todo/todoStore.js'
+import { useSettingsStore } from '../src/stores/settings.js'
 import { webcrypto } from 'node:crypto'
 import CryptoJS from 'crypto-js'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -42,6 +49,14 @@ vi.mock('@capacitor/filesystem', () => ({ Directory: { Data: 'DATA' }, Encoding:
 vi.mock('../src/services/uiFeedback.js', () => ({
   appPrompt: vi.fn(), appChoose: vi.fn(), appAlert: (...args) => mock.alert(...args), appToast: vi.fn(), resolveFeedbackDialog: vi.fn()
 }))
+// Keep the old v4 security regression matrix without routing it through new Kanata stores.
+vi.mock('../src/application/protectedModules.js', async importOriginal => {
+  const original = await importOriginal()
+  return { ...original, protectedModules: original.createProtectedModuleRegistry([
+    { id: 'passwords', resolve: async () => (await import('../src/stores/passwordVault.js')).usePasswordVaultStore(), load: (store, password) => store.loadRecords(password) },
+    { id: 'chat', resolve: async () => (await import('../src/features/chat/chatStore.js')).useChatStore(), load: (store, password) => store.loadChatData(password) }
+  ]) }
+})
 
 import { useAuthStore } from '../src/stores/auth.js'
 import { useProtectedAccessStore } from '../src/stores/protectedAccess.js'
@@ -55,7 +70,31 @@ import { changeMasterPasswordTransaction } from '../src/services/masterPasswordC
 const original = 'Synthetic-recovery-original', updated = 'Synthetic-recovery-updated'
 const decode = (ciphertext, password) => JSON.parse(CryptoJS.AES.decrypt(ciphertext, password).toString(CryptoJS.enc.Utf8))
 
-describe('实际加密存储：改密回滚与失败保存恢复', () => {
+// Test-local composition of the retained legacy participants. It uses the real registry,
+// coordinator, encrypted journal and stores; it is not the new product fullBackupRuntime.
+function createLegacyFullBackupTestRuntime() {
+  const protectedAccess = useProtectedAccessStore()
+  const registry = createBackupRegistry(backupParticipants({
+    debtStore: useDebtStore(), weightStore: useWeightStore(), moodStore: useMoodStore(),
+    scheduleStore: useScheduleStore(), todoStore: useTodoStore(), chatStore: useChatStore(),
+    vaultStore: usePasswordVaultStore(), settingsStore: useSettingsStore()
+  }))
+  return createRestoreCoordinator({
+    journal: restoreJournal, state: restoreState,
+    prepare: async ({ recovering = false } = {}) => {
+      await nextTick()
+      const ready = recovering ? await protectedAccess.prepareRecovery() : await protectedAccess.ensureModules()
+      if (!ready) throw new Error('BACKUP_AUTHENTICATION_REQUIRED')
+      await registry.initialize()
+      await registry.flush()
+    },
+    capture: () => buildFullBackupFromParts(registry.exportAll()),
+    apply: snapshot => registry.restoreAll(fullBackupParts(snapshot)),
+    validate: normalizeFullBackupSnapshot
+  })
+}
+
+describe('历史旧聊天兼容回归：实际加密存储、改密回滚与失败保存恢复（非Kanata产品验收）', () => {
   let auth, access
   beforeEach(async () => {
     Object.assign(restoreState, { blocked: false, busy: false, message: '', syncError: '' })
@@ -210,11 +249,11 @@ describe('实际加密存储：改密回滚与失败保存恢复', () => {
     expect(useChatStore().messages.some(x => x.content === 'Synthetic newer message')).toBe(true)
     expect((await createChatStorage().load(original)).data.messages).toHaveLength(2)
   })
-  it('产品完整恢复协调器使用实际全部Store，参与者失败后原数据与加密资料均回滚', async () => {
+  it('历史全备夹具使用实际旧Store与恢复协调器，参与者失败后原数据与加密资料均回滚', async () => {
     const weight = useWeightStore(); await weight.loadWeightRecords()
     weight.addRecord({ id: 'original-weight', date: '2026-10-26', weight: 65 }); await weight.flush()
     await prepareVault()
-    const runtime = createFullBackupRuntime()
+    const runtime = createLegacyFullBackupTestRuntime()
     mock.failPreference = STORAGE_KEYS.debtGroups
     const target = buildFullBackupSnapshot({ weight: [{ id: 'target-weight', weight: 60 }], passwords: [{ id: 'changed', appName: 'target', password: 'fake' }] })
     await expect(runtime.restore(target, original)).rejects.toThrow('INJECTED_PREFERENCE_FAILURE')

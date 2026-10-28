@@ -1,0 +1,11 @@
+{
+  "command": [
+    "node",
+    "/workspace/ForMyself/node_modules/@capacitor/cli/bin/capacitor",
+    "copy",
+    "android"
+  ],
+  "exitCode": 0,
+  "distIndexSha256": "8a82423d74bfb93b932dbda31bcc66f5308e75e29dc9135169bafe4ded04de27",
+  "utc": "20261028T063845Z"
+}

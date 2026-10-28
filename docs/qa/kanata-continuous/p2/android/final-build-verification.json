@@ -1,0 +1,367 @@
+{
+  "verifiedAtUtc": "2026-10-28T06:40:32.324964+00:00",
+  "build": {
+    "command": [
+      "bash",
+      "./gradlew",
+      "--no-daemon",
+      "--max-workers=1",
+      "-Dorg.gradle.jvmargs=-Xmx1536m -Dfile.encoding=UTF-8 -Djavax.net.ssl.trustStore=/etc/ssl/certs/java/cacerts",
+      "-Djavax.net.ssl.trustStore=/etc/ssl/certs/java/cacerts",
+      "-Dhttps.proxyHost=proxy",
+      "-Dhttps.proxyPort=8080",
+      "-Dhttp.proxyHost=proxy",
+      "-Dhttp.proxyPort=8080",
+      ":app:testDebugUnitTest",
+      ":app:assembleDebug",
+      ":app:assembleDebugAndroidTest"
+    ],
+    "started": "2026-10-28T06:38:46.481223+00:00",
+    "ended": "2026-10-28T06:39:28.479773+00:00",
+    "exit_code": 0
+  },
+  "apkSha256": "9f904c5b9d393a09e06771455ea0f61cdb6d03d3b977c496f0e16509eea78f33",
+  "testApkSha256": "1688ce3142e43bb61c2d84297548b4214cd94efcc525cb31069f2ca029419c9b",
+  "distIndexSha256": "8a82423d74bfb93b932dbda31bcc66f5308e75e29dc9135169bafe4ded04de27",
+  "matchingDistFiles": 55,
+  "allDistFilesMatch": true,
+  "extraGeneratedFiles": [
+    "assets/public/cordova.js",
+    "assets/public/cordova_plugins.js"
+  ],
+  "files": [
+    {
+      "path": "assets/AppDateField-CLvqeiVN.css",
+      "sha256": "d94936222157f76db88797a1bb7d0354e8c35a6b15254e0148f0e3882e438582",
+      "currentDistMatches": true,
+      "apkMatches": true
+    },
+    {
+      "path": "assets/AppDateField-DOgNLDgR.js",
+      "sha256": "932a0781b93d38074b80593b4ca52711b6c19628cf4d827979beef4311dd2d03",
+      "currentDistMatches": true,
+      "apkMatches": true
+    },
+    {
+      "path": "assets/AppTimeField-DzHWjbvO.js",
+      "sha256": "b769148950b6cd754dacdbd900be919b97628d80942990ddf3f847d849c75abc",
+      "currentDistMatches": true,
+      "apkMatches": true
+    },
+    {
+      "path": "assets/AppTimeField-u48vC79D.css",
+      "sha256": "d7eff430d92b620b4cb2019731fedc5ae8e22a5a2fef03d80b48dbffe24d7973",
+      "currentDistMatches": true,
+      "apkMatches": true
+    },
+    {
+      "path": "assets/CommonNoteField-DNbsaUVF.js",
+      "sha256": "8cc6340643d96d878e8ad218eb285a55a63c8df0817b62a0dee7051e7b6f4407",
+      "currentDistMatches": true,
+      "apkMatches": true
+    },
+    {
+      "path": "assets/CommonNoteField-y86zMc8V.css",
+      "sha256": "7ce882d857984c0f0b1cdd5dc8c0fb257aa00f45250add9def1b3550ade6db0b",
+      "currentDistMatches": true,
+      "apkMatches": true
+    },
+    {
+      "path": "assets/DebtListView-BD6QARKy.js",
+      "sha256": "e123a9eca9eac4e845cbc3d852a497f99fa783807aed6a72062a7dd7a3068980",
+      "currentDistMatches": true,
+      "apkMatches": true
+    },
+    {
+      "path": "assets/DebtListView-BosDIeJ1.css",
+      "sha256": "3da5bd2c56cf1cd2524028a5c4af3fb2ca3f9e32d244c94c26a3ab23b76e1be2",
+      "currentDistMatches": true,
+      "apkMatches": true
+    },
+    {
+      "path": "assets/KanataSetupView-C4NMku_U.js",
+      "sha256": "3d61cd5d478ab80cdbc8671c653612a29ed3b8680dd13385820618682c8bc518",
+      "currentDistMatches": true,
+      "apkMatches": true
+    },
+    {
+      "path": "assets/KanataSetupView-SyQ_Clw9.css",
+      "sha256": "6d310cd4fea6f9f3c1e9a4c8e4e6bd6f260572e50f82c8b2e9c71fe6c1d2e616",
+      "currentDistMatches": true,
+      "apkMatches": true
+    },
+    {
+      "path": "assets/MonthlyReportView-BMeeCKqe.css",
+      "sha256": "7d0e7286eb4f447cd1a5b85cf873674b086906177cfdaa5df8e97f0f7bf2969f",
+      "currentDistMatches": true,
+      "apkMatches": true
+    },
+    {
+      "path": "assets/MonthlyReportView-DckT0gFb.js",
+      "sha256": "d636b482cf034d6a5500f1cdaf0622c7711abb14db4658fb97bf545fba64116c",
+      "currentDistMatches": true,
+      "apkMatches": true
+    },
+    {
+      "path": "assets/MoodView-B-Tgffpp.css",
+      "sha256": "2d687ce8f5552912c9ded4e938d2c4adfa1eddd80eb009fa873ed0178c25f289",
+      "currentDistMatches": true,
+      "apkMatches": true
+    },
+    {
+      "path": "assets/MoodView-B7tyXJ0v.js",
+      "sha256": "df463fc765955cfe1a716f5d243bab7e9f85bbf865b9ec750476ccdf4d54e855",
+      "currentDistMatches": true,
+      "apkMatches": true
+    },
+    {
+      "path": "assets/PasswordVaultView-DjBw1hzm.js",
+      "sha256": "5183a1e48b4fb58e0b3dbbebc52ba89b101c183947c273b0136aeafb11a7bb53",
+      "currentDistMatches": true,
+      "apkMatches": true
+    },
+    {
+      "path": "assets/PasswordVaultView-Dw-1kdyI.css",
+      "sha256": "f6620893b5f6f60ff23f428ec78e38b742b517998eb257eb3c91954b8159ec29",
+      "currentDistMatches": true,
+      "apkMatches": true
+    },
+    {
+      "path": "assets/ScheduleView-DUhgudqu.css",
+      "sha256": "00d620ca0fecf632679c17ca5e9e48ca8e3d6e54ca8b19a9b1e9227f5ed75f99",
+      "currentDistMatches": true,
+      "apkMatches": true
+    },
+    {
+      "path": "assets/ScheduleView-Dq1Yr_eF.js",
+      "sha256": "87f6c86bdb3e012c08e926cdc0d6d02de0361c4c88089c3165094f1aac0c0110",
+      "currentDistMatches": true,
+      "apkMatches": true
+    },
+    {
+      "path": "assets/SettingsView-BMVeBjgC.js",
+      "sha256": "0ac20bf1c284f2caac742416ab07c7244fdccc6772e0716359f50c25950ab654",
+      "currentDistMatches": true,
+      "apkMatches": true
+    },
+    {
+      "path": "assets/SettingsView-CGzdui91.css",
+      "sha256": "f39162b45390ca9f10131ca0ecf0339e26ddd7ec26d46f354f8ddd7f609e6366",
+      "currentDistMatches": true,
+      "apkMatches": true
+    },
+    {
+      "path": "assets/TodoView-BI8kFZQq.css",
+      "sha256": "150483001ecc2c283be8c34fc6a83bd6e64c289c532ab81a88f8e38d734f58e5",
+      "currentDistMatches": true,
+      "apkMatches": true
+    },
+    {
+      "path": "assets/TodoView-Bg4u-D-U.js",
+      "sha256": "39ebeb06775628de68c5e7a92e68bf3c2c138694aba001c906af9fa8f8da3380",
+      "currentDistMatches": true,
+      "apkMatches": true
+    },
+    {
+      "path": "assets/WeightView-0ZDnXay2.css",
+      "sha256": "ffb9e2fa15c0d622ca22b40d1178ed6eed769eb516e10995a888412e28511f04",
+      "currentDistMatches": true,
+      "apkMatches": true
+    },
+    {
+      "path": "assets/WeightView-CIHyDG49.js",
+      "sha256": "0070d0f3a40dd4522b362d615651c9cadab73f6dfed24531ddad6b203cb33e62",
+      "currentDistMatches": true,
+      "apkMatches": true
+    },
+    {
+      "path": "assets/chatFollowup-DsVV5auz.js",
+      "sha256": "5c745f224cd0fd560307c0bdfe570fe54f4c5f4ac59e7734b445729e1d7d80f7",
+      "currentDistMatches": true,
+      "apkMatches": true
+    },
+    {
+      "path": "assets/chatStore-B8pdpOJA.js",
+      "sha256": "5bef49fab73103da2c7692a7c97de4b6432bb77c7e92d9419c728183f2f6a1ae",
+      "currentDistMatches": true,
+      "apkMatches": true
+    },
+    {
+      "path": "assets/companionContext-DXtHtjNp.js",
+      "sha256": "0029b4248546a28aa3fc5d62d44634c935d4efe89df1c04e74d8f91d9dceac83",
+      "currentDistMatches": true,
+      "apkMatches": true
+    },
+    {
+      "path": "assets/definitions-eXqoZmy0.js",
+      "sha256": "bf47153c796d340be16e152c6d99911f92430b89fc4c7c57b5e50419ab5f4b1b",
+      "currentDistMatches": true,
+      "apkMatches": true
+    },
+    {
+      "path": "assets/dist-BcvA-GRa.js",
+      "sha256": "f4d084abb55d5e2f8b9f0a0f604c11caab2b9d3e9eac9854addf254df5903b65",
+      "currentDistMatches": true,
+      "apkMatches": true
+    },
+    {
+      "path": "assets/esm-CMl6BN3d.js",
+      "sha256": "2cf34e670319fbab1c95bea74a245cc932678e1fbd070e497a9ea5c5b99f5bbb",
+      "currentDistMatches": true,
+      "apkMatches": true
+    },
+    {
+      "path": "assets/fullBackupRuntime-jmsHEo-w.js",
+      "sha256": "ee1f73c22d0d3beb2698bf6dbaacd7176ec7e649e7fb837d2b7c5b4f343cc453",
+      "currentDistMatches": true,
+      "apkMatches": true
+    },
+    {
+      "path": "assets/index-BS0IgfnU.css",
+      "sha256": "b9fb49779e2f688101e263a20cc069775026e00efe9c27bcf0cb3d0e9689b238",
+      "currentDistMatches": true,
+      "apkMatches": true
+    },
+    {
+      "path": "assets/index-CTjbbAYD.js",
+      "sha256": "901a5407331a42628aad4d10cb5ad3e0228c14a92e941bb4596d8aadc7bcdc60",
+      "currentDistMatches": true,
+      "apkMatches": true
+    },
+    {
+      "path": "assets/kanataStore-CgLmDF2d.js",
+      "sha256": "44302a95e47a1a3b803503acdd1fcb4dc44c447d420f71e66f6d46358c5e3a84",
+      "currentDistMatches": true,
+      "apkMatches": true
+    },
+    {
+      "path": "assets/masterPasswordWorker-C4Y6rooB.js",
+      "sha256": "458e5b0e91166f51e2acd0cf1b94ac76cc778b84cfb6857bff95267c135e173b",
+      "currentDistMatches": true,
+      "apkMatches": true
+    },
+    {
+      "path": "assets/passwordVault-BP4R6bfO.js",
+      "sha256": "f0270c4feadd99b52b67989a820e5655fc9f338d3597c1afa8c0e55b32b018fd",
+      "currentDistMatches": true,
+      "apkMatches": true
+    },
+    {
+      "path": "assets/passwordVaultRecords-CBOpOs7L.js",
+      "sha256": "71b93edaa18b0d154cb4063e3d6597652d830d1349b6d563ecf2b12732a181f8",
+      "currentDistMatches": true,
+      "apkMatches": true
+    },
+    {
+      "path": "assets/preferenceRepository-Cx_gUz5B.js",
+      "sha256": "6d9f30aa7619f1065ef3dbc748d1bb11569fca91548916a45fd49ddffa00b627",
+      "currentDistMatches": true,
+      "apkMatches": true
+    },
+    {
+      "path": "assets/preferences-HIxXJFKs.js",
+      "sha256": "c0290e6b4bf9d869d45785e8cdc3db4464ce2501f42c4122a36fff2dcbaee8ab",
+      "currentDistMatches": true,
+      "apkMatches": true
+    },
+    {
+      "path": "assets/restoreState-X9X1tbPu.js",
+      "sha256": "30338fa711c97d48aee96c35026440f9b012588c52583ac8a315db579b3808f9",
+      "currentDistMatches": true,
+      "apkMatches": true
+    },
+    {
+      "path": "assets/settings-yJ2IjKBi.js",
+      "sha256": "f73d236581727b9063b030041e56be12ac394bfc6d88fbd31dd35fc38669adeb",
+      "currentDistMatches": true,
+      "apkMatches": true
+    },
+    {
+      "path": "assets/storePersistence-CGDIWBdd.js",
+      "sha256": "29cc5741f381c7380b916558cd7693a35a7f979c9f883693ba99fa3ae0eca604",
+      "currentDistMatches": true,
+      "apkMatches": true
+    },
+    {
+      "path": "assets/uiFeedback-BCBuL7NN.js",
+      "sha256": "30fc6c06268058f8ab11fdca2eb895ba7e88a7c287cac52dc13b56adf99540a5",
+      "currentDistMatches": true,
+      "apkMatches": true
+    },
+    {
+      "path": "assets/useSortableDrag-anTZHnwv.js",
+      "sha256": "4075f04d78cdbcef8062624346378aa70383503975098563373307b033f30449",
+      "currentDistMatches": true,
+      "apkMatches": true
+    },
+    {
+      "path": "assets/web-BDHGbk52.js",
+      "sha256": "289f83e5a73a4355a6b27d021ba666e210c1fea436247d90431a8e487732b841",
+      "currentDistMatches": true,
+      "apkMatches": true
+    },
+    {
+      "path": "assets/web-CTN4TO-D.js",
+      "sha256": "78e59e7e9126afc07a60c408b11f4bd89a511e54d6442c381355f02fe4c55bba",
+      "currentDistMatches": true,
+      "apkMatches": true
+    },
+    {
+      "path": "assets/web-D8u9090R.js",
+      "sha256": "2fdc4ec286b464e273540d921561184ce37875904c77dcd634bffd47bb81d926",
+      "currentDistMatches": true,
+      "apkMatches": true
+    },
+    {
+      "path": "assets/web-DFngoWcC.js",
+      "sha256": "a943194d88633a053dd36e1bd804fa149852cf305a8faa0b3df2bc1839698c95",
+      "currentDistMatches": true,
+      "apkMatches": true
+    },
+    {
+      "path": "assets/web-DhIHqm1x.js",
+      "sha256": "d4c3f282bf802d3e489ba9dc6d289d2747073726c2c0d2be9c29e75b69214712",
+      "currentDistMatches": true,
+      "apkMatches": true
+    },
+    {
+      "path": "assets/web-JRntW8aU.js",
+      "sha256": "6f5cc3bcbe6f51fd868017ea6b51f3acd6c6f2aab3ee3653248e7763510c70a5",
+      "currentDistMatches": true,
+      "apkMatches": true
+    },
+    {
+      "path": "favicon.svg",
+      "sha256": "61bc9a161de58248288e6905425d7180f0624c2865007b97d763fdac12043a66",
+      "currentDistMatches": true,
+      "apkMatches": true
+    },
+    {
+      "path": "icon.png",
+      "sha256": "7653122b0501c560511409730a4d7637905048afd0beec3523c98b54f0347989",
+      "currentDistMatches": true,
+      "apkMatches": true
+    },
+    {
+      "path": "icons.svg",
+      "sha256": "b45fa506195cfcdef406ba9f0c77b36ddc1a7c224040926ec70abc2fdea7b93a",
+      "currentDistMatches": true,
+      "apkMatches": true
+    },
+    {
+      "path": "index.html",
+      "sha256": "8a82423d74bfb93b932dbda31bcc66f5308e75e29dc9135169bafe4ded04de27",
+      "currentDistMatches": true,
+      "apkMatches": true
+    },
+    {
+      "path": "manifest.webmanifest",
+      "sha256": "b32053f0791486cf12155d12127ad09ca778506a2552a92d4aaea1458592dc00",
+      "currentDistMatches": true,
+      "apkMatches": true
+    }
+  ],
+  "deviceStatus": "BLOCKED: no KVM; APEX/dm timeouts, no usable task AVD. No APK installed or device tests run.",
+  "unitTestScope": "Only existing ExampleUnitTest.addition_isCorrect (1 test); not Kanata functionality evidence",
+  "distribution": "Task-only debug APK; not published or installed on a user device"
+}

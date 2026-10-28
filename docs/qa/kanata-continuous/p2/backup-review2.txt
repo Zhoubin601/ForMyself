@@ -1,0 +1,29 @@
+✔ P2-backup new v13 and single preserve all new entities, never call v4 normalizer on chat (137.197609ms)
+✔ P2-backup legacy full v1 preserves nonchat, requires consent and never revives legacy chat (10.340995ms)
+✔ P2-backup legacy full v2 preserves nonchat, requires consent and never revives legacy chat (6.761644ms)
+✔ P2-backup legacy full v3 preserves nonchat, requires consent and never revives legacy chat (7.974373ms)
+✔ P2-backup legacy full v4 preserves nonchat, requires consent and never revives legacy chat (9.47286ms)
+✔ P2-backup legacy full v5 preserves nonchat, requires consent and never revives legacy chat (7.824441ms)
+✔ P2-backup legacy full v6 preserves nonchat, requires consent and never revives legacy chat (8.435485ms)
+✔ P2-backup legacy full v7 preserves nonchat, requires consent and never revives legacy chat (18.354304ms)
+✔ P2-backup legacy full v8 preserves nonchat, requires consent and never revives legacy chat (8.43305ms)
+✔ P2-backup legacy full v9 preserves nonchat, requires consent and never revives legacy chat (5.545589ms)
+✔ P2-backup legacy full v10 preserves nonchat, requires consent and never revives legacy chat (7.407865ms)
+✔ P2-backup legacy full v11 preserves nonchat, requires consent and never revives legacy chat (14.661473ms)
+✔ P2-backup legacy full v12 preserves nonchat, requires consent and never revives legacy chat (18.102259ms)
+✔ P2-backup rejects legacy single and future schemas without returning partial new data (49.214312ms)
+✔ P2-backup export pauses sending but rollback capture preserves tasks exactly (28.916741ms)
+✔ P2-backup canonical recovery rejects legacy content injected into empty sentinel (12.927253ms)
+✔ P2-backup review1 rejects present-but-invalid optional Todo parts instead of silently omitting them (15.217119ms)
+✔ P2-backup review1 valid optional Todo and all three independent permissions survive wire roundtrip (21.134631ms)
+✔ P2-backup review2 all nonempty new entities and safe unknown card extensions roundtrip (33.134885ms)
+✔ P2-backup review2 hostile task-policy omissions cannot silently resume pending sends (28.041851ms)
+✔ P2-backup review2 canonical journals reject mode confusion and unknown versions (37.504669ms)
+ℹ tests 21
+ℹ suites 0
+ℹ pass 21
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 711.593944

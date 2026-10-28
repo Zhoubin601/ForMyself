@@ -1,0 +1,10 @@
+
+ RUN  v3.2.4 /workspace/ForMyself
+
+ ✓ tests/KanataInitialization.spec.js (4 tests) 318ms
+
+ Test Files  1 passed (1)
+      Tests  4 passed (4)
+   Start at  17:19:57
+   Duration  4.70s (transform 1.12s, setup 0ms, collect 1.89s, tests 318ms, environment 1.40s, prepare 369ms)
+

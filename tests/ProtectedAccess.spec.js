@@ -22,6 +22,14 @@ vi.mock('../src/features/chat/chatStorage.js', async importOriginal => ({ ...awa
 vi.mock('../src/platform/security/secureCredentials.js', () => ({ secureCredentials: {
   getMasterPassword: (...args) => mocks.secureGet(...args), hasMasterPassword: async () => false
 } }))
+// These scenarios explicitly exercise the retained v4 chat, not the new Kanata product runtime.
+vi.mock('../src/application/protectedModules.js', async importOriginal => {
+  const original = await importOriginal()
+  return { ...original, protectedModules: original.createProtectedModuleRegistry([
+    { id: 'passwords', resolve: async () => (await import('../src/stores/passwordVault.js')).usePasswordVaultStore(), load: (store, password) => store.loadRecords(password) },
+    { id: 'chat', resolve: async () => (await import('../src/features/chat/chatStore.js')).useChatStore(), load: (store, password) => store.loadChatData(password) }
+  ]) }
+})
 
 import { useAuthStore } from '../src/stores/auth.js'
 import { useSettingsStore } from '../src/stores/settings.js'
@@ -32,7 +40,7 @@ import { normalizeChatData } from '../src/features/chat/chatRecords.js'
 import { STORAGE_KEYS } from '../src/platform/storage/keys.js'
 import { buildFullBackupSnapshot, normalizeFullBackupSnapshot } from '../src/services/fullBackup.js'
 
-describe('受保护会话与独立加载', () => {
+describe('历史旧聊天兼容回归：受保护会话与独立加载（非Kanata产品验收）', () => {
   let auth, access
   beforeEach(async () => {
     vi.stubGlobal('crypto', webcrypto)

@@ -1,0 +1,11 @@
+
+ RUN  v3.2.4 /workspace/ForMyself
+
+ ✓ tests/KanataProductRecovery.spec.js (8 tests) 1695ms
+   ✓ Kanata P2 product runtime: actual stores, encrypted files and restore journal > rollback failure keeps the real encrypted journal and barrier, then recovers after the fault is fixed  356ms
+
+ Test Files  1 passed (1)
+      Tests  8 passed (8)
+   Start at  02:42:21
+   Duration  3.45s (transform 402ms, setup 0ms, collect 730ms, tests 1.69s, environment 698ms, prepare 119ms)
+

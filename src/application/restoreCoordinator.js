@@ -3,7 +3,7 @@ import { openRestoreRecord } from '../platform/storage/restoreJournal.js'
 
 // Runtime adapters are the same participants used by the product, not a second transaction implementation.
 /** @template Snapshot @param {import('./contracts').RestoreCoordinatorOptions<Snapshot>} options */
-export function createRestoreCoordinator({ journal, state, prepare, capture, apply, validate, synchronize = async () => {} }) {
+export function createRestoreCoordinator({ journal, state, prepare, capture, apply, validate, validateRecovery = validate, synchronize = async () => {} }) {
   const block = (/** @type {string} */ message) => { state.blocked = true; state.message = message }
   const synchronizeSafely = async () => {
     try { await synchronize(); state.syncError = '' }
@@ -63,7 +63,7 @@ export function createRestoreCoordinator({ journal, state, prepare, capture, app
         if (!record) { await finish(); return }
         const snapshots = await openRestoreRecord(record.encrypted, password)
         if (snapshots.version !== 1) throw new Error('UNSUPPORTED_RESTORE_RECORD')
-        const target = validate(record.committed ? snapshots.target : snapshots.previous)
+        const target = validateRecovery(record.committed ? snapshots.target : snapshots.previous)
         await prepare({ recovering: true })
         await apply(target)
         await finish()

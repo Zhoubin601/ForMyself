@@ -1,0 +1,10 @@
+
+ RUN  v3.2.4 /workspace/ForMyself
+
+ ✓ tests/KanataStore.spec.js (14 tests) 327ms
+
+ Test Files  1 passed (1)
+      Tests  14 passed (14)
+   Start at  17:14:57
+   Duration  1.75s (transform 207ms, setup 0ms, collect 398ms, tests 327ms, environment 539ms, prepare 101ms)
+

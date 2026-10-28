@@ -69,6 +69,7 @@ export interface RestoreCoordinatorOptions<Snapshot> {
   capture(): Snapshot
   apply(snapshot: Snapshot): Promise<unknown>
   validate(value: unknown): Snapshot
+  validateRecovery?(value: unknown): Snapshot
   synchronize?(): Promise<unknown>
 }
 export interface FullBackupDTO {
@@ -87,3 +88,8 @@ export interface FullBackupDTO {
   metadata: { savings: Record<string, any>; mood: Record<string, any>; vault: Record<string, any> }
   settings: Record<string, any>
 }
+
+// Kanata P2 contracts are sourced from the actual adapters; legacy FullBackupDTO stays v1-v12.
+export type { KanataReadResult, KanataFilesystem, KanataJournal } from '../features/chat/storage/kanataRepositoryTypes'
+export type { KanataChatBackup, KanataFullBackup, KanataRestoreSnapshot } from '../features/chat/backup/kanataBackup.js'
+export type KanataRepository = ReturnType<typeof import('../features/chat/storage/kanataRepository.js').createKanataRepository>

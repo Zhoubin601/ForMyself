@@ -1,0 +1,43 @@
+✔ P2-R01 missing显式返回null；加载前和空密码拒绝写，无创建默认世界 (38.634742ms)
+✔ P2-R02 独立命名空间主密码加密往返，旧聊天/其他模块字节不变 (62.611274ms)
+✔ P2-R03 错密、合法密文内坏JSON、未来版本拒绝且原字节零写入 (27.829342ms)
+✔ P2-R04 存在但全部坏文件不能返回missing；仅坏备份也明确失败 (3.056145ms)
+✔ P2-R05 驱动读取/存在性错误不当不存在，不用备份掩盖权限错误 (56.896454ms)
+✔ P2-R06 主文件损坏从备份只读恢复；首次中断从tmp只读恢复 (68.706158ms)
+✔ P2-R07 未来版本主文件不被旧备份或恢复副本降级覆盖 (22.808253ms)
+✔ P2-R08 写失败保留最新密文；重建仓库/重新读回后恢复且flush可重试 (80.148594ms)
+✔ P2-R09 持久介质全失败仅进程内密文，原始主文件不变；持续失败flush必须reject (28.390201ms)
+✔ P2-R10 tmp到主文件rename失败自动恢复原主文件并保留密文重试 (33.699739ms)
+✔ P2-R11 旧journal清理失败不能覆盖较新主文件，read不擅自清日志 (85.879955ms)
+✔ P2-R12 journal坏JSON、形状/未来版本严格拒绝，即便主文件有效也不初始化覆盖 (38.324428ms)
+✔ P2-R13 read不会用磁盘旧值覆盖尚未保存pending，release失败后重新认证可恢复 (56.513434ms)
+✔ P2-R14 已开始写入仅保留密文，调用后修改传入对象不改变待写内容 (43.425396ms)
+✔ P2-R15 reencrypt成功可用新密码、错旧密码拒绝；失败可用旧密码补偿 (68.676408ms)
+✔ P2-R16 release期间迟到read不得重新置loaded或返回明文 (17.872398ms)
+✔ P2-R17 并发写入串行结算，失败后仍保存最新候选 (35.036734ms)
+✔ P2-R1 自查：改密后所有可恢复文件均不能再用旧密码解密 (37.349343ms)
+✔ P2-R1 自查：备份重加密阶段中断仍留恢复任务，新实例必须完成全部副本 (47.970025ms)
+✔ P2-R2 Android missing code accepted; permission code never treated as missing by message (1.048127ms)
+✖ P2-R21 real Web mkdir existing-directory message permits later saves; coded permission errors still fail (18.87134ms)
+ℹ tests 21
+ℹ suites 0
+ℹ pass 20
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1038.932391
+
+✖ failing tests:
+
+test at tests/kanataRepository.test.js:261:1
+✖ P2-R21 real Web mkdir existing-directory message permits later saves; coded permission errors still fail (18.87134ms)
+  Error [KanataRepositoryError]: KANATA_SAVE_FAILED
+      at problem (file:///workspace/ForMyself/src/features/chat/storage/kanataRepository.js:25:42)
+      at persistLatest (file:///workspace/ForMyself/src/features/chat/storage/kanataRepository.js:141:13)
+      at async TestContext.<anonymous> (file:///workspace/ForMyself/tests/kanataRepository.test.js:265:3)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    code: 'KANATA_SAVE_FAILED',
+    failureCodes: [ 'KANATA_DRIVER_FAILED' ]
+  }

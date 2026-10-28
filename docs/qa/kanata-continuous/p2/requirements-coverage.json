@@ -1,0 +1,31 @@
+{
+  "scope": "P2检查点；非P7总验收。模型/存储存在不代表最终交互完成。",
+  "requirementsSource": "raw/完整需求清单.txt 第十五节",
+  "scenarios": [
+    {"id": 1, "status": "NOT RUN", "evidence": "P1纯函数已验证同卡跨世界ID/关系隔离；实际多世界管理与长期记忆行为未实现"},
+    {"id": 2, "status": "NOT RUN", "evidence": "P2备份保留安全rawData未知扩展；酒馆PNG/JSON导入未实现"},
+    {"id": 3, "status": "NOT RUN", "evidence": "已持久化5私聊1群聊结构，无真实发送/@/发言决策"},
+    {"id": 4, "status": "NOT RUN", "evidence": "P6未开始"},
+    {"id": 5, "status": "NOT RUN", "evidence": "P6未开始"},
+    {"id": 6, "status": "NOT RUN", "evidence": "无后台服务；离线补算未实现"},
+    {"id": 7, "status": "NOT RUN", "evidence": "P5记忆提取/压缩未开始"},
+    {"id": 8, "status": "NOT RUN", "evidence": "只有P1事件/effect图校验；P5因果重建未开始"},
+    {"id": 9, "status": "NOT RUN", "evidence": "P6视角UI未开始"},
+    {"id": 10, "status": "NOT RUN", "evidence": "三独立布尔领域/备份保留已测试；现实读取/传播权限门禁未实现"},
+    {"id": 11, "status": "NOT RUN", "evidence": "实际角色绑定UI/规则未实现"},
+    {"id": 12, "status": "NOT RUN", "evidence": "P4用量统计未开始；未调用真实AI"},
+    {"id": 13, "status": "NOT RUN", "evidence": "预设三个独立开关初始false；尚无P6主动/自治/通知功能"},
+    {"id": 14, "status": "NOT RUN", "evidence": "尚无P6水位补算"},
+    {"id": 15, "status": "BLOCKED", "evidence": "自动化与Web回归通过；Android持久化/恢复/强停冷启动尚未完成，不能给最终PASS"}
+  ],
+  "preset": {
+    "structureAndPersistence": "PASS：Web1世界5实例5私聊1群聊，零消息/记忆/事件，重载不重复",
+    "officialSourcesAndDistributionReview": "NOT RUN：P3审查待完成，无官方图像/完整台词",
+    "distinctAIBehavior": "NOT RUN：P4未开始，不能由五份不同人格文本推定对话质量通过"
+  },
+  "legacyCleanup": {
+    "syntheticFaultMatrix": "PASS：28项协调器测试、实际Web旧3文件+恢复键确认前保留/确认后清理，非聊天合成文件保留",
+    "realDeviceData": "NOT RUN：禁止本开发流程清理用户真实资料"
+  },
+  "capacity": "Web1k/10k全量路径已测；Android、100k、真实分页/索引、峰值内存与目标实体机阈值未完成"
+}

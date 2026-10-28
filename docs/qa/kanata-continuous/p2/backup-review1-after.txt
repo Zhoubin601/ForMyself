@@ -1,0 +1,26 @@
+✔ P2-backup new v13 and single preserve all new entities, never call v4 normalizer on chat (93.940386ms)
+✔ P2-backup legacy full v1 preserves nonchat, requires consent and never revives legacy chat (8.472695ms)
+✔ P2-backup legacy full v2 preserves nonchat, requires consent and never revives legacy chat (6.069372ms)
+✔ P2-backup legacy full v3 preserves nonchat, requires consent and never revives legacy chat (6.520097ms)
+✔ P2-backup legacy full v4 preserves nonchat, requires consent and never revives legacy chat (9.543749ms)
+✔ P2-backup legacy full v5 preserves nonchat, requires consent and never revives legacy chat (29.45805ms)
+✔ P2-backup legacy full v6 preserves nonchat, requires consent and never revives legacy chat (8.374583ms)
+✔ P2-backup legacy full v7 preserves nonchat, requires consent and never revives legacy chat (3.620884ms)
+✔ P2-backup legacy full v8 preserves nonchat, requires consent and never revives legacy chat (4.963463ms)
+✔ P2-backup legacy full v9 preserves nonchat, requires consent and never revives legacy chat (6.744966ms)
+✔ P2-backup legacy full v10 preserves nonchat, requires consent and never revives legacy chat (5.114507ms)
+✔ P2-backup legacy full v11 preserves nonchat, requires consent and never revives legacy chat (5.83035ms)
+✔ P2-backup legacy full v12 preserves nonchat, requires consent and never revives legacy chat (3.885045ms)
+✔ P2-backup rejects legacy single and future schemas without returning partial new data (43.118879ms)
+✔ P2-backup export pauses sending but rollback capture preserves tasks exactly (36.675ms)
+✔ P2-backup canonical recovery rejects legacy content injected into empty sentinel (19.017408ms)
+✔ P2-backup review1 rejects present-but-invalid optional Todo parts instead of silently omitting them (25.191875ms)
+✔ P2-backup review1 valid optional Todo and all three independent permissions survive wire roundtrip (39.214097ms)
+ℹ tests 18
+ℹ suites 0
+ℹ pass 18
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 549.76743

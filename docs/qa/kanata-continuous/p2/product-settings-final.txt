@@ -1,0 +1,16 @@
+
+ RUN  v3.2.4 /workspace/ForMyself
+
+ ✓ tests/KanataProductRecovery.spec.js (21 tests) 5313ms
+   ✓ Kanata P2 product runtime: actual stores, encrypted files and restore journal > exports v13 from the product and rejects direct internal apply outside the coordinator  391ms
+   ✓ Kanata P2 product runtime: actual stores, encrypted files and restore journal > legacy v1 explicitly restores nonchat modules and AI config, without any legacy chat write  402ms
+   ✓ Kanata P2 product runtime: actual stores, encrypted files and restore journal > legacy v2 explicitly restores nonchat modules and AI config, without any legacy chat write  571ms
+   ✓ Kanata P2 product runtime: actual stores, encrypted files and restore journal > legacy v3 explicitly restores nonchat modules and AI config, without any legacy chat write  360ms
+   ✓ Kanata P2 product runtime: actual stores, encrypted files and restore journal > rollback failure keeps the real encrypted journal and barrier, then recovers after the fault is fixed  330ms
+ ✓ tests/FeatureBoundaries.spec.js (11 tests) 149ms
+
+ Test Files  2 passed (2)
+      Tests  32 passed (32)
+   Start at  02:46:57
+   Duration  8.91s (transform 1.02s, setup 0ms, collect 2.04s, tests 5.46s, environment 833ms, prepare 149ms)
+

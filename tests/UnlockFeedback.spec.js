@@ -3,19 +3,22 @@ import { nextTick, reactive, ref, computed } from 'vue'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 let controller
+const moduleUnmounted = vi.hoisted(() => vi.fn())
 
 vi.mock('../src/composables/useAppController.js', () => ({
   useAppController: () => controller
 }))
 
-vi.mock('../src/features/chat/ChatView.vue', () => ({ default: {
-  name: 'ChatView', props: ['isVisible'], data: () => ({ draft: 'initial' }),
+vi.mock('../src/features/chat/KanataSetupView.vue', () => ({ default: {
+  name: 'KanataSetupView', props: ['isVisible'], data: () => ({ draft: 'initial' }),
+  beforeUnmount() { moduleUnmounted() },
   template: '<section data-test="chat" :data-visible="isVisible"><input v-model="draft" /></section>'
 } }))
 import App from '../src/App.vue'
 
 describe('解锁反馈', () => {
   beforeEach(() => {
+    moduleUnmounted.mockClear()
     controller = {
       appWrapperRef: ref(null),
       authStore: reactive({
@@ -104,7 +107,7 @@ describe('解锁反馈', () => {
   })
 
   it.each([
-    ['chat', '正在安全载入温馨小家'],
+    ['chat', '正在安全载入彼方 · Kanata'],
     ['passwords', '正在安全载入密码库']
   ])('%s 页面等待受保护数据时显示固定加载态', async (view, label) => {
     controller.authStore.isLocked = false
@@ -145,7 +148,7 @@ describe('解锁反馈', () => {
     expect(wrapper.find('.lock-screen').exists()).toBe(true)
     expect(wrapper.find('.main-app').isVisible()).toBe(false)
   })
-  it('模块渲染保留会话内聊天状态，锁定隐藏可见性，失效后不复用敏感页面缓存', async () => {
+  it('彼方离开即卸载，锁定隐藏可见性，失效后不复用敏感页面状态', async () => {
     controller.authStore.isLocked = false; controller.hasEnteredApp.value = true
     controller.settingsStore.currentView = 'chat'; controller.protectedAccess.status.chat = 'ready'
     controller.protectedDataStatus.value = 'ready'
@@ -153,8 +156,10 @@ describe('解锁反馈', () => {
     await vi.waitFor(() => expect(wrapper.find('[data-test="chat"]').exists()).toBe(true))
     await wrapper.find('[data-test="chat"] input').setValue('session draft')
     controller.settingsStore.currentView = 'home'; await nextTick()
+    expect(wrapper.find('[data-test="chat"]').exists()).toBe(false)
+    expect(moduleUnmounted).toHaveBeenCalledTimes(1)
     controller.settingsStore.currentView = 'chat'; await nextTick()
-    expect(wrapper.find('[data-test="chat"] input').element.value).toBe('session draft')
+    expect(wrapper.find('[data-test="chat"] input').element.value).toBe('initial')
     controller.authStore.isLocked = true; await nextTick()
     expect(wrapper.find('[data-test="chat"]').attributes('data-visible')).toBe('false')
     controller.authStore.isLocked = false; controller.protectedAccess.status.chat = 'idle'; controller.protectedDataStatus.value = 'loading'

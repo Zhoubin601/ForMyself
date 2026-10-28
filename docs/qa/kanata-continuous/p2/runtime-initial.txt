@@ -1,0 +1,13 @@
+
+ RUN  v3.2.4 /workspace/ForMyself
+
+ ✓ tests/KanataBackupRuntime.spec.js (4 tests) 2192ms
+   ✓ P2 actual coordinator: legacy restore requires discard consent and never restores chat  585ms
+   ✓ P2 actual coordinator: new backup target failure restores full previous graph and preserves tasks  743ms
+   ✓ P2 actual coordinator: rollback failure retains encrypted journal/barrier and can recover  772ms
+
+ Test Files  1 passed (1)
+      Tests  4 passed (4)
+   Start at  17:08:31
+   Duration  6.86s (transform 834ms, setup 0ms, collect 1.36s, tests 2.19s, environment 1.92s, prepare 356ms)
+

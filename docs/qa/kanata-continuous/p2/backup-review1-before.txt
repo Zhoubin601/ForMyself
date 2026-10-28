@@ -1,0 +1,46 @@
+✔ P2-backup new v13 and single preserve all new entities, never call v4 normalizer on chat (85.377813ms)
+✔ P2-backup legacy full v1 preserves nonchat, requires consent and never revives legacy chat (8.078655ms)
+✔ P2-backup legacy full v2 preserves nonchat, requires consent and never revives legacy chat (4.154537ms)
+✔ P2-backup legacy full v3 preserves nonchat, requires consent and never revives legacy chat (6.704959ms)
+✔ P2-backup legacy full v4 preserves nonchat, requires consent and never revives legacy chat (5.300377ms)
+✔ P2-backup legacy full v5 preserves nonchat, requires consent and never revives legacy chat (7.626774ms)
+✔ P2-backup legacy full v6 preserves nonchat, requires consent and never revives legacy chat (4.746729ms)
+✔ P2-backup legacy full v7 preserves nonchat, requires consent and never revives legacy chat (3.555778ms)
+✔ P2-backup legacy full v8 preserves nonchat, requires consent and never revives legacy chat (4.844574ms)
+✔ P2-backup legacy full v9 preserves nonchat, requires consent and never revives legacy chat (6.558153ms)
+✔ P2-backup legacy full v10 preserves nonchat, requires consent and never revives legacy chat (5.98316ms)
+✔ P2-backup legacy full v11 preserves nonchat, requires consent and never revives legacy chat (5.731194ms)
+✔ P2-backup legacy full v12 preserves nonchat, requires consent and never revives legacy chat (5.150907ms)
+✔ P2-backup rejects legacy single and future schemas without returning partial new data (34.633343ms)
+✔ P2-backup export pauses sending but rollback capture preserves tasks exactly (24.714449ms)
+✔ P2-backup canonical recovery rejects legacy content injected into empty sentinel (8.123842ms)
+✖ P2-backup review1 rejects present-but-invalid optional Todo parts instead of silently omitting them (12.771632ms)
+✔ P2-backup review1 valid optional Todo and all three independent permissions survive wire roundtrip (24.205969ms)
+ℹ tests 18
+ℹ suites 0
+ℹ pass 17
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 399.991353
+
+✖ failing tests:
+
+test at tests/kanataBackup.test.js:52:1
+✖ P2-backup review1 rejects present-but-invalid optional Todo parts instead of silently omitting them (12.771632ms)
+  AssertionError [ERR_ASSERTION]: Missing expected exception.
+      at TestContext.<anonymous> (file:///workspace/ForMyself/tests/kanataBackup.test.js:55:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1382:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:960:18)
+      at Test.postRun (node:internal/test_runner/test:1522:19)
+      at Test.run (node:internal/test_runner/test:1447:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: /INVALID_BACKUP_PART:todos|MISSING_BACKUP_DATA:todos/,
+    operator: 'throws',
+    diff: 'simple'
+  }

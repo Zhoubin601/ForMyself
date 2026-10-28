@@ -1,0 +1,19 @@
+{
+  "startedAt": "2026-10-28T02:46:59.731Z",
+  "browser": "154.0.8037.57",
+  "pageErrors": [],
+  "samples": [],
+  "cancelZeroSeed": true,
+  "seed": {
+    "worlds": 1,
+    "instances": 5,
+    "private": 5,
+    "group": 1,
+    "messages": 0,
+    "memories": 0,
+    "events": 0
+  },
+  "layout": true,
+  "status": "FAIL",
+  "error": "page.evaluate: KanataRepositoryError: KANATA_SAVE_FAILED\n    at problem (http://127.0.0.1:4173/src/features/chat/storage/kanataRepository.js:25:42)\n    at persistLatest (http://127.0.0.1:4173/src/features/chat/storage/kanataRepository.js:141:13)\n    at async eval (eval at evaluate (:311:30), <anonymous>:11:38)\n    at async <anonymous>:337:30"
+}
