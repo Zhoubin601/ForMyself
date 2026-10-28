@@ -3,7 +3,7 @@ import { chromium } from 'playwright-core'
 import { writeFile } from 'node:fs/promises'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-const directory = dirname(fileURLToPath(import.meta.url))
+const directory = process.env.KANATA_QA_OUTPUT ? resolve(process.env.KANATA_QA_OUTPUT) : dirname(fileURLToPath(import.meta.url))
 const browser = await chromium.launch({ executablePath: process.env.KANATA_CHROMIUM || '/usr/bin/chromium', headless: true, args: ['--no-sandbox'] })
 const context = await browser.newContext({ viewport: {width: 390, height: 844}, reducedMotion: 'reduce' })
 const page = await context.newPage()

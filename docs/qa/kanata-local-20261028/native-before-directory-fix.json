@@ -1,0 +1,84 @@
+{
+  "startedAt": "2026-10-28T07:06:28.784Z",
+  "serial": "emulator-5580",
+  "avd": "KanataP2Synthetic34",
+  "pageErrors": [],
+  "checks": {
+    "install-test-apk": {
+      "status": "PASS",
+      "elapsedMs": 637,
+      "result": "Performing Streamed Install\r\nSuccess"
+    },
+    "prepare-native-synthetic-fixture": {
+      "status": "PASS",
+      "elapsedMs": 32443,
+      "result": {
+        "loaded": true,
+        "needsInitialization": true
+      }
+    },
+    "cancel-zero-delete-zero-seed": {
+      "status": "PASS",
+      "elapsedMs": 6590,
+      "result": true
+    },
+    "cleanup-interruption": {
+      "status": "PASS",
+      "elapsedMs": 285,
+      "result": "files"
+    },
+    "interrupted-cleanup-cold-unlock": {
+      "status": "PASS",
+      "elapsedMs": 2906,
+      "result": {
+        "counts": {
+          "worlds": 0,
+          "instances": 0,
+          "private": 0,
+          "group": 0,
+          "messages": 0,
+          "memories": 0,
+          "events": 0
+        },
+        "aiConfigurationPreserved": true,
+        "weightIds": [
+          "local-weight-original"
+        ]
+      }
+    }
+  },
+  "samples": [],
+  "status": "FAIL",
+  "attempts": [
+    {
+      "startedAt": "2026-10-28T07:02:25.798Z",
+      "error": "Command failed: E:\\Android\\Sdk\\platform-tools\\adb.exe -s emulator-5580 shell run-as com.yubin.formyself sh -c 'printf KanataP2Synthetic34:20261028:new-empty-avd > files/kanata-qa-isolation.txt'\nsh: can't create files/kanata-qa-isolation.txt: No such file or directory\r\n",
+      "apkSha256": "d286fd1fe8cf923d286e1bbda07052c9e889938396b58f1280cf7aadd8c14dbf"
+    },
+    {
+      "startedAt": "2026-10-28T07:03:09.931Z",
+      "error": "page.evaluate: TypeError: (intermediate value).run is not a function\n    at eval (eval at evaluate (:311:30), <anonymous>:2:45)\n    at async <anonymous>:337:30",
+      "apkSha256": "d286fd1fe8cf923d286e1bbda07052c9e889938396b58f1280cf7aadd8c14dbf"
+    },
+    {
+      "startedAt": "2026-10-28T07:04:04.096Z",
+      "error": "androidDevice.info: Please install Android driver apk using 'npx playwright install android'",
+      "apkSha256": "cd118bfae6d2f97bfed07b14868b77b2eeafb926426dd82e949050f55cbf938c"
+    },
+    {
+      "startedAt": "2026-10-28T07:05:12.202Z",
+      "error": "browserType.connectOverCDP: WebSocket error: socket hang up\nCall log:\n\u001b[2m  - <ws connecting> ws://127.0.0.1:53064/devtools/browser\u001b[22m\n\u001b[2m  - <ws error> ws://127.0.0.1:53064/devtools/browser error socket hang up\u001b[22m\n\u001b[2m  - <ws connect error> ws://127.0.0.1:53064/devtools/browser socket hang up\u001b[22m\n\u001b[2m  - <ws disconnected> ws://127.0.0.1:53064/devtools/browser code=1006 reason=\u001b[22m\n",
+      "apkSha256": "cd118bfae6d2f97bfed07b14868b77b2eeafb926426dd82e949050f55cbf938c"
+    }
+  ],
+  "environment": {
+    "android": "14",
+    "api": "34",
+    "webview": "Current WebView Update Service state\r\n  Multiprocess enabled: true\r\n  Current WebView package (name, version): (com.google.android.webview, 113.0.5672.136)\r\n  Minimum targetSdkVersion: 33\r\n  Minimum WebView version code: 567263637\r\n  Number of relros started: 1\r\n  Number of relros finished: 1\r\n  WebView package dirty: false\r\n  Any WebView package installed: true\r\n  Preferred WebView package (name, version): (com.google.android.webview, 113.0.5672.136)\r\n  WebView packages:\r\n    Valid package com.google.android.webview (versionName: 113.0.5672.136, versionCode: 567263637, targetSdkVersion: 34) is  installed/enabled for all users\r\n    com.google.android.webview.beta is NOT installed.\r\n    com.google.android.webview.dev is NOT installed.\r\n    com.google.android.webview.canary is NOT installed.\r\n    com.google.android.webview.debug is NOT installed.\r\n    com.android.webview is NOT installed.",
+    "hardware": "sdk_gphone64_x86_64"
+  },
+  "apkSha256": "cd118bfae6d2f97bfed07b14868b77b2eeafb926426dd82e949050f55cbf938c",
+  "error": "locator.waitFor: Timeout 60000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByText('世界已准备好', { exact: true }) to be visible\u001b[22m\n",
+  "visibleText": "彼方 · Kanata\n\n彼方 · Kanata：KANATA_SAVE_FAILED\n\n重试保存\n彼\n\n在现实之外，共同成长\n\n彼方 · Kanata\n\n资料尚未保存：请重试准备；成功前请勿关闭或卸载应用。\n\n准备未完成：本次准备尚未完成。请保留应用资料，验证后重试。\n\n从阿拜多斯开始\n\n五位成员，各自的私聊与共同群聊，从没有历史消息的新世界开始。\n\n检测到旧温馨小家资料。准备前会请你确认清理范围。\n\n上次准备尚未完成，验证后可以继续。\n\n准备过程不会生成聊天、长期记忆或已发生事件，也不会发起 AI 请求。\n\n验证并重试准备\n\n这是非官方同人文字预设，不含官方图像或完整台词。\n\nMY PRIVATE SPACE\n\nForMyself\n\n生活面板\n\n首页总览\n今天\n月度报告\n回顾\n省钱计划\n目标\n体重记录\n健康\n心情日记\n感受\n彼方 · Kanata\n陪伴\n每日待办\n计划\n日程提醒\n安排\n密码库\n安全\n通用配置\n设置\n你的私人空间\n核心数据保存在设备内",
+  "finishedAt": "2026-10-28T07:07:43.012Z"
+}

@@ -1,0 +1,175 @@
+{
+  "startedAt": "2026-10-28T07:10:37.428Z",
+  "serial": "emulator-5580",
+  "avd": "KanataP2Synthetic34",
+  "pageErrors": [],
+  "checks": {
+    "install-test-apk": {
+      "status": "PASS",
+      "elapsedMs": 637,
+      "result": "Performing Streamed Install\r\nSuccess"
+    },
+    "prepare-native-synthetic-fixture": {
+      "status": "PASS",
+      "elapsedMs": 32443,
+      "result": {
+        "loaded": true,
+        "needsInitialization": true
+      }
+    },
+    "cancel-zero-delete-zero-seed": {
+      "status": "PASS",
+      "elapsedMs": 6590,
+      "result": true
+    },
+    "cleanup-interruption": {
+      "status": "PASS",
+      "elapsedMs": 285,
+      "result": "files"
+    },
+    "interrupted-cleanup-cold-unlock": {
+      "status": "PASS",
+      "elapsedMs": 370,
+      "result": {
+        "counts": {
+          "worlds": 1,
+          "instances": 5,
+          "private": 5,
+          "group": 1,
+          "messages": 0,
+          "memories": 0,
+          "events": 0
+        },
+        "aiConfigurationPreserved": true,
+        "weightIds": [
+          "local-weight-original"
+        ]
+      }
+    },
+    "cleanup-whitelist-and-idempotent-seed": {
+      "status": "PASS",
+      "elapsedMs": 1961,
+      "result": {
+        "counts": {
+          "worlds": 1,
+          "instances": 5,
+          "private": 5,
+          "group": 1,
+          "messages": 0,
+          "memories": 0,
+          "events": 0
+        },
+        "pendingIds": [
+          123456
+        ],
+        "channelIds": [
+          "formyself-todo-v1",
+          "kanata-qa-nonchat",
+          "default"
+        ]
+      }
+    },
+    "seed-cold-reload": {
+      "status": "PASS",
+      "elapsedMs": 3229,
+      "result": {
+        "counts": {
+          "worlds": 1,
+          "instances": 5,
+          "private": 5,
+          "group": 1,
+          "messages": 0,
+          "memories": 0,
+          "events": 0
+        },
+        "aiConfigurationPreserved": true,
+        "weightIds": [
+          "local-weight-original"
+        ]
+      }
+    },
+    "native-file-faults-and-retry": {
+      "status": "PASS",
+      "elapsedMs": 1282,
+      "result": {
+        "missing": true,
+        "future": "UNSUPPORTED_KANATA_VERSION",
+        "wrongPassword": "KANATA_DECRYPT_FAILED",
+        "parse": "KANATA_DATA_CORRUPTED",
+        "allCorrupt": "KANATA_ALL_COPIES_INVALID",
+        "writeRetry": true
+      }
+    },
+    "backup-new-and-v1-v12": {
+      "status": "PASS",
+      "elapsedMs": 7658,
+      "result": {
+        "newFull": true,
+        "newSingle": true,
+        "legacySingleRejected": true,
+        "oldVersions": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12
+        ]
+      }
+    },
+    "prepare-recovery-false": {
+      "status": "PASS",
+      "elapsedMs": 174,
+      "result": {
+        "prepared": true,
+        "committed": false,
+        "expectedWorld": "阿拜多斯 · 对策委员会日常"
+      }
+    }
+  },
+  "samples": [],
+  "status": "FAIL",
+  "attempts": [
+    {
+      "startedAt": "2026-10-28T07:02:25.798Z",
+      "error": "Command failed: E:\\Android\\Sdk\\platform-tools\\adb.exe -s emulator-5580 shell run-as com.yubin.formyself sh -c 'printf KanataP2Synthetic34:20261028:new-empty-avd > files/kanata-qa-isolation.txt'\nsh: can't create files/kanata-qa-isolation.txt: No such file or directory\r\n",
+      "apkSha256": "d286fd1fe8cf923d286e1bbda07052c9e889938396b58f1280cf7aadd8c14dbf"
+    },
+    {
+      "startedAt": "2026-10-28T07:03:09.931Z",
+      "error": "page.evaluate: TypeError: (intermediate value).run is not a function\n    at eval (eval at evaluate (:311:30), <anonymous>:2:45)\n    at async <anonymous>:337:30",
+      "apkSha256": "d286fd1fe8cf923d286e1bbda07052c9e889938396b58f1280cf7aadd8c14dbf"
+    },
+    {
+      "startedAt": "2026-10-28T07:04:04.096Z",
+      "error": "androidDevice.info: Please install Android driver apk using 'npx playwright install android'",
+      "apkSha256": "cd118bfae6d2f97bfed07b14868b77b2eeafb926426dd82e949050f55cbf938c"
+    },
+    {
+      "startedAt": "2026-10-28T07:05:12.202Z",
+      "error": "browserType.connectOverCDP: WebSocket error: socket hang up\nCall log:\n\u001b[2m  - <ws connecting> ws://127.0.0.1:53064/devtools/browser\u001b[22m\n\u001b[2m  - <ws error> ws://127.0.0.1:53064/devtools/browser error socket hang up\u001b[22m\n\u001b[2m  - <ws connect error> ws://127.0.0.1:53064/devtools/browser socket hang up\u001b[22m\n\u001b[2m  - <ws disconnected> ws://127.0.0.1:53064/devtools/browser code=1006 reason=\u001b[22m\n",
+      "apkSha256": "cd118bfae6d2f97bfed07b14868b77b2eeafb926426dd82e949050f55cbf938c"
+    },
+    {
+      "startedAt": "2026-10-28T07:06:28.784Z",
+      "error": "locator.waitFor: Timeout 60000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByText('世界已准备好', { exact: true }) to be visible\u001b[22m\n",
+      "apkSha256": "cd118bfae6d2f97bfed07b14868b77b2eeafb926426dd82e949050f55cbf938c"
+    }
+  ],
+  "environment": {
+    "android": "14",
+    "api": "34",
+    "webview": "Current WebView Update Service state\r\n  Multiprocess enabled: true\r\n  Current WebView package (name, version): (com.google.android.webview, 113.0.5672.136)\r\n  Minimum targetSdkVersion: 33\r\n  Minimum WebView version code: 567263637\r\n  Number of relros started: 1\r\n  Number of relros finished: 1\r\n  WebView package dirty: false\r\n  Any WebView package installed: true\r\n  Preferred WebView package (name, version): (com.google.android.webview, 113.0.5672.136)\r\n  WebView packages:\r\n    Valid package com.google.android.webview (versionName: 113.0.5672.136, versionCode: 567263637, targetSdkVersion: 34) is  installed/enabled for all users\r\n    com.google.android.webview.beta is NOT installed.\r\n    com.google.android.webview.dev is NOT installed.\r\n    com.google.android.webview.canary is NOT installed.\r\n    com.google.android.webview.debug is NOT installed.\r\n    com.android.webview is NOT installed.",
+    "hardware": "sdk_gphone64_x86_64"
+  },
+  "apkSha256": "ed99f8153c7c96a84cdbf151eac8c7022b82488c9985c9062022101679ea3b30",
+  "error": "page.evaluate: Error: BACKUP_AUTHENTICATION_REQUIRED\n    at _ (https://localhost/assets/fullBackupRuntime-DJ5PvA9h.js:1:11478)\n    at async prepare (https://localhost/assets/fullBackupRuntime-DJ5PvA9h.js:1:10113)\n    at async https://localhost/assets/fullBackupRuntime-DJ5PvA9h.js:1:6489\n    at async f (https://localhost/assets/fullBackupRuntime-DJ5PvA9h.js:1:5522)\n    at async Module.H (https://localhost/assets/kanataQA-DoEH6ups.js:1:9233)\n    at async <anonymous>:337:30",
+  "visibleText": "MY PRIVATE SPACE\n\nForMyself\n\n欢迎回来，解锁你的私人空间\n\n解锁进入\n主密码只用于本机解锁，不会上传",
+  "finishedAt": "2026-10-28T07:11:18.933Z"
+}

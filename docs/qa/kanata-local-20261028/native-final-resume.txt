@@ -1,0 +1,28 @@
+
+> formyself-app@0.0.0 test:e2e:kanata:android
+> node docs/qa/kanata-local-20261028/verify-native.mjs
+
+PASS prepare-native-synthetic-fixture
+PASS cancel-zero-delete-zero-seed
+PASS cleanup-interruption
+PASS interrupted-cleanup-cold-unlock
+PASS cleanup-whitelist-and-idempotent-seed
+PASS seed-cold-reload
+PASS native-file-faults-and-retry
+PASS backup-new-and-v1-v12
+PASS backup-partial-write-compensation
+PASS backup-rollback-failure-barrier
+PASS cold-rollback-failure-recovery
+PASS prepare-recovery-false
+PASS cold-encrypted-recovery-false
+PASS prepare-recovery-true
+PASS cold-encrypted-recovery-true
+PASS master-password-failure-compensation
+PASS compensated-password-cold-reload
+PASS master-password-and-session-expiry
+PASS new-password-cold-reload
+PASS native-background-expiry
+PASS optional-unlock-setting
+PASS optional-entry-keeps-plaintext-unloaded
+PASS optional-protected-cancel-and-verify
+PASS native-1k-10k-growth

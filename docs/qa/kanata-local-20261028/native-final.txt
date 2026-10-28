@@ -1,0 +1,10 @@
+
+> formyself-app@0.0.0 test:e2e:kanata:android
+> node docs/qa/kanata-local-20261028/verify-native.mjs
+
+PASS install-test-apk
+page.route: Target page, context or browser has been closed
+    at attach (D:\2026Autumn Semester File\GitHub\formyself-app\.worktrees\kanata\docs\qa\kanata-local-20261028\verify-native.mjs:65:14)
+    at async file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata/docs/qa/kanata-local-20261028/verify-native.mjs:113:3 {
+  log: []
+}

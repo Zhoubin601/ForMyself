@@ -1083,3 +1083,13 @@ F：原稿八条验收各丢首字，JSON示例语法不合法，裸feature路�
 P2最终编译补记：匹配安全修复dist的Android JVM/debug/test APK构建退出0，APK内55资源SHA256一致；JVM仅现有算术样例。设备无KVM且APEX超时未启动，原生instrumentation/强停恢复/改密/增长未运行，P2仍BLOCKED，P3–P7未开始。详见 [P2证据](20261028-kanata-stage-p2-verification-v1.md)。
 
 用户随后明确授权“推送远端，我转到本地开发”。本次提交P2 BLOCKED接续检查点（含之前P1提交），不声称P2验收或Android设备通过，不合并main、不发布APK。[本地交接](20261028-kanata-local-handoff-v1.md)列明安装、测试和剩余原生门禁。
+
+## 2026-10-28 Kanata 本地 P2 接续
+
+来源：用户当前连续开发指令；远端 Kanata e4b46ef；本地交接、P2验收记录、连续计划v3、预设规格v1、clean-start-v2及raw/完整需求清单.txt。raw/Android - 快捷方式.lnk只读解析目标E:/Android，未读取raw私人备份。
+环境：main 41cbb66保留四文档修改、APK删除与未跟踪资料；隔离工作树.worktrees/kanata，分支Kanata。全新空白AVD KanataP2Synthetic34，序列号emulator-5580，WHPX加速，未复制任何旧userdata。JDK21.0.11；SDK在E:/Android/Sdk。
+实际准备：npm ci按原锁文件退出0，三项postinstall补丁成功；npm run check退出0，原始日志docs/qa/kanata-local-20261028/check-baseline.log。ADB核验boot_completed=1、pm path android成功、AVD名称匹配。历史云端结果不当本轮结果。
+
+### 本地P2最终证据（2026-10-28）
+
+来源：docs/20261028-kanata-stage-p2-local-verification-v1.md及docs/qa/kanata-local-20261028/实际结果。生产修复1处Android明确目录已存在码0010；新增回归先22过1失败，修复后23/23。最终check退出0：Node409/Vitest219、0 lint错误、类型/构建通过。Android专用25项PASS、直接AndroidJUnitRunner实际8项通过/1个显式夹具Assume跳过；Gradle connected因UTP宿主依赖缺失失败，不冒充其成功。生产APK55资源哈希匹配、不含QA入口、覆盖保留合成资料并以新密码强停重载通过。P2 PASS/Go，进入P3。真实私人资料未读取/删除，无远端推送。

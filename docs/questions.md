@@ -156,3 +156,11 @@ P1已通过，见 [验收](20261028-kanata-stage-p1-verification-v1.md)。P2新�
 - 不需要用户提供真实Key/私人备份或确认删除设备数据来完成当前合成测试。用户当次应用内清理确认仍是强制条件。
 
 P2最终编译补记：匹配安全修复dist的Android JVM/debug/test APK构建退出0，APK内55资源SHA256一致；JVM仅现有算术样例。设备无KVM且APEX超时未启动，原生instrumentation/强停恢复/改密/增长未运行，P2仍BLOCKED，P3–P7未开始。详见 [P2证据](20261028-kanata-stage-p2-verification-v1.md)。
+
+## 2026-10-28 本地接续参数
+
+无需真实Key、私人备份或真实设备删除授权。已准备任务新建合成模拟器；实体手机阈值/生物识别/厂商通知和IP公开分发许可仍未提供，不将模拟器结果等同真机。当前仅普通本地检查点提交获授权，禁止推送/PR/发布。
+
+### 本地P2门禁关闭
+
+本任务新建合成AVD已完成25项专项、生产包强停重载与直接AndroidJUnitRunner；P2不再受云端设备环境阻塞。Gradle connected宿主UTP依赖问题保留但同一测试APK实际runner已成功。P3公开分发授权、P7实体设备目标阈值仍未提供，不需要真实私人备份/Key才能继续本地开发。

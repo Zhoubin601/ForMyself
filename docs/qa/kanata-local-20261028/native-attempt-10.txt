@@ -1,0 +1,10 @@
+PASS install-test-apk
+PASS prepare-native-synthetic-fixture
+androidDevice.info: androidx.test.uiautomator.StaleObjectException
+    at tap (D:\2026Autumn Semester File\GitHub\formyself-app\.worktrees\kanata\docs\qa\kanata-local-20261028\verify-native.mjs:87:65)
+    at async file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata/docs/qa/kanata-local-20261028/verify-native.mjs:123:5
+    at async record (D:\2026Autumn Semester File\GitHub\formyself-app\.worktrees\kanata\docs\qa\kanata-local-20261028\verify-native.mjs:44:17)
+    at async file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata/docs/qa/kanata-local-20261028/verify-native.mjs:122:3 {
+  log: [],
+  name: 'Error'
+}

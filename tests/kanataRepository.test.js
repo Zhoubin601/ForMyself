@@ -278,3 +278,15 @@ test('P2-R22 serialization tail exposes no plaintext result before or after rele
   await r.release()
   assert.equal(await r.wait(), undefined)
 })
+
+test('P2-R23 actual Android existing-directory code permits verified native-style saves, denied codes remain errors', async () => {
+  const h = harness(), r = h.repository()
+  h.filesystem.mkdir = async () => { throw Object.assign(new Error("Directory at 'formyself' already exists, cannot be overwritten."), { code: 'OS-PLUG-FILE-0010' }) }
+  await r.read(PASSWORD)
+  await r.write(fixture('android existing directory'), PASSWORD)
+  await r.flush()
+  assert.equal((await h.repository().read(PASSWORD)).data.worlds[0].name, 'android existing directory')
+  h.filesystem.mkdir = async () => { throw Object.assign(new Error('Directory already exists'), { code: 'OS-PLUG-FILE-0007' }) }
+  await assert.rejects(r.write(fixture('native denied mkdir'), PASSWORD), code('KANATA_SAVE_FAILED'))
+  assert.equal(decryptKanataData(h.files.get(MAIN), PASSWORD).worlds[0].name, 'android existing directory')
+})

@@ -14,7 +14,7 @@ const missing = error => error?.code !== undefined
   ? ['ENOENT', 'OS-PLUG-FILE-0008'].includes(error.code)
   : ['File does not exist.', 'Entry does not exist.'].includes(error?.message)
 const alreadyExists = error => error?.code !== undefined
-  ? error.code === 'EEXIST'
+  ? ['EEXIST', 'OS-PLUG-FILE-0010'].includes(error.code)
   : error?.message === 'Current directory does already exist.' || /^(?:Directory|File).*(?:already exists|exists)/i.test(String(error?.message || ''))
 
 export class KanataRepositoryError extends Error {

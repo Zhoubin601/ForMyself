@@ -1,0 +1,14 @@
+{
+  "startedAt": "2026-10-28T07:36:54.001Z",
+  "status": "PASS",
+  "apkSha256": "e322edd37bb0b57f27278a67daabde92378bc980d46ca9a1cb27e17cb35af128",
+  "state": {
+    "worlds": 1,
+    "instances": 5,
+    "messages": 2,
+    "memories": 1,
+    "events": 1,
+    "configurationPreserved": true
+  },
+  "finishedAt": "2026-10-28T07:36:59.639Z"
+}

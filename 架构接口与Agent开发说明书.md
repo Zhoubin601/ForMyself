@@ -412,3 +412,10 @@ Windows 使用 `npm.cmd`、`npx.cmd` 和 `android/gradlew.bat` 的对应命令�
 - 类型：contracts.d.ts 重导出真实备份、仓库 DTO 和 ReturnType；[strict样例](tests/types/kanata.ts) 覆盖密码类型、旧图拒绝、显式旧备份选择、wire/canonical 版本区分。FullBackupDTO 是历史 shell，不能给它简单加上13而让旧 normalizer处理新图。
 - 验证：`npm run check`；新增 Node 仓库/清理/备份故障测试和实际 Pinia、产品 fullBackupRuntime、加密恢复日志、设置 FileReader 组件路径测试。Web 实测驱动为 [verify-web.mjs](docs/qa/kanata-continuous/p2/verify-web.mjs)，只启动全新隔离 Chromium context，需本机 Vite dev server（默认4173）和系统 Chromium，不读取用户浏览器。Android 仍须按第12节构建与独立设备验证，旧 P6 驱动中的旧聊天断言不作为新产品验收。
 - 规模：当前仍是全量 JSON 加密/重载，没有真实磁盘分页/索引查询。P2 样本只记录数据增长；1万条已有明显整包耗时，P7 必须先独立设计必要分片/索引、兼容与回滚，并在目标设备确定阈值，不能声称容量和真分页已完成。
+
+### 16.1 Kanata 本地 Android 验证入口（2026-10-28）
+
+- 新命令 `npm run build:qa:kanata` 通过独立第二入口打包合成设备驱动；正常 build/check 不包含该入口。测试包不能发布。`npm run test:e2e:kanata:android` 连接实际 Android WebView，调用同一构建中的真实 Store、文件桥接、全备运行时与加密恢复日志，不替换加密协议或恢复协调器。
+- `scripts/start-kanata-qa.ps1` 只创建任务空白 AVD；`-NewRun` 在核实任务清单和设备身份、等待进程退出后，保留旧合成磁盘原路径并建立带时间戳的新空白目录，不 wipe/卸载/清数据，不移动 raw。`scripts/kanata-device-guard.mjs` 与负向测试核验名称、序列号、绝对路径和 syntheticOnly。
+- Android Filesystem 8.1.x 的目录已存在错误码 `OS-PLUG-FILE-0010` 与 `EEXIST` 同义；Kanata 仓库明确兼容这两个码。权限拒绝等其他码仍报保存失败，不能按错误消息兜底当已存在。原生故障与 Node 回归见 `docs/qa/kanata-local-20261028/`。
+- Web 驱动允许 `KANATA_QA_OUTPUT` 指定本轮证据目录，避免覆盖历史云端结果；默认行为不变。

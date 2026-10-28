@@ -1,0 +1,6 @@
+PASS cancel-zero-delete-zero-seed
+PASS cleanup-interruption
+PASS interrupted-cleanup-cold-unlock
+Error: Disabled button 开始准备彼方
+    at tap (file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata/docs/qa/kanata-local-20261028/verify-native.mjs:86:40)
+    at async file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata/docs/qa/kanata-local-20261028/verify-native.mjs:130:5

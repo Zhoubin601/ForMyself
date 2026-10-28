@@ -1,0 +1,61 @@
+
+> formyself-app@0.0.0 lint
+> eslint src tests scripts vite.config.js
+
+
+D:\2026Autumn Semester File\GitHub\formyself-app\.worktrees\kanata\src\components\settings\SettingsBackup.vue
+  26:43  warning  Attribute "ref" should go before "accept"  vue/attributes-order
+
+D:\2026Autumn Semester File\GitHub\formyself-app\.worktrees\kanata\src\components\settings\SettingsCatalogs.vue
+  201:18  warning  Expected 1 line break after opening tag (`<button>`), but no line breaks found    vue/multiline-html-element-content-newline
+  201:20  warning  Expected 1 line break before closing tag (`</button>`), but no line breaks found  vue/multiline-html-element-content-newline
+
+D:\2026Autumn Semester File\GitHub\formyself-app\.worktrees\kanata\src\composables\useSortableDrag.js
+   52:78  warning  '_' is defined but never used  no-unused-vars
+  176:74  warning  '_' is defined but never used  no-unused-vars
+  181:46  warning  '_' is defined but never used  no-unused-vars
+
+D:\2026Autumn Semester File\GitHub\formyself-app\.worktrees\kanata\src\features\chat\ChatMessageActions.vue
+  3:126  warning  Prop "CHAT_REACTION_EMOJIS" is not in camelCase  vue/prop-name-casing
+
+D:\2026Autumn Semester File\GitHub\formyself-app\.worktrees\kanata\src\features\chat\ChatView.vue
+  125:5  warning  'longPressOrigin' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+D:\2026Autumn Semester File\GitHub\formyself-app\.worktrees\kanata\src\features\mood\MoodView.vue
+  240:39   warning  Expected 1 line break after opening tag (`<div>`), but 2 line breaks found        vue/multiline-html-element-content-newline
+  256:227  warning  Attribute "class" should go before "@keydown.space.prevent"                       vue/attributes-order
+  256:243  warning  Attribute ":class" should go before "@keydown.space.prevent"                      vue/attributes-order
+  258:38   warning  Attribute "v-if" should go before "class"                                         vue/attributes-order
+  362:14   warning  Expected 1 line break after opening tag (`<button>`), but no line breaks found    vue/multiline-html-element-content-newline
+  362:23   warning  Expected 1 line break before closing tag (`</button>`), but no line breaks found  vue/multiline-html-element-content-newline
+  402:16   warning  Expected 1 line break before closing tag (`</div>`), but 2 line breaks found      vue/multiline-html-element-content-newline
+
+D:\2026Autumn Semester File\GitHub\formyself-app\.worktrees\kanata\src\features\schedule\ScheduleView.vue
+  437:14   warning  Expected 1 line break after opening tag (`<button>`), but no line breaks found    vue/multiline-html-element-content-newline
+  437:161  warning  Expected 1 line break before closing tag (`</button>`), but no line breaks found  vue/multiline-html-element-content-newline
+  600:18   warning  Expected 1 line break after opening tag (`<button>`), but no line breaks found    vue/multiline-html-element-content-newline
+  600:29   warning  Expected 1 line break before closing tag (`</button>`), but no line breaks found  vue/multiline-html-element-content-newline
+
+D:\2026Autumn Semester File\GitHub\formyself-app\.worktrees\kanata\src\features\weight\WeightView.vue
+  196:120  warning  Attribute "v-if" should go before "class"                                      vue/attributes-order
+  237:36   warning  Attribute "v-if" should go before "class"                                      vue/attributes-order
+  241:39   warning  Expected 1 line break after opening tag (`<div>`), but no line breaks found    vue/multiline-html-element-content-newline
+  242:325  warning  Expected a space before '/>', but not found                                    vue/html-closing-bracket-spacing
+  242:342  warning  Expected 1 line break before closing tag (`</div>`), but no line breaks found  vue/multiline-html-element-content-newline
+  249:31   warning  Attribute "v-if" should go before "class"                                      vue/attributes-order
+  256:32   warning  Attribute "v-if" should go before "class"                                      vue/attributes-order
+  257:30   warning  Attribute "v-if" should go before "class"                                      vue/attributes-order
+  261:246  warning  Attribute "v-model" should go before "step"                                    vue/attributes-order
+  265:14   warning  Expected 1 line break before closing tag (`</div>`), but 3 line breaks found   vue/multiline-html-element-content-newline
+
+D:\2026Autumn Semester File\GitHub\formyself-app\.worktrees\kanata\src\platform\ai\client.js
+  207:7  warning  'emitted' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+D:\2026Autumn Semester File\GitHub\formyself-app\.worktrees\kanata\tests\fullBackup.test.js
+  208:50  warning  'scope' is defined but never used. Allowed unused args must match /^_/u      no-unused-vars
+  225:52  warning  'reactions' is defined but never used. Allowed unused args must match /^_/u  no-unused-vars
+  225:63  warning  'type' is defined but never used. Allowed unused args must match /^_/u       no-unused-vars
+
+✖ 33 problems (0 errors, 33 warnings)
+  0 errors and 24 warnings potentially fixable with the `--fix` option.
+

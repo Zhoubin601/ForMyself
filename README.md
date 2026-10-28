@@ -14,6 +14,8 @@ npm run check
 
 `check` 包括 ESLint、Node 领域测试、Vitest 组件/故障回归、Vue 类型检查、严格契约类型检查和生产构建。`tests/types` 的负向样例必须被编译器拒绝，不能移除 `@ts-expect-error` 来掩盖接口问题。JavaScript 采用渐进检查，未宣称整个代码库已经严格类型化。
 
+Kanata 原生专用合成验证：先以 `scripts/start-kanata-qa.ps1` 创建全新空白 AVD（SDK 默认 `E:/Android/Sdk`，可传 `-Sdk`）；确认启动完成后，执行 `npm run build:qa:kanata`、`npx cap sync android`、Android debug 构建，再运行 `npm run test:e2e:kanata:android`。驱动只接受匹配本地隔离清单的 `KanataP2Synthetic34 / emulator-5580`，拒绝未标记的已有 App，不执行清数据或卸载。再次全新测试用 `-NewRun` 正常关闭本任务旧 AVD，保留磁盘原路径并创建带时间戳的新空白目录；不使用用户日常模拟器。专用构建额外包含测试入口，**只用于隔离验收，不能发布**；正常 `npm run build` 不包含该入口。设备驱动和结果位于 `docs/qa/kanata-local-20261028/`，不以旧聊天 E2E 代替新业务验证。
+
 ```bash
 npm run build
 npx cap sync android
