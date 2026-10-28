@@ -90,3 +90,19 @@ const feedbackOwner: KanataFeedbackOwner = Symbol('synthetic-owner')
 cancelOwnedFeedbackDialog(feedbackOwner)
 // @ts-expect-error a text label cannot cancel an owned dialog
 cancelOwnedFeedbackDialog('other-owner')
+
+import type { KanataChatRuntime, CompletionOptions } from '../../src/application/contracts'
+declare const chatRuntime: KanataChatRuntime
+chatRuntime.send('conversation', { text:'Synthetic', stream:true, delayMs:2000 })
+chatRuntime.setMode('conversation','roleplay')
+// @ts-expect-error roleplay is an explicit mode rather than arbitrary text
+chatRuntime.setMode('conversation','romance')
+// @ts-expect-error stream must be a boolean
+chatRuntime.send('conversation',{text:'Synthetic',stream:'yes'})
+// @ts-expect-error numeric delay only
+chatRuntime.send('conversation',{delayMs:'2000'})
+declare const request: CompletionOptions
+// @ts-expect-error accounting cannot be omitted or made synchronous
+request.onAttempt = () => undefined
+// @ts-expect-error hidden tool instructions cannot enter this text-only interface
+request.messages = [{role:'tool',content:'Synthetic'}]

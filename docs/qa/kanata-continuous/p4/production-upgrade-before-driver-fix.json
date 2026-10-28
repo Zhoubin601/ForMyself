@@ -1,0 +1,10 @@
+{
+  "status": "FAIL",
+  "startedAt": "2026-10-28T12:24:02.786Z",
+  "apkSha256": "37081ce87e5a4a5eedad9e3857484bfeec81f6058919eb79f325af85dc99180a",
+  "checks": [
+    "production-upgrade-cold-preserves-worlds-messages-usage"
+  ],
+  "error": "page.waitForFunction: Target page, context or browser has been closed",
+  "finishedAt": "2026-10-28T12:24:26.260Z"
+}

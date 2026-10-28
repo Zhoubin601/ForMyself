@@ -103,6 +103,27 @@ export function validateKanataData(input) {
   const instances = new Map(data.instances.map(c => [c.id, c]))
   const conversations = new Map(data.conversations.map(c => [c.id, c]))
   const messages = new Map(data.messages.map(m => [m.id, m]))
+  if (data.usageEvents !== undefined) {
+    rows(data.usageEvents, 'usageEvents')
+    const seen = new Set()
+    data.usageEvents.forEach(event => {
+      validateId(event.id, 'usage.id'); requireKanata(!seen.has(event.id) && !entities.has(event.id), 'DUPLICATE_ID', 'usage.id'); seen.add(event.id)
+      const conversation = conversations.get(event.conversationId)
+      requireKanata(conversation?.worldId === event.worldId && instances.get(event.instanceId)?.worldId === event.worldId && conversation?.participantIds.includes(event.instanceId), 'USAGE_SCOPE_DENIED', 'usage')
+      validateId(event.turnId, 'usage.turnId'); text(event.model, 'usage.model'); bool(event.officialProvider, 'usage.officialProvider')
+      requireKanata(/^[a-zA-Z0-9._:/-]{1,100}$/.test(event.model), 'INVALID_MODEL', 'usage.model')
+      integer(event.startedAt, 'usage.startedAt'); if (event.finishedAt !== null) integer(event.finishedAt, 'usage.finishedAt')
+      choice(event.transport, ['stream','json'], 'usage.transport'); choice(event.status, ['pending','succeeded','failed'], 'usage.status')
+      requireKanata((event.status === 'pending') === (event.finishedAt === null), 'INVALID_USAGE_STATUS', 'usage')
+      text(event.errorCode, 'usage.errorCode', true); text(event.finishReason, 'usage.finishReason', true)
+      requireKanata(/^[A-Z0-9_]*$/.test(event.errorCode) && /^[a-z_]*$/.test(event.finishReason), 'INVALID_USAGE_CODE', 'usage')
+      integer(event.estimatedInputTokens, 'usage.estimate'); integer(event.estimatedOutputTokens, 'usage.estimate')
+      if (event.usage !== null) {
+        object(event.usage, 'usage.tokens'); integer(event.usage.promptTokens, 'usage.promptTokens'); integer(event.usage.completionTokens, 'usage.completionTokens')
+        if (event.usage.cacheHitTokens !== null) { integer(event.usage.cacheHitTokens, 'usage.cacheHitTokens'); requireKanata(event.usage.cacheHitTokens <= event.usage.promptTokens, 'INVALID_CACHE_USAGE', 'usage') }
+      }
+    })
+  }
   const events = new Map(data.events.map(e => [e.id, e]))
   const relationships = new Map(data.relationships.map(r => [r.id, r]))
   /** @param {string} id @param {string} worldId @param {string} path */

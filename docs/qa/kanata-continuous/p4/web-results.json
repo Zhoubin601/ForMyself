@@ -1,0 +1,71 @@
+{
+  "startedAt": "2026-10-28T12:20:19.858Z",
+  "status": "PASS",
+  "checks": {
+    "no-key-no-auto-call": {
+      "status": "PASS",
+      "elapsedMs": 42,
+      "result": true
+    },
+    "five-private-speakers-and-real-usage": {
+      "status": "PASS",
+      "elapsedMs": 4470,
+      "result": {
+        "speakers": 5,
+        "requests": 5,
+        "controlledProvider": true
+      }
+    },
+    "group-mention-priority-and-natural-silence": {
+      "status": "PASS",
+      "elapsedMs": 908,
+      "result": true
+    },
+    "RP-mode-and-bounded-truncation-retry": {
+      "status": "PASS",
+      "elapsedMs": 936,
+      "result": true
+    },
+    "stream-fallback-once-and-cost-range": {
+      "status": "PASS",
+      "elapsedMs": 940,
+      "result": true
+    },
+    "leaving-page-aborts-late-result": {
+      "status": "PASS",
+      "elapsedMs": 959,
+      "result": true
+    },
+    "short-submissions-batched-one-paid-turn": {
+      "status": "PASS",
+      "elapsedMs": 864,
+      "result": true
+    },
+    "cancel-configured-delay-before-AI": {
+      "status": "PASS",
+      "elapsedMs": 985,
+      "result": true
+    },
+    "world-switch-isolates-context-and-cancels-old-target": {
+      "status": "PASS",
+      "elapsedMs": 1998,
+      "result": true
+    },
+    "expiry-releases-chat-and-preview": {
+      "status": "PASS",
+      "elapsedMs": 5,
+      "result": true
+    }
+  },
+  "pageErrors": [],
+  "finalCounts": {
+    "worlds": 2,
+    "instances": 6,
+    "messages": 32,
+    "attempts": 14,
+    "requests": 14,
+    "otherModuleCalls": 0,
+    "controlledProvider": true
+  },
+  "finishedAt": "2026-10-28T12:20:34.241Z"
+}

@@ -1,3 +1,4 @@
+import type { CompletionAttempt } from '../../../platform/ai/completionTypes'
 export type JsonValue = null | boolean | number | string | JsonValue[] | { [key: string]: JsonValue }
 export type ChatMode = 'daily' | 'roleplay'
 export type Visibility = 'public' | 'private' | 'participants'
@@ -91,6 +92,10 @@ export interface KanataData {
   messages: Message[]; lorebookEntries: LorebookEntry[]; memories: Memory[]
   relationships: Relationship[]; events: WorldEvent[]; effects: WorldEffect[]
   tasks: BackgroundTask[]; lifeGrants: LifeGrant[]; presetApplications: PresetApplication[]
+  usageEvents?: KanataUsageEvent[]
+}
+export interface KanataUsageEvent extends CompletionAttempt {
+  worldId: string; conversationId: string; instanceId: string; turnId: string
 }
 export interface PresetCharacter { key: string; definition: CharacterDefinition; source: string }
 export interface WorldPreset {

@@ -1,0 +1,18 @@
+✔ P4 transport JSON actual usage, stream ignored response and legacy methods stay compatible (16.6142ms)
+✔ P4 SSE collects usage-only chunk once and never exposes reasoning (0.9889ms)
+✔ P4 missing or invalid usage stays null rather than actual zero (0.327ms)
+✔ P4 unsupported stream fallback creates two separately identified attempts (0.4686ms)
+✔ P4 truncation retry records both charges and returns only complete attempt (0.4703ms)
+✔ P4 repeated truncation is bounded and throws safe code (0.7891ms)
+✔ P4 timeout aborts fetch and finalizes attempt without leaking provider text (21.3636ms)
+✔ P4 caller cancellation and persistence-before-request failure make zero extra calls (0.3255ms)
+✔ P4 interrupted partial stream does not auto replay or count partial output as complete (0.4474ms)
+✔ P4 HTTP errors never serialize provider credentials or private payload (0.2607ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 10
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 117.0998

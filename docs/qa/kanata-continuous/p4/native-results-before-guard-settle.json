@@ -1,0 +1,92 @@
+{
+  "startedAt": "2026-10-28T12:09:01.033Z",
+  "status": "FAIL",
+  "serial": "emulator-5580",
+  "avd": "KanataP2Synthetic34",
+  "apkSha256": "4a22422ad9ef12201d93af56928f8260c83fc8d1dc9a81f329365b4c51d1dbee",
+  "checks": {
+    "install-production-apk": {
+      "status": "PASS",
+      "elapsedMs": 238,
+      "result": "Performing Streamed Install\r\nSuccess"
+    },
+    "no-key-no-auto-call": {
+      "status": "PASS",
+      "elapsedMs": 1085,
+      "result": true
+    },
+    "five-private-speakers-and-real-usage": {
+      "status": "PASS",
+      "elapsedMs": 17036,
+      "result": {
+        "speakers": 5,
+        "requests": 5,
+        "controlledProvider": true
+      }
+    },
+    "group-mention-priority-and-natural-silence": {
+      "status": "PASS",
+      "elapsedMs": 4778,
+      "result": true
+    },
+    "RP-mode-and-bounded-truncation-retry": {
+      "status": "PASS",
+      "elapsedMs": 8199,
+      "result": true
+    },
+    "stream-fallback-once-and-cost-range": {
+      "status": "PASS",
+      "elapsedMs": 6949,
+      "result": true
+    },
+    "leaving-page-aborts-late-result": {
+      "status": "PASS",
+      "elapsedMs": 3458,
+      "result": true
+    },
+    "short-submissions-batched-one-paid-turn": {
+      "status": "PASS",
+      "elapsedMs": 5702,
+      "result": true
+    },
+    "cancel-configured-delay-before-AI": {
+      "status": "PASS",
+      "elapsedMs": 3050,
+      "result": true
+    },
+    "native-full-backup-p4-messages-and-usage": {
+      "status": "PASS",
+      "elapsedMs": 3521,
+      "result": {
+        "version": 13,
+        "worlds": 1,
+        "attempts": 12,
+        "exactGraph": true
+      }
+    },
+    "native-final-cold-reload": {
+      "status": "PASS",
+      "elapsedMs": 4465,
+      "result": true
+    }
+  },
+  "pageErrors": [],
+  "aiRequests": 1,
+  "environment": {
+    "android": "14",
+    "api": "34",
+    "webview": "Current WebView Update Service state\r\n  Multiprocess enabled: true\r\n  Current WebView package (name, version): (com.google.android.webview, 113.0.5672.136)\r\n  Minimum targetSdkVersion: 33\r\n  Minimum WebView version code: 567263637\r\n  Number of relros started: 1\r\n  Number of relros finished: 1\r\n  WebView package dirty: false\r\n  Any WebView package installed: true\r\n  Preferred WebView package (name, version): (com.google.android.webview, 113.0.5672.136)\r\n  WebView packages:\r\n    Valid package com.google.android.webview (versionName: 113.0.5672.136, versionCode: 567263637, targetSdkVersion: 34) is  installed/enabled for all users\r\n    com.google.android.webview.beta is NOT installed.\r\n    com.google.android.webview.dev is NOT installed.\r\n    com.google.android.webview.canary is NOT installed.\r\n    com.google.android.webview.debug is NOT installed.\r\n    com.android.webview is NOT installed."
+  },
+  "finalCounts": {
+    "worlds": 1,
+    "instances": 5,
+    "messages": 28,
+    "attempts": 12,
+    "requests": 12,
+    "otherModuleCalls": 0,
+    "controlledProvider": true
+  },
+  "error": "page.waitForFunction: Timeout 60000ms exceeded.",
+  "visibleText": "彼方 · Kanata\n\n彼方 · Kanata\n\n在这里，开始另一种日常\n\n世界已准备好\n\n我的世界\n全局角色库\n世界书\n阿拜多斯 · 对策委员会日常\n1 个独立世界\n阿拜多斯 · 对策委员会日常\n5\n角色实例\n5\n独立私聊\n1\n群聊\n\n当前世界称谓：老师 · 现实时间同步 · UTC\n\n重命名世界\n复制设定\n编辑世界身份\n归档世界\n在这个世界相遇\n加入角色\n星\n小鸟游星野\n\n短句、轻松自嘲；重要事情转为清楚认真的表达。\n\n实例设置\n附带世界书\n白\n砂狼白子\n\n先简短表达判断，再提出可执行步骤；避免重复固定口头禅。\n\n实例设置\n附带世界书\n野\n十六夜野宫\n\n温暖自然，关注对方感受；必要时坚定说明自己的看法。\n\n实例设置\n附带世界书\n芹\n黑见芹香\n\n反应快，直说不现实之处，随后给出具体替代办法。\n\n实例设置\n附带世界书\n绫\n奥空绫音\n\n礼貌清楚，适当列出事项和细节，不机械播报。\n\n实例设置\n附带世界书\n会话 · 独立保存的相遇\n小鸟游星野\n私聊 · 1 位角色\n砂狼白子\n私聊 · 1 位角色\n十六夜野宫\n私聊 · 1 位角色\n黑见芹香\n私聊 · 1 位角色\n奥空绫音\n私聊 · 1 位角色\n阿拜多斯 · 对策委员会日常\n群聊 · 5 位角色\n\n选择私聊或群聊开始文字对话。只有主动发送才调用全局 DeepSeek，不会自动生成历史。\n\n另一个世界，从零开始\n创建空白世界\n从预设创建世界\n阿拜多斯为非官方同人文字预设。头像为文字占位或用户自行导入；没有官方图片、完整台词和虚构的历史聊天。\n\nMY PRIVATE SPACE\n\nForMyself\n\n生活面板\n\n首页总览\n今天\n月度报告\n回顾\n省钱计划\n目标\n体重记录\n健康\n心情日记\n感受\n彼方 · Kanata\n陪伴\n每日待办\n计划\n日程提醒\n安排\n密码库\n安全\n通用配置\n设置\n你的私人空间\n核心数据保存在设备内",
+  "finishedAt": "2026-10-28T12:11:10.211Z"
+}

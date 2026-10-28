@@ -1,0 +1,9 @@
+{
+  "requests": 17,
+  "promptTokens": 11951,
+  "completionTokens": 4097,
+  "minimumCnyEstimate": 0.02382806,
+  "maximumCnyEstimate": 0.04765612,
+  "priceVersion": "deepseek-cny-20261028-range-v1",
+  "actualInvoiceVerified": false
+}

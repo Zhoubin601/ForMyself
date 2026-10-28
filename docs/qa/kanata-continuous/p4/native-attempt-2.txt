@@ -1,0 +1,18 @@
+PASS install-production-apk
+PASS no-key-no-auto-call
+PASS five-private-speakers-and-real-usage
+PASS group-mention-priority-and-natural-silence
+PASS RP-mode-and-bounded-truncation-retry
+PASS stream-fallback-once-and-cost-range
+PASS leaving-page-aborts-late-result
+PASS short-submissions-batched-one-paid-turn
+PASS cancel-configured-delay-before-AI
+PASS native-full-backup-p4-messages-and-usage
+PASS native-final-cold-reload
+page.waitForFunction: Timeout 60000ms exceeded.
+    at D:\2026Autumn Semester File\GitHub\formyself-app\.worktrees\kanata\docs\qa\kanata-continuous\p4\verify-native.mjs:84:16
+    at async record (D:\2026Autumn Semester File\GitHub\formyself-app\.worktrees\kanata\docs\qa\kanata-continuous\p4\verify-native.mjs:27:71)
+    at async file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata/docs/qa/kanata-continuous/p4/verify-native.mjs:78:3 {
+  log: [],
+  name: 'TimeoutError'
+}

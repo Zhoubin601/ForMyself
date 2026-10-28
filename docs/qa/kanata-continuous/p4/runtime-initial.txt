@@ -1,0 +1,39 @@
+
+ RUN  v3.2.4 D:/2026Autumn Semester File/GitHub/formyself-app/.worktrees/kanata
+
+ ❯ tests/KanataChatRuntime.spec.js (9 tests | 1 failed) 855ms
+   ✓ P4 actual Store + protected application runtime > saves user and real speaker bubbles with stable batch, reply source and one attempt  413ms
+   ✓ P4 actual Store + protected application runtime > no key, invalid mention and recovery barrier make zero model calls 4ms
+   ✓ P4 actual Store + protected application runtime > actual Store failed user save retains draft but never starts a chargeable call 3ms
+   ✓ P4 actual Store + protected application runtime > disposing a page aborts and rejects stale completion without writing another conversation 5ms
+   × P4 actual Store + protected application runtime > session expiry cancels before waiting delay calls the provider 9ms
+     → expected [Function] to throw error including 'ABORTED' but got 'KANATA_SESSION_EXPIRED'
+   ✓ P4 actual Store + protected application runtime > world identity changed while waiting invalidates the response 8ms
+   ✓ P4 actual Store + protected application runtime > retry does not duplicate user or already completed speakers  388ms
+   ✓ P4 actual Store + protected application runtime > failure retains source, retry finishes it once; RP does not change persona or relation 19ms
+   ✓ P4 actual Store + protected application runtime > queued operation rechecks session, and cancellation result is not success 5ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/KanataChatRuntime.spec.js > P4 actual Store + protected application runtime > session expiry cancels before waiting delay calls the provider
+AssertionError: expected [Function] to throw error including 'ABORTED' but got 'KANATA_SESSION_EXPIRED'
+
+Expected: "ABORTED"
+Received: "KANATA_SESSION_EXPIRED"
+
+ ❯ tests/KanataChatRuntime.spec.js:63:5
+     61|     const h=await fixture(),task=h.runtime.send(h.c.id,{text:'等待',dela…
+     62|     await vi.waitFor(()=>expect(h.store.snapshot.messages).toHaveLengt…
+     63|     await expect(task).rejects.toThrow('ABORTED');expect(h.completion)…
+       |     ^
+     64|   })
+     65|   it('world identity changed while waiting invalidates the response',a…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 8 passed (9)
+   Start at  19:55:33
+   Duration  10.46s (transform 146ms, setup 0ms, collect 428ms, tests 855ms, environment 8.01s, prepare 592ms)
+

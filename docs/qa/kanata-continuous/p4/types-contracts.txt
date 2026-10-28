@@ -1,0 +1,6 @@
+
+> formyself-app@0.0.0 typecheck
+> vue-tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.contracts.json
+
+src/platform/ai/completion.js(8,19): error TS7006: Parameter 'value' implicitly has an 'any' type.
+src/platform/ai/completion.js(102,90): error TS2339: Property 'code' does not exist on type '{}'.

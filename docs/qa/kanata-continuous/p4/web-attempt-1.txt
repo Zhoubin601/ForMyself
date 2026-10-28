@@ -1,0 +1,10 @@
+page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4173/
+Call log:
+  - navigating to "http://127.0.0.1:4173/", waiting until "load"
+
+    at D:\2026Autumn Semester File\GitHub\formyself-app\.worktrees\kanata\docs\qa\kanata-continuous\p4\verify-web.mjs:13:14 {
+  log: [
+    '  - navigating to "http://127.0.0.1:4173/", waiting until "load"'
+  ],
+  name: 'Error'
+}

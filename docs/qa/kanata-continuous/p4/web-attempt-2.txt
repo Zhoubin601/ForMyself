@@ -1,0 +1,25 @@
+PASS no-key-no-auto-call
+PASS five-private-speakers-and-real-usage
+PASS group-mention-priority-and-natural-silence
+PASS RP-mode-and-bounded-truncation-retry
+PASS stream-fallback-once-and-cost-range
+PASS leaving-page-aborts-late-result
+PASS short-submissions-batched-one-paid-turn
+PASS cancel-configured-delay-before-AI
+file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata/docs/qa/kanata-continuous/p4/chat-scenarios.mjs:13
+    const persona=JSON.parse(system.split('你自己的角色设定：')[1].split('\n当前用户身份：')[0])
+                                                         ^
+
+TypeError: Cannot read properties of undefined (reading 'split')
+    at file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata/docs/qa/kanata-continuous/p4/chat-scenarios.mjs:13:58
+    at RouteHandler._handleInternal (D:\2026Autumn Semester File\GitHub\formyself-app\.worktrees\kanata\node_modules\playwright-core\lib\coreBundle.js:59786:11)
+    at RouteHandler._handleImpl (D:\2026Autumn Semester File\GitHub\formyself-app\.worktrees\kanata\node_modules\playwright-core\lib\coreBundle.js:59753:29)
+    at D:\2026Autumn Semester File\GitHub\formyself-app\.worktrees\kanata\node_modules\playwright-core\lib\coreBundle.js:59747:59
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14)
+    at _Zone.run (D:\2026Autumn Semester File\GitHub\formyself-app\.worktrees\kanata\node_modules\playwright-core\lib\coreBundle.js:10149:40)
+    at RouteHandler.handle (D:\2026Autumn Semester File\GitHub\formyself-app\.worktrees\kanata\node_modules\playwright-core\lib\coreBundle.js:59747:38)
+    at _Page._onRoute (D:\2026Autumn Semester File\GitHub\formyself-app\.worktrees\kanata\node_modules\playwright-core\lib\coreBundle.js:61037:46)
+    at Proxy.<anonymous> (D:\2026Autumn Semester File\GitHub\formyself-app\.worktrees\kanata\node_modules\playwright-core\lib\coreBundle.js:60984:63)
+    at Proxy._callHandler (D:\2026Autumn Semester File\GitHub\formyself-app\.worktrees\kanata\node_modules\playwright-core\lib\coreBundle.js:10746:33)
+
+Node.js v24.14.1

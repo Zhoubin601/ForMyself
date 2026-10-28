@@ -991,3 +991,9 @@ P2最终编译补记：匹配安全修复dist的Android JVM/debug/test APK构建
 
 ## 2026-10-28 最新执行检查点
 P3已按连续计划v3五项门禁通过，详见20261028-kanata-stage-p3-verification-v1.md；用户最新改为继续P4，完成P4后推送Kanata并暂停，覆盖此前P3后暂停要求。P4尚未完成；不操作main、PR或发布。
+
+
+## 2026-10-28 P4最终交接范围
+执行到P4，完成后普通提交并推送Kanata，再暂停；不进入P5。P1/P2/P3验收已完成，P4详细状态、实际命令和两轮修复以20261028-kanata-stage-p4-verification-v1.md最终结果为准。新旧完整备份与安全门禁保留，用户main既有修改保持，不发布安装包。
+
+P4最终门禁PASS：455 Node/252组件、Web10、Android14、生产升级3项、原生8通过1夹具跳过、真实DeepSeek8组质量审查与9attempt用量。P1–P4完成，普通推送后暂停，后续不自动进入P5。

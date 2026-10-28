@@ -1105,3 +1105,10 @@ P2基线提交c543d52，25项原生专项/生产重载已通过，自动开始P3
 
 
 P3最终来源：docs/20261028-kanata-stage-p3-verification-v1.md及qa/kanata-continuous/p3实际日志。Web12、Android生产16检查通过，初始1世界5实例5私聊1群聊13书/25关系且历史0；最终完整备份含PNG源精确恢复。完整需求截至P3逐项覆盖见20261028-kanata-requirements-through-p3-v1.md。用户最新授权继续P4并在P4通过后推送暂停。
+
+
+## 2026-10-28 P4实际来源与验证
+依据连续计划v3 P4、五人规格F、clean-start-v2及真实platform/ai/client、application/aiClient、protectedAccess/Store/备份协调器。来源名称DeepSeek官方价格与Chat Completion协议；链接https://api-docs.deepseek.com/zh-cn/quick_start/pricing/ 及https://api-docs.deepseek.com/api/create-chat-completion/ ，引用日期2026-10-28。只参考字段与价格自主实现，无新第三方依赖。
+用户明确提供桌面外部测试Key文件后才有限联网；未回显/复制Key进项目，未修改原文件。两轮合成模型测试17次HTTP，其中最终8组交流9attempt均有真实usage，人工审查群聊独立立场和私聊保密。早期driver把合法失败重试误当整轮失败，保留原FAIL并以独立重验记录修正，不额外联网。详见P4报告及live-quality-review.json。
+
+P4最终证据：check-final、web-results、native-results、production-upgrade-results、instrumentation-direct与live-quality-review均在qa/kanata-continuous/p4。最终APK37081ce…，55资源相符，无QA入口。实际模型两轮17请求，最终八组九attempt含合法截断重试，全有真实usage；价格区间估算非账单。P4 PASS，推送后暂停。

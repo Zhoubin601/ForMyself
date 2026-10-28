@@ -1,0 +1,58 @@
+{
+  "startedAt": "2026-10-28T12:16:57.577Z",
+  "status": "FAIL",
+  "serial": "emulator-5580",
+  "avd": "KanataP2Synthetic34",
+  "apkSha256": "f5f2b332be9d960aafcc30372c3f09e84aa6d0011b0ecb91a0a56fb61a93e151",
+  "checks": {
+    "install-production-apk": {
+      "status": "PASS",
+      "elapsedMs": 2369,
+      "result": "Performing Streamed Install\r\nSuccess"
+    },
+    "no-key-no-auto-call": {
+      "status": "PASS",
+      "elapsedMs": 2375,
+      "result": true
+    },
+    "five-private-speakers-and-real-usage": {
+      "status": "PASS",
+      "elapsedMs": 39787,
+      "result": {
+        "speakers": 5,
+        "requests": 5,
+        "controlledProvider": true
+      }
+    },
+    "group-mention-priority-and-natural-silence": {
+      "status": "PASS",
+      "elapsedMs": 5133,
+      "result": true
+    },
+    "RP-mode-and-bounded-truncation-retry": {
+      "status": "PASS",
+      "elapsedMs": 7579,
+      "result": true
+    },
+    "stream-fallback-once-and-cost-range": {
+      "status": "PASS",
+      "elapsedMs": 9999,
+      "result": true
+    },
+    "leaving-page-aborts-late-result": {
+      "status": "PASS",
+      "elapsedMs": 4895,
+      "result": true
+    }
+  },
+  "pageErrors": [],
+  "aiRequests": 0,
+  "environment": {
+    "android": "14",
+    "api": "34",
+    "webview": "Current WebView Update Service state\r\n  Multiprocess enabled: true\r\n  Current WebView package (name, version): (com.google.android.webview, 113.0.5672.136)\r\n  Minimum targetSdkVersion: 33\r\n  Minimum WebView version code: 567263637\r\n  Number of relros started: 1\r\n  Number of relros finished: 1\r\n  WebView package dirty: false\r\n  Any WebView package installed: true\r\n  Preferred WebView package (name, version): (com.google.android.webview, 113.0.5672.136)\r\n  WebView packages:\r\n    Valid package com.google.android.webview (versionName: 113.0.5672.136, versionCode: 567263637, targetSdkVersion: 34) is  installed/enabled for all users\r\n    com.google.android.webview.beta is NOT installed.\r\n    com.google.android.webview.dev is NOT installed.\r\n    com.google.android.webview.canary is NOT installed.\r\n    com.google.android.webview.debug is NOT installed.\r\n    com.android.webview is NOT installed."
+  },
+  "error": "P4_ASSERT:one paid turn",
+  "visibleText": "彼方 · Kanata\n\n彼方 · Kanata\n\n在这里，开始另一种日常\n\n世界已准备好\n\n我的世界\n全局角色库\n世界书\n阿拜多斯 · 对策委员会日常\n1 个独立世界\n黑见芹香\n\n阿拜多斯 · 对策委员会日常 · 独立私聊\n\n返回世界\n对话模式：日常聊天\n回复等待：立即\n流式预览\n老师\n\n今天有什么安排？\n\n12:18 PM\n黑见芹香\n\n黑见芹香的合成测试回应。\n\n12:18 PM\n黑见芹香\n\n保留自己的观点。\n\n12:18 PM\n老师\n\n第一短句\n\n12:18 PM\n黑见芹香\n\n黑见芹香的合成测试回应。\n\n12:18 PM\n黑见芹香\n\n保留自己的观点。\n\n12:18 PM\n老师\n\n第二短句\n\n12:18 PM\n黑见芹香\n\n黑见芹香的合成测试回应。\n\n12:18 PM\n黑见芹香\n\n保留自己的观点。\n\n12:18 PM\n发送文字\n发送消息\n重试最近一轮\n本会话 AI 用量 · 3 次请求\n阿拜多斯为非官方同人文字预设。头像为文字占位或用户自行导入；没有官方图片、完整台词和虚构的历史聊天。\n\nMY PRIVATE SPACE\n\nForMyself\n\n生活面板\n\n首页总览\n今天\n月度报告\n回顾\n省钱计划\n目标\n体重记录\n健康\n心情日记\n感受\n彼方 · Kanata\n陪伴\n每日待办\n计划\n日程提醒\n安排\n密码库\n安全\n通用配置\n设置\n你的私人空间\n核心数据保存在设备内",
+  "finishedAt": "2026-10-28T12:18:51.401Z"
+}

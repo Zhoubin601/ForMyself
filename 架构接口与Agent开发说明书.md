@@ -431,3 +431,16 @@ Windows 使用 `npm.cmd`、`npx.cmd` 和 `android/gradlew.bat` 的对应命令�
 - [预设目录](src/features/chat/presets/presetCatalog.js) 声明id、版本、来源日期及授权状态，业务不硬编码五人名单。原始abydos.v1.json保持独立，只有文字摘要与占位头像；不包含官方图像和完整台词，不代表获公开分发许可。
 - 共享反馈接口新增 `cancelOwnedFeedbackDialog(symbol)`，只有相同owner能取消；`sensitive:true` 对话结束时清除全部文字、选项、输入及owner。普通反馈返回值和密码清空行为兼容。真实签名通过 contracts 的 KanataFeedbackOwner 及strict负向样例维护。
 - 验证：`npm run check`；P3 Web `node docs/qa/kanata-continuous/p3/verify-web.mjs`（需4173 Vite及系统Chrome）；P3 Android `node docs/qa/kanata-continuous/p3/verify-native.mjs`（需新空白任务AVD、正常生产APK及同目录production-build-verification.json，拒绝已有安装，不使用P2 QA入口）。证据与未覆盖项见 [P3验收](docs/20261028-kanata-stage-p3-verification-v1.md)。P4生成聊天、P5记忆因果、P6自治尚未实现。
+
+## 18. Kanata P4 文字对话与用量（2026-10-28）
+
+本节覆盖第17节的P4未实现状态。P5记忆/因果/生活联动和P6自治仍未开发，不能用文字聊天通过代表全部产品完成。
+
+- [kanataConversation](src/features/chat/domain/kanataConversation.js) 纯规则固定world/conversation/speaker，精确@优先（含别名，未知或歧义拒绝），群聊最多两人、按兴趣与最近参与判断，不递归调用模型。日常段落最多4气泡，RP整段保留；每角色整组气泡原子保存，取消/失败不会留下导致重试误跳过的半组完整回复。
+- 上下文只取本会话最多40条及24k UTF8保守预算、该实例锁定版本与覆盖、授权静态书、该角色公开关系和本世界用户身份。其他角色的群聊内容标记其真实身份，以user上下文提供，不能混成当前角色assistant历史；不读取其他私聊/世界、卡脚本、其他人格或生活Store。无read授权的数据源不调用；[read权限基础](src/features/chat/domain/kanataReadPermission.js) 的lazy reader检查world×instance×module，群分享额外要求share，read不推导remember/share。P4不提供生活模块绑定/授权UI或实际投影，留P5。
+- [kanataChatRuntime](src/application/kanataChatRuntime.js) 通过protectedAccess操作租约、Store.update持久化。页面owner会话revision前后检查；离页/切世界/过期Abort，结束再比较当前用户源消息与角色、会话和实际上下文，旧响应不能入新世界。失败保留最新待写与源消息；显式重试不复制用户发言或已完成角色。
+- [KanataConversationView](src/features/chat/KanataConversationView.vue) 按独立会话挂载，支持发送、停止、重试、@按钮、日常/RP、0/2/5/15秒等待、流式临时预览与用量。600ms窗口合并连续短句为一轮；无Key不发起调用、不生成假历史。输入、计时器、返回处理、所属弹窗、预览与watch在卸载释放。进入对话从顶部显示，回世界恢复原滚动。
+- [AI详细接口](src/platform/ai/completion.js) 由既有createAIClient及application/aiClient导出completeChat，旧askAI/streamAIChat字符串接口保留。配置仍取全局设置。CompletionOptions要求异步onAttempt；每个HTTP请求先持久化pending，终结更新同ID。新接口SSE/JSON使用真实usage，缺失保留null及独立保守估计，不借reasoning_content冒充回复。不记录Key、提示词、供应商错误正文或思维内容。超时/Abort/HTTP分类；仅一次自动回退或截断重试，部分中断不自动重演。
+- Kanata schema1增加可选usageEvents，旧图不必带此集合；校验全局ID冲突、world/conversation/member、Token整数、状态/时间和安全错误码。事件只含请求/目标ID、模型、传输、实际/估计计数及结果，无请求正文/Key。所有数据仍沿原仓库加密与单项/完整备份v13、实际协调器恢复；旧v1–v12策略不变。
+- [费用估算](src/features/chat/domain/kanataUsage.js) 版本deepseek-cny-20261028-range-v1，引用DeepSeek官方中文价格。使用峰/谷区间以避免猜测节假日；缓存明细缺失扩大区间，未知模型/非官方提供商不套官方价，结果不是账单。不设置应用费用限制；每轮2角色和1次重试为技术边界。已有用户模型/Key/URL不改，旧模型别名价格未提供时显示未知。
+- 验证入口：P4目录verify-web.mjs（新隔离Chrome+4173）、verify-native.mjs（新空白任务AVD+已核验生产APK）、verify-upgrade.mjs（只允许标记合成安装，覆盖升级保图与滚动/后台）。verify-live.mjs需要用户明确指定的外部测试Key文件，最多8组合成对话，不作为npm check自动任务；只在内存读取Key，原文件不改、不复制入项目。validate-live-results.mjs核查已记录真实响应，不重复计费。实际结论及失败修复见 [P4验收](docs/20261028-kanata-stage-p4-verification-v1.md)。

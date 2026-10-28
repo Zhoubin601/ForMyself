@@ -1,0 +1,25 @@
+✔ P4 transport JSON actual usage, stream ignored response and legacy methods stay compatible (16.6053ms)
+✔ P4 SSE collects usage-only chunk once and never exposes reasoning (1.0161ms)
+✔ P4 missing or invalid usage stays null rather than actual zero (0.3527ms)
+✔ P4 unsupported stream fallback creates two separately identified attempts (0.4789ms)
+✔ P4 truncation retry records both charges and returns only complete attempt (0.4436ms)
+✔ P4 repeated truncation is bounded and throws safe code (0.8831ms)
+✔ P4 timeout aborts fetch and finalizes attempt without leaking provider text (20.873ms)
+✔ P4 caller cancellation and persistence-before-request failure make zero extra calls (0.3015ms)
+✔ P4 interrupted partial stream does not auto replay or count partial output as complete (0.4253ms)
+✔ P4 HTTP errors never serialize provider credentials or private payload (0.26ms)
+✔ P4 @ chooses exact speaker, normal group is bounded and unknown mentions fail (19.5861ms)
+✔ P4 five persona contexts differ and exclude other personas, private chats and knowledge (2.4259ms)
+✔ P4 other group characters are labelled user-context, never merged into speaker assistant history (1.6542ms)
+✔ P4 modes preserve persona, identities and state; paragraphs cap without breaking RP (1.9053ms)
+✔ P4 archived or cross-world speaker cannot build a request (1.5004ms)
+✔ P4 attempts finalize once, strict scope validation and compatibility with old no-usage graph (9.1642ms)
+✔ P4 cost uses documented CNY range, cache accounting and unknown model/provider stays unpriced (1.3582ms)
+ℹ tests 17
+ℹ suites 0
+ℹ pass 17
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 116.6354

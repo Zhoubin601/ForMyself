@@ -67,3 +67,14 @@
   .kanata-form { padding: 16px 12px; }
 }
 @media (prefers-reduced-motion: reduce) { .kanata-manager button { transition: none; } }
+
+.kanata-chat-options { display:flex; flex-wrap:wrap; gap:1rem; align-items:center; }
+.kanata-chat-options label { display:grid; gap:.5rem; }
+.kanata-chat select { min-height:48px; max-width:100%; padding:.5rem; border:1px solid var(--theme-border); border-radius:.75rem; color:inherit; background:var(--theme-surface); font:inherit; }
+.kanata-chat-timeline { max-height:55vh; min-height:8rem; overflow:auto; overscroll-behavior:contain; margin:1rem 0; }
+.kanata-chat-message { margin:1rem .5rem 1rem 0; padding:1rem; border-radius:1rem; background:var(--canvas); border:1px solid var(--theme-border); overflow-wrap:anywhere; }
+.kanata-chat-message.is-user { margin-left:1rem; background:var(--theme-primary-soft); }
+.kanata-chat-message time { font-size:.8rem; opacity:.7; }
+.kanata-preview-message { opacity:.8; }
+.kanata-usage { margin-top:1rem; overflow-wrap:anywhere; }
+.kanata-usage li { margin:1rem 0; }

@@ -1,3 +1,5 @@
+import { createDetailedCompletion } from './completion.js'
+
 export function createAIClient(configuration) {
 
 const DEFAULT_SYSTEM_PROMPT = '你是一个真诚、温暖的个人生活伴侣。请用简短、自然、像真人发微信的语气说话。'
@@ -258,5 +260,5 @@ async function askAI(prompt) {
   })
 }
 
-  return { askAI, streamAIChat }
+  return { askAI, streamAIChat, completeChat: createDetailedCompletion(resolveRuntime) }
 }

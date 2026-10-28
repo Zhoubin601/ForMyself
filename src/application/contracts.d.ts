@@ -96,3 +96,6 @@ export type KanataRepository = ReturnType<typeof import('../features/chat/storag
 export type { ParsedCharacterCard, ImportedCardAsset, CardLoreCandidate } from '../features/chat/cards/characterCardTypes'
 export type KanataManagement = ReturnType<typeof import('./kanataManagement.js').createKanataManagement>
 export type KanataFeedbackOwner = Parameters<typeof import('../services/uiFeedback.js').cancelOwnedFeedbackDialog>[0]
+export type { CompletionOptions, CompletionAttempt, CompletionUsage } from '../platform/ai/completionTypes'
+export type { KanataUsageEvent } from '../features/chat/domain/kanataTypes'
+export type KanataChatRuntime = ReturnType<typeof import('./kanataChatRuntime.js').createKanataChatRuntime>

@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import DataStatusBanner from '../../components/DataStatusBanner.vue'
 import { appChoose, appConfirm, appPrompt, cancelOwnedFeedbackDialog } from '../../services/uiFeedback.js'
 import { registerBackHandler } from '../../services/backNavigation.js'
@@ -9,11 +9,22 @@ import { resolveKanataCharacter } from './domain/kanataManagementCore.js'
 import { previewKanataCardLore } from './lorebook/kanataLorebook.js'
 import { builtinKanataPresets } from './presets/presetCatalog.js'
 import { useKanataStore } from './kanataStore.js'
+import KanataConversationView from './KanataConversationView.vue'
 import KanataCardLibrary from './cards/KanataCardLibrary.vue'
 import KanataLorebookPanel from './lorebook/KanataLorebookPanel.vue'
 
 const store = useKanataStore(), management = createKanataManagement()
 const data = computed(() => store.snapshot), section = ref('world'), selectedWorldId = ref(''), notice = ref(''), error = ref(''), busy = ref(false)
+const selectedConversationId = ref('')
+const managerElement = ref(null)
+let worldScroll = 0
+watch(selectedConversationId, async (next, previous) => {
+  const frame = managerElement.value?.closest('.kanata-frame')
+  if (!frame) return
+  if (next && !previous) worldScroll = frame.scrollTop
+  await nextTick()
+  if (mounted) frame.scrollTop = next ? 0 : worldScroll
+})
 const identityDraft = ref(null), instanceDraft = ref(null)
 const dialogOwner = Symbol('kanata-management-dialog')
 let mounted = true, confirming = false
@@ -22,7 +33,7 @@ const world = computed(() => worlds.value.find(w => w.id === selectedWorldId.val
 watch(() => worlds.value.map(w => w.id).join('|'), () => {
   if (!world.value) selectedWorldId.value = worlds.value.find(w => !w.archived)?.id || worlds.value[0]?.id || ''
 }, { immediate: true })
-watch(selectedWorldId, () => { identityDraft.value = null; instanceDraft.value = null; error.value = ''; notice.value = '' })
+watch(selectedWorldId, () => { selectedConversationId.value = ''; identityDraft.value = null; instanceDraft.value = null; error.value = ''; notice.value = '' })
 const instances = computed(() => data.value?.instances.filter(i => i.worldId === world.value?.id) || [])
 const conversations = computed(() => data.value?.conversations.filter(c => c.worldId === world.value?.id && c.type !== 'character') || [])
 const identity = computed(() => data.value?.identities.find(i => i.worldId === world.value?.id))
@@ -119,13 +130,14 @@ onBeforeUnmount(()=>{mounted=false;identityDraft.value=null;instanceDraft.value=
 </script>
 
 <template>
-  <div v-if="data" class="kanata-manager">
+  <div v-if="data" ref="managerElement" class="kanata-manager">
     <header class="kanata-page-heading"><div><p class="kanata-eyebrow">彼方 · Kanata</p><h2>在这里，开始另一种日常</h2><p class="kanata-help">世界已准备好</p></div><span class="kanata-badge">文字世界</span></header>
     <DataStatusBanner :issues="issues" />
     <p v-if="notice" class="kanata-notice" role="status">{{ notice }}</p><p v-if="error" class="kanata-error" role="alert">{{ error }}</p>
     <nav class="kanata-sections" aria-label="彼方管理分区"><button type="button" :aria-pressed="section==='world'" @click="section='world'">我的世界</button><button type="button" :aria-pressed="section==='cards'" @click="section='cards'">全局角色库</button><button type="button" :aria-pressed="section==='lore'" @click="section='lore'">世界书</button></nav>
     <div class="kanata-world-toolbar"><button type="button" class="kanata-selection" :disabled="busy" @click="chooseWorld">{{ world?.name || '选择世界' }}<span>{{ world?.archived?'已归档':`${worlds.length} 个独立世界` }}</span></button></div>
-    <template v-if="section==='world' && world">
+    <KanataConversationView v-if="section==='world' && selectedConversationId" :key="selectedConversationId" :conversation-id="selectedConversationId" @close="selectedConversationId=''" />
+    <template v-if="section==='world' && world && !selectedConversationId">
       <section class="kanata-panel" aria-label="世界管理"><header class="kanata-section-heading"><h3>{{ world.name }}</h3><span v-if="world.archived" class="kanata-badge">已归档 · 自动活动关闭</span></header>
         <div class="kanata-count-grid"><div><strong>{{ instances.length }}</strong><span>角色实例</span></div><div><strong>{{ conversations.filter(c=>c.type==='private').length }}</strong><span>独立私聊</span></div><div><strong>{{ conversations.filter(c=>c.type==='group').length }}</strong><span>群聊</span></div></div>
         <p class="kanata-help">当前世界称谓：{{ identity?.displayName }} · 现实时间同步 · {{ world.timeZone }}</p>
@@ -138,7 +150,7 @@ onBeforeUnmount(()=>{mounted=false;identityDraft.value=null;instanceDraft.value=
         <form v-if="instanceDraft" class="kanata-form" novalidate @submit.prevent="saveInstance"><h4>{{ instanceDraft.name }} · 本世界独立覆盖</h4><label>本世界中的称呼<input v-model="instanceDraft.name" maxlength="200" /></label><label>人物概要<textarea v-model="instanceDraft.summary" rows="4" maxlength="20000"></textarea></label><label>说话习惯<textarea v-model="instanceDraft.speechStyle" rows="3" maxlength="10000"></textarea></label><div class="kanata-actions"><button type="submit" :disabled="worldBlocked||busy">保存实例设定</button><button type="button" @click="instanceDraft=null">取消实例编辑</button></div></form>
       </section>
       <section class="kanata-panel" aria-label="世界会话预览">
-        <h3>会话 · 独立保存的相遇</h3><ul class="kanata-conversation-list"><li v-for="conversation in conversations" :key="conversation.id"><strong>{{ conversation.title }}</strong><span>{{ conversation.type==='group'?'群聊':'私聊' }} · {{ conversation.participantIds.length-1 }} 位角色</span></li></ul><p class="kanata-help">角色和会话已准备，当前可管理世界与设定。文字对话暂未开放，不会自动生成聊天或发起 AI 请求。</p></section>
+        <h3>会话 · 独立保存的相遇</h3><ul class="kanata-conversation-list"><li v-for="conversation in conversations" :key="conversation.id"><button type="button" @click="selectedConversationId=conversation.id">{{ conversation.title }}</button><span>{{ conversation.type==='group'?'群聊':'私聊' }} · {{ conversation.participantIds.length-1 }} 位角色</span></li></ul><p class="kanata-help">选择私聊或群聊开始文字对话。只有主动发送才调用全局 DeepSeek，不会自动生成历史。</p></section>
       <section class="kanata-panel">
         <h3>另一个世界，从零开始</h3><div class="kanata-actions"><button type="button" :disabled="blocked||busy" @click="createWorld">创建空白世界</button><button type="button" :disabled="blocked||busy" @click="addPreset">从预设创建世界</button></div></section>
     </template>
