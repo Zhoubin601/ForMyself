@@ -1,0 +1,69 @@
+.kanata-frame { flex: 1; min-height: 0; width: 100%; overflow-y: auto; overscroll-behavior: contain; scroll-padding: 20px; }
+.kanata-manager { width: min(100%, 960px); margin: 0 auto; padding: 24px 20px calc(40px + env(safe-area-inset-bottom)); color: var(--ink); }
+.kanata-page-heading, .kanata-section-heading, .kanata-avatar-heading { display: flex; align-items: center; gap: 16px; justify-content: space-between; }
+.kanata-page-heading { margin-bottom: 24px; align-items: flex-start; }
+.kanata-manager h2 { font-size: clamp(1.375rem, 4.8vw, 1.75rem); line-height: 1.45; margin: 8px 0; overflow-wrap: anywhere; }
+.kanata-manager h3 { font-size: 1.1875rem; margin: 0 0 12px; line-height: 1.5; overflow-wrap: anywhere; }
+.kanata-manager h4 { font-size: 1rem; margin: 0 0 8px; line-height: 1.6; overflow-wrap: anywhere; }
+.kanata-manager p { line-height: 1.75; margin: 8px 0 16px; overflow-wrap: anywhere; }
+.kanata-manager button { min-height: 48px; min-width: 48px; padding: 10px 16px; font: inherit; line-height: 1.5; font-weight: 600; color: var(--theme-primary-strong); background: var(--theme-primary-soft); border: 1px solid var(--theme-border); border-radius: var(--radius-input); cursor: pointer; white-space: normal; overflow-wrap: anywhere; transition: background-color 140ms, opacity 140ms; }
+.kanata-manager button:active { background: var(--theme-primary-soft-strong); }
+.kanata-manager button:disabled { opacity: .48; cursor: default; }
+.kanata-manager :is(button,input,textarea,summary,pre):focus-visible { outline: 3px solid var(--theme-primary); outline-offset: 3px; }
+.kanata-eyebrow { color: var(--theme-primary-strong); font-size: .8125rem; font-weight: 700; letter-spacing: .1em; }
+.kanata-help { color: color-mix(in srgb, var(--ink) 70%, var(--canvas)); font-size: .8125rem; }
+.kanata-badge { display: inline-block; padding: 5px 10px; border-radius: 12px; color: var(--theme-primary-strong); background: var(--theme-primary-soft); font-size: .75rem; white-space: normal; flex-shrink: 0; }
+.kanata-sections { display: flex; gap: 8px; margin: 16px 0; padding: 6px; border-radius: 18px; background: var(--component-panel); border: 1px solid var(--hairline); }
+.kanata-sections button { flex: 1; min-width: 0; padding: 10px 6px; background: transparent; border-color: transparent; font-size: .875rem; }
+.kanata-sections button[aria-pressed="true"] { background: var(--theme-primary-soft); border-color: var(--theme-border); color: var(--theme-primary-strong); }
+.kanata-world-toolbar { margin-bottom: 20px; }
+.kanata-manager .kanata-selection { display: flex; width: 100%; text-align: left; justify-content: space-between; align-items: center; gap: 12px; background: var(--component-panel); }
+.kanata-selection span { font-size: .75rem; font-weight: 400; flex-shrink: 0; }
+.kanata-panel { padding: 24px; margin: 0 0 20px; background: var(--component-panel); border: 1px solid var(--hairline); border-radius: var(--radius-panel); box-shadow: var(--shadow-card); min-width: 0; }
+.kanata-section-heading { flex-wrap: wrap; margin-bottom: 16px; }
+.kanata-section-heading h3 { margin: 0; }
+.kanata-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0 0; }
+.kanata-count-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 12px; margin: 20px 0; }
+.kanata-count-grid div { padding: 16px 8px; text-align: center; background: var(--theme-surface); border-radius: var(--radius-input); }
+.kanata-count-grid strong { display: block; font-size: 1.5rem; color: var(--theme-primary-strong); }
+.kanata-count-grid span { display: block; font-size: .75rem; margin-top: 4px; }
+.kanata-character-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,260px),1fr)); gap: 16px; }
+.kanata-character-grid article { padding: 20px; border-radius: var(--radius-card); border: 1px solid var(--hairline); background: var(--surface-pearl); min-width: 0; }
+.kanata-avatar-heading { justify-content: flex-start; margin-bottom: 12px; }
+.kanata-avatar-heading h4 { overflow-wrap: anywhere; margin: 0; }
+.kanata-avatar-heading img, .kanata-avatar, .kanata-avatar-preview { flex-shrink: 0; width: 52px; height: 52px; object-fit: cover; border-radius: 18px; background: var(--theme-primary-soft); }
+.kanata-avatar { display: grid; place-items: center; color: var(--theme-primary-strong); font-size: 22px; }
+.kanata-character-grid .kanata-help { min-height: 3.5em; }
+.kanata-manager label { display: grid; gap: 8px; font-size: .875rem; line-height: 1.6; margin: 16px 0; min-width: 0; }
+.kanata-manager :is(input,textarea) { width: 100%; min-width: 0; min-height: 48px; padding: 12px; border: 1px solid var(--hairline); border-radius: var(--radius-input); color: var(--ink); background: var(--canvas); font: inherit; font-size: 1rem; }
+.kanata-manager textarea { resize: vertical; min-height: 88px; }
+.kanata-form { margin-top: 20px; padding: 20px; border-radius: var(--radius-card); background: var(--theme-surface); border: 1px solid var(--theme-border); }
+.kanata-manager .kanata-check { display: flex; align-items: center; gap: 12px; min-height: 48px; margin: 4px 0; }
+.kanata-check input { flex-shrink: 0; width: 24px; height: 24px; min-height: 24px; accent-color: var(--theme-primary-strong); }
+.kanata-manager fieldset { border: 1px solid var(--hairline); border-radius: var(--radius-input); padding: 12px; min-width: 0; }
+.kanata-manager .kanata-file-input { display: none; }
+.kanata-manager details { margin-top: 20px; }
+.kanata-manager summary { min-height: 48px; padding: 12px 0; line-height: 1.6; cursor: pointer; color: var(--theme-primary-strong); }
+.kanata-text, .kanata-raw { white-space: pre-wrap; user-select: text; -webkit-user-select: text; overflow-wrap: anywhere; }
+.kanata-raw { font: .75rem/1.8 ui-monospace, monospace; max-height: 320px; overflow: auto; padding: 12px; background: var(--canvas-parchment); border-radius: var(--radius-input); }
+.kanata-description { margin: 20px 0; font-size: .875rem; }
+.kanata-description dt { font-weight: 600; margin: 16px 0 4px; }
+.kanata-description dd { margin: 0; line-height: 1.8; overflow-wrap: anywhere; white-space: pre-wrap; }
+.kanata-manager .kanata-notice { padding: 14px 16px; background: var(--theme-primary-soft); color: var(--theme-primary-strong); border-radius: var(--radius-input); }
+.kanata-manager .kanata-error { padding: 14px 16px; border: 1px solid currentColor; background: var(--canvas); color: #8c3024; border-radius: var(--radius-input); }
+.kanata-import-preview { padding: 20px; margin: 16px 0; border: 1px solid var(--theme-border); background: var(--theme-surface); border-radius: var(--radius-card); }
+.kanata-conversation-list, .kanata-lore-list { list-style: none; padding: 0; margin: 16px 0; }
+.kanata-conversation-list li { display: flex; justify-content: space-between; gap: 12px; padding: 16px 0; border-bottom: 1px solid var(--hairline); font-size: .875rem; }
+.kanata-conversation-list span { flex-shrink: 0; font-size: .75rem; }
+.kanata-lore-list > li { padding: 20px 0; border-top: 1px solid var(--hairline); overflow-wrap: anywhere; }
+.kanata-lore-list > li > div { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.kanata-footer { padding: 8px 4px 24px; color: color-mix(in srgb,var(--ink) 70%,var(--canvas)); font-size: 12px; line-height: 1.9; }
+@media (max-width: 480px) {
+  .kanata-manager { padding: 20px 12px calc(32px + env(safe-area-inset-bottom)); }
+  .kanata-panel { padding: 20px 16px; }
+  .kanata-page-heading > .kanata-badge { display: none; }
+  .kanata-manager .kanata-selection { align-items: flex-start; flex-direction: column; gap: 4px; }
+  .kanata-character-grid article { padding: 16px; }
+  .kanata-form { padding: 16px 12px; }
+}
+@media (prefers-reduced-motion: reduce) { .kanata-manager button { transition: none; } }

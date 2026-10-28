@@ -57,3 +57,36 @@ void unsafeFullVersion
 // @ts-expect-error only internal canonical modes are supported
 const unsafeRestoreMode: KanataRestoreSnapshot['mode'] = 'merge'
 void unsafeRestoreMode
+
+import { parseCharacterCardBytes, parseCharacterCardFile } from '../../src/features/chat/cards/characterCardImport.js'
+import { createKanataWorld, previewKanataCardSync, syncKanataCard, updateKanataCharacter } from '../../src/features/chat/domain/kanataManagementCore.js'
+import { selectKanataLorebook } from '../../src/features/chat/lorebook/kanataLorebook.js'
+import type { ParsedCharacterCard, KanataManagement } from '../../src/application/contracts'
+declare const management: KanataManagement
+const parsed: ParsedCharacterCard = parseCharacterCardBytes(new Uint8Array(), {fileName:'synthetic.json'})
+management.importCard(parsed)
+const creation = {key:'manual',now:1000,timeZone:'Asia/Shanghai',idFactory:options.idFactory}
+createKanataWorld(empty,{name:'World',rules:'',displayName:'User',background:''},creation)
+syncKanataCard(empty,'card',previewKanataCardSync(empty,'card'))
+// @ts-expect-error card files are binary data, not path strings
+parseCharacterCardBytes('unsafe-path', {fileName:'synthetic.json'})
+// @ts-expect-error async file reader must return binary, not arbitrary text
+parseCharacterCardFile({name:'x.json',size:1,type:'application/json',arrayBuffer:async()=> 'text'})
+// @ts-expect-error a world requires an explicitly supplied identity
+createKanataWorld(empty,{name:'World',rules:''},creation)
+// @ts-expect-error synchronization requires a revision-checked preview, not raw IDs
+syncKanataCard(empty,'card',['instance'])
+// @ts-expect-error overrides cannot mutate instance state or grant permissions
+updateKanataCharacter(empty,'instance',{state:{mood:'unsafe'}})
+// @ts-expect-error context budget is a number with runtime bounds
+selectKanataLorebook(empty,{worldId:'world',instanceId:'instance',text:'',tokenBudget:'100'})
+// @ts-expect-error archive is an independent boolean
+const unsafeArchived: NonNullable<KanataData['worlds'][number]['archived']> = 'yes'
+void unsafeArchived
+
+import { cancelOwnedFeedbackDialog } from '../../src/services/uiFeedback.js'
+import type { KanataFeedbackOwner } from '../../src/application/contracts'
+const feedbackOwner: KanataFeedbackOwner = Symbol('synthetic-owner')
+cancelOwnedFeedbackDialog(feedbackOwner)
+// @ts-expect-error a text label cannot cancel an owned dialog
+cancelOwnedFeedbackDialog('other-owner')

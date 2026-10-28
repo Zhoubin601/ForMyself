@@ -9,8 +9,8 @@ vi.mock('../src/composables/useAppController.js', () => ({
   useAppController: () => controller
 }))
 
-vi.mock('../src/features/chat/KanataSetupView.vue', () => ({ default: {
-  name: 'KanataSetupView', props: ['isVisible'], data: () => ({ draft: 'initial' }),
+vi.mock('../src/features/chat/KanataView.vue', () => ({ default: {
+  name: 'KanataView', props: ['isVisible'], data: () => ({ draft: 'initial' }),
   beforeUnmount() { moduleUnmounted() },
   template: '<section data-test="chat" :data-visible="isVisible"><input v-model="draft" /></section>'
 } }))

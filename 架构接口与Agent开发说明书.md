@@ -419,3 +419,15 @@ Windows 使用 `npm.cmd`、`npx.cmd` 和 `android/gradlew.bat` 的对应命令�
 - `scripts/start-kanata-qa.ps1` 只创建任务空白 AVD；`-NewRun` 在核实任务清单和设备身份、等待进程退出后，保留旧合成磁盘原路径并建立带时间戳的新空白目录，不 wipe/卸载/清数据，不移动 raw。`scripts/kanata-device-guard.mjs` 与负向测试核验名称、序列号、绝对路径和 syntheticOnly。
 - Android Filesystem 8.1.x 的目录已存在错误码 `OS-PLUG-FILE-0010` 与 `EEXIST` 同义；Kanata 仓库明确兼容这两个码。权限拒绝等其他码仍报保存失败，不能按错误消息兜底当已存在。原生故障与 Node 回归见 `docs/qa/kanata-local-20261028/`。
 - Web 驱动允许 `KANATA_QA_OUTPUT` 指定本轮证据目录，避免覆盖历史云端结果；默认行为不变。
+
+## 17. Kanata P3 世界、角色卡和世界书（2026-10-28）
+
+- chat 页面现在懒加载 [KanataView](src/features/chat/KanataView.vue)，仍 protected/cache=false；未完成首启时呈现既有 Setup，成功后进入世界管理。路由滚动位置经 settings.currentRoute 保存，卸载清理文件读取、草稿、返回处理及所属弹窗。
+- [kanataManagement](src/application/kanataManagement.js) 是页面唯一修改门面，使用受保护操作租约，并在排队前后核对创建页面时的 sessionRevision；最终调用 Store.update/retrySave，Store 继续负责加载、恢复门禁及失败待写语义。领域纯函数位于 [kanataManagementCore](src/features/chat/domain/kanataManagementCore.js)，不导入 Store。
+- 世界创建/复制均分离实例和身份；复制仅静态设定、成员及初始组织关系，不带经历、动态状态、任务或生活授权。归档可逆，关闭自动活动；取消归档不会自动打开计费或通知开关。
+- [角色卡解析](src/features/chat/cards/characterCardImport.js) 声明支持 JSON V1、V2/2.0、V3/3.0 和静态 PNG tEXt chara/ccv3（ccv3 优先），限制8MB文件/2MB JSON/16M像素/4096 chunks/500世界书条目；头像覆盖限2MB PNG。校验尺寸、CRC、结构、MIME与版本；APNG、未来版本和未声明编码拒绝。保留源字节及未知 JSON 扩展，不执行脚本、regex或远程资源。导出纯函数保留未知字段，PNG更新元数据及CRC；全备沿既有协调器保留原卡与头像。
+- 角色卡新版本不改既有实例锁定版本，显式同步需要包含实例revision的预览；保留实例覆盖及经历。说话习惯扩展键为 `formyself.kanata/speechStyle.v1`，冲突拒绝而非覆盖未知值。新增可选字段沿用 Kanata schema1及全备v13，不修改加密、数据库或旧v1–v12兼容策略。
+- [世界书](src/features/chat/lorebook/kanataLorebook.js) 先检查world/owner/knownBy，再激活与预算排序；采用保守UTF-8字节上界，非计费Token。附带世界书显式预览、默认角色私有、冲突跳过；静态书不写成事件或记忆。用户称谓单次占位替换，不递归解释输入。
+- [预设目录](src/features/chat/presets/presetCatalog.js) 声明id、版本、来源日期及授权状态，业务不硬编码五人名单。原始abydos.v1.json保持独立，只有文字摘要与占位头像；不包含官方图像和完整台词，不代表获公开分发许可。
+- 共享反馈接口新增 `cancelOwnedFeedbackDialog(symbol)`，只有相同owner能取消；`sensitive:true` 对话结束时清除全部文字、选项、输入及owner。普通反馈返回值和密码清空行为兼容。真实签名通过 contracts 的 KanataFeedbackOwner 及strict负向样例维护。
+- 验证：`npm run check`；P3 Web `node docs/qa/kanata-continuous/p3/verify-web.mjs`（需4173 Vite及系统Chrome）；P3 Android `node docs/qa/kanata-continuous/p3/verify-native.mjs`（需新空白任务AVD、正常生产APK及同目录production-build-verification.json，拒绝已有安装，不使用P2 QA入口）。证据与未覆盖项见 [P3验收](docs/20261028-kanata-stage-p3-verification-v1.md)。P4生成聊天、P5记忆因果、P6自治尚未实现。

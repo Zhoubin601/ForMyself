@@ -1,0 +1,98 @@
+✔ P3-card JSON V1/V2/V3 preserves all supported fields and inert unknown extensions (5.0161ms)
+✔ P3-card PNG chara and ccv3 decode UTF8; ccv3 takes precedence without executing embedded references (5.3851ms)
+✔ P3-card PNG export embeds edited current data while preserving actual image chunks (2.3428ms)
+✔ P3-card rejects malformed PNG signatures, CRCs, overflowing/truncated chunks and trailing bytes (0.9962ms)
+✔ P3-card duplicate metadata, missing card, invalid base64 and invalid JSON fail explicitly (2.615ms)
+✔ P3-card file extension, MIME, version and field errors do not become partial imported cards (1.1633ms)
+✔ P3-card regex remains raw and disabled; selective/case-sensitive/constant lore retains declared semantics (1.0894ms)
+✔ P3-card prototype-looking JSON remains inert and independent, without global mutation (1.1844ms)
+✔ P3-card imported original bytes/avatar survive full domain validation; remote/SVG avatars are refused (3.9093ms)
+✔ P3-card built-in definitions export as interoperable JSON without losing original preset metadata (0.9759ms)
+✖ P3-review1 invalid PNG color-depth combinations and animated image chunks are rejected (1.4109ms)
+✖ P3-review1 selective lore with no secondary key stays disabled instead of broadening activation (0.7264ms)
+✔ P3-world new world is empty, has editable independent identity, and preserves the input (36.4817ms)
+✔ P3-world same card creates independently in another world, with own state and private conversation (11.3958ms)
+✔ P3-world copy only static settings/knowledge/roles; original experiences and grants never cross (7.6004ms)
+✔ P3-world archive is reversible, disables automation and rejects ordinary world edits (8.267ms)
+✔ P3-card global import is byte-idempotent and raw data is retained through backup (18.3557ms)
+✔ P3-card immutable version updates need explicit selection, preserving overrides and experience (18.1849ms)
+✔ P3-lore authorization precedes activation/budget, never searching another world or private owner (8.1204ms)
+✔ P3-lore deterministic budgets and selective/case-sensitive keys are bounded without regex (3.9008ms)
+✔ P3-lore card knowledge import defaults private, detects conflicts and never overwrites (11.4808ms)
+✔ P3-lore edit is revision checked and a duplicate content cannot silently replace another entry (7.9304ms)
+✔ P3-identity world user placeholders change without mutating the base card or other world (8.7499ms)
+✖ P3-review1 editing an imported card preserves unrelated primitive extensions, examples and scenario (7.7319ms)
+ℹ tests 24
+ℹ suites 0
+ℹ pass 21
+ℹ fail 3
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 306.0765
+
+✖ failing tests:
+
+test at tests\characterCardImport.test.js:128:1
+✖ P3-review1 invalid PNG color-depth combinations and animated image chunks are rejected (1.4109ms)
+  AssertionError [ERR_ASSERTION]: Missing expected exception.
+      at TestContext.<anonymous> (file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata/tests/characterCardImport.test.js:131:10)
+      at Test.runInAsyncScope (node:async_hooks:228:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: /INVALID_CARD_PNG_HEADER/,
+    operator: 'throws',
+    diff: 'simple'
+  }
+
+test at tests\characterCardImport.test.js:134:1
+✖ P3-review1 selective lore with no secondary key stays disabled instead of broadening activation (0.7264ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  true !== false
+  
+      at TestContext.<anonymous> (file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata/tests/characterCardImport.test.js:137:10)
+      at Test.runInAsyncScope (node:async_hooks:228:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests\kanataManagement.test.js:144:1
+✖ P3-review1 editing an imported card preserves unrelated primitive extensions, examples and scenario (7.7319ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + {
+  +   speechStyle: '新的表达节奏'
+  + }
+  - 'unrelated-extension'
+  
+      at TestContext.<anonymous> (file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata/tests/kanataManagement.test.js:152:10)
+      at Test.runInAsyncScope (node:async_hooks:228:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { speechStyle: '新的表达节奏' },
+    expected: 'unrelated-extension',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

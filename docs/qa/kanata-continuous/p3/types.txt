@@ -1,0 +1,6 @@
+
+> formyself-app@0.0.0 typecheck
+> vue-tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.contracts.json
+
+src/features/chat/cards/characterCardImport.js(61,12): error TS7053: Element implicitly has an 'any' type because expression of type 'number' can't be used to index type '{ 0: number[]; 2: number[]; 3: number[]; 4: number[]; 6: number[]; }'.
+  No index signature with a parameter of type 'number' was found on type '{ 0: number[]; 2: number[]; 3: number[]; 4: number[]; 6: number[]; }'.

@@ -10,10 +10,13 @@ import { createKanataRepository } from './storage/kanataRepository.js'
 
 /** @typedef {import('./domain/kanataTypes').KanataData} KanataData */
 /** @typedef {ReturnType<typeof createKanataRepository>} KanataRepository */
+/** @param {string} code */
 const failure = (code) => Object.assign(new Error(code), { code })
-const safeErrorCode = (error, fallback) => (
-  typeof error?.code === 'string' && /^[A-Z][A-Z0-9_]*$/.test(error.code) ? error.code : fallback
-)
+/** @param {unknown} error @param {string} fallback */
+const safeErrorCode = (error, fallback) => {
+  const code = error && typeof error === 'object' && 'code' in error ? error.code : undefined
+  return typeof code === 'string' && /^[A-Z][A-Z0-9_]*$/.test(code) ? code : fallback
+}
 
 /**
  * Session-owned plaintext facade. The repository retains only ciphertext between operations.

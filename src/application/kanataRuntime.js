@@ -11,7 +11,7 @@ import { useChatStore as useLegacyChatStore } from '../features/chat/chatStore.j
 import { useKanataStore } from '../features/chat/kanataStore.js'
 import { createLegacyChatCleanup } from '../features/chat/legacy/legacyChatCleanup.js'
 import { withKanataInitializationScope } from '../features/chat/domain/initializationGate.js'
-import preset from '../features/chat/presets/abydos.v1.json'
+import { getBuiltinKanataPreset, DEFAULT_KANATA_PRESET_ID } from '../features/chat/presets/presetCatalog.js'
 
 /** Protected composition root. File deletion exists only in the explicitly confirmed cleanup coordinator. */
 export function createKanataRuntime(adapters = {}) {
@@ -51,7 +51,7 @@ export function createKanataRuntime(adapters = {}) {
         // A previous seed can be visible while its disk write failed. Never label it successful until flush.
         await store.flush()
         if (store.snapshot?.worlds.length) return { status: 'already-initialized' }
-        await withKanataInitializationScope(() => store.initializePreset(preset, {
+        await withKanataInitializationScope(() => store.initializePreset(getBuiltinKanataPreset(DEFAULT_KANATA_PRESET_ID), {
           initializationKey: 'initial-abydos-v1', now: Date.now(),
           timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
           idFactory: (kind, key) => kind + '-' + CryptoJS.SHA256(key).toString().slice(0, 32)

@@ -7,6 +7,7 @@ export interface World {
   createdAt: number; lastSimulatedAt: number; autonomyEnabled: boolean
   proactiveEnabled: boolean; notificationsEnabled: boolean; defaultChatMode: ChatMode
   presetSourceId?: string; presetVersion?: number
+  archived?: boolean
 }
 export interface CharacterDefinition {
   name: string; aliases: string[]; summary: string; anchors: string[]; speechStyle: string
@@ -14,11 +15,14 @@ export interface CharacterDefinition {
   knowledgeBoundary: string; addressRule: string; driftGuards: string[]
   promptPriority: ('worldRules' | 'core' | 'worldIdentity' | 'knowledge' | 'style')[]
   avatarPlaceholder: string
+  avatarDataUrl?: string
+  scenario?: string; exampleDialogue?: string; greetings?: string[]; groupGreetings?: string[]
 }
 export interface CharacterCard { id: string; currentVersionId: string; archived: boolean; presetKey?: string }
 export interface CharacterCardVersion {
   id: string; cardId: string; revision: number; definition: CharacterDefinition
   rawData: JsonValue; source: string
+  imported?: import('../cards/characterCardTypes').ImportedCardAsset
 }
 export interface CharacterInstance {
   id: string; worldId: string; cardId: string; cardVersionId: string; revision: number
@@ -42,6 +46,7 @@ export interface LorebookEntry {
   id: string; worldId: string; scope: 'world' | 'character' | 'system'; ownerId: string
   keys: string[]; content: string; priority: number; activationRule: 'keyword' | 'always'
   visibility: Visibility; knownBy: string[]; sourceTag: string; revision: number
+  enabled?: boolean; caseSensitive?: boolean; secondaryKeys?: string[]
 }
 export interface Memory {
   id: string; worldId: string; ownerType: 'world' | 'character'; ownerId: string

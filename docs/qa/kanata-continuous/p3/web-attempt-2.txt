@@ -1,0 +1,12 @@
+PASS first-seed-exact-and-no-key
+PASS world-create-and-independent-instance
+PASS world-identity-and-instance-overrides
+PASS global-version-preview-selective-sync
+PASS json-preview-cancel-and-confirm
+PASS png-v3-import-and-corrupt-rejection
+PASS attached-lore-private-and-conflict-skip
+PASS role-knowledge-filter-and-world-switch
+PASS world-copy-and-reversible-archive
+PASS navigation-scroll-restoration
+PASS cold-browser-reload
+PASS session-expiry-clears-management

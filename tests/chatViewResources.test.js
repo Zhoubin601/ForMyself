@@ -8,7 +8,7 @@ test('侧栏与首页陪伴卡复用 chat 路由进入受保护的彼方入口',
   const home = read('components/HomeView.vue')
   const chat = moduleRegistry.get('chat')
   assert.equal(chat.title, '彼方 · Kanata')
-  assert.equal(chat.name, 'KanataSetupView')
+  assert.equal(chat.name, 'KanataView')
   assert.equal(chat.cache, false)
   assert.equal(chat.access, 'protected')
   assert.equal(moduleRegistry.menu({ warmHomeEnabled: true }).some(m => m.id === 'chat'), true)

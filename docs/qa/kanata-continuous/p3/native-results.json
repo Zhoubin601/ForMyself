@@ -1,0 +1,138 @@
+{
+  "startedAt": "2026-10-28T08:45:47.696Z",
+  "status": "PASS",
+  "serial": "emulator-5580",
+  "avd": "KanataP2Synthetic34",
+  "apkSha256": "799d48a8f1030de9185d2f64c1859a7bbbace2248d5c5e2fdebb37fdbdd45fda",
+  "checks": {
+    "install-production-apk": {
+      "status": "PASS",
+      "elapsedMs": 505,
+      "result": "Performing Streamed Install\r\nSuccess"
+    },
+    "seed-three-cold-reentries-no-duplicates": {
+      "status": "PASS",
+      "elapsedMs": 19805,
+      "result": {
+        "reentries": 3,
+        "worlds": 1,
+        "instances": 5,
+        "private": 5,
+        "group": 1,
+        "messages": 0,
+        "memories": 0,
+        "events": 0
+      }
+    },
+    "first-seed-exact-and-no-key": {
+      "status": "PASS",
+      "elapsedMs": 66,
+      "result": {
+        "worlds": 1,
+        "cards": 5,
+        "instances": 5,
+        "private": 5,
+        "group": 1,
+        "lore": 13,
+        "relationships": 25,
+        "messages": 0,
+        "memories": 0,
+        "events": 0
+      }
+    },
+    "world-create-and-independent-instance": {
+      "status": "PASS",
+      "elapsedMs": 4547,
+      "result": {
+        "worlds": 2,
+        "instances": 6
+      }
+    },
+    "world-identity-and-instance-overrides": {
+      "status": "PASS",
+      "elapsedMs": 4864,
+      "result": true
+    },
+    "global-version-preview-selective-sync": {
+      "status": "PASS",
+      "elapsedMs": 5584,
+      "result": true
+    },
+    "json-preview-cancel-and-confirm": {
+      "status": "PASS",
+      "elapsedMs": 2267,
+      "result": true
+    },
+    "png-v3-import-and-corrupt-rejection": {
+      "status": "PASS",
+      "elapsedMs": 1932,
+      "result": {
+        "cards": 7,
+        "crcRejected": true
+      }
+    },
+    "attached-lore-private-and-conflict-skip": {
+      "status": "PASS",
+      "elapsedMs": 5679,
+      "result": true
+    },
+    "role-knowledge-filter-and-world-switch": {
+      "status": "PASS",
+      "elapsedMs": 4474,
+      "result": true
+    },
+    "world-copy-and-reversible-archive": {
+      "status": "PASS",
+      "elapsedMs": 9653,
+      "result": true
+    },
+    "navigation-scroll-restoration": {
+      "status": "PASS",
+      "elapsedMs": 1176,
+      "result": true
+    },
+    "native-full-backup-p3-assets-and-worlds": {
+      "status": "PASS",
+      "elapsedMs": 4059,
+      "result": {
+        "version": 13,
+        "worlds": 3,
+        "importedAssets": 2,
+        "exactGraph": true
+      }
+    },
+    "native-final-cold-reload": {
+      "status": "PASS",
+      "elapsedMs": 8314,
+      "result": true
+    },
+    "native-background-releases-plaintext": {
+      "status": "PASS",
+      "elapsedMs": 2136,
+      "result": true
+    },
+    "native-owned-dialog-expiry": {
+      "status": "PASS",
+      "elapsedMs": 1047,
+      "result": true
+    }
+  },
+  "pageErrors": [],
+  "aiRequests": 0,
+  "environment": {
+    "android": "14",
+    "api": "34",
+    "webview": "Current WebView Update Service state\r\n  Multiprocess enabled: true\r\n  Current WebView package (name, version): (com.google.android.webview, 113.0.5672.136)\r\n  Minimum targetSdkVersion: 33\r\n  Minimum WebView version code: 567263637\r\n  Number of relros started: 1\r\n  Number of relros finished: 1\r\n  WebView package dirty: false\r\n  Any WebView package installed: true\r\n  Preferred WebView package (name, version): (com.google.android.webview, 113.0.5672.136)\r\n  WebView packages:\r\n    Valid package com.google.android.webview (versionName: 113.0.5672.136, versionCode: 567263637, targetSdkVersion: 34) is  installed/enabled for all users\r\n    com.google.android.webview.beta is NOT installed.\r\n    com.google.android.webview.dev is NOT installed.\r\n    com.google.android.webview.canary is NOT installed.\r\n    com.google.android.webview.debug is NOT installed.\r\n    com.android.webview is NOT installed."
+  },
+  "finalCounts": {
+    "worlds": 3,
+    "cards": 7,
+    "instances": 12,
+    "conversations": 14,
+    "lorebook": 27,
+    "messages": 0,
+    "memories": 0,
+    "events": 0
+  },
+  "finishedAt": "2026-10-28T08:47:20.838Z"
+}

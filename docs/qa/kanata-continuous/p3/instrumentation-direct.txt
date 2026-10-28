@@ -1,0 +1,12 @@
+
+com.getcapacitor.myapp.ExampleInstrumentedTest:.
+com.yubin.formyself.ArchitectureContractTest:...
+com.yubin.formyself.TodoNativeTest:....
+com.yubin.formyself.TodoWidgetHarness:
+com.yubin.formyself.TodoWidgetHarness:
+
+Time: 3.475
+
+OK (9 tests)
+
+

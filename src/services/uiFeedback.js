@@ -12,6 +12,8 @@ const defaultDialog = () => ({
   inputValue: '',
   inputPlaceholder: '',
   inputType: 'text',
+  sensitive: false,
+  owner: null,
   options: []
 })
 
@@ -91,7 +93,15 @@ export const resolveFeedbackDialog = value => {
   activeResolver = null
   uiFeedbackState.dialog.open = false
   if (uiFeedbackState.dialog.inputType === 'password') uiFeedbackState.dialog.inputValue = ''
+  if (uiFeedbackState.dialog.sensitive) Object.assign(uiFeedbackState.dialog, defaultDialog())
   resolve?.(value)
+}
+
+/** Cancel only a dialog opened by this component. @param {symbol} owner */
+export const cancelOwnedFeedbackDialog = owner => {
+  if (!uiFeedbackState.dialog.open || uiFeedbackState.dialog.owner !== owner) return false
+  resolveFeedbackDialog(null)
+  return true
 }
 
 export const appToast = (message, options = {}) => {

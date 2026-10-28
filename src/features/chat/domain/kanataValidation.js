@@ -15,6 +15,12 @@ const object = (value, path) => requireKanata(value !== null && typeof value ===
 const text = (value, path, empty = false) => requireKanata(typeof value === 'string' && (empty || value.trim().length > 0), 'INVALID_TEXT', path)
 /** @param {unknown} value @param {string} path */
 export const validateId = (value, path) => requireKanata(typeof value === 'string' && /^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$/.test(value), 'INVALID_ID', path)
+/** @param {unknown} value @param {string} path */
+export const validateCharacterAvatar = (value, path) => {
+  requireKanata(typeof value === 'string' && value.length <= 12 * 1024 * 1024 && value.startsWith('data:image/png;base64,'), 'INVALID_CHARACTER_AVATAR', path)
+  const data = /** @type {string} */(value).slice(22)
+  requireKanata(data.length > 0 && data.length % 4 === 0 && /^[A-Za-z0-9+/]*={0,2}$/.test(data), 'INVALID_CHARACTER_AVATAR', path)
+}
 /** @param {unknown} value @param {string} path @param {number} [minimum] */
 const integer = (value, path, minimum = 0) => requireKanata(Number.isSafeInteger(value) && Number(value) >= minimum, 'INVALID_INTEGER', path)
 /** @param {unknown} value @param {string} path */
@@ -59,6 +65,11 @@ export function validateCharacterDefinition(value, path = 'definition') {
   object(value, path)
   const d = /** @type {import('./kanataTypes').CharacterDefinition} */(value)
   for (const key of /** @type {const} */(['name', 'summary', 'speechStyle', 'disagreementStyle', 'knowledgeBoundary', 'addressRule', 'avatarPlaceholder'])) text(d[key], path + '.' + key)
+  if (d.avatarDataUrl !== undefined) validateCharacterAvatar(d.avatarDataUrl, path + '.avatarDataUrl')
+  for (const key of /** @type {const} */(['scenario', 'exampleDialogue'])) if (d[key] !== undefined) text(d[key], path + '.' + key, true)
+  for (const key of /** @type {const} */(['greetings', 'groupGreetings'])) if (d[key] !== undefined) {
+    requireKanata(Array.isArray(d[key]) && d[key].every(value => typeof value === 'string'), 'INVALID_CHARACTER_GREETINGS', path + '.' + key)
+  }
   for (const key of /** @type {const} */(['aliases', 'anchors', 'motivations', 'interests', 'driftGuards'])) strings(d[key], path + '.' + key)
   requireKanata(d.anchors.length > 0 && d.driftGuards.length > 0, 'EMPTY_PERSONA', path)
   strings(d.promptPriority, path + '.promptPriority')
@@ -130,6 +141,7 @@ export function validateKanataData(input) {
     integer(w.createdAt, 'world.createdAt'); integer(w.lastSimulatedAt, 'world.lastSimulatedAt')
     requireKanata(w.lastSimulatedAt >= w.createdAt, 'INVALID_TIME_WATERMARK', 'world.lastSimulatedAt')
     bool(w.autonomyEnabled, 'world.autonomyEnabled'); bool(w.proactiveEnabled, 'world.proactiveEnabled'); bool(w.notificationsEnabled, 'world.notificationsEnabled')
+    if (w.archived !== undefined) bool(w.archived, 'world.archived')
     choice(w.defaultChatMode, ['daily', 'roleplay'], 'world.defaultChatMode')
     requireKanata(data.identities.filter(u => u.worldId === w.id).length === 1, 'WORLD_IDENTITY_REQUIRED', 'world')
     if (w.presetSourceId !== undefined) { text(w.presetSourceId, 'world.presetSourceId'); integer(w.presetVersion, 'world.presetVersion', 1) }
@@ -149,6 +161,15 @@ export function validateKanataData(input) {
     requireKanata(!cardRevisions.has(key), 'DUPLICATE_CARD_REVISION', 'cardVersion'); cardRevisions.add(key)
     validateCharacterDefinition(v.definition); text(v.source, 'cardVersion.source')
     requireKanata(Object.hasOwn(v, 'rawData'), 'MISSING_CARD_RAW_DATA', 'cardVersion.rawData')
+    if (v.imported !== undefined) {
+      object(v.imported, 'cardVersion.imported')
+      text(v.imported.fileName, 'cardVersion.imported.fileName')
+      requireKanata(v.imported.fileName.length <= 255 && !/[\\/\u0000-\u001f]/.test(v.imported.fileName), 'INVALID_CARD_FILE_NAME', 'cardVersion.imported.fileName')
+      choice(v.imported.format, ['json', 'png'], 'cardVersion.imported.format')
+      const bytes = v.imported.sourceBase64
+      requireKanata(typeof bytes === 'string' && bytes.length > 0 && bytes.length <= 12 * 1024 * 1024 && bytes.length % 4 === 0 && /^[A-Za-z0-9+/]*={0,2}$/.test(bytes), 'INVALID_CARD_SOURCE_BYTES', 'cardVersion.imported.sourceBase64')
+      if (v.imported.avatarDataUrl !== undefined) validateCharacterAvatar(v.imported.avatarDataUrl, 'cardVersion.imported.avatarDataUrl')
+    }
   })
   data.identities.forEach(u => {
     requireKanata(u.userId === data.userId, 'INVALID_USER_IDENTITY', 'identity.userId')
@@ -188,6 +209,9 @@ export function validateKanataData(input) {
     choice(l.scope, ['world', 'character', 'system'], 'lore.scope'); choice(l.visibility, ['public', 'private', 'participants'], 'lore.visibility')
     requireKanata(l.scope === 'character' ? instances.has(l.ownerId) : l.ownerId === l.worldId, 'INVALID_LORE_OWNER', 'lore.ownerId'); scoped(l.ownerId, l.worldId, 'lore.owner')
     l.knownBy.forEach(id => participant(id, l.worldId, 'lore.knownBy'))
+    if (l.enabled !== undefined) bool(l.enabled, 'lore.enabled')
+    if (l.caseSensitive !== undefined) bool(l.caseSensitive, 'lore.caseSensitive')
+    if (l.secondaryKeys !== undefined) strings(l.secondaryKeys, 'lore.secondaryKeys')
     integer(l.priority, 'lore.priority'); integer(l.revision, 'lore.revision', 1)
     choice(l.activationRule, ['keyword', 'always'], 'lore.activationRule'); text(l.sourceTag, 'lore.sourceTag')
     requireKanata(l.visibility !== 'private' || l.knownBy.length > 0, 'PRIVATE_KNOWLEDGE_REQUIRED', 'lore.knownBy')

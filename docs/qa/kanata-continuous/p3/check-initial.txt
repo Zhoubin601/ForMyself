@@ -1,0 +1,668 @@
+
+> formyself-app@0.0.0 check
+> npm run lint && npm test && npm run test:component && npm run typecheck && npm run build
+
+
+> formyself-app@0.0.0 lint
+> eslint src tests scripts vite.config.js
+
+
+D:\2026Autumn Semester File\GitHub\formyself-app\.worktrees\kanata\src\components\settings\SettingsBackup.vue
+  26:43  warning  Attribute "ref" should go before "accept"  vue/attributes-order
+
+D:\2026Autumn Semester File\GitHub\formyself-app\.worktrees\kanata\src\components\settings\SettingsCatalogs.vue
+  201:18  warning  Expected 1 line break after opening tag (`<button>`), but no line breaks found    vue/multiline-html-element-content-newline
+  201:20  warning  Expected 1 line break before closing tag (`</button>`), but no line breaks found  vue/multiline-html-element-content-newline
+
+D:\2026Autumn Semester File\GitHub\formyself-app\.worktrees\kanata\src\composables\useSortableDrag.js
+   52:78  warning  '_' is defined but never used  no-unused-vars
+  176:74  warning  '_' is defined but never used  no-unused-vars
+  181:46  warning  '_' is defined but never used  no-unused-vars
+
+D:\2026Autumn Semester File\GitHub\formyself-app\.worktrees\kanata\src\features\chat\ChatMessageActions.vue
+  3:126  warning  Prop "CHAT_REACTION_EMOJIS" is not in camelCase  vue/prop-name-casing
+
+D:\2026Autumn Semester File\GitHub\formyself-app\.worktrees\kanata\src\features\chat\ChatView.vue
+  125:5  warning  'longPressOrigin' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+D:\2026Autumn Semester File\GitHub\formyself-app\.worktrees\kanata\src\features\chat\KanataWorldManager.vue
+  128:55   warning  Expected 1 line break after opening tag (`<section>`), but no line breaks found    vue/multiline-html-element-content-newline
+  134:57   warning  Expected 1 line break after opening tag (`<section>`), but no line breaks found    vue/multiline-html-element-content-newline
+  140:362  warning  Expected 1 line break before closing tag (`</section>`), but no line breaks found  vue/multiline-html-element-content-newline
+  142:229  warning  Expected 1 line break before closing tag (`</section>`), but no line breaks found  vue/multiline-html-element-content-newline
+
+D:\2026Autumn Semester File\GitHub\formyself-app\.worktrees\kanata\src\features\mood\MoodView.vue
+  240:39   warning  Expected 1 line break after opening tag (`<div>`), but 2 line breaks found        vue/multiline-html-element-content-newline
+  256:227  warning  Attribute "class" should go before "@keydown.space.prevent"                       vue/attributes-order
+  256:243  warning  Attribute ":class" should go before "@keydown.space.prevent"                      vue/attributes-order
+  258:38   warning  Attribute "v-if" should go before "class"                                         vue/attributes-order
+  362:14   warning  Expected 1 line break after opening tag (`<button>`), but no line breaks found    vue/multiline-html-element-content-newline
+  362:23   warning  Expected 1 line break before closing tag (`</button>`), but no line breaks found  vue/multiline-html-element-content-newline
+  402:16   warning  Expected 1 line break before closing tag (`</div>`), but 2 line breaks found      vue/multiline-html-element-content-newline
+
+D:\2026Autumn Semester File\GitHub\formyself-app\.worktrees\kanata\src\features\schedule\ScheduleView.vue
+  437:14   warning  Expected 1 line break after opening tag (`<button>`), but no line breaks found    vue/multiline-html-element-content-newline
+  437:161  warning  Expected 1 line break before closing tag (`</button>`), but no line breaks found  vue/multiline-html-element-content-newline
+  600:18   warning  Expected 1 line break after opening tag (`<button>`), but no line breaks found    vue/multiline-html-element-content-newline
+  600:29   warning  Expected 1 line break before closing tag (`</button>`), but no line breaks found  vue/multiline-html-element-content-newline
+
+D:\2026Autumn Semester File\GitHub\formyself-app\.worktrees\kanata\src\features\weight\WeightView.vue
+  196:120  warning  Attribute "v-if" should go before "class"                                      vue/attributes-order
+  237:36   warning  Attribute "v-if" should go before "class"                                      vue/attributes-order
+  241:39   warning  Expected 1 line break after opening tag (`<div>`), but no line breaks found    vue/multiline-html-element-content-newline
+  242:325  warning  Expected a space before '/>', but not found                                    vue/html-closing-bracket-spacing
+  242:342  warning  Expected 1 line break before closing tag (`</div>`), but no line breaks found  vue/multiline-html-element-content-newline
+  249:31   warning  Attribute "v-if" should go before "class"                                      vue/attributes-order
+  256:32   warning  Attribute "v-if" should go before "class"                                      vue/attributes-order
+  257:30   warning  Attribute "v-if" should go before "class"                                      vue/attributes-order
+  261:246  warning  Attribute "v-model" should go before "step"                                    vue/attributes-order
+  265:14   warning  Expected 1 line break before closing tag (`</div>`), but 3 line breaks found   vue/multiline-html-element-content-newline
+
+D:\2026Autumn Semester File\GitHub\formyself-app\.worktrees\kanata\src\platform\ai\client.js
+  207:7  warning  'emitted' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+D:\2026Autumn Semester File\GitHub\formyself-app\.worktrees\kanata\tests\fullBackup.test.js
+  208:50  warning  'scope' is defined but never used. Allowed unused args must match /^_/u      no-unused-vars
+  225:52  warning  'reactions' is defined but never used. Allowed unused args must match /^_/u  no-unused-vars
+  225:63  warning  'type' is defined but never used. Allowed unused args must match /^_/u       no-unused-vars
+
+✖ 37 problems (0 errors, 37 warnings)
+  0 errors and 28 warnings potentially fixable with the `--fix` option.
+
+
+> formyself-app@0.0.0 test
+> node --test tests/*.test.js
+
+[AI] fetch failed: TypeError: offline once
+    at globalThis.fetch (file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata/tests/aiChat.test.js:85:28)
+    at fetchCompletion (file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata/src/platform/ai/client.js:52:18)
+    at streamAIChat (file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata/src/platform/ai/client.js:209:28)
+    at TestContext.<anonymous> (file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata/tests/aiChat.test.js:91:24)
+    at Test.runInAsyncScope (node:async_hooks:228:14)
+    at Test.run (node:internal/test_runner/test:1118:25)
+    at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+    at Test.postRun (node:internal/test_runner/test:1247:19)
+    at Test.run (node:internal/test_runner/test:1175:12)
+    at async Test.processPendingSubtests (node:internal/test_runner/test:787:7)
+[AI] HTTP error: 400 { error: { message: 'maximum context length exceeded' } }
+✔ SSE 支持跨 chunk JSON、连续分片和 [DONE] (75.5335ms)
+✔ SSE 明确因 token 上限结束时拒绝保存半截回复 (4.7311ms)
+✔ 流式网络失败时自动回退一次非流式完整回复 (8.5504ms)
+✔ SSE 已收到部分文字后中断仍会回退为完整回复 (12.7139ms)
+✔ 上下文超限被分类且不会误走普通回退 (5.2285ms)
+✔ AbortController 可以停止 SSE 读取并返回明确的中止分类 (4.0666ms)
+✔ R1/GLM 类模型把完整人格作为首条上下文注入 (4.0614ms)
+✔ 聊天窗口只发送最近24条历史，超限后缩至12条 (2.6412ms)
+✔ 聊天生活上下文保留近期完整记录并将久远数据压缩为月度概览 (39.5469ms)
+✔ 聊天人格包含动态名字、相关上下文、安全边界和本轮硬上限 (0.8053ms)
+✔ 聊天专属规则使用独立真人私聊节奏并禁止模板化 AI 情绪链 (0.4178ms)
+✔ 欢迎语像上线私聊且禁止数据总结和客服式套话 (29.5623ms)
+✔ 聊天流默认使用更自然的温度参数 (0.6221ms)
+✔ 聊天流对长度截断自动提高生成预算并重试完整回复 (0.5255ms)
+✔ 服务端未给 finish_reason 时也会拦截结构残缺的回复 (0.3929ms)
+✔ AI 回复按自然段拆成连续小气泡且不保留空行 (1.2347ms)
+✔ 连续的小气泡在发送给模型时重新合并为完整轮次 (0.5358ms)
+✔ 引用回复会作为明确上下文发送给模型但不改变原消息 (0.4437ms)
+✔ 聊天人格要求短气泡并将动作旁白降为极少数点缀 (0.3235ms)
+✔ 单独成行的动作旁白会与下一段对白合并成同一气泡 (0.3148ms)
+✔ 本轮上下文限制历史、记忆和生活数据并按话题选择 (4.8532ms)
+✔ 普通回复清理重复动作、称呼和 emoji 并限制为三个气泡 (1.6881ms)
+✔ 已有完整句时移除模型意外中止留下的悬空尾句 (0.359ms)
+✔ 字符收束只在完整句边界停止，不再制造带省略号的半句话 (0.4347ms)
+✔ 回复模式区分普通、复杂问题和明确安全风险 (0.7986ms)
+✔ 四格小组件深链映射到应用页面 (1.4203ms)
+✔ 日程深链保留系列和 occurrence 定位参数 (0.8838ms)
+✔ 忽略未知、错误协议和无效深链 (0.1321ms)
+✔ 待办深链保留任务、日期及编码参数，协议和主机仍需匹配 (0.1631ms)
+✔ 兼容实际 WebView113 将自定义协议 authority 当路径的行为 (0.3152ms)
+✔ 只接受受支持的自动锁定时间 (1.3454ms)
+✔ 立即锁定只在进入后台时触发 (0.2624ms)
+✔ 延迟锁定在达到边界时触发 (1.2362ms)
+✔ 关闭自动锁定时永不触发 (0.2252ms)
+✔ 无效时间戳和系统时间倒退不会误锁 (0.1873ms)
+✔ 系统文件选择活动只豁免当前一次后台切换并会在恢复时消费 (0.2846ms)
+✔ 返回处理优先关闭最高层且只执行一个处理器 (3.1954ms)
+✔ 未激活或拒绝处理时继续寻找下一层 (0.2888ms)
+✔ 注销处理器后不再拦截返回 (0.1432ms)
+✔ 裁剪适配横图、竖图、极端长图；缩放与边缘拖动不会超出原图 (3.7507ms)
+✔ 透明度保留两端、修正异常值，完整备份往返兼容旧备份 (51.1897ms)
+✔ 双指缩放以手势中心为锚点，可平移且缩到边缘不会留白 (0.5497ms)
+✔ 解锁页与其他页独立归一化，0保留为清晰原图，异常值使用默认值 (3.3147ms)
+✔ 完整备份保留独立效果和关闭状态，v10缺失字段恢复默认且不丢失原图 (64.2728ms)
+✔ 每日提醒原生重排继续使用可唤醒且允许休眠触发的精确闹钟 (7.7197ms)
+✔ P3-card JSON V1/V2/V3 preserves all supported fields and inert unknown extensions (10.3772ms)
+✔ P3-card PNG chara and ccv3 decode UTF8; ccv3 takes precedence without executing embedded references (12.0229ms)
+✔ P3-card PNG export embeds edited current data while preserving actual image chunks (4.373ms)
+✔ P3-card rejects malformed PNG signatures, CRCs, overflowing/truncated chunks and trailing bytes (2.328ms)
+✔ P3-card duplicate metadata, missing card, invalid base64 and invalid JSON fail explicitly (4.4832ms)
+✔ P3-card file extension, MIME, version and field errors do not become partial imported cards (1.7411ms)
+✔ P3-card regex remains raw and disabled; selective/case-sensitive/constant lore retains declared semantics (2.1667ms)
+✔ P3-card prototype-looking JSON remains inert and independent, without global mutation (1.0398ms)
+✔ P3-card imported original bytes/avatar survive full domain validation; remote/SVG avatars are refused (6.5575ms)
+✔ P3-card built-in definitions export as interoperable JSON without losing original preset metadata (1.4018ms)
+✔ P3-review1 invalid PNG color-depth combinations and animated image chunks are rejected (0.8658ms)
+✔ P3-review1 selective lore with no secondary key stays disabled instead of broadening activation (1.1508ms)
+✔ 头像裁剪会从横图中央截取正方形 (2.0566ms)
+✔ 头像裁剪会从竖图中央截取正方形 (1.4856ms)
+✔ 主动联系总开关关闭时仅取消已有任务，不请求权限或安排新通知 (3.9339ms)
+✔ 主动联系等待系统权限期间关闭，不会在异步返回后重新安排通知 (0.7808ms)
+✔ 主动联系排程正在提交时关闭，串行清理等待提交完成后取消 (0.7356ms)
+✔ 延迟补话总开关关闭时仅取消已有任务，不请求权限或安排新通知 (0.6648ms)
+✔ 延迟补话等待系统权限期间关闭，不会在异步返回后重新安排通知 (0.6709ms)
+✔ 延迟补话排程正在提交时关闭，串行清理等待提交完成后取消 (0.3409ms)
+✔ 延迟补话限制在10至90秒并过滤敏感凭据 (2.3935ms)
+✔ 补话通知会取消旧任务、按深链安排，关闭后不再调度 (1.8106ms)
+女朋友互动判断失败，已跳过本轮小动作 Error: INVALID_CHAT_INTERACTION_RESPONSE
+    at extractJson (file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata/src/features/chat/chatInteraction.js:41:40)
+    at parseCompanionInteraction (file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata/src/features/chat/chatInteraction.js:95:46)
+    at planCompanionInteraction (file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata/src/features/chat/chatInteraction.js:135:12)
+    at async TestContext.<anonymous> (file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata/tests/chatInteraction.test.js:73:21)
+    at async Test.run (node:internal/test_runner/test:1125:7)
+    at async Test.processPendingSubtests (node:internal/test_runner/test:787:7)
+女朋友互动判断失败，已跳过本轮小动作 Error: offline
+    at ask (file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata/tests/chatInteraction.test.js:81:30)
+    at file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata/src/features/chat/chatInteraction.js:22:17
+女朋友互动判断失败，已跳过本轮小动作 Error: CHAT_INTERACTION_TIMEOUT
+    at Timeout._onTimeout (file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata/src/features/chat/chatInteraction.js:19:12)
+    at listOnTimeout (node:internal/timers:605:17)
+    at process.processTimers (node:internal/timers:541:7)
+✔ 互动规划只接受真实 user 消息 ID 和固定表情 (3.9554ms)
+✔ 最近已有主动动作时抑制重复，但哥哥主动引用时允许自然回应 (0.6708ms)
+✔ 互动规划异常时安全降级为无动作，不影响主回复 (3.8325ms)
+✔ 互动规划超时后立即降级，不会拖住正常聊天回复 (27.4078ms)
+✔ 表情和拍一拍后续严格限制动作与短文案 (0.8029ms)
+✔ 爱心和点赞默认安静收下，不触发程序式补充回复 (0.686ms)
+✔ 发送给模型的历史按时间注入引用、表情和拍一拍语境 (1.2132ms)
+主动联系文案生成失败，已使用本地文案 Error: offline
+    at ask (file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata/tests/chatProactive.test.js:116:30)
+    at generateProactiveOutbox (file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata/src/features/chat/chatProactive.js:272:38)
+    at TestContext.<anonymous> (file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata/tests/chatProactive.test.js:105:24)
+    at Test.runInAsyncScope (node:async_hooks:228:14)
+    at Test.run (node:internal/test_runner/test:1118:25)
+    at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+    at Test.postRun (node:internal/test_runner/test:1247:19)
+    at Test.run (node:internal/test_runner/test:1175:12)
+    at async Test.processPendingSubtests (node:internal/test_runner/test:787:7)
+主动联系文案生成失败，已使用本地文案 Error: offline
+    at ask (file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata/tests/chatProactive.test.js:139:30)
+    at generateProactiveOutbox (file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata/src/features/chat/chatProactive.js:272:38)
+    at TestContext.<anonymous> (file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata/tests/chatProactive.test.js:134:24)
+    at Test.runInAsyncScope (node:async_hooks:228:14)
+    at Test.run (node:internal/test_runner/test:1118:25)
+    at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+    at Test.postRun (node:internal/test_runner/test:1247:19)
+    at Test.run (node:internal/test_runner/test:1175:12)
+    at async Test.processPendingSubtests (node:internal/test_runner/test:787:7)
+主动联系文案生成失败，已使用本地文案 Error: INVALID_PROACTIVE_RESPONSE
+    at extractJson (file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata/src/features/chat/chatProactive.js:205:40)
+    at generateProactiveOutbox (file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata/src/features/chat/chatProactive.js:272:20)
+    at async TestContext.<anonymous> (file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata/tests/chatProactive.test.js:171:18)
+    at async Test.run (node:internal/test_runner/test:1125:7)
+    at async Test.processPendingSubtests (node:internal/test_runner/test:787:7)
+✔ 六小时内反复进入不重复说话，跨日或久别才生成智能主动消息 (19.7467ms)
+✔ 表情回应也属于近期聊天活动，会抑制两小时内主动打扰 (0.3261ms)
+✔ 第一条未回应时当天不追发，刚聊过两小时内也不安排 (1.4174ms)
+✔ 哥哥回应过第一条且仍有未完话题时才允许当天第二条 (0.5583ms)
+✔ 未来七天多数第一条主动联系以想哥哥为原因 (1.0885ms)
+✔ 想念原因离线兜底会直接表达想哥哥且不制造回复压力 (8.6648ms)
+✔ 主动文案生成失败会使用本地短消息，且通知正文限制为 35 字 (2.708ms)
+✔ 第二条主动消息必须点明未完话题，模糊话题直接跳过 (2.9169ms)
+聊天行为规划失败，已使用本地安全计划 Error: INVALID_BEHAVIOR_PLAN
+    at extractJson (file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata/src/features/chat/chatRealism.js:25:40)
+    at planChatBehavior (file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata/src/features/chat/chatRealism.js:136:38)
+    at async TestContext.<anonymous> (file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata/tests/chatRealism.test.js:37:20)
+    at async Test.run (node:internal/test_runner/test:1125:7)
+    at async startSubtestAfterBootstrap (node:internal/test_runner/harness:358:3)
+✔ 行为计划只保留合法引用并在规划失败时使用本地安全计划 (5.6284ms)
+✔ 第三轮轻微矛盾强制进入修复，修复完成后清空情绪链 (18.9818ms)
+✔ 自我变化必须累计三个完成轮次并跨两个日期才生效 (2.8011ms)
+✔ 主回复与延迟补话严格分离，名单外人物引用会被每日事件过滤 (1.7359ms)
+✔ 历史初始化按每25条分块且过滤明显敏感消息，确认前只返回草案 (6.4846ms)
+✔ 历史初始化会跳过连续畸形分块，不再让单个分块拖垮整份草案 (1.3629ms)
+✔ 最终合并连续返回畸形内容时使用成功观察生成可编辑草案 (1.8833ms)
+✔ 完全缺少 AI Key 时明确报错，不伪装成历史草案 (1.4623ms)
+✔ 聊天消息按时间规范化、按 ID 去重并保留中止状态 (5.3264ms)
+✔ 聊天合并按消息 ID 和记忆 key 去重，较新记忆优先且保留当前档案 (1.1364ms)
+✔ 长期记忆提取容忍 JSON 围栏、过滤敏感凭据并按 key 去重 (0.4583ms)
+✔ 独立聊天备份 v4 往返保留名字、互动、她的世界和关系状态 (3.6089ms)
+✔ 旧聊天数据自动迁移为哥哥记忆并补齐新关系字段 (0.9425ms)
+✔ 主动次数限制在0至5，旧设置迁移为最少0且保留原上限 (0.3955ms)
+✔ 虚拟事件每天只保留一个，最近30天保留明细且更早内容合并为概览 (53.3866ms)
+✔ 消息互动只接受固定表情和类型，同一方只保留最新回应 (0.7441ms)
+✔ 旧聊天没有 readState 时全部视为已读，新快照保留真实未读边界 (0.5954ms)
+✔ 合并相同消息时优先保留带更新表情的版本 (0.8093ms)
+✔ 相同语义键按哥哥、她和我们三个归属分别保留 (0.5471ms)
+✔ 头像只接受安全的栅格 data URL，引用缺少正文时会被丢弃 (0.3353ms)
+✔ 合并时同 ID 的较旧导入消息不会覆盖本机较新消息 (0.4658ms)
+✔ 未完话题按内容去重并清理已经被多轮对话越过的旧问题 (0.5672ms)
+✔ 每日状态只发生在虚拟小家且包含连续关系背景 (25.1187ms)
+✔ 关系更新限制每轮派生记忆、整理未完话题和女朋友状态 (34.9382ms)
+✔ 关系整理提示禁止把控制、凭据和现实经历当作亲密 (0.6328ms)
+✔ 聊天文件使用主密码加密往返，错误密码无法解密 (20.4647ms)
+✔ 加密聊天存储保存后可读取，并在主文件损坏时只读恢复上一版 (16.2346ms)
+✔ 首次保存中断时可以从已校验的临时文件恢复 (5.2893ms)
+✔ 替换主文件失败时自动恢复上一版主文件 (4.9688ms)
+✖ 侧栏与首页陪伴卡复用 chat 路由进入受保护的彼方入口 (11.3886ms)
+✔ 聊天界面包含全高布局、100 条分批加载、流式停止、重试和单条操作 (7.1746ms)
+✔ 聊天支持双向微信式互动、拍一拍和未读定位 (10.2339ms)
+✔ 消息表情使用独立轻量表情条，不以负边距穿插相邻气泡 (5.5954ms)
+✔ 聊天每次进入和内容更新后强制定位最底部 (5.2238ms)
+✔ 流式回复会按节奏拆成连续气泡并在完整一轮后只更新一次关系状态 (5.2629ms)
+✔ 用户发送新消息后会使尚未落地的智能开场失效 (5.5761ms)
+✔ 彼方入口不缓存；历史聊天的中断恢复实现保留但不作为产品入口 (9.1421ms)
+✔ 温馨小家设置页在窄屏使用紧凑字号和完整宽度输入布局 (19.5165ms)
+✔ 进入页面使用六小时智能主动消息并持久化，反复进出不再固定欢迎 (5.3525ms)
+✔ 彼方设置通过统一导航进入受保护入口，备份保留独立选项 (1.2507ms)
+✔ 聊天上下文只组合生活 Store，不读取密码库、主密码或 API Key 内容 (6.0227ms)
+✔ 近 30 天心情历史保留全部真实记录、分组同日事件并排除自动补记 (53.1208ms)
+✔ 心情回音明确区分本次记录并排除历史中的自身重复项 (4.0549ms)
+✔ 完整人设包含称呼切换、情绪链、跨日证据和正反边界 (0.3579ms)
+✔ 首页上下文包含三类 30 天轨迹且日期参与指纹 (7.1462ms)
+✔ 首页首次、跨日和历史变化时生成，同日相同上下文复用缓存 (0.3884ms)
+✔ 回复清理器去除引号并执行不同场景的字符硬上限 (0.5482ms)
+✔ 心情界面不再使用闺蜜文案并接入共享提示词 (10.3852ms)
+✔ 计划图标标签保留组合 emoji，最多显示两个可见字符 (3.0055ms)
+✔ 省钱排序只替换当前分类位置，保留对象及备份顺序 (3.3158ms)
+✔ 省钱排序拒绝缺项、重复、跨分类及过期成员 (0.8089ms)
+✔ 金额进度来自存入记录，兼容零目标、缺失记录及超额完成 (0.5391ms)
+✔ 跨分组排序只更改目标计划的分组和顺序，金额与完成状态保持原样 (1.024ms)
+✔ 分组规范化保留用户排序，并为旧数据补充未分组 (0.3677ms)
+✔ 完整备份 v6 包含互动聊天、连续关系、五类生活数据和设置，但不包含安全凭据 (68.1916ms)
+✔ 完整备份可用当前主密码加密并完整解密 (26.8572ms)
+✔ 完整备份保留省钱自定义分组，旧 v8 数据自动归入未分组 (7.2681ms)
+✔ 完整恢复在写入前拒绝错误类型、版本、日期和缺失数据集 (6.7251ms)
+✔ v1 完整备份可导入并自动补为空日程与聊天 (5.2512ms)
+✔ v2 完整备份可导入并自动补为空聊天 (4.5738ms)
+✔ v3 完整备份聊天自动迁移为哥哥记忆并补齐关系状态 (8.1131ms)
+✔ v4 完整备份继续兼容并把旧聊天全部标记为已读 (4.5583ms)
+✔ v5 完整备份迁移到v6并补齐她的世界，运行中队列不恢复 (7.785ms)
+✔ 旧完整备份缺少主题字段时回退云朵蓝 (4.7313ms)
+✔ 完整备份 v7 保留心情等级目录，v6 自动迁移默认五档 (8.8134ms)
+✔ 完整备份中的空心情 ID 回退到备份目录的默认项 (3.2666ms)
+✔ 完整备份v1兼容入口保留核心记录及旧版缺失字段语义 (4.0141ms)
+✔ 完整备份v2兼容入口保留核心记录及旧版缺失字段语义 (3.395ms)
+✔ 完整备份v3兼容入口保留核心记录及旧版缺失字段语义 (4.095ms)
+✔ 完整备份v4兼容入口保留核心记录及旧版缺失字段语义 (7.4824ms)
+✔ 完整备份v5兼容入口保留核心记录及旧版缺失字段语义 (3.2784ms)
+✔ 完整备份v6兼容入口保留核心记录及旧版缺失字段语义 (3.456ms)
+✔ 完整备份v7兼容入口保留核心记录及旧版缺失字段语义 (3.375ms)
+✔ 完整备份v8兼容入口保留核心记录及旧版缺失字段语义 (3.4157ms)
+✔ 完整备份v9兼容入口保留核心记录及旧版缺失字段语义 (3.6959ms)
+✔ 完整备份v10兼容入口保留核心记录及旧版缺失字段语义 (3.1401ms)
+✔ 完整备份v11兼容入口保留核心记录及旧版缺失字段语义 (3.5495ms)
+✔ 完整备份v12兼容入口保留核心记录及旧版缺失字段语义 (3.4395ms)
+✔ 完整备份拒绝原始值记录，防止保存后无法安全重载 (2.4408ms)
+✔ 桌面信息卡固定使用 2x2 的最小尺寸 (12.5303ms)
+✔ 临近日程组件为独立 2x2 Provider 并最多展示三条事项 (5.0173ms)
+✔ 临近日程组件标题支持两行与动态字号 (6.1292ms)
+✔ 桌面信息卡展示三类基本信息和今日完成度 (11.5213ms)
+✔ 桌面组件快照采用版本化、可直接渲染的协议 (15.472ms)
+✔ 桌面组件快照为空数据提供稳定默认值 (0.4346ms)
+✔ P2-backup new v13 and single preserve all new entities, never call v4 normalizer on chat (141.2837ms)
+✔ P2-backup legacy full v1 preserves nonchat, requires consent and never revives legacy chat (8.894ms)
+✔ P2-backup legacy full v2 preserves nonchat, requires consent and never revives legacy chat (7.5031ms)
+✔ P2-backup legacy full v3 preserves nonchat, requires consent and never revives legacy chat (11.7262ms)
+✔ P2-backup legacy full v4 preserves nonchat, requires consent and never revives legacy chat (7.0747ms)
+✔ P2-backup legacy full v5 preserves nonchat, requires consent and never revives legacy chat (8.7543ms)
+✔ P2-backup legacy full v6 preserves nonchat, requires consent and never revives legacy chat (7.1118ms)
+✔ P2-backup legacy full v7 preserves nonchat, requires consent and never revives legacy chat (11.5106ms)
+✔ P2-backup legacy full v8 preserves nonchat, requires consent and never revives legacy chat (7.2473ms)
+✔ P2-backup legacy full v9 preserves nonchat, requires consent and never revives legacy chat (7.1909ms)
+✔ P2-backup legacy full v10 preserves nonchat, requires consent and never revives legacy chat (8.3139ms)
+✔ P2-backup legacy full v11 preserves nonchat, requires consent and never revives legacy chat (7.0448ms)
+✔ P2-backup legacy full v12 preserves nonchat, requires consent and never revives legacy chat (9.2339ms)
+✔ P2-backup rejects legacy single and future schemas without returning partial new data (49.763ms)
+✔ P2-backup export pauses sending but rollback capture preserves tasks exactly (38.4703ms)
+✔ P2-backup canonical recovery rejects legacy content injected into empty sentinel (15.5645ms)
+✔ P2-backup review1 rejects present-but-invalid optional Todo parts instead of silently omitting them (24.2897ms)
+✔ P2-backup review1 valid optional Todo and all three independent permissions survive wire roundtrip (35.3825ms)
+✔ P2-backup review2 all nonempty new entities and safe unknown card extensions roundtrip (53.2947ms)
+✔ P2-backup review2 hostile task-policy omissions cannot silently resume pending sends (38.4658ms)
+✔ P2-backup review2 canonical journals reject mode confusion and unknown versions (38.8351ms)
+✔ native driver accepts task manifest only with the exact AVD, path, serial and synthetic flag (2.9975ms)
+✔ P1-01 五人预设精确计数，无旧小暖、伪历史、任务或默认生活授权 (74.2246ms)
+✔ P1-02 重复seed三次不增，重试不重新取ID且初始化键冲突拒绝 (22.5288ms)
+✔ P1-03 同卡手动第二世界重用五卡但实例、私聊、关系、记忆及水位独立 (31.6351ms)
+✔ P1-04 卡版本更新不覆盖既有实例引用、预设原文或用户身份 (12.6892ms)
+✔ P1-05 人格、知情边界与动机五份独立数据，不执行隐式时钟/随机或AI (17.4737ms)
+✔ P1-06 拒绝未知未来版本 (10.1491ms)
+✔ P1-06 拒绝旧v4不是彼方 (9.8114ms)
+✔ P1-06 拒绝缺少集合 (15.3212ms)
+✔ P1-06 拒绝重复实体ID (9.8759ms)
+✔ P1-06 拒绝孤儿世界 (7.7644ms)
+✔ P1-06 拒绝跨世界群成员 (18.0946ms)
+✔ P1-06 拒绝孤儿成员 (9.1609ms)
+✔ P1-06 拒绝重复群成员 (8.9809ms)
+✔ P1-06 拒绝私聊不允许多人 (12.2822ms)
+✔ P1-06 拒绝角色会话不能含用户 (10.4135ms)
+✔ P1-06 拒绝未知模型role (8.6066ms)
+✔ P1-06 拒绝用户不能伪装assistant (8.1724ms)
+✔ P1-06 拒绝非成员不能发言 (19.7907ms)
+✔ P1-06 拒绝孤儿卡版本 (9.1641ms)
+✔ P1-06 拒绝不同卡的版本 (8.22ms)
+✔ P1-06 拒绝关系边重复 (9.2527ms)
+✔ P1-06 拒绝事件因果环 (17.888ms)
+✔ P1-06 拒绝候选事件不可挂正式effect (9.772ms)
+✔ P1-06 拒绝effect禁止原型路径 (9.2437ms)
+✔ P1-06 拒绝任务幂等键重复 (9.4992ms)
+✔ P1-06 拒绝三权限不能使用字符串 (8.5201ms)
+✔ P1-06 拒绝授权重复 (9.2093ms)
+✔ P1-06 拒绝来源引用孤儿 (8.4751ms)
+✔ P1-06 拒绝来源未来版本 (13.5419ms)
+✔ P1-06 拒绝无效时区 (9.0345ms)
+✔ P1-06 拒绝时间水位错误 (8.8184ms)
+✔ P1-06 拒绝不统一的真实用户 (8.9591ms)
+✔ P1-06 拒绝伪角色身份 (8.2643ms)
+✔ P1-07 跨世界拒绝 memory-owner (18.9547ms)
+✔ P1-07 跨世界拒绝 memory-source (23.5057ms)
+✔ P1-07 跨世界拒绝 event-participant (18.3253ms)
+✔ P1-07 跨世界拒绝 event-cause (17.4888ms)
+✔ P1-07 跨世界拒绝 relationship (17.0073ms)
+✔ P1-07 跨世界拒绝 lore (18.3821ms)
+✔ P1-07 跨世界拒绝 effect (14.8158ms)
+✔ P1-07 跨世界拒绝 task-instance (15.7347ms)
+✔ P1-07 跨世界拒绝 task-conversation (14.2432ms)
+✔ P1-07 跨世界拒绝 grant (17.4914ms)
+✔ P1-08 保留新数据所有字段及安全扩展，不截断或套v4归一化 (9.8268ms)
+✔ P1-09 JSON恶意输入拒绝且不调用getter；无敏感输入回显 (33.3024ms)
+✔ P1-10 验证预设版本、身份、重复角色、孤儿/重复关系和私有知识 (8.9059ms)
+✔ P1-11 三权限独立，不通过字段耦合暗中授予其他权限 (9.8881ms)
+✔ P1-R1 自查：卡版本缺原文、关系维度缺字段和重复模板卡必须拒绝 (35.3684ms)
+✔ P1-R1 自查：任务角色必须在目标会话内，稀疏数组不可补null后冒充原文 (12.9352ms)
+✔ P1-R2 预设结构：五人都有提示词层次，私有条目仅归属本角色 (7.4469ms)
+✔ P1-R2 归档卡不会因再次创建预设世界被静默重新启用 (7.567ms)
+✔ P3-world new world is empty, has editable independent identity, and preserves the input (118.7784ms)
+✔ P3-world same card creates independently in another world, with own state and private conversation (32.6508ms)
+✔ P3-world copy only static settings/knowledge/roles; original experiences and grants never cross (20.298ms)
+✔ P3-world archive is reversible, disables automation and rejects ordinary world edits (17.2988ms)
+✔ P3-card global import is byte-idempotent and raw data is retained through backup (41.2359ms)
+✔ P3-card immutable version updates need explicit selection, preserving overrides and experience (63.9496ms)
+✔ P3-lore authorization precedes activation/budget, never searching another world or private owner (20.3115ms)
+✔ P3-lore deterministic budgets and selective/case-sensitive keys are bounded without regex (23.5145ms)
+✔ P3-lore card knowledge import defaults private, detects conflicts and never overwrites (55.6132ms)
+✔ P3-lore edit is revision checked and a duplicate content cannot silently replace another entry (18.8421ms)
+✔ P3-identity world user placeholders change without mutating the base card or other world (37.1469ms)
+✔ P3-review1 editing an imported card preserves unrelated primitive extensions, examples and scenario (15.3002ms)
+✔ P2-R01 missing显式返回null；加载前和空密码拒绝写，无创建默认世界 (111.4845ms)
+✔ P2-R02 独立命名空间主密码加密往返，旧聊天/其他模块字节不变 (109.8869ms)
+✔ P2-R03 错密、合法密文内坏JSON、未来版本拒绝且原字节零写入 (37.3945ms)
+✔ P2-R04 存在但全部坏文件不能返回missing；仅坏备份也明确失败 (5.4036ms)
+✔ P2-R05 驱动读取/存在性错误不当不存在，不用备份掩盖权限错误 (91.8786ms)
+✔ P2-R06 主文件损坏从备份只读恢复；首次中断从tmp只读恢复 (86.7424ms)
+✔ P2-R07 未来版本主文件不被旧备份或恢复副本降级覆盖 (28.39ms)
+✔ P2-R08 写失败保留最新密文；重建仓库/重新读回后恢复且flush可重试 (77.8604ms)
+✔ P2-R09 持久介质全失败仅进程内密文，原始主文件不变；持续失败flush必须reject (37.9735ms)
+✔ P2-R10 tmp到主文件rename失败自动恢复原主文件并保留密文重试 (37.6238ms)
+✔ P2-R11 旧journal清理失败不能覆盖较新主文件，read不擅自清日志 (76.0615ms)
+✔ P2-R12 journal坏JSON、形状/未来版本严格拒绝，即便主文件有效也不初始化覆盖 (27.9233ms)
+✔ P2-R13 read不会用磁盘旧值覆盖尚未保存pending，release失败后重新认证可恢复 (34.5105ms)
+✔ P2-R14 已开始写入仅保留密文，调用后修改传入对象不改变待写内容 (14.6091ms)
+✔ P2-R15 reencrypt成功可用新密码、错旧密码拒绝；失败可用旧密码补偿 (49.533ms)
+✔ P2-R16 release期间迟到read不得重新置loaded或返回明文 (16.6304ms)
+✔ P2-R17 并发写入串行结算，失败后仍保存最新候选 (24.0639ms)
+✔ P2-R1 自查：改密后所有可恢复文件均不能再用旧密码解密 (34.113ms)
+✔ P2-R1 自查：备份重加密阶段中断仍留恢复任务，新实例必须完成全部副本 (38.1461ms)
+✔ P2-R2 Android missing code accepted; permission code never treated as missing by message (0.529ms)
+✔ P2-R21 real Web mkdir existing-directory message permits later saves; coded permission errors still fail (27.8621ms)
+✔ P2-R22 serialization tail exposes no plaintext result before or after release (11.579ms)
+✔ P2-R23 actual Android existing-directory code permits verified native-style saves, denied codes remain errors (24.1512ms)
+✔ P2-cleanup-01 缺少当次确认函数拒绝；取消不停止旧运行时、不写checkpoint、不删除 (7.8908ms)
+✔ P2-cleanup-02 未认证或租约拒绝时零删除，确认弹窗不被调用 (0.7006ms)
+✔ P2-cleanup-03 恢复门禁拒绝 blocked (0.4659ms)
+✔ P2-cleanup-03 恢复门禁拒绝 busy (0.3702ms)
+✔ P2-cleanup-03 恢复门禁拒绝 restorePending (0.3016ms)
+✔ P2-cleanup-04 确认等待期间会话失效不得清理或持久化旧授权 (0.582ms)
+✔ P2-cleanup-05 只删除源码白名单旧文件、恢复键、独占通知与频道；完整恢复日志保留 (3.1089ms)
+✔ P2-cleanup-06 幂等重试也必须取得新的当次确认，checkpoint不能当授权token (2.1572ms)
+✔ P2-cleanup-07 停止与通知失败前不删除任何文件/旧恢复键：stop (0.6364ms)
+✔ P2-cleanup-07 停止与通知失败前不删除任何文件/旧恢复键：cancel (0.4131ms)
+✔ P2-cleanup-07 停止与通知失败前不删除任何文件/旧恢复键：listChannels (0.3586ms)
+✔ P2-cleanup-07 停止与通知失败前不删除任何文件/旧恢复键：deleteChannel (0.4508ms)
+✔ P2-cleanup-08 无法确认旧writer停止、取消通知/频道返回假成功均阻断删除 (0.8806ms)
+✔ P2-cleanup-09 任何文件或恢复键预读失败零删除，不把权限错误当不存在 (1.5961ms)
+✔ P2-cleanup-10 仅明确缺失可视为成功：Android错误码和Web精确缺失消息 (5.5889ms)
+✔ P2-cleanup-11 删除假成功必须读回核验；旧恢复键删除假成功也不标done (2.4497ms)
+✔ P2-cleanup-12 checkpoint写入断点 1 重建协调器可安全恢复且只删白名单 (1.7403ms)
+✔ P2-cleanup-12 checkpoint写入断点 2 重建协调器可安全恢复且只删白名单 (1.3825ms)
+✔ P2-cleanup-12 checkpoint写入断点 3 重建协调器可安全恢复且只删白名单 (1.5595ms)
+✔ P2-cleanup-12 checkpoint写入断点 4 重建协调器可安全恢复且只删白名单 (1.6843ms)
+✔ P2-cleanup-12 checkpoint写入断点 5 重建协调器可安全恢复且只删白名单 (2.3308ms)
+✔ P2-cleanup-12 checkpoint写入断点 6 重建协调器可安全恢复且只删白名单 (1.9711ms)
+✔ P2-cleanup-12 checkpoint写入断点 7 重建协调器可安全恢复且只删白名单 (1.9607ms)
+✔ P2-cleanup-13 删除已发生但checkpoint未记录时，重建不能复活旧文件或误删其他模块 (1.7678ms)
+✔ P2-cleanup-14 malformed/未来checkpoint或白名单外completed项拒绝，零删除 (0.9532ms)
+✔ P2-cleanup-15 写后读回不一致在删除前阻断 (0.5131ms)
+✔ P2-cleanup-16 清理并发拒绝，不共享等待中的确认 (1.9266ms)
+✔ P2-cleanup-17 等待迟到旧持久化结算再删除，清理期间恢复门禁变动中止 (1.5308ms)
+保存心情标签失败 ReferenceError: window is not defined
+    at get impl (D:\2026Autumn Semester File\GitHub\formyself-app\.worktrees\kanata\node_modules\@capacitor\preferences\dist\plugin.cjs.js:66:9)
+    at PreferencesWeb.set (D:\2026Autumn Semester File\GitHub\formyself-app\.worktrees\kanata\node_modules\@capacitor\preferences\dist\plugin.cjs.js:24:14)
+    at D:\2026Autumn Semester File\GitHub\formyself-app\.worktrees\kanata\node_modules\@capacitor\core\dist\index.cjs.js:121:35
+保存心情标签失败 ReferenceError: window is not defined
+    at get impl (D:\2026Autumn Semester File\GitHub\formyself-app\.worktrees\kanata\node_modules\@capacitor\preferences\dist\plugin.cjs.js:66:9)
+    at PreferencesWeb.set (D:\2026Autumn Semester File\GitHub\formyself-app\.worktrees\kanata\node_modules\@capacitor\preferences\dist\plugin.cjs.js:24:14)
+    at D:\2026Autumn Semester File\GitHub\formyself-app\.worktrees\kanata\node_modules\@capacitor\core\dist\index.cjs.js:121:35
+保存心情标签失败 ReferenceError: window is not defined
+    at get impl (D:\2026Autumn Semester File\GitHub\formyself-app\.worktrees\kanata\node_modules\@capacitor\preferences\dist\plugin.cjs.js:66:9)
+    at PreferencesWeb.set (D:\2026Autumn Semester File\GitHub\formyself-app\.worktrees\kanata\node_modules\@capacitor\preferences\dist\plugin.cjs.js:24:14)
+    at D:\2026Autumn Semester File\GitHub\formyself-app\.worktrees\kanata\node_modules\@capacitor\core\dist\index.cjs.js:121:35
+✔ 默认优先级迁移一次且保留自定义和主动清零 (45.4271ms)
+✔ 体重多次记录统一使用日期、有效时间及原数组顺序 (15.7482ms)
+✔ 体重跨月范围使用本地日期，周均先平均每天 (1.8052ms)
+✔ 体重按 ID 编辑保留其他记录，清空时间后按旧记录显示 (10.0937ms)
+✔ 心情显示优先级独立于等级，手动优先且同级最新在前 (22.1226ms)
+✔ 预设改名同步历史和默认勾选，清空默认不改旧日记 (6.6016ms)
+✔ 新版全量及心情备份保留空默认、改名目录、优先级与体重时间 (21.2539ms)
+✔ 主密码校验器只保存不可逆派生值 (266.2994ms)
+✔ Web Crypto 与旧 CryptoJS 验证记录保持兼容 (245.0445ms)
+✔ 缺少 Web Crypto 时把派生任务交给 Worker (1.5391ms)
+✔ 新主密码必须满足长度并与确认值一致 (0.411ms)
+✔ 受保护存储迁移失败时会按反序回滚 (0.9541ms)
+✔ 新验证值提交失败时也会回滚已重加密的数据 (0.3586ms)
+✔ 安全凭据适配器使用不同命名空间保存主密码和 API Key (1.0625ms)
+✔ 统一偏好存储会串行执行写入 (39.0723ms)
+✔ 心情统计计算分布、百分比和本月最长连续天数 (49.3407ms)
+✔ 重复日期不会虚增连续记录天数 (10.7171ms)
+✔ 体重统计计算月平均、首末变化和目标差距 (2.7793ms)
+✔ 没有体重记录时返回可安全展示的空统计 (1.6002ms)
+✔ 省钱统计计算月存款、当前月日均和预计完成天数 (0.9262ms)
+✔ 历史月份按完整自然月计算日均速度 (0.3641ms)
+✔ 完整月报聚合三类数据且 AI 提示词禁止编造和焦虑表达 (1.8801ms)
+✔ 心情月报按自定义等级动态统计并保留归档历史项 (0.8301ms)
+保存心情标签失败 ReferenceError: window is not defined
+    at get impl (D:\2026Autumn Semester File\GitHub\formyself-app\.worktrees\kanata\node_modules\@capacitor\preferences\dist\plugin.cjs.js:66:9)
+    at PreferencesWeb.set (D:\2026Autumn Semester File\GitHub\formyself-app\.worktrees\kanata\node_modules\@capacitor\preferences\dist\plugin.cjs.js:24:14)
+    at D:\2026Autumn Semester File\GitHub\formyself-app\.worktrees\kanata\node_modules\@capacitor\core\dist\index.cjs.js:121:35
+✔ 旧心情记录导入时自动补上学习标签且保留原字段 (2.0685ms)
+✔ 兼容单个 tag 字段并规范为可多选 tags 数组 (0.5701ms)
+✔ 标签去空白、去重，显式空标签保留为空 (0.2841ms)
+✔ 同一天的多个事件在规范化时全部保留 (0.532ms)
+✔ 自定义标签从导入记录和已保存列表合并且不混入内置标签 (23.5475ms)
+✔ Store 在同一天连续新增时保留两条独立事件 (25.2621ms)
+✔ 用户补写真实事件时替换自动补记占位而不重复计数 (7.9766ms)
+✔ 删除自定义标签时会同步清理历史记录并保留无标签记录 (6.7173ms)
+✔ 心情等级默认迁移保留五个稳定 ID，未知历史 ID 生成归档占位 (1.6186ms)
+✔ 心情 Emoji 只接受单个完整字素并支持组合 Emoji (0.9643ms)
+✔ Store 支持等级新增编辑排序、默认保护、归档恢复和安全删除 (18.7465ms)
+✔ 已使用心情等级只能归档，归档不会改写历史记录 (8.8138ms)
+✔ 心情单项备份往返保留等级配置并兼容旧数组 (11.7478ms)
+✔ 旧心情数组的空等级回退到当前默认项，未知非空 ID 继续保留 (1.4667ms)
+✔ Galaxy 风格动效不依赖第三方运行时并覆盖核心界面 (21.8217ms)
+✔ 动效遵循系统减少动态效果偏好 (24.538ms)
+✔ 默认自定义壁纸不会与氛围柔光重复叠加 (3.7347ms)
+✔ 导航历史保留页面来源、设置分类、日程目标和滚动位置 (2.5041ms)
+✔ 相同页面不重复入栈且历史只保留最近三十项 (2.896ms)
+✔ 设置分类和日程 occurrence 属于不同历史地址 (0.6138ms)
+✔ AI 开启时使用真实摘要生成并缓存关怀文案 (62.9026ms)
+✔ 数据指纹未变化时复用缓存且不调用 API (3.2338ms)
+✔ 缺少 API Key 时报告错误并允许通知层回退默认文案 (3.0681ms)
+✔ 数据变化后重新调用 AI 并更新缓存 (5.5653ms)
+✔ 个性化通知正文执行 35 字硬上限 (1.8699ms)
+✔ 每日提醒会先申请权限、创建 Android 渠道并校验系统待处理任务 (2.6848ms)
+✔ 权限被拒绝时不会先删除原有提醒 (1.0733ms)
+✔ 立即测试通知使用独立 ID 且真实调用通知插件 (12.6953ms)
+✔ 每日提醒设置成功后立即发送确认通知 (1.9388ms)
+✔ 通知状态返回权限、系统待处理任务和精确闹钟状态 (1.0795ms)
+✔ Android 精确闹钟未开启时会进入系统设置并返回授权结果 (2.0306ms)
+✔ 精确闹钟已开启或非 Android 平台时不会重复打开设置 (0.4502ms)
+✔ 原备份格式导入后补齐未分类和未收藏且不损失字段 (2.1357ms)
+✔ 兼容旧别名 group 和 isFavorite (0.656ms)
+✔ 分类为空时安全回退且异常附加字段不会破坏导入 (0.6289ms)
+✔ 收藏记录排序优先于普通记录 (0.3173ms)
+✔ Store 追加原备份并支持收藏切换 (8.0366ms)
+✔ 保存过的分类列表可删除未使用内置项，并自动补入记录实际使用的分类 (0.3004ms)
+✔ 密码分类支持添加和删除，但占用中分类与未分类不可删除 (1.7046ms)
+✔ Preferences durability patch returns commit status and is idempotent (1.7976ms)
+✔ Preferences bridge rejects failed disk commits for set, remove and clear (1.1119ms)
+✔ 心情摘要保留近 30 天全部真实记录并按日期分组 (57.0595ms)
+✔ 体重摘要过滤无效值并按日期正序保留完整备注 (0.9257ms)
+✔ 省钱摘要优先未完成和最近有记录的计划 (0.8733ms)
+✔ 上下文指纹只在相关数据变化时变化 (3.8429ms)
+✔ 提示词包含女朋友式称呼、完整上下文和关怀边界 (0.4691ms)
+✔ 提醒时间只接受有效的 24 小时时间 (1.7471ms)
+✔ 缺失或异常配置会恢复为安全默认值 (2.8108ms)
+✔ 只为已启用的类型生成每日本地通知 (1.4518ms)
+✔ 全部关闭时不生成通知 (0.3807ms)
+✔ 通知 ID 固定且互不重复，便于安全取消和重排 (0.4659ms)
+✔ 只在对应 AI 开关开启且有缓存时使用个性化正文 (0.4559ms)
+✔ 测试通知使用独立 ID、通知渠道并立即投递 (0.4784ms)
+✔ 保存成功通知会列出已开启的提醒和时间 (0.7383ms)
+✔ 常用重复规则生成稳定 occurrence，月末自动落在最后一天 (13.8711ms)
+✔ 自定义每几天按手动输入的间隔生成日程 (1.018ms)
+✔ 日程标签只预设学习，其余分类保留用户手动添加项 (0.4316ms)
+✔ 完成状态只影响当前 occurrence，后续重复事项保持待办 (1.355ms)
+✔ 通知和组件快照只包含未过期事项并使用独立稳定 ID (1.7524ms)
+✔ 已到点的提醒不会在应用恢复重校准时再次安排 (0.5319ms)
+✔ 日程标签只有完全未使用时才可删除 (0.4518ms)
+✔ 日程默认列表包含此前日期并以灰色展示过期事项 (5.0318ms)
+✔ 修改开始日期时保留原日程时长，标题可动态缩放并完整换行 (14.3468ms)
+✔ 主题预设使用确认的四套治愈主色 (4.8706ms)
+✔ 异常主题设置回退云朵蓝并规范自定义颜色 (1.0119ms)
+✔ 任意自定义主色都会派生满足白字对比度的按钮色 (1.9492ms)
+✔ 主题 CSS 变量包含浅色表面、边框、渐变和可访问主按钮色 (1.0209ms)
+✔ 主题设置可持久化且首页栏目统一中文 (33.1787ms)
+✔ 每日、星期与间隔规则按日期独立生成，跨月不漂移 (29.9221ms)
+✔ 未来修改原子拆分，完成记录保持旧键与历史标题 (2.5522ms)
+✔ 仅本次编辑不丢完成记录，撤销不丢单次覆盖 (2.6555ms)
+✔ 打卡保护拒绝未来范围改写，不改变输入快照 (1.0392ms)
+✔ 名称修改保持间隔锚点，首日拆分旧版归档 (0.5877ms)
+✔ 取消单次不计入进度，零任务不当成100%，日期各自独立 (0.4447ms)
+✔ 完成取消当次提醒，撤销只恢复尚未到点的提醒 (4.5618ms)
+✔ 完整备份v10保留任务；v9缺失待办保持缺失语义 (17.5739ms)
+✔ 损坏版本链与未来未知格式不静默清空数据 (0.5896ms)
+✔ JS/Java shared Todo fixture: one-off across month (9.1829ms)
+✔ JS/Java shared Todo fixture: daily across leap day with end date (0.7117ms)
+✔ JS/Java shared Todo fixture: weekly Monday Friday (0.5005ms)
+✔ JS/Java shared Todo fixture: custom interval anchored before current version (0.5066ms)
+✔ JS/Java shared Todo fixture: single override cancel and completion (0.8562ms)
+✔ JS/Java shared Todo fixture: archived task hidden (0.341ms)
+✔ JS/Java shared Todo fixture: sort time then creation then id (28.594ms)
+✔ JS/Java shared Todo fixture: version split preserves completed history (0.4989ms)
+✔ 业务界面不再调用浏览器或 Android WebView 原生弹窗 (8.9721ms)
+✔ 日期、时间与下拉选择不再触发 WebView 原生选择弹窗 (4.9078ms)
+✔ 应用内日期面板先选中日期，再由确定按钮提交选择 (1.1572ms)
+✔ 应用内时间转盘支持每一分钟精确选择 (0.9868ms)
+✔ 侧边栏包含统一图标导航、隐私说明和关闭控件 (3.7373ms)
+✔ 只有存在独立配置的模块显示设置入口 (16.9333ms)
+✔ 日程页保留搜索框并移除重复的顶部搜索按钮 (1.1061ms)
+✔ 解锁先绘制忙碌状态并防止重复提交 (5.4204ms)
+✔ 主密码通过后主页先绘制且受保护数据在随后加载 (2.5772ms)
+✖ 非首页组件和受保护 Store 不进入首屏静态依赖 (4.9984ms)
+✔ 首次指纹启用在主页主动触发而不阻塞密码解锁 (2.7106ms)
+✔ 生物识别不可用时拒绝访问且不调用验证弹窗 (1.3475ms)
+✔ 只有生物识别验证成功才授予密码访问 (0.2771ms)
+✔ 用户取消或验证失败时拒绝密码访问 (0.2983ms)
+✔ 插件检查异常时按生物识别不可用处理 (1.3815ms)
+✔ 旧健康设置只含目标体重时补齐身高和变化提醒默认值 (3.2474ms)
+✔ 异常健康设置恢复为安全范围 (0.3691ms)
+✔ 根据最新体重和身高计算 BMI (2.0122ms)
+✔ 周平均先合并同一天多次称重，避免重复记录加权 (24.0839ms)
+✔ 周平均忽略不存在的日期，变化提醒优先比较同日最后一条记录 (1.2383ms)
+✔ 达到阈值才生成温和的体重变化提醒 (0.6249ms)
+✔ 变化提醒通知使用独立固定 ID 且不包含诊断措辞 (0.6339ms)
+ℹ tests 433
+ℹ suites 0
+ℹ pass 431
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2196.1434
+
+✖ failing tests:
+
+test at tests\chatViewResources.test.js:6:1
+✖ 侧栏与首页陪伴卡复用 chat 路由进入受保护的彼方入口 (11.3886ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'KanataView'
+  - 'KanataSetupView'
+           ^
+  
+      at TestContext.<anonymous> (file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata/tests/chatViewResources.test.js:11:10)
+      at Test.runInAsyncScope (node:async_hooks:228:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.start (node:internal/test_runner/test:1015:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:358:17) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'KanataView',
+    expected: 'KanataSetupView',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests\unlockPerformance.test.js:24:1
+✖ 非首页组件和受保护 Store 不进入首屏静态依赖 (4.9984ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /loadView: \(\) => import\('..\/features\/chat\/KanataSetupView.vue'\)/. Input:
+  
+  '// @ts-check\r\n' +
+    "/** @param {import('./contracts').ModuleDescriptor[]} modules */\r\n" +
+    'export function createModuleRegistry(modules) {\r\n' +
+    "  /** @type {Map<string, Readonly<import('./contracts').ModuleDescriptor & { cache: boolean }>>} */\r\n" +
+    '  const byId = new Map()\r\n' +
+    '  for (const module of modules) {\r\n' +
+    "    if (!module.id || byId.has(module.id) || !module.title || typeof module.loadView !== 'function') throw new Error('INVALID_MODULE_DESCRIPTOR')\r\n" +
+    "    if ((module.settings && typeof module.settings !== 'string') || (module.access && module.cache && !module.name)) throw new Error('INVALID_MODULE_CAPABILITY')\r\n" +
+    "    if (module.access && module.access !== 'protected') throw new Error('INVALID_MODULE_ACCESS')\r\n" +
+    '    byId.set(module.id, Object.freeze({ cache: !module.access, ...module }))\r\n' +
+    '  }\r\n' +
+    '  const list = Object.freeze([...byId.values()])\r\n' +
+    '  return Object.freeze({ list, get: (/** @type {string} */ id) => byId.get(id), has: (/** @type {string} */ id) => byId.has(id),\r\n' +
+    '    settings: new Set(list.filter(m => m.settings).map(m => m.id)),\r\n' +
+    '    menu: (/** @type {{warmHomeEnabled?: boolean}} */ context) => list.filter(m => !m.enabled || m.enabled(context)).map(m => ({ id: m.id, label: m.label || m.title, meta: m.meta, icon: m.icon })) })\r\n' +
+    '}\r\n' +
+    '\r\n' +
+    'export const moduleRegistry = createModuleRegistry([\r\n' +
+    "  { id: 'home', title: '首页总览', meta: '今天', icon: 'House', name: 'HomeView', loadView: () => import('../components/HomeView.vue'),\r\n" +
+    '    bindings: c => ({ chatUnreadCount: c.chatUnreadCount, showBiometricSetup: c.showBiometricSetup, isEnablingBiometric: c.isEnablingBiometric, onEnableBiometric: c.enableBiometricUnlock, onDismissBiometric: c.dismissBiometricSetup }) },\r\n' +
+    "  { id: 'reports', title: '月度报告', meta: '回顾', icon: 'ChartNoAxesColumn', name: 'MonthlyReportView', loadView: () => import('../components/MonthlyReportView.vue') },\r\n" +
+    "  { id: 'debts', backup: { id: 'savings', label: '省钱数据', prefix: 'Savings' }, title: '我的省钱计划', label: '省钱计划', meta: '目标', icon: 'Wallet', name: 'DebtListView', settings: '管理计划分组、目标回顾提醒与 AI 个性化鼓励。', loadView: () => import('../features/savings/DebtListView.vue') },\r\n" +
+    "  { id: 'weight', backup: { id: 'weight', label: '体重数据', prefix: 'Weight' }, title: '体重记录', meta: '健康', icon: 'Scale', name: 'WeightView', settings: '管理健康参数、变化提醒与每日记录提醒。', loadView: () => import('../features/weight/WeightView.vue') },\r\n" +
+    "  { id: 'mood', backup: { id: 'mood', label: '心情数据', prefix: 'Mood' }, title: '心情日记', meta: '感受', icon: 'Heart', name: 'MoodView', settings: '管理心情等级、自定义标签与每日关怀提醒。', loadView: () => import('../features/mood/MoodView.vue') },\r\n" +
+    "  { id: 'chat', backup: { id: 'chat', label: '彼方数据', prefix: 'Kanata' }, title: '彼方 · Kanata', meta: '陪伴', icon: 'HouseHeart', name: 'KanataView', access: 'protected', cache: false, settings: '管理彼方世界、角色与资料。', enabled: c => c.warmHomeEnabled !== false,\r\n" +
+    "    loadView: () => import('../features/chat/KanataView.vue'), bindings: c => ({ isVisible: c.isVisible }) },\r\n" +
+    "  { id: 'todo', backup: { id: 'todos', label: '每日待办数据', prefix: 'Todos' }, title: '每日待办', meta: '计划', icon: 'ListChecks', name: 'TodoView', loadView: () => import('../features/todo/TodoView.vue') },\r\n" +
+    "  { id: 'schedule', backup: { id: 'schedules', label: '日程数据', prefix: 'Schedules' }, title: '日程提醒', meta: '安排', icon: 'CalendarDays', name: 'ScheduleView', settings: '管理日程标签、颜色和分类规则。', loadView: () => import('../features/schedule/ScheduleView.vue') },\r\n" +
+    "  { id: 'passwords', backup: { id: 'passwords', label: '密码库数据', prefix: 'Passwords' }, title: '我的密码库', label: '密码库', meta: '安全', icon: 'LockKeyhole', name: 'PasswordVaultView', access: 'protected', settings: '管理密码分类；主密码仍在通用配置中管理。', loadView: () => import('../features/vault/PasswordVaultView.vue') },\r\n" +
+    "  { id: 'settings', title: '通用配置', meta: '设置', icon: 'SlidersHorizontal', name: 'SettingsView', cache: false, loadView: () => import('../components/SettingsView.vue') }\r\n" +
+    '])\r\n' +
+    '\r\n' +
+    "export const BACKUP_TYPE_OPTIONS = Object.freeze([{ value: 'full', label: '完整数据（全部数据与设置）' },\r\n" +
+    '  ...moduleRegistry.list.flatMap(m => m.backup ? [{ value: m.backup.id, label: m.backup.label }] : [])])\r\n'
+  
+      at TestContext.<anonymous> (file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata/tests/unlockPerformance.test.js:28:10)
+      at Test.runInAsyncScope (node:async_hooks:228:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: "// @ts-check\r\n/** @param {import('./contracts').ModuleDescriptor[]} modules */\r\nexport function createModuleRegistry(modules) {\r\n  /** @type {Map<string, Readonly<import('./contracts').ModuleDescriptor & { cache: boolean }>>} */\r\n  const byId = new Map()\r\n  for (const module of modules) {\r\n    if (!module.id || byId.has(module.id) || !module.title || typeof module.loadView !== 'function') throw new Error('INVALID_MODULE_DESCRIPTOR')\r\n    if ((module.settings && typeof module.settings !== 'string') || (module.access && module.cache && !module.name)) throw new Error('INVALID_MODULE_CAPABILITY')\r\n    if (module.access && module.access !== 'protected') throw new Error('INVALID_MODULE_ACCESS')\r\n    byId.set(module.id, Object.freeze({ cache: !module.access, ...module }))\r\n  }\r\n  const list = Object.freeze([...byId.values()])\r\n  return Object.freeze({ list, get: (/** @type {string} */ id) => byId.get(id), has: (/** @type {string} */ id) => byId.has(id),\r\n    settings: new Set(list.filter(m => m.settings).map(m => m.id)),\r\n    menu: (/** @type {{warmHomeEnabled?: boolean}} */ context) => list.filter(m => !m.enabled || m.enabled(context)).map(m => ({ id: m.id, label: m.label || m.title, meta: m.meta, icon: m.icon })) })\r\n}\r\n\r\nexport const moduleRegistry = createModuleRegistry([\r\n  { id: 'home', title: '首页总览', meta: '今天', icon: 'House', name: 'HomeView', loadView: () => import('../components/HomeView.vue'),\r\n    bindings: c => ({ chatUnreadCount: c.chatUnreadCount, showBiometricSetup: c.showBiometricSetup, isEnablingBiometric: c.isEnablingBiometric, onEnableBiometric: c.enableBiometricUnlock, onDismissBiometric: c.dismissBiometricSetup }) },\r\n  { id: 'reports', title: '月度报告', meta: '回顾', icon: 'ChartNoAxesColumn', name: 'MonthlyReportView', loadView: () => import('../components/MonthlyReportView.vue') },\r\n  { id: 'debts', backup: { id: 'savings', label: '省钱数据', prefix: 'Savings' }, title: '我的省钱计划', label: '省钱计划', meta: '目标', icon: 'Wallet', name: 'DebtListView', settings: '管理计划分组、目标回顾提醒与 AI 个性化鼓励。', loadView: () => import('../features/savings/DebtListView.vue') },\r\n  { id: 'weight', backup: { id: 'weight', label: '体重数据', prefix: 'Weight' }, title: '体重记录', meta: '健康', icon: 'Scale', name: 'WeightView', settings: '管理健康参数、变化提醒与每日记录提醒。', loadView: () => import('../features/weight/WeightView.vue') },\r\n  { id: 'mood', backup: { id: 'mood', label: '心情数据', prefix: 'Mood' }, title: '心情日记', meta: '感受', icon: 'Heart', name: 'MoodView', settings: '管理心情等级、自定义标签与每日关怀提醒。', loadView: () => import('../features/mood/MoodView.vue') },\r\n  { id: 'chat', backup: { id: 'chat', label: '彼方数据', prefix: 'Kanata' }, title: '彼方 · Kanata', meta: '陪伴', icon: 'HouseHeart', name: 'KanataView', access: 'protected', cache: false, settings: '管理彼方世界、角色与资料。', enabled: c => c.warmHomeEnabled !== false,\r\n    loadView: () => import('../features/chat/KanataView.vue'), bindings: c => ({ isVisible: c.isVisible }) },\r\n  { id: 'todo', backup: { id: 'todos', label: '每日待办数据', prefix: 'Todos' }, title: '每日待办', meta: '计划', icon: 'ListChecks', name: 'TodoView', loadView: () => import('../features/todo/TodoView.vue') },\r\n  { id: 'schedule', backup: { id: 'schedules', label: '日程数据', prefix: 'Schedules' }, title: '日程提醒', meta: '安排', icon: 'CalendarDays', name: 'ScheduleView', settings: '管理日程标签、颜色和分类规则。', loadView: () => import('../features/schedule/ScheduleView.vue') },\r\n  { id: 'passwords', backup: { id: 'passwords', label: '密码库数据', prefix: 'Passwords' }, title: '我的密码库', label: '密码库', meta: '安全', icon: 'LockKeyhole', name: 'PasswordVaultView', access: 'protected', settings: '管理密码分类；主密码仍在通用配置中管理。', loadView: () => import('../features/vault/PasswordVaultView.vue') },\r\n  { id: 'settings', title: '通用配置', meta: '设置', icon: 'SlidersHorizontal', name: 'SettingsView', cache: false, loadView: () => import('../components/SettingsView.vue') }\r\n])\r\n\r\nexport const BACKUP_TYPE_OPTIONS = Object.freeze([{ value: 'full', label: '完整数据（全部数据与设置）' },\r\n  ...moduleRegistry.list.flatMap(m => m.backup ? [{ value: m.backup.id, label: m.backup.label }] : [])])\r\n",
+    expected: /loadView: \(\) => import\('..\/features\/chat\/KanataSetupView.vue'\)/,
+    operator: 'match',
+    diff: 'simple'
+  }

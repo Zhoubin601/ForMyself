@@ -2,6 +2,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { moduleRegistry } from '../src/application/moduleRegistry.js'
 
 const read = path => readFileSync(join(process.cwd(), 'src', path), 'utf8')
 
@@ -25,7 +26,11 @@ test('非首页组件和受保护 Store 不进入首屏静态依赖', () => {
   const registry = read('application/moduleRegistry.js')
   const controller = read('composables/useAppController.js')
   const home = read('components/HomeView.vue')
-  assert.match(registry, /loadView: \(\) => import\('..\/features\/chat\/KanataSetupView.vue'\)/)
+  const chat = moduleRegistry.get('chat')
+  assert.equal(chat.name, 'KanataView')
+  assert.equal(typeof chat.loadView, 'function')
+  assert.equal(chat.access, 'protected')
+  assert.equal(chat.cache, false)
   assert.doesNotMatch(registry, /^import .*View/m)
   assert.match(read('application/protectedModules.js'), /import\('\.\.\/features\/chat\/kanataStore\.js'\)/)
   assert.doesNotMatch(controller, /^import .*chatStore/m)

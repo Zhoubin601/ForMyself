@@ -1093,3 +1093,15 @@ P2最终编译补记：匹配安全修复dist的Android JVM/debug/test APK构建
 ### 本地P2最终证据（2026-10-28）
 
 来源：docs/20261028-kanata-stage-p2-local-verification-v1.md及docs/qa/kanata-local-20261028/实际结果。生产修复1处Android明确目录已存在码0010；新增回归先22过1失败，修复后23/23。最终check退出0：Node409/Vitest219、0 lint错误、类型/构建通过。Android专用25项PASS、直接AndroidJUnitRunner实际8项通过/1个显式夹具Assume跳过；Gradle connected因UTP宿主依赖缺失失败，不冒充其成功。生产APK55资源哈希匹配、不含QA入口、覆盖保留合成资料并以新密码强停重载通过。P2 PASS/Go，进入P3。真实私人资料未读取/删除，无远端推送。
+
+## Kanata P3 本地来源复核（2026-10-28）
+
+P2基线提交c543d52，25项原生专项/生产重载已通过，自动开始P3。ui-ux-pro-max技能本轮用于已有Vue页面的副作用清理、字段错误、键盘焦点和移动布局；没有新增UI依赖或更换既有图标体系。
+外部来源名称：动画官方人物列表、故事与五人个人页。链接：https://sh-anime.shochiku.co.jp/bluearchive-anime/character/ ；https://sh-anime.shochiku.co.jp/bluearchive-anime/story/ ；个人页沿用预设spec列出的五个官方URL。引用日期2026-10-28。本轮读取仅身份/性格/兴趣事实，不下载官方图像/剧情全文，不代表获公开分发许可。
+核实：星野负责人/午睡/保护同伴，白子寡言/跑步骑行，野宫温柔/精神支持及未公开家庭条件，芹香会计/秘密兼职，绫音书记/设备/规则。芹香兼职不应自动成为队伍共有知识；后续上下文只注入发言角色自身定义，私人世界书按knownBy筛选。
+外部来源名称：Character Card V2规范。链接https://github.com/malfoyslastname/character-card-spec-v2/blob/main/spec_v2.md ，GitHub连接器读取blob SHA cde6a3bf77631ff1f298583d4af8d079e4b21cdb，日期2026-10-28。
+外部来源名称：Character Card V3规范。链接https://github.com/kwaroran/character-card-spec-v3/blob/main/SPEC_V3.md ，GitHub连接器读取blob SHA cb9749821955047890ac88aa84ec0b235ae0fb5d，日期2026-10-28。
+采用方式：仅按协议字段自主实现PNG/JSON解析；不复制SillyTavern等第三方业务代码、不新增其依赖。PNG中ccv3优先于chara，UTF8 JSON采用base64；未知扩展保留但不执行，外部资源不请求。产品权限规则优先于卡中system_prompt，原始字段保留并提示不覆盖安全边界。
+
+
+P3最终来源：docs/20261028-kanata-stage-p3-verification-v1.md及qa/kanata-continuous/p3实际日志。Web12、Android生产16检查通过，初始1世界5实例5私聊1群聊13书/25关系且历史0；最终完整备份含PNG源精确恢复。完整需求截至P3逐项覆盖见20261028-kanata-requirements-through-p3-v1.md。用户最新授权继续P4并在P4通过后推送暂停。

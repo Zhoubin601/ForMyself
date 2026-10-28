@@ -93,3 +93,6 @@ export interface FullBackupDTO {
 export type { KanataReadResult, KanataFilesystem, KanataJournal } from '../features/chat/storage/kanataRepositoryTypes'
 export type { KanataChatBackup, KanataFullBackup, KanataRestoreSnapshot } from '../features/chat/backup/kanataBackup.js'
 export type KanataRepository = ReturnType<typeof import('../features/chat/storage/kanataRepository.js').createKanataRepository>
+export type { ParsedCharacterCard, ImportedCardAsset, CardLoreCandidate } from '../features/chat/cards/characterCardTypes'
+export type KanataManagement = ReturnType<typeof import('./kanataManagement.js').createKanataManagement>
+export type KanataFeedbackOwner = Parameters<typeof import('../services/uiFeedback.js').cancelOwnedFeedbackDialog>[0]

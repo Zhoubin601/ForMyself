@@ -195,7 +195,7 @@ describe('Kanata protected setup view', () => {
   it('retains the chat route and protected unloading policy without exposing the old page', async () => {
     const descriptor = moduleRegistry.get('chat')
     expect(descriptor.title).toBe('彼方 · Kanata')
-    expect(descriptor.name).toBe('KanataSetupView')
+    expect(descriptor.name).toBe('KanataView')
     expect(descriptor.access).toBe('protected')
     expect(descriptor.cache).toBe(false)
     expect(descriptor.backup).toEqual({ id: 'chat', label: '彼方数据', prefix: 'Kanata' })

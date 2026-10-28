@@ -979,3 +979,15 @@ P2最终编译补记：匹配安全修复dist的Android JVM/debug/test APK构建
 ### 本地P2 Go与P3接续
 
 本地P2全部必要设备/安全条件已通过，证据docs/20261028-kanata-stage-p2-local-verification-v1.md。当前自动进入P3：实际世界/全局卡管理、PNG/JSON导入、安全扩展保留、世界书权限和预算、独立预设来源审核及交互；无需重复P0/P1，不推送/发布。先提交本地已验收P2检查点。
+
+### P3正在实施
+
+真实文件切片：features/chat/cards/角色卡导入；domain/世界和卡管理；lorebook/授权检索；application/kanataManagement组合；现有chat注册视图升级（保留setup首启与受保护卸载）；contracts/types/故障与UI回归。每片先定向测试，再两轮自查与完整check及Web/Android界面验证。未配置AI不发送回复；聊天生成仍属P4。
+
+### 用户范围更新：P3后推送并暂停
+
+2026-10-28用户明确要求“完成p3后推送，然后就暂停”。本轮范围调整为完成并验收P3、普通提交并推送Kanata（包含已验收P2检查点），然后停止，不进入P4；不强推、不合并main、不发布。无需再询问推送授权。
+
+
+## 2026-10-28 最新执行检查点
+P3已按连续计划v3五项门禁通过，详见20261028-kanata-stage-p3-verification-v1.md；用户最新改为继续P4，完成P4后推送Kanata并暂停，覆盖此前P3后暂停要求。P4尚未完成；不操作main、PR或发布。

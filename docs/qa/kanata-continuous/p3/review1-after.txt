@@ -1,0 +1,32 @@
+✔ P3-card JSON V1/V2/V3 preserves all supported fields and inert unknown extensions (6.8891ms)
+✔ P3-card PNG chara and ccv3 decode UTF8; ccv3 takes precedence without executing embedded references (7.8639ms)
+✔ P3-card PNG export embeds edited current data while preserving actual image chunks (3.0694ms)
+✔ P3-card rejects malformed PNG signatures, CRCs, overflowing/truncated chunks and trailing bytes (1.7069ms)
+✔ P3-card duplicate metadata, missing card, invalid base64 and invalid JSON fail explicitly (3.2128ms)
+✔ P3-card file extension, MIME, version and field errors do not become partial imported cards (0.8907ms)
+✔ P3-card regex remains raw and disabled; selective/case-sensitive/constant lore retains declared semantics (0.8299ms)
+✔ P3-card prototype-looking JSON remains inert and independent, without global mutation (0.5072ms)
+✔ P3-card imported original bytes/avatar survive full domain validation; remote/SVG avatars are refused (3.5027ms)
+✔ P3-card built-in definitions export as interoperable JSON without losing original preset metadata (1.0753ms)
+✔ P3-review1 invalid PNG color-depth combinations and animated image chunks are rejected (0.5102ms)
+✔ P3-review1 selective lore with no secondary key stays disabled instead of broadening activation (0.5826ms)
+✔ P3-world new world is empty, has editable independent identity, and preserves the input (51.4244ms)
+✔ P3-world same card creates independently in another world, with own state and private conversation (14.9893ms)
+✔ P3-world copy only static settings/knowledge/roles; original experiences and grants never cross (8.8653ms)
+✔ P3-world archive is reversible, disables automation and rejects ordinary world edits (8.6364ms)
+✔ P3-card global import is byte-idempotent and raw data is retained through backup (21.0476ms)
+✔ P3-card immutable version updates need explicit selection, preserving overrides and experience (21.9441ms)
+✔ P3-lore authorization precedes activation/budget, never searching another world or private owner (10.4366ms)
+✔ P3-lore deterministic budgets and selective/case-sensitive keys are bounded without regex (5.4304ms)
+✔ P3-lore card knowledge import defaults private, detects conflicts and never overwrites (15.9192ms)
+✔ P3-lore edit is revision checked and a duplicate content cannot silently replace another entry (8.5361ms)
+✔ P3-identity world user placeholders change without mutating the base card or other world (10.9273ms)
+✔ P3-review1 editing an imported card preserves unrelated primitive extensions, examples and scenario (8.0647ms)
+ℹ tests 24
+ℹ suites 0
+ℹ pass 24
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 383.5972

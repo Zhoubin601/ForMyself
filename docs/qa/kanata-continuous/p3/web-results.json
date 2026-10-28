@@ -1,0 +1,147 @@
+{
+  "startedAt": "2026-10-28T08:44:03.682Z",
+  "browser": "155.0.8059.85",
+  "status": "PASS",
+  "checks": {
+    "first-seed-exact-and-no-key": {
+      "status": "PASS",
+      "elapsedMs": 17,
+      "result": {
+        "worlds": 1,
+        "cards": 5,
+        "instances": 5,
+        "private": 5,
+        "group": 1,
+        "lore": 13,
+        "relationships": 25,
+        "messages": 0,
+        "memories": 0,
+        "events": 0
+      }
+    },
+    "world-create-and-independent-instance": {
+      "status": "PASS",
+      "elapsedMs": 174,
+      "result": {
+        "worlds": 2,
+        "instances": 6
+      }
+    },
+    "world-identity-and-instance-overrides": {
+      "status": "PASS",
+      "elapsedMs": 219,
+      "result": true
+    },
+    "global-version-preview-selective-sync": {
+      "status": "PASS",
+      "elapsedMs": 236,
+      "result": true
+    },
+    "json-preview-cancel-and-confirm": {
+      "status": "PASS",
+      "elapsedMs": 171,
+      "result": true
+    },
+    "png-v3-import-and-corrupt-rejection": {
+      "status": "PASS",
+      "elapsedMs": 149,
+      "result": {
+        "cards": 7,
+        "crcRejected": true
+      }
+    },
+    "attached-lore-private-and-conflict-skip": {
+      "status": "PASS",
+      "elapsedMs": 211,
+      "result": true
+    },
+    "role-knowledge-filter-and-world-switch": {
+      "status": "PASS",
+      "elapsedMs": 177,
+      "result": true
+    },
+    "world-copy-and-reversible-archive": {
+      "status": "PASS",
+      "elapsedMs": 295,
+      "result": true
+    },
+    "navigation-scroll-restoration": {
+      "status": "PASS",
+      "elapsedMs": 28,
+      "result": true
+    },
+    "cold-browser-reload": {
+      "status": "PASS",
+      "elapsedMs": 660,
+      "result": true
+    },
+    "session-expiry-clears-management": {
+      "status": "PASS",
+      "elapsedMs": 8,
+      "result": true
+    }
+  },
+  "pageErrors": [],
+  "aiRequests": 0,
+  "finalCounts": {
+    "worlds": 3,
+    "cards": 7,
+    "instances": 12,
+    "conversations": 14,
+    "lorebook": 27,
+    "messages": 0,
+    "memories": 0,
+    "events": 0
+  },
+  "layouts": [
+    {
+      "width": 375,
+      "height": 812,
+      "fontSize": "16px",
+      "within": true,
+      "targets": true,
+      "scroll": true
+    },
+    {
+      "width": 375,
+      "height": 812,
+      "fontSize": "32px",
+      "within": true,
+      "targets": true,
+      "scroll": true
+    },
+    {
+      "width": 812,
+      "height": 375,
+      "fontSize": "16px",
+      "within": true,
+      "targets": true,
+      "scroll": true
+    },
+    {
+      "width": 812,
+      "height": 375,
+      "fontSize": "32px",
+      "within": true,
+      "targets": true,
+      "scroll": true
+    },
+    {
+      "width": 1024,
+      "height": 768,
+      "fontSize": "16px",
+      "within": true,
+      "targets": true,
+      "scroll": true
+    },
+    {
+      "width": 1024,
+      "height": 768,
+      "fontSize": "32px",
+      "within": true,
+      "targets": true,
+      "scroll": true
+    }
+  ],
+  "finishedAt": "2026-10-28T08:44:07.663Z"
+}
