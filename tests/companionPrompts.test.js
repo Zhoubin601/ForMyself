@@ -97,9 +97,16 @@ test('回复清理器去除引号并执行不同场景的字符硬上限', () =>
   assert.ok(Array.from(clipped).length <= 18)
 })
 
-test('心情界面不再使用闺蜜文案并接入共享提示词', async () => {
+test('心情界面走受授权角色入口，未授权生活资料不会被读取', async () => {
   const source = await readFile(new URL('../src/features/mood/MoodView.vue', import.meta.url), 'utf8')
   assert.doesNotMatch(source, /闺蜜正在感知/)
-  assert.match(source, /buildMoodEchoContext/)
+  assert.doesNotMatch(source, /await askAI\(/)
+  assert.match(source, /useKanataLifeCompanion\('mood'\)/)
+  const {collectKanataLifeContext}=await import('../src/application/kanataLifeContext.js')
+  const data={worlds:[{id:'world'}],instances:[{id:'instance',worldId:'world'}],lifeGrants:[]}
+  let reads=0
+  const result=await collectKanataLifeContext(data,{worldId:'world',instanceId:'instance',group:false},{mood:async()=>{reads++;return[{id:'synthetic',note:'private synthetic'}]}})
+  assert.equal(reads,0)
+  assert.deepEqual(result.entries,[])
   assert.match(source, /normalizeCompanionReply\(echoText, 200\)/)
 })

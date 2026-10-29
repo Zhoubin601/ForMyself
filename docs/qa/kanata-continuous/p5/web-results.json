@@ -1,0 +1,225 @@
+{
+  "startedAt": "2026-10-29T04:03:59.099Z",
+  "status": "PASS",
+  "checks": {
+    "seed-zero-invented-experience": {
+      "status": "PASS",
+      "elapsedMs": 0,
+      "result": true
+    },
+    "manual-memory-candidate-and-confirmation": {
+      "status": "PASS",
+      "elapsedMs": 209,
+      "result": true
+    },
+    "automatic-candidate-idempotent-and-source-trace": {
+      "status": "PASS",
+      "elapsedMs": 978,
+      "result": true
+    },
+    "L0-revision-invalidates-derived-memory-and-replies": {
+      "status": "PASS",
+      "elapsedMs": 290,
+      "result": true
+    },
+    "memory-conflict-never-silently-overwrites": {
+      "status": "PASS",
+      "elapsedMs": 237,
+      "result": true
+    },
+    "L2-compression-preserves-L0-and-old-valid-summary-on-failure": {
+      "status": "PASS",
+      "elapsedMs": 1576,
+      "result": true
+    },
+    "causal-revoke-preserves-independent-effects": {
+      "status": "PASS",
+      "elapsedMs": 553,
+      "result": true
+    },
+    "event-correction-is-a-new-reviewed-candidate": {
+      "status": "PASS",
+      "elapsedMs": 134,
+      "result": true
+    },
+    "exact-role-binding-and-read-only-life-reply": {
+      "status": "PASS",
+      "elapsedMs": 570,
+      "result": true
+    },
+    "life-memory-requires-remember-and-remains-private": {
+      "status": "PASS",
+      "elapsedMs": 486,
+      "result": true
+    },
+    "one-hop-share-permission-and-revocation": {
+      "status": "PASS",
+      "elapsedMs": 1165,
+      "result": true
+    },
+    "expiry-releases-chat-and-preview": {
+      "status": "PASS",
+      "elapsedMs": 11,
+      "result": true
+    }
+  },
+  "pageErrors": [],
+  "finalCounts": {
+    "worlds": 1,
+    "instances": 5,
+    "messages": 7,
+    "memories": 7,
+    "events": 3,
+    "attempts": 8,
+    "tasks": 3,
+    "requests": 7,
+    "controlledProvider": true
+  },
+  "layouts": [
+    {
+      "width": 375,
+      "height": 812,
+      "fontSize": "16px",
+      "tab": "记忆",
+      "within": true,
+      "targets": true
+    },
+    {
+      "width": 375,
+      "height": 812,
+      "fontSize": "16px",
+      "tab": "世界事件",
+      "within": true,
+      "targets": true
+    },
+    {
+      "width": 375,
+      "height": 812,
+      "fontSize": "16px",
+      "tab": "生活联动",
+      "within": true,
+      "targets": true
+    },
+    {
+      "width": 375,
+      "height": 812,
+      "fontSize": "32px",
+      "tab": "记忆",
+      "within": true,
+      "targets": true
+    },
+    {
+      "width": 375,
+      "height": 812,
+      "fontSize": "32px",
+      "tab": "世界事件",
+      "within": true,
+      "targets": true
+    },
+    {
+      "width": 375,
+      "height": 812,
+      "fontSize": "32px",
+      "tab": "生活联动",
+      "within": true,
+      "targets": true
+    },
+    {
+      "width": 812,
+      "height": 375,
+      "fontSize": "16px",
+      "tab": "记忆",
+      "within": true,
+      "targets": true
+    },
+    {
+      "width": 812,
+      "height": 375,
+      "fontSize": "16px",
+      "tab": "世界事件",
+      "within": true,
+      "targets": true
+    },
+    {
+      "width": 812,
+      "height": 375,
+      "fontSize": "16px",
+      "tab": "生活联动",
+      "within": true,
+      "targets": true
+    },
+    {
+      "width": 812,
+      "height": 375,
+      "fontSize": "32px",
+      "tab": "记忆",
+      "within": true,
+      "targets": true
+    },
+    {
+      "width": 812,
+      "height": 375,
+      "fontSize": "32px",
+      "tab": "世界事件",
+      "within": true,
+      "targets": true
+    },
+    {
+      "width": 812,
+      "height": 375,
+      "fontSize": "32px",
+      "tab": "生活联动",
+      "within": true,
+      "targets": true
+    },
+    {
+      "width": 1024,
+      "height": 768,
+      "fontSize": "16px",
+      "tab": "记忆",
+      "within": true,
+      "targets": true
+    },
+    {
+      "width": 1024,
+      "height": 768,
+      "fontSize": "16px",
+      "tab": "世界事件",
+      "within": true,
+      "targets": true
+    },
+    {
+      "width": 1024,
+      "height": 768,
+      "fontSize": "16px",
+      "tab": "生活联动",
+      "within": true,
+      "targets": true
+    },
+    {
+      "width": 1024,
+      "height": 768,
+      "fontSize": "32px",
+      "tab": "记忆",
+      "within": true,
+      "targets": true
+    },
+    {
+      "width": 1024,
+      "height": 768,
+      "fontSize": "32px",
+      "tab": "世界事件",
+      "within": true,
+      "targets": true
+    },
+    {
+      "width": 1024,
+      "height": 768,
+      "fontSize": "32px",
+      "tab": "生活联动",
+      "within": true,
+      "targets": true
+    }
+  ],
+  "finishedAt": "2026-10-29T04:04:09.293Z"
+}

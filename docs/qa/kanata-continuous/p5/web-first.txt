@@ -1,0 +1,14 @@
+PASS seed-zero-invented-experience
+PASS manual-memory-candidate-and-confirmation
+PASS automatic-candidate-idempotent-and-source-trace
+PASS L0-revision-invalidates-derived-memory-and-replies
+PASS memory-conflict-never-silently-overwrites
+PASS causal-revoke-preserves-independent-effects
+PASS event-correction-is-a-new-reviewed-candidate
+PASS exact-role-binding-and-read-only-life-reply
+Error: P5_ASSERT:separate memory permission and provenance
+    at assert (file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata/docs/qa/kanata-continuous/p5/experience-scenarios.mjs:3:48)
+    at file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata/docs/qa/kanata-continuous/p5/experience-scenarios.mjs:112:5
+    at async record (file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata/docs/qa/kanata-continuous/p5/verify-web.mjs:11:65)
+    at async verifyExperience (file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata/docs/qa/kanata-continuous/p5/experience-scenarios.mjs:108:3)
+    at async file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata/docs/qa/kanata-continuous/p5/verify-web.mjs:14:23

@@ -1,0 +1,38 @@
+✔ P4 life read permission checks before invoking a reader; read alone never grants group sharing (33.5861ms)
+✔ P4 @ chooses exact speaker, normal group is bounded and unknown mentions fail (8.6656ms)
+✔ P4 five persona contexts differ and exclude other personas, private chats and knowledge (6.2761ms)
+✔ P4 other group characters are labelled user-context, never merged into speaker assistant history (3.4062ms)
+✔ P4 modes preserve persona, identities and state; paragraphs cap without breaking RP (4.5642ms)
+✔ P4 archived or cross-world speaker cannot build a request (3.9338ms)
+✔ P4 actual second world history, identity and persona overrides never enter first world context (8.9903ms)
+✔ P4 attempts finalize once, strict scope validation and compatibility with old no-usage graph (18.5712ms)
+✔ P4 cost uses documented CNY range, cache accounting and unknown model/provider stays unpriced (3.872ms)
+✔ P5 legacy graph keeps optional experience fields absent and validates unchanged (38.7764ms)
+✔ P5 read, remember and share flags are independent and default-deny (9.7437ms)
+✔ P5 grant revision stops use of prior raw messages and memory without deleting history (13.3968ms)
+✔ P5 bound instances never fall back to a same-name role or the global override (10.4113ms)
+✔ P5 read-only life information cannot enter L2/L3 by removing supplied provenance (10.1389ms)
+✔ P5 canonical duplicate extraction merges sources without promoting or sharing candidates (7.5203ms)
+✔ P5 conflicting facts preserve the active original and require explicit selection (12.2833ms)
+✔ P5 revising and soft-deleting L0 invalidates memory but retains inspectable source IDs (12.1146ms)
+✔ P5-review source revision also invalidates assistant replies and memories derived from those replies (7.5555ms)
+✔ P5 shared life memories require recipient consent and cannot be forwarded without recipient share (21.1307ms)
+✔ P5-review a retained copy cannot propagate after its origin memory is deleted (11.1018ms)
+✔ P5 retrieval excludes candidates, stale refs, private nonowners and over-budget records (5.9872ms)
+✔ P5 task success is idempotent and concurrent running lease cannot be duplicated (13.3281ms)
+✔ P5 invalid summary output retains L0 and previous active L2; failed task can retry (18.0646ms)
+✔ P5 memory task cannot accept output after a source revision or remember revocation (5.1668ms)
+✔ P5 event proposals never change truth; commit applies only known versioned rule (11.2495ms)
+✔ P5 revoke E1 recomputes from baseline and preserves independent E2 on the same path (20.5435ms)
+✔ P5 causal descendants revoke together but stale previews and uncertain dependencies block (42.7331ms)
+✔ P5 source corrections invalidate committed events and re-fold state without deleting original events (11.5723ms)
+✔ P5 unknown legacy effects lack a trusted baseline and cannot be silently inverted (9.6599ms)
+✔ P5 malformed optional metadata, cross-world bindings and unsafe policies are rejected (6.966ms)
+ℹ tests 30
+ℹ suites 0
+ℹ pass 30
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 484.6543

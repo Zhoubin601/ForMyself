@@ -1,0 +1,26 @@
+PASS install-production-apk
+PASS seed-zero-invented-experience
+locator.click: Target page, context or browser has been closed
+Call log:
+  - waiting for locator('.kanata-experience-card').filter({ has: getByRole('heading', { name: /^合成主题/ }) }).getByRole('button', { name: '核对并采用', exact: true })
+    - locator resolved to <button disabled type="button">核对并采用</button>
+  - attempting click action
+    2 × waiting for element to be visible, enabled and stable
+      - element is not enabled
+    - retrying click action
+    - waiting 20ms
+
+    at D:\2026Autumn Semester File\GitHub\formyself-app\.worktrees\kanata\docs\qa\kanata-continuous\p5\experience-scenarios.mjs:30:79
+    at async record (D:\2026Autumn Semester File\GitHub\formyself-app\.worktrees\kanata\docs\qa\kanata-continuous\p5\verify-native.mjs:27:71)
+    at async verifyExperience (D:\2026Autumn Semester File\GitHub\formyself-app\.worktrees\kanata\docs\qa\kanata-continuous\p5\experience-scenarios.mjs:28:3)
+    at async file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata/docs/qa/kanata-continuous/p5/verify-native.mjs:59:23 {
+  log: [
+    "  - waiting for locator('.kanata-experience-card').filter({ has: getByRole('heading', { name: /^合成主题/ }) }).getByRole('button', { name: '核对并采用', exact: true })",
+    '    - locator resolved to <button disabled type="button">核对并采用</button>',
+    '  - attempting click action',
+    '    2 × waiting for element to be visible, enabled and stable',
+    '      - element is not enabled',
+    '    - retrying click action',
+    '    - waiting 20ms'
+  ]
+}

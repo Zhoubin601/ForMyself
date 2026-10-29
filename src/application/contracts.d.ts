@@ -99,3 +99,8 @@ export type KanataFeedbackOwner = Parameters<typeof import('../services/uiFeedba
 export type { CompletionOptions, CompletionAttempt, CompletionUsage } from '../platform/ai/completionTypes'
 export type { KanataUsageEvent } from '../features/chat/domain/kanataTypes'
 export type KanataChatRuntime = ReturnType<typeof import('./kanataChatRuntime.js').createKanataChatRuntime>
+export type {LifeSource,MemoryPolicy,RoleBinding,KanataRoleBindings,EffectBaseline,EventAudit} from '../features/chat/domain/kanataTypes'
+export type KanataExperienceRuntime = ReturnType<typeof import('./kanataExperienceRuntime.js').createKanataExperienceRuntime>
+export type {MessageAudit} from '../features/chat/domain/kanataTypes'
+export type KanataLifeCompanion = ReturnType<typeof import('./kanataLifeCompanion.js').createKanataLifeCompanion>
+export type KanataLifeReaders = Parameters<typeof import('./kanataLifeContext.js').collectKanataLifeContext>[2]

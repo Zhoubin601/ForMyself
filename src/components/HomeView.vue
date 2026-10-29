@@ -1,4 +1,6 @@
 <script setup>
+import {useKanataLifeCompanion} from '../composables/useKanataLifeCompanion.js'
+import KanataLifeCompanion from './KanataLifeCompanion.vue'
 import HomeScheduleCard from './HomeScheduleCard.vue'
 import HomeTodayCards from './HomeTodayCards.vue'
 import { sortWeightRecords } from "../services/weightInsights.js"
@@ -11,16 +13,9 @@ import TodoProgressCard from '../features/todo/TodoProgressCard.vue'
 import { useTodoStore } from '../features/todo/todoStore.js'
 import { appToast } from '../services/uiFeedback.js'
 import { useScheduleStore } from '../features/schedule/scheduleStore'
-import { askAI } from '../services/aiEngine'
-import {
-  buildHomeCompanionContext,
-  buildHomeCompanionPrompt,
-  getCompanionContextFingerprint,
-  normalizeCompanionReply,
-  shouldGenerateHomeCompanion
-} from '../features/chat/companionPrompts'
 
 const settingsStore = useSettingsStore()
+const homeCompanion=useKanataLifeCompanion('home')
 const moodStore = useMoodStore()
 const weightStore = useWeightStore()
 const debtStore = useDebtStore()
@@ -146,6 +141,7 @@ const nextScheduleDateLabel = computed(() => {
 })
 
 const companionText = computed(() => {
+  if(homeCompanion.text.value)return homeCompanion.text.value
   const cachedText = settingsStore.cachedQuote?.text?.trim()
   if (cachedText && settingsStore.cachedQuote?.date === todayStr.value) return cachedText
   if (todayRecordCount.value === 0) return '今天还没有留下记录，从你最想关注的一项开始就好。'
@@ -266,34 +262,9 @@ const fetchAIQuote = async () => {
     !debtStore.isDataLoaded
   ) return
 
-  const context = buildHomeCompanionContext({
-    moodRecords: moodStore.moodRecords,
-    moodDefinitions: moodStore.moodDefinitions,
-    weightRecords: weightStore.weightRecords,
-    savedDebts: debtStore.savedDebts
-  }, todayStr.value)
-  const fingerprint = getCompanionContextFingerprint(context)
-  if (!shouldGenerateHomeCompanion({
-    cachedQuote: settingsStore.cachedQuote,
-    storedFingerprint: settingsStore.dataFingerprint,
-    nextFingerprint: fingerprint,
-    referenceDate: todayStr.value
-  })) return
-
-  isFetchingAIQuote = true
-  try {
-    const answer = await askAI(buildHomeCompanionPrompt(context))
-    settingsStore.cachedQuote = {
-      text: normalizeCompanionReply(answer, 120),
-      date: todayStr.value
-    }
-    // 仅在成功生成后提交指纹，失败时下次进入首页仍可重试。
-    settingsStore.dataFingerprint = fingerprint
-  } catch (error) {
-    if (error.message !== 'MISSING_KEY') console.error('[HomeView] AI error:', error.message)
-  } finally {
-    isFetchingAIQuote = false
-  }
+  isFetchingAIQuote=true
+  try { await homeCompanion.request('根据已授权资料，给今天一个简短、自然的角色陪伴回应。') }
+  finally { isFetchingAIQuote=false }
 }
 
 const switchView = view => {
@@ -312,6 +283,7 @@ onMounted(() => {
 
 <template>
   <div class="home-dashboard">
+    <KanataLifeCompanion module-id="home" />
     <section class="home-hero" :class="heroTone">
       <div class="hero-orb hero-orb-one"></div>
       <div class="hero-orb hero-orb-two"></div>

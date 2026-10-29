@@ -444,3 +444,18 @@ Windows 使用 `npm.cmd`、`npx.cmd` 和 `android/gradlew.bat` 的对应命令�
 - Kanata schema1增加可选usageEvents，旧图不必带此集合；校验全局ID冲突、world/conversation/member、Token整数、状态/时间和安全错误码。事件只含请求/目标ID、模型、传输、实际/估计计数及结果，无请求正文/Key。所有数据仍沿原仓库加密与单项/完整备份v13、实际协调器恢复；旧v1–v12策略不变。
 - [费用估算](src/features/chat/domain/kanataUsage.js) 版本deepseek-cny-20261028-range-v1，引用DeepSeek官方中文价格。使用峰/谷区间以避免猜测节假日；缓存明细缺失扩大区间，未知模型/非官方提供商不套官方价，结果不是账单。不设置应用费用限制；每轮2角色和1次重试为技术边界。已有用户模型/Key/URL不改，旧模型别名价格未提供时显示未知。
 - 验证入口：P4目录verify-web.mjs（新隔离Chrome+4173）、verify-native.mjs（新空白任务AVD+已核验生产APK）、verify-upgrade.mjs（只允许标记合成安装，覆盖升级保图与滚动/后台）。verify-live.mjs需要用户明确指定的外部测试Key文件，最多8组合成对话，不作为npm check自动任务；只在内存读取Key，原文件不改、不复制入项目。validate-live-results.mjs核查已记录真实响应，不重复计费。实际结论及失败修复见 [P4验收](docs/20261028-kanata-stage-p4-verification-v1.md)。
+
+## 19. Kanata P5 经历、事件与生活授权（2026-10-28）
+
+本节覆盖第18节的P5未实现说明；P6自治、通知与双视角仍单独验收。
+
+- 新纯规则位于 `src/features/chat/experience/`。L0默认保留；L1为策略限定的近期原文；L2摘要、L3候选事实与静态世界书分离；L4只使用当前有效、角色有权获知的事件与状态。`kanataMemory` 的任务键包含会话、实例、源消息revision和策略revision；成功同源不重复计费，失败保留L0及旧有效摘要。自动提取先候选，冲突经显式解决；删除事实不从相同旧源自动重建。工程默认标准策略：近期12条、摘要24条、提取8条、上下文24000 UTF8字节；字节预算不是计费Token，其他策略与手动整理可配置。
+- `kanataKnowledge` 检查原始来源、事件因果祖先和分享父链；旧导入省略冗余lifeSources也不能绕过原授权。生活来源包含精确grant/revision/module/instance及合成内容SHA256。read/remember/share独立，接收者另需read/remember，转发另需share；撤权保留可管理原文但停止生成使用。私聊与私有事件的状态增量不进入群聊；同一群的L2/L3可在本群回忆，其他群不获得它。用户管理查看不等于角色获取知识。
+- `kanataEvents` 只允许版本化闭集Effects：support/conflict小幅有向关系增量及情绪、rest能量和情绪、move地点，note/promise不改数值。模型不能直接提交真值。首次效果保存每字段baseline，撤销从baseline折叠仍有效事件，保留独立E2；未知旧效果/缺baseline拒绝。因果不明时预览后明确决定，修正生成新候选；eventAudits保留前后版本。生活来源事件提交同时检查全部角色参与者，不能借private绕过分享。
+- `reviseKanataMessage` 保留稳定ID并审计版本；停用依赖回复、派生记忆、任务和事件，重建状态。显式删除清空该消息当前及审计版本正文；其他回复、记忆和既有备份不被宣称同步擦除。`replyToRevision`防止导入旧回答在源修订后重新进入上下文。
+- [kanataExperienceRuntime](src/application/kanataExperienceRuntime.js) 通过受保护租约和真实Store.update执行操作；异步任务先保存running/pending用量再请求，owner/session/revision变化拒绝结果。页面离开、会话过期和dispose取消；失败保存语义沿Store，不直接调用底层文件或恢复apply。
+- [kanataLifeContext](src/application/kanataLifeContext.js) 在授权检查后才调用现有模块lazy reader，显式投影并限制条数。Todo读canonical todayItems及标明不等于完成事实的planDefinitions，不新建数据源、不改CAS/native共享键。home/reports只汇总逐项被授予权限的数据，不推断未提供内容。
+- [kanataLifeCompanion](src/application/kanataLifeCompanion.js) 动态加载，精确全局绑定与模块覆盖；null/失效绑定不按同名重选。主动点击可请求chat认证，普通页面被动挂载不解密。虚拟任务不是用户L0，purpose=life；remember=false仅临时回复，允许remember时只生成私有候选。模型前后重验绑定、授权、投影与knowledgeSignature；KeepAlive停用/卸载/过期清空明文、订阅和旧响应。
+- 入口：彼方“记忆与权限”含记忆、世界事件、生活联动；角色与世界精准绑定、三独立权限和撤销影响提示。首页、心情、体重、省钱、日程、待办、报告接入同一受保护门面，不再用统一恋人人设代替选定角色。原普通模块用户缓存与数据保留；新角色回复不写入其普通缓存。通知联动另属P6，旧通知个性化链不据此宣称已升级。
+- 兼容：仍Kanata schema1和完整备份v13，新增字段可选；类型与严格负向样例同步。新增messageAudits/eventAudits/effectBaselines/roleBindings/memoryPolicies及来源/任务字段均由完整图校验和原加密仓库/协调器往返；不新增存储键、数据库、加密协议或主密码机制。旧v1–v12非聊天恢复/旧聊天丢弃规则不变。
+- 验证：`npm run check`；`node docs/qa/kanata-continuous/p5/verify-web.mjs`（新Chrome context/4173）；正常build→cap sync→Android构建→`scripts/verify-kanata-apk.ps1`→同目录verify-native.mjs（新任务AVD）；真实模型verify-live.mjs只读用户指定外部Key，以validate-live-results.mjs离线核查，不重复联网。精确命令、两轮自查、失败证据与边界见[P5验收](docs/20261028-kanata-stage-p5-verification-v1.md)。全量JSON/无磁盘分页仍是P7限制。

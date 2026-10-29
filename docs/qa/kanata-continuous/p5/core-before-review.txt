@@ -1,0 +1,72 @@
+✔ P5 legacy graph keeps optional experience fields absent and validates unchanged (43.3198ms)
+✔ P5 read, remember and share flags are independent and default-deny (9.0015ms)
+✔ P5 grant revision stops use of prior raw messages and memory without deleting history (15.6987ms)
+✔ P5 bound instances never fall back to a same-name role or the global override (11.9217ms)
+✔ P5 read-only life information cannot enter L2/L3 by removing supplied provenance (9.3951ms)
+✔ P5 canonical duplicate extraction merges sources without promoting or sharing candidates (11.1214ms)
+✔ P5 conflicting facts preserve the active original and require explicit selection (12.6906ms)
+✔ P5 revising and soft-deleting L0 invalidates memory but retains inspectable source IDs (12.6846ms)
+✖ P5-review source revision also invalidates assistant replies and memories derived from those replies (9.3329ms)
+✔ P5 shared life memories require recipient consent and cannot be forwarded without recipient share (24.8617ms)
+✖ P5-review a retained copy cannot propagate after its origin memory is deleted (15.2114ms)
+✔ P5 retrieval excludes candidates, stale refs, private nonowners and over-budget records (6.2203ms)
+✔ P5 task success is idempotent and concurrent running lease cannot be duplicated (17.2717ms)
+✔ P5 invalid summary output retains L0 and previous active L2; failed task can retry (19.9747ms)
+✔ P5 memory task cannot accept output after a source revision or remember revocation (4.6468ms)
+✔ P5 event proposals never change truth; commit applies only known versioned rule (12.1826ms)
+✔ P5 revoke E1 recomputes from baseline and preserves independent E2 on the same path (20.4921ms)
+✔ P5 causal descendants revoke together but stale previews and uncertain dependencies block (45.3507ms)
+✔ P5 source corrections invalidate committed events and re-fold state without deleting original events (11.7813ms)
+✔ P5 unknown legacy effects lack a trusted baseline and cannot be silently inverted (10.8283ms)
+✔ P5 malformed optional metadata, cross-world bindings and unsafe policies are rejected (7.7994ms)
+ℹ tests 21
+ℹ suites 0
+ℹ pass 19
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 510.305
+
+✖ failing tests:
+
+test at tests\kanataExperience.test.js:71:1
+✖ P5-review source revision also invalidates assistant replies and memories derived from those replies (9.3329ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'complete'
+  - 'stopped'
+  
+      at TestContext.<anonymous> (file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata/tests/kanataExperience.test.js:75:10)
+      at Test.runInAsyncScope (node:async_hooks:228:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'complete',
+    expected: 'stopped',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests\kanataExperience.test.js:86:1
+✖ P5-review a retained copy cannot propagate after its origin memory is deleted (15.2114ms)
+  AssertionError [ERR_ASSERTION]: Missing expected exception.
+      at TestContext.<anonymous> (file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata/tests/kanataExperience.test.js:90:10)
+      at Test.runInAsyncScope (node:async_hooks:228:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: /MEMORY_SHARE_UNAVAILABLE/,
+    operator: 'throws',
+    diff: 'simple'
+  }

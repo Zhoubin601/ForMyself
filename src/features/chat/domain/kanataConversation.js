@@ -1,6 +1,7 @@
 // @ts-check
 import { requireKanata as need, validateKanataData } from './kanataValidation.js'
 import { renderKanataCharacter, selectKanataLorebook } from '../lorebook/kanataLorebook.js'
+import {canUseKanataMessage,canUseKanataLifeSources,canUseKanataEvent,kanataEventLifeSources,selectKanataMemories,kanataMemoryPolicy} from '../experience/kanataKnowledge.js'
 /** @typedef {import('./kanataTypes').KanataData} Data */
 /** @param {Data} data @param {string} conversationId */
 export function kanataConversation(data, conversationId) {
@@ -37,16 +38,27 @@ export function decideKanataSpeakers(data, conversationId, text) {
 /** Only current conversation and this speaker's permitted static knowledge enter a request.
  * No raw card extensions, other private chats, other persona definitions or life stores.
  * @param {Data} data @param {string} conversationId @param {string} instanceId
+ * @param {{lifeEntries?:{moduleId:string,value:unknown}[],lifeSources?:import('./kanataTypes').LifeSource[],historyMessageIds?:string[]}} [options]
  */
-export function buildKanataConversationContext(data, conversationId, instanceId) {
+export function buildKanataConversationContext(data, conversationId, instanceId, options={}) {
   const c = kanataConversation(data, conversationId)
   need(c.participantIds.includes(instanceId) && data.instances.some(i=>i.id===instanceId && i.worldId===c.worldId), 'SPEAKER_ACCESS_DENIED', 'instanceId')
   const world = /** @type {Data['worlds'][number]} */(data.worlds.find(w=>w.id===c.worldId))
   const identity = /** @type {Data['identities'][number]} */(data.identities.find(i=>i.worldId===c.worldId))
   const definition = renderKanataCharacter(data, instanceId)
-  const history = data.messages.filter(m=>m.worldId===c.worldId && m.conversationId===c.id && m.status==='complete').slice(-40)
+  const policy=kanataMemoryPolicy(data,c.worldId),group=c.type==='group'
+  if(options.lifeEntries?.length)need(!!options.lifeSources?.length&&canUseKanataLifeSources(data,options.lifeSources,{worldId:c.worldId,instanceId,group}),'LIFE_CONTEXT_PERMISSION_DENIED','life')
+  const history = data.messages.filter(m=>m.worldId===c.worldId && m.conversationId===c.id && (!options.historyMessageIds||options.historyMessageIds.includes(m.id)) && canUseKanataMessage(data,m,instanceId,group)).slice(-policy.recentMessages)
   const text = history.slice(-3).map(m=>m.content).join('\n')
   const book = selectKanataLorebook(data,{worldId:c.worldId,instanceId,text,tokenBudget:4000})
+  const memories=selectKanataMemories(data,{worldId:c.worldId,instanceId,text,group,budget:4000,conversationId:c.id})
+  const events=data.events.filter(e=>e.worldId===c.worldId&&canUseKanataEvent(data,e,instanceId,group)).slice(-12)
+  const instance=data.instances.find(i=>i.id===instanceId)
+  /** @param {string} targetId */
+  const allowedState=targetId=>data.effects.filter(effect=>effect.targetId===targetId&&data.events.some(e=>e.id===effect.eventId&&e.status==='committed')).every(effect=>{
+    const event=data.events.find(e=>e.id===effect.eventId)
+    return !!event&&canUseKanataEvent(data,event,instanceId,group)
+  })
   const {avatarDataUrl:_avatar,avatarPlaceholder:_placeholder,promptPriority:_priority,...persona} = definition
   const mode = c.mode === 'inherit' ? world.defaultChatMode : c.mode
   const system = [
@@ -55,10 +67,13 @@ export function buildKanataConversationContext(data, conversationId, instanceId)
     '你自己的角色设定：'+JSON.stringify(persona),
     '当前用户身份：'+JSON.stringify({name:identity.displayName,background:identity.background}),
     '你有权知道的静态设定：'+JSON.stringify(book.entries.map(l=>l.content)),
-    '你的初始公开关系：'+JSON.stringify(data.relationships.filter(r=>r.worldId===c.worldId&&r.fromId===instanceId).map(r=>({target:r.toId,kind:r.kind,summary:r.publicSummary}))),
+    '你的有向关系（数值仅为描述性基线的增量，不是绝对好感）：'+JSON.stringify(data.relationships.filter(r=>r.worldId===c.worldId&&r.fromId===instanceId).map(r=>({target:r.toId,kind:r.kind,summary:r.publicSummary,...(allowedState(r.id)?{dimensions:r.dimensions}:{dynamicStateUnavailable:true})}))),
+    '可追溯的动态记忆（摘要和角色陈述不等于已确认世界事实）：'+JSON.stringify(memories.entries.map(m=>({id:m.id,layer:m.layer,content:m.content,confidence:m.confidence||'statement',sourceRefs:m.sourceRefs}))),
+    '当前角色状态：'+JSON.stringify(allowedState(instanceId)?instance?.state:{dynamicStateUnavailable:true}),
+    '经代码确认且你知晓的世界事件：'+JSON.stringify(events.map(e=>({id:e.id,summary:e.summary,effectiveAt:e.effectiveAt}))),
     c.type==='group'?'群聊只输出你自己的发言。先根据自己的兴趣、动机和底线独立判断，再回应同伴；不自动同意上一位，也不为分歧而反对。如果同意，提供自己的新理由、不同方案或保留条件，不复述上一位的段落。':'私聊只和当前用户交流。',
     mode==='roleplay'?'角色扮演模式：可用简短动作描写，不强迫用户行动，不更改核心人格。':'日常模式：自然短句，避免舞台说明；多段用空行分隔，最多4段。',
-    '现实生活模块没有在此次请求中授权提供资料；不能推断真实待办、财务、健康或私人日记。可以暂时拒绝或说明稍后再聊，但不能虚构已安排的后台执行。'
+    options.lifeEntries?.length?'此次明确授权提供的生活资料：'+JSON.stringify(options.lifeEntries)+'。这些资料不自动授权长期记忆或转发；未经明确提供的模块仍不可推断。':'现实生活模块没有在此次请求中授权提供资料；不能推断真实待办、财务、健康或私人日记。可以暂时拒绝或说明稍后再聊，但不能虚构已安排的后台执行。'
   ].join('\n')
   /** @type {import('../../../platform/ai/completionTypes').CompletionOptions['messages']} */
   const messages = [{role:'system',content:system}]
@@ -66,11 +81,15 @@ export function buildKanataConversationContext(data, conversationId, instanceId)
   const selected = []
   for (let index=history.length-1;index>=0;index--) {
     const m=history[index],content=`${m.senderNameSnapshot}（${m.senderId}）：${m.content}`,cost=new TextEncoder().encode(content).length
-    if(bytes+cost>24000)break
+    if(bytes+cost>policy.contextBudget)break
     bytes+=cost;selected.unshift({role:/** @type {'assistant'|'user'} */(m.senderId===instanceId?'assistant':'user'),content})
   }
   need(selected.some(m=>m.role==='user'), 'CONTEXT_BUDGET_EXCEEDED', 'messages')
-  return {messages:[...messages,...selected],mode,instanceRevision:data.instances.find(i=>i.id===instanceId)?.revision,conversationRevision:c.revision}
+  const allSources=[...history.flatMap(m=>m.lifeSources||[]),...memories.entries.flatMap(m=>m.lifeSources||[]),...events.flatMap(e=>kanataEventLifeSources(data,e)),...options.lifeSources||[]]
+  for(const source of [...allSources]){const own=data.lifeGrants.find(g=>g.worldId===c.worldId&&g.instanceId===instanceId&&g.moduleId===source.moduleId);if(own)allSources.push({...source,grantId:own.id,revision:own.revision,instanceId})}
+  const lifeSources=[...new Map(allSources.map(s=>[JSON.stringify(s),s])).values()]
+  const knowledgeSignature=JSON.stringify([world.revision,identity.revision,instance?.revision,c.revision,history.map(m=>[m.id,m.revision]),memories.entries.map(m=>[m.id,m.revision]),book.entries.map(e=>[e.id,e.revision]),events.map(e=>[e.id,e.revision])])
+  return {messages:[...messages,...selected],mode,lifeSources,knowledgeSignature,instanceRevision:instance?.revision,conversationRevision:c.revision}
 }
 /** Preserve prose and punctuation; split only natural paragraph boundaries, cap at four bubbles.
  * @param {string} text @param {'daily'|'roleplay'} mode

@@ -106,3 +106,35 @@ declare const request: CompletionOptions
 request.onAttempt = () => undefined
 // @ts-expect-error hidden tool instructions cannot enter this text-only interface
 request.messages = [{role:'tool',content:'Synthetic'}]
+
+import type {KanataExperienceRuntime,MemoryPolicy} from '../../src/application/contracts'
+declare const experience:KanataExperienceRuntime
+experience.setGrant('world','instance','todo',{read:true,remember:false,share:false})
+experience.setBinding('mood',{worldId:'world',instanceId:'instance'})
+experience.organize('conversation','instance','summary')
+// @ts-expect-error three permissions are independent required flags
+experience.setGrant('world','instance','todo',{read:true})
+// @ts-expect-error binding must identify an exact world and instance, not a name
+experience.setBinding('mood','星野')
+// @ts-expect-error unknown inference tasks cannot execute through the memory interface
+experience.organize('conversation','instance','relationship')
+// @ts-expect-error no automatic event truth changes through candidate fields
+experience.proposeEvent({worldId:'world',effects:[]})
+// @ts-expect-error an event commit must specify its observed revision
+experience.commitEvent('event')
+// @ts-expect-error numeric memory thresholds only
+const invalidMemoryPolicy:MemoryPolicy={worldId:'world',strategy:'custom',enabled:true,recentMessages:'20',summarizeAfter:24,extractAfter:8,contextBudget:24000,revision:1}
+void invalidMemoryPolicy
+
+import type {KanataLifeCompanion,KanataLifeReaders} from '../../src/application/contracts'
+declare const lifeCompanion:KanataLifeCompanion
+lifeCompanion.request('todo','Synthetic task',{allowPrompt:true})
+const lifeReaders:KanataLifeReaders={mood:async()=>[{id:'synthetic'}]}
+void lifeReaders
+// @ts-expect-error password vault is never a role-readable life module
+lifeCompanion.request('passwords','unsafe')
+// @ts-expect-error reader must be lazy, never pre-read private data
+const eagerLifeReaders:KanataLifeReaders={mood:[{id:'unsafe'}]}
+void eagerLifeReaders
+// @ts-expect-error message revisions require an explicit deletion/content decision
+experience.reviseMessage('message',1,{deleted:true})

@@ -1,0 +1,9 @@
+file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata/docs/qa/kanata-continuous/p5/verify-native.mjs:17
+if(await run(['shell','getprop','sys.boot_completed'])!=='1')throw Error('Device not booted')
+                                                                   ^
+
+Error: Device not booted
+    at file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata/docs/qa/kanata-continuous/p5/verify-native.mjs:17:68
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+
+Node.js v24.14.1

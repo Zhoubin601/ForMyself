@@ -1,0 +1,12 @@
+PASS seed-zero-invented-experience
+PASS manual-memory-candidate-and-confirmation
+PASS automatic-candidate-idempotent-and-source-trace
+PASS L0-revision-invalidates-derived-memory-and-replies
+PASS memory-conflict-never-silently-overwrites
+PASS L2-compression-preserves-L0-and-old-valid-summary-on-failure
+PASS causal-revoke-preserves-independent-effects
+PASS event-correction-is-a-new-reviewed-candidate
+PASS exact-role-binding-and-read-only-life-reply
+PASS life-memory-requires-remember-and-remains-private
+PASS one-hop-share-permission-and-revocation
+PASS expiry-releases-chat-and-preview

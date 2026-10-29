@@ -1,0 +1,13 @@
+ACTIVITY MANAGER PROCESS EXIT INFO (dumpsys activity exit-info)
+Last Timestamp of Persistence Into Persistent Storage: 1970-01-01 00:00:00.000
+  package: com.yubin.formyself
+    Historical Process Exit for uid=10192
+        ApplicationExitInfo #0:
+          timestamp=2026-10-28 14:18:05.655 pid=2563 realUid=10192 packageUid=10192 definingUid=10192 user=0
+          process=com.yubin.formyself reason=12 (DEPENDENCY DIED) subreason=0 (UNKNOWN) status=0
+          importance=100 pss=79MB rss=158MB description=depends on provider com.google.android.gms/.fonts.provider.FontsProvider in dying proc com.google.android.gms.persistent (adj -10000) state=empty trace=null
+    Historical Process Exit for uid=99000
+        ApplicationExitInfo #0:
+          timestamp=2026-10-28 14:18:06.107 pid=2910 realUid=99000 packageUid=10192 definingUid=10133 user=0
+          process=com.google.android.webview:sandboxed_process0:org.chromium.content.app.SandboxedProcessService0:0 reason=1 (EXIT_SELF) subreason=0 (UNKNOWN) status=0
+          importance=100 pss=69MB rss=159MB description=null state=empty trace=null

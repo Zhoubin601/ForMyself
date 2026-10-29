@@ -1,4 +1,5 @@
 // @ts-check
+import { validateKanataExperience } from '../experience/experienceValidation.js'
 /** @typedef {import('./kanataTypes').KanataData} KanataData */
 /** Stable codes, with structural paths only; never echo private input in errors. */
 export class KanataValidationError extends Error {
@@ -323,5 +324,6 @@ export function validateKanataData(input) {
     const world = worlds.get(p.worldId)
     requireKanata(world?.presetSourceId === p.presetSourceId && world.presetVersion === p.presetVersion, 'PRESET_SOURCE_MISMATCH', 'presetApplications')
   })
+  validateKanataExperience(data)
   return data
 }

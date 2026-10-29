@@ -1,6 +1,11 @@
 import { DOMWrapper, mount, flushPromises } from '@vue/test-utils'
 import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest'
 import { reactive } from 'vue'
+
+vi.mock('../src/composables/useKanataLifeCompanion.js',async()=>{
+  const {ref}=await import('vue')
+  return{useKanataLifeCompanion:()=>{const text=ref('');return{text,speaker:ref('合成角色'),busy:ref(false),error:ref(''),cancel:vi.fn(),request:async(...args)=>{const result=await mocks.askAI(...args);text.value=result;return result}}}}
+})
 import DebtListView from '../src/components/DebtListView.vue'
 import { dispatchBackAction, resetBackHandlersForTests } from '../src/services/backNavigation.js'
 import { preferenceStorage as Preferences } from '../src/platform/storage/preferences.js'

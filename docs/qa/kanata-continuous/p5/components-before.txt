@@ -1,0 +1,62 @@
+
+ RUN  v3.2.4 D:/2026Autumn Semester File/GitHub/formyself-app/.worktrees/kanata
+
+ ✓ tests/KanataChatRuntime.spec.js (9 tests) 267ms
+ ✓ tests/KanataManagementView.spec.js (12 tests) 415ms
+ ❯ tests/DebtListView.spec.js (12 tests | 1 failed) 1194ms
+   ✓ 省钱计划页面 > 空列表、单项、长名称和超额金额保持完整展示并限制排序 106ms
+   ✓ 省钱计划页面 > 撤销写入失败保留当前顺序，分类变化取消撤销入口 128ms
+   ✓ 省钱计划页面 > 固定标题、默认鼓励、真实进度与连续列表，取消旧自定义内容 51ms
+   ✓ 省钱计划页面 > 新建和编辑计划可保存 emoji 或短标签，清空后恢复默认图标 126ms
+   ✓ 省钱计划页面 > 移除显示方式选择栏后仍可双指捏合逐档调整卡片密度 54ms
+   ✓ 省钱计划页面 > 捏合切换时直接动画化卡片和分组高度，完成后清理动画标记 49ms
+   ✓ 省钱计划页面 > 长按分组手柄可调整分组顺序并撤销 141ms
+   ✓ 省钱计划页面 > 更多中下移自动保存并可撤销；搜索时禁用排序 72ms
+   × 省钱计划页面 > 排序不请求 AI，金额变化刷新一次，失败保留已生成文案 77ms
+     → expected "spy" to be called 1 times, but got 0 times
+   ✓ 省钱计划页面 > 写入失败不给撤销或成功提示 67ms
+   ✓ 省钱计划页面 > 短按和提前滑动不拖动，长按后返回取消且不保存 102ms
+   ✓ 省钱计划页面 > 长按拖过下一项后松手保存，pointercancel 和锁屏清理拖动 219ms
+ ❯ tests/LifeRecords.spec.js (9 tests | 1 failed) 564ms
+   ✓ 历史列表独立于图表范围，全部趋势不显示密集圆点 147ms
+   ✓ 日历与当天详情不显示自动说明文字 46ms
+   ✓ 体重空图可切换，新增多次、编辑和清空时间刷新最新值 76ms
+   ✓ 过去日期打开当天列表，按优先级显示并可新增、编辑、删除和返回 89ms
+   ✓ 常用备注选择、去重、改名、删除相互隔离且不修改输入中的历史备注 32ms
+   ✓ 调色盘支持键盘选色、合法 HEX 与非法 HEX 回退 36ms
+   ✓ 改名目录、空默认与优先级在重载后保留，合并保留本地默认 12ms
+   ✓ 设置表单新增和编辑优先级、调色盘，内置标签可改名及取消默认 78ms
+   × 关闭生成中的 AI 回应后，迟到结果不会重新打开面板 45ms
+     → resolveReply is not a function
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/DebtListView.spec.js > 省钱计划页面 > 排序不请求 AI，金额变化刷新一次，失败保留已生成文案
+AssertionError: expected "spy" to be called 1 times, but got 0 times
+ ❯ tests/DebtListView.spec.js:209:23
+    207|     expect(wrapper.find('.encouragement').text()).toBe('你的小坚持，都在发光')
+    208|   })
+    209|   it('写入失败不给撤销或成功提示', async () => {
+       |                       ^
+    210|     mocks.store.arrangeDebts.mockRejectedValueOnce(new Error('disk'))
+    211|     render()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/LifeRecords.spec.js > 关闭生成中的 AI 回应后，迟到结果不会重新打开面板
+TypeError: resolveReply is not a function
+ ❯ tests/LifeRecords.spec.js:202:3
+    183|   expect(document.querySelector('.echo-bubble')).toBeNull()
+    184|   expect(document.querySelector('.mood-day-panel')).toBeTruthy()
+    185| })
+       |    ^
+    186| 
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  2 failed | 2 passed (4)
+      Tests  2 failed | 40 passed (42)
+   Start at  21:08:17
+   Duration  5.97s (transform 2.13s, setup 0ms, collect 6.36s, tests 2.44s, environment 8.88s, prepare 2.31s)
+

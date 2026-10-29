@@ -1,4 +1,5 @@
 <script setup>
+import KanataLifeCompanion from '../../components/KanataLifeCompanion.vue'
 import { ref, computed, onBeforeUnmount, watch } from 'vue'
 import { useWeightStore } from '../../stores/weight'
 import { useSettingsStore } from '../../stores/settings'
@@ -170,6 +171,7 @@ const getTrend = (record) => {
 
 <template>
 <div class="fade-in weight-container">
+    <KanataLifeCompanion module-id="weight" />
   <section class="weight-hero">
     <div><span class="stat-label">最新体重</span><div class="hero-value">{{ stats.latest ? stats.latest.weight : '--' }} <small>kg</small></div><p class="caption body-muted">{{ stats.latest ? `${stats.latest.date} · ${stats.latest.time || '未记录时间'}` : '从第一次记录开始' }}</p><p class="caption">{{ latestChange === null ? '记录两次后显示变化' : `较上次 ${latestChange > 0 ? '+' : ''}${latestChange.toFixed(1)} kg` }}</p></div>
     <button class="button-primary" @click="openAddModal">＋ 记录体重</button>

@@ -1,4 +1,5 @@
 <script setup>
+import KanataLifeCompanion from '../../components/KanataLifeCompanion.vue'
 import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import { useScheduleStore } from './scheduleStore'
 import { useSettingsStore } from '../../stores/settings'
@@ -368,6 +369,7 @@ onMounted(() => scrollAgendaToLatest())
 
 <template>
   <div class="vivo-schedule">
+    <KanataLifeCompanion module-id="schedule" />
     <header class="schedule-header">
       <button class="plain-icon menu-trigger" aria-label="打开菜单" @click="settingsStore.isDrawerOpen = true">
         <span></span><span></span><span></span>

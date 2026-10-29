@@ -1,0 +1,18 @@
+{
+  "status": "PASS",
+  "reviewedAt": "2026-10-28T14:17:58.007Z",
+  "source": "live-results.json",
+  "newNetworkRequests": 0,
+  "assertions": "3 actual completed requests with provider usage; synthetic-only; valid JSON; preference, joke and explicit uncertainty kept distinct; no world events",
+  "manualReview": [
+    "逐条阅读三条提取事实：薄荷茶为陈述，星星为玩笑且不是资产，晨跑未确认。没有将候选自动提升为世界真值。",
+    "逐条阅读摘要：保留白子的猜测与用户明确否定，普通闲聊未被编造成事件。",
+    "阅读星野的授权待办回复：准确提及合成任务，以放松但不纵容拖延的表达鼓励，没有声称已经替用户完成任务。"
+  ],
+  "usage": {
+    "promptTokens": 2984,
+    "completionTokens": 712,
+    "cacheHitTokens": 256
+  },
+  "limits": "仅本轮三个合成交流；真实模型不得作为确定性权限控制。权限、撤权、来源修订、跨世界与异常由独立代码及受控测试验证。后续来源过滤加固不改变本轮模型提示词；本脚本不重新联网。"
+}

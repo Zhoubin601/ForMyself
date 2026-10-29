@@ -1,0 +1,8 @@
+
+> formyself-app@0.0.0 typecheck
+> vue-tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.contracts.json
+
+src/features/chat/experience/kanataEvents.js(53,57): error TS7034: Variable 'effects' implicitly has type 'any[]' in some locations where its type cannot be determined.
+src/features/chat/experience/kanataEvents.js(67,10): error TS7005: Variable 'effects' implicitly has an 'any[]' type.
+src/features/chat/experience/kanataKnowledge.js(53,54): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{ read: boolean; remember: boolean; share: boolean; }'.
+  No index signature with a parameter of type 'string' was found on type '{ read: boolean; remember: boolean; share: boolean; }'.

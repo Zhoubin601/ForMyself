@@ -1112,3 +1112,11 @@ P3最终来源：docs/20261028-kanata-stage-p3-verification-v1.md及qa/kanata-co
 用户明确提供桌面外部测试Key文件后才有限联网；未回显/复制Key进项目，未修改原文件。两轮合成模型测试17次HTTP，其中最终8组交流9attempt均有真实usage，人工审查群聊独立立场和私聊保密。早期driver把合法失败重试误当整轮失败，保留原FAIL并以独立重验记录修正，不额外联网。详见P4报告及live-quality-review.json。
 
 P4最终证据：check-final、web-results、native-results、production-upgrade-results、instrumentation-direct与live-quality-review均在qa/kanata-continuous/p4。最终APK37081ce…，55资源相符，无QA入口。实际模型两轮17请求，最终八组九attempt含合法截断重试，全有真实usage；价格区间估算非账单。P4 PASS，推送后暂停。
+
+
+## 2026-10-28 P5源码依据
+依序复核AGENTS/架构规范及P4交接、连续计划v3 P5、五人规格、clean-start-v2、raw/完整需求清单.txt第5/7/9节及过程入口。真实源码kanataTypes/Validation/Core、Conversation/ReadPermission、ChatRuntime、protectedAccess、ordinaryModules、companionContext、各生活Store与备份参与者。P4只有L2/L3模型和read基础，尚无记忆提取/事件提交撤销运行时，不将历史文档函数当已实现接口。原始材料不改。
+
+
+## 2026-10-29 P5验收接续
+P5最终证据：qa/kanata-continuous/p5实际check、Web、生产APK、instrumentation与live-quality-review；488 Node/273组件、Web12/布局18、Android16、原生8通过1跳过。真实模型3请求仅合成；外部Key未写仓库。

@@ -1,0 +1,36 @@
+✔ P5 legacy graph keeps optional experience fields absent and validates unchanged (22.52ms)
+✔ P5 read, remember and share flags are independent and default-deny (4.801ms)
+✔ P5 grant revision stops use of prior raw messages and memory without deleting history (8.4018ms)
+✔ P5 bound instances never fall back to a same-name role or the global override (7.3444ms)
+✔ P5 read-only life information cannot enter L2/L3 by removing supplied provenance (6.1816ms)
+✔ P5 canonical duplicate extraction merges sources without promoting or sharing candidates (5.7349ms)
+✔ P5 conflicting facts preserve the active original and require explicit selection (8.6992ms)
+✔ P5 revising and soft-deleting L0 invalidates memory but retains inspectable source IDs (7.8283ms)
+✔ P5-review source revision also invalidates assistant replies and memories derived from those replies (5.322ms)
+✔ P5 shared life memories require recipient consent and cannot be forwarded without recipient share (13.1288ms)
+✔ P5-review a retained copy cannot propagate after its origin memory is deleted (6.3369ms)
+✔ P5 retrieval excludes candidates, stale refs, private nonowners and over-budget records (3.571ms)
+✔ P5 task success is idempotent and concurrent running lease cannot be duplicated (8.4895ms)
+✔ P5 invalid summary output retains L0 and previous active L2; failed task can retry (11.1619ms)
+✔ P5 memory task cannot accept output after a source revision or remember revocation (4.2179ms)
+✔ P5 event proposals never change truth; commit applies only known versioned rule (6.9312ms)
+✔ P5 revoke E1 recomputes from baseline and preserves independent E2 on the same path (11.9993ms)
+✔ P5 causal descendants revoke together but stale previews and uncertain dependencies block (28.6763ms)
+✔ P5 source corrections invalidate committed events and re-fold state without deleting original events (7.8549ms)
+✔ P5 unknown legacy effects lack a trusted baseline and cannot be silently inverted (5.4552ms)
+✔ P5 malformed optional metadata, cross-world bindings and unsafe policies are rejected (6.8826ms)
+✔ P5 message audits preserve original versions, explicit deletion removes all version bodies (4.9423ms)
+✔ P5 corrections atomically revoke old effects and create a separate candidate replacement (10.5972ms)
+✔ P5 deleted facts cannot be automatically recreated from the same old sources (5.213ms)
+✔ P5 extraction watermark does not count old messages outside the rolling window as new (5.4872ms)
+✔ P5 revoked event provenance is filtered even when a legacy memory lacks redundant source tags (10.2352ms)
+✔ P5 source revision proofs prevent imported old assistant text from re-entering context (2.5989ms)
+✔ P5 disabling automatic organization still permits explicit, idempotent manual extraction (4.0868ms)
+ℹ tests 28
+ℹ suites 0
+ℹ pass 28
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 360.8665

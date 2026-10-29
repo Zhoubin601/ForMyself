@@ -10,6 +10,7 @@ import { previewKanataCardLore } from './lorebook/kanataLorebook.js'
 import { builtinKanataPresets } from './presets/presetCatalog.js'
 import { useKanataStore } from './kanataStore.js'
 import KanataConversationView from './KanataConversationView.vue'
+import KanataExperiencePanel from './experience/KanataExperiencePanel.vue'
 import KanataCardLibrary from './cards/KanataCardLibrary.vue'
 import KanataLorebookPanel from './lorebook/KanataLorebookPanel.vue'
 
@@ -134,7 +135,7 @@ onBeforeUnmount(()=>{mounted=false;identityDraft.value=null;instanceDraft.value=
     <header class="kanata-page-heading"><div><p class="kanata-eyebrow">彼方 · Kanata</p><h2>在这里，开始另一种日常</h2><p class="kanata-help">世界已准备好</p></div><span class="kanata-badge">文字世界</span></header>
     <DataStatusBanner :issues="issues" />
     <p v-if="notice" class="kanata-notice" role="status">{{ notice }}</p><p v-if="error" class="kanata-error" role="alert">{{ error }}</p>
-    <nav class="kanata-sections" aria-label="彼方管理分区"><button type="button" :aria-pressed="section==='world'" @click="section='world'">我的世界</button><button type="button" :aria-pressed="section==='cards'" @click="section='cards'">全局角色库</button><button type="button" :aria-pressed="section==='lore'" @click="section='lore'">世界书</button></nav>
+    <nav class="kanata-sections" aria-label="彼方管理分区"><button type="button" :aria-pressed="section==='world'" @click="section='world'">我的世界</button><button type="button" :aria-pressed="section==='cards'" @click="section='cards'">全局角色库</button><button type="button" :aria-pressed="section==='lore'" @click="section='lore'">世界书</button><button type="button" :aria-pressed="section==='experience'" @click="section='experience'">记忆与权限</button></nav>
     <div class="kanata-world-toolbar"><button type="button" class="kanata-selection" :disabled="busy" @click="chooseWorld">{{ world?.name || '选择世界' }}<span>{{ world?.archived?'已归档':`${worlds.length} 个独立世界` }}</span></button></div>
     <KanataConversationView v-if="section==='world' && selectedConversationId" :key="selectedConversationId" :conversation-id="selectedConversationId" @close="selectedConversationId=''" />
     <template v-if="section==='world' && world && !selectedConversationId">
@@ -156,6 +157,7 @@ onBeforeUnmount(()=>{mounted=false;identityDraft.value=null;instanceDraft.value=
     </template>
     <KanataCardLibrary v-if="section==='cards'" :data="data" :management="management" :blocked="blocked" @message="notice=$event" />
     <KanataLorebookPanel v-if="section==='lore' && world" :key="world.id" :data="data" :world-id="world.id" :management="management" :blocked="worldBlocked" @message="notice=$event" />
+    <KanataExperiencePanel v-if="section==='experience' && world" :key="world.id" :world-id="world.id" :blocked="worldBlocked" />
     <footer class="kanata-footer">阿拜多斯为非官方同人文字预设。头像为文字占位或用户自行导入；没有官方图片、完整台词和虚构的历史聊天。</footer>
   </div>
 </template>

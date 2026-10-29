@@ -1,17 +1,19 @@
 <script setup>
+import {useKanataLifeCompanion} from '../composables/useKanataLifeCompanion.js'
+import KanataLifeCompanion from './KanataLifeCompanion.vue'
 import { computed, ref, watch } from 'vue'
 import { useMoodStore } from '../features/mood/moodStore'
 import { useWeightStore } from '../stores/weight'
 import { useDebtStore } from '../stores/debt'
 import { useSettingsStore } from '../stores/settings'
-import { askAI } from '../services/aiEngine'
-import { buildMonthlyReport, buildMonthlySummaryPrompt } from '../services/monthlyReport'
+import { buildMonthlyReport } from '../services/monthlyReport'
 import { appAlert } from '../services/uiFeedback'
 
 const moodStore = useMoodStore()
 const weightStore = useWeightStore()
 const debtStore = useDebtStore()
 const settingsStore = useSettingsStore()
+const reportCompanion=useKanataLifeCompanion('reports')
 
 const now = new Date()
 const selectedYear = ref(now.getFullYear())
@@ -29,6 +31,7 @@ const report = computed(() => buildMonthlyReport({
   now
 }))
 
+watch(()=>reportCompanion.text.value,value=>{if(!value)aiSummary.value=''})
 const reportFingerprint = computed(() => JSON.stringify(report.value))
 watch(reportFingerprint, () => { aiSummary.value = '' })
 
@@ -64,7 +67,8 @@ const generateMonthlySummary = async () => {
   if (!settingsStore.aiApiKey?.trim()) return appAlert('请先在通用配置中填写 AI API Key')
   isGeneratingSummary.value = true
   try {
-    aiSummary.value = await askAI(buildMonthlySummaryPrompt(report.value))
+    aiSummary.value = await reportCompanion.request(`仅总结已授权资料中属于${monthLabel.value}的内容；没有足够记录就说明未知，不推断完整月度趋势。`,true)
+    if(!aiSummary.value&&reportCompanion.error.value)appAlert(reportCompanion.error.value)
   } catch (error) {
     appAlert('月度总结生成失败：' + error.message)
   } finally {
@@ -75,6 +79,7 @@ const generateMonthlySummary = async () => {
 
 <template>
   <div class="report-view fade-in">
+    <KanataLifeCompanion module-id="reports" />
     <div class="month-switcher">
       <button class="month-nav" @click="changeMonth(-1)">‹</button>
       <div>

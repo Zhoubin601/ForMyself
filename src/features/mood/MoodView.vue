@@ -1,12 +1,11 @@
 <script setup>
+import {useKanataLifeCompanion} from '../../composables/useKanataLifeCompanion.js'
+import KanataLifeCompanion from '../../components/KanataLifeCompanion.vue'
 import { ref, computed, onBeforeUnmount, onMounted, watch } from 'vue'
 import { useMoodStore } from './moodStore'
 import { useSettingsStore } from '../../stores/settings'
-import { askAI } from '../../services/aiEngine'
 import { compareMoodRecordsNewestFirst } from './moodRecords'
 import {
-  buildMoodEchoContext,
-  buildMoodEchoPrompt,
   normalizeCompanionReply
 } from '../../application/companionContext.js'
 import { appAlert, appConfirm } from '../../services/uiFeedback'
@@ -15,6 +14,7 @@ import AppDateField from '../../components/AppDateField.vue'
 
 const moodStore = useMoodStore()
 const settingsStore = useSettingsStore()
+const moodCompanion=useKanataLifeCompanion('mood')
 
 onMounted(() => {
   if (!moodStore.isDataLoaded) moodStore.loadMoodRecords()
@@ -166,6 +166,7 @@ const isEchoThinking = ref(false)
 let echoRequest = 0
 const closeEcho = () => { echoRequest++; activeEcho.value = null; isEchoThinking.value = false }
 onBeforeUnmount(closeEcho)
+watch(()=>moodCompanion.text.value,value=>{if(!value)closeEcho()})
 
 const saveRecord = async () => {
   if (!editDate.value) return appAlert('请选择日期')
@@ -187,8 +188,7 @@ const saveRecord = async () => {
     activeEcho.value = 'thinking'
     isEchoThinking.value = true
     try {
-      const context = buildMoodEchoContext(moodStore.moodRecords, savedRecord, moodStore.moodDefinitions)
-      const echoText = await askAI(buildMoodEchoPrompt(context))
+      const echoText = await moodCompanion.request('回应我刚更新的已授权心情记录，理解感受，不给诊断，不假定未提供的历史。')
       if (request === echoRequest) activeEcho.value = normalizeCompanionReply(echoText, 200)
     } catch {
       if (request === echoRequest) activeEcho.value = null
@@ -238,6 +238,7 @@ const isToday = (day) => {
 
 <template>
   <div class="fade-in mood-container">
+    <KanataLifeCompanion module-id="mood" />
 
     <!-- 日历卡片 -->
     <div class="calendar-card">

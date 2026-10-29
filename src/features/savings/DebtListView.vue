@@ -1,9 +1,10 @@
 <script setup>
+import {useKanataLifeCompanion} from '../../composables/useKanataLifeCompanion.js'
+import KanataLifeCompanion from '../../components/KanataLifeCompanion.vue'
 import CommonNoteField from "../../components/CommonNoteField.vue"
 import { ref, computed, nextTick, watch, onBeforeUnmount, onMounted, onActivated, onDeactivated } from 'vue'
 import { useDebtStore } from '../../stores/debt'
 import { useSettingsStore } from '../../stores/settings'
-import { askAI } from '../../services/aiEngine'
 import { appAlert, appConfirm, appToast } from '../../services/uiFeedback'
 import { registerBackHandler } from '../../services/backNavigation'
 import { useAuthStore } from '../../stores/auth'
@@ -19,6 +20,7 @@ import { Plus, Ellipsis } from 'lucide-vue-next'
 
 const debtStore = useDebtStore()
 const settingsStore = useSettingsStore()
+const savingsCompanion=useKanataLifeCompanion('savings')
 const authStore = useAuthStore()
 
 const getTodayStr = () => {
@@ -414,7 +416,7 @@ const triggerCheerleader = async (debtName, percent) => {
   cheerModal.value = { name: debtName, percent }
   cheerText.value = '🎉 拉拉队正在赶来的路上...'
   isCheerLoading.value = true
-  try { cheerText.value = await askAI(`用户正在为目标"[${debtName}]"攒钱，刚刚存入一笔钱后，进度正式突破了 [${percent}]%。请生成一句 20 字以内的幽默激昂的贺词，激励他继续坚持。`) }
+  try { cheerText.value = await savingsCompanion.request('回应刚刚更新的已授权省钱进展，20字左右，不编造金额。') || '这份坚持值得肯定，继续按自己的节奏来。' }
   catch { cheerText.value = `太棒了！[${debtName}] 进度突破 ${percent}%！继续冲！` }
   finally { isCheerLoading.value = false }
 }
@@ -446,22 +448,24 @@ const fetchAIEncouragement = async () => {
   }
   isAiLoading.value = true
   try {
-    const reply = await askAI(`用户累计省钱 ${currentTotal} 元。写一句 20 字以内温柔自然的鼓励语，不编造数据、不制造财务焦虑，只输出正文：`)
+    const reply = await savingsCompanion.request('根据已授权的省钱计划，给一句20字左右的自然鼓励，不制造财务焦虑。')
     if (request !== encouragementRequest) return
     if (reply?.trim()) {
       aiEncouragement.value = reply.trim()
-      settingsStore.lastEncouragement = `${currentTotal}|${reply.trim()}`
-    } else aiEncouragement.value = cached || DEFAULT_ENCOURAGEMENT
+      // Role-owned plaintext remains volatile and clears with the protected session.
+    } else aiEncouragement.value = savingsCompanion.text.value || cached || DEFAULT_ENCOURAGEMENT
   } catch {
-    if (request === encouragementRequest) aiEncouragement.value = cached || DEFAULT_ENCOURAGEMENT
+    if (request === encouragementRequest) aiEncouragement.value = savingsCompanion.text.value || cached || DEFAULT_ENCOURAGEMENT
   } finally { if (request === encouragementRequest) isAiLoading.value = false }
 }
+watch(()=>savingsCompanion.text.value,value=>{if(!value){aiEncouragement.value=DEFAULT_ENCOURAGEMENT;cheerModal.value=null;cheerText.value=''}})
 watch([totalSaved, () => debtStore.isDataLoaded, () => settingsStore.aiApiKey], fetchAIEncouragement)
 onMounted(fetchAIEncouragement)
 </script>
 
 <template>
   <div class="savings-page fade-in" @click="moreId = null">
+    <KanataLifeCompanion module-id="savings" />
     <header class="savings-heading">
       <svg class="piggy-mark" viewBox="0 0 80 80" aria-hidden="true">
         <circle cx="40" cy="40" r="37" fill="#fff0f3" />

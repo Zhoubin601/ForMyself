@@ -1,0 +1,82 @@
+{
+  "status": "AWAITING_QUALITY_REVIEW",
+  "startedAt": "2026-10-28T13:48:50.671Z",
+  "syntheticOnly": true,
+  "attempts": [
+    {
+      "id": "attempt-0de2483d-872a-440d-b590-2957a5923084",
+      "model": "deepseek-flash",
+      "officialProvider": true,
+      "startedAt": 1793195330695,
+      "finishedAt": 1793195334062,
+      "transport": "json",
+      "status": "succeeded",
+      "errorCode": "",
+      "finishReason": "stop",
+      "usage": {
+        "promptTokens": 1136,
+        "completionTokens": 398,
+        "cacheHitTokens": 0
+      },
+      "estimatedInputTokens": 4172,
+      "estimatedOutputTokens": 435
+    },
+    {
+      "id": "attempt-2fc7fcbd-64cc-4965-90f0-eda17588afb3",
+      "model": "deepseek-flash",
+      "officialProvider": true,
+      "startedAt": 1793195334075,
+      "finishedAt": 1793195335899,
+      "transport": "json",
+      "status": "succeeded",
+      "errorCode": "",
+      "finishReason": "stop",
+      "usage": {
+        "promptTokens": 640,
+        "completionTokens": 201,
+        "cacheHitTokens": 0
+      },
+      "estimatedInputTokens": 2337,
+      "estimatedOutputTokens": 376
+    },
+    {
+      "id": "attempt-a7aff3cd-c631-4b92-a22e-7712447d6f2e",
+      "model": "deepseek-flash",
+      "officialProvider": true,
+      "startedAt": 1793195335908,
+      "finishedAt": 1793195337513,
+      "transport": "json",
+      "status": "succeeded",
+      "errorCode": "",
+      "finishReason": "stop",
+      "usage": {
+        "promptTokens": 1208,
+        "completionTokens": 113,
+        "cacheHitTokens": 256
+      },
+      "estimatedInputTokens": 5073,
+      "estimatedOutputTokens": 224
+    }
+  ],
+  "responses": [
+    {
+      "kind": "memory",
+      "content": "{\"memories\":[{\"key\":\"饮品偏好-合成薄荷茶\",\"content\":\"用户表示自己喜欢合成薄荷茶。\",\"confidence\":\"statement\"},{\"key\":\"玩笑-一百万颗星星\",\"content\":\"用户开玩笑称自己有一百万颗星星，并明确说明这不是真实资产。\",\"confidence\":\"joke\"},{\"key\":\"偏好-晨跑未确认\",\"content\":\"用户未确认喜欢晨跑，并要求不要将晨跑偏好当作事实。\",\"confidence\":\"statement\"}]}"
+    },
+    {
+      "kind": "summary",
+      "content": "{\"summary\":\"这是合成测试对话。identity-2 起初请记住其喜欢合成薄荷茶，并说明“有一百万颗星星”是玩笑说法，并非真实资产。instance-5 曾猜测 identity-2 可能喜欢晨跑；identity-2 明确表示没有确认喜欢晨跑，不要当作事实。其余为普通合成闲聊第0至第9条，均声明不包含新的重要事实。\"}"
+    },
+    {
+      "kind": "authorized-life-read",
+      "content": "老师，待办里那项“复习合成测试章节”还在呢。别急着一次啃完，先挑一小段开始，累了就歇会儿。\n\n不过该看的部分还是要看，别学我平时那样拖到最后才认真起来。"
+    }
+  ],
+  "counts": {
+    "messages": 27,
+    "memories": 4,
+    "events": 0,
+    "tasks": 2
+  },
+  "finishedAt": "2026-10-28T13:48:57.513Z"
+}

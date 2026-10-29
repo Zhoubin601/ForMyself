@@ -42,6 +42,8 @@ export interface Message {
   senderType: 'user' | 'character'; senderId: string; senderNameSnapshot: string
   content: string; createdAt: number; revision: number; status: 'complete' | 'stopped'
   turnId: string; batchId: string; replyToMessageId?: string
+  deleted?: boolean; lifeSources?: LifeSource[]
+  replyToRevision?: number
 }
 export interface LorebookEntry {
   id: string; worldId: string; scope: 'world' | 'character' | 'system'; ownerId: string
@@ -53,6 +55,9 @@ export interface Memory {
   id: string; worldId: string; ownerType: 'world' | 'character'; ownerId: string
   layer: 'L2' | 'L3'; key: string; content: string; sourceRefs: SourceRef[]
   status: 'candidate' | 'active' | 'stale' | 'deleted'; revision: number; visibility: Visibility
+  knownBy?: string[]; conversationId?: string; sourceEventIds?: string[]; lifeSources?: LifeSource[]
+  confidence?: 'statement' | 'inference' | 'confirmed' | 'joke'; conflictWith?: string[]
+  generationKey?: string; sharedFromId?: string; supersededById?: string
 }
 export interface Relationship {
   id: string; worldId: string; fromId: string; toId: string
@@ -66,6 +71,9 @@ export interface WorldEvent {
   id: string; worldId: string; participantIds: string[]; sourceRefs: SourceRef[]
   causedByEventIds: string[]; status: 'candidate' | 'committed' | 'revoked' | 'needsReview'
   visibility: Visibility; summary: string; effectiveAt: number; recordedAt: number; revision: number
+  causality?: 'explicit' | 'unknown'; kind?: EventKind; lifeSources?: LifeSource[]
+  action?: { instanceId?: string; relationshipId?: string; location?: string }
+  replacesEventId?: string
 }
 export interface WorldEffect {
   id: string; worldId: string; eventId: string; targetType: 'world' | 'instance' | 'relationship'
@@ -76,11 +84,27 @@ export interface BackgroundTask {
   state: 'pending' | 'running' | 'succeeded' | 'failed' | 'cancelled'
   idempotencyKey: string; sourceRefs: SourceRef[]; sourceRevision: number; attempt: number
   notBefore: number; leaseUntil: number; conversationId?: string; instanceId?: string; resultEventIds: string[]
+  resultMemoryIds?: string[]; errorCode?: string
 }
 export type LifeModule = 'home' | 'mood' | 'weight' | 'savings' | 'schedule' | 'todo' | 'reports'
 export interface LifeGrant {
   id: string; worldId: string; instanceId: string; moduleId: LifeModule
   read: boolean; remember: boolean; share: boolean; revision: number
+}
+export interface LifeSource { grantId: string; revision: number; moduleId: LifeModule; instanceId: string; fingerprint: string }
+export type EventKind = 'note' | 'support' | 'conflict' | 'rest' | 'move' | 'promise'
+export interface EffectBaseline {
+  id: string; worldId: string; targetType: WorldEffect['targetType']; targetId: string; path: string; value: JsonValue
+}
+export interface EventAudit {
+  id: string; worldId: string; eventId: string; at: number; previous: WorldEvent; next: WorldEvent
+}
+export interface MessageAudit { id:string; worldId:string; messageId:string; at:number; previous:Message; next:Message }
+export interface RoleBinding { worldId: string; instanceId: string }
+export interface KanataRoleBindings { revision: number; global: RoleBinding | null; modules: Partial<Record<LifeModule,RoleBinding | null>> }
+export interface MemoryPolicy {
+  worldId: string; strategy: 'economical' | 'standard' | 'deep' | 'custom'; enabled: boolean
+  recentMessages: number; summarizeAfter: number; extractAfter: number; contextBudget: number; revision: number
 }
 export interface PresetApplication {
   id: string; initializationKey: string; presetSourceId: string; presetVersion: number; worldId: string
@@ -93,9 +117,13 @@ export interface KanataData {
   relationships: Relationship[]; events: WorldEvent[]; effects: WorldEffect[]
   tasks: BackgroundTask[]; lifeGrants: LifeGrant[]; presetApplications: PresetApplication[]
   usageEvents?: KanataUsageEvent[]
+  effectBaselines?: EffectBaseline[]; eventAudits?: EventAudit[]
+  messageAudits?: MessageAudit[]
+  roleBindings?: KanataRoleBindings; memoryPolicies?: MemoryPolicy[]
 }
 export interface KanataUsageEvent extends CompletionAttempt {
   worldId: string; conversationId: string; instanceId: string; turnId: string
+  purpose?: 'chat' | 'memory' | 'summary' | 'world' | 'proactive' | 'life'
 }
 export interface PresetCharacter { key: string; definition: CharacterDefinition; source: string }
 export interface WorldPreset {

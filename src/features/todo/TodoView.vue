@@ -1,4 +1,5 @@
 <script setup>
+import KanataLifeCompanion from '../../components/KanataLifeCompanion.vue'
 import { computed, nextTick, onActivated, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import { Capacitor } from '@capacitor/core'
 import { TodoNative } from './todoRepository.js'
@@ -150,6 +151,7 @@ const toggleDay = day => { form.weekdays = form.weekdays.includes(day) ? form.we
 
 <template>
   <div class="todo-page">
+    <KanataLifeCompanion module-id="todo" />
     <div class="todo-toolbar"><div class="todo-tabs"><button :class="{ active:tab==='day' }" @click="tab='day'">每日待办</button><button :class="{ active:tab==='plans' }" @click="tab='plans'">计划管理</button></div><button class="todo-add" :disabled="!store.isDataLoaded" @click="showEditor()">＋ 新建</button></div>
     <p v-if="store.loadError" class="todo-error">待办加载失败，原数据未覆盖。<button @click="store.load()">重试</button></p>
     <p v-if="store.reminderError" class="todo-warning">{{ store.reminderError }}</p>

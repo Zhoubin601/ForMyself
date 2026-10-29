@@ -1,0 +1,29 @@
+{
+  "startedAt": "2026-10-28T14:17:29.983Z",
+  "status": "FAIL",
+  "serial": "emulator-5580",
+  "avd": "KanataP2Synthetic34",
+  "apkSha256": "bd7dfc0201b9eab9b28e91ca4522920d521c5fc742daa1e06fbbd8b1d59efaf7",
+  "checks": {
+    "install-production-apk": {
+      "status": "PASS",
+      "elapsedMs": 1804,
+      "result": "Performing Streamed Install\r\nSuccess"
+    },
+    "seed-zero-invented-experience": {
+      "status": "PASS",
+      "elapsedMs": 1,
+      "result": true
+    }
+  },
+  "pageErrors": [],
+  "aiRequests": 0,
+  "environment": {
+    "android": "14",
+    "api": "34",
+    "webview": "Current WebView Update Service state\r\n  Multiprocess enabled: true\r\n  Current WebView package (name, version): (com.google.android.webview, 113.0.5672.136)\r\n  Minimum targetSdkVersion: 33\r\n  Minimum WebView version code: 567263637\r\n  Number of relros started: 1\r\n  Number of relros finished: 1\r\n  WebView package dirty: false\r\n  Any WebView package installed: true\r\n  Preferred WebView package (name, version): (com.google.android.webview, 113.0.5672.136)\r\n  WebView packages:\r\n    Valid package com.google.android.webview (versionName: 113.0.5672.136, versionCode: 567263637, targetSdkVersion: 34) is  installed/enabled for all users\r\n    com.google.android.webview.beta is NOT installed.\r\n    com.google.android.webview.dev is NOT installed.\r\n    com.google.android.webview.canary is NOT installed.\r\n    com.google.android.webview.debug is NOT installed.\r\n    com.android.webview is NOT installed."
+  },
+  "error": "locator.click: Target page, context or browser has been closed\nCall log:\n\u001b[2m  - waiting for locator('.kanata-experience-card').filter({ has: getByRole('heading', { name: /^合成主题/ }) }).getByRole('button', { name: '核对并采用', exact: true })\u001b[22m\n\u001b[2m    - locator resolved to <button disabled type=\"button\">核对并采用</button>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is not enabled\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n",
+  "visibleText": "",
+  "finishedAt": "2026-10-28T14:18:07.991Z"
+}

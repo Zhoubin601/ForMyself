@@ -4,7 +4,7 @@ import { createKanataChatRuntime } from '../../application/kanataChatRuntime.js'
 import { useKanataStore } from './kanataStore.js'
 import { useSettingsStore } from '../../stores/settings.js'
 import { registerBackHandler } from '../../services/backNavigation.js'
-import { appChoose, cancelOwnedFeedbackDialog } from '../../services/uiFeedback.js'
+import { appChoose, appConfirm, cancelOwnedFeedbackDialog } from '../../services/uiFeedback.js'
 import { restoreState } from '../../platform/storage/restoreState.js'
 import { resolveKanataCharacter } from './domain/kanataManagementCore.js'
 import { estimateKanataCost, KANATA_PRICE_SOURCE, KANATA_PRICE_VERSION } from './domain/kanataUsage.js'
@@ -13,6 +13,7 @@ const emit=defineEmits(['close'])
 const store=useKanataStore(),settings=useSettingsStore(),runtime=createKanataChatRuntime()
 const draft=ref(''),busy=ref(false),error=ref(''),preview=ref(null),replyDelay=ref(0),stream=ref(true),timeline=ref(null)
 const queued=ref([])
+const revisionDraft=ref(null)
 let mounted=true,timer=null
 const dialogOwner=Symbol('kanata-chat-dialog')
 const conversation=computed(()=>store.snapshot?.conversations.find(c=>c.id===props.conversationId))
@@ -55,8 +56,10 @@ const changeDelay=async()=>{
   if(mounted&&value!==null)replyDelay.value=Number(value)
 }
 const retry=()=>{stop();if(lastUser.value)void send({retryMessageId:lastUser.value.id})}
-const unregister=registerBackHandler(()=>{emit('close');return true},{priority:610,isActive:()=>true})
-onBeforeUnmount(()=>{mounted=false;stop();preview.value=null;draft.value='';runtime.dispose();unregister();cancelOwnedFeedbackDialog(dialogOwner)})
+const saveRevision=async()=>{if(!revisionDraft.value||busy.value||blocked.value)return;const value=revisionDraft.value;try{await runtime.reviseMessage(value.id,value.revision,{content:value.content,deleted:false});if(mounted)revisionDraft.value=null}catch{if(mounted)error.value='原文修订未完成。请核对版本、待复核事件或保存状态；不明确的因果关系需要先处理。'}}
+const removeMessage=async message=>{const accepted=await appConfirm('删除这条原文及其版本正文，保留来源标识。相关回复会停用，记忆与事件会标为过期或待复核；它们的正文及旧备份不会一起删除。',{sensitive:true,owner:dialogOwner,title:'删除原文并核对派生影响',confirmText:'删除这条原文',destructive:true});if(mounted&&accepted===true)try{await runtime.reviseMessage(message.id,message.revision,{content:'',deleted:true})}catch{if(mounted)error.value='无法安全删除：请先处理不明确的历史依赖或重试保存，原资料未被当作成功清理。'}}
+const unregister=registerBackHandler(()=>{if(revisionDraft.value){revisionDraft.value=null;return true}emit('close');return true},{priority:610,isActive:()=>true})
+onBeforeUnmount(()=>{mounted=false;stop();preview.value=null;revisionDraft.value=null;draft.value='';runtime.dispose();unregister();cancelOwnedFeedbackDialog(dialogOwner)})
 </script>
 
 <template>
@@ -68,9 +71,10 @@ onBeforeUnmount(()=>{mounted=false;stop();preview.value=null;draft.value='';runt
     <div class="kanata-chat-options"><button type="button" :disabled="blocked||busy" @click="changeMode">对话模式：{{ mode==='roleplay'?'角色扮演':'日常聊天' }}</button><button type="button" :disabled="busy" @click="changeDelay">回复等待：{{ Number(replyDelay)===0?'立即':`${Number(replyDelay)/1000} 秒` }}</button><label class="kanata-check"><input v-model="stream" type="checkbox" :disabled="busy" />流式预览</label></div>
     <div ref="timeline" class="kanata-chat-timeline" aria-label="已保存的聊天">
       <p v-if="!messages.length" class="kanata-help">这里还没有聊天。从你想说的话开始。</p>
-      <article v-for="message in messages" :key="message.id" class="kanata-chat-message" :class="{'is-user':message.role==='user'}" :data-sender-id="message.senderId" :data-batch-id="message.batchId"><strong>{{ message.senderNameSnapshot }}</strong><p class="kanata-text">{{ message.content }}</p><time :datetime="new Date(message.createdAt).toISOString()">{{ new Date(message.createdAt).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) }}</time></article>
+      <article v-for="message in messages" :key="message.id" class="kanata-chat-message" :class="{'is-user':message.role==='user'}" :data-sender-id="message.senderId" :data-batch-id="message.batchId"><strong>{{ message.senderNameSnapshot }}</strong><span v-if="message.deleted" class="kanata-badge">原文已删除</span><span v-else-if="message.status==='stopped'" class="kanata-badge">来源修订后已停用</span><p class="kanata-text">{{ message.content }}</p><time :datetime="new Date(message.createdAt).toISOString()">{{ new Date(message.createdAt).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) }}</time><div v-if="!message.deleted" class="kanata-actions"><button type="button" :disabled="busy||blocked" @click="revisionDraft={id:message.id,revision:message.revision,content:message.content}">修订这条原文</button><button type="button" :disabled="busy||blocked" @click="removeMessage(message)">删除这条原文</button></div></article>
       <article v-if="preview" class="kanata-chat-message kanata-preview-message"><strong>{{ name(preview.instanceId) }} · 正在输入</strong><p class="kanata-text">{{ preview.content }}</p><span class="kanata-help">尚未保存的预览</span></article>
     </div>
+    <form v-if="revisionDraft" class="kanata-form" @submit.prevent="saveRevision"><label>修订原文<textarea v-model="revisionDraft.content" rows="4" maxlength="64000" required></textarea></label><p class="kanata-help">旧版本可追溯，相关派生内容会停用，不会被当成新事实。</p><div class="kanata-actions"><button type="submit" :disabled="blocked||busy">保存原文修订</button><button type="button" @click="revisionDraft=null">取消原文修订</button></div></form>
     <div v-if="conversation?.type==='group'" class="kanata-actions"><button v-for="member in members" :key="member.id" type="button" :disabled="busy||blocked" @click="draft+=`@${name(member.id)} `">@{{ name(member.id) }}</button></div>
     <form class="kanata-form" @submit.prevent="submit"><label>发送文字<textarea v-model="draft" rows="3" maxlength="8000" :disabled="blocked||busy" placeholder="说说此刻想分享的事" @keydown.ctrl.enter.prevent="submit"></textarea></label><p v-if="queued.length" class="kanata-help" role="status">{{ queued.length }} 条短句将合并为这一轮发送。</p><div class="kanata-actions"><button type="submit" :disabled="blocked||busy||!configured||!draft.trim()">发送消息</button><button v-if="busy||queued.length" type="button" @click="stop">停止回复</button><button v-if="lastUser" type="button" :disabled="blocked||busy||!configured" @click="retry">重试最近一轮</button></div></form>
     <details class="kanata-usage"><summary>本会话 AI 用量 · {{ attempts.length }} 次请求</summary><p class="kanata-help">每次重试分别记录；真实 Token 来自服务端，缺失时显示保守估算。费用是人民币区间估算，未知模型或自定义服务不套用官方价格，最终以账单为准。</p><p class="kanata-help"><a :href="KANATA_PRICE_SOURCE" target="_blank" rel="noopener noreferrer">官方价格来源</a> · {{ KANATA_PRICE_VERSION }}</p><ul><li v-for="attempt in attempts" :key="attempt.id"><strong>{{ attempt.model }} · {{ attempt.status==='pending'?'结果未知／可能已计费':attempt.status==='failed'?'未完成':'已完成' }}</strong><p v-if="attempt.usage">真实 Token：输入 {{ attempt.usage.promptTokens }} / 输出 {{ attempt.usage.completionTokens }}</p><p v-else>Token 缺失 · 输入保守估算 {{ attempt.estimatedInputTokens }} / 输出保守估算 {{ attempt.estimatedOutputTokens }}</p><p>{{ estimateKanataCost(attempt).minimumCny===null?'暂无适用价格':`费用估算 ¥${estimateKanataCost(attempt).minimumCny.toFixed(6)}～${estimateKanataCost(attempt).maximumCny.toFixed(6)}` }}</p><p v-if="attempt.errorCode" class="kanata-help">{{ attempt.errorCode }}</p></li></ul></details>

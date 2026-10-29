@@ -1,0 +1,51 @@
+
+ RUN  v3.2.4 D:/2026Autumn Semester File/GitHub/formyself-app/.worktrees/kanata
+
+ ❯ tests/KanataExperienceView.spec.js (6 tests | 3 failed) 327ms
+   × P5 management views with actual Store and runtime > creates a candidate and explicitly adopts it without fake history or AI calls 100ms
+     → Cannot read properties of undefined (reading 'status')
+   ✓ P5 management views with actual Store and runtime > extracts real candidates, shows source versions and retains old text after source correction 90ms
+   ✓ P5 management views with actual Store and runtime > summary parse failure is visible and never discards L0 40ms
+   ✓ P5 management views with actual Store and runtime > permission checkboxes stay independent and binding uses an exact instance 68ms
+   × P5 management views with actual Store and runtime > event remains a candidate until confirmation, and rollback restores rule-based mood 17ms
+     → Cannot read properties of undefined (reading 'trigger')
+   × P5 management views with actual Store and runtime > explicit memory removal deletes its body but explains the retained source 11ms
+     → Cannot read properties of undefined (reading 'trigger')
+ ✓ tests/KanataExperienceRuntime.spec.js (12 tests) 553ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/KanataExperienceView.spec.js > P5 management views with actual Store and runtime > creates a candidate and explicitly adopts it without fake history or AI calls
+TypeError: Cannot read properties of undefined (reading 'status')
+ ❯ tests/KanataExperienceView.spec.js:19:71
+     17|   it('creates a candidate and explicitly adopts it without fake histor…
+     18|     await click('新建记忆');await wrapper.find('input[maxlength="200"]').s…
+     19|     await click('保存记忆');expect(state.model.store.snapshot.memories[0].…
+       |                                                                       ^
+     20|     await click('核对并采用');expect(state.model.store.snapshot.memories[0]…
+     21|     expect(state.model.store.snapshot.messages).toHaveLength(0);expect…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  tests/KanataExperienceView.spec.js > P5 management views with actual Store and runtime > event remains a candidate until confirmation, and rollback restores rule-based mood
+TypeError: Cannot read properties of undefined (reading 'trigger')
+ ❯ click tests/KanataExperienceView.spec.js:13:44
+
+ ❯ tests/KanataExperienceView.spec.js:51:53
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  tests/KanataExperienceView.spec.js > P5 management views with actual Store and runtime > explicit memory removal deletes its body but explains the retained source
+TypeError: Cannot read properties of undefined (reading 'trigger')
+ ❯ click tests/KanataExperienceView.spec.js:13:44
+
+ ❯ tests/KanataExperienceView.spec.js:58:54
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  3 failed | 15 passed (18)
+   Start at  21:17:51
+   Duration  4.76s (transform 665ms, setup 0ms, collect 2.50s, tests 880ms, environment 3.83s, prepare 996ms)
+

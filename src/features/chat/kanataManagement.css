@@ -78,3 +78,7 @@
 .kanata-preview-message { opacity:.8; }
 .kanata-usage { margin-top:1rem; overflow-wrap:anywhere; }
 .kanata-usage li { margin:1rem 0; }
+
+.kanata-experience-card { margin:1.25rem 0; padding:1rem; border:1px solid var(--theme-border); border-radius:var(--radius-card); overflow-wrap:anywhere; }
+.kanata-permission-fields { display:flex; flex-wrap:wrap; gap:1rem; padding:.75rem; border:1px solid var(--theme-border); border-radius:.75rem; }
+.kanata-experience-card code { white-space:normal; overflow-wrap:anywhere; }

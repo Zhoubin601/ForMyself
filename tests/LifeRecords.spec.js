@@ -183,3 +183,9 @@ it('关闭生成中的 AI 回应后，迟到结果不会重新打开面板', asy
   expect(document.querySelector('.echo-bubble')).toBeNull()
   expect(document.querySelector('.mood-day-panel')).toBeTruthy()
 })
+
+
+vi.mock('../src/composables/useKanataLifeCompanion.js',async()=>{
+  const {ref}=await import('vue'),{askAI}=await import('../src/services/aiEngine')
+  return{useKanataLifeCompanion:()=>{const text=ref('');return{text,speaker:ref('合成角色'),busy:ref(false),error:ref(''),cancel:vi.fn(),request:async(...args)=>{const result=await askAI(...args);text.value=result;return result}}}}
+})

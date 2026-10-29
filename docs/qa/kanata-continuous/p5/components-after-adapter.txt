@@ -1,0 +1,43 @@
+
+ RUN  v3.2.4 D:/2026Autumn Semester File/GitHub/formyself-app/.worktrees/kanata
+
+ ❯ tests/DebtListView.spec.js (12 tests | 1 failed) 981ms
+   ✓ 省钱计划页面 > 空列表、单项、长名称和超额金额保持完整展示并限制排序 102ms
+   ✓ 省钱计划页面 > 撤销写入失败保留当前顺序，分类变化取消撤销入口 106ms
+   ✓ 省钱计划页面 > 固定标题、默认鼓励、真实进度与连续列表，取消旧自定义内容 52ms
+   ✓ 省钱计划页面 > 新建和编辑计划可保存 emoji 或短标签，清空后恢复默认图标 116ms
+   ✓ 省钱计划页面 > 移除显示方式选择栏后仍可双指捏合逐档调整卡片密度 67ms
+   ✓ 省钱计划页面 > 捏合切换时直接动画化卡片和分组高度，完成后清理动画标记 42ms
+   ✓ 省钱计划页面 > 长按分组手柄可调整分组顺序并撤销 126ms
+   ✓ 省钱计划页面 > 更多中下移自动保存并可撤销；搜索时禁用排序 74ms
+   × 省钱计划页面 > 排序不请求 AI，金额变化刷新一次，失败保留已生成文案 84ms
+     → expected '小小改变，大大未来 ✨' to be '你的小坚持，都在发光' // Object.is equality
+   ✓ 省钱计划页面 > 写入失败不给撤销或成功提示 46ms
+   ✓ 省钱计划页面 > 短按和提前滑动不拖动，长按后返回取消且不保存 61ms
+   ✓ 省钱计划页面 > 长按拖过下一项后松手保存，pointercancel 和锁屏清理拖动 102ms
+ ✓ tests/LifeRecords.spec.js (9 tests) 517ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/DebtListView.spec.js > 省钱计划页面 > 排序不请求 AI，金额变化刷新一次，失败保留已生成文案
+AssertionError: expected '小小改变，大大未来 ✨' to be '你的小坚持，都在发光' // Object.is equality
+
+Expected: "你的小坚持，都在发光"
+Received: "小小改变，大大未来 ✨"
+
+ ❯ tests/DebtListView.spec.js:219:26
+    217|     await wrapper.find('.more-button').trigger('click')
+    218|     await wrapper.findAll('.card-menu button')[2].trigger('click')
+    219|     await flushPromises()
+       |                          ^
+    220|     expect(document.querySelector('.order-toast')).toBeNull()
+    221|     expect(mocks.store.savedDebts[0].id).toBe('0')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  1 failed | 20 passed (21)
+   Start at  21:10:47
+   Duration  5.02s (transform 1.06s, setup 0ms, collect 2.68s, tests 1.50s, environment 3.57s, prepare 1.03s)
+

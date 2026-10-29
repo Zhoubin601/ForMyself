@@ -1,0 +1,12 @@
+
+ RUN  v3.2.4 D:/2026Autumn Semester File/GitHub/formyself-app/.worktrees/kanata
+
+ ✓ tests/KanataExperienceRuntime.spec.js (12 tests) 572ms
+ ✓ tests/DebtListView.spec.js (12 tests) 1007ms
+ ✓ tests/LifeRecords.spec.js (9 tests) 566ms
+
+ Test Files  3 passed (3)
+      Tests  33 passed (33)
+   Start at  21:13:58
+   Duration  5.34s (transform 1.51s, setup 0ms, collect 4.36s, tests 2.15s, environment 5.89s, prepare 1.62s)
+
