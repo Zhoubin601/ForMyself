@@ -1,0 +1,18 @@
+✔ P6 disabled world does not catch up, enabling starts at current time; switches independent (22.6668ms)
+✔ P6 disabling and reopening never replays disabled time (7.1359ms)
+✔ P6 repeated window cannot duplicate events and pure plans never mutate input (7.884ms)
+✔ P6 long offline interval processes at most six windows and records skipped duration (14.3868ms)
+✔ P6 backward clock and timezone changes cannot replay UTC windows (7.3466ms)
+✔ P6 DST repeated hour has distinct UTC windows and local day calculation is explicit (5.1548ms)
+✔ P6 zero daily dialogue limit still allows rule events, never fabricated chat (12.826ms)
+✔ P6 overlapping virtual schedules or cross-world instance references are rejected (2.9859ms)
+✔ P6 changed actor state invalidates a plan; no retroactive movement from stale snapshots (4.1263ms)
+✔ P6 schedule boundary and invalid timezone have explicit outcomes (1.4977ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 10
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 177.1845

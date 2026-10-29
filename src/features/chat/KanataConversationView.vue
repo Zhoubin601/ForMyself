@@ -13,6 +13,8 @@ const emit=defineEmits(['close'])
 const store=useKanataStore(),settings=useSettingsStore(),runtime=createKanataChatRuntime()
 const draft=ref(''),busy=ref(false),error=ref(''),preview=ref(null),replyDelay=ref(0),stream=ref(true),timeline=ref(null)
 const queued=ref([])
+const notice=ref('')
+const pendingReplies=computed(()=>store.snapshot?.tasks.filter(t=>t.conversationId===props.conversationId&&t.deferredReply&&t.state==='pending')||[])
 const revisionDraft=ref(null)
 let mounted=true,timer=null
 const dialogOwner=Symbol('kanata-chat-dialog')
@@ -32,8 +34,8 @@ watch(()=>preview.value?.content,scroll)
 const errors={MISSING_KEY:'请先在全局设置中配置 DeepSeek。',ABORTED:'本次回复已停止；已经保存的内容会保留。',TIMEOUT:'请求超时，可以重试。',MENTION_UNKNOWN_OR_AMBIGUOUS:'未找到唯一的 @角色，请使用下方角色按钮。',OUTPUT_TRUNCATED:'回复达到长度上限，完整内容未保存，可以重试。',STALE_CONTEXT:'设定已变化，旧回复已停止。',STALE_TURN:'已经有新的发言，旧回复已停止。'}
 const send=async options=>{
   if(busy.value||blocked.value)return
-  busy.value=true;error.value='';preview.value=null
-  try{await runtime.send(props.conversationId,{...options,stream:stream.value,delayMs:Number(replyDelay.value),onDelta:value=>{if(mounted)preview.value=value}})}
+  busy.value=true;error.value='';notice.value='';preview.value=null
+  try{const result=await runtime.send(props.conversationId,{...options,stream:stream.value,delayMs:Number(replyDelay.value),persistDelay:true,onDelta:value=>{if(mounted)preview.value=value}});if(result.deferred&&mounted)notice.value='已保存延迟回复任务；应用保持前台时会执行，关闭后在恢复时重新检查。'}
   catch(failure){if(mounted)error.value=errors[failure.code]||'回复未完成，请检查全局配置或重试保存；不会伪造成功回复。'}
   finally{if(mounted){busy.value=false;preview.value=null}}
 }
@@ -68,6 +70,7 @@ onBeforeUnmount(()=>{mounted=false;stop();preview.value=null;revisionDraft.value
     <p v-if="!configured" class="kanata-notice">请先在全局设置配置 DeepSeek；此处不会自动调用模型。</p>
     <p v-if="world?.archived" class="kanata-notice">世界已归档，可以阅读已保存的聊天。</p>
     <p v-if="error" role="alert" class="kanata-error">{{ error }}</p>
+    <p v-if="notice" role="status" class="kanata-notice">{{ notice }}</p><button v-if="pendingReplies.length" type="button" :disabled="blocked||busy" @click="runtime.cancelDeferred(conversationId).catch(()=>{error='未能取消，请检查保存状态。'})">取消等待中的回复</button>
     <div class="kanata-chat-options"><button type="button" :disabled="blocked||busy" @click="changeMode">对话模式：{{ mode==='roleplay'?'角色扮演':'日常聊天' }}</button><button type="button" :disabled="busy" @click="changeDelay">回复等待：{{ Number(replyDelay)===0?'立即':`${Number(replyDelay)/1000} 秒` }}</button><label class="kanata-check"><input v-model="stream" type="checkbox" :disabled="busy" />流式预览</label></div>
     <div ref="timeline" class="kanata-chat-timeline" aria-label="已保存的聊天">
       <p v-if="!messages.length" class="kanata-help">这里还没有聊天。从你想说的话开始。</p>

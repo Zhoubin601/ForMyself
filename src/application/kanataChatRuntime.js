@@ -36,7 +36,7 @@ export function createKanataChatRuntime(adapters={}) {
   const cancel=()=>controller?.abort()
   const stop=watch(()=>auth.sessionRevision,cancel,{flush:'sync'})
   const assertSession=()=>{if(disposed||revision!==auth.sessionRevision)throw failure('KANATA_SESSION_EXPIRED');if(restoreState.blocked)throw failure('RESTORE_RECOVERY_REQUIRED')}
-  /** @param {string} conversationId @param {{text?:string,retryMessageId?:string,stream?:boolean,delayMs?:number,onDelta?:(value:{instanceId:string,content:string})=>void}} options */
+  /** @param {string} conversationId @param {{text?:string,retryMessageId?:string,stream?:boolean,delayMs?:number,persistDelay?:boolean,onDelta?:(value:{instanceId:string,content:string})=>void}} options */
   const send=async(conversationId,options={})=>{
     assertSession();if(controller)throw failure('KANATA_REPLY_BUSY')
     if(!settings.aiApiKey?.trim())throw failure('MISSING_KEY')
@@ -56,6 +56,17 @@ export function createKanataChatRuntime(adapters={}) {
         const speakers=decideKanataSpeakers(snapshot,c.id,text)
         const turnId=previous?.turnId||'turn-'+id(),messageId=previous?.id||'message-'+id()
         if(!previous)await store.update(data=>{data.messages.push({id:messageId,worldId,conversationId:c.id,role:'user',senderType:'user',senderId:identity.id,senderNameSnapshot:identity.displayName,content:text,createdAt:clock(),revision:1,status:'complete',turnId,batchId:turnId})})
+        if(wait&&options.persistDelay){
+          await store.update(draft=>{
+            const source=draft.messages.find(m=>m.id===messageId);if(!source)throw failure('RETRY_SOURCE_UNAVAILABLE')
+            const key=`deferred-reply-v1:${messageId}:${source.revision}`
+            for(const task of draft.tasks)if(task.deferredReply&&task.conversationId===conversationId&&task.state==='pending'&&task.deferredReply.sourceMessageId!==messageId){task.state='cancelled';task.leaseUntil=0}
+            const existing=draft.tasks.find(t=>t.idempotencyKey===key&&t.worldId===worldId)
+            if(!existing)draft.tasks.push({id:'deferred-'+id(),worldId,kind:'reply',state:'pending',idempotencyKey:key,sourceRefs:[{messageId,revision:source.revision}],sourceRevision:source.revision,attempt:0,notBefore:clock()+wait,leaseUntil:0,conversationId,resultEventIds:[],deferredReply:{sourceMessageId:messageId,sourceRevision:source.revision,expiresAt:clock()+2*3600000}})
+            else if(options.retryMessageId&&['failed','cancelled'].includes(existing.state)){existing.state='pending';existing.notBefore=clock()+wait;existing.leaseUntil=0;existing.errorCode='';if(existing.deferredReply)existing.deferredReply.expiresAt=clock()+2*3600000}
+          })
+          return{messageId,turnId,deferred:true}
+        }
         const assertCurrent=()=>{
           assertSession();if(owned.signal.aborted)throw failure('ABORTED')
           const data=/** @type {Data} */(store.snapshot)
@@ -114,5 +125,7 @@ export function createKanataChatRuntime(adapters={}) {
     if(result===false)throw failure('KANATA_OPERATION_CANCELLED')
     return result
   }
-  return{send,setMode,cancel,reviseMessage:experience.reviseMessage,dispose:()=>{disposed=true;cancel();experience.dispose();stop()}}
+  /** @param {string} conversationId */
+  const cancelDeferred=async conversationId=>{assertSession();const result=await access.runOperation(['chat'],()=>store.update(draft=>{assertSession();for(const task of draft.tasks)if(task.deferredReply&&task.conversationId===conversationId&&task.state==='pending'){task.state='cancelled';task.leaseUntil=0}}));if(result===false)throw failure('KANATA_OPERATION_CANCELLED');return result}
+  return{send,setMode,cancel,cancelDeferred,reviseMessage:experience.reviseMessage,dispose:()=>{disposed=true;cancel();experience.dispose();stop()}}
 }

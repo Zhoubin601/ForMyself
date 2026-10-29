@@ -138,3 +138,29 @@ const eagerLifeReaders:KanataLifeReaders={mood:[{id:'unsafe'}]}
 void eagerLifeReaders
 // @ts-expect-error message revisions require an explicit deletion/content decision
 experience.reviseMessage('message',1,{deleted:true})
+
+import type {KanataWorldRuntime,AutonomyPolicy,VirtualSchedule} from '../../src/application/contracts'
+declare const worldRuntime:KanataWorldRuntime
+worldRuntime.advance('world')
+// @ts-expect-error all three world switches remain independent, explicit booleans
+worldRuntime.setActivity('world',1,{autonomyEnabled:true})
+// @ts-expect-error dialogue limit must be numeric
+const badAutonomy:AutonomyPolicy={worldId:'world',revision:1,dailyDialogueLimit:'0',maxCatchUpHours:3,freedom:'strict',quietStartMinute:1320,quietEndMinute:480}
+void badAutonomy
+// @ts-expect-error a virtual schedule requires its own world and instance scope
+const badSchedule:VirtualSchedule={id:'schedule',days:[1],startMinute:0,endMinute:1440,location:'room',activity:'rest',resting:true,revision:1}
+void badSchedule
+
+import type {KanataSocialRuntime,KanataContactRuntime,KanataDeferredRuntime} from '../../src/application/contracts'
+declare const socialRuntime:KanataSocialRuntime
+declare const contactRuntime:KanataContactRuntime
+declare const deferredRuntime:KanataDeferredRuntime
+socialRuntime.run('world');contactRuntime.run('world');deferredRuntime.run()
+// @ts-expect-error world identity is a string, never an unscoped numeric row
+socialRuntime.run(123)
+// @ts-expect-error proactive contact needs an explicit world
+contactRuntime.run()
+// @ts-expect-error deferred executor chooses only persisted scoped tasks, not arbitrary caller worlds
+deferredRuntime.run('other-world')
+// @ts-expect-error configuration requires explicit per-instance flags as well as policy and schedules
+worldRuntime.configure('world',1,{policy:{},schedules:[]})

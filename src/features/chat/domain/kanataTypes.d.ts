@@ -85,6 +85,10 @@ export interface BackgroundTask {
   idempotencyKey: string; sourceRefs: SourceRef[]; sourceRevision: number; attempt: number
   notBefore: number; leaseUntil: number; conversationId?: string; instanceId?: string; resultEventIds: string[]
   resultMemoryIds?: string[]; errorCode?: string
+  simulationWindow?: {start:number;end:number;skippedMs:number;timeZone:string}
+  social?: {windowTaskId:string;date:string;participantIds:string[];location:string;effectiveAt:number}
+  contact?: {date:string;expiresAt:number;notificationId:number;notificationState:'none'|'dispatching'|'sent'|'denied'|'failed'}
+  deferredReply?: {sourceMessageId:string;sourceRevision:number;expiresAt:number}
 }
 export type LifeModule = 'home' | 'mood' | 'weight' | 'savings' | 'schedule' | 'todo' | 'reports'
 export interface LifeGrant {
@@ -106,6 +110,15 @@ export interface MemoryPolicy {
   worldId: string; strategy: 'economical' | 'standard' | 'deep' | 'custom'; enabled: boolean
   recentMessages: number; summarizeAfter: number; extractAfter: number; contextBudget: number; revision: number
 }
+export interface AutonomyPolicy {
+  worldId:string; revision:number; dailyDialogueLimit:number; maxCatchUpHours:number
+  freedom:'strict'|'standard'|'free'|'unrestricted'; quietStartMinute:number; quietEndMinute:number
+  socialChannel?:'private'|'group'
+}
+export interface VirtualSchedule {
+  id:string; worldId:string; instanceId:string; days:number[]; startMinute:number; endMinute:number
+  location:string; activity:string; resting:boolean; revision:number
+}
 export interface PresetApplication {
   id: string; initializationKey: string; presetSourceId: string; presetVersion: number; worldId: string
 }
@@ -120,6 +133,7 @@ export interface KanataData {
   effectBaselines?: EffectBaseline[]; eventAudits?: EventAudit[]
   messageAudits?: MessageAudit[]
   roleBindings?: KanataRoleBindings; memoryPolicies?: MemoryPolicy[]
+  autonomyPolicies?: AutonomyPolicy[]; virtualSchedules?: VirtualSchedule[]
 }
 export interface KanataUsageEvent extends CompletionAttempt {
   worldId: string; conversationId: string; instanceId: string; turnId: string

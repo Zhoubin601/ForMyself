@@ -1,0 +1,59 @@
+{
+  "status": "AWAITING_QUALITY_REVIEW",
+  "syntheticOnly": true,
+  "startedAt": "2026-10-29T05:03:14.774Z",
+  "attempts": [
+    {
+      "id": "attempt-bd6f3a66-c9fb-4c02-8c7f-1f3a08a90ce0",
+      "model": "deepseek-flash",
+      "officialProvider": true,
+      "startedAt": 1793250194807,
+      "finishedAt": 1793250196771,
+      "transport": "json",
+      "status": "succeeded",
+      "errorCode": "",
+      "finishReason": "stop",
+      "usage": {
+        "promptTokens": 465,
+        "completionTokens": 128,
+        "cacheHitTokens": 0
+      },
+      "estimatedInputTokens": 1974,
+      "estimatedOutputTokens": 153
+    },
+    {
+      "id": "attempt-5b883cc2-eea3-44f4-a74b-2ed85ff86419",
+      "model": "deepseek-flash",
+      "officialProvider": true,
+      "startedAt": 1793250196774,
+      "finishedAt": 1793250198534,
+      "transport": "json",
+      "status": "succeeded",
+      "errorCode": "",
+      "finishReason": "stop",
+      "usage": {
+        "promptTokens": 510,
+        "completionTokens": 87,
+        "cacheHitTokens": 0
+      },
+      "estimatedInputTokens": 2129,
+      "estimatedOutputTokens": 87
+    }
+  ],
+  "responses": [
+    {
+      "speakerId": "social-live-5",
+      "content": "（打了个哈欠，靠在资料柜边）白子，你也在资料室待了一下午啊……这些档案整理得完吗，要不要我帮你分一点？"
+    },
+    {
+      "speakerId": "social-live-9",
+      "content": "还剩一些没核对完。你能帮忙的话就从这边开始吧，按编号分好。"
+    }
+  ],
+  "counts": {
+    "messages": 2,
+    "characterConversations": 1,
+    "attempts": 2
+  },
+  "finishedAt": "2026-10-29T05:03:18.543Z"
+}

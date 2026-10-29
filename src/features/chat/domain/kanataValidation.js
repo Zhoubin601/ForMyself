@@ -1,5 +1,6 @@
 // @ts-check
 import { validateKanataExperience } from '../experience/experienceValidation.js'
+import { validateKanataAutonomy } from '../autonomy/autonomyValidation.js'
 /** @typedef {import('./kanataTypes').KanataData} KanataData */
 /** Stable codes, with structural paths only; never echo private input in errors. */
 export class KanataValidationError extends Error {
@@ -325,5 +326,6 @@ export function validateKanataData(input) {
     requireKanata(world?.presetSourceId === p.presetSourceId && world.presetVersion === p.presetVersion, 'PRESET_SOURCE_MISMATCH', 'presetApplications')
   })
   validateKanataExperience(data)
+  validateKanataAutonomy(data)
   return data
 }

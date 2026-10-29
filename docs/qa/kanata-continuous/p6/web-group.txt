@@ -1,0 +1,12 @@
+PASS initial-history-empty-and-switches-off
+PASS independent-world-switches-real-ui
+PASS zero-scenes-only-lightweight-rule-events
+PASS two-real-speakers-one-linked-private-scene
+PASS ordinary-god-view-does-not-grant-npc-knowledge
+PASS same-window-retry-no-extra-transcript-or-charge
+PASS proactive-independent-of-autonomy-and-notification
+PASS expired-contact-cancelled-without-api
+PASS delayed-reply-persists-and-explicit-cancel-makes-no-request
+PASS delayed-reply-new-owner-foreground-resume-no-duplicate-user
+PASS explicit-existing-group-scene-has-one-event-and-navigates-to-the-same-chat
+PASS cold-reload-exact-graph

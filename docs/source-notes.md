@@ -1120,3 +1120,7 @@ P4最终证据：check-final、web-results、native-results、production-upgrade
 
 ## 2026-10-29 P5验收接续
 P5最终证据：qa/kanata-continuous/p5实际check、Web、生产APK、instrumentation与live-quality-review；488 Node/273组件、Web12/布局18、Android16、原生8通过1跳过。真实模型3请求仅合成；外部Key未写仓库。
+
+2026-10-29 P6来源：连续计划v3 P6门禁、raw/完整需求清单.txt第6/8节，实际P5事件规则/Store.update保存语义/protectedAccess与kanataBackup适配器。首批自主窗口无外部依赖或联网，证据qa/kanata-continuous/p6；完整check500 Node/278组件通过，不能当作整个P6或设备验收。
+
+2026-10-29用户最新决定：本轮允许用raw中的模拟器验收。来源文件为主工作区raw/Android - 快捷方式.lnk，只读读取TargetPath=E:\Android，未执行/改写该文件；沿用SDK E:\Android\Sdk与独立KanataP2Synthetic34，不接触用户已有AVD数据。P6新增社交/主动/通知/延迟任务与双视角，实际来源为本目录源码及qa/kanata-continuous/p6；完整check最终501 Node/317组件通过。有限真实DeepSeek三轮6请求的失败/修正样本与人工审核均保留，Key只在进程读取。

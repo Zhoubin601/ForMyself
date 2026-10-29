@@ -459,3 +459,21 @@ Windows 使用 `npm.cmd`、`npx.cmd` 和 `android/gradlew.bat` 的对应命令�
 - 入口：彼方“记忆与权限”含记忆、世界事件、生活联动；角色与世界精准绑定、三独立权限和撤销影响提示。首页、心情、体重、省钱、日程、待办、报告接入同一受保护门面，不再用统一恋人人设代替选定角色。原普通模块用户缓存与数据保留；新角色回复不写入其普通缓存。通知联动另属P6，旧通知个性化链不据此宣称已升级。
 - 兼容：仍Kanata schema1和完整备份v13，新增字段可选；类型与严格负向样例同步。新增messageAudits/eventAudits/effectBaselines/roleBindings/memoryPolicies及来源/任务字段均由完整图校验和原加密仓库/协调器往返；不新增存储键、数据库、加密协议或主密码机制。旧v1–v12非聊天恢复/旧聊天丢弃规则不变。
 - 验证：`npm run check`；`node docs/qa/kanata-continuous/p5/verify-web.mjs`（新Chrome context/4173）；正常build→cap sync→Android构建→`scripts/verify-kanata-apk.ps1`→同目录verify-native.mjs（新任务AVD）；真实模型verify-live.mjs只读用户指定外部Key，以validate-live-results.mjs离线核查，不重复联网。精确命令、两轮自查、失败证据与边界见[P5验收](docs/20261028-kanata-stage-p5-verification-v1.md)。全量JSON/无磁盘分页仍是P7限制。
+
+## 20. Kanata P6 时间窗口首批接口（进行中，2026-10-29）
+
+- `features/chat/autonomy/kanataAutonomy.js`纯规则及autonomyValidation：可选AutonomyPolicy/VirtualSchedule、UTC半小时窗口、最多6窗口/次、工程默认3小时补算/每日0场完整对话；每世界三开关独立，关闭期间不补算，重开不降低已保存水位。显式日程生成P5版本化move/rest规则事件，无模型聊天、无捏造离线实时执行。
+- `application/kanataWorldRuntime.js`为受保护前台能力，advance/setActivity/dispose通过租约与Store.update；每窗口实际保存后再推进，pending/saveError/恢复/过期阻断。当前未注册到组合根恢复事件、没有UI自动开启或后台任务。新增字段可选，schema1/v13及原加密不变；task.simulationWindow保留UTC范围、时区和跳过时间。
+- 新类型与contracts负向例、12领域/5真实Store测试及完整check入口见[P6检查点](docs/20261029-kanata-p6-checkpoint-v1.md)。社交/主动联系/通知/双视角与实际设备验证尚未实现，不以本节标记P6通过。
+
+### 20.1 P6 后续实际接口（2026-10-29）
+
+本节覆盖第20节的首批“未实现”历史说明，阶段放行见[P6验收](docs/20261029-kanata-stage-p6-verification-v1.md)，不能只据此宣称P7完成。
+
+- `kanataSocial`/`kanataSocialRuntime`：共同地点和非休息日程、当前用户交谈窗口抑制、world/policy/实例/日程/群成员签名；各角色只收自己的人设、授权知识与当前共同会话。每日0–4场，失败也占场次，不自动付费重演；2角色2段原子写入。默认独立character会话；policy.socialChannel=group时显式写原群，task.sourceRefs/resultEventIds关联同一note，无模型真值Effects。群收件角色逐项核对生活分享权限。上帝视角状态不传模型。
+- `kanataContact`/`kanataContactRuntime`：world和instance主动开关独立于自治；默认闲置6小时排队2分钟，每世界每天1次，2小时过期或新增会话活动即取消。虚拟系统任务不落用户L0；每HTTP先持久化purpose=proactive用量，前后核对上下文/会话。通知拒绝或发送中断不删已保存消息，failed不自动二次计费。
+- `kanataDeferredRuntime`与chatRuntime.persistDelay/cancelDeferred：延迟先保存原用户消息+reply任务，离页不要求常驻。前台恢复检查源revision/最新用户/期限，准备租约结束再调chat.send，避免串行队列嵌套死锁。取消只改待发任务；显式重试复用同源ID。过期cancelled，过期running租约failed并保留可观察错误，不擅自重付。外部备份仍pause-sending-v1。
+- `kanataActivityLifecycle`独立注册到createModuleLifecycle，动态导入protected运行时，不主动authenticate。可见且chat ready的前台每30秒有限处理（2世界轮转，先用户延迟任务，再世界/社交/联系）；后台flush/会话变化/dispose释放AI owner和订阅、timer，失败世界不饿死其他世界。每世界六时间窗、每窗最多8角色/16规则事件，UTC轮转；不是关机AI。
+- 平台`kanataNotifications`只接target和选项，不导入Store；独立formyself-kanata-v1 channel和910M通知范围，锁屏通用文案。显式UI请求权限使用既有native activity guard，后台不弹权限。dispatching先持久化，崩溃不集中补发旧通知；Web明确unsupported。没有删除其他模块任务/旧通知或使用真实Key作设备资料。
+- UI：WorldManager“世界日常与视角”，独立开关、日程、自由度/场次/通道配置、普通/上帝管理及关联群导航；ConversationView延迟任务提示与取消。schema1/task可选元数据及full v13兼容，新增类型和strict负向样例同步，无数据库/加密协议变更。实际设备/Web/真实模型证据与风险见P6报告。
+- 本轮P7设备范围按用户2026-10-29明确决定，接受raw快捷方式指向的本地隔离模拟器；原架构关于真机局限如实记录，但缺少真机不再单独阻断本次。真分页/容量/峰值、备份/改密和安全门禁仍必须实际执行。

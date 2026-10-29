@@ -1,0 +1,31 @@
+
+ RUN  v3.2.4 D:/2026Autumn Semester File/GitHub/formyself-app/.worktrees/kanata
+
+ ❯ tests/KanataWorldRuntime.spec.js (5 tests | 1 failed) 105ms
+   ✓ P6 protected world window persistence > persists six bounded windows, then repeated resume does no work 57ms
+   ✓ P6 protected world window persistence > write failure retains pending draft but durable watermark stays unchanged and retry is blocked 11ms
+   ✓ P6 protected world window persistence > expired session refuses any simulation write 4ms
+   ✓ P6 protected world window persistence > disposed owner cannot reopen background work 2ms
+   × P6 protected world window persistence > simulation metadata and explicit policies round trip in the actual backup adapter 30ms
+     → (0 , createKanataChatBackup) is not a function
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/KanataWorldRuntime.spec.js > P6 protected world window persistence > simulation metadata and explicit policies round trip in the actual backup adapter
+TypeError: (0 , createKanataChatBackup) is not a function
+ ❯ tests/KanataWorldRuntime.spec.js:39:40
+     37|   it('simulation metadata and explicit policies round trip in the actu…
+     38|     await enable();await runtime.advance(f.binding.worldId)
+     39|     const backup=createKanataChatBackup(f.store.snapshot)
+       |                                        ^
+     40|     const result=normalizeKanataChatBackup(backup)
+     41|     expect(result.data.tasks[0].simulationWindow).toEqual(f.store.snap…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 4 passed (5)
+   Start at  12:20:25
+   Duration  2.07s (transform 176ms, setup 0ms, collect 521ms, tests 105ms, environment 875ms, prepare 212ms)
+

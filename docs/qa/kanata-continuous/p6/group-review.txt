@@ -1,0 +1,11 @@
+
+ RUN  v3.2.4 D:/2026Autumn Semester File/GitHub/formyself-app/.worktrees/kanata
+
+ ✓ tests/KanataActivityView.spec.js (3 tests) 245ms
+ ✓ tests/KanataSocialRuntime.spec.js (11 tests) 986ms
+
+ Test Files  2 passed (2)
+      Tests  14 passed (14)
+   Start at  14:26:26
+   Duration  5.62s (transform 975ms, setup 0ms, collect 3.63s, tests 1.23s, environment 3.76s, prepare 930ms)
+

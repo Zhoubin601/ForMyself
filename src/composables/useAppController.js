@@ -1,6 +1,7 @@
 import { moduleRegistry } from '../application/moduleRegistry.js'
 import { createModuleLifecycle, createListenerScope } from '../application/moduleLifecycle.js'
 import { ordinaryModuleRuntimes } from '../application/ordinaryModules.js'
+import { createKanataActivityLifecycle } from '../application/kanataActivityLifecycle.js'
 import { restoreState } from '../platform/storage/restoreState.js'
 import { computed, nextTick, onBeforeUnmount, ref, onMounted, watch, watchEffect } from 'vue'
 import { StatusBar } from '@capacitor/status-bar'
@@ -326,7 +327,7 @@ export function useAppController() {
     }
   }
 
-  const lifecycle = createModuleLifecycle(runtimeModules)
+  const lifecycle = createModuleLifecycle([...runtimeModules,createKanataActivityLifecycle({auth:authStore,access:protectedAccess,settings:settingsStore,onError:()=>appToast('彼方的本次活动未完成，已有记录已保留。可在世界日常中重试。',{tone:'warning'})})])
   const listeners = createListenerScope()
   const handleAppStateChange = ({ isActive }) => {
     if (!isActive) {

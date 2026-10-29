@@ -1,0 +1,59 @@
+{
+  "status": "AWAITING_QUALITY_REVIEW",
+  "syntheticOnly": true,
+  "startedAt": "2026-10-29T05:05:03.894Z",
+  "attempts": [
+    {
+      "id": "attempt-0161439c-4aac-41fd-bf4a-8bdd8649f275",
+      "model": "deepseek-flash",
+      "officialProvider": true,
+      "startedAt": 1793250303928,
+      "finishedAt": 1793250305648,
+      "transport": "json",
+      "status": "succeeded",
+      "errorCode": "",
+      "finishReason": "stop",
+      "usage": {
+        "promptTokens": 614,
+        "completionTokens": 114,
+        "cacheHitTokens": 384
+      },
+      "estimatedInputTokens": 2604,
+      "estimatedOutputTokens": 90
+    },
+    {
+      "id": "attempt-977b5fea-807d-4ca7-a5d7-350080210518",
+      "model": "deepseek-flash",
+      "officialProvider": true,
+      "startedAt": 1793250305651,
+      "finishedAt": 1793250307298,
+      "transport": "json",
+      "status": "succeeded",
+      "errorCode": "",
+      "finishReason": "stop",
+      "usage": {
+        "promptTokens": 646,
+        "completionTokens": 95,
+        "cacheHitTokens": 384
+      },
+      "estimatedInputTokens": 2696,
+      "estimatedOutputTokens": 135
+    }
+  ],
+  "responses": [
+    {
+      "speakerId": "social-live-5",
+      "content": "白子，这些书打算怎么分？我负责把重的搬下来，你决定顺序就好。"
+    },
+    {
+      "speakerId": "social-live-9",
+      "content": "先按内容分区，再逐层往下搬。我先把书架上层中能直接判断类别的挑出来，你按我指的堆位放就行。"
+    }
+  ],
+  "counts": {
+    "messages": 2,
+    "characterConversations": 1,
+    "attempts": 2
+  },
+  "finishedAt": "2026-10-29T05:05:07.309Z"
+}

@@ -84,3 +84,7 @@ Android API Key 使用安全凭据适配器。配置有加载、保存、失败�
 Kanata 当前实现到 P4：全局卡、PNG/JSON 导入、独立世界/实例、版本同步和静态世界书，以及私聊/群聊/@、日常/RP、气泡/延迟、统一DeepSeek与按请求用量/人民币区间估算。P5记忆/生活联动和P6自治尚未开发；无Key时不伪造历史或调用模型。当前阶段证据见 [P2本地验收](docs/20261028-kanata-stage-p2-local-verification-v1.md)、[P3验收](docs/20261028-kanata-stage-p3-verification-v1.md) 和 [完整需求覆盖](docs/20261028-kanata-requirements-through-p3-v1.md)。用户最新授权为完成P4后普通推送Kanata并暂停，不发布安装包。P4证据及范围见 [P4验收](docs/20261028-kanata-stage-p4-verification-v1.md) 和 [P4覆盖](docs/20261028-kanata-requirements-through-p4-v1.md)。新全备v13与旧v1–v12安全恢复策略见架构规范第16–18节。
 
 Kanata P5已通过（2026-10-29最终复测）：分层记忆、来源修订、因果事件撤销、独立生活授权和精确角色绑定。见[实际验收](docs/20261028-kanata-stage-p5-verification-v1.md)、[需求增量](docs/20261028-kanata-requirements-through-p5-v1.md)及架构规范第19节。此记录覆盖上方P4暂停/后续未开发的历史状态；当前继续P6，未自动推送或发布。
+
+P6首批时间规则与受保护持久化已实现，完整check为500 Node/278组件通过；P6整体未验收，社交/通知/双视角及设备流程尚未实现。后续开发从[P6准确检查点](docs/20261029-kanata-p6-checkpoint-v1.md)接续，不能用P5 APK证据覆盖新代码。
+
+最新状态（2026-10-29）：P6已PASS，覆盖上述首批未完成状态；完整check501 Node/317组件、Web12流程/6布局、最终生产Android17流程及原生8通过/1夹具跳过。角色社交、现群联动、主动/通知、持久化延迟和双视角证据见[P6验收](docs/20261029-kanata-stage-p6-verification-v1.md)、[完整需求P6增量](docs/20261029-kanata-requirements-through-p6-v1.md)。P7尚未验收；按用户最新决定使用raw指向的本地隔离模拟器，容量/真分页/需求收口仍须实际完成。

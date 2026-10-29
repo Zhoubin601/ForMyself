@@ -1,0 +1,12 @@
+
+ RUN  v3.2.4 D:/2026Autumn Semester File/GitHub/formyself-app/.worktrees/kanata
+
+ ✓ tests/KanataActivityLifecycle.spec.js (5 tests) 8ms
+ ✓ tests/KanataNotifications.spec.js (4 tests) 4ms
+ ✓ tests/KanataContactRuntime.spec.js (8 tests) 198ms
+
+ Test Files  3 passed (3)
+      Tests  17 passed (17)
+   Start at  14:09:44
+   Duration  2.50s (transform 202ms, setup 0ms, collect 656ms, tests 210ms, environment 3.40s, prepare 759ms)
+

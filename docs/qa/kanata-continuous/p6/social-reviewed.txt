@@ -1,0 +1,10 @@
+
+ RUN  v3.2.4 D:/2026Autumn Semester File/GitHub/formyself-app/.worktrees/kanata
+
+ ✓ tests/KanataSocialRuntime.spec.js (9 tests) 303ms
+
+ Test Files  1 passed (1)
+      Tests  9 passed (9)
+   Start at  13:01:25
+   Duration  2.29s (transform 180ms, setup 0ms, collect 517ms, tests 303ms, environment 897ms, prepare 228ms)
+

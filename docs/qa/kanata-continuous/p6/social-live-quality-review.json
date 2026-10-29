@@ -1,0 +1,35 @@
+{
+  "status": "PASS",
+  "reviewedAt": "2026-10-29T06:31:47.109Z",
+  "syntheticOnly": true,
+  "finalSource": "social-live-results.json",
+  "newNetworkRequests": 0,
+  "rounds": [
+    {
+      "source": "social-live-before-history-review.json",
+      "attempts": 2,
+      "review": "FAIL: invented prior afternoon and daily-mode stage direction"
+    },
+    {
+      "source": "social-live-before-activity-review.json",
+      "attempts": 2,
+      "review": "PARTIAL: no invented past, but absent configured activity allowed unrelated cycling task"
+    },
+    {
+      "source": "social-live-results.json",
+      "attempts": 2,
+      "review": "PASS: both speakers discuss categorizing and moving the synthetic books; no invented past duration, no user impersonation or private material"
+    }
+  ],
+  "usage": {
+    "promptTokens": 3388,
+    "completionTokens": 622,
+    "cacheHitTokens": 1536
+  },
+  "manualReview": [
+    "星野以轻松、主动承担搬重物的方式开场，白子给出简短具体的分类与搬运顺序。不是同一段回复改名。",
+    "最终两段围绕已配置的整理书架活动，没有补造下午、先前约定或现实任务；不替用户发言。",
+    "这是一场有限合成的角色私聊，不代表长期自治质量。群聊路由和权限以独立真实Store/组件/Web/原生检查为证据。"
+  ],
+  "limits": "Six actual HTTP attempts across three reviewed two-speaker scenes; no additional live calls during this validation. Synthetic fixtures only; no key or prompts in attempts."
+}

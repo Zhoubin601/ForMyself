@@ -104,3 +104,8 @@ export type KanataExperienceRuntime = ReturnType<typeof import('./kanataExperien
 export type {MessageAudit} from '../features/chat/domain/kanataTypes'
 export type KanataLifeCompanion = ReturnType<typeof import('./kanataLifeCompanion.js').createKanataLifeCompanion>
 export type KanataLifeReaders = Parameters<typeof import('./kanataLifeContext.js').collectKanataLifeContext>[2]
+export type {AutonomyPolicy,VirtualSchedule} from '../features/chat/domain/kanataTypes'
+export type KanataWorldRuntime = ReturnType<typeof import('./kanataWorldRuntime.js').createKanataWorldRuntime>
+export type KanataSocialRuntime = ReturnType<typeof import('./kanataSocialRuntime.js').createKanataSocialRuntime>
+export type KanataContactRuntime = ReturnType<typeof import('./kanataContactRuntime.js').createKanataContactRuntime>
+export type KanataDeferredRuntime = ReturnType<typeof import('./kanataDeferredRuntime.js').createKanataDeferredRuntime>

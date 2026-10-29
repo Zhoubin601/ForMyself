@@ -1,0 +1,106 @@
+{
+  "startedAt": "2026-10-29T06:24:42.909Z",
+  "status": "PASS",
+  "serial": "emulator-5580",
+  "avd": "KanataP2Synthetic34",
+  "apkSha256": "39510c2507b3c8ed693223cd45efe9cf818836ab79f9bf8d82f03685de684b3c",
+  "checks": {
+    "install-production-apk": {
+      "status": "PASS",
+      "elapsedMs": 1298,
+      "result": "Performing Streamed Install\r\nSuccess"
+    },
+    "initial-history-empty-and-switches-off": {
+      "status": "PASS",
+      "elapsedMs": 0,
+      "result": true
+    },
+    "independent-world-switches-real-ui": {
+      "status": "PASS",
+      "elapsedMs": 1330,
+      "result": true
+    },
+    "zero-scenes-only-lightweight-rule-events": {
+      "status": "PASS",
+      "elapsedMs": 3502,
+      "result": true
+    },
+    "two-real-speakers-one-linked-private-scene": {
+      "status": "PASS",
+      "elapsedMs": 6631,
+      "result": true
+    },
+    "ordinary-god-view-does-not-grant-npc-knowledge": {
+      "status": "PASS",
+      "elapsedMs": 2515,
+      "result": true
+    },
+    "same-window-retry-no-extra-transcript-or-charge": {
+      "status": "PASS",
+      "elapsedMs": 911,
+      "result": true
+    },
+    "proactive-independent-of-autonomy-and-notification": {
+      "status": "PASS",
+      "elapsedMs": 18616,
+      "result": true
+    },
+    "expired-contact-cancelled-without-api": {
+      "status": "PASS",
+      "elapsedMs": 2563,
+      "result": true
+    },
+    "delayed-reply-persists-and-explicit-cancel-makes-no-request": {
+      "status": "PASS",
+      "elapsedMs": 9790,
+      "result": true
+    },
+    "delayed-reply-new-owner-foreground-resume-no-duplicate-user": {
+      "status": "PASS",
+      "elapsedMs": 31692,
+      "result": true
+    },
+    "native-full-backup-p6-activity-tasks-and-history": {
+      "status": "PASS",
+      "elapsedMs": 5812,
+      "result": {
+        "version": 13,
+        "worlds": 1,
+        "attempts": 4,
+        "exactGraph": true
+      }
+    },
+    "native-final-cold-reload": {
+      "status": "PASS",
+      "elapsedMs": 30235,
+      "result": true
+    },
+    "native-background-releases-plaintext": {
+      "status": "PASS",
+      "elapsedMs": 14370,
+      "result": {
+        "lockedAndPlaintextReleasedBeforeUnlock": true
+      }
+    },
+    "native-owned-dialog-expiry": {
+      "status": "PASS",
+      "elapsedMs": 5852,
+      "result": true
+    }
+  },
+  "pageErrors": [],
+  "aiRequests": 0,
+  "environment": {
+    "android": "14",
+    "api": "34",
+    "webview": "Current WebView Update Service state\r\n  Multiprocess enabled: true\r\n  Current WebView package (name, version): (com.google.android.webview, 113.0.5672.136)\r\n  Minimum targetSdkVersion: 33\r\n  Minimum WebView version code: 567263637\r\n  Number of relros started: 1\r\n  Number of relros finished: 1\r\n  WebView package dirty: false\r\n  Any WebView package installed: true\r\n  Preferred WebView package (name, version): (com.google.android.webview, 113.0.5672.136)\r\n  WebView packages:\r\n    Valid package com.google.android.webview (versionName: 113.0.5672.136, versionCode: 567263637, targetSdkVersion: 34) is  installed/enabled for all users\r\n    com.google.android.webview.beta is NOT installed.\r\n    com.google.android.webview.dev is NOT installed.\r\n    com.google.android.webview.canary is NOT installed.\r\n    com.google.android.webview.debug is NOT installed.\r\n    com.android.webview is NOT installed."
+  },
+  "finalCounts": {
+    "worlds": 1,
+    "instances": 5,
+    "messages": 5,
+    "attempts": 4,
+    "requests": 4
+  },
+  "finishedAt": "2026-10-29T06:27:41.579Z"
+}

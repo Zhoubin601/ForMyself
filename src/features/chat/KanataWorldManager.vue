@@ -11,6 +11,7 @@ import { builtinKanataPresets } from './presets/presetCatalog.js'
 import { useKanataStore } from './kanataStore.js'
 import KanataConversationView from './KanataConversationView.vue'
 import KanataExperiencePanel from './experience/KanataExperiencePanel.vue'
+import KanataActivityPanel from './autonomy/KanataActivityPanel.vue'
 import KanataCardLibrary from './cards/KanataCardLibrary.vue'
 import KanataLorebookPanel from './lorebook/KanataLorebookPanel.vue'
 
@@ -158,6 +159,8 @@ onBeforeUnmount(()=>{mounted=false;identityDraft.value=null;instanceDraft.value=
     <KanataCardLibrary v-if="section==='cards'" :data="data" :management="management" :blocked="blocked" @message="notice=$event" />
     <KanataLorebookPanel v-if="section==='lore' && world" :key="world.id" :data="data" :world-id="world.id" :management="management" :blocked="worldBlocked" @message="notice=$event" />
     <KanataExperiencePanel v-if="section==='experience' && world" :key="world.id" :world-id="world.id" :blocked="worldBlocked" />
+    <section v-if="section==='world' && world && !selectedConversationId" class="kanata-panel"><button type="button" @click="section='activity'">世界日常与视角</button></section>
+    <KanataActivityPanel v-if="section==='activity'&&world" :key="world.id" :world-id="world.id" :blocked="worldBlocked" @open-conversation="selectedConversationId=$event;section='world'" />
     <footer class="kanata-footer">阿拜多斯为非官方同人文字预设。头像为文字占位或用户自行导入；没有官方图片、完整台词和虚构的历史聊天。</footer>
   </div>
 </template>

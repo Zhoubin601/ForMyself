@@ -1,0 +1,107 @@
+{
+  "status": "PASS",
+  "startedAt": "2026-10-29T06:29:11.528Z",
+  "checks": {
+    "initial-history-empty-and-switches-off": {
+      "status": "PASS",
+      "result": true
+    },
+    "independent-world-switches-real-ui": {
+      "status": "PASS",
+      "result": true
+    },
+    "zero-scenes-only-lightweight-rule-events": {
+      "status": "PASS",
+      "result": true
+    },
+    "two-real-speakers-one-linked-private-scene": {
+      "status": "PASS",
+      "result": true
+    },
+    "ordinary-god-view-does-not-grant-npc-knowledge": {
+      "status": "PASS",
+      "result": true
+    },
+    "same-window-retry-no-extra-transcript-or-charge": {
+      "status": "PASS",
+      "result": true
+    },
+    "proactive-independent-of-autonomy-and-notification": {
+      "status": "PASS",
+      "result": true
+    },
+    "expired-contact-cancelled-without-api": {
+      "status": "PASS",
+      "result": true
+    },
+    "delayed-reply-persists-and-explicit-cancel-makes-no-request": {
+      "status": "PASS",
+      "result": true
+    },
+    "delayed-reply-new-owner-foreground-resume-no-duplicate-user": {
+      "status": "PASS",
+      "result": true
+    },
+    "explicit-existing-group-scene-has-one-event-and-navigates-to-the-same-chat": {
+      "status": "PASS",
+      "result": true
+    },
+    "cold-reload-exact-graph": {
+      "status": "PASS",
+      "result": true
+    }
+  },
+  "pageErrors": [],
+  "finalCounts": {
+    "worlds": 2,
+    "instances": 10,
+    "messages": 7,
+    "attempts": 6,
+    "requests": 6
+  },
+  "layouts": [
+    {
+      "width": 375,
+      "height": 812,
+      "fontSize": "16px",
+      "within": true,
+      "targets": true
+    },
+    {
+      "width": 375,
+      "height": 812,
+      "fontSize": "32px",
+      "within": true,
+      "targets": true
+    },
+    {
+      "width": 812,
+      "height": 375,
+      "fontSize": "16px",
+      "within": true,
+      "targets": true
+    },
+    {
+      "width": 812,
+      "height": 375,
+      "fontSize": "32px",
+      "within": true,
+      "targets": true
+    },
+    {
+      "width": 1024,
+      "height": 768,
+      "fontSize": "16px",
+      "within": true,
+      "targets": true
+    },
+    {
+      "width": 1024,
+      "height": 768,
+      "fontSize": "32px",
+      "within": true,
+      "targets": true
+    }
+  ],
+  "finishedAt": "2026-10-29T06:29:44.908Z"
+}
