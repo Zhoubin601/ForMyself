@@ -1,0 +1,17 @@
+
+ RUN  v3.2.4 D:/2026Autumn Semester File/GitHub/formyself-app/.worktrees/kanata
+
+ ✓ tests/KanataStore.spec.js (16 tests) 508ms
+ ✓ tests/KanataArchiveStore.spec.js (8 tests) 3579ms
+   ✓ P7 actual Store archive commits verified pages, keeps old canonical backup, cold loads metadata only and pages stable IDs  583ms
+   ✓ P7 archive failure before header leaves full original graph; failed header save retains latest durable-page draft and retry  452ms
+   ✓ P7 unhydrated synchronous backup fails; actual archive backup is self contained and new restore loses no message or source revision  542ms
+   ✓ P7 bad or missing page cannot become empty history or a successful backup; write gate closes after corrupt read  319ms
+   ✓ P7 actual main/bak reencrypt includes all archive bodies, retires orphan copies, old password rejected, and other module untouched  618ms
+   ✓ P7 cleanup failure after reencrypt cannot claim success; old-password compensation restores whole graph and clears gate  694ms
+
+ Test Files  2 passed (2)
+      Tests  24 passed (24)
+   Start at  15:34:11
+   Duration  7.91s (transform 455ms, setup 0ms, collect 2.26s, tests 4.09s, environment 3.74s, prepare 959ms)
+

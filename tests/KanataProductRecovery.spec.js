@@ -17,7 +17,8 @@ vi.mock('@capacitor/preferences', () => ({ Preferences: {
   remove: async ({ key }) => { driver.calls.push(['remove', key]); driver.preferences.delete(key) }
 } }))
 vi.mock('@capacitor/filesystem', () => ({ Directory: { Data: 'DATA', Cache: 'CACHE' }, Encoding: { UTF8: 'utf8' }, Filesystem: {
-  stat: async ({ path }) => { if (!driver.files.has(path)) throw Object.assign(new Error('ENOENT'), { code: 'ENOENT' }); return {} },
+  stat: async ({ path }) => { if (!driver.files.has(path)) throw Object.assign(new Error('ENOENT'), { code: 'ENOENT' }); return {type:'file',size:driver.files.get(path).length} },
+  readdir: async ({path}) => ({files:[...driver.files.keys()].filter(key=>key.startsWith(path+'/')).map(key=>({name:key.slice(path.length+1),type:'file'}))}),
   readFile: async ({ path }) => { if (!driver.files.has(path)) throw Object.assign(new Error('ENOENT'), { code: 'ENOENT' }); return { data: driver.files.get(path) } },
   mkdir: async () => {},
   writeFile: async ({ path, data }) => {
@@ -53,7 +54,7 @@ import { useSettingsStore } from '../src/stores/settings.js'
 import { preferenceStorage } from '../src/platform/storage/preferences.js'
 import { STORAGE_KEYS } from '../src/platform/storage/keys.js'
 import { restoreState } from '../src/platform/storage/restoreState.js'
-import { restoreJournal, RESTORE_PATH } from '../src/platform/storage/restoreJournal.js'
+import { restoreJournal, RESTORE_PATH, openRestoreRecord } from '../src/platform/storage/restoreJournal.js'
 import { KANATA_DATA_PATH, decryptKanataData } from '../src/features/chat/storage/kanataRepository.js'
 import { CHAT_DATA_PATH } from '../src/features/chat/chatStorage.js'
 import { buildFullBackupSnapshot } from '../src/services/fullBackup.js'
@@ -62,6 +63,8 @@ import { useBackupSettings } from '../src/composables/settings/useBackupSettings
 import { appConfirm, appAlert, appToast } from '../src/services/uiFeedback.js'
 import { buildKanataChatBackupSnapshot } from '../src/features/chat/backup/kanataBackup.js'
 import CryptoJS from 'crypto-js'
+import { archiveData } from './helpers/kanataArchiveFixture.js'
+import {createKanataChatRuntime} from '../src/application/kanataChatRuntime.js'
 
 const original = 'Synthetic-Kanata-original', changed = 'Synthetic-Kanata-changed'
 const clone = value => JSON.parse(JSON.stringify(value))
@@ -96,6 +99,84 @@ describe('Kanata P2 product runtime: actual stores, encrypted files and restore 
     await preferenceStorage.flush()
     vi.unstubAllGlobals()
   })
+
+  it('P7 group limits and activity timing survive the actual encrypted full coordinator, and later failure compensates the previous configuration',async()=>{
+    const runtime=createFullBackupRuntime(),api=createKanataChatRuntime(),group=chat.snapshot.conversations.find(c=>c.type==='group')
+    try{
+      await api.setGroupLimits(group.id,group.revision,{maxSpeakers:3,maxMessages:4})
+      await api.setReplyTiming(group.id,chat.snapshot.conversations.find(c=>c.id===group.id).revision,{enabled:true,waitMs:30000})
+      const portable=await runtime.exportFull()
+      expect(portable.version).toBe(13);expect(portable.data.chat.conversations.find(c=>c.id===group.id).replyLimits).toEqual({maxSpeakers:3,maxMessages:4})
+      expect(portable.data.chat.conversations.find(c=>c.id===group.id).replyTiming).toEqual({enabled:true,waitMs:30000})
+      const changed=clone(portable);changed.data.chat.conversations.find(c=>c.id===group.id).replyLimits={maxSpeakers:1,maxMessages:1}
+      changed.data.chat.conversations.find(c=>c.id===group.id).replyTiming={enabled:false,waitMs:1000}
+      await runtime.restore(changed,original)
+      expect(decryptKanataData(driver.files.get(KANATA_DATA_PATH),original).conversations.find(c=>c.id===group.id).replyLimits).toEqual({maxSpeakers:1,maxMessages:1})
+      expect(chat.snapshot.conversations.find(c=>c.id===group.id).replyTiming).toEqual({enabled:false,waitMs:1000})
+      driver.failNextPreference=STORAGE_KEYS.debtGroups
+      await expect(runtime.restore(portable,original)).rejects.toThrow()
+      expect(chat.snapshot.conversations.find(c=>c.id===group.id).replyLimits).toEqual({maxSpeakers:1,maxMessages:1})
+      expect(chat.snapshot.conversations.find(c=>c.id===group.id).replyTiming).toEqual({enabled:false,waitMs:1000})
+      expect(restoreState.blocked).toBe(false);expect(await restoreJournal.inspect()).toBe(null)
+      const invalid=clone(portable);invalid.data.chat.conversations.find(c=>c.id===group.id).replyLimits.maxSpeakers=9
+      const before=driver.files.get(KANATA_DATA_PATH)
+      expect(()=>runtime.restore(invalid,original)).toThrow('INVALID_GROUP_REPLY_LIMITS')
+      expect(driver.files.get(KANATA_DATA_PATH)).toBe(before)
+      const badTiming=clone(portable);badTiming.data.chat.conversations.find(c=>c.id===group.id).replyTiming.waitMs=30001
+      expect(()=>runtime.restore(badTiming,original)).toThrow('INVALID_REPLY_TIMING');expect(driver.files.get(KANATA_DATA_PATH)).toBe(before)
+    }finally{api.dispose()}
+  })
+
+  it('P7 actual full-backup coordinator exports every archived body and compensates a later participant failure without source loss',async()=>{
+    const runtime=createFullBackupRuntime(),target=await runtime.exportFull(),data=archiveData()
+    target.data.chat=data
+    await runtime.restore(target,original)
+    const options={worldId:data.worlds[0].id,conversationId:data.conversations.find(c=>c.type==='private').id,keepRecent:50}
+    await chat.archiveHistory(options)
+    expect(chat.snapshot.messages).toHaveLength(50)
+    const portable=await runtime.exportFull()
+    expect(portable.data.chat.messages).toHaveLength(400);expect(portable.data.chat.messageArchives).toBeUndefined()
+    expect(portable.data.chat.version).toBe(1)
+    const changed=clone(portable);changed.data.chat.worlds[0].name='合成恢复失败目标'
+    changed.data.weight=[{id:'synthetic-target-weight',date:'2026-01-02',weight:70}]
+    driver.failNextPreference=STORAGE_KEYS.debtGroups
+    await expect(runtime.restore(changed,original)).rejects.toThrow()
+    expect(restoreState.blocked).toBe(false);expect(await restoreJournal.inspect()).toBe(null)
+    expect(chat.snapshot.worlds[0].name).toBe(data.worlds[0].name)
+    expect([...chat.snapshot.messages].sort((a,b)=>a.id.localeCompare(b.id))).toEqual([...data.messages].sort((a,b)=>a.id.localeCompare(b.id)))
+    expect(decryptKanataData(driver.files.get(KANATA_DATA_PATH),original).messages).toHaveLength(400)
+    expect(useWeightStore().weightRecords[0].id).toBe('previous-weight')
+  })
+
+  it('P7 missing archive aborts product full export/capture before restore journal preparation and leaves other modules unchanged',async()=>{
+    const runtime=createFullBackupRuntime(),target=await runtime.exportFull(),data=archiveData()
+    target.data.chat=data;await runtime.restore(target,original)
+    await chat.archiveHistory({worldId:data.worlds[0].id,conversationId:data.conversations.find(c=>c.type==='private').id,keepRecent:50})
+    const page=chat.snapshot.messageArchives[0]
+    driver.files.delete('formyself/kanata-pages-v1/'+page.key+'.enc') // isolated synthetic mock filesystem
+    const previous=driver.files.get(KANATA_DATA_PATH),weight=clone(useWeightStore().weightRecords)
+    await expect(runtime.exportFull()).rejects.toThrow('KANATA_ARCHIVE_READ_FAILED')
+    await expect(runtime.restore(target,original)).rejects.toThrow('KANATA_ARCHIVE_READ_FAILED')
+    expect(await restoreJournal.inspect()).toBe(null)
+    expect(driver.files.get(KANATA_DATA_PATH)).toBe(previous);expect(useWeightStore().weightRecords).toEqual(weight)
+  })
+
+  it('P7 compressed self-contained journal survives failed compensation and the actual coordinator recovers every source body',async()=>{
+    const runtime=createFullBackupRuntime(),target=await runtime.exportFull(),data=archiveData(800)
+    target.data.chat=data;await runtime.restore(target,original)
+    const next=clone(target);next.data.chat.worlds[0].name='合成压缩恢复目标'
+    driver.alwaysFailPreference=STORAGE_KEYS.debtGroups
+    await expect(runtime.restore(next,original)).rejects.toHaveProperty('rollbackFailed',true)
+    expect(restoreState.blocked).toBe(true)
+    const pending=await restoreJournal.inspect(),record=await openRestoreRecord(pending.encrypted,original)
+    expect(JSON.parse(pending.encrypted).version).toBe(1)
+    expect(record.previous.kanata.messages).toHaveLength(800);expect(record.target.kanata.messages).toHaveLength(800)
+    expect(pending.encrypted.length).toBeLessThan(JSON.stringify(record).length/2)
+    driver.alwaysFailPreference=null;await runtime.recover(original)
+    expect(restoreState.blocked).toBe(false);expect(await restoreJournal.inspect()).toBe(null)
+    expect(chat.snapshot.worlds[0].name).toBe(data.worlds[0].name)
+    expect([...chat.snapshot.messages].sort((a,b)=>a.id.localeCompare(b.id))).toEqual([...data.messages].sort((a,b)=>a.id.localeCompare(b.id)))
+  },15000)
 
   it('exports v13 from the product and rejects direct internal apply outside the coordinator', async () => {
     const runtime = createFullBackupRuntime(), backup = await runtime.exportFull()
@@ -140,6 +221,16 @@ describe('Kanata P2 product runtime: actual stores, encrypted files and restore 
     settings.handleFileUpload({ target: { files: [{}], value: 'synthetic-file' } })
     await finished
   }
+
+  it('P7 settings reports missing large-journal capability accurately and leaves the actual previous data intact',async()=>{
+    const runtime=createFullBackupRuntime(),target=await runtime.exportFull(),settings=useBackupSettings(),before=clone(chat.snapshot),weight=clone(useWeightStore().weightRecords)
+    target.data.chat=archiveData(800);appConfirm.mockResolvedValueOnce(true)
+    vi.stubGlobal('CompressionStream',undefined)
+    await importThroughSettings(settings,target)
+    expect(appAlert).toHaveBeenCalledWith('当前环境暂时不能安全处理这份恢复资料，请保留备份并稍后重试。')
+    expect(chat.snapshot).toEqual(before);expect(useWeightStore().weightRecords).toEqual(weight)
+    expect(driver.files.has(RESTORE_PATH)).toBe(false);expect(restoreState.blocked).toBe(false);expect(appToast).not.toHaveBeenCalled()
+  })
 
   it('settings file import previews legacy exclusion; cancellation writes nothing and confirmation uses the coordinator', async () => {
     await createFullBackupRuntime().exportFull()

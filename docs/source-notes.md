@@ -1124,3 +1124,38 @@ P5最终证据：qa/kanata-continuous/p5实际check、Web、生产APK、instrume
 2026-10-29 P6来源：连续计划v3 P6门禁、raw/完整需求清单.txt第6/8节，实际P5事件规则/Store.update保存语义/protectedAccess与kanataBackup适配器。首批自主窗口无外部依赖或联网，证据qa/kanata-continuous/p6；完整check500 Node/278组件通过，不能当作整个P6或设备验收。
 
 2026-10-29用户最新决定：本轮允许用raw中的模拟器验收。来源文件为主工作区raw/Android - 快捷方式.lnk，只读读取TargetPath=E:\Android，未执行/改写该文件；沿用SDK E:\Android\Sdk与独立KanataP2Synthetic34，不接触用户已有AVD数据。P6新增社交/主动/通知/延迟任务与双视角，实际来源为本目录源码及qa/kanata-continuous/p6；完整check最终501 Node/317组件通过。有限真实DeepSeek三轮6请求的失败/修正样本与人工审核均保留，Key只在进程读取。
+# 2026-10-29 P7 归档增量来源
+
+本轮只读原始来源 `raw/完整需求清单.txt` 第4.1/4.3/5.3/10.3节、已确认连续执行v3与现有仓库/Store/备份/恢复/改密源码。字符片段索引及加密页为项目本地实现；没有引入外部数据库/服务。CryptoJS协议核对来源为本仓库锁定依赖 `node_modules/crypto-js/cipher-core.js` 的 OpenSSLKdf / PasswordBasedCipher 与 Base64/AES实现（读取日期2026-10-29），只做相同字节协议的分块处理。设备来源沿用原始Android快捷方式及本任务 isolation marker；原始资料未改写。实际证据见P7归档检查点，不把资料中的参考功能当现成接口。
+
+
+
+### 2026-10-30 P7接续
+
+新增实际Android容量驱动及内部canonical不可变所有权，来源为当前真实协调器/Store/原始完整需求十五节与已冻结容量契约。详见[接续证据](20261029-kanata-p7-archive-checkpoint-v1.md)。Android1k实际完成，最新候选更大容量尚需复测；Web100k最新已完成样本仍超内存门槛。完整check 526 Node/342 Vitest通过，P7继续No-Go，不推送/发布。
+
+
+### 2026-10-30 当前实测覆盖
+
+[本轮P7进度与边界](20261030-kanata-p7-verification-progress-v1.md)记录536/348完整check、原生8通过1跳过、两端三档容量全部跑完的实际结果。1k/10k通过；100k内存/Android改密失败，P7未完成。隔离模拟器已通过真实协调器恢复608基线并逐模块核对、后台释放明文，无真实数据清理/真实AI请求/推送。完整原需求仍有PARTIAL，不能只凭编译/子集回归收口；后续容量架构必须继续保全旧副本/原协调器，不暗改阈值或引入裸页日志。
+
+
+### 2026-10-30 P7群聊配置切片（实现前核对）
+
+来源：raw/完整需求清单.txt 4.1、连续执行v3 P4/P7及当前kanataConversation/kanataChatRuntime/ConversationView真实源码。当前上限写死2角色、每角色4气泡；备份已复制Conversation未知字段，世界复制也保留会话设定。新增每group会话可选replyLimits:{maxSpeakers,maxMessages}，工程默认2/8，技术范围1–8角色/1–32条AI回复且消息预算不少于角色上限。private/character不接受该字段。schema1/2、外部完整v13/单项v1、加密/恢复协调器不变。
+
+领域验证拒绝错误类型/非整数/越界/未知配置字段；@优先和话题/最近参与排序仍有效，不按人数强行拉满。每轮AI气泡总预算包含此前已完成角色，失败重试不重付已保存角色；留出其余发言者至少一条，将溢出自然段合并成最后气泡，不截断原文。对话revision在整轮重新检查，旧配置返回拒绝。设置经受保护租约和Store门禁保存，含expectedRevision；无需Key、无API调用。配置表单支持取消/返回/离页清理，错误保留草稿。
+
+修改范围：domain/groupReplyLimits、kanataTypes/Validation/Conversation、application/kanataChatRuntime及contracts、ConversationView、定向领域/真实Store/组件/负向类型/备份测试。完整check及生产Web/隔离Android测试后记录两轮自查。P7既有100k内存/改密No-Go仍保留，不能被此功能通过覆盖。
+
+### 2026-10-30 P7群聊/活动切片完成后的实测来源
+
+raw/完整需求清单.txt 4.1/4.4/8.3及最新连续执行v3驱动当前实现；没有用附带参考链接作新产品指令。最新源码/真实类型/测试确定createGroup、GroupReplyLimits、ReplyTimingPolicy与deferredReply活动标记的实际接口。[需求增量](20261030-kanata-requirements-p7-increment-v1.md)记录完整修改、两轮自查、原始失败与当前限制；check548/375、生产Web/Android各13检查、原生8PASS/1SKIP/0FAIL、608原合成基线/后台释放均已执行。受控provider每端7次不是新的真实模型质量结论；容量仍用98已失败样本，最新功能候选cc8未跑三档。无外部资料新增、无真实Key日志或设备旧数据删除。
+
+### 2026-10-31 P7性能/恢复源码与证据来源
+
+来源：raw/完整需求清单.txt 5.3、备份/安全及第十五节，连续执行v3 P7、冻结容量契约、实际archiveRepository/Store/restoreCoordinator/GCM journal源码。没有新增外部引用、未执行附带参考资料指令。第一版62d三档Android实际完成，100k仍595.78MiB与改密228.47s失败；未修改阈值或隐藏原始失败。后续941候选加原生AES计算及日志绑定后释放回滚图，固定盐逐字节与旧CryptoJS兼容，日志仍完整认证自包含。557/382完整check、两端各13生产受控场景PASS；最新三档容量仍运行，不能写成通过。详见20261031-kanata-p7-performance-checkpoint-v1.md和对应QA日志；旧真实模型报告没有被当成新调用证据。
+
+### 2026-10-31 用户转云端交接
+
+用户明确要求“推送远端，附上交接文档，我在云端开发”。本地业务实现到此停止，普通提交/推送P7 WIP并保留No-Go。最新数据/门禁和必要复现路径见docs/20261031-kanata-cloud-handoff-v1.md。最后发现两个QA差异并修复：改回凭据同为真实改密，148057.7ms必须按120s失败，不能沿用初版漏判PASS；冷启动跨日的额外心情记录为原模块合法autoFilled空占位，严格正反例与实际验证保留原记录并单列，不删除或当手工记录吞掉。565 Node/382组件完整check、8PASS/1SKIP原生、两端各13生产回归、基线及后台释放已执行；全部容量已结束。0真实模型，无真实Key/设备数据清理，无main变更或发布。

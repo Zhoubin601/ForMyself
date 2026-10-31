@@ -1,0 +1,13 @@
+{
+  "status": "FAIL",
+  "at": "2026-10-30T02:38:25.861Z",
+  "count": 1000,
+  "syntheticOnly": true,
+  "kind": "production-android-actual-coordinator",
+  "forcedGC": false,
+  "build": "f530916f00e123175000ee67fa574f77e41e8d939279aa024ed9b9625c5f2fb8",
+  "metrics": {},
+  "pageErrors": [],
+  "aiRequests": 0,
+  "error": "page.evaluate: Error: UNEXPECTED_NON_CAPACITY_MESSAGES\n    at eval (eval at evaluate (:311:30), <anonymous>:5:91)\n    at async <anonymous>:337:30"
+}

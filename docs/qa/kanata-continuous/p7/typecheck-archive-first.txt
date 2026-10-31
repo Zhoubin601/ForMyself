@@ -1,0 +1,9 @@
+
+> formyself-app@0.0.0 typecheck
+> vue-tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.contracts.json
+
+src/features/chat/domain/kanataValidation.js(129,87): error TS2304: Cannot find name 'KanataValidationError'.
+src/features/chat/kanataStore.js(348,9): error TS2322: Type '{ bytes: any; index: string; messages: { id: any; revision: any; createdAt: any; }[]; worldId: any; conversationId: any; version: number; key: any; }[]' is not assignable to type 'MessageArchiveDescriptor[]'.
+  Type '{ bytes: any; index: string; messages: { id: any; revision: any; createdAt: any; }[]; worldId: any; conversationId: any; version: number; key: any; }' is not assignable to type 'MessageArchiveDescriptor'.
+    Types of property 'version' are incompatible.
+      Type 'number' is not assignable to type '1'.

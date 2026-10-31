@@ -1,0 +1,37 @@
+{
+  "status": "PASS",
+  "at": "2026-10-30T03:59:49.557Z",
+  "build": {
+    "frozenAt": "2026-10-30T11:42:58.4537103+08:00",
+    "productionPreview": true,
+    "syntheticOnly": true,
+    "sourceCheck": "check-reused-descriptor.txt",
+    "resourceCount": 79
+  },
+  "controlledProvider": true,
+  "realModelRequests": 0,
+  "fixtureRequests": 2,
+  "checks": {
+    "atomicBatchAndShowAll": {
+      "status": "PASS",
+      "durableRows": 4,
+      "visibleRows": 2,
+      "batches": 1,
+      "visibleAfter": 4,
+      "fixtureRequests": 1
+    },
+    "reducedMotionImmediate": {
+      "status": "PASS",
+      "visibleRows": 8,
+      "fixtureRequests": 2
+    },
+    "existingHistoryImmediate": {
+      "status": "PASS",
+      "visibleRows": 8
+    },
+    "expiryClearsView": {
+      "status": "PASS"
+    }
+  },
+  "pageErrors": []
+}

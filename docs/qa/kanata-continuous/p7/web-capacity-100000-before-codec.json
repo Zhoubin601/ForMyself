@@ -1,0 +1,547 @@
+{
+  "status": "FAIL",
+  "at": "2026-10-29T11:53:08.656Z",
+  "count": 100000,
+  "syntheticOnly": true,
+  "kind": "production-chrome-actual-coordinator",
+  "forcedGC": false,
+  "build": {
+    "syntheticOnly": true,
+    "productionPreview": true,
+    "sourceCheck": "check-owned-snapshots.txt",
+    "resourceCount": 79,
+    "resources": [
+      {
+        "path": "assets/AppDateField-C1EGtNkw.js",
+        "sha256": "3596a9828ee79b694f614d66e96ab187c90bf48863d1be3ac235642c21a8d0a3"
+      },
+      {
+        "path": "assets/AppDateField-cD0yOLMZ.css",
+        "sha256": "670f18950b7685aec0bc9c90a681c0f9ce5d057e78961414212b0b156d789b39"
+      },
+      {
+        "path": "assets/AppTimeField-CNDcfYhb.css",
+        "sha256": "bbe4df55edd2c4c28daa1c792fff21cca2e0ecaf8fd2f938c11fe747f938efdc"
+      },
+      {
+        "path": "assets/AppTimeField-CoAOXDKJ.js",
+        "sha256": "7d857b4b2a7117e0afb6dda97d5ee6a21fb3e9126033c0f9760650d542a3efb4"
+      },
+      {
+        "path": "assets/chatFollowup-C8L4NSL4.js",
+        "sha256": "11483f7be7228eb4020e878aa6ebac84edfd694812ca997ad03717fa04563b23"
+      },
+      {
+        "path": "assets/chatStore-BGAe_K3Z.js",
+        "sha256": "8553f316a579c6ff0c30cad008194225fb9ec1afdf4cf6edb768ddf261a84d68"
+      },
+      {
+        "path": "assets/CommonNoteField-BmZ2pm7g.css",
+        "sha256": "87255b16f10442fdf1a7382fcf4761e07ab210e59c1fa0b2dd39b2a59be0c0e9"
+      },
+      {
+        "path": "assets/CommonNoteField-BnuJfwLU.js",
+        "sha256": "7f69731ebd46e9a2b4676c15a726315c1f782393ae8f5de2b5da4427b7154e82"
+      },
+      {
+        "path": "assets/crypto-js-CiVKIBfJ.js",
+        "sha256": "35153b777450d793fc7ef238d67ad5fd07662681a12910b357225716bf76ed2d"
+      },
+      {
+        "path": "assets/date-Dq3RQpqh.js",
+        "sha256": "386439805a27cde30b16fb0361ad0daff7485ac73a5a7a6d943cb97ecb720757"
+      },
+      {
+        "path": "assets/DebtListView-BWGozFPJ.css",
+        "sha256": "a4a252cff414af5e9cc3666849444e9b1ac8879150163d7d0bd38b455bfecbf6"
+      },
+      {
+        "path": "assets/DebtListView-HXeBNhu_.js",
+        "sha256": "a74cb1a9c0a6234efd7d06d3cbd55c5d4bc636fd1ed0e70710758abfe5f001e2"
+      },
+      {
+        "path": "assets/debtOrdering-CfbnVTrp.js",
+        "sha256": "239edb84b52682ad42775a1fcec636df675a1c17a1843936d519f0c65343ca8e"
+      },
+      {
+        "path": "assets/definitions-DlpntO5o.js",
+        "sha256": "386d6863bee205584abf6e3c5c7b71353d92150155a3d8093a8a919380bc85a5"
+      },
+      {
+        "path": "assets/definitions-eXqoZmy0.js",
+        "sha256": "bf47153c796d340be16e152c6d99911f92430b89fc4c7c57b5e50419ab5f4b1b"
+      },
+      {
+        "path": "assets/dist-BcvA-GRa.js",
+        "sha256": "f4d084abb55d5e2f8b9f0a0f604c11caab2b9d3e9eac9854addf254df5903b65"
+      },
+      {
+        "path": "assets/esm-CMl6BN3d.js",
+        "sha256": "2cf34e670319fbab1c95bea74a245cc932678e1fbd070e497a9ea5c5b99f5bbb"
+      },
+      {
+        "path": "assets/fullBackupRuntime-BpLr5NF1.js",
+        "sha256": "654c9a84f7602f119af5add4aa2a6adde420201319452bc7325f19d653698293"
+      },
+      {
+        "path": "assets/index-D0ovgkUo.js",
+        "sha256": "0d214e1749025df11fa1bf7e67527ce984bbb64d610bd8af693934934c7d68f8"
+      },
+      {
+        "path": "assets/index-oR2BMCma.css",
+        "sha256": "621e59f1e67f1da0e934f05cb3c1a188f8edaee3683d59909533400e67086650"
+      },
+      {
+        "path": "assets/kanataAutonomy-2FQP4f_2.js",
+        "sha256": "6cefb3b79556fc166542e43936ab4ff1e61cad18c5e0ea1dff927f6165f5b61c"
+      },
+      {
+        "path": "assets/kanataChatRuntime-MNrKuzA7.js",
+        "sha256": "d2f26c2dfd63f29a5aa318613fcd3acaa4a87e275e7a7ecc7aac2e776a303717"
+      },
+      {
+        "path": "assets/kanataContactRuntime-DQvAxuY0.js",
+        "sha256": "9171dc38c9077db8614cca42bdb9e6007bcfe489c97745a061bdb5009c19d8c0"
+      },
+      {
+        "path": "assets/kanataConversation-CCE6KYwu.js",
+        "sha256": "b8c05ddf83debda7f4b1bf03c46ec8b7f2676834e5d0eca51a6c8748489120f4"
+      },
+      {
+        "path": "assets/kanataDeferredRuntime-9Rddz9H3.js",
+        "sha256": "bed6c8b5bfba471f9341abb58c2edbc715393b24b80afe2621edc5c47fe9b7d8"
+      },
+      {
+        "path": "assets/kanataEvents-BhR1no3K.js",
+        "sha256": "83228b24e20bad1bc6356614ad8b41d38ace5d3f0ac557ef6c576eac1c21fed7"
+      },
+      {
+        "path": "assets/kanataKnowledge-C7qFD8R6.js",
+        "sha256": "666de0b4f3ed695b7e234628b845f1cf9c5a468581cef1cbb9f74c2d142b1ab8"
+      },
+      {
+        "path": "assets/kanataLifeCompanion-uxU6p7zQ.js",
+        "sha256": "534c740a23a419c6d67af1d5edb716258d14d0ceb02035d0c8f2c8f14211e5f6"
+      },
+      {
+        "path": "assets/kanataMemory-DYWpZbgm.js",
+        "sha256": "905a0b1f8ccc03a2a9eb880068a85eb602d856d265abf2d09f75fcd03c865710"
+      },
+      {
+        "path": "assets/kanataSocialRuntime-QEU-uVdp.js",
+        "sha256": "a6e3a38aa3298bb678f4f63b29d8baea9dfaf4c99b3e846eb770ce76ac2d3fbb"
+      },
+      {
+        "path": "assets/kanataStore-BrIeyXMs.js",
+        "sha256": "eb1a2af663aa0fb8158844eae7c8911223abc4f45ec9f225e5e8b4905ed1a96f"
+      },
+      {
+        "path": "assets/KanataView-CIzXpnT8.css",
+        "sha256": "c943ea3c69085ba3cfa611ce9955e129b3da07fffce53c0771f3a1b8d54654e5"
+      },
+      {
+        "path": "assets/KanataView-nvz74Htr.js",
+        "sha256": "8853dab71e52a763aa887eb51a083629b5bda94b1ca3ab1bac98c3fdc9f8ecad"
+      },
+      {
+        "path": "assets/kanataWorldRuntime-CC6xA17L.js",
+        "sha256": "2bcdb0457f48ae0ec6e15ed6f0df1662e78aa20683e4299a842197a35fb95103"
+      },
+      {
+        "path": "assets/keys-B0cw2xba.js",
+        "sha256": "fa70b7d62a650468b5e00f5afa14bcdaef326bdcdf3d504a108e111e728acf9c"
+      },
+      {
+        "path": "assets/masterPasswordWorker-C4Y6rooB.js",
+        "sha256": "458e5b0e91166f51e2acd0cf1b94ac76cc778b84cfb6857bff95267c135e173b"
+      },
+      {
+        "path": "assets/MonthlyReportView--uj--leI.css",
+        "sha256": "001e2005e5eeff5bd40f8ce50eff17e40f3aa7c36ad73c86c0187369e9ed96bd"
+      },
+      {
+        "path": "assets/MonthlyReportView-CcK_UFiB.js",
+        "sha256": "d8769a1b364b322d16426e05bcceb07eb379790146ecd4c92bc548fbf9b22e6a"
+      },
+      {
+        "path": "assets/moodRecords-WC9ywwLM.js",
+        "sha256": "aa6dc92cc4ad4e12ece7ae91775d08b8108138552df3a791b20ff10cf4bb3d87"
+      },
+      {
+        "path": "assets/moodStore-BtZlDExr.js",
+        "sha256": "d0981bf07b525aa32d76bb421fd85538d9630fc1ed4df0978d29dd55b0c9afc4"
+      },
+      {
+        "path": "assets/MoodView-GWzycNZM.js",
+        "sha256": "41dea9b9281f8caf7a6d6a66d2b3bd98466bd8141f7df55883e5b2afb7aef4ae"
+      },
+      {
+        "path": "assets/MoodView-xkk7VDR7.css",
+        "sha256": "447388386c4c9c9f479509332de3d7fc6207600bdd8da4060ae15dd729b68ffa"
+      },
+      {
+        "path": "assets/passwordVault-CA3w0GLZ.js",
+        "sha256": "ca9070fd6c31125e54599a31ffa4b9cd96952360b8ed859499e74ff6224e7748"
+      },
+      {
+        "path": "assets/passwordVaultRecords-Bc3b03Px.js",
+        "sha256": "202e706b2b5ede0e41f25ffbdf78bc6f913c16f85e12ce10c1803a2b6196abfb"
+      },
+      {
+        "path": "assets/PasswordVaultView-CF4_qVX4.js",
+        "sha256": "77698d0bf5a816016d983af04a82ee46ea2a2878f52a95d60599a28603146352"
+      },
+      {
+        "path": "assets/PasswordVaultView-Cg2O8DG5.css",
+        "sha256": "27008aff277bc78c2843d2eeb9189b1091379938bdc68f6da4ead77b6a94a22b"
+      },
+      {
+        "path": "assets/preferenceRepository-Cx_gUz5B.js",
+        "sha256": "6d9f30aa7619f1065ef3dbc748d1bb11569fca91548916a45fd49ddffa00b627"
+      },
+      {
+        "path": "assets/preferences-HIxXJFKs.js",
+        "sha256": "c0290e6b4bf9d869d45785e8cdc3db4464ce2501f42c4122a36fff2dcbaee8ab"
+      },
+      {
+        "path": "assets/restoreState-X9X1tbPu.js",
+        "sha256": "30338fa711c97d48aee96c35026440f9b012588c52583ac8a315db579b3808f9"
+      },
+      {
+        "path": "assets/savingsStore-DFJYpUnA.js",
+        "sha256": "b5518da81aef691bf114f31a11947be950d2fac8593f7d54054f439abdbf1207"
+      },
+      {
+        "path": "assets/scheduleCore-DatnuaGP.js",
+        "sha256": "b172c7d3ec53c52b66096071844639896edcefaa78c3a1a95339587b9b678645"
+      },
+      {
+        "path": "assets/scheduleStore-lWbqKly7.js",
+        "sha256": "52b68be440ac2bd25fe62583ca00021055d272d55562b3c9e57870c04a89d035"
+      },
+      {
+        "path": "assets/ScheduleView-DedGotRA.js",
+        "sha256": "7822603055c0f51d46ac56e67351936c55d91d39ebcaf49c3611af82054bebb1"
+      },
+      {
+        "path": "assets/ScheduleView-OT8ntXx9.css",
+        "sha256": "f8710da6dfbf8144bca3995516ab499ffe450d1289e2a45845bf1b0d309b95f1"
+      },
+      {
+        "path": "assets/settings-pItZVPaJ.js",
+        "sha256": "198eda5b990628be98f1ce7b9ad8db7a15346eb77f74792499fa60986e9fdc00"
+      },
+      {
+        "path": "assets/SettingsView-B-5iQo8h.css",
+        "sha256": "f3a656ae092bc667380957f304f0b6698e9e5d574a224ba83a835ba67da18ff1"
+      },
+      {
+        "path": "assets/SettingsView-DrvxbkRH.js",
+        "sha256": "53ec58a1ef992915d1230f0613277ee83ce546508cc02fc18747a74069891a19"
+      },
+      {
+        "path": "assets/sha256Text-CDEhJvMA.js",
+        "sha256": "a7b0d2e79512fadc2979f443ce052c62d6804615cd870cdc21ceb5426e4d65e0"
+      },
+      {
+        "path": "assets/storePersistence-CGDIWBdd.js",
+        "sha256": "29cc5741f381c7380b916558cd7693a35a7f979c9f883693ba99fa3ae0eca604"
+      },
+      {
+        "path": "assets/todoCore-VLOTllg9.js",
+        "sha256": "050890acd2b8695312eaa952934d8eade1ac0ab1cc8801e7391fb7783eb75f35"
+      },
+      {
+        "path": "assets/todoStore-0GKloYom.js",
+        "sha256": "ce87c55ac47b9b107bb9297f4908a7ee48feff0ac94af1136a37833ad51d643a"
+      },
+      {
+        "path": "assets/TodoView-C7H0a6Qh.js",
+        "sha256": "e47757cf20ec9dd689ee8d93a0eba29ec462b6cf6e96b13f6583a7896f9e89f6"
+      },
+      {
+        "path": "assets/TodoView-F118Eqbg.css",
+        "sha256": "266d2c925a20364bb2404693e8ea9853b2921369cd95d18f545e37f23ba6d6a7"
+      },
+      {
+        "path": "assets/uiFeedback-xStVYypN.js",
+        "sha256": "f5d34b5363909fe4a155ae47fb9d0e5bee00db6217daf7edb98e813d9f7bdf75"
+      },
+      {
+        "path": "assets/useSortableDrag-B81e_CNg.js",
+        "sha256": "4ae89ab215922e96c313eab2a95a009404399dc6d11dd564a6b0dd6bd4de9ddd"
+      },
+      {
+        "path": "assets/web-BDHGbk52.js",
+        "sha256": "289f83e5a73a4355a6b27d021ba666e210c1fea436247d90431a8e487732b841"
+      },
+      {
+        "path": "assets/web-CmfLYa0s.js",
+        "sha256": "3f207e0b7797bcf4b9f12936df6fb3aa42848d8aa25c6ac05ce36920fe8e036c"
+      },
+      {
+        "path": "assets/web-CTN4TO-D.js",
+        "sha256": "78e59e7e9126afc07a60c408b11f4bd89a511e54d6442c381355f02fe4c55bba"
+      },
+      {
+        "path": "assets/web-D8u9090R.js",
+        "sha256": "2fdc4ec286b464e273540d921561184ce37875904c77dcd634bffd47bb81d926"
+      },
+      {
+        "path": "assets/web-DhIHqm1x.js",
+        "sha256": "d4c3f282bf802d3e489ba9dc6d289d2747073726c2c0d2be9c29e75b69214712"
+      },
+      {
+        "path": "assets/web-JRntW8aU.js",
+        "sha256": "6f5cc3bcbe6f51fd868017ea6b51f3acd6c6f2aab3ee3653248e7763510c70a5"
+      },
+      {
+        "path": "assets/weightStore-DqfyZXK_.js",
+        "sha256": "fdf4edc762d5f8d746e5aff34b833ce21c12786620705c3c7f0f0c21a509bb3e"
+      },
+      {
+        "path": "assets/WeightView-26geoACl.js",
+        "sha256": "b4e1d9dc9f866b46145b8063a4a120fda3c9d709b330ce100bfcb5f033105668"
+      },
+      {
+        "path": "assets/WeightView-QI1ldkN7.css",
+        "sha256": "3fd4b62a758fb8a6a7185cbeaaf22af6739b4d4f4913a1d451076d0620765737"
+      },
+      {
+        "path": "favicon.svg",
+        "sha256": "61bc9a161de58248288e6905425d7180f0624c2865007b97d763fdac12043a66"
+      },
+      {
+        "path": "icon.png",
+        "sha256": "7653122b0501c560511409730a4d7637905048afd0beec3523c98b54f0347989"
+      },
+      {
+        "path": "icons.svg",
+        "sha256": "7ca2d67c9c3aebf50cdc8709ee8aacf8cdb8cc7ea6325ea94939caef5da1c53d"
+      },
+      {
+        "path": "index.html",
+        "sha256": "a1b57eeb3433806581167c6834066f20b829cd1bea7b735d8a8ca7a3f2948739"
+      },
+      {
+        "path": "manifest.webmanifest",
+        "sha256": "484b37ccd32203a7c1b3a81bfbf604e3e6fe4331530f22e6a948c158818bf16e"
+      }
+    ],
+    "frozenAt": "2026-10-29T19:51:46.1870950+08:00"
+  },
+  "metrics": {
+    "portableImportActualCoordinator": {
+      "ms": 45005.4,
+      "value": {
+        "active": 220,
+        "archived": 99780,
+        "saved": true
+      },
+      "memory": {
+        "windowsRendererProcesses": [
+          {
+            "Id": 32936,
+            "PeakWorkingSet64": 92110848,
+            "WorkingSet64": 84258816
+          },
+          {
+            "Id": 37060,
+            "PeakWorkingSet64": 33001472,
+            "WorkingSet64": 32628736
+          },
+          {
+            "Id": 40428,
+            "PeakWorkingSet64": 2070728704,
+            "WorkingSet64": 1473433600
+          }
+        ],
+        "peakResidentMiB": 1974.80078125,
+        "heapPoint": {
+          "usedSize": 317547616,
+          "totalSize": 770564096,
+          "embedderHeapUsedSize": 5243368,
+          "backingStorageSize": 667710
+        }
+      }
+    },
+    "coldPageReloadAndProtectedLoad": {
+      "ms": 2988.1,
+      "value": {
+        "loaded": true
+      },
+      "memory": {
+        "windowsRendererProcesses": [
+          {
+            "Id": 32936,
+            "PeakWorkingSet64": 92110848,
+            "WorkingSet64": 84426752
+          },
+          {
+            "Id": 37060,
+            "PeakWorkingSet64": 33001472,
+            "WorkingSet64": 32628736
+          },
+          {
+            "Id": 40428,
+            "PeakWorkingSet64": 2070728704,
+            "WorkingSet64": 562569216
+          }
+        ],
+        "peakResidentMiB": 1974.80078125,
+        "heapPoint": {
+          "usedSize": 176233700,
+          "totalSize": 247791616,
+          "embedderHeapUsedSize": 6974392,
+          "backingStorageSize": 874353
+        }
+      }
+    },
+    "diskPage50": {
+      "ms": 20.2,
+      "value": {
+        "rows": 50,
+        "pages": 2,
+        "bytes": 88940
+      },
+      "memory": {
+        "windowsRendererProcesses": [
+          {
+            "Id": 32936,
+            "PeakWorkingSet64": 92110848,
+            "WorkingSet64": 84426752
+          },
+          {
+            "Id": 37060,
+            "PeakWorkingSet64": 33001472,
+            "WorkingSet64": 32628736
+          },
+          {
+            "Id": 40428,
+            "PeakWorkingSet64": 2070728704,
+            "WorkingSet64": 564350976
+          }
+        ],
+        "peakResidentMiB": 1974.80078125,
+        "heapPoint": {
+          "usedSize": 176825520,
+          "totalSize": 247791616,
+          "embedderHeapUsedSize": 6974392,
+          "backingStorageSize": 892425
+        }
+      }
+    },
+    "indexedExactSearch": {
+      "ms": 43.5,
+      "value": {
+        "matches": 1,
+        "pages": 3,
+        "bytes": 166276
+      },
+      "memory": {
+        "windowsRendererProcesses": [
+          {
+            "Id": 32936,
+            "PeakWorkingSet64": 92110848,
+            "WorkingSet64": 84426752
+          },
+          {
+            "Id": 37060,
+            "PeakWorkingSet64": 33001472,
+            "WorkingSet64": 32628736
+          },
+          {
+            "Id": 40428,
+            "PeakWorkingSet64": 2070728704,
+            "WorkingSet64": 579481600
+          }
+        ],
+        "peakResidentMiB": 1974.80078125,
+        "heapPoint": {
+          "usedSize": 184193920,
+          "totalSize": 262897664,
+          "embedderHeapUsedSize": 6974392,
+          "backingStorageSize": 891913
+        }
+      }
+    },
+    "saveHeader": {
+      "ms": 2921.8,
+      "value": {
+        "saved": true
+      },
+      "memory": {
+        "windowsRendererProcesses": [
+          {
+            "Id": 32936,
+            "PeakWorkingSet64": 92110848,
+            "WorkingSet64": 84459520
+          },
+          {
+            "Id": 37060,
+            "PeakWorkingSet64": 33001472,
+            "WorkingSet64": 32686080
+          },
+          {
+            "Id": 40428,
+            "PeakWorkingSet64": 2070728704,
+            "WorkingSet64": 552058880
+          }
+        ],
+        "peakResidentMiB": 1974.80078125,
+        "heapPoint": {
+          "usedSize": 133626268,
+          "totalSize": 236998656,
+          "embedderHeapUsedSize": 2663920,
+          "backingStorageSize": 667705
+        }
+      }
+    },
+    "fullExportActualCoordinator": {
+      "ms": 12827.8,
+      "value": {
+        "version": 13,
+        "messages": 100000,
+        "selfContained": true
+      },
+      "memory": {
+        "windowsRendererProcesses": [
+          {
+            "Id": 32936,
+            "PeakWorkingSet64": 92110848,
+            "WorkingSet64": 84471808
+          },
+          {
+            "Id": 37060,
+            "PeakWorkingSet64": 33001472,
+            "WorkingSet64": 32698368
+          },
+          {
+            "Id": 40428,
+            "PeakWorkingSet64": 2070728704,
+            "WorkingSet64": 464695296
+          }
+        ],
+        "peakResidentMiB": 1974.80078125,
+        "heapPoint": {
+          "usedSize": 183192392,
+          "totalSize": 256446464,
+          "embedderHeapUsedSize": 2721104,
+          "backingStorageSize": 669239
+        }
+      }
+    },
+    "fullRestoreActualCoordinator": {
+      "status": "FAIL",
+      "ms": 180001,
+      "error": "CAPACITY_OPERATION_TIMEOUT:fullRestoreActualCoordinator"
+    }
+  },
+  "pageErrors": [],
+  "aiRequests": 0,
+  "activeOperation": {
+    "name": "fullRestoreActualCoordinator",
+    "at": "2026-10-29T11:54:15.995Z"
+  },
+  "error": "CAPACITY_OPERATION_TIMEOUT:fullRestoreActualCoordinator"
+}

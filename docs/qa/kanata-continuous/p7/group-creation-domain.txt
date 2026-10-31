@@ -1,0 +1,16 @@
+✔ P7 old conversations retain conservative defaults without mutating their schema (15.8991ms)
+✔ P7 invalid limits and non-group scopes are rejected without running getters (2.462ms)
+✔ P7 configured speaker cap respects ordered mentions, permits silence and filters by topic (3.3368ms)
+✔ P7 lower bubble allowance merges complete paragraphs and preserves RP prose (0.2582ms)
+✔ P7 imported multiword names and aliases use longest literal mentions; ambiguity remains an error (1.6045ms)
+✔ P7 limits survive portable backup and world copy with independent settings (6.15ms)
+✔ P7 custom group creation starts empty, belongs to one world and adds no memories, grants or events (5.2913ms)
+✔ P7 custom group cannot accept an identity/foreign/missing/repeated member, archived world or conflicting ID (10.3814ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 8
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 190.8121

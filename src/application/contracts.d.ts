@@ -1,6 +1,6 @@
 import type { Component } from 'vue'
 export type { KanataData, World, CharacterCard, CharacterCardVersion, CharacterInstance,
-  WorldPreset, WorldUserIdentity, Conversation, Message, LorebookEntry, Memory,
+  WorldPreset, WorldUserIdentity, Conversation, GroupReplyLimits, ReplyTimingPolicy, Message, LorebookEntry, Memory,
   Relationship, WorldEvent, WorldEffect, BackgroundTask, LifeGrant, SeedOptions } from '../features/chat/domain/kanataTypes'
 
 export interface ModuleDescriptor {
@@ -24,6 +24,10 @@ export interface BackupParticipant {
   optional?: boolean
   ready(): boolean
   initialize?(): unknown
+  /** Materialize external encrypted pages before synchronous capture/export. Failure aborts export. */
+  prepareExport?(): Promise<unknown>
+  /** export() already returns a detached inert DTO; registry may omit a second JSON serialize/parse. */
+  detachedExport?: boolean
   export(): BackupPart
   restore(part: BackupPart): unknown
   flush(): unknown
@@ -56,14 +60,18 @@ export interface NativeListenerPlugin {
 }
 export interface RestoreState { blocked: boolean; busy: boolean; message: string; syncError: string }
 export interface RestoreRecord<Snapshot> { version: 1; previous: Snapshot; target: Snapshot }
+export type {RestoreCipherEnvelope,CompressedRestorePayload} from '../platform/storage/restorePayloadTypes'
 export interface RestoreJournal<Snapshot> {
   inspect(): Promise<{ encrypted: string; committed: boolean; digest: string } | null>
-  prepare(record: RestoreRecord<Snapshot>, password: string): Promise<void>
+  prepare(record: RestoreRecord<Snapshot>, password: string): Promise<void | {digest:string}>
   commit(): Promise<void>
   clear(): Promise<void>
 }
 export interface RestoreCoordinatorOptions<Snapshot> {
   journal: RestoreJournal<Snapshot>
+  /** Release the captured rollback graph only after its complete encrypted journal is durable;
+   * compensation reopens the same uncommitted digest and validates its previous image. */
+  journalRollback?: boolean
   state: RestoreState
   prepare(options?: { recovering?: boolean }): Promise<unknown>
   capture(): Snapshot
@@ -98,6 +106,9 @@ export type KanataManagement = ReturnType<typeof import('./kanataManagement.js')
 export type KanataFeedbackOwner = Parameters<typeof import('../services/uiFeedback.js').cancelOwnedFeedbackDialog>[0]
 export type { CompletionOptions, CompletionAttempt, CompletionUsage } from '../platform/ai/completionTypes'
 export type { KanataUsageEvent } from '../features/chat/domain/kanataTypes'
+export type { MessageArchiveDescriptor, MessageHistoryRequest } from '../features/chat/domain/kanataTypes'
+/** reencrypt verifies old plaintext and exact new read-back before its caller commits headers. */
+export type KanataArchiveRepository = ReturnType<typeof import('../features/chat/storage/messageArchiveRepository.js').createMessageArchiveRepository>
 export type KanataChatRuntime = ReturnType<typeof import('./kanataChatRuntime.js').createKanataChatRuntime>
 export type {LifeSource,MemoryPolicy,RoleBinding,KanataRoleBindings,EffectBaseline,EventAudit} from '../features/chat/domain/kanataTypes'
 export type KanataExperienceRuntime = ReturnType<typeof import('./kanataExperienceRuntime.js').createKanataExperienceRuntime>

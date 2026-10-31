@@ -1,0 +1,13 @@
+✔ P7 old conversations retain conservative defaults without mutating their schema (16.1145ms)
+✔ P7 invalid limits and non-group scopes are rejected without running getters (2.5978ms)
+✔ P7 configured speaker cap respects ordered mentions, permits silence and filters by topic (4.0144ms)
+✔ P7 lower bubble allowance merges complete paragraphs and preserves RP prose (0.2776ms)
+✔ P7 limits survive portable backup and world copy with independent settings (5.8635ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 169.8278

@@ -2,15 +2,11 @@
 import { validateKanataExperience } from '../experience/experienceValidation.js'
 import { validateKanataAutonomy } from '../autonomy/autonomyValidation.js'
 /** @typedef {import('./kanataTypes').KanataData} KanataData */
-/** Stable codes, with structural paths only; never echo private input in errors. */
-export class KanataValidationError extends Error {
-  /** @param {string} code @param {string} path */
-  constructor(code, path) { super(code + ':' + path); this.name = 'KanataValidationError'; this.code = code; this.path = path }
-}
-/** @param {unknown} condition @param {string} code @param {string} path */
-export function requireKanata(condition, code, path) {
-  if (!condition) throw new KanataValidationError(code, path)
-}
+import { requireKanata, cloneKanataJson, assertKanataJson, KanataValidationError } from './kanataJson.js'
+export { KanataValidationError, requireKanata, cloneKanataJson } from './kanataJson.js'
+import { validateMessageArchives } from '../storage/messageArchiveCore.js'
+import {validateGroupReplyLimits} from './groupReplyLimits.js'
+import {validateReplyTimingPolicy} from './replyTimingPolicy.js'
 /** @param {unknown} value @param {string} path */
 const object = (value, path) => requireKanata(value !== null && typeof value === 'object' && !Array.isArray(value), 'INVALID_OBJECT', path)
 /** @param {unknown} value @param {string} path @param {boolean} [empty] */
@@ -33,35 +29,6 @@ const choice = (value, values, path) => requireKanata(typeof value === 'string' 
 const rows = (value, path) => { requireKanata(Array.isArray(value), 'INVALID_COLLECTION', path); return /** @type {unknown[]} */ (value) }
 /** @param {unknown} value @param {string} path */
 const strings = (value, path) => { rows(value, path).forEach(v => text(v, path)); requireKanata(new Set(/** @type {string[]} */(value)).size === /** @type {string[]} */(value).length, 'DUPLICATE_REFERENCE', path) }
-/** Accept inert JSON only; reject accessors, cycles, non-finite numbers and hidden runtime objects before cloning.
- * @template T @param {T} value @returns {T}
- */
-export function cloneKanataJson(value) {
-  /** @type {Set<object>} */
-  const stack = new Set()
-  /** @param {unknown} item @param {number} depth */
-  const visit = (item, depth) => {
-    requireKanata(depth <= 64, 'JSON_TOO_DEEP', 'data')
-    if (item === null || typeof item === 'string' || typeof item === 'boolean') return
-    if (typeof item === 'number') { requireKanata(Number.isFinite(item), 'INVALID_JSON_NUMBER', 'data'); return }
-    requireKanata(typeof item === 'object' && item !== null, 'INVALID_JSON_VALUE', 'data')
-    const obj = /** @type {object} */(item)
-    requireKanata(!stack.has(obj), 'CYCLIC_JSON', 'data')
-    requireKanata(Array.isArray(obj) || Object.getPrototypeOf(obj) === Object.prototype || Object.getPrototypeOf(obj) === null, 'INVALID_JSON_OBJECT', 'data')
-    requireKanata(Object.getOwnPropertySymbols(obj).length === 0, 'INVALID_JSON_VALUE', 'data')
-    stack.add(obj)
-    const descriptors = Object.getOwnPropertyDescriptors(obj)
-    for (const [key, d] of Object.entries(descriptors)) {
-      if (Array.isArray(obj) && key === 'length') continue
-      requireKanata(Object.hasOwn(d, 'value') && d.enumerable, 'INVALID_JSON_PROPERTY', 'data')
-      visit(d.value, depth + 1)
-    }
-    if (Array.isArray(obj)) requireKanata(Object.keys(obj).length === obj.length && Object.keys(obj).every((key, index) => key === String(index)), 'INVALID_JSON_ARRAY', 'data')
-    stack.delete(obj)
-  }
-  visit(value, 0)
-  return JSON.parse(JSON.stringify(value))
-}
 /** @param {unknown} value @param {string} [path] */
 export function validateCharacterDefinition(value, path = 'definition') {
   object(value, path)
@@ -82,10 +49,20 @@ export function validateCharacterDefinition(value, path = 'definition') {
  */
 export function validateKanataData(input) {
   const copied = cloneKanataJson(input)
+  return validateKanataGraph(copied)
+}
+/** Validate a privately owned detached graph, without making another copy. Does not transfer ownership.
+ * @param {unknown} input @returns {KanataData} */
+export function assertKanataData(input) {
+  assertKanataJson(input)
+  return validateKanataGraph(input)
+}
+/** @param {unknown} copied @returns {KanataData} */
+function validateKanataGraph(copied) {
   object(copied, 'data')
   const data = /** @type {KanataData} */(copied)
   requireKanata(data.type === 'kanata-data', 'INVALID_KANATA_TYPE', 'type')
-  requireKanata(data.version === 1, 'UNSUPPORTED_KANATA_VERSION', 'version')
+  requireKanata(data.version === 1 || data.version === 2, 'UNSUPPORTED_KANATA_VERSION', 'version')
   validateId(data.userId, 'userId')
   const names = /** @type {const} */(['worlds', 'cards', 'cardVersions', 'identities', 'instances', 'conversations', 'messages', 'lorebookEntries', 'memories', 'relationships', 'events', 'effects', 'tasks', 'lifeGrants', 'presetApplications'])
   /** @type {Map<string, {id: string, worldId?: string}>} */
@@ -98,6 +75,7 @@ export function validateKanataData(input) {
       entities.set(row.id, row)
     }
   }
+  validateMessageArchives(data)
   const worlds = new Map(data.worlds.map(w => [w.id, w]))
   const cards = new Map(data.cards.map(c => [c.id, c]))
   const versions = new Map(data.cardVersions.map(c => [c.id, c]))
@@ -208,6 +186,14 @@ export function validateKanataData(input) {
     bool(c.autonomyEnabled, 'instance.autonomy'); bool(c.proactiveEnabled, 'instance.proactive')
   })
   data.conversations.forEach(c => {
+    if(c.replyTiming!==undefined){
+      requireKanata(c.type!=='character','REPLY_TIMING_SCOPE','conversation.replyTiming')
+      validateReplyTimingPolicy(c.replyTiming)
+    }
+    if(c.replyLimits!==undefined){
+      requireKanata(c.type==='group','GROUP_REPLY_LIMITS_SCOPE','conversation.replyLimits')
+      validateGroupReplyLimits(c.replyLimits)
+    }
     text(c.title, 'conversation.title'); strings(c.participantIds, 'conversation.participants')
     choice(c.type, ['private', 'group', 'character'], 'conversation.type'); choice(c.mode, ['inherit', 'daily', 'roleplay'], 'conversation.mode')
     integer(c.revision, 'conversation.revision', 1); integer(c.lastReadAt, 'conversation.lastReadAt')

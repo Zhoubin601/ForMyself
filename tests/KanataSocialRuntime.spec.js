@@ -3,6 +3,7 @@ import {createPinia,setActivePinia} from 'pinia'
 import {experienceFixture} from './helpers/kanataExperienceFixture.js'
 import {createKanataWorldRuntime} from '../src/application/kanataWorldRuntime.js'
 import {createKanataSocialRuntime} from '../src/application/kanataSocialRuntime.js'
+import {createKanataGroup} from '../src/features/chat/domain/kanataManagementCore.js'
 describe('P6 private NPC social generation uses production persistence and knowledge gates',()=>{
   let f,runtime,worldRuntime
   const now=12*3600000
@@ -34,6 +35,38 @@ describe('P6 private NPC social generation uses production persistence and knowl
     await f.store.update(d=>{d.autonomyPolicies[0].dailyDialogueLimit=0})
     expect((await runtime.run(f.binding.worldId)).status).toBe('not-needed')
     expect(f.completion).not.toHaveBeenCalled();expect(f.store.snapshot.conversations.filter(c=>c.type==='character')).toHaveLength(0)
+  })
+  it('P7 one-speaker group limits stop autonomous group dialogue without falling back to a private scene',async()=>{
+    await f.store.update(d=>{d.autonomyPolicies[0].socialChannel='group';d.conversations.find(c=>c.type==='group').replyLimits={maxSpeakers:1,maxMessages:1}})
+    expect((await runtime.run(f.binding.worldId)).status).toBe('not-needed')
+    expect(f.completion).not.toHaveBeenCalled();expect(f.store.snapshot.tasks.some(t=>t.social)).toBe(false)
+    expect(f.store.snapshot.conversations.some(c=>c.type==='character')).toBe(false)
+    await f.store.update(d=>{const c=d.conversations.find(c=>c.type==='group');c.replyLimits={maxSpeakers:2,maxMessages:2};c.revision++})
+    expect((await runtime.run(f.binding.worldId)).status).toBe('succeeded')
+    const group=f.store.snapshot.conversations.find(c=>c.type==='group')
+    expect(f.store.snapshot.messages.filter(m=>m.conversationId===group.id)).toHaveLength(2)
+    expect(f.completion).toHaveBeenCalledTimes(2)
+  })
+  it('P7 changing group limits while autonomous text is in flight discards it before the next call',async()=>{
+    await f.store.update(d=>{d.autonomyPolicies[0].socialChannel='group'})
+    const normal=f.completion.getMockImplementation()
+    f.completion.mockImplementationOnce(async options=>{
+      const response=await normal(options)
+      await f.store.update(d=>{d.conversations.find(c=>c.type==='group').replyLimits={maxSpeakers:1,maxMessages:1}})
+      return response
+    })
+    await expect(runtime.run(f.binding.worldId)).rejects.toThrow('SOCIAL_SCENE_CHANGED')
+    expect(f.completion).toHaveBeenCalledTimes(1);expect(f.store.snapshot.messages).toHaveLength(0)
+  })
+  it('P7 a restricted group does not block another eligible group or receive its private scene',async()=>{
+    await f.store.update(d=>{
+      d.autonomyPolicies[0].socialChannel='group';d.conversations.find(c=>c.type==='group').replyLimits={maxSpeakers:1,maxMessages:1}
+      Object.assign(d,createKanataGroup(d,f.binding.worldId,{title:'合成小组',instanceIds:d.instances.slice(0,2).map(i=>i.id)},{key:'second-social-group',now,timeZone:'Asia/Shanghai',idFactory:()=> 'second-social-group'}))
+    })
+    expect((await runtime.run(f.binding.worldId)).status).toBe('succeeded')
+    expect(f.store.snapshot.messages).toHaveLength(2)
+    expect(f.store.snapshot.messages.every(m=>m.conversationId==='second-social-group')).toBe(true)
+    expect(f.completion).toHaveBeenCalledTimes(2)
   })
   it('separate locations and resting actors cannot manufacture a social scene',async()=>{
     await f.store.update(d=>{d.virtualSchedules[1].location='另一个合成地点'})

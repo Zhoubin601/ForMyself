@@ -1,6 +1,7 @@
 // @ts-check
 import { buildFullBackupFromParts, fullBackupParts, normalizeFullBackupSnapshot, FULL_BACKUP_TYPE } from '../../../services/fullBackup.js'
-import { cloneKanataJson, validateKanataData } from '../domain/kanataValidation.js'
+import { cloneKanataJson, validateKanataData, assertKanataData } from '../domain/kanataValidation.js'
+import { assertKanataJson } from '../domain/kanataJson.js'
 
 /** @typedef {import('../domain/kanataTypes').KanataData} KanataData */
 /** @typedef {import('../../../application/contracts').BackupPart} BackupPart */
@@ -29,20 +30,37 @@ const date = value => {
   requireValue(typeof value === 'string' && value.length > 0 && Number.isFinite(Date.parse(value)), 'INVALID_KANATA_BACKUP_DATE')
   return /** @type {string} */(value)
 }
+/** @param {unknown} input @returns {KanataData} */
+const portableKanataData = input => {
+  const data = validateKanataData(input)
+  requireValue(!(data.messageArchives?.length), 'KANATA_ARCHIVE_BACKUP_NOT_HYDRATED')
+  return data
+}
+/** Only for descendants of a private clone created inside this adapter.
+ * @param {unknown} input @returns {KanataData} */
+const ownedPortableData = input => {
+  const data=assertKanataData(input)
+  requireValue(!(data.messageArchives?.length), 'KANATA_ARCHIVE_BACKUP_NOT_HYDRATED')
+  return data
+}
 /** Export/import policy is intentionally separate from internal rollback snapshots.
  * Pending/running/failed sending tasks are retained for audit as cancelled, never silently resent.
  * Other interrupted tasks become pending with their lease cleared; their owning runtime must recheck permissions.
  * @param {unknown} input @returns {KanataData}
  */
 export function prepareKanataBackupData(input) {
-  const data = validateKanataData(input)
+  const data = portableKanataData(input)
+  return pauseOwnedSending(data)
+}
+/** @param {KanataData} data @returns {KanataData} */
+function pauseOwnedSending(data) {
   data.tasks = data.tasks.map(task => ({
     ...task,
     leaseUntil: 0,
     state: ['reply', 'proactive', 'followup'].includes(task.kind) && ['pending', 'running', 'failed'].includes(task.state)
       ? 'cancelled' : task.state === 'running' ? 'pending' : task.state
   }))
-  return validateKanataData(data)
+  return assertKanataData(data)
 }
 
 /** @param {unknown} input @param {string} [createdAt] @returns {KanataChatBackup} */
@@ -56,7 +74,7 @@ export function readKanataChatBackupSnapshot(input) {
   requireValue(value.type === KANATA_CHAT_BACKUP_TYPE, 'INVALID_KANATA_CHAT_BACKUP_TYPE')
   requireValue(value.version === KANATA_CHAT_BACKUP_VERSION, 'UNSUPPORTED_KANATA_CHAT_BACKUP_VERSION')
   if (value.taskPolicy !== undefined) requireValue(value.taskPolicy === TASK_POLICY, 'UNSUPPORTED_KANATA_TASK_POLICY')
-  return buildKanataChatBackupSnapshot(value.data, date(value.createdAt))
+  return {type:KANATA_CHAT_BACKUP_TYPE,version:1,createdAt:date(value.createdAt),taskPolicy:TASK_POLICY,data:pauseOwnedSending(ownedPortableData(value.data))}
 }
 
 /** Remove legacy chat before calling the legacy normalizer. It never sees Kanata data or legacy content.
@@ -76,6 +94,12 @@ function legacyShell(input) {
 /** @param {Record<string, BackupPart>} input @param {string} [createdAt] */
 function shellFromParts(input, createdAt) {
   const parts = record(cloneKanataJson(input), 'INVALID_BACKUP_PARTS')
+  return shellFromOwnedParts(parts,createdAt)
+}
+/** Only freshly detached parts from the actual registry's export contract.
+ * @param {Record<string, BackupPart>} parts @param {string} [createdAt] */
+function shellFromOwnedParts(parts,createdAt) {
+  assertKanataJson(parts)
   const known = ['savings', 'weight', 'mood', 'passwords', 'schedules', 'todos', 'chat', 'settings']
   requireValue(Object.keys(parts).every(key => known.includes(key)), 'UNSUPPORTED_BACKUP_FORMAT_PART')
   for (const key of known) {
@@ -84,7 +108,7 @@ function shellFromParts(input, createdAt) {
     record(parts[key], 'INVALID_BACKUP_PART:' + key)
     requireValue(Object.hasOwn(parts[key], 'data'), 'MISSING_BACKUP_DATA:' + key)
   }
-  const kanata = validateKanataData(parts.chat.data)
+  const kanata = ownedPortableData(parts.chat.data)
   const backup = buildFullBackupFromParts({ ...parts, chat: { data: {} } })
   const shell = legacyShell({ ...backup, createdAt: date(createdAt ?? backup.createdAt) })
   return { shell, kanata }
@@ -95,7 +119,7 @@ function shellFromParts(input, createdAt) {
  */
 export function buildKanataFullBackupSnapshot(parts, createdAt) {
   const { shell, kanata } = shellFromParts(parts, createdAt)
-  return { ...shell, version: 13, taskPolicy: TASK_POLICY, data: { ...shell.data, chat: prepareKanataBackupData(kanata) } }
+  return { ...shell, version: 13, taskPolicy: TASK_POLICY, data: { ...shell.data, chat: pauseOwnedSending(kanata) } }
 }
 
 /** Internal capture preserves all new entities, including task state/leases, for exact compensation.
@@ -104,6 +128,26 @@ export function buildKanataFullBackupSnapshot(parts, createdAt) {
 export function captureKanataRestoreSnapshot(parts, createdAt) {
   const { shell, kanata } = shellFromParts(parts, createdAt)
   return { type: RESTORE_TYPE, version: 1, mode: 'replace', backup: shell, kanata }
+}
+
+/** Internal composition capability: its producer must return fresh detached registry exports.
+ * No wire/import input or caller-provided trust flag is accepted by the returned methods.
+ * Public builders above still detach arbitrary inputs. Both paths perform all graph validation.
+ * @param {() => Record<string, BackupPart>} exportParts
+ */
+export function createKanataBackupImageAdapter(exportParts) {
+  return {
+    /** @returns {KanataFullBackup} */
+    exportFull() {
+      const {shell,kanata}=shellFromOwnedParts(exportParts())
+      return {...shell,version:13,taskPolicy:TASK_POLICY,data:{...shell.data,chat:pauseOwnedSending(kanata)}}
+    },
+    /** @returns {KanataRestoreSnapshot} */
+    capture() {
+      const {shell,kanata}=shellFromOwnedParts(exportParts())
+      return {type:RESTORE_TYPE,version:1,mode:'replace',backup:shell,kanata}
+    }
+  }
 }
 
 /** Parse imported wire data into the actual coordinator's canonical operation.
@@ -116,7 +160,7 @@ export function prepareKanataFullRestore(input, { legacyChat } = {}) {
   if (value.version === KANATA_FULL_BACKUP_VERSION) {
     if (value.taskPolicy !== undefined) requireValue(value.taskPolicy === TASK_POLICY, 'UNSUPPORTED_KANATA_TASK_POLICY')
     const data = record(value.data, 'INVALID_FULL_BACKUP_DATA')
-    const kanata = prepareKanataBackupData(data.chat)
+    const kanata = pauseOwnedSending(ownedPortableData(data.chat))
     const shell = legacyShell({ ...value, version: 12, data: { ...data, chat: {} } })
     return { type: RESTORE_TYPE, version: 1, mode: 'replace', backup: shell, kanata }
   }
@@ -141,7 +185,7 @@ export function validateKanataRestoreSnapshot(input) {
   return {
     type: RESTORE_TYPE, version: 1, mode: value.mode,
     backup: legacyShell(backup),
-    kanata: value.mode === 'replace' ? validateKanataData(value.kanata) : null
+    kanata: value.mode === 'replace' ? ownedPortableData(value.kanata) : null
   }
 }
 

@@ -1,0 +1,12 @@
+✔ P7 incremental UTF8 SHA256 preserves existing recovery fingerprints including surrogate chunk boundaries (13.8388ms)
+✔ P7 chunked AES emits exactly the existing CryptoJS passphrase wire bytes for the same synthetic salt (36.3937ms)
+✔ P7 chunked AES uses fresh random salt and rejects wrong password, malformed/truncated ciphertext and corrupt padding (26.0258ms)
+✔ P7 UTF8 decoding retains multibyte characters across AES blocks and Base64 chunk boundaries (68.8145ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 255.3293

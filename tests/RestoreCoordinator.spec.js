@@ -35,6 +35,60 @@ const runtime = async (options = {}) => {
     apply: async value => { await store.restoreWeightRecords(value.records); await store.flush() }, ...options })
   return { store, ...coordinator }
 }
+it('P7 journal-backed rollback reopens the exact authenticated previous image instead of retaining capture identity',async()=>{
+  const previous={records:[{id:'synthetic-previous'}]},target={records:[{id:'synthetic-target'}]},calls=[]
+  const inspect=vi.spyOn(journal,'inspect')
+  let captured,restored
+  const coordinator=createRestoreCoordinator({journal,state:restoreState,journalRollback:true,prepare:async()=>{},validate,
+    capture:()=>{captured=validate(previous);return captured},apply:async value=>{calls.push(value);if(value.records[0].id==='synthetic-target')throw Error('synthetic-target-failed');restored=value}})
+  await expect(coordinator.restore(target,password)).rejects.toThrow('synthetic-target-failed')
+  expect(restored).toEqual(previous);expect(restored).not.toBe(captured);expect(calls).toHaveLength(2)
+  // prepare() uses its lexical inspect implementation; this spy observes the two
+  // coordinator reads: pre-apply binding and compensation, never a mock-only third call.
+  expect(inspect).toHaveBeenCalledTimes(2);expect(restoreState.blocked).toBe(false);expect(files.size).toBe(0)
+})
+it('P7 corrupt journal at compensation keeps the barrier and record; repairing storage permits the actual recovery path',async()=>{
+  let validCipher='',current={records:[{id:'synthetic-previous'}]}
+  const coordinator=createRestoreCoordinator({journal,state:restoreState,journalRollback:true,prepare:async()=>{},validate,capture:()=>current,
+    apply:async value=>{if(value.records[0].id==='synthetic-target'){validCipher=files.get(RESTORE_PATH);files.set(RESTORE_PATH,'corrupt-synthetic-record');current=value;throw Error('synthetic-target-failed')}current=value}})
+  await expect(coordinator.restore({records:[{id:'synthetic-target'}]},password)).rejects.toHaveProperty('rollbackFailed',true)
+  expect(restoreState.blocked).toBe(true);expect(files.get(RESTORE_PATH)).toBe('corrupt-synthetic-record')
+  expect(current.records[0].id).toBe('synthetic-target')
+  files.set(RESTORE_PATH,validCipher);await coordinator.recover(password)
+  expect(current.records[0].id).toBe('synthetic-previous');expect(restoreState.blocked).toBe(false);expect(files.size).toBe(0)
+})
+it('P7 a valid replacement journal cannot become the rollback source for a different prepared transaction',async()=>{
+  let current={records:[{id:'synthetic-previous'}]},originalCipher
+  const other=await import('../src/platform/storage/restoreJournal.js')
+  const coordinator=createRestoreCoordinator({journal,state:restoreState,journalRollback:true,prepare:async()=>{},validate,capture:()=>current,
+    apply:async value=>{
+      if(value.records[0].id==='synthetic-target'){
+        originalCipher=files.get(RESTORE_PATH)
+        files.set(RESTORE_PATH,await other.sealRestoreRecord({version:1,previous:{records:[{id:'synthetic-imposter'}]},target:value},password))
+        throw Error('synthetic-target-failed')
+      }
+      current=value
+    }})
+  await expect(coordinator.restore({records:[{id:'synthetic-target'}]},password)).rejects.toHaveProperty('rollbackFailed',true)
+  expect(current.records[0].id).toBe('synthetic-previous');expect(restoreState.blocked).toBe(true)
+  files.set(RESTORE_PATH,originalCipher);await coordinator.recover(password)
+  expect(current.records[0].id).toBe('synthetic-previous');expect(restoreState.blocked).toBe(false)
+})
+it('P7 journal replacement immediately after prepare stops before the first business write',async()=>{
+  const apply=vi.fn(),original=journal.prepare
+  journal.prepare=async(...args)=>{const prepared=await original(...args);files.set(RESTORE_PATH,'synthetic-replacement');return prepared}
+  const coordinator=createRestoreCoordinator({journal,state:restoreState,journalRollback:true,prepare:async()=>{},validate,capture:()=>({records:[]}),apply})
+  await expect(coordinator.restore({records:[{id:'synthetic-target'}]},password)).rejects.toThrow('RESTORE_ROLLBACK_RECORD_CHANGED')
+  expect(apply).not.toHaveBeenCalled();expect(restoreState.blocked).toBe(true);expect(files.get(RESTORE_PATH)).toBe('synthetic-replacement')
+})
+it('P7 legacy journal adapters without a verified preparation digest cannot enable journal-backed writes',async()=>{
+  const apply=vi.fn(),original=journal.prepare
+  journal.prepare=async(...args)=>{await original(...args)}
+  const coordinator=createRestoreCoordinator({journal,state:restoreState,journalRollback:true,prepare:async()=>{},validate,capture:()=>({records:[]}),apply})
+  await expect(coordinator.restore({records:[{id:'synthetic-target'}]},password)).rejects.toThrow('RESTORE_ROLLBACK_DIGEST_REQUIRED')
+  expect(apply).not.toHaveBeenCalled();expect(restoreState.blocked).toBe(true);expect(files.has(RESTORE_PATH)).toBe(true)
+  await coordinator.recover(password);expect(apply).toHaveBeenCalledWith({records:[]});expect(restoreState.blocked).toBe(false)
+})
 it('actual store: invalid input is zero-write and a normal restore survives a new Pinia instance', async () => {
   const r = await runtime(); expect(() => r.restore({}, password)).toThrow('INVALID'); expect(files.size).toBe(0)
   await r.restore({ records: [{ id: 'target' }] }, password)

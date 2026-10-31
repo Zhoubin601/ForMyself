@@ -1,5 +1,7 @@
 # ForMyself — 我的自留地
 
+云端接续入口（2026-10-31）：[Kanata 云端交接](docs/20261031-kanata-cloud-handoff-v1.md)。P1–P6已有验收，P7仍No-Go；本次按用户明确要求推送未完成检查点，不能当成P7完成或安装包发布。
+
 个人生活记录应用：省钱计划、体重、心情、每日待办、日程、密码库、月度报告与 AI 陪伴。采用 Vue 3、Pinia、Vite 和 Capacitor，支持 Web 与 Android。本机保存业务数据；启用 AI 时，聊天和选中的生活上下文会发送给用户配置的服务商。
 
 ## 开发与验证
@@ -13,6 +15,8 @@ npm run check
 ```
 
 `check` 包括 ESLint、Node 领域测试、Vitest 组件/故障回归、Vue 类型检查、严格契约类型检查和生产构建。`tests/types` 的负向样例必须被编译器拒绝，不能移除 `@ts-expect-error` 来掩盖接口问题。JavaScript 采用渐进检查，未宣称整个代码库已经严格类型化。
+
+彼方 Kanata 的 P1–P6 已有阶段证据；P7正在做容量与完整需求收口。当前已实现加密历史分页、查询、归档与备份展开，但尚未通过全部容量门禁，详见[P7准确检查点](docs/20261029-kanata-p7-archive-checkpoint-v1.md)及[存储格式](docs/20261029-kanata-p7-archive-format-v1.md)。不要用构建成功或旧测试数字宣称全项目完成。
 
 Kanata 原生专用合成验证：先以 `scripts/start-kanata-qa.ps1` 创建全新空白 AVD（SDK 默认 `E:/Android/Sdk`，可传 `-Sdk`）；确认启动完成后，执行 `npm run build:qa:kanata`、`npx cap sync android`、Android debug 构建，再运行 `npm run test:e2e:kanata:android`。驱动只接受匹配本地隔离清单的 `KanataP2Synthetic34 / emulator-5580`，拒绝未标记的已有 App，不执行清数据或卸载。再次全新测试用 `-NewRun` 正常关闭本任务旧 AVD，保留磁盘原路径并创建带时间戳的新空白目录；不使用用户日常模拟器。专用构建额外包含测试入口，**只用于隔离验收，不能发布**；正常 `npm run build` 不包含该入口。设备驱动和结果位于 `docs/qa/kanata-local-20261028/`，不以旧聊天 E2E 代替新业务验证。
 
@@ -81,10 +85,17 @@ Android API Key 使用安全凭据适配器。配置有加载、保存、失败�
 
 阶段计划和实际验收记录位于 `docs/20261026-architecture-*.md`，对应合成测试证据位于 `docs/qa/architecture-20261026/`；P1–P6 曾按当时授权逐阶段提交并推送。后续任务的提交、推送和发布遵循用户当前授权。
 
-Kanata 当前实现到 P4：全局卡、PNG/JSON 导入、独立世界/实例、版本同步和静态世界书，以及私聊/群聊/@、日常/RP、气泡/延迟、统一DeepSeek与按请求用量/人民币区间估算。P5记忆/生活联动和P6自治尚未开发；无Key时不伪造历史或调用模型。当前阶段证据见 [P2本地验收](docs/20261028-kanata-stage-p2-local-verification-v1.md)、[P3验收](docs/20261028-kanata-stage-p3-verification-v1.md) 和 [完整需求覆盖](docs/20261028-kanata-requirements-through-p3-v1.md)。用户最新授权为完成P4后普通推送Kanata并暂停，不发布安装包。P4证据及范围见 [P4验收](docs/20261028-kanata-stage-p4-verification-v1.md) 和 [P4覆盖](docs/20261028-kanata-requirements-through-p4-v1.md)。新全备v13与旧v1–v12安全恢复策略见架构规范第16–18节。
+Kanata 的 P1–P6 已有阶段验收，P7继续开发，尚未通过最终门禁。已实现全局角色卡、PNG/JSON导入、独立世界/实例、世界书、私聊/群聊/@、日常/RP、长期记忆/因果修正、生活授权、有限自主活动与通知。无Key时不伪造回复。历史证据见 [P2](docs/20261028-kanata-stage-p2-local-verification-v1.md)、[P3](docs/20261028-kanata-stage-p3-verification-v1.md)、[P4](docs/20261028-kanata-stage-p4-verification-v1.md)、[P5](docs/20261028-kanata-stage-p5-verification-v1.md) 和 [P6](docs/20261029-kanata-stage-p6-verification-v1.md)。当前用户要求继续开发；不自动发布。全备v13与旧v1–v12非聊天安全恢复策略仍按架构规范执行。
 
 Kanata P5已通过（2026-10-29最终复测）：分层记忆、来源修订、因果事件撤销、独立生活授权和精确角色绑定。见[实际验收](docs/20261028-kanata-stage-p5-verification-v1.md)、[需求增量](docs/20261028-kanata-requirements-through-p5-v1.md)及架构规范第19节。此记录覆盖上方P4暂停/后续未开发的历史状态；当前继续P6，未自动推送或发布。
 
 P6首批时间规则与受保护持久化已实现，完整check为500 Node/278组件通过；P6整体未验收，社交/通知/双视角及设备流程尚未实现。后续开发从[P6准确检查点](docs/20261029-kanata-p6-checkpoint-v1.md)接续，不能用P5 APK证据覆盖新代码。
 
 最新状态（2026-10-29）：P6已PASS，覆盖上述首批未完成状态；完整check501 Node/317组件、Web12流程/6布局、最终生产Android17流程及原生8通过/1夹具跳过。角色社交、现群联动、主动/通知、持久化延迟和双视角证据见[P6验收](docs/20261029-kanata-stage-p6-verification-v1.md)、[完整需求P6增量](docs/20261029-kanata-requirements-through-p6-v1.md)。P7尚未验收；按用户最新决定使用raw指向的本地隔离模拟器，容量/真分页/需求收口仍须实际完成。
+
+
+2026-10-30 接续状态：P7仍在开发，新增加密历史页、原文查询/修订、完整备份正文展开、分页改密和恢复内存优化、分次气泡/立即全部。完整check536 Node/348组件通过，当前生产候选98a1e79的Android1k/10k容量全流程通过；Web/Android三档已跑完：100k内存均超限，Android改密耗时亦超限，P7仍No-Go；已恢复原608条隔离合成资料并核对各模块，最终综合验收尚未完成。不得据此称P7完成或发布。准确续作入口见[P7检查点末节](docs/20261029-kanata-p7-archive-checkpoint-v1.md)。
+
+2026-10-30最新功能增量：自定义世界可从本世界选择成员创建空群聊，支持单群每轮角色/AI条数限制和活动等待/立即回复。最终check548 Node/375组件，Web/隔离Android各13项生产检查通过；详情见[需求增量与两轮自查](docs/20261030-kanata-requirements-p7-increment-v1.md)。P7仍No-Go：100k容量失败与其余原需求差距继续开发，当前功能APK未重测三档；不据此发布/宣称完成。
+
+2026-10-31：已按用户要求准备推送P7 WIP并转云端，唯一新交接入口见文首。最终check565/382与生产子集已验证，P7因100k Web内存/Android反向改密及余项仍No-Go；所有测量和合成基线恢复已结束。请用本日交接及结构化结果覆盖前述旧进度，不将WIP当最终完成。

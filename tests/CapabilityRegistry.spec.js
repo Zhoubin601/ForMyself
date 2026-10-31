@@ -9,6 +9,14 @@ const auth = reactive({ savedMasterPwd: 'synthetic-old', isLocked: false, sessio
 vi.mock('../src/stores/auth.js', () => ({ useAuthStore: () => auth }))
 vi.mock('../src/services/uiFeedback.js', () => ({ appAlert: vi.fn(), appChoose: vi.fn(), appPrompt: vi.fn(), resolveFeedbackDialog: vi.fn() }))
 let stores, access, backup
+it('P7 export ownership preserves default JSON conversion and detached images cannot alias participant state',()=>{
+  const source={rows:[{value:'synthetic'}]},date=new Date('2026-10-29T00:00:00Z'),base={ready:()=>true,restore:()=>{},flush:()=>{}}
+  const registry=createBackupRegistry([{...base,id:'ordinary',export:()=>({data:source,metadata:{date,omitted:undefined}})},
+    {...base,id:'detached',detachedExport:true,export:()=>({data:structuredClone(source)})}])
+  const image=registry.exportAll();image.ordinary.data.rows[0].value='changed';image.detached.data.rows[0].value='changed'
+  expect(source.rows[0].value).toBe('synthetic');expect(image.ordinary.metadata).toEqual({date:'2026-10-29T00:00:00.000Z'})
+  expect(()=>createBackupRegistry([{...base,id:'invalid',detachedExport:'yes',export:()=>({data:[]})}])).toThrow('INVALID_BACKUP_PARTICIPANT')
+})
 beforeEach(() => {
   setActivePinia(createPinia()); Object.assign(auth, { savedMasterPwd: 'synthetic-old', isLocked: false, sessionRevision: 0 })
   stores = ['first', 'second', 'third'].map(id => reactive({ id, isDataLoaded: false, loadError: '', saveError: '', value: '', key: 'synthetic-old',

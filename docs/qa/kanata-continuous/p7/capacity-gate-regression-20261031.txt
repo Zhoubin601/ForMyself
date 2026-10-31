@@ -1,0 +1,12 @@
+✔ P7 both real password changes must meet the same frozen threshold, even when the first direction passes (1.6925ms)
+✔ P7 an unexecuted Android credential return is NOT_RUN and can never become capacity PASS (0.2272ms)
+✔ P7 fresh Web profiles have no return operation; any return actually measured still uses the same gate (1.0701ms)
+✔ P7 missing/non-finite memory or unmeasured required operations cannot receive a pass (0.46ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 142.3051

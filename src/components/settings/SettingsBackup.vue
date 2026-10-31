@@ -25,6 +25,6 @@ const { backupPickerOpen, backupTypeOptions, exportDataType, exportJSON, fileInp
         </button>
         <input type="file" accept=".json" ref="fileInputRef" style="display: none" @change="handleFileUpload" />
       </div>
-          <p class="caption body-muted" style="padding: 12px 16px; margin: 0;">完整备份包含省钱、体重、心情、密码库、日程、每日待办、温馨小家的头像、全部聊天与长期记忆，以及应用设置和 API Key，并由当前主密码进行 AES 加密；不会包含主密码或设备生物识别凭据。仍可选择单项备份。</p>
+          <p class="caption body-muted" style="padding: 12px 16px; margin: 0;">完整备份包含省钱、体重、心情、密码库、日程、每日待办，以及彼方的角色、世界、全部聊天（含加密历史）、记忆和事件，还包含应用设置和 API Key，使用当前主密码加密；不包含主密码或设备生物识别凭据。恢复旧完整备份时，可保留其他模块并明确丢弃旧聊天。仍可选择单项备份。</p>
     </div>
 </template>

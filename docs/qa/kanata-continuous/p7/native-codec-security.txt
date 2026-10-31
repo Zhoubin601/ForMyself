@@ -1,0 +1,6 @@
+PASS upgraded-graph-preserved-and-rearchived-with-verified-pending-semantics
+PASS native-version2-cold-load-uses-real-stat-and-pages-with-source-proofs
+PASS native-actual-master-password-ui-transaction-rekeys-pages-and-credentials
+PASS only-current-password-page-copies-remain-in-owned-archive-directory
+PASS native-real-password-transaction-back-to-original-synthetic-credential
+PASS native-authenticated-compressed-journal-in-actual-full-backup-coordinator

@@ -4,10 +4,11 @@ import {kanataAutonomyPolicy,kanataLocalTime,kanataScheduledActivity} from './ka
 import {renderKanataCharacter,selectKanataLorebook} from '../lorebook/kanataLorebook.js'
 import {selectKanataMemories,canUseKanataMessage,canUseKanataEvent,kanataEventLifeSources,canUseKanataLifeSources} from '../experience/kanataKnowledge.js'
 import {proposeKanataEvent,commitKanataEvent} from '../experience/kanataEvents.js'
+import {kanataReplyLimits} from '../domain/groupReplyLimits.js'
 /** @typedef {import('../domain/kanataTypes').KanataData} Data */
 /** @typedef {{clock:()=>number,id:()=>string}} Tools */
 /** @param {Data} data @param {string} worldId */
-export const kanataSocialStateSignature=(data,worldId)=>JSON.stringify([data.worlds.find(w=>w.id===worldId),data.autonomyPolicies?.find(p=>p.worldId===worldId),data.virtualSchedules?.filter(s=>s.worldId===worldId),data.instances.filter(i=>i.worldId===worldId).map(i=>[i.id,i.revision,i.autonomyEnabled,i.state]),data.conversations.filter(c=>c.worldId===worldId&&c.type==='group').map(c=>[c.id,c.revision,c.participantIds])])
+export const kanataSocialStateSignature=(data,worldId)=>JSON.stringify([data.worlds.find(w=>w.id===worldId),data.autonomyPolicies?.find(p=>p.worldId===worldId),data.virtualSchedules?.filter(s=>s.worldId===worldId),data.instances.filter(i=>i.worldId===worldId).map(i=>[i.id,i.revision,i.autonomyEnabled,i.state]),data.conversations.filter(c=>c.worldId===worldId&&c.type==='group').map(c=>[c.id,c.revision,c.participantIds,c.replyLimits??null])])
 /** Only one bounded two-speaker scene is selected per resume. Failed attempts count towards
  * the local-day cap too; a restarted app never silently pays to repeat the same scene.
  * @param {Data} data @param {string} worldId @param {number} now */
@@ -28,7 +29,7 @@ export function planKanataSocial(data,worldId,now) {
   const windowStart=window.simulationWindow.start
   // Never replay a live user conversation as an additional autonomous scene.
   if(data.messages.some(m=>m.worldId===worldId&&m.role==='user'&&m.createdAt>=windowStart&&data.conversations.some(c=>c.id===m.conversationId&&participantIds.some(id=>c.participantIds.includes(id)))))return null
-  const group=policy.socialChannel==='group'?data.conversations.find(c=>c.worldId===worldId&&c.type==='group'&&participantIds.every(id=>c.participantIds.includes(id))):null
+  const group=policy.socialChannel==='group'?data.conversations.find(c=>c.worldId===worldId&&c.type==='group'&&participantIds.every(id=>c.participantIds.includes(id))&&kanataReplyLimits(c).maxSpeakers>=2):null
   if(policy.socialChannel==='group'&&!group)return null
   return{worldId,signature:kanataSocialStateSignature(data,worldId),conversationId:group?.id,idempotencyKey:`social-v1:${window.id}`,social:{windowTaskId:window.id,date,participantIds,location:first.schedule.location,effectiveAt},activity:first.schedule.activity}
 }
@@ -51,6 +52,8 @@ export function buildKanataSocialContext(data,taskId,instanceId,pending=[]) {
   need(task&&social?.participantIds.includes(instanceId),'SOCIAL_SPEAKER_DENIED','speaker')
   const selected=/** @type {NonNullable<typeof social>} */(social),world=data.worlds.find(w=>w.id===task?.worldId)
   need(world?.autonomyEnabled&&!world.archived,'SOCIAL_WORLD_DISABLED','world')
+  const conversation=data.conversations.find(c=>c.id===task?.conversationId)
+  need(conversation&&(conversation.type!=='group'||kanataReplyLimits(conversation).maxSpeakers>=2),'SOCIAL_GROUP_LIMIT','conversation')
   const persona=renderKanataCharacter(data,instanceId),book=selectKanataLorebook(data,{worldId:world?.id||'',instanceId,text:selected.location,tokenBudget:2000})
   const memories=selectKanataMemories(data,{worldId:world?.id||'',instanceId,text:selected.location,group:true,budget:2000,conversationId:task?.conversationId})
   const recipients=data.conversations.find(c=>c.id===task?.conversationId)?.participantIds.filter(id=>data.instances.some(i=>i.id===id))||[]
@@ -81,13 +84,15 @@ export function completeKanataSocial(input,taskId,replies,tools) {
   need(task?.state==='running'&&social&&replies.length===2&&replies.every((r,n)=>r.speakerId===social.participantIds[n]&&typeof r.content==='string'&&r.content.trim().length>0&&r.content.length<=4000),'SOCIAL_RESULT_INVALID','task')
   const selected=/** @type {NonNullable<typeof social>} */(social),sourceRefs=[]
   const world=data.worlds.find(w=>w.id===task?.worldId)
+  const conversation=data.conversations.find(c=>c.id===task?.conversationId)
+  need(conversation&&(conversation.type!=='group'||kanataReplyLimits(conversation).maxSpeakers>=2),'SOCIAL_GROUP_LIMIT','conversation')
   need(world?.autonomyEnabled&&!world.archived&&Number(task?.leaseUntil)>tools.clock()&&kanataAutonomyPolicy(data,world.id).dailyDialogueLimit>0,'SOCIAL_SCENE_EXPIRED','task')
   for(const participantId of selected.participantIds){
     const instance=data.instances.find(i=>i.id===participantId),schedule=kanataScheduledActivity(data,participantId,selected.effectiveAt-1,world?.timeZone||'UTC')
     need(instance?.autonomyEnabled&&instance.state.location===selected.location&&schedule?.location===selected.location&&!schedule.resting,'SOCIAL_LOCATION_CHANGED','task')
   }
   for(const reply of replies){const message={id:tools.id(),worldId:/** @type {string} */(task?.worldId),conversationId:/** @type {string} */(task?.conversationId),role:/** @type {const} */('assistant'),senderType:/** @type {const} */('character'),senderId:reply.speakerId,senderNameSnapshot:renderKanataCharacter(data,reply.speakerId).name,content:reply.content.trim(),createdAt:tools.clock(),revision:1,status:/** @type {const} */('complete'),turnId:taskId,batchId:taskId,lifeSources:reply.lifeSources};data.messages.push(message);sourceRefs.push({messageId:message.id,revision:1})}
-  const conversation=data.conversations.find(c=>c.id===task?.conversationId),participants=conversation?.type==='group'?conversation.participantIds:selected.participantIds
+  const participants=conversation?.type==='group'?conversation.participantIds:selected.participantIds
   data=proposeKanataEvent(data,{worldId:/** @type {string} */(task?.worldId),participantIds:[...participants],sourceRefs,causedByEventIds:[],visibility:'participants',summary:`角色在「${selected.location}」进行了一场两段文字交流；完整内容见关联角色会话。`,effectiveAt:selected.effectiveAt,kind:'note'},tools)
   // Sharing permissions are conservatively enforced by the P5 event commit rule too.
   const event=data.events.at(-1);if(!event)throw Error('SOCIAL_EVENT_MISSING')

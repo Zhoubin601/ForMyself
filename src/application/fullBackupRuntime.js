@@ -16,7 +16,7 @@ import {
   buildKanataChatBackupSnapshot, readKanataChatBackupSnapshot, buildKanataFullBackupSnapshot,
   validateKanataRestoreSnapshot, kanataRestoreParts, prepareKanataBackupData
 } from '../features/chat/backup/kanataBackup.js'
-import { validateKanataData } from '../features/chat/domain/kanataValidation.js'
+import { assertKanataData } from '../features/chat/domain/kanataValidation.js'
 import { syncReminderNotifications } from '../services/notificationService.js'
 import { getPersonalizedReminderBodies } from '../services/reminderSchedule.js'
 import { syncScheduleNotifications } from '../features/schedule/scheduleNotificationService.js'
@@ -35,11 +35,13 @@ export function createFullBackupRuntime() {
     id: 'chat',
     ready: () => chatStore.isDataLoaded && !chatStore.loadError && chatStore.snapshot !== null,
     initialize: () => chatStore.isDataLoaded,
-    validate: part => { validateKanataData(part.data) },
-    export: () => ({ data: validateKanataData(chatStore.snapshot) }),
+    validate: part => { assertKanataData(part.data) },
+    prepareExport: () => chatStore.prepareBackup(),
+    detachedExport: true,
+    export: () => ({ data: chatStore.backupSnapshot() }),
     restore: part => chatStore.restoreSnapshot(part.data),
     flush: () => chatStore.flush(),
-    singleExport: () => buildKanataChatBackupSnapshot(chatStore.snapshot),
+    singleExport: () => buildKanataChatBackupSnapshot(chatStore.backupSnapshot()),
     import: async (input, { overwrite }) => {
       // World graph merge needs an explicit collision/ID remapping design. Never silently append.
       if (overwrite !== true) throw new Error('KANATA_BACKUP_MERGE_NOT_SUPPORTED')

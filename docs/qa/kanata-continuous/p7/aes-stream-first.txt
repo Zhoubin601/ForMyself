@@ -1,0 +1,11 @@
+✔ P7 chunked AES emits exactly the existing CryptoJS passphrase wire bytes for the same synthetic salt (49.08ms)
+✔ P7 chunked AES uses fresh random salt and rejects wrong password, malformed/truncated ciphertext and corrupt padding (38.4114ms)
+✔ P7 UTF8 decoding retains multibyte characters across AES blocks and Base64 chunk boundaries (98.6855ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 337.7956

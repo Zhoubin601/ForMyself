@@ -64,7 +64,7 @@ export async function verifyActivity(page,record,{nativeNotification=false}={}){
   })
   await click('我的世界');await page.locator('.kanata-conversation-list').getByRole('button',{name:initial.conversations[0].title,exact:true}).click()
   await record('delayed-reply-persists-and-explicit-cancel-makes-no-request',async()=>{
-    await click('回复等待：立即');await page.locator('.feedback-options').getByText('15 秒',{exact:true}).click()
+    await click('回复等待：按活动设置');await page.locator('.feedback-options').getByText('15 秒',{exact:true}).click()
     await page.getByLabel('流式预览',{exact:true}).uncheck();await page.getByLabel('发送文字',{exact:true}).fill('普通合成延迟测试');await click('发送消息')
     await page.getByRole('button',{name:'取消等待中的回复',exact:true}).waitFor()
     assert((await appData(page)).tasks.some(t=>t.deferredReply&&t.state==='pending')&&requests===3,'saved before HTTP')

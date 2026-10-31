@@ -1,5 +1,6 @@
 import { Filesystem, Directory, Encoding } from '@capacitor/filesystem'
-import CryptoJS from 'crypto-js'
+import { sha256Text } from '../../shared/crypto/sha256Text.js'
+import {encodeRestorePayload,decodeRestorePayload} from './restorePayloadCodec.js'
 
 export const RESTORE_PATH = 'formyself/restore-v1.enc'
 const COMMIT_PATH = 'formyself/restore-v1.commit'
@@ -20,7 +21,8 @@ const derive = async (password, salt) => {
 export async function sealRestoreRecord(value, password) {
   const salt = crypto.getRandomValues(new Uint8Array(16)), iv = crypto.getRandomValues(new Uint8Array(12))
   const key = await derive(password, salt)
-  const ciphertext = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, new TextEncoder().encode(JSON.stringify(value)))
+  const payload=await encodeRestorePayload(value)
+  const ciphertext = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, new TextEncoder().encode(payload))
   return JSON.stringify({ version: 1, salt: base64(salt), iv: base64(iv), ciphertext: base64(new Uint8Array(ciphertext)) })
 }
 export async function openRestoreRecord(value, password) {
@@ -28,7 +30,7 @@ export async function openRestoreRecord(value, password) {
   if (envelope.version !== 1) throw new Error('UNSUPPORTED_RESTORE_RECORD')
   const key = await derive(password, bytes(envelope.salt))
   const plaintext = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: bytes(envelope.iv) }, key, bytes(envelope.ciphertext))
-  return JSON.parse(new TextDecoder().decode(plaintext))
+  return decodeRestorePayload(new TextDecoder().decode(plaintext))
 }
 export function createRestoreJournal(filesystem = Filesystem) {
   const options = path => ({ path, directory: Directory.Data, encoding: Encoding.UTF8 })
@@ -49,7 +51,7 @@ export function createRestoreJournal(filesystem = Filesystem) {
       return null
     }
     const marker = await read(COMMIT_PATH)
-    const digest = CryptoJS.SHA256(encrypted).toString()
+    const digest = sha256Text(encrypted)
     if (marker !== null && JSON.parse(marker).digest !== digest) throw new Error('RESTORE_COMMIT_MISMATCH')
     return { encrypted, committed: marker !== null, digest }
   }
@@ -61,6 +63,9 @@ export function createRestoreJournal(filesystem = Filesystem) {
       await writeVerified(TEMP_PATH, encrypted)
       await filesystem.rename({ from: TEMP_PATH, to: RESTORE_PATH, directory: Directory.Data, toDirectory: Directory.Data })
       if (await read(RESTORE_PATH) !== encrypted) throw new Error('RESTORE_JOURNAL_VERIFY_FAILED')
+      // Bind later compensation to the exact bytes this call verified, never a replacement
+      // record that happened to appear between preparation and the coordinator's inspection.
+      return {digest:sha256Text(encrypted)}
     },
     async commit() {
       const record = await inspect()

@@ -1,0 +1,21 @@
+{
+  "kind": "diagnostic-node-native-clone-after-inert-validation",
+  "notDeviceAcceptance": true,
+  "rows": 100000,
+  "ms": 424.6475,
+  "before": {
+    "rss": 151486464,
+    "heapTotal": 110456832,
+    "heapUsed": 71515088,
+    "external": 1894066,
+    "arrayBuffers": 24818
+  },
+  "after": {
+    "rss": 323682304,
+    "heapTotal": 274755584,
+    "heapUsed": 150638912,
+    "external": 1936209,
+    "arrayBuffers": 24818
+  },
+  "peakKiB": 371136
+}

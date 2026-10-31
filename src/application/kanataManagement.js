@@ -4,7 +4,7 @@ import { useProtectedAccessStore } from '../stores/protectedAccess.js'
 import { useKanataStore } from '../features/chat/kanataStore.js'
 import { instantiateWorldPreset } from '../features/chat/domain/presetCore.js'
 import { createKanataWorld, renameKanataWorld, archiveKanataWorld, copyKanataWorld, updateKanataIdentity, addKanataCharacter,
-  importKanataCard, archiveKanataCard, updateKanataCard, updateKanataCharacter, syncKanataCard } from '../features/chat/domain/kanataManagementCore.js'
+  importKanataCard, archiveKanataCard, updateKanataCard, updateKanataCharacter, syncKanataCard, createKanataGroup } from '../features/chat/domain/kanataManagementCore.js'
 import { saveKanataLoreEntry, attachKanataCardLore } from '../features/chat/lorebook/kanataLorebook.js'
 import { getBuiltinKanataPreset } from '../features/chat/presets/presetCatalog.js'
 
@@ -41,6 +41,8 @@ export function createKanataManagement(adapters = {}) {
     archiveWorld: (worldId, archived) => execute(data => archiveKanataWorld(data, worldId, archived)),
     /** @param {string} worldId @param {string} name */
     copyWorld: (worldId, name) => execute(data => copyKanataWorld(data, worldId, name, options())),
+    /** @param {string} worldId @param {{title:string,instanceIds:string[]}} fields */
+    createGroup: (worldId, fields) => execute(data => createKanataGroup(data,worldId,fields,options())),
     /** @param {string} presetId */
     createPresetWorld: presetId => execute(data => { const o = options(); return instantiateWorldPreset(data, getBuiltinKanataPreset(presetId), { initializationKey: 'manual-preset-' + o.key, now: o.now, timeZone: o.timeZone, idFactory }) }),
     /** @param {string} worldId @param {{displayName:string,background:string}} fields */

@@ -1,0 +1,21 @@
+{
+  "kind": "diagnostic-node-manual-clone",
+  "notDeviceAcceptance": true,
+  "rows": 100000,
+  "ms": 511.5622,
+  "before": {
+    "rss": 150728704,
+    "heapTotal": 111505408,
+    "heapUsed": 71286016,
+    "external": 1894066,
+    "arrayBuffers": 24818
+  },
+  "after": {
+    "rss": 274890752,
+    "heapTotal": 222932992,
+    "heapUsed": 117064072,
+    "external": 1936209,
+    "arrayBuffers": 24818
+  },
+  "peakKiB": 268452
+}

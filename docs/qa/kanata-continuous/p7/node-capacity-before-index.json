@@ -1,0 +1,122 @@
+{
+  "status": "FAIL",
+  "at": "2026-10-29T06:52:15.559Z",
+  "kind": "node-repository-baseline-only",
+  "syntheticOnly": true,
+  "node": "v24.14.1",
+  "samples": [
+    {
+      "status": "MEASURED",
+      "count": 1000,
+      "root": "C:\\Users\\a3185\\AppData\\Local\\Temp\\kanata-p7-synthetic-e9MFCQ",
+      "metrics": {
+        "save": {
+          "ms": 112.5,
+          "heapUsedBytes": 66674568,
+          "peakProcessRssKiB": 136908
+        },
+        "coldRepositoryRead": {
+          "ms": 81.6,
+          "heapUsedBytes": 52299688,
+          "peakProcessRssKiB": 136908
+        },
+        "inMemorySliceNotPaging": {
+          "ms": 0.1,
+          "heapUsedBytes": 8167368,
+          "peakProcessRssKiB": 136908
+        },
+        "linearScanNotIndex": {
+          "ms": 0.1,
+          "heapUsedBytes": 8145424,
+          "peakProcessRssKiB": 136908
+        },
+        "backupAdapterBuild": {
+          "ms": 21.3,
+          "heapUsedBytes": 26723272,
+          "peakProcessRssKiB": 136908
+        },
+        "backupAdapterReadNotCoordinator": {
+          "ms": 25.9,
+          "heapUsedBytes": 32555536,
+          "peakProcessRssKiB": 136908
+        },
+        "reencrypt": {
+          "ms": 114.6,
+          "heapUsedBytes": 42460480,
+          "peakProcessRssKiB": 147908
+        },
+        "newPasswordRead": {
+          "ms": 86.4,
+          "heapUsedBytes": 51077384,
+          "peakProcessRssKiB": 167060
+        }
+      },
+      "realPaging": false,
+      "archiveAvailable": false,
+      "fullProductRestoreCoordinator": false,
+      "ciphertextBytes": 988248,
+      "oldPasswordRejected": true,
+      "peakProcessRssKiB": 186696
+    },
+    {
+      "status": "MEASURED",
+      "count": 10000,
+      "root": "C:\\Users\\a3185\\AppData\\Local\\Temp\\kanata-p7-synthetic-i4hGh7",
+      "metrics": {
+        "save": {
+          "ms": 1040,
+          "heapUsedBytes": 294656192,
+          "peakProcessRssKiB": 654808
+        },
+        "coldRepositoryRead": {
+          "ms": 923.7,
+          "heapUsedBytes": 325070592,
+          "peakProcessRssKiB": 654808
+        },
+        "inMemorySliceNotPaging": {
+          "ms": 0.1,
+          "heapUsedBytes": 14971712,
+          "peakProcessRssKiB": 654808
+        },
+        "linearScanNotIndex": {
+          "ms": 0.5,
+          "heapUsedBytes": 14966584,
+          "peakProcessRssKiB": 654808
+        },
+        "backupAdapterBuild": {
+          "ms": 523.2,
+          "heapUsedBytes": 74987000,
+          "peakProcessRssKiB": 654808
+        },
+        "backupAdapterReadNotCoordinator": {
+          "ms": 889.8,
+          "heapUsedBytes": 65549104,
+          "peakProcessRssKiB": 654808
+        },
+        "reencrypt": {
+          "ms": 2260.7,
+          "heapUsedBytes": 346520576,
+          "peakProcessRssKiB": 654808
+        },
+        "newPasswordRead": {
+          "ms": 2007.9,
+          "heapUsedBytes": 256742440,
+          "peakProcessRssKiB": 654808
+        }
+      },
+      "realPaging": false,
+      "archiveAvailable": false,
+      "fullProductRestoreCoordinator": false,
+      "ciphertextBytes": 9505580,
+      "oldPasswordRejected": true,
+      "peakProcessRssKiB": 815396
+    },
+    {
+      "size": 100000,
+      "status": "FAIL",
+      "code": "ETIMEDOUT",
+      "stderr": ""
+    }
+  ],
+  "p7Gate": "NO_GO: current production repository has no actual paging/query/archive API; these are Node measurements, not device acceptance"
+}

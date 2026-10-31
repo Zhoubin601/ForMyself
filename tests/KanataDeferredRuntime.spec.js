@@ -14,6 +14,56 @@ describe('P6 persisted delayed replies',()=>{
   })
   afterEach(()=>{chat.dispose();deferred.dispose();f.dispose()})
   const queue=()=>chat.send(f.data.conversations[0].id,{text:'普通合成问候',delayMs:2000,persistDelay:true})
+  const activity=async(waitMs=5000)=>{
+    await f.store.update(d=>{d.worlds[0].autonomyEnabled=true;d.instances[0].autonomyEnabled=true;d.instances[0].state.energy=0.2})
+    const c=f.store.snapshot.conversations[0];await chat.setReplyTiming(c.id,c.revision,{enabled:true,waitMs})
+  }
+  it('P7 automatic activity delay is durable even without a caller persistence flag; no fake busy reply or paid call',async()=>{
+    await activity();const result=await chat.send(f.data.conversations[0].id,{text:'合成活动问题'})
+    expect(result).toMatchObject({deferred:true,activityDelayed:true});expect(f.completion).not.toHaveBeenCalled()
+    expect(f.disk().tasks[0]).toMatchObject({state:'pending',notBefore:now+5000,deferredReply:{activityDelay:true}})
+    expect(f.store.snapshot.messages).toHaveLength(1);expect(f.store.snapshot.messages[0].role).toBe('user')
+    now+=4999;await deferred.run();expect(f.completion).not.toHaveBeenCalled()
+    now++;await deferred.run();expect(f.store.snapshot.tasks[0].state).toBe('succeeded');expect(f.completion).toHaveBeenCalledTimes(1)
+    expect(f.store.snapshot.tasks.filter(t=>t.deferredReply)).toHaveLength(1)
+  })
+  it('P7 an explicit immediate response cancels the same pending source and never charges it again on resume',async()=>{
+    await activity();const result=await chat.send(f.data.conversations[0].id,{text:'合成活动问题'})
+    await chat.send(f.data.conversations[0].id,{retryMessageId:result.messageId,timing:'immediate',delayMs:15000})
+    expect(f.completion).toHaveBeenCalledTimes(1);expect(f.store.snapshot.tasks[0].state).toBe('cancelled')
+    now+=5001;await deferred.run();expect(f.completion).toHaveBeenCalledTimes(1)
+    expect(f.store.snapshot.messages.filter(m=>m.role==='user')).toHaveLength(1)
+    await chat.send(f.data.conversations[0].id,{retryMessageId:result.messageId})
+    expect(f.store.snapshot.tasks[0].state).toBe('cancelled');expect(f.completion).toHaveBeenCalledTimes(1)
+  })
+  it('P7 manual wait wins and a newer immediate turn cancels older waiting work',async()=>{
+    await activity();await queue();expect(f.disk().tasks[0].notBefore).toBe(now+2000)
+    expect(f.disk().tasks[0].deferredReply.activityDelay).toBe(false)
+    await chat.send(f.data.conversations[0].id,{text:'合成新问题',timing:'immediate'})
+    expect(f.disk().tasks[0].state).toBe('cancelled');expect(f.completion).toHaveBeenCalledTimes(1)
+  })
+  it('P7 turning off activity waiting releases an existing bounded task and current permissions still apply',async()=>{
+    await activity();await chat.send(f.data.conversations[0].id,{text:'合成活动问题'})
+    const c=f.store.snapshot.conversations[0];await chat.setReplyTiming(c.id,c.revision,{enabled:false,waitMs:5000})
+    expect(f.disk().tasks[0].notBefore).toBe(now);await deferred.run();expect(f.completion).toHaveBeenCalledTimes(1)
+    expect(f.disk().tasks[0].state).toBe('succeeded')
+  })
+  it('P7 stale configuration, expired owner and rejected operation cannot write timing settings',async()=>{
+    const c=f.store.snapshot.conversations[0]
+    await expect(chat.setReplyTiming(c.id,c.revision+1,{enabled:true,waitMs:5000})).rejects.toThrow('STALE_REPLY_TIMING')
+    expect(f.disk().conversations[0].replyTiming).toBeUndefined()
+    f.access.runOperation.mockResolvedValueOnce(false)
+    await expect(chat.setReplyTiming(c.id,c.revision,{enabled:true,waitMs:5000})).rejects.toThrow('KANATA_OPERATION_CANCELLED')
+    f.auth.sessionRevision++
+    await expect(chat.setReplyTiming(c.id,c.revision,{enabled:true,waitMs:5000})).rejects.toThrow('KANATA_SESSION_EXPIRED')
+  })
+  it('P7 failed timing save retains the newest configuration; failed deferred writes never call the model',async()=>{
+    const c=f.store.snapshot.conversations[0];f.fail()
+    await expect(chat.setReplyTiming(c.id,c.revision,{enabled:true,waitMs:5000})).rejects.toThrow()
+    expect(f.store.snapshot.conversations[0].replyTiming).toEqual({enabled:true,waitMs:5000});expect(f.store.hasPendingSave).toBe(true)
+    await expect(chat.send(c.id,{text:'不得调用的合成问题'})).rejects.toThrow()
+    expect(f.completion).not.toHaveBeenCalled()
+  })
   it('saves user text and delayed task before charging, then a new owner resumes without duplicating the user',async()=>{
     const result=await queue();expect(result.deferred).toBe(true);expect(f.completion).not.toHaveBeenCalled()
     expect(f.disk().tasks[0].state).toBe('pending');chat.dispose();now+=2001

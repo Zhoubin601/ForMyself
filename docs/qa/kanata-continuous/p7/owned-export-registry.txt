@@ -1,0 +1,10 @@
+
+ RUN  v3.2.4 D:/2026Autumn Semester File/GitHub/formyself-app/.worktrees/kanata
+
+ ✓ tests/CapabilityRegistry.spec.js (9 tests) 65ms
+
+ Test Files  1 passed (1)
+      Tests  9 passed (9)
+   Start at  19:51:43
+   Duration  1.55s (transform 44ms, setup 0ms, collect 142ms, tests 65ms, environment 841ms, prepare 204ms)
+

@@ -25,6 +25,13 @@ let sequence=0
 const idFactory=kind=>kind+'-ui-'+(++sequence)
 const options=()=>({key:String(++sequence),now:2000,timeZone:'Asia/Shanghai',idFactory})
 const button=(wrapper,text)=>wrapper.findAll('button').find(b=>b.text()===text)
+it('P7 historical read failure is visible and pauses edit actions independently of save-error status',async()=>{
+  mocked.store.archiveError='KANATA_ARCHIVE_VERIFY_FAILED'
+  const wrapper=mount(KanataWorldManager);await flushPromises()
+  expect(wrapper.text()).toContain('历史资料未能安全读取')
+  expect(button(wrapper,'重命名世界').attributes('disabled')).toBeDefined();expect(button(wrapper,'加入角色').attributes('disabled')).toBeDefined()
+  expect(wrapper.text()).not.toContain('KANATA_ARCHIVE_VERIFY_FAILED');wrapper.unmount()
+})
 const chooseFile=async(wrapper,file,label='导入角色卡')=>{
   await button(wrapper,label).trigger('click')
   const input=wrapper.find('input[type=file]')
@@ -67,7 +74,8 @@ describe('P3 world/card/lore management user interactions',()=>{
     expect(wrapper.findAll('.kanata-character-grid article')).toHaveLength(5)
     expect(wrapper.findAll('.kanata-conversation-list li')).toHaveLength(6)
     expect(wrapper.findAll('.kanata-conversation-list button')).toHaveLength(6)
-    expect(wrapper.text()).toContain('只有主动发送才调用全局 DeepSeek')
+    expect(wrapper.text()).toContain('用户发送会调用全局 DeepSeek；已开启的自主交流与主动联系也可能调用')
+    expect(wrapper.text()).toContain('新群聊不预填历史')
     expect(wrapper.text()).toContain('小鸟游星野');expect(wrapper.text()).toContain('奥空绫音')
     expect(fetch).not.toHaveBeenCalled();expect(mocked.store.snapshot.messages).toEqual([])
     wrapper.unmount()

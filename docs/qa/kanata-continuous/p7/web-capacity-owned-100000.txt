@@ -1,0 +1,10 @@
+MEASURED 100000 portableImportActualCoordinator
+MEASURED 100000 coldPageReloadAndProtectedLoad
+MEASURED 100000 diskPage50
+MEASURED 100000 indexedExactSearch
+MEASURED 100000 saveHeader
+MEASURED 100000 fullExportActualCoordinator
+Error: CAPACITY_OPERATION_TIMEOUT:fullRestoreActualCoordinator
+    at Timeout.<anonymous> (file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata/docs/qa/kanata-continuous/p7/verify-capacity-web.mjs:32:95)
+    at listOnTimeout (node:internal/timers:605:17)
+    at process.processTimers (node:internal/timers:541:7)

@@ -1,0 +1,181 @@
+{
+  "status": "FAIL",
+  "at": "2026-10-30T03:08:17.916Z",
+  "count": 100000,
+  "syntheticOnly": true,
+  "kind": "production-android-actual-coordinator",
+  "forcedGC": false,
+  "build": "df5dda5f2282cad4548cf0a63eea91649adeea5acde43348b09c69c370407ead",
+  "metrics": {
+    "portableImportActualCoordinator": {
+      "ms": 179947.8,
+      "value": {
+        "active": 220,
+        "archived": 99780,
+        "saved": true
+      },
+      "memory": {
+        "processes": [
+          {
+            "pid": 10400,
+            "type": "browser",
+            "peakRssKiB": 377932,
+            "currentRssKiB": 272792
+          },
+          {
+            "pid": 10466,
+            "type": "renderer",
+            "peakRssKiB": 497476,
+            "currentRssKiB": 367900
+          }
+        ],
+        "peakResidentMiB": 485.81640625,
+        "sumOfProcessPeaksMiB": 854.890625,
+        "currentTotalRssMiB": 625.67578125,
+        "sumIsNotSimultaneousPeak": true,
+        "heapPoint": {
+          "usedSize": 177887388,
+          "totalSize": 195006464
+        }
+      },
+      "cpuProfile": [
+        {
+          "function": "(idle)",
+          "asset": "",
+          "selfMs": 35177.3
+        },
+        {
+          "function": "(program)",
+          "asset": "",
+          "selfMs": 33773.3
+        },
+        {
+          "function": "(garbage collector)",
+          "asset": "",
+          "selfMs": 15578
+        },
+        {
+          "function": "_doProcessBlock",
+          "asset": "crypto-js-CiVKIBfJ.js",
+          "selfMs": 7607
+        },
+        {
+          "function": "parse",
+          "asset": "crypto-js-CiVKIBfJ.js",
+          "selfMs": 7185.6
+        },
+        {
+          "function": "parse",
+          "asset": "crypto-js-CiVKIBfJ.js",
+          "selfMs": 5497.4
+        },
+        {
+          "function": "_doProcessBlock",
+          "asset": "crypto-js-CiVKIBfJ.js",
+          "selfMs": 5489.7
+        },
+        {
+          "function": "parse",
+          "asset": "crypto-js-CiVKIBfJ.js",
+          "selfMs": 4541.4
+        },
+        {
+          "function": "s",
+          "asset": "kanataStore-B6JY9z-R.js",
+          "selfMs": 4451.4
+        },
+        {
+          "function": "_append",
+          "asset": "crypto-js-CiVKIBfJ.js",
+          "selfMs": 2516.4
+        },
+        {
+          "function": "me",
+          "asset": "kanataStore-B6JY9z-R.js",
+          "selfMs": 2468.4
+        },
+        {
+          "function": "removeEventListener",
+          "asset": "",
+          "selfMs": 2297
+        },
+        {
+          "function": "_doCryptBlock",
+          "asset": "crypto-js-CiVKIBfJ.js",
+          "selfMs": 2042.9
+        },
+        {
+          "function": "_doCryptBlock",
+          "asset": "crypto-js-CiVKIBfJ.js",
+          "selfMs": 2026.3
+        },
+        {
+          "function": "_append",
+          "asset": "crypto-js-CiVKIBfJ.js",
+          "selfMs": 1745.3
+        },
+        {
+          "function": "r",
+          "asset": "kanataStore-B6JY9z-R.js",
+          "selfMs": 1717.3
+        },
+        {
+          "function": "pe",
+          "asset": "kanataStore-B6JY9z-R.js",
+          "selfMs": 1670.7
+        },
+        {
+          "function": "r",
+          "asset": "kanataStore-B6JY9z-R.js",
+          "selfMs": 1634.4
+        },
+        {
+          "function": "processBlock",
+          "asset": "crypto-js-CiVKIBfJ.js",
+          "selfMs": 1618.3
+        },
+        {
+          "function": "_append",
+          "asset": "crypto-js-CiVKIBfJ.js",
+          "selfMs": 1490.3
+        }
+      ]
+    },
+    "coldPageReloadAndProtectedLoad": {
+      "ms": 14700,
+      "value": {
+        "loaded": true,
+        "processRestart": true,
+        "protectedLoadMs": 8292.09999999986
+      },
+      "memory": {
+        "processes": [
+          {
+            "pid": 12086,
+            "type": "browser",
+            "peakRssKiB": 364128,
+            "currentRssKiB": 247496
+          },
+          {
+            "pid": 12120,
+            "type": "renderer",
+            "peakRssKiB": 311000,
+            "currentRssKiB": 250180
+          }
+        ],
+        "peakResidentMiB": 355.59375,
+        "sumOfProcessPeaksMiB": 659.3046875,
+        "currentTotalRssMiB": 486.01171875,
+        "sumIsNotSimultaneousPeak": true,
+        "heapPoint": {
+          "usedSize": 74862708,
+          "totalSize": 81055744
+        }
+      }
+    }
+  },
+  "pageErrors": [],
+  "aiRequests": 0,
+  "profilerDiagnostic": true,
+  "error": "cdpSession.send: Protocol error (Profiler.stop): No recording profiles found"
+}

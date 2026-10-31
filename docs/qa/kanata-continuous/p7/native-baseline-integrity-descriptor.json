@@ -1,0 +1,29 @@
+{
+  "status": "PASS",
+  "at": "2026-10-30T04:09:20.836Z",
+  "syntheticOnly": true,
+  "apkSha256": "98a1e79afd40e33f3f3a2b850793315a0c26757d11538217357f7ac9b52788af",
+  "aiRequests": 0,
+  "pageErrors": [],
+  "integrity": {
+    "modules": [
+      "savings",
+      "weight",
+      "mood",
+      "passwords",
+      "schedules",
+      "todos",
+      "chat"
+    ],
+    "settings": true,
+    "metadata": true,
+    "todoRevision": {
+      "before": 3,
+      "after": 20,
+      "advanced": true
+    },
+    "autoLockDelaySeconds": 0
+  },
+  "expiryTriggeredExplicitly": false,
+  "backgroundPlaintextReleased": true
+}

@@ -54,6 +54,23 @@ const harness = () => {
 const journalRecord = (ciphertext, baseFingerprint = '') => JSON.stringify({ type: 'kanata-recovery', version: 1, baseFingerprint, ciphertext })
 const fingerprint = value => CryptoJS.SHA256(value).toString()
 
+test('P7 synchronous encryption keeps complete validation without caller mutation; decoded graphs have independent ownership',()=>{
+  const value=fixture('synthetic-owned-graph'),before=JSON.stringify(value)
+  Object.freeze(value.worlds[0]);Object.freeze(value.worlds);Object.freeze(value)
+  const encrypted=encryptKanataData(value,PASSWORD)
+  assert.equal(JSON.stringify(value),before)
+  const first=decryptKanataData(encrypted,PASSWORD),second=decryptKanataData(encrypted,PASSWORD)
+  first.worlds[0].name='changed decoded value'
+  assert.equal(second.worlds[0].name,'synthetic-owned-graph')
+  const invalid=fixture('synthetic-invalid')
+  invalid.instances[0].worldId='orphan'
+  assert.throws(()=>encryptKanataData(invalid,PASSWORD),/ORPHAN_WORLD/)
+  let getterCalled=false
+  Object.defineProperty(invalid.worlds[0],'name',{enumerable:true,get(){getterCalled=true;return 'private'}})
+  assert.throws(()=>encryptKanataData(invalid,PASSWORD),/INVALID_JSON_PROPERTY/)
+  assert.equal(getterCalled,false)
+})
+
 test('P2-R01 missing显式返回null；加载前和空密码拒绝写，无创建默认世界', async () => {
   const h = harness(), r = h.repository()
   await assert.rejects(r.write(fixture('first'), PASSWORD), code('KANATA_NOT_LOADED'))
@@ -118,7 +135,7 @@ test('P2-R06 主文件损坏从备份只读恢复；首次中断从tmp只读恢�
   assert.equal(tempOnly.files.has(MAIN), false)
 })
 test('P2-R07 未来版本主文件不被旧备份或恢复副本降级覆盖', async () => {
-  const h = harness(), future = CryptoJS.AES.encrypt(JSON.stringify({ type: 'kanata-data', version: 2 }), PASSWORD).toString()
+  const h = harness(), future = CryptoJS.AES.encrypt(JSON.stringify({ type: 'kanata-data', version: 3 }), PASSWORD).toString()
   h.files.set(MAIN, future); h.files.set(BACKUP, encryptKanataData(fixture('old'), PASSWORD))
   h.values.set(KEY, journalRecord(encryptKanataData(fixture('older'), PASSWORD)))
   const r = h.repository(); await assert.rejects(r.read(PASSWORD), code('UNSUPPORTED_KANATA_VERSION'))

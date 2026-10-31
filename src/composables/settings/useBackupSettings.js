@@ -1,11 +1,13 @@
 import { BACKUP_TYPE_OPTIONS, moduleRegistry } from '../../application/moduleRegistry.js'
 import { restoreState } from '../../platform/storage/restoreState.js'
 import { createFullBackupRuntime } from '../../application/fullBackupRuntime.js'
+import { backupFailureGuidance } from '../../application/backupErrors.js'
 import { Capacitor } from '@capacitor/core'
 import { ref } from 'vue'
 import { Filesystem, Directory, Encoding } from '@capacitor/filesystem'
 import { Share } from '@capacitor/share'
 import CryptoJS from 'crypto-js'
+import { encryptPassphraseAes, decryptPassphraseAes } from '../../shared/crypto/passphraseAes.js'
 import { syncReminderNotifications } from '../../services/notificationService'
 import { getPersonalizedReminderBodies } from '../../services/reminderSchedule'
 import { beginNativeActivityGuard } from '../../services/nativeActivityGuard'
@@ -100,7 +102,10 @@ export function useBackupSettings() {
       if (!todoStore.isDataLoaded) return appAlert('待办未能安全加载，请重试后导出')
     }
     await ensureOrdinaryDataReady()
-    if (exportDataType.value === 'chat') await chatStore.flush()
+    if (exportDataType.value === 'chat') {
+      await chatStore.flush()
+      await fullBackup.registry.prepareExports(['chat'])
+    }
     const label = getDataTypeLabel()
     const isFullBackup = exportDataType.value === 'full'
     const data = isFullBackup ? await fullBackup.exportFull() : getDataArray()
@@ -117,7 +122,7 @@ export function useBackupSettings() {
     try {
       if (session !== authStore.sessionRevision || !password) return
       const rawData = JSON.stringify(data)
-      const encryptedData = CryptoJS.AES.encrypt(rawData, password).toString()
+      const encryptedData = encryptPassphraseAes(rawData, password)
       const date = new Date().toISOString().slice(0, 10)
       const prefix = getFilePrefix()
       const filename = `ForMyself_${prefix}_Backup_${date}.json`
@@ -139,7 +144,7 @@ export function useBackupSettings() {
         downloadAsFile(encryptedData, filename)
       }
     } catch (error) {
-      appAlert('导出错误：' + error.message)
+      appAlert(backupFailureGuidance(error)||'导出错误：' + error.message)
     }
   }
 
@@ -160,8 +165,7 @@ export function useBackupSettings() {
       let decoded = false
       try {
         const encryptedContent = e.target.result
-        const bytes = CryptoJS.AES.decrypt(encryptedContent, password)
-        const decryptedData = bytes.toString(CryptoJS.enc.Utf8)
+        const decryptedData = decryptPassphraseAes(encryptedContent, password)
         if (!decryptedData) throw new Error('密码错误')
         const importedData = JSON.parse(decryptedData)
         decoded = true
@@ -258,6 +262,8 @@ export function useBackupSettings() {
         appToast(`${label}数据恢复成功`, { tone: 'success' })
       } catch (error) {
         if (restoreState.blocked) return appAlert(restoreState.message)
+        const guidance=backupFailureGuidance(error)
+        if(guidance)return appAlert(guidance)
         if (decoded && exportDataType.value !== 'full') return appAlert('备份已解密，但恢复或同步失败，请检查保存状态并重试：' + error.message)
         if (error?.rollbackFailed) return appAlert('完整恢复回滚失败，请保留应用数据并重试恢复')
         if (exportDataType.value === 'todos') {

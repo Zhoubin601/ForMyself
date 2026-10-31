@@ -1,0 +1,10 @@
+
+ RUN  v3.2.4 D:/2026Autumn Semester File/GitHub/formyself-app/.worktrees/kanata
+
+ ✓ tests/KanataChatRuntime.spec.js (14 tests) 197ms
+
+ Test Files  1 passed (1)
+      Tests  14 passed (14)
+   Start at  12:31:33
+   Duration  2.19s (transform 189ms, setup 0ms, collect 537ms, tests 197ms, environment 897ms, prepare 220ms)
+

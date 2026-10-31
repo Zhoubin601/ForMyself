@@ -19,16 +19,17 @@ function harness() {
     async deleteFile({path}){if(!files.has(path))throw missing();files.delete(path)}
   }
   const parts={savings:{data:[],metadata:{groups:[]}},weight:{data:[{id:'previous-weight',weight:60,date:'2026-01-01'}]},mood:{data:[],metadata:{}},passwords:{data:[],metadata:{categories:[]}},schedules:{data:{}},chat:{data:seed()},settings:{data:{}}}
-  const control={failTarget:false,failRollback:false}
+  const control={failTarget:false,failRollback:false,prepare:null,beforeRestore:null}
   const participants=Object.entries(parts).map(([id])=>({id,ready:()=>true,flush:async()=>{},
     export:()=>clone(parts[id]),restore:async part=>{
       calls.push(id)
+      control.beforeRestore?.(id,part)
       if(id==='weight' && control.failTarget && part.data[0]?.id==='target-weight')throw new Error('target-failed')
       if(id==='weight' && control.failRollback && part.data[0]?.id==='previous-weight')throw new Error('rollback-failed')
       parts[id]=clone(part)
     }}))
   const journal=createRestoreJournal(filesystem)
-  const runtime=createKanataBackupRuntime({participants,journal,state,prepare:async()=>{}})
+  const runtime=createKanataBackupRuntime({participants,journal,state,prepare:async()=>{await control.prepare?.()}})
   return {runtime,parts,calls,files,state,control,journal}
 }
 it('P2 actual coordinator: legacy restore requires discard consent and never restores chat',async()=>{
@@ -63,4 +64,45 @@ it('P2 actual coordinator: invalid new graph is zero-write before journal',async
   const h=harness(), target=await h.runtime.exportFull();target.data.chat.instances[0].worldId='missing'
   expect(()=>h.runtime.restore(target,'synthetic-password')).toThrow('ORPHAN_WORLD')
   expect(h.calls).toEqual([]);expect(h.files.size).toBe(0);expect(h.state.blocked).toBe(false)
+})
+it('P7 canonical target is detached before async prepare and stays immutable through participant apply',async()=>{
+  const h=harness(),target=await h.runtime.exportFull(),expected=target.data.chat.worlds[0].name
+  let resume,entered
+  const waiting=new Promise(resolve=>{entered=resolve})
+  h.control.prepare=async()=>{entered();await new Promise(resolve=>{resume=resolve})}
+  let checked=false
+  h.control.beforeRestore=(id,part)=>{
+    if(id!=='chat')return
+    checked=true
+    expect(Object.isFrozen(part.data)).toBe(true)
+    expect(Object.isFrozen(part.data.worlds[0])).toBe(true)
+    expect(()=>{part.data.worlds[0].name='participant mutation'}).toThrow(TypeError)
+  }
+  const restoring=h.runtime.restore(target,'synthetic-password')
+  await waiting
+  // This caller-owned object remains editable, but cannot change the captured target.
+  target.data.chat.worlds[0].name='late caller mutation'
+  target.data.chat.instances[0].worldId='late orphan'
+  resume();await restoring
+  expect(checked).toBe(true);expect(h.parts.chat.data.worlds[0].name).toBe(expected)
+  expect(h.parts.chat.data.instances[0].worldId).toBe(h.parts.chat.data.worlds[0].id)
+  expect(h.state.blocked).toBe(false);expect(h.files.size).toBe(0)
+})
+it('P7 separate public restores revalidate a mutated export rather than reuse prior object identity',async()=>{
+  const h=harness(),target=await h.runtime.exportFull()
+  await h.runtime.restore(target,'synthetic-password')
+  h.calls.length=0
+  target.data.chat.instances[0].worldId='changed-after-success'
+  expect(()=>h.runtime.restore(target,'synthetic-password')).toThrow('ORPHAN_WORLD')
+  expect(h.calls).toEqual([]);expect(h.files.size).toBe(0);expect(h.state.blocked).toBe(false)
+})
+it('P7 consumed registry export has no alias to live parts or later exports across modules',async()=>{
+  const h=harness(),first=await h.runtime.exportFull(),original=clone(h.parts)
+  first.data.chat.worlds[0].name='changed first export'
+  first.data.weight[0].weight=999
+  const second=await h.runtime.exportFull()
+  expect(h.parts).toEqual(original)
+  expect(second.data.chat.worlds[0].name).toBe(original.chat.data.worlds[0].name)
+  expect(second.data.weight[0].weight).toBe(60)
+  expect(second.data.chat.worlds[0]).not.toBe(first.data.chat.worlds[0])
 })

@@ -1,0 +1,11 @@
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+android.devices: FAIL
+    at D:\2026Autumn Semester File\GitHub\formyself-app\.worktrees\kanata\docs\qa\kanata-continuous\p7\verify-validation-upgrade.mjs:20:30 {
+  log: [],
+  name: 'Error'
+}
+
+Node.js v24.14.1

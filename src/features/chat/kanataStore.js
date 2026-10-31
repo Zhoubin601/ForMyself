@@ -5,8 +5,12 @@ import { assertOrdinaryWriteAllowed } from '../../platform/storage/restoreState.
 import { createEmptyKanataData } from './domain/kanataCore.js'
 import { instantiateWorldPreset } from './domain/presetCore.js'
 import { isKanataInitializationAllowed } from './domain/initializationGate.js'
-import { validateKanataData } from './domain/kanataValidation.js'
+import { validateKanataData, assertKanataData } from './domain/kanataValidation.js'
 import { createKanataRepository } from './storage/kanataRepository.js'
+import { createMessageArchiveRepository } from './storage/messageArchiveRepository.js'
+import { planMessageArchive, messageOrder } from './storage/messageArchiveCore.js'
+import {mapInBatches} from '../../shared/async/mapInBatches.js'
+import {kanataRestoreDraft} from './domain/kanataOwnedImage.js'
 
 /** @typedef {import('./domain/kanataTypes').KanataData} KanataData */
 /** @typedef {ReturnType<typeof createKanataRepository>} KanataRepository */
@@ -24,9 +28,9 @@ const safeErrorCode = (error, fallback) => {
  * the protected cleanup coordinator, never a page-only flag.
  * @param {KanataRepository} repository
  * @param {string} [id]
- * @param {{ userId?: string, canInitialize?: () => boolean }} [options]
+ * @param {{ userId?: string, canInitialize?: () => boolean, archives?: ReturnType<typeof createMessageArchiveRepository> }} [options]
  */
-export function createKanataStore(repository, id = 'kanata', { userId = 'user-local', canInitialize = () => false } = {}) {
+export function createKanataStore(repository, id = 'kanata', { userId = 'user-local', canInitialize = () => false, archives = repository.archives ?? createMessageArchiveRepository() } = {}) {
   return defineStore(id, () => {
     /** @type {import('vue').ShallowRef<KanataData | null>} */
     const data = shallowRef(null)
@@ -46,9 +50,21 @@ export function createKanataStore(repository, id = 'kanata', { userId = 'user-lo
     let reencryptRecoveryRequired = false
     let writeError = ''
     let activeWrites = 0
+    let archiveBusy = false
+    let dataGeneration = 0
+    const archiveError = ref('')
+    /** @type {KanataData | null} */
+    let preparedBackup = null
+    /** @type {import('./domain/kanataTypes').MessageArchiveDescriptor[]} */
+    let retiredArchives = []
     /** @type {Promise<boolean> | null} */
     let loading = null
     let releasing = Promise.resolve()
+    /** @param {unknown} error */
+    const noteArchiveFailure = error => {
+      const code = safeErrorCode(error, 'KANATA_ARCHIVE_READ_FAILED')
+      if (['KANATA_ARCHIVE_READ_FAILED','KANATA_ARCHIVE_VERIFY_FAILED','KANATA_ARCHIVE_DECRYPT_FAILED','KANATA_ARCHIVE_INDEX_MISMATCH','KANATA_ARCHIVE_INVALID','UNSUPPORTED_KANATA_ARCHIVE_VERSION'].includes(code)) archiveError.value = code
+    }
 
     const syncPersistence = () => {
       const state = repository.getState()
@@ -65,10 +81,14 @@ export function createKanataStore(repository, id = 'kanata', { userId = 'user-lo
       if (persistenceSuspended) throw failure('KANATA_PERSISTENCE_SUSPENDED')
       if (reencrypting) throw failure('KANATA_REENCRYPT_IN_PROGRESS')
       if (reencryptRecoveryRequired) throw failure('KANATA_REENCRYPT_RECOVERY_REQUIRED')
+      if (archiveBusy) throw failure('KANATA_ARCHIVE_BUSY')
+      if (archiveError.value) throw failure(archiveError.value)
     }
     /** @param {KanataData} value */
     const commitDraft = value => {
       data.value = value
+      ++dataGeneration
+      preparedBackup = null
       needsInitialization.value = value.worlds.length === 0
     }
     /** Encrypt before any asynchronous wait; never capture the password in deferred work.
@@ -120,12 +140,15 @@ export function createKanataStore(repository, id = 'kanata', { userId = 'user-lo
           const value = result.status === 'missing'
             ? createEmptyKanataData(userId)
             : validateKanataData(result.data)
+          await archives.inspectAll(value.messageArchives ?? [])
+          if (session !== revision) return false
           password = nextPassword
           commitDraft(value)
           recoveredFromBackup.value = result.recovered
           persistenceSuspended = false
           reencryptRecoveryRequired = false
           writeError = ''
+          archiveError.value = ''
           isDataLoaded.value = true
           loadStatus.value = 'ready'
           syncPersistence()
@@ -133,6 +156,7 @@ export function createKanataStore(repository, id = 'kanata', { userId = 'user-lo
         } catch (error) {
           if (session !== revision) return false
           password = ''
+          data.value = null
           isDataLoaded.value = false
           loadStatus.value = 'error'
           loadError.value = safeErrorCode(error, 'KANATA_READ_FAILED')
@@ -193,10 +217,33 @@ export function createKanataStore(repository, id = 'kanata', { userId = 'user-lo
       if (persistenceSuspended) throw failure('KANATA_PERSISTENCE_SUSPENDED')
       if (reencrypting) throw failure('KANATA_REENCRYPT_IN_PROGRESS')
       if (reencryptRecoveryRequired) throw failure('KANATA_REENCRYPT_RECOVERY_REQUIRED')
-      const value = validateKanataData(input)
-      commitDraft(value)
-      await persist(value)
-      return validateKanataData(value)
+      if (archiveBusy) throw failure('KANATA_ARCHIVE_BUSY')
+      const value = kanataRestoreDraft(input)
+      if (value.messageArchives?.length) throw failure('KANATA_ARCHIVE_BACKUP_NOT_HYDRATED')
+      const owner=revision,captured=data.value
+      const assertCurrent=()=>{assertLoaded();if(owner!==revision||captured!==data.value)throw failure('KANATA_ARCHIVE_SESSION_CHANGED')}
+      archiveBusy=true
+      try {
+        // Large portable imports enter bounded files directly. Never encrypt a second giant monolith first.
+        const counts=new Map()
+        for(const message of value.messages)counts.set(message.conversationId,(counts.get(message.conversationId)||0)+1)
+        for(const conversation of value.conversations)if((counts.get(conversation.id)||0)>1000){
+          const scope={worldId:conversation.worldId,conversationId:conversation.id}
+          const plan=planMessageArchive(value,{...scope,keepRecent:200})
+          const pages=await mapInBatches(plan.pages,messages=>archives.write(messages,password,scope,assertCurrent))
+          value.messages=plan.remaining
+          if(pages.length){value.messageArchives=[...(value.messageArchives??[]),...pages];value.version=2}
+        }
+        assertCurrent()
+        // `value` is the detached import draft. Page planning/writes do not share caller objects.
+        const packed=assertKanataData(value)
+        // Old files remain encrypted until successful rekey retires them. No deletion on restore.
+        retiredArchives.push(...(captured?.messageArchives ?? []))
+        commitDraft(packed)
+        await persist(packed)
+        archiveError.value = ''
+        return validateKanataData(packed)
+      } finally {archiveBusy=false}
     }
 
     const flush = async () => {
@@ -222,6 +269,8 @@ export function createKanataStore(repository, id = 'kanata', { userId = 'user-lo
       loading = null
       password = ''
       data.value = null
+      preparedBackup = null
+      archiveError.value = ''
       isDataLoaded.value = false
       loadStatus.value = 'idle'
       loadError.value = ''
@@ -241,17 +290,35 @@ export function createKanataStore(repository, id = 'kanata', { userId = 'user-lo
       assertLoaded()
       if (persistenceSuspended) throw failure('KANATA_PERSISTENCE_SUSPENDED')
       if (reencrypting) throw failure('KANATA_REENCRYPT_IN_PROGRESS')
+      if (archiveBusy) throw failure('KANATA_ARCHIVE_BUSY')
       if (typeof nextPassword !== 'string' || !nextPassword) throw failure('KANATA_PASSWORD_REQUIRED')
       const session = revision
       reencrypting = true
       saveStatus.value = 'saving'
       try {
-        await repository.reencrypt(validateKanataData(data.value), nextPassword)
+        const captured = data.value
+        const previousPages = [...(captured?.messageArchives ?? []), ...retiredArchives]
+        const assertCurrent = () => {
+          assertLoaded()
+          if (session !== revision || captured !== data.value) throw failure('KANATA_ARCHIVE_SESSION_CHANGED')
+        }
+        const value = validateKanataData(captured)
+        // Copy-on-write page rekey: retain all old files until both canonical copies reference verified new pages.
+        const nextPages = await mapInBatches(value.messageArchives ?? [],page=>archives.reencrypt(page,password,nextPassword,page,assertCurrent))
+        if (value.messageArchives) value.messageArchives = nextPages
+        assertCurrent()
+        await repository.reencrypt(value, nextPassword)
         if (session === revision) {
+          commitDraft(value)
           password = nextPassword
+          retiredArchives = previousPages
+          await archives.retire(retiredArchives)
+          // Also retire verified-unreferenced files left by an interrupted conversion or an older restore.
+          await repository.retireArchives?.(nextPages.map(page=>page.key))
+          retiredArchives = []
           reencryptRecoveryRequired = false
           writeError = ''
-        }
+        } else throw failure('KANATA_ARCHIVE_SESSION_CHANGED')
       } catch (error) {
         if (session === revision) reencryptRecoveryRequired = true
         throw error
@@ -260,6 +327,122 @@ export function createKanataStore(repository, id = 'kanata', { userId = 'user-lo
         syncPersistence()
       }
     }
+    const hydrateSnapshot = async () => {
+      assertLoaded()
+      const owner = revision, captured = data.value
+      const assertCurrent = () => {
+        assertLoaded()
+        if (owner !== revision || captured !== data.value) throw failure('KANATA_ARCHIVE_SESSION_CHANGED')
+      }
+      const value = validateKanataData(captured)
+      try {
+        const pages=await mapInBatches(value.messageArchives ?? [],descriptor=>archives.read(descriptor,password,descriptor,assertCurrent))
+        for(const messages of pages)value.messages.push(...messages)
+      } catch (error) { if(owner===revision)noteArchiveFailure(error);throw error }
+      value.messages.sort(messageOrder)
+      delete value.messageArchives
+      value.version = 1
+      assertCurrent()
+      // The header was privately cloned, and read() returns detached verified page DTOs.
+      return assertKanataData(value)
+    }
+    const prepareBackup = async () => {
+      assertLoaded()
+      if (!data.value?.messageArchives?.length) { preparedBackup = null; return }
+      const owner = revision, captured = data.value
+      const result = await hydrateSnapshot()
+      assertLoaded()
+      if (owner !== revision || captured !== data.value) throw failure('KANATA_ARCHIVE_SESSION_CHANGED')
+      preparedBackup = result
+    }
+    const backupSnapshot = () => {
+      assertLoaded()
+      if (data.value?.messageArchives?.length && !preparedBackup) throw failure('KANATA_ARCHIVE_BACKUP_NOT_PREPARED')
+      // Transfer ownership of the private prepared image, never of the live Store graph.
+      const result = preparedBackup ? assertKanataData(preparedBackup) : validateKanataData(data.value)
+      preparedBackup = null
+      return result
+    }
+    /** Explicit conversion, protected by the same Store gates as every mutation.
+     * @param {{worldId:string,conversationId:string,keepRecent?:number}} options
+     */
+    const archiveHistory = async options => {
+      assertReady()
+      if (needsInitialization.value) throw failure('KANATA_INITIALIZATION_REQUIRED')
+      await flush()
+      assertReady()
+      const captured = data.value, owner = revision
+      const assertCurrent = () => {
+        assertLoaded()
+        if (owner !== revision || captured !== data.value) throw failure('KANATA_ARCHIVE_SESSION_CHANGED')
+        assertOrdinaryWriteAllowed()
+        if (persistenceSuspended) throw failure('KANATA_PERSISTENCE_SUSPENDED')
+      }
+      const draft = validateKanataData(captured), plan = planMessageArchive(draft, options)
+      if (draft.worlds.find(w=>w.id===options.worldId)?.archived) throw failure('KANATA_WORLD_ARCHIVED')
+      if (!plan.archivedCount) return { archivedCount: 0, pages: 0 }
+      archiveBusy = true
+      try {
+        const pages=await mapInBatches(plan.pages,messages=>archives.write(messages,password,options,assertCurrent))
+        assertCurrent()
+        draft.messages = plan.remaining
+        draft.messageArchives = [...(draft.messageArchives ?? []), ...pages]
+        draft.version = 2
+        const value = validateKanataData(draft)
+        commitDraft(value)
+        await persist(value)
+        return { archivedCount: plan.archivedCount, pages: pages.length }
+      } finally { archiveBusy = false }
+    }
+    /** No unrequested historical bodies enter the snapshot or a retained cache.
+     * @param {import('./domain/kanataTypes').MessageHistoryRequest} request
+     */
+    const readHistory = async request => {
+      assertReady()
+      const captured = data.value, owner = revision, generation = dataGeneration
+      if (!captured?.conversations.some(c => c.id === request.conversationId && c.worldId === request.worldId)) throw failure('KANATA_ARCHIVE_SCOPE_DENIED')
+      const text = request.text ?? '', cursor = request.cursor
+      if (cursor && (cursor.worldId !== request.worldId || cursor.conversationId !== request.conversationId || cursor.text !== text || cursor.generation !== generation)) throw failure('KANATA_ARCHIVE_CURSOR_EXPIRED')
+      const assertCurrent = () => {
+        assertReady()
+        if (owner !== revision || captured !== data.value) throw failure('KANATA_ARCHIVE_SESSION_CHANGED')
+      }
+      try {
+        const result = await archives.query(captured.messageArchives ?? [], captured.messages, password, { ...request, text, before: cursor?.before ?? null }, assertCurrent)
+        const last = result.messages.at(-1)
+        return { ...result, cursor: result.hasMore && last ? { worldId:request.worldId, conversationId:request.conversationId, text, generation, before:{id:last.id,createdAt:last.createdAt} } : null }
+      } catch (error) {
+        if (owner === revision) noteArchiveFailure(error)
+        throw error
+      }
+    }
+    /** Restore one complete archive page to the active graph before a revision/deletion.
+     * The old encrypted file stays available to the previous canonical backup.
+     * @param {{worldId:string,conversationId:string,messageId:string}} request
+     */
+    const activateHistoryMessage = async request => {
+      assertReady()
+      const captured = data.value, owner = revision
+      if (!captured?.worlds.some(w=>w.id===request.worldId&&!w.archived)) throw failure('KANATA_ARCHIVE_SCOPE_DENIED')
+      const page=captured.messageArchives?.find(p=>p.worldId===request.worldId&&p.conversationId===request.conversationId&&p.messages.some(m=>m.id===request.messageId))
+      if (!page) {
+        if (!captured.messages.some(m=>m.id===request.messageId&&m.worldId===request.worldId&&m.conversationId===request.conversationId)) throw failure('KANATA_ARCHIVE_SCOPE_DENIED')
+        return
+      }
+      const assertCurrent=()=>{assertReady();if(owner!==revision||captured!==data.value)throw failure('KANATA_ARCHIVE_SESSION_CHANGED')}
+      let messages
+      try { messages=await archives.read(page,password,request,assertCurrent) }
+      catch (error) {if(owner===revision)noteArchiveFailure(error);throw error}
+      assertCurrent()
+      const draft=validateKanataData(captured)
+      draft.messages.push(...messages);draft.messages.sort(messageOrder)
+      draft.messageArchives=draft.messageArchives?.filter(p=>p.key!==page.key)
+      if (!draft.messageArchives?.length) {delete draft.messageArchives;draft.version=1}
+      const value=validateKanataData(draft)
+      retiredArchives.push(page)
+      commitDraft(value)
+      await persist(value)
+    }
     const suspendPersistence = () => {
       persistenceSuspended = true
       loadError.value = 'KANATA_PERSISTENCE_SUSPENDED'
@@ -267,9 +450,10 @@ export function createKanataStore(repository, id = 'kanata', { userId = 'user-lo
 
     return {
       snapshot, isDataLoaded, loadStatus, loadError, saveStatus, saveError, hasPendingSave,
-      needsInitialization, recoveredFromBackup,
+      needsInitialization, recoveredFromBackup, archiveError,
       load, loadChatData: load, initializePreset, update, restoreSnapshot, restoreChatData: restoreSnapshot,
-      flush, retrySave: flush, release, reencrypt, suspendPersistence
+      flush, retrySave: flush, release, reencrypt, suspendPersistence,
+      archiveHistory, readHistory, activateHistoryMessage, prepareBackup, backupSnapshot
     }
   })
 }

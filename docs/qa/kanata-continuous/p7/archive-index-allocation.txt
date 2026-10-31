@@ -1,0 +1,19 @@
+✔ P7 JSON clone preserves inert JSON without serialized copies, aliasing or prototype setters (1.0696ms)
+✔ P7 JSON clone still rejects hidden/accessor/runtime/sparse/cyclic/deep/non-finite inputs without invoking getters (0.6018ms)
+✔ P7 archive planner retains source proofs, audits and complete reply components; no fake history or source changes (26.5111ms)
+✔ P7 Bloom index never skips an exact normalized match, including Unicode and repeated/single characters (1.6948ms)
+✔ P7 encrypted immutable page verifies bytes/hash/scope/index, has no plaintext/password cache and refuses traversal (23.8109ms)
+✔ P7 version2 graph validates unique archive IDs and scope while portable export rejects unhydrated references (15.938ms)
+✔ P7 disk pagination returns only requested rows and indexed rare search reads one page; canceled reads return no late bodies (42.2198ms)
+✔ P7 query budget exhaustion cannot return a partial page/cursor that skips unchecked history (10.3189ms)
+✔ P7 archive missing/corrupt/readback/cancel failures never alter the canonical file; retire is nonrecursive and confined (3.6682ms)
+✔ P7 raw page payload must match authenticated descriptor metadata, not just valid JSON (8.4405ms)
+✔ P7 future archive header version cannot silently fall back to and overwrite an older full graph (24.1513ms)
+ℹ tests 11
+ℹ suites 0
+ℹ pass 11
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1187.0948

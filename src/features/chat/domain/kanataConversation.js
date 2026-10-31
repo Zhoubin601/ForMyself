@@ -2,6 +2,7 @@
 import { requireKanata as need, validateKanataData } from './kanataValidation.js'
 import { renderKanataCharacter, selectKanataLorebook } from '../lorebook/kanataLorebook.js'
 import {canUseKanataMessage,canUseKanataLifeSources,canUseKanataEvent,kanataEventLifeSources,selectKanataMemories,kanataMemoryPolicy} from '../experience/kanataKnowledge.js'
+import {kanataReplyLimits} from './groupReplyLimits.js'
 /** @typedef {import('./kanataTypes').KanataData} Data */
 /** @param {Data} data @param {string} conversationId */
 export function kanataConversation(data, conversationId) {
@@ -9,7 +10,7 @@ export function kanataConversation(data, conversationId) {
   need(conversation && conversation.type !== 'character' && data.worlds.some(w => w.id === conversation.worldId && !w.archived), 'CONVERSATION_UNAVAILABLE', 'conversationId')
   return /** @type {import('./kanataTypes').Conversation} */(conversation)
 }
-/** Explicit mentions win; otherwise topic interest and recent participation select at most two.
+/** Explicit mentions win; otherwise topic interest and recent participation stay within the saved limit.
  * Unknown/ambiguous @ never silently targets another character. No recursive AI rounds.
  * @param {Data} data @param {string} conversationId @param {string} text
  */
@@ -17,23 +18,26 @@ export function decideKanataSpeakers(data, conversationId, text) {
   const c = kanataConversation(data, conversationId)
   const members = data.instances.filter(i => c.participantIds.includes(i.id) && i.worldId === c.worldId)
   if (c.type === 'private') return members.map(i => i.id)
-  const mentions = [...text.matchAll(/@([^\s@，。！？,!?：:]+)/gu)].map(m => m[1])
-  if (mentions.length) {
-    const ids = mentions.map(name => members.filter(i => {
-      const d = renderKanataCharacter(data,i.id)
-      return [d.name,...d.aliases].includes(name)
-    }))
-    need(ids.every(matches => matches.length === 1), 'MENTION_UNKNOWN_OR_AMBIGUOUS', 'mention')
-    return [...new Set(ids.map(matches => matches[0].id))].slice(0,2)
+  const {maxSpeakers}=kanataReplyLimits(c)
+  const definitions=members.map(instance=>({id:instance.id,definition:renderKanataCharacter(data,instance.id)}))
+  const mentions=[]
+  // Imported names/aliases may contain spaces or punctuation. Match known literal names,
+  // prefer the longest complete name, and never build executable regex from a card field.
+  for(let position=text.indexOf('@');position!==-1;position=text.indexOf('@',position)){
+    const tail=text.slice(position+1)
+    const matches=definitions.flatMap(({id,definition})=>[definition.name,...definition.aliases].filter(name=>tail.startsWith(name)&&(!tail[name.length]||/[\s@，。！？,!?：:;；、]/u.test(tail[name.length]))).map(name=>({id,length:name.length})))
+    const longest=Math.max(0,...matches.map(match=>match.length)),ids=[...new Set(matches.filter(match=>match.length===longest).map(match=>match.id))]
+    need(ids.length===1,'MENTION_UNKNOWN_OR_AMBIGUOUS','mention')
+    mentions.push(ids[0]);position+=longest+1
   }
+  if(mentions.length)return [...new Set(mentions)].slice(0,maxSpeakers)
   const previous = data.messages.filter(m => m.conversationId === c.id && m.role === 'assistant').at(-1)?.senderId
-  const ranked = members.map(i => {
-    const d = renderKanataCharacter(data,i.id)
-    const score = d.interests.filter(interest => text.includes(interest)).length * 3 + (previous === i.id ? 0 : 1)
-    return {id:i.id,score}
+  const ranked = definitions.map(({id,definition}) => {
+    const score = definition.interests.filter(interest => text.includes(interest)).length * 3 + (previous === id ? 0 : 1)
+    return {id,score}
   }).sort((a,b) => b.score-a.score || a.id.localeCompare(b.id,'en'))
-  // One relevant lead, with an optional second viewpoint only on topic matches.
-  return ranked.filter((entry,index) => index === 0 || (index === 1 && entry.score >= 3)).map(entry => entry.id)
+  // A limit is a ceiling; additional viewpoints still require a topic match.
+  return ranked.filter((entry,index) => index === 0 || entry.score >= 3).slice(0,maxSpeakers).map(entry => entry.id)
 }
 /** Only current conversation and this speaker's permitted static knowledge enter a request.
  * No raw card extensions, other private chats, other persona definitions or life stores.
@@ -92,13 +96,14 @@ export function buildKanataConversationContext(data, conversationId, instanceId,
   return {messages:[...messages,...selected],mode,lifeSources,knowledgeSignature,instanceRevision:instance?.revision,conversationRevision:c.revision}
 }
 /** Preserve prose and punctuation; split only natural paragraph boundaries, cap at four bubbles.
- * @param {string} text @param {'daily'|'roleplay'} mode
+ * @param {string} text @param {'daily'|'roleplay'} mode @param {number} [maxBubbles]
  */
-export function splitKanataBubbles(text, mode) {
+export function splitKanataBubbles(text, mode, maxBubbles=4) {
+  need(Number.isSafeInteger(maxBubbles)&&maxBubbles>=1&&maxBubbles<=4,'INVALID_BUBBLE_LIMIT','maxBubbles')
   const value=text.trim();need(value.length>0&&value.length<=64000,'INVALID_REPLY','content')
   if(mode==='roleplay')return [value]
   const parts=value.split(/\n\s*\n/).map(s=>s.trim()).filter(Boolean)
-  return parts.length>4?[...parts.slice(0,3),parts.slice(3).join('\n\n')]:parts
+  return parts.length>maxBubbles?[...parts.slice(0,maxBubbles-1),parts.slice(maxBubbles-1).join('\n\n')]:parts
 }
 /** @param {Data} input @param {import('./kanataTypes').KanataUsageEvent} event */
 export function recordKanataAttempt(input, event) {

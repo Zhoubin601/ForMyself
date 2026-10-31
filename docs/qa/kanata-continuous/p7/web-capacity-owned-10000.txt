@@ -1,0 +1,9 @@
+MEASURED 10000 portableImportActualCoordinator
+MEASURED 10000 coldPageReloadAndProtectedLoad
+MEASURED 10000 diskPage50
+MEASURED 10000 indexedExactSearch
+MEASURED 10000 saveHeader
+MEASURED 10000 fullExportActualCoordinator
+MEASURED 10000 fullRestoreActualCoordinator
+MEASURED 10000 restoredMessageProofExportVerification
+MEASURED 10000 masterPasswordActualUiTransaction

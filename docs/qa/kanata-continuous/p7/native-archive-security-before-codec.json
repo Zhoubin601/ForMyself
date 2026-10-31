@@ -1,0 +1,55 @@
+{
+  "status": "PASS",
+  "at": "2026-10-29T11:32:47.138Z",
+  "apkSha256": "4323e736a927b706555da878c8aaed7e69bb35f63e386e0dc04d09058fd4ba29",
+  "checks": {
+    "upgraded-graph-preserved-and-rearchived-with-verified-pending-semantics": {
+      "status": "PASS",
+      "ms": 3133,
+      "result": {
+        "worldId": "world-de8d45bf45c446ebe45dbd46f69119fc",
+        "conversationId": "private-3bf694547e20ddc66b1ed64902184663"
+      }
+    },
+    "native-version2-cold-load-uses-real-stat-and-pages-with-source-proofs": {
+      "status": "PASS",
+      "ms": 331,
+      "result": {
+        "active": 211,
+        "pagesRead": 1,
+        "bytesRead": 29248,
+        "sourceRetained": true
+      }
+    },
+    "native-actual-master-password-ui-transaction-rekeys-pages-and-credentials": {
+      "status": "PASS",
+      "ms": 9758,
+      "result": {
+        "nativeCredential": true,
+        "newPasswordReadsAllFiles": true,
+        "oldPasswordRejected": true
+      }
+    },
+    "only-current-password-page-copies-remain-in-owned-archive-directory": {
+      "status": "PASS",
+      "ms": 114,
+      "result": {
+        "referencedPages": 8,
+        "files": 8,
+        "noOldOrphanCopies": true
+      }
+    },
+    "native-real-password-transaction-back-to-original-synthetic-credential": {
+      "status": "PASS",
+      "ms": 6674,
+      "result": {
+        "messages": 608,
+        "audit": true,
+        "originalSyntheticCredentialRestored": true
+      }
+    }
+  },
+  "pageErrors": [],
+  "aiRequests": 0,
+  "realDevice": false
+}

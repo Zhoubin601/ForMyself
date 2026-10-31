@@ -1,0 +1,877 @@
+{
+  "status": "NO_GO",
+  "at": "2026-10-31T06:12:14.065Z",
+  "handoff": "docs/20261031-kanata-cloud-handoff-v1.md",
+  "branch": "Kanata",
+  "baseHead": "62a2b755a622a181f6d530525e15ad070dd33b9f",
+  "build": "9411037b9993622e6816dc4915bb535633f7a7e75edfbda18c5a5034eb17be6c",
+  "fullCheck": {
+    "command": "npm run check",
+    "log": "check-cloud-handoff-20261031.txt",
+    "exitCode": 0,
+    "nodePassed": 565,
+    "componentPassed": 382,
+    "componentFiles": 40,
+    "lintErrors": 0,
+    "lintWarnings": 42,
+    "strictBuild": "PASS"
+  },
+  "androidBuild": {
+    "status": "PASS",
+    "log": "android-build-journal-release-20261031.txt",
+    "verifiedResources": 78,
+    "qaHarnessAbsent": true
+  },
+  "instrumentation": {
+    "pass": 8,
+    "skipped": 1,
+    "failed": 0,
+    "log": "instrumentation-cloud-handoff-20261031.txt",
+    "note": "TodoWidgetHarness Assume skip, not a ninth pass"
+  },
+  "featureRegression": {
+    "web": {
+      "status": "PASS",
+      "at": "2026-10-31T05:40:42.605Z",
+      "kind": "web",
+      "syntheticOnly": true,
+      "controlledProvider": true,
+      "realModelRequests": 0,
+      "checks": {
+        "blank-world-zero-and-one-role-cannot-create-a-group": {
+          "status": "PASS",
+          "ms": 302,
+          "value": {
+            "emptyAndOneRoleBlocked": true,
+            "independentInstances": 3,
+            "modelRequests": 0
+          }
+        },
+        "member-selection-validation-and-a-fresh-two-role-group": {
+          "status": "PASS",
+          "ms": 187,
+          "value": {
+            "newConversation": "group-2c222ca0-2fca-485f-a2b7-1b5f62a28e1e",
+            "roles": 2,
+            "onlyCurrentWorld": true,
+            "noHistoryOrGrants": true,
+            "literalTitle": true
+          }
+        },
+        "a-second-custom-group-has-its-own-identity-and-no-prior-history": {
+          "status": "PASS",
+          "ms": 152,
+          "value": {
+            "differentGroupId": true,
+            "roles": 3,
+            "otherWorldsExact": true,
+            "modelRequests": 0
+          }
+        },
+        "three-actor-four-message-policy-and-validation": {
+          "status": "PASS",
+          "ms": 133,
+          "value": {
+            "speakers": 3,
+            "messages": 4,
+            "noConfigModelCall": true
+          }
+        },
+        "third-provider-failure-keeps-two-actor-batches-and-original-source": {
+          "status": "PASS",
+          "ms": 1000,
+          "value": {
+            "completedAiRows": 3,
+            "providerAttempts": 3
+          }
+        },
+        "retry-fills-only-third-actor-and-preserves-every-paragraph": {
+          "status": "PASS",
+          "ms": 166,
+          "value": {
+            "actors": 3,
+            "aiRows": 4,
+            "sourceRows": 1,
+            "paragraphsPreserved": true
+          }
+        },
+        "one-actor-one-message-policy-keeps-history-and-merges-new-full-reply": {
+          "status": "PASS",
+          "ms": 875,
+          "value": {
+            "newAiRows": 1,
+            "previousAiRows": 4,
+            "bodyPreserved": true
+          }
+        },
+        "actual-full-coordinator-restores-scoped-policy-and-entire-conversation": {
+          "status": "PASS",
+          "ms": 327,
+          "value": {
+            "actualCoordinator": true,
+            "policyPreserved": true,
+            "exactRows": 7
+          }
+        },
+        "activity-setting-persists-with-inline-error-and-no-model-request": {
+          "status": "PASS",
+          "ms": 144,
+          "value": {
+            "enabled": true,
+            "waitMs": 30000,
+            "requests": 0
+          }
+        },
+        "busy-source-is-durable-before-charge-and-explicit-immediate-replies-once": {
+          "status": "PASS",
+          "ms": 1072,
+          "value": {
+            "durableBeforeRequest": true,
+            "noInventedBusyMessage": true,
+            "cancelledPending": true,
+            "userRows": 1,
+            "requests": 1
+          }
+        },
+        "cold-owner-loads-pending-activity-task-and-real-foreground-composition-completes-once": {
+          "status": "PASS",
+          "ms": 31300,
+          "value": {
+            "loadedTask": true,
+            "savedConfig": true,
+            "actualForegroundLifecycle": true,
+            "userRows": 2,
+            "aiRows": 6,
+            "requests": 1
+          }
+        },
+        "external-full-restore-retains-activity-policy-but-pauses-the-waiting-send": {
+          "status": "PASS",
+          "ms": 1200,
+          "value": {
+            "actualCoordinator": true,
+            "pendingSendPaused": true,
+            "policyPreserved": true,
+            "noAdditionalRequest": true
+          }
+        },
+        "cold-storage-reload-keeps-policy-and-the-same-seven-rows": {
+          "status": "PASS",
+          "ms": 510,
+          "value": {
+            "rows": 7,
+            "policy": true,
+            "processRestart": false
+          }
+        }
+      },
+      "pageErrors": [],
+      "build": {
+        "syntheticOnly": true,
+        "resourceCount": 78,
+        "frozenAt": "2026-10-31T13:39:09.4840060+08:00",
+        "sourceCheck": "check-journal-release-20261031.txt",
+        "productionPreview": true
+      },
+      "cleanup": {
+        "status": "PASS",
+        "actualCoordinator": true,
+        "chatRows": 0,
+        "otherModulesAndSettingsPreserved": true
+      },
+      "fixtureRequests": 7
+    },
+    "native": {
+      "status": "PASS",
+      "at": "2026-10-31T05:41:23.267Z",
+      "kind": "native",
+      "syntheticOnly": true,
+      "controlledProvider": true,
+      "realModelRequests": 0,
+      "checks": {
+        "blank-world-zero-and-one-role-cannot-create-a-group": {
+          "status": "PASS",
+          "ms": 5603,
+          "value": {
+            "emptyAndOneRoleBlocked": true,
+            "independentInstances": 3,
+            "modelRequests": 0
+          }
+        },
+        "member-selection-validation-and-a-fresh-two-role-group": {
+          "status": "PASS",
+          "ms": 2781,
+          "value": {
+            "newConversation": "group-b1fea1c9-7ca3-49d1-acf2-860d9fcc3167",
+            "roles": 2,
+            "onlyCurrentWorld": true,
+            "noHistoryOrGrants": true,
+            "literalTitle": true
+          }
+        },
+        "a-second-custom-group-has-its-own-identity-and-no-prior-history": {
+          "status": "PASS",
+          "ms": 1889,
+          "value": {
+            "differentGroupId": true,
+            "roles": 3,
+            "otherWorldsExact": true,
+            "modelRequests": 0
+          }
+        },
+        "three-actor-four-message-policy-and-validation": {
+          "status": "PASS",
+          "ms": 1741,
+          "value": {
+            "speakers": 3,
+            "messages": 4,
+            "noConfigModelCall": true
+          }
+        },
+        "third-provider-failure-keeps-two-actor-batches-and-original-source": {
+          "status": "PASS",
+          "ms": 5856,
+          "value": {
+            "completedAiRows": 3,
+            "providerAttempts": 3
+          }
+        },
+        "retry-fills-only-third-actor-and-preserves-every-paragraph": {
+          "status": "PASS",
+          "ms": 2645,
+          "value": {
+            "actors": 3,
+            "aiRows": 4,
+            "sourceRows": 1,
+            "paragraphsPreserved": true
+          }
+        },
+        "one-actor-one-message-policy-keeps-history-and-merges-new-full-reply": {
+          "status": "PASS",
+          "ms": 3972,
+          "value": {
+            "newAiRows": 1,
+            "previousAiRows": 4,
+            "bodyPreserved": true
+          }
+        },
+        "actual-full-coordinator-restores-scoped-policy-and-entire-conversation": {
+          "status": "PASS",
+          "ms": 4070,
+          "value": {
+            "actualCoordinator": true,
+            "policyPreserved": true,
+            "exactRows": 7
+          }
+        },
+        "activity-setting-persists-with-inline-error-and-no-model-request": {
+          "status": "PASS",
+          "ms": 1089,
+          "value": {
+            "enabled": true,
+            "waitMs": 30000,
+            "requests": 0
+          }
+        },
+        "busy-source-is-durable-before-charge-and-explicit-immediate-replies-once": {
+          "status": "PASS",
+          "ms": 4426,
+          "value": {
+            "durableBeforeRequest": true,
+            "noInventedBusyMessage": true,
+            "cancelledPending": true,
+            "userRows": 1,
+            "requests": 1
+          }
+        },
+        "cold-owner-loads-pending-activity-task-and-real-foreground-composition-completes-once": {
+          "status": "PASS",
+          "ms": 36097,
+          "value": {
+            "loadedTask": true,
+            "savedConfig": true,
+            "actualForegroundLifecycle": true,
+            "userRows": 2,
+            "aiRows": 6,
+            "requests": 1
+          }
+        },
+        "external-full-restore-retains-activity-policy-but-pauses-the-waiting-send": {
+          "status": "PASS",
+          "ms": 7252,
+          "value": {
+            "actualCoordinator": true,
+            "pendingSendPaused": true,
+            "policyPreserved": true,
+            "noAdditionalRequest": true
+          }
+        },
+        "cold-storage-reload-keeps-policy-and-the-same-seven-rows": {
+          "status": "PASS",
+          "ms": 7253,
+          "value": {
+            "rows": 7,
+            "policy": true,
+            "processRestart": true
+          }
+        }
+      },
+      "pageErrors": [],
+      "build": "9411037b9993622e6816dc4915bb535633f7a7e75edfbda18c5a5034eb17be6c",
+      "baselineArtifact": "journal-release-20261031-native-baseline-1793425289128.enc",
+      "cleanup": {
+        "status": "PASS",
+        "actualCoordinator": true,
+        "chatRows": 608,
+        "otherModulesAndSettingsPreserved": true
+      },
+      "fixtureRequests": 7
+    }
+  },
+  "capacity": [
+    {
+      "platform": "native",
+      "count": 1000,
+      "sourceFile": "native-capacity-journal-release-20261031-1000.json",
+      "build": "9411037b9993622e6816dc4915bb535633f7a7e75edfbda18c5a5034eb17be6c",
+      "status": "PASS",
+      "memoryGate": "PASS",
+      "timeGate": "PASS",
+      "peakMiB": 250.3359375,
+      "timeChecks": [
+        {
+          "name": "protectedColdLoad",
+          "actualMs": 2144,
+          "limitMs": 5000,
+          "status": "PASS"
+        },
+        {
+          "name": "saveHeader",
+          "actualMs": 319.6,
+          "limitMs": 5000,
+          "status": "PASS"
+        },
+        {
+          "name": "diskPage50",
+          "actualMs": 61,
+          "limitMs": 1000,
+          "status": "PASS"
+        },
+        {
+          "name": "indexedExactSearch",
+          "actualMs": 23.7,
+          "limitMs": 2000,
+          "status": "PASS"
+        },
+        {
+          "name": "portableImportActualCoordinator",
+          "actualMs": 1806.4,
+          "limitMs": 120000,
+          "status": "PASS"
+        },
+        {
+          "name": "fullExportActualCoordinator",
+          "actualMs": 351.5,
+          "limitMs": 120000,
+          "status": "PASS"
+        },
+        {
+          "name": "fullRestoreActualCoordinator",
+          "actualMs": 1896.1,
+          "limitMs": 120000,
+          "status": "PASS"
+        },
+        {
+          "name": "masterPasswordActualUiTransaction",
+          "actualMs": 9444.5,
+          "limitMs": 120000,
+          "status": "PASS"
+        },
+        {
+          "name": "restoreSyntheticCredentialActualUi",
+          "actualMs": 2508.1,
+          "limitMs": 120000,
+          "status": "PASS"
+        }
+      ],
+      "ms": {
+        "portableImportActualCoordinator": 1806.4,
+        "coldPageReloadAndProtectedLoad": 4314.9,
+        "diskPage50": 61,
+        "indexedExactSearch": 23.7,
+        "saveHeader": 319.6,
+        "fullExportActualCoordinator": 351.5,
+        "fullRestoreActualCoordinator": 1896.1,
+        "restoredMessageProofExportVerification": 130.3,
+        "masterPasswordActualUiTransaction": 9444.5,
+        "restoreSyntheticCredentialActualUi": 2508.1
+      },
+      "reassessment": {
+        "onlyAssessmentChanged": true,
+        "originalStatus": "PASS",
+        "originalMeasurementsPreserved": true,
+        "reason": "Include the measured return credential change in the same 120s rekey gate",
+        "source": "native-capacity-journal-release-20261031-1000-before-gate-fix.json"
+      },
+      "aiRequests": 0,
+      "pageErrors": []
+    },
+    {
+      "platform": "native",
+      "count": 10000,
+      "sourceFile": "native-capacity-journal-release-20261031-10000.json",
+      "build": "9411037b9993622e6816dc4915bb535633f7a7e75edfbda18c5a5034eb17be6c",
+      "status": "PASS",
+      "memoryGate": "PASS",
+      "timeGate": "PASS",
+      "peakMiB": 247.46875,
+      "timeChecks": [
+        {
+          "name": "protectedColdLoad",
+          "actualMs": 2287.600000000093,
+          "limitMs": 10000,
+          "status": "PASS"
+        },
+        {
+          "name": "saveHeader",
+          "actualMs": 1264.5,
+          "limitMs": 10000,
+          "status": "PASS"
+        },
+        {
+          "name": "diskPage50",
+          "actualMs": 200.2,
+          "limitMs": 1000,
+          "status": "PASS"
+        },
+        {
+          "name": "indexedExactSearch",
+          "actualMs": 195.8,
+          "limitMs": 2000,
+          "status": "PASS"
+        },
+        {
+          "name": "portableImportActualCoordinator",
+          "actualMs": 8719.1,
+          "limitMs": 120000,
+          "status": "PASS"
+        },
+        {
+          "name": "fullExportActualCoordinator",
+          "actualMs": 3418.8,
+          "limitMs": 120000,
+          "status": "PASS"
+        },
+        {
+          "name": "fullRestoreActualCoordinator",
+          "actualMs": 11603.3,
+          "limitMs": 120000,
+          "status": "PASS"
+        },
+        {
+          "name": "masterPasswordActualUiTransaction",
+          "actualMs": 12734.6,
+          "limitMs": 120000,
+          "status": "PASS"
+        },
+        {
+          "name": "restoreSyntheticCredentialActualUi",
+          "actualMs": 11174.2,
+          "limitMs": 120000,
+          "status": "PASS"
+        }
+      ],
+      "ms": {
+        "portableImportActualCoordinator": 8719.1,
+        "coldPageReloadAndProtectedLoad": 4483.6,
+        "diskPage50": 200.2,
+        "indexedExactSearch": 195.8,
+        "saveHeader": 1264.5,
+        "fullExportActualCoordinator": 3418.8,
+        "fullRestoreActualCoordinator": 11603.3,
+        "restoredMessageProofExportVerification": 3144.7,
+        "masterPasswordActualUiTransaction": 12734.6,
+        "restoreSyntheticCredentialActualUi": 11174.2
+      },
+      "reassessment": {
+        "onlyAssessmentChanged": true,
+        "originalStatus": "PASS",
+        "originalMeasurementsPreserved": true,
+        "reason": "Include the measured return credential change in the same 120s rekey gate",
+        "source": "native-capacity-journal-release-20261031-10000-before-gate-fix.json"
+      },
+      "aiRequests": 0,
+      "pageErrors": []
+    },
+    {
+      "platform": "native",
+      "count": 100000,
+      "sourceFile": "native-capacity-journal-release-20261031-100000.json",
+      "build": "9411037b9993622e6816dc4915bb535633f7a7e75edfbda18c5a5034eb17be6c",
+      "status": "FAIL_CAPACITY_GATE",
+      "memoryGate": "PASS",
+      "timeGate": "FAIL",
+      "peakMiB": 501.71484375,
+      "timeChecks": [
+        {
+          "name": "protectedColdLoad",
+          "actualMs": 5411.799999999814,
+          "limitMs": 30000,
+          "status": "PASS"
+        },
+        {
+          "name": "saveHeader",
+          "actualMs": 6683.3,
+          "limitMs": 30000,
+          "status": "PASS"
+        },
+        {
+          "name": "diskPage50",
+          "actualMs": 178.9,
+          "limitMs": 1000,
+          "status": "PASS"
+        },
+        {
+          "name": "indexedExactSearch",
+          "actualMs": 265.2,
+          "limitMs": 2000,
+          "status": "PASS"
+        },
+        {
+          "name": "portableImportActualCoordinator",
+          "actualMs": 68166.5,
+          "limitMs": 120000,
+          "status": "PASS"
+        },
+        {
+          "name": "fullExportActualCoordinator",
+          "actualMs": 33509.2,
+          "limitMs": 120000,
+          "status": "PASS"
+        },
+        {
+          "name": "fullRestoreActualCoordinator",
+          "actualMs": 97331.3,
+          "limitMs": 120000,
+          "status": "PASS"
+        },
+        {
+          "name": "masterPasswordActualUiTransaction",
+          "actualMs": 116779.4,
+          "limitMs": 120000,
+          "status": "PASS"
+        },
+        {
+          "name": "restoreSyntheticCredentialActualUi",
+          "actualMs": 148057.7,
+          "limitMs": 120000,
+          "status": "FAIL"
+        }
+      ],
+      "ms": {
+        "portableImportActualCoordinator": 68166.5,
+        "coldPageReloadAndProtectedLoad": 7652.8,
+        "diskPage50": 178.9,
+        "indexedExactSearch": 265.2,
+        "saveHeader": 6683.3,
+        "fullExportActualCoordinator": 33509.2,
+        "fullRestoreActualCoordinator": 97331.3,
+        "restoredMessageProofExportVerification": 31697,
+        "masterPasswordActualUiTransaction": 116779.4,
+        "restoreSyntheticCredentialActualUi": 148057.7
+      },
+      "reassessment": {
+        "onlyAssessmentChanged": true,
+        "originalStatus": "PASS",
+        "originalMeasurementsPreserved": true,
+        "reason": "Include the measured return credential change in the same 120s rekey gate",
+        "source": "native-capacity-journal-release-20261031-100000-before-gate-fix.json"
+      },
+      "aiRequests": 0,
+      "pageErrors": []
+    },
+    {
+      "platform": "web",
+      "count": 1000,
+      "sourceFile": "web-capacity-journal-release-20261031-1000.json",
+      "build": "9411037b9993622e6816dc4915bb535633f7a7e75edfbda18c5a5034eb17be6c",
+      "status": "PASS",
+      "memoryGate": "PASS",
+      "timeGate": "PASS",
+      "peakMiB": 232.87890625,
+      "timeChecks": [
+        {
+          "name": "protectedColdLoad",
+          "actualMs": 313,
+          "limitMs": 5000,
+          "status": "PASS"
+        },
+        {
+          "name": "saveHeader",
+          "actualMs": 140.2,
+          "limitMs": 5000,
+          "status": "PASS"
+        },
+        {
+          "name": "diskPage50",
+          "actualMs": 14.1,
+          "limitMs": 1000,
+          "status": "PASS"
+        },
+        {
+          "name": "indexedExactSearch",
+          "actualMs": 9.9,
+          "limitMs": 2000,
+          "status": "PASS"
+        },
+        {
+          "name": "portableImportActualCoordinator",
+          "actualMs": 365.2,
+          "limitMs": 120000,
+          "status": "PASS"
+        },
+        {
+          "name": "fullExportActualCoordinator",
+          "actualMs": 139.3,
+          "limitMs": 120000,
+          "status": "PASS"
+        },
+        {
+          "name": "fullRestoreActualCoordinator",
+          "actualMs": 572.7,
+          "limitMs": 120000,
+          "status": "PASS"
+        },
+        {
+          "name": "masterPasswordActualUiTransaction",
+          "actualMs": 1017.1,
+          "limitMs": 120000,
+          "status": "PASS"
+        }
+      ],
+      "ms": {
+        "portableImportActualCoordinator": 365.2,
+        "coldPageReloadAndProtectedLoad": 1649.7,
+        "diskPage50": 14.1,
+        "indexedExactSearch": 9.9,
+        "saveHeader": 140.2,
+        "fullExportActualCoordinator": 139.3,
+        "fullRestoreActualCoordinator": 572.7,
+        "restoredMessageProofExportVerification": 39.8,
+        "masterPasswordActualUiTransaction": 1017.1
+      },
+      "reassessment": null,
+      "aiRequests": 0,
+      "pageErrors": []
+    },
+    {
+      "platform": "web",
+      "count": 10000,
+      "sourceFile": "web-capacity-journal-release-20261031-10000.json",
+      "build": "9411037b9993622e6816dc4915bb535633f7a7e75edfbda18c5a5034eb17be6c",
+      "status": "PASS",
+      "memoryGate": "PASS",
+      "timeGate": "PASS",
+      "peakMiB": 313.57421875,
+      "timeChecks": [
+        {
+          "name": "protectedColdLoad",
+          "actualMs": 356.2999999988824,
+          "limitMs": 10000,
+          "status": "PASS"
+        },
+        {
+          "name": "saveHeader",
+          "actualMs": 395.9,
+          "limitMs": 10000,
+          "status": "PASS"
+        },
+        {
+          "name": "diskPage50",
+          "actualMs": 16.3,
+          "limitMs": 1000,
+          "status": "PASS"
+        },
+        {
+          "name": "indexedExactSearch",
+          "actualMs": 14.9,
+          "limitMs": 2000,
+          "status": "PASS"
+        },
+        {
+          "name": "portableImportActualCoordinator",
+          "actualMs": 2150.3,
+          "limitMs": 120000,
+          "status": "PASS"
+        },
+        {
+          "name": "fullExportActualCoordinator",
+          "actualMs": 1184.1,
+          "limitMs": 120000,
+          "status": "PASS"
+        },
+        {
+          "name": "fullRestoreActualCoordinator",
+          "actualMs": 4332.4,
+          "limitMs": 120000,
+          "status": "PASS"
+        },
+        {
+          "name": "masterPasswordActualUiTransaction",
+          "actualMs": 4386.7,
+          "limitMs": 120000,
+          "status": "PASS"
+        }
+      ],
+      "ms": {
+        "portableImportActualCoordinator": 2150.3,
+        "coldPageReloadAndProtectedLoad": 1446.5,
+        "diskPage50": 16.3,
+        "indexedExactSearch": 14.9,
+        "saveHeader": 395.9,
+        "fullExportActualCoordinator": 1184.1,
+        "fullRestoreActualCoordinator": 4332.4,
+        "restoredMessageProofExportVerification": 1346.2,
+        "masterPasswordActualUiTransaction": 4386.7
+      },
+      "reassessment": null,
+      "aiRequests": 0,
+      "pageErrors": []
+    },
+    {
+      "platform": "web",
+      "count": 100000,
+      "sourceFile": "web-capacity-journal-release-20261031-100000.json",
+      "build": "9411037b9993622e6816dc4915bb535633f7a7e75edfbda18c5a5034eb17be6c",
+      "status": "FAIL_CAPACITY_GATE",
+      "memoryGate": "FAIL",
+      "timeGate": "PASS",
+      "peakMiB": 834.9140625,
+      "timeChecks": [
+        {
+          "name": "protectedColdLoad",
+          "actualMs": 1396.7000000011176,
+          "limitMs": 30000,
+          "status": "PASS"
+        },
+        {
+          "name": "saveHeader",
+          "actualMs": 2877.7,
+          "limitMs": 30000,
+          "status": "PASS"
+        },
+        {
+          "name": "diskPage50",
+          "actualMs": 29.3,
+          "limitMs": 1000,
+          "status": "PASS"
+        },
+        {
+          "name": "indexedExactSearch",
+          "actualMs": 59.2,
+          "limitMs": 2000,
+          "status": "PASS"
+        },
+        {
+          "name": "portableImportActualCoordinator",
+          "actualMs": 26777.6,
+          "limitMs": 120000,
+          "status": "PASS"
+        },
+        {
+          "name": "fullExportActualCoordinator",
+          "actualMs": 12485,
+          "limitMs": 120000,
+          "status": "PASS"
+        },
+        {
+          "name": "fullRestoreActualCoordinator",
+          "actualMs": 35205.3,
+          "limitMs": 120000,
+          "status": "PASS"
+        },
+        {
+          "name": "masterPasswordActualUiTransaction",
+          "actualMs": 36942.9,
+          "limitMs": 120000,
+          "status": "PASS"
+        }
+      ],
+      "ms": {
+        "portableImportActualCoordinator": 26777.6,
+        "coldPageReloadAndProtectedLoad": 2612.2,
+        "diskPage50": 29.3,
+        "indexedExactSearch": 59.2,
+        "saveHeader": 2877.7,
+        "fullExportActualCoordinator": 12485,
+        "fullRestoreActualCoordinator": 35205.3,
+        "restoredMessageProofExportVerification": 9695,
+        "masterPasswordActualUiTransaction": 36942.9
+      },
+      "reassessment": null,
+      "aiRequests": 0,
+      "pageErrors": []
+    }
+  ],
+  "baselineIntegrity": {
+    "status": "PASS",
+    "at": "2026-10-31T06:05:46.674Z",
+    "syntheticOnly": true,
+    "apkSha256": "9411037b9993622e6816dc4915bb535633f7a7e75edfbda18c5a5034eb17be6c",
+    "aiRequests": 0,
+    "pageErrors": [],
+    "integrity": {
+      "modules": [
+        "savings",
+        "weight",
+        "mood",
+        "passwords",
+        "schedules",
+        "todos",
+        "chat"
+      ],
+      "settings": true,
+      "metadata": true,
+      "todoRevision": {
+        "before": 3,
+        "after": 44,
+        "advanced": true
+      },
+      "moodRollover": {
+        "originalRows": 1,
+        "originalsPreserved": true,
+        "automaticMoodRows": [
+          {
+            "id": "1793426296326_blg8",
+            "date": "2026-10-30"
+          }
+        ],
+        "basis": "existing-moodStore-autoFillMissingDays"
+      },
+      "autoLockDelaySeconds": 0
+    },
+    "expiryTriggeredExplicitly": false,
+    "backgroundPlaintextReleased": true
+  },
+  "gateCorrection": {
+    "rule": "Both actual password transactions use 120000ms",
+    "nodeRegression": "capacity-gate-regression-20261031.txt",
+    "originalErroneousPassPreserved": true,
+    "native100000ReturnMs": 148057.7,
+    "onlyAssessmentChanged": true
+  },
+  "remaining": [
+    "Web100k peak 834.9141MiB >768MiB",
+    "Android100k return credential 148.0577s >120s",
+    "Dense provenance remains pinned in active graph",
+    "Legacy life reminder role integration",
+    "Whole-app usage aggregation/date trends",
+    "Advanced autonomous emotion/relationship decisions",
+    "Latest complete fifteen-scene and preset acceptance"
+  ],
+  "git": {
+    "userAuthorizedWipCheckpointAndPush": true,
+    "p7Accepted": false,
+    "published": false
+  }
+}

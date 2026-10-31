@@ -1,0 +1,6 @@
+
+> formyself-app@0.0.0 typecheck
+> vue-tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.contracts.json
+
+src/features/chat/kanataStore.js(374,126): error TS2322: Type '{ id: string; createdAt: number; } | null' is not assignable to type 'null | undefined'.
+  Type '{ id: string; createdAt: number; }' is not assignable to type 'null | undefined'.

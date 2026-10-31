@@ -32,7 +32,9 @@ export function createKanataDeferredRuntime(adapters={}) {
         // The preparation lease is finished before invoking the serial chat operation.
         if(!result||!valid())continue
         try{
-          await chat.send(/** @type {string} */(result.conversationId),{retryMessageId:result.deferredReply?.sourceMessageId,stream:false,delayMs:0})
+          // A due task has exhausted its user-selected bounded wait. Rebuild the latest
+          // conversation/knowledge context, but never recursively postpone the same task.
+          await chat.send(/** @type {string} */(result.conversationId),{retryMessageId:result.deferredReply?.sourceMessageId,stream:false,delayMs:0,timing:'immediate'})
           if(valid())await access.runOperation(['chat'],()=>store.update(draft=>{const task=draft.tasks.find(t=>t.id===id);if(task?.state==='running'){task.state='succeeded';task.leaseUntil=0}}))
         }catch{
           if(valid())await access.runOperation(['chat'],()=>store.update(draft=>{const task=draft.tasks.find(t=>t.id===id);if(task?.state==='running'){task.state='failed';task.leaseUntil=0;task.errorCode='DEFERRED_REPLY_FAILED'}}))

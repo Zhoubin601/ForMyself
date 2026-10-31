@@ -1,0 +1,52 @@
+{
+  "mood": {
+    "expectedRows": 1,
+    "actualRows": 2,
+    "expectedKeys": [
+      {
+        "id": "1793327902946_c7ru",
+        "date": "2026-10-29",
+        "keys": [
+          "id",
+          "date",
+          "mood",
+          "note",
+          "tags",
+          "autoFilled",
+          "createdAt"
+        ]
+      }
+    ],
+    "actualKeys": [
+      {
+        "id": "1793327902946_c7ru",
+        "date": "2026-10-29",
+        "keys": [
+          "id",
+          "date",
+          "mood",
+          "note",
+          "tags",
+          "autoFilled",
+          "createdAt"
+        ]
+      },
+      {
+        "id": "1793426296326_blg8",
+        "date": "2026-10-30",
+        "keys": [
+          "id",
+          "date",
+          "mood",
+          "note",
+          "tags",
+          "autoFilled",
+          "createdAt"
+        ]
+      }
+    ]
+  },
+  "mismatches": [
+    "mood"
+  ]
+}

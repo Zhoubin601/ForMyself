@@ -10,6 +10,9 @@ import { kanataConversation, decideKanataSpeakers, buildKanataConversationContex
 import { resolveKanataCharacter } from '../features/chat/domain/kanataManagementCore.js'
 import {createKanataLifeReaders,collectKanataLifeContext} from './kanataLifeContext.js'
 import {createKanataExperienceRuntime} from './kanataExperienceRuntime.js'
+import {kanataReplyLimits,validateGroupReplyLimits} from '../features/chat/domain/groupReplyLimits.js'
+import {validateReplyTimingPolicy} from '../features/chat/domain/replyTimingPolicy.js'
+import {planKanataReplyDelay} from '../features/chat/autonomy/kanataReplyTiming.js'
 /** @typedef {import('../features/chat/domain/kanataTypes').KanataData} Data */
 /** @typedef {{snapshot:unknown,update:(change:(data:Data)=>void)=>Promise<Data>}} ChatStorePort */
 /** @param {string} code */
@@ -36,12 +39,13 @@ export function createKanataChatRuntime(adapters={}) {
   const cancel=()=>controller?.abort()
   const stop=watch(()=>auth.sessionRevision,cancel,{flush:'sync'})
   const assertSession=()=>{if(disposed||revision!==auth.sessionRevision)throw failure('KANATA_SESSION_EXPIRED');if(restoreState.blocked)throw failure('RESTORE_RECOVERY_REQUIRED')}
-  /** @param {string} conversationId @param {{text?:string,retryMessageId?:string,stream?:boolean,delayMs?:number,persistDelay?:boolean,onDelta?:(value:{instanceId:string,content:string})=>void}} options */
+  /** @param {string} conversationId @param {{text?:string,retryMessageId?:string,stream?:boolean,delayMs?:number,persistDelay?:boolean,timing?:'configured'|'immediate',onDelta?:(value:{instanceId:string,content:string})=>void}} options */
   const send=async(conversationId,options={})=>{
     assertSession();if(controller)throw failure('KANATA_REPLY_BUSY')
     if(!settings.aiApiKey?.trim())throw failure('MISSING_KEY')
-    const wait=options.delayMs??0
-    if(!Number.isSafeInteger(wait)||wait<0||wait>30000)throw failure('INVALID_REPLY_DELAY')
+    const manualWait=options.delayMs??0
+    if(!Number.isSafeInteger(manualWait)||manualWait<0||manualWait>30000)throw failure('INVALID_REPLY_DELAY')
+    if(options.timing!==undefined&&!['configured','immediate'].includes(options.timing))throw failure('INVALID_REPLY_TIMING')
     const owned=new AbortController();controller=owned
     try{
       const result=await access.runOperation(['chat'],async()=>{
@@ -54,31 +58,49 @@ export function createKanataChatRuntime(adapters={}) {
         const text=previous?.content||String(options.text||'').trim()
         if(!text||text.length>8000)throw failure('INVALID_MESSAGE')
         const speakers=decideKanataSpeakers(snapshot,c.id,text)
+        const limits=kanataReplyLimits(c)
+        const done=previous?snapshot.messages.filter(m=>m.conversationId===c.id&&m.replyToMessageId===previous.id&&m.role==='assistant'&&m.status==='complete'&&!m.deleted):[]
+        const needsReply=done.length<limits.maxMessages&&speakers.some(speaker=>!done.some(m=>m.senderId===speaker))
+        const activityWait=options.timing==='immediate'?0:planKanataReplyDelay(snapshot,c,speakers,clock())
+        const wait=options.timing==='immediate'||!needsReply?0:manualWait||activityWait
         const turnId=previous?.turnId||'turn-'+id(),messageId=previous?.id||'message-'+id()
-        if(!previous)await store.update(data=>{data.messages.push({id:messageId,worldId,conversationId:c.id,role:'user',senderType:'user',senderId:identity.id,senderNameSnapshot:identity.displayName,content:text,createdAt:clock(),revision:1,status:'complete',turnId,batchId:turnId})})
-        if(wait&&options.persistDelay){
+        const cancelPending=/** @type {Data} */(store.snapshot).tasks.some(task=>task.deferredReply&&task.conversationId===conversationId&&task.state==='pending'&&(task.deferredReply.sourceMessageId!==messageId||!wait))
+        if(!previous||cancelPending)await store.update(data=>{
+          if(!previous)data.messages.push({id:messageId,worldId,conversationId:c.id,role:'user',senderType:'user',senderId:identity.id,senderNameSnapshot:identity.displayName,content:text,createdAt:clock(),revision:1,status:'complete',turnId,batchId:turnId})
+          for(const task of data.tasks)if(task.deferredReply&&task.conversationId===conversationId&&task.state==='pending'&&(task.deferredReply.sourceMessageId!==messageId||!wait)){task.state='cancelled';task.leaseUntil=0}
+        })
+        if(wait&&(options.persistDelay||activityWait)){
           await store.update(draft=>{
             const source=draft.messages.find(m=>m.id===messageId);if(!source)throw failure('RETRY_SOURCE_UNAVAILABLE')
             const key=`deferred-reply-v1:${messageId}:${source.revision}`
             for(const task of draft.tasks)if(task.deferredReply&&task.conversationId===conversationId&&task.state==='pending'&&task.deferredReply.sourceMessageId!==messageId){task.state='cancelled';task.leaseUntil=0}
             const existing=draft.tasks.find(t=>t.idempotencyKey===key&&t.worldId===worldId)
-            if(!existing)draft.tasks.push({id:'deferred-'+id(),worldId,kind:'reply',state:'pending',idempotencyKey:key,sourceRefs:[{messageId,revision:source.revision}],sourceRevision:source.revision,attempt:0,notBefore:clock()+wait,leaseUntil:0,conversationId,resultEventIds:[],deferredReply:{sourceMessageId:messageId,sourceRevision:source.revision,expiresAt:clock()+2*3600000}})
-            else if(options.retryMessageId&&['failed','cancelled'].includes(existing.state)){existing.state='pending';existing.notBefore=clock()+wait;existing.leaseUntil=0;existing.errorCode='';if(existing.deferredReply)existing.deferredReply.expiresAt=clock()+2*3600000}
+            if(!existing)draft.tasks.push({id:'deferred-'+id(),worldId,kind:'reply',state:'pending',idempotencyKey:key,sourceRefs:[{messageId,revision:source.revision}],sourceRevision:source.revision,attempt:0,notBefore:clock()+wait,leaseUntil:0,conversationId,resultEventIds:[],deferredReply:{sourceMessageId:messageId,sourceRevision:source.revision,expiresAt:clock()+2*3600000,activityDelay:Boolean(activityWait&&!manualWait)}})
+            else if(options.retryMessageId&&['failed','cancelled'].includes(existing.state)){existing.state='pending';existing.notBefore=clock()+wait;existing.leaseUntil=0;existing.errorCode='';if(existing.deferredReply){existing.deferredReply.expiresAt=clock()+2*3600000;existing.deferredReply.activityDelay=Boolean(activityWait&&!manualWait)}}
           })
-          return{messageId,turnId,deferred:true}
+          return{messageId,turnId,deferred:true,activityDelayed:Boolean(activityWait&&!manualWait)}
         }
         const assertCurrent=()=>{
           assertSession();if(owned.signal.aborted)throw failure('ABORTED')
           const data=/** @type {Data} */(store.snapshot)
-          kanataConversation(data,conversationId)
+          const currentConversation=kanataConversation(data,conversationId)
+          if(currentConversation.revision!==c.revision||JSON.stringify(kanataReplyLimits(currentConversation))!==JSON.stringify(limits)||JSON.stringify(currentConversation.replyTiming)!==JSON.stringify(c.replyTiming))throw failure('STALE_CONTEXT')
           const latest=data.messages.filter(m=>m.conversationId===conversationId&&m.role==='user').at(-1)
           if(latest?.id!==messageId)throw failure('STALE_TURN')
         }
         assertCurrent();if(wait)await delay(wait,owned.signal)
-        for(const instanceId of speakers){
+        /** @param {Data} data */
+        const completedReplies=data=>data.messages.filter(m=>m.worldId===worldId&&m.conversationId===conversationId&&m.replyToMessageId===messageId&&m.role==='assistant'&&m.status==='complete'&&!m.deleted)
+        const completed=completedReplies(/** @type {Data} */(store.snapshot))
+        const pending=speakers.filter(instanceId=>!completed.some(m=>m.senderId===instanceId)).slice(0,Math.max(0,limits.maxMessages-completed.length))
+        for(const [index,instanceId] of pending.entries()){
           assertCurrent()
           let data=/** @type {Data} */(store.snapshot)
-          if(data.messages.some(m=>m.replyToMessageId===messageId&&m.senderId===instanceId&&m.status==='complete'))continue
+          if(completedReplies(data).some(m=>m.senderId===instanceId))continue
+          const remaining=limits.maxMessages-completedReplies(data).length
+          if(remaining<1)break
+          const reserved=Math.min(pending.length-index-1,remaining-1)
+          const bubbleLimit=Math.min(4,remaining-reserved)
           const life=await collectKanataLifeContext(data,{worldId,instanceId,group:c.type==='group'},lifeReaders)
           assertCurrent();data=/** @type {Data} */(store.snapshot)
           const lifeNow=await collectKanataLifeContext(data,{worldId,instanceId,group:c.type==='group'},lifeReaders)
@@ -97,7 +119,7 @@ export function createKanataChatRuntime(adapters={}) {
           assertCurrent()
           const freshContext=buildKanataConversationContext(/** @type {Data} */(store.snapshot),c.id,instanceId,{lifeEntries:afterLife.entries,lifeSources:afterLife.lifeSources})
           if(afterLife.signature!==life.signature||freshContext.knowledgeSignature!==context.knowledgeSignature||JSON.stringify(freshContext.messages)!==JSON.stringify(context.messages))throw failure('STALE_CONTEXT')
-          const bubbles=splitKanataBubbles(response.content,context.mode),batchId='batch-'+id(),name=resolveKanataCharacter(data,instanceId).name
+          const bubbles=splitKanataBubbles(response.content,context.mode,bubbleLimit),batchId='batch-'+id(),name=resolveKanataCharacter(data,instanceId).name
           // All bubbles of one speaker commit together: cancellation/save failure cannot leave
           // a complete first bubble that makes retry incorrectly skip the remaining reply.
           assertCurrent()
@@ -125,7 +147,45 @@ export function createKanataChatRuntime(adapters={}) {
     if(result===false)throw failure('KANATA_OPERATION_CANCELLED')
     return result
   }
+  /** Explicitly configured limits are per group, with optimistic revision protection.
+   * @param {string} conversationId @param {number} expectedRevision
+   * @param {import('../features/chat/domain/kanataTypes').GroupReplyLimits} input */
+  const setGroupLimits=async(conversationId,expectedRevision,input)=>{
+    assertSession()
+    const limits=validateGroupReplyLimits(input)
+    if(!Number.isSafeInteger(expectedRevision)||expectedRevision<1)throw failure('INVALID_GROUP_REVISION')
+    cancel()
+    const result=await access.runOperation(['chat'],()=>{
+      assertSession()
+      return store.update(data=>{
+        const conversation=kanataConversation(data,conversationId)
+        if(conversation.type!=='group')throw failure('GROUP_CONVERSATION_REQUIRED')
+        if(conversation.revision!==expectedRevision)throw failure('STALE_GROUP_LIMITS')
+        conversation.replyLimits=limits;conversation.revision++
+      })
+    })
+    if(result===false)throw failure('KANATA_OPERATION_CANCELLED')
+    return result
+  }
   /** @param {string} conversationId */
   const cancelDeferred=async conversationId=>{assertSession();const result=await access.runOperation(['chat'],()=>store.update(draft=>{assertSession();for(const task of draft.tasks)if(task.deferredReply&&task.conversationId===conversationId&&task.state==='pending'){task.state='cancelled';task.leaseUntil=0}}));if(result===false)throw failure('KANATA_OPERATION_CANCELLED');return result}
-  return{send,setMode,cancel,cancelDeferred,reviseMessage:experience.reviseMessage,dispose:()=>{disposed=true;cancel();experience.dispose();stop()}}
+  /** @param {string} conversationId @param {number} expectedRevision
+   * @param {import('../features/chat/domain/kanataTypes').ReplyTimingPolicy} input */
+  const setReplyTiming=async(conversationId,expectedRevision,input)=>{
+    assertSession();const policy=validateReplyTimingPolicy(input)
+    if(!Number.isSafeInteger(expectedRevision)||expectedRevision<1)throw failure('INVALID_REPLY_TIMING_REVISION')
+    cancel()
+    const result=await access.runOperation(['chat'],()=>{
+      assertSession()
+      return store.update(data=>{
+        const conversation=kanataConversation(data,conversationId)
+        if(conversation.revision!==expectedRevision)throw failure('STALE_REPLY_TIMING')
+        conversation.replyTiming=policy;conversation.revision++
+        if(!policy.enabled)for(const task of data.tasks)if(task.conversationId===conversationId&&task.state==='pending'&&task.deferredReply?.activityDelay)task.notBefore=Math.min(task.notBefore,clock())
+      })
+    })
+    if(result===false)throw failure('KANATA_OPERATION_CANCELLED')
+    return result
+  }
+  return{send,setMode,setGroupLimits,setReplyTiming,cancel,cancelDeferred,reviseMessage:experience.reviseMessage,dispose:()=>{disposed=true;cancel();experience.dispose();stop()}}
 }

@@ -33,9 +33,13 @@ export interface CharacterInstance {
 export interface WorldUserIdentity {
   id: string; worldId: string; userId: string; displayName: string; background: string; revision: number
 }
+export interface GroupReplyLimits { maxSpeakers:number; maxMessages:number }
+export interface ReplyTimingPolicy { enabled:boolean; waitMs:number }
 export interface Conversation {
   id: string; worldId: string; type: 'private' | 'group' | 'character'
   title: string; participantIds: string[]; mode: ChatMode | 'inherit'; revision: number; lastReadAt: number
+  replyLimits?: GroupReplyLimits
+  replyTiming?: ReplyTimingPolicy
 }
 export interface Message {
   id: string; worldId: string; conversationId: string; role: 'user' | 'assistant'
@@ -88,7 +92,7 @@ export interface BackgroundTask {
   simulationWindow?: {start:number;end:number;skippedMs:number;timeZone:string}
   social?: {windowTaskId:string;date:string;participantIds:string[];location:string;effectiveAt:number}
   contact?: {date:string;expiresAt:number;notificationId:number;notificationState:'none'|'dispatching'|'sent'|'denied'|'failed'}
-  deferredReply?: {sourceMessageId:string;sourceRevision:number;expiresAt:number}
+  deferredReply?: {sourceMessageId:string;sourceRevision:number;expiresAt:number;activityDelay?:boolean}
 }
 export type LifeModule = 'home' | 'mood' | 'weight' | 'savings' | 'schedule' | 'todo' | 'reports'
 export interface LifeGrant {
@@ -123,7 +127,7 @@ export interface PresetApplication {
   id: string; initializationKey: string; presetSourceId: string; presetVersion: number; worldId: string
 }
 export interface KanataData {
-  type: 'kanata-data'; version: 1; userId: string
+  type: 'kanata-data'; version: 1 | 2; userId: string
   worlds: World[]; cards: CharacterCard[]; cardVersions: CharacterCardVersion[]
   identities: WorldUserIdentity[]; instances: CharacterInstance[]; conversations: Conversation[]
   messages: Message[]; lorebookEntries: LorebookEntry[]; memories: Memory[]
@@ -134,6 +138,16 @@ export interface KanataData {
   messageAudits?: MessageAudit[]
   roleBindings?: KanataRoleBindings; memoryPolicies?: MemoryPolicy[]
   autonomyPolicies?: AutonomyPolicy[]; virtualSchedules?: VirtualSchedule[]
+  /** Storage-only references; portable backup exports hydrate every body. */
+  messageArchives?: MessageArchiveDescriptor[]
+}
+export interface MessageArchiveDescriptor {
+  version: 1; key: string; worldId: string; conversationId: string; bytes: number; index: string
+  messages: {id: string; revision: number; createdAt: number}[]
+}
+export interface MessageHistoryRequest {
+  worldId: string; conversationId: string; text?: string; limit?: number
+  cursor?: {worldId:string;conversationId:string;text:string;generation:number;before:{id:string;createdAt:number}}
 }
 export interface KanataUsageEvent extends CompletionAttempt {
   worldId: string; conversationId: string; instanceId: string; turnId: string

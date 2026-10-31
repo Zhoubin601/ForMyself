@@ -1,0 +1,29 @@
+{
+  "status": "PASS",
+  "syntheticOnly": true,
+  "build": {
+    "syntheticOnly": true,
+    "productionPreview": true,
+    "resourceCount": 78,
+    "sourceCheck": "check-activity-timing.txt",
+    "frozenAt": "2026-10-30T13:15:56.4320543+08:00"
+  },
+  "viewport": {
+    "width": 375,
+    "height": 812
+  },
+  "checks": {
+    "group": {
+      "inlineErrors": 2,
+      "currentWorldRoles": 5,
+      "overflow": false
+    },
+    "timing": {
+      "inlineErrors": 1,
+      "overflow": false
+    }
+  },
+  "modelAttempts": 0,
+  "pageErrors": [],
+  "documentOverflow": false
+}

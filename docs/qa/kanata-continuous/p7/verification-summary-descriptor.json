@@ -1,0 +1,283 @@
+{
+  "status": "NO_GO",
+  "at": "2026-10-30",
+  "build": "98a1e79afd40e33f3f3a2b850793315a0c26757d11538217357f7ac9b52788af",
+  "fullCheck": {
+    "command": "npm run check",
+    "log": "check-reused-descriptor.txt",
+    "exitCode": 0,
+    "nodePassed": 536,
+    "componentPassed": 348,
+    "componentFiles": 39,
+    "lintStrictBuild": "PASS"
+  },
+  "androidBuild": {
+    "status": "PASS",
+    "log": "android-build-descriptor.txt",
+    "verifiedResources": 79,
+    "qaHarnessAbsent": true
+  },
+  "instrumentation": {
+    "pass": 8,
+    "skipped": 1,
+    "failed": 0,
+    "note": "TodoWidgetHarness assumption skip, not a ninth pass"
+  },
+  "capacity": [
+    {
+      "platform": "native",
+      "count": 1000,
+      "status": "PASS",
+      "memoryGate": "PASS",
+      "timeGate": "PASS",
+      "peakMiB": 251.84765625,
+      "ms": {
+        "portableImportActualCoordinator": 2215.2,
+        "coldPageReloadAndProtectedLoad": 5563.4,
+        "diskPage50": 49,
+        "indexedExactSearch": 21.6,
+        "saveHeader": 381.8,
+        "fullExportActualCoordinator": 387.4,
+        "fullRestoreActualCoordinator": 1862.5,
+        "restoredMessageProofExportVerification": 72.9,
+        "masterPasswordActualUiTransaction": 3237.6,
+        "restoreSyntheticCredentialActualUi": 3138.3
+      },
+      "coldProtectedLoadMs": 3096.899999999907,
+      "aiRequests": 0,
+      "pageErrors": []
+    },
+    {
+      "platform": "native",
+      "count": 10000,
+      "status": "PASS",
+      "memoryGate": "PASS",
+      "timeGate": "PASS",
+      "peakMiB": 247.7890625,
+      "ms": {
+        "portableImportActualCoordinator": 9844.8,
+        "coldPageReloadAndProtectedLoad": 4873.2,
+        "diskPage50": 87.1,
+        "indexedExactSearch": 88.4,
+        "saveHeader": 1233.8,
+        "fullExportActualCoordinator": 3441.7,
+        "fullRestoreActualCoordinator": 12778.4,
+        "restoredMessageProofExportVerification": 3325.2,
+        "masterPasswordActualUiTransaction": 17770.1,
+        "restoreSyntheticCredentialActualUi": 16269.8
+      },
+      "coldProtectedLoadMs": 2388.899999999907,
+      "aiRequests": 0,
+      "pageErrors": []
+    },
+    {
+      "platform": "native",
+      "count": 100000,
+      "status": "FAIL_CAPACITY_GATE",
+      "memoryGate": "FAIL",
+      "timeGate": "FAIL",
+      "peakMiB": 624.59765625,
+      "ms": {
+        "portableImportActualCoordinator": 85664.5,
+        "coldPageReloadAndProtectedLoad": 8499,
+        "diskPage50": 198.8,
+        "indexedExactSearch": 298,
+        "saveHeader": 7363.9,
+        "fullExportActualCoordinator": 34075.6,
+        "fullRestoreActualCoordinator": 113480.2,
+        "restoredMessageProofExportVerification": 34251.8,
+        "masterPasswordActualUiTransaction": 175681.8,
+        "restoreSyntheticCredentialActualUi": 149807.3
+      },
+      "coldProtectedLoadMs": 6132.799999999814,
+      "aiRequests": 0,
+      "pageErrors": []
+    },
+    {
+      "platform": "web",
+      "count": 1000,
+      "status": "PASS",
+      "memoryGate": "PASS",
+      "timeGate": "PASS",
+      "peakMiB": 269.8671875,
+      "ms": {
+        "portableImportActualCoordinator": 215.7,
+        "coldPageReloadAndProtectedLoad": 1017.8,
+        "diskPage50": 5.9,
+        "indexedExactSearch": 3.5,
+        "saveHeader": 84.5,
+        "fullExportActualCoordinator": 59.2,
+        "fullRestoreActualCoordinator": 325.1,
+        "restoredMessageProofExportVerification": 15,
+        "masterPasswordActualUiTransaction": 380.2
+      },
+      "coldProtectedLoadMs": 196.29999999981374,
+      "aiRequests": 0,
+      "pageErrors": []
+    },
+    {
+      "platform": "web",
+      "count": 10000,
+      "status": "PASS",
+      "memoryGate": "PASS",
+      "timeGate": "PASS",
+      "peakMiB": 317.7734375,
+      "ms": {
+        "portableImportActualCoordinator": 1891.7,
+        "coldPageReloadAndProtectedLoad": 1287.6,
+        "diskPage50": 10,
+        "indexedExactSearch": 11.8,
+        "saveHeader": 274.4,
+        "fullExportActualCoordinator": 743.5,
+        "fullRestoreActualCoordinator": 3548,
+        "restoredMessageProofExportVerification": 808.5,
+        "masterPasswordActualUiTransaction": 3650.9
+      },
+      "coldProtectedLoadMs": 302.29999999981374,
+      "aiRequests": 0,
+      "pageErrors": []
+    },
+    {
+      "platform": "web",
+      "count": 100000,
+      "status": "FAIL_CAPACITY_GATE",
+      "memoryGate": "FAIL",
+      "timeGate": "PASS",
+      "peakMiB": 1135.33984375,
+      "ms": {
+        "portableImportActualCoordinator": 23702.4,
+        "coldPageReloadAndProtectedLoad": 2508.4,
+        "diskPage50": 19.1,
+        "indexedExactSearch": 32,
+        "saveHeader": 2017.8,
+        "fullExportActualCoordinator": 7559.6,
+        "fullRestoreActualCoordinator": 31420.8,
+        "restoredMessageProofExportVerification": 8213.6,
+        "masterPasswordActualUiTransaction": 33147.3
+      },
+      "coldProtectedLoadMs": 1322.7000000001863,
+      "aiRequests": 0,
+      "pageErrors": []
+    }
+  ],
+  "git": {
+    "branch": "Kanata",
+    "head": "62a2b755a622a181f6d530525e15ad070dd33b9f",
+    "originKanata": "be9ebc3dbe1a08e14575e044875426f0648c0179",
+    "p7CommitCreated": false,
+    "pushed": false
+  },
+  "remaining": [
+    "100k Web and Android peak memory exceed frozen limits",
+    "100k Android rekey exceeds 120s",
+    "Dense source closure still limits archiving",
+    "Configurable group limits and remaining original requirements",
+    "Latest complete 15-scene product E2E and final P7 acceptance"
+  ],
+  "bubbleWeb": {
+    "status": "PASS",
+    "at": "2026-10-30T03:59:49.557Z",
+    "build": {
+      "frozenAt": "2026-10-30T11:42:58.4537103+08:00",
+      "productionPreview": true,
+      "syntheticOnly": true,
+      "sourceCheck": "check-reused-descriptor.txt",
+      "resourceCount": 79
+    },
+    "controlledProvider": true,
+    "realModelRequests": 0,
+    "fixtureRequests": 2,
+    "checks": {
+      "atomicBatchAndShowAll": {
+        "status": "PASS",
+        "durableRows": 4,
+        "visibleRows": 2,
+        "batches": 1,
+        "visibleAfter": 4,
+        "fixtureRequests": 1
+      },
+      "reducedMotionImmediate": {
+        "status": "PASS",
+        "visibleRows": 8,
+        "fixtureRequests": 2
+      },
+      "existingHistoryImmediate": {
+        "status": "PASS",
+        "visibleRows": 8
+      },
+      "expiryClearsView": {
+        "status": "PASS"
+      }
+    },
+    "pageErrors": []
+  },
+  "baselineRestore": {
+    "status": "PASS",
+    "at": "2026-10-30T04:02:13.077Z",
+    "syntheticOnly": true,
+    "apkSha256": "98a1e79afd40e33f3f3a2b850793315a0c26757d11538217357f7ac9b52788af",
+    "aiRequests": 0,
+    "pageErrors": [],
+    "value": {
+      "actualCoordinator": true,
+      "restoredMessages": 608,
+      "exactOriginals": true,
+      "exactAudits": true,
+      "saveError": "",
+      "hasPendingSave": false
+    },
+    "memory": {
+      "processes": [
+        {
+          "pid": 21216,
+          "type": "browser",
+          "peakRssKiB": 363220,
+          "currentRssKiB": 217328
+        },
+        {
+          "pid": 21280,
+          "type": "renderer",
+          "peakRssKiB": 379200,
+          "currentRssKiB": 309840
+        }
+      ],
+      "peakResidentMiB": 370.3125,
+      "sumOfProcessPeaksMiB": 725.01953125,
+      "currentTotalRssMiB": 514.8125,
+      "sumIsNotSimultaneousPeak": true,
+      "heapPoint": {
+        "usedSize": 99249960,
+        "totalSize": 130691072
+      }
+    }
+  },
+  "baselineIntegrity": {
+    "status": "PASS",
+    "at": "2026-10-30T04:09:20.836Z",
+    "syntheticOnly": true,
+    "apkSha256": "98a1e79afd40e33f3f3a2b850793315a0c26757d11538217357f7ac9b52788af",
+    "aiRequests": 0,
+    "pageErrors": [],
+    "integrity": {
+      "modules": [
+        "savings",
+        "weight",
+        "mood",
+        "passwords",
+        "schedules",
+        "todos",
+        "chat"
+      ],
+      "settings": true,
+      "metadata": true,
+      "todoRevision": {
+        "before": 3,
+        "after": 20,
+        "advanced": true
+      },
+      "autoLockDelaySeconds": 0
+    },
+    "expiryTriggeredExplicitly": false,
+    "backgroundPlaintextReleased": true
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "status": "FAIL",
+  "at": "2026-10-31T05:58:21.400Z",
+  "syntheticOnly": true,
+  "apkSha256": "9411037b9993622e6816dc4915bb535633f7a7e75edfbda18c5a5034eb17be6c",
+  "aiRequests": 0,
+  "pageErrors": [],
+  "error": "page.evaluate: Error: BASELINE_MODULE_MISMATCH:mood\n    at eval (eval at evaluate (:311:30), <anonymous>:16:50)\n    at async <anonymous>:337:30"
+}

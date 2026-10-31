@@ -5,6 +5,7 @@ export function createBackupRegistry(participants) {
   const entries = new Map()
   for (const p of participants) {
     if (!p.id || entries.has(p.id) || [p.export, p.restore, p.flush, p.ready].some(method => typeof method !== 'function')) throw new Error('INVALID_BACKUP_PARTICIPANT')
+    if (p.detachedExport!==undefined&&typeof p.detachedExport!=='boolean')throw new Error('INVALID_BACKUP_PARTICIPANT')
     entries.set(p.id, p)
   }
   const list = Object.freeze([...entries.values()])
@@ -18,6 +19,10 @@ export function createBackupRegistry(participants) {
   }
   return {
     list, get, flush,
+    async prepareExports(ids = [...entries.keys()]) {
+      ids.forEach(assertReady)
+      for (const id of ids) await get(id).prepareExport?.()
+    },
     async initialize() {
       const results = await Promise.allSettled(list.map(p => Promise.resolve().then(() => p.initialize?.())))
       const failed = results.find(result => result.status === 'rejected')
@@ -26,7 +31,10 @@ export function createBackupRegistry(participants) {
     },
     exportAll() {
       list.forEach(p => assertReady(p.id))
-      return JSON.parse(JSON.stringify(Object.fromEntries(list.map(p => [p.id, p.export()]))))
+      return Object.fromEntries(list.map(p => {
+        const part=p.export()
+        return [p.id,p.detachedExport===true?part:JSON.parse(JSON.stringify(part))]
+      }))
     },
     async restoreAll(/** @type {Record<string, import('./contracts').BackupPart>} */ parts) {
       Object.keys(parts).forEach(get)

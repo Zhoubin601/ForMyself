@@ -3,6 +3,7 @@ export interface KanataFilesystem {
   readFile(options: {path: string; directory: string; encoding: string}): Promise<{data: string | Blob}>
   writeFile(options: {path: string; directory: string; encoding: string; data: string}): Promise<unknown>
   mkdir(options: {path: string; directory: string; recursive: boolean}): Promise<unknown>
+  readdir(options: {path: string; directory: string}): Promise<{files:{name:string;type:string;size?:number}[]}>
   deleteFile(options: {path: string; directory: string}): Promise<unknown>
   rename(options: {from: string; to: string; directory: string; toDirectory: string}): Promise<unknown>
 }

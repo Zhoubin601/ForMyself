@@ -1,0 +1,40 @@
+{
+  "status": "PASS",
+  "at": "2026-10-31T05:53:58.882Z",
+  "syntheticOnly": true,
+  "apkSha256": "9411037b9993622e6816dc4915bb535633f7a7e75edfbda18c5a5034eb17be6c",
+  "aiRequests": 0,
+  "pageErrors": [],
+  "value": {
+    "actualCoordinator": true,
+    "restoredMessages": 608,
+    "exactOriginals": true,
+    "exactAudits": true,
+    "saveError": "",
+    "hasPendingSave": false
+  },
+  "memory": {
+    "processes": [
+      {
+        "pid": 21002,
+        "type": "browser",
+        "peakRssKiB": 354156,
+        "currentRssKiB": 214440
+      },
+      {
+        "pid": 21071,
+        "type": "renderer",
+        "peakRssKiB": 360152,
+        "currentRssKiB": 251436
+      }
+    ],
+    "peakResidentMiB": 351.7109375,
+    "sumOfProcessPeaksMiB": 697.56640625,
+    "currentTotalRssMiB": 454.95703125,
+    "sumIsNotSimultaneousPeak": true,
+    "heapPoint": {
+      "usedSize": 28926524,
+      "totalSize": 73662464
+    }
+  }
+}

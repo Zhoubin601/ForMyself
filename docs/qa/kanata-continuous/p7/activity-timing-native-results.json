@@ -1,0 +1,146 @@
+{
+  "status": "PASS",
+  "at": "2026-10-30T05:16:22.727Z",
+  "kind": "native",
+  "syntheticOnly": true,
+  "controlledProvider": true,
+  "realModelRequests": 0,
+  "checks": {
+    "blank-world-zero-and-one-role-cannot-create-a-group": {
+      "status": "PASS",
+      "ms": 5446,
+      "value": {
+        "emptyAndOneRoleBlocked": true,
+        "independentInstances": 3,
+        "modelRequests": 0
+      }
+    },
+    "member-selection-validation-and-a-fresh-two-role-group": {
+      "status": "PASS",
+      "ms": 2374,
+      "value": {
+        "newConversation": "group-d6edc843-cc60-4b59-86d6-2880d2804433",
+        "roles": 2,
+        "onlyCurrentWorld": true,
+        "noHistoryOrGrants": true,
+        "literalTitle": true
+      }
+    },
+    "a-second-custom-group-has-its-own-identity-and-no-prior-history": {
+      "status": "PASS",
+      "ms": 1850,
+      "value": {
+        "differentGroupId": true,
+        "roles": 3,
+        "otherWorldsExact": true,
+        "modelRequests": 0
+      }
+    },
+    "three-actor-four-message-policy-and-validation": {
+      "status": "PASS",
+      "ms": 1702,
+      "value": {
+        "speakers": 3,
+        "messages": 4,
+        "noConfigModelCall": true
+      }
+    },
+    "third-provider-failure-keeps-two-actor-batches-and-original-source": {
+      "status": "PASS",
+      "ms": 6380,
+      "value": {
+        "completedAiRows": 3,
+        "providerAttempts": 3
+      }
+    },
+    "retry-fills-only-third-actor-and-preserves-every-paragraph": {
+      "status": "PASS",
+      "ms": 2311,
+      "value": {
+        "actors": 3,
+        "aiRows": 4,
+        "sourceRows": 1,
+        "paragraphsPreserved": true
+      }
+    },
+    "one-actor-one-message-policy-keeps-history-and-merges-new-full-reply": {
+      "status": "PASS",
+      "ms": 4780,
+      "value": {
+        "newAiRows": 1,
+        "previousAiRows": 4,
+        "bodyPreserved": true
+      }
+    },
+    "actual-full-coordinator-restores-scoped-policy-and-entire-conversation": {
+      "status": "PASS",
+      "ms": 4321,
+      "value": {
+        "actualCoordinator": true,
+        "policyPreserved": true,
+        "exactRows": 7
+      }
+    },
+    "activity-setting-persists-with-inline-error-and-no-model-request": {
+      "status": "PASS",
+      "ms": 2125,
+      "value": {
+        "enabled": true,
+        "waitMs": 30000,
+        "requests": 0
+      }
+    },
+    "busy-source-is-durable-before-charge-and-explicit-immediate-replies-once": {
+      "status": "PASS",
+      "ms": 4584,
+      "value": {
+        "durableBeforeRequest": true,
+        "noInventedBusyMessage": true,
+        "cancelledPending": true,
+        "userRows": 1,
+        "requests": 1
+      }
+    },
+    "cold-owner-loads-pending-activity-task-and-real-foreground-composition-completes-once": {
+      "status": "PASS",
+      "ms": 37287,
+      "value": {
+        "loadedTask": true,
+        "savedConfig": true,
+        "actualForegroundLifecycle": true,
+        "userRows": 2,
+        "aiRows": 6,
+        "requests": 1
+      }
+    },
+    "external-full-restore-retains-activity-policy-but-pauses-the-waiting-send": {
+      "status": "PASS",
+      "ms": 6983,
+      "value": {
+        "actualCoordinator": true,
+        "pendingSendPaused": true,
+        "policyPreserved": true,
+        "noAdditionalRequest": true
+      }
+    },
+    "cold-storage-reload-keeps-policy-and-the-same-seven-rows": {
+      "status": "PASS",
+      "ms": 7732,
+      "value": {
+        "rows": 7,
+        "policy": true,
+        "processRestart": true
+      }
+    }
+  },
+  "pageErrors": [],
+  "build": "cc8af561e549278f3c0af97831188538b47d6e5ed819d1d6df57862209274009",
+  "baselineArtifact": "activity-timing-native-baseline-1793337391346.enc",
+  "cleanup": {
+    "status": "PASS",
+    "actualCoordinator": true,
+    "chatRows": 608,
+    "otherModulesAndSettingsPreserved": true
+  },
+  "fixtureRequests": 7
+}

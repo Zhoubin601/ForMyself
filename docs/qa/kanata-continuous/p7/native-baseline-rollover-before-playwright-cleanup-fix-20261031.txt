@@ -1,0 +1,8 @@
+file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata/docs/qa/kanata-continuous/p7/verify-native-baseline.mjs:50
+finally{if(allowExpectedMoodAutofill)await page.removeExposedFunction('__qaCompareMoodBaseline').catch(()=>{});await writeFile(new URL('native-baseline-integrity-results.json',import.meta.url),JSON.stringify(result,null,2)+'\n');await native.close()}
+                                                ^
+
+TypeError: page.removeExposedFunction is not a function
+    at file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata/docs/qa/kanata-continuous/p7/verify-native-baseline.mjs:50:49
+
+Node.js v24.14.1

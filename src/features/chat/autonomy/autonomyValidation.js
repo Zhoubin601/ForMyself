@@ -50,6 +50,7 @@ export function validateKanataAutonomy(data) {
   }
   for(const task of data.tasks)if(task.deferredReply){
     const reply=task.deferredReply,source=data.messages.find(m=>m.id===reply.sourceMessageId)
+    if(reply.activityDelay!==undefined)need(typeof reply.activityDelay==='boolean','INVALID_DEFERRED_ACTIVITY_DELAY')
     need(task.kind==='reply'&&source?.worldId===task.worldId&&source.conversationId===task.conversationId&&source.senderType==='user'&&bounded(reply.sourceRevision,1,source.revision)&&bounded(reply.expiresAt,task.notBefore,Number.MAX_SAFE_INTEGER),'INVALID_DEFERRED_REPLY')
   }
 }

@@ -1,0 +1,17 @@
+
+ RUN  v3.2.4 D:/2026Autumn Semester File/GitHub/formyself-app/.worktrees/kanata
+
+ ✓ tests/KanataConversationView.spec.js (9 tests) 279ms
+ ✓ tests/KanataBackupRuntime.spec.js (7 tests) 693ms
+ ✓ tests/KanataProductRecovery.spec.js (27 tests) 6718ms
+   ✓ Kanata P2 product runtime: actual stores, encrypted files and restore journal > P7 actual full-backup coordinator exports every archived body and compensates a later participant failure without source loss  920ms
+   ✓ Kanata P2 product runtime: actual stores, encrypted files and restore journal > P7 missing archive aborts product full export/capture before restore journal preparation and leaves other modules unchanged  389ms
+   ✓ Kanata P2 product runtime: actual stores, encrypted files and restore journal > P7 compressed self-contained journal survives failed compensation and the actual coordinator recovers every source body  1063ms
+   ✓ Kanata P2 product runtime: actual stores, encrypted files and restore journal > P7 settings reports missing large-journal capability accurately and leaves the actual previous data intact  315ms
+   ✓ Kanata P2 product runtime: actual stores, encrypted files and restore journal > rollback failure keeps the real encrypted journal and barrier, then recovers after the fault is fixed  355ms
+
+ Test Files  3 passed (3)
+      Tests  43 passed (43)
+   Start at  10:51:54
+   Duration  12.64s (transform 1.16s, setup 0ms, collect 3.65s, tests 7.69s, environment 8.15s, prepare 1.84s)
+

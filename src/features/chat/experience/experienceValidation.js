@@ -13,6 +13,7 @@ export function validateKanataExperience(data) {
   const worlds=new Map(data.worlds.map(w=>[w.id,w])),instances=new Map(data.instances.map(i=>[i.id,i]))
   const conversations=new Map(data.conversations.map(c=>[c.id,c])),memories=new Map(data.memories.map(m=>[m.id,m])),events=new Map(data.events.map(e=>[e.id,e]))
   const grants=new Map(data.lifeGrants.map(g=>[g.id,g]))
+  const messages=new Map(data.messages.map(m=>[m.id,m]))
   /** @param {unknown} value @param {string} worldId */
   const lifeSources=(value,worldId)=>{
     if(value===undefined)return
@@ -27,7 +28,7 @@ export function validateKanataExperience(data) {
       const key=JSON.stringify(source);need(!seen.has(key),'DUPLICATE_LIFE_SOURCE');seen.add(key)
     }
   }
-  for(const message of data.messages){if(message.deleted!==undefined)need(typeof message.deleted==='boolean','INVALID_MESSAGE_DELETED');if(message.replyToRevision!==undefined){integer(message.replyToRevision,1);need(!!message.replyToMessageId&&message.replyToRevision<=Number(data.messages.find(m=>m.id===message.replyToMessageId)?.revision),'INVALID_REPLY_SOURCE_REVISION')}lifeSources(message.lifeSources,message.worldId)}
+  for(const message of data.messages){if(message.deleted!==undefined)need(typeof message.deleted==='boolean','INVALID_MESSAGE_DELETED');if(message.replyToRevision!==undefined){integer(message.replyToRevision,1);need(!!message.replyToMessageId&&message.replyToRevision<=Number(messages.get(message.replyToMessageId)?.revision),'INVALID_REPLY_SOURCE_REVISION')}lifeSources(message.lifeSources,message.worldId)}
   for(const memory of data.memories){
     if(memory.conversationId!==undefined)need(conversations.get(memory.conversationId)?.worldId===memory.worldId,'MEMORY_CONVERSATION_SCOPE_DENIED')
     if(memory.knownBy!==undefined){need(Array.isArray(memory.knownBy)&&new Set(memory.knownBy).size===memory.knownBy.length,'INVALID_MEMORY_KNOWN_BY');memory.knownBy.forEach(i=>need(instances.get(i)?.worldId===memory.worldId,'MEMORY_KNOWLEDGE_SCOPE_DENIED'))}

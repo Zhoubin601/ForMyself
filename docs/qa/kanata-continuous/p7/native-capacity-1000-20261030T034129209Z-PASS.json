@@ -1,0 +1,379 @@
+{
+  "status": "PASS",
+  "at": "2026-10-30T03:41:29.209Z",
+  "count": 1000,
+  "syntheticOnly": true,
+  "kind": "production-android-actual-coordinator",
+  "forcedGC": false,
+  "build": "e13f66839f7b5df55b3089018276742d365446fb1054cadc27070ab9594215cf",
+  "metrics": {
+    "portableImportActualCoordinator": {
+      "ms": 2187.3,
+      "value": {
+        "active": 1000,
+        "archived": 0,
+        "saved": true
+      },
+      "memory": {
+        "processes": [
+          {
+            "pid": 13250,
+            "type": "browser",
+            "peakRssKiB": 257308,
+            "currentRssKiB": 248744
+          },
+          {
+            "pid": 13325,
+            "type": "renderer",
+            "peakRssKiB": 205500,
+            "currentRssKiB": 191952
+          }
+        ],
+        "peakResidentMiB": 251.27734375,
+        "sumOfProcessPeaksMiB": 451.9609375,
+        "currentTotalRssMiB": 430.3671875,
+        "sumIsNotSimultaneousPeak": true,
+        "heapPoint": {
+          "usedSize": 10578896,
+          "totalSize": 20082688
+        }
+      }
+    },
+    "coldPageReloadAndProtectedLoad": {
+      "ms": 6162.7,
+      "value": {
+        "loaded": true,
+        "processRestart": true,
+        "protectedLoadMs": 3387
+      },
+      "memory": {
+        "processes": [
+          {
+            "pid": 13503,
+            "type": "browser",
+            "peakRssKiB": 228808,
+            "currentRssKiB": 221736
+          },
+          {
+            "pid": 13538,
+            "type": "renderer",
+            "peakRssKiB": 191840,
+            "currentRssKiB": 183416
+          }
+        ],
+        "peakResidentMiB": 223.4453125,
+        "sumOfProcessPeaksMiB": 410.7890625,
+        "currentTotalRssMiB": 395.65625,
+        "sumIsNotSimultaneousPeak": true,
+        "heapPoint": {
+          "usedSize": 5243576,
+          "totalSize": 14864384
+        }
+      }
+    },
+    "diskPage50": {
+      "ms": 74.2,
+      "value": {
+        "rows": 50,
+        "pages": 2,
+        "bytes": 88624
+      },
+      "memory": {
+        "processes": [
+          {
+            "pid": 13503,
+            "type": "browser",
+            "peakRssKiB": 244840,
+            "currentRssKiB": 242816
+          },
+          {
+            "pid": 13538,
+            "type": "renderer",
+            "peakRssKiB": 200160,
+            "currentRssKiB": 191676
+          }
+        ],
+        "peakResidentMiB": 239.1015625,
+        "sumOfProcessPeaksMiB": 434.5703125,
+        "currentTotalRssMiB": 424.30859375,
+        "sumIsNotSimultaneousPeak": true,
+        "heapPoint": {
+          "usedSize": 7420884,
+          "totalSize": 21188608
+        }
+      }
+    },
+    "indexedExactSearch": {
+      "ms": 27.8,
+      "value": {
+        "matches": 1,
+        "pages": 1,
+        "bytes": 33304
+      },
+      "memory": {
+        "processes": [
+          {
+            "pid": 13503,
+            "type": "browser",
+            "peakRssKiB": 244840,
+            "currentRssKiB": 242796
+          },
+          {
+            "pid": 13538,
+            "type": "renderer",
+            "peakRssKiB": 200160,
+            "currentRssKiB": 191560
+          }
+        ],
+        "peakResidentMiB": 239.1015625,
+        "sumOfProcessPeaksMiB": 434.5703125,
+        "currentTotalRssMiB": 424.17578125,
+        "sumIsNotSimultaneousPeak": true,
+        "heapPoint": {
+          "usedSize": 8843868,
+          "totalSize": 21188608
+        }
+      }
+    },
+    "saveHeader": {
+      "ms": 410.6,
+      "value": {
+        "saved": true
+      },
+      "memory": {
+        "processes": [
+          {
+            "pid": 13503,
+            "type": "browser",
+            "peakRssKiB": 257336,
+            "currentRssKiB": 210452
+          },
+          {
+            "pid": 13538,
+            "type": "renderer",
+            "peakRssKiB": 200160,
+            "currentRssKiB": 195532
+          }
+        ],
+        "peakResidentMiB": 251.3046875,
+        "sumOfProcessPeaksMiB": 446.7734375,
+        "currentTotalRssMiB": 396.46875,
+        "sumIsNotSimultaneousPeak": true,
+        "heapPoint": {
+          "usedSize": 13649376,
+          "totalSize": 24154112
+        }
+      }
+    },
+    "fullExportActualCoordinator": {
+      "ms": 445.3,
+      "value": {
+        "version": 13,
+        "messages": 1000,
+        "selfContained": true
+      },
+      "memory": {
+        "processes": [
+          {
+            "pid": 13503,
+            "type": "browser",
+            "peakRssKiB": 257336,
+            "currentRssKiB": 210708
+          },
+          {
+            "pid": 13538,
+            "type": "renderer",
+            "peakRssKiB": 200160,
+            "currentRssKiB": 192072
+          }
+        ],
+        "peakResidentMiB": 251.3046875,
+        "sumOfProcessPeaksMiB": 446.7734375,
+        "currentTotalRssMiB": 393.33984375,
+        "sumIsNotSimultaneousPeak": true,
+        "heapPoint": {
+          "usedSize": 8751248,
+          "totalSize": 18534400
+        }
+      }
+    },
+    "fullRestoreActualCoordinator": {
+      "ms": 1990.9,
+      "value": {
+        "actualCoordinator": true,
+        "expectedCount": 1000
+      },
+      "memory": {
+        "processes": [
+          {
+            "pid": 13503,
+            "type": "browser",
+            "peakRssKiB": 257336,
+            "currentRssKiB": 217384
+          },
+          {
+            "pid": 13538,
+            "type": "renderer",
+            "peakRssKiB": 207888,
+            "currentRssKiB": 196296
+          }
+        ],
+        "peakResidentMiB": 251.3046875,
+        "sumOfProcessPeaksMiB": 454.3203125,
+        "currentTotalRssMiB": 403.984375,
+        "sumIsNotSimultaneousPeak": true,
+        "heapPoint": {
+          "usedSize": 13231844,
+          "totalSize": 25055232
+        }
+      }
+    },
+    "restoredMessageProofExportVerification": {
+      "ms": 88.9,
+      "value": {
+        "messages": 1000,
+        "exactOriginalMessageProofs": true,
+        "memories": 20,
+        "actualCoordinator": true,
+        "fixtureRegeneratedWithoutRetainedPlaintextCopy": true
+      },
+      "memory": {
+        "processes": [
+          {
+            "pid": 13503,
+            "type": "browser",
+            "peakRssKiB": 257336,
+            "currentRssKiB": 217456
+          },
+          {
+            "pid": 13538,
+            "type": "renderer",
+            "peakRssKiB": 207888,
+            "currentRssKiB": 196364
+          }
+        ],
+        "peakResidentMiB": 251.3046875,
+        "sumOfProcessPeaksMiB": 454.3203125,
+        "currentTotalRssMiB": 404.12109375,
+        "sumIsNotSimultaneousPeak": true,
+        "heapPoint": {
+          "usedSize": 11726112,
+          "totalSize": 25055232
+        }
+      }
+    },
+    "masterPasswordActualUiTransaction": {
+      "ms": 20385.4,
+      "value": {
+        "newCredential": true,
+        "oldPasswordRejected": true,
+        "pagedBodyPreserved": true
+      },
+      "memory": {
+        "processes": [
+          {
+            "pid": 13503,
+            "type": "browser",
+            "peakRssKiB": 257336,
+            "currentRssKiB": 212128
+          },
+          {
+            "pid": 13538,
+            "type": "renderer",
+            "peakRssKiB": 207888,
+            "currentRssKiB": 200896
+          }
+        ],
+        "peakResidentMiB": 251.3046875,
+        "sumOfProcessPeaksMiB": 454.3203125,
+        "currentTotalRssMiB": 403.34375,
+        "sumIsNotSimultaneousPeak": true,
+        "heapPoint": {
+          "usedSize": 13814408,
+          "totalSize": 22999040
+        }
+      }
+    },
+    "restoreSyntheticCredentialActualUi": {
+      "ms": 2189.3,
+      "value": {
+        "originalSyntheticCredentialRestored": true
+      },
+      "memory": {
+        "processes": [
+          {
+            "pid": 13503,
+            "type": "browser",
+            "peakRssKiB": 257336,
+            "currentRssKiB": 213528
+          },
+          {
+            "pid": 13538,
+            "type": "renderer",
+            "peakRssKiB": 207888,
+            "currentRssKiB": 197516
+          }
+        ],
+        "peakResidentMiB": 251.3046875,
+        "sumOfProcessPeaksMiB": 454.3203125,
+        "currentTotalRssMiB": 401.41015625,
+        "sumIsNotSimultaneousPeak": true,
+        "heapPoint": {
+          "usedSize": 8832896,
+          "totalSize": 23941120
+        }
+      }
+    }
+  },
+  "pageErrors": [],
+  "aiRequests": 0,
+  "profilerDiagnostic": false,
+  "timeChecks": [
+    {
+      "name": "protectedColdLoad",
+      "actualMs": 3387,
+      "limitMs": 5000,
+      "status": "PASS"
+    },
+    {
+      "name": "saveHeader",
+      "actualMs": 410.6,
+      "limitMs": 5000,
+      "status": "PASS"
+    },
+    {
+      "name": "diskPage50",
+      "actualMs": 74.2,
+      "limitMs": 1000,
+      "status": "PASS"
+    },
+    {
+      "name": "indexedExactSearch",
+      "actualMs": 27.8,
+      "limitMs": 2000,
+      "status": "PASS"
+    },
+    {
+      "name": "fullExportActualCoordinator",
+      "actualMs": 445.3,
+      "limitMs": 120000,
+      "status": "PASS"
+    },
+    {
+      "name": "fullRestoreActualCoordinator",
+      "actualMs": 1990.9,
+      "limitMs": 120000,
+      "status": "PASS"
+    },
+    {
+      "name": "masterPasswordActualUiTransaction",
+      "actualMs": 20385.4,
+      "limitMs": 120000,
+      "status": "PASS"
+    }
+  ],
+  "peakAppProcessResidentMiB": 251.3046875,
+  "memoryThresholdMiB": 512,
+  "memoryGate": "PASS",
+  "timeGate": "PASS"
+}

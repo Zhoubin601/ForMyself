@@ -1,0 +1,104 @@
+{
+  "status": "PASS",
+  "at": "2026-10-30T05:08:36.108Z",
+  "kind": "native",
+  "syntheticOnly": true,
+  "controlledProvider": true,
+  "realModelRequests": 0,
+  "checks": {
+    "blank-world-zero-and-one-role-cannot-create-a-group": {
+      "status": "PASS",
+      "ms": 6199,
+      "value": {
+        "emptyAndOneRoleBlocked": true,
+        "independentInstances": 3,
+        "modelRequests": 0
+      }
+    },
+    "member-selection-validation-and-a-fresh-two-role-group": {
+      "status": "PASS",
+      "ms": 3057,
+      "value": {
+        "newConversation": "group-381d9d1f-a864-4855-9176-932797fad359",
+        "roles": 2,
+        "onlyCurrentWorld": true,
+        "noHistoryOrGrants": true,
+        "literalTitle": true
+      }
+    },
+    "a-second-custom-group-has-its-own-identity-and-no-prior-history": {
+      "status": "PASS",
+      "ms": 1895,
+      "value": {
+        "differentGroupId": true,
+        "roles": 3,
+        "otherWorldsExact": true,
+        "modelRequests": 0
+      }
+    },
+    "three-actor-four-message-policy-and-validation": {
+      "status": "PASS",
+      "ms": 1818,
+      "value": {
+        "speakers": 3,
+        "messages": 4,
+        "noConfigModelCall": true
+      }
+    },
+    "third-provider-failure-keeps-two-actor-batches-and-original-source": {
+      "status": "PASS",
+      "ms": 6565,
+      "value": {
+        "completedAiRows": 3,
+        "providerAttempts": 3
+      }
+    },
+    "retry-fills-only-third-actor-and-preserves-every-paragraph": {
+      "status": "PASS",
+      "ms": 2780,
+      "value": {
+        "actors": 3,
+        "aiRows": 4,
+        "sourceRows": 1,
+        "paragraphsPreserved": true
+      }
+    },
+    "one-actor-one-message-policy-keeps-history-and-merges-new-full-reply": {
+      "status": "PASS",
+      "ms": 5751,
+      "value": {
+        "newAiRows": 1,
+        "previousAiRows": 4,
+        "bodyPreserved": true
+      }
+    },
+    "actual-full-coordinator-restores-scoped-policy-and-entire-conversation": {
+      "status": "PASS",
+      "ms": 3675,
+      "value": {
+        "actualCoordinator": true,
+        "policyPreserved": true,
+        "exactRows": 7
+      }
+    },
+    "cold-storage-reload-keeps-policy-and-the-same-seven-rows": {
+      "status": "PASS",
+      "ms": 8132,
+      "value": {
+        "rows": 7,
+        "policy": true,
+        "processRestart": true
+      }
+    }
+  },
+  "pageErrors": [],
+  "build": "3afedbb14240cc519c83013b3ac8b44afe41d96f337c47f502c803e56b29686f",
+  "baselineArtifact": "custom-groups-native-baseline-1793336922471.enc",
+  "cleanup": {
+    "status": "PASS",
+    "actualCoordinator": true,
+    "chatRows": 608,
+    "otherModulesAndSettingsPreserved": true
+  },
+  "fixtureRequests": 5
+}

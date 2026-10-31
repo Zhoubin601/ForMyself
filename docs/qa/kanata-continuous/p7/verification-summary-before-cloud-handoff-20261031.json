@@ -1,0 +1,624 @@
+{
+  "status": "NO_GO",
+  "at": "2026-10-30T05:24:31.612Z",
+  "build": "cc8af561e549278f3c0af97831188538b47d6e5ed819d1d6df57862209274009",
+  "fullCheck": {
+    "command": "npm run check",
+    "log": "check-activity-timing.txt",
+    "exitCode": 0,
+    "nodePassed": 548,
+    "componentPassed": 375,
+    "componentFiles": 40,
+    "lintStrictBuild": "PASS"
+  },
+  "androidBuild": {
+    "status": "PASS",
+    "log": "android-build-activity-timing.txt",
+    "syncLog": "android-sync-activity-timing.txt",
+    "verifiedResources": 78,
+    "qaHarnessAbsent": true
+  },
+  "instrumentation": {
+    "pass": 8,
+    "skipped": 1,
+    "failed": 0,
+    "log": "instrumentation-activity-timing.txt",
+    "note": "TodoWidgetHarness assumption skip; not a ninth pass"
+  },
+  "capacity": [
+    {
+      "platform": "native",
+      "count": 1000,
+      "status": "PASS",
+      "memoryGate": "PASS",
+      "timeGate": "PASS",
+      "peakMiB": 251.84765625,
+      "ms": {
+        "portableImportActualCoordinator": 2215.2,
+        "coldPageReloadAndProtectedLoad": 5563.4,
+        "diskPage50": 49,
+        "indexedExactSearch": 21.6,
+        "saveHeader": 381.8,
+        "fullExportActualCoordinator": 387.4,
+        "fullRestoreActualCoordinator": 1862.5,
+        "restoredMessageProofExportVerification": 72.9,
+        "masterPasswordActualUiTransaction": 3237.6,
+        "restoreSyntheticCredentialActualUi": 3138.3
+      },
+      "coldProtectedLoadMs": 3096.899999999907,
+      "aiRequests": 0,
+      "pageErrors": [],
+      "build": "98a1e79afd40e33f3f3a2b850793315a0c26757d11538217357f7ac9b52788af"
+    },
+    {
+      "platform": "native",
+      "count": 10000,
+      "status": "PASS",
+      "memoryGate": "PASS",
+      "timeGate": "PASS",
+      "peakMiB": 247.7890625,
+      "ms": {
+        "portableImportActualCoordinator": 9844.8,
+        "coldPageReloadAndProtectedLoad": 4873.2,
+        "diskPage50": 87.1,
+        "indexedExactSearch": 88.4,
+        "saveHeader": 1233.8,
+        "fullExportActualCoordinator": 3441.7,
+        "fullRestoreActualCoordinator": 12778.4,
+        "restoredMessageProofExportVerification": 3325.2,
+        "masterPasswordActualUiTransaction": 17770.1,
+        "restoreSyntheticCredentialActualUi": 16269.8
+      },
+      "coldProtectedLoadMs": 2388.899999999907,
+      "aiRequests": 0,
+      "pageErrors": [],
+      "build": "98a1e79afd40e33f3f3a2b850793315a0c26757d11538217357f7ac9b52788af"
+    },
+    {
+      "platform": "native",
+      "count": 100000,
+      "status": "FAIL_CAPACITY_GATE",
+      "memoryGate": "FAIL",
+      "timeGate": "FAIL",
+      "peakMiB": 624.59765625,
+      "ms": {
+        "portableImportActualCoordinator": 85664.5,
+        "coldPageReloadAndProtectedLoad": 8499,
+        "diskPage50": 198.8,
+        "indexedExactSearch": 298,
+        "saveHeader": 7363.9,
+        "fullExportActualCoordinator": 34075.6,
+        "fullRestoreActualCoordinator": 113480.2,
+        "restoredMessageProofExportVerification": 34251.8,
+        "masterPasswordActualUiTransaction": 175681.8,
+        "restoreSyntheticCredentialActualUi": 149807.3
+      },
+      "coldProtectedLoadMs": 6132.799999999814,
+      "aiRequests": 0,
+      "pageErrors": [],
+      "build": "98a1e79afd40e33f3f3a2b850793315a0c26757d11538217357f7ac9b52788af"
+    },
+    {
+      "platform": "web",
+      "count": 1000,
+      "status": "PASS",
+      "memoryGate": "PASS",
+      "timeGate": "PASS",
+      "peakMiB": 269.8671875,
+      "ms": {
+        "portableImportActualCoordinator": 215.7,
+        "coldPageReloadAndProtectedLoad": 1017.8,
+        "diskPage50": 5.9,
+        "indexedExactSearch": 3.5,
+        "saveHeader": 84.5,
+        "fullExportActualCoordinator": 59.2,
+        "fullRestoreActualCoordinator": 325.1,
+        "restoredMessageProofExportVerification": 15,
+        "masterPasswordActualUiTransaction": 380.2
+      },
+      "coldProtectedLoadMs": 196.29999999981374,
+      "aiRequests": 0,
+      "pageErrors": [],
+      "build": "98a1e79afd40e33f3f3a2b850793315a0c26757d11538217357f7ac9b52788af"
+    },
+    {
+      "platform": "web",
+      "count": 10000,
+      "status": "PASS",
+      "memoryGate": "PASS",
+      "timeGate": "PASS",
+      "peakMiB": 317.7734375,
+      "ms": {
+        "portableImportActualCoordinator": 1891.7,
+        "coldPageReloadAndProtectedLoad": 1287.6,
+        "diskPage50": 10,
+        "indexedExactSearch": 11.8,
+        "saveHeader": 274.4,
+        "fullExportActualCoordinator": 743.5,
+        "fullRestoreActualCoordinator": 3548,
+        "restoredMessageProofExportVerification": 808.5,
+        "masterPasswordActualUiTransaction": 3650.9
+      },
+      "coldProtectedLoadMs": 302.29999999981374,
+      "aiRequests": 0,
+      "pageErrors": [],
+      "build": "98a1e79afd40e33f3f3a2b850793315a0c26757d11538217357f7ac9b52788af"
+    },
+    {
+      "platform": "web",
+      "count": 100000,
+      "status": "FAIL_CAPACITY_GATE",
+      "memoryGate": "FAIL",
+      "timeGate": "PASS",
+      "peakMiB": 1135.33984375,
+      "ms": {
+        "portableImportActualCoordinator": 23702.4,
+        "coldPageReloadAndProtectedLoad": 2508.4,
+        "diskPage50": 19.1,
+        "indexedExactSearch": 32,
+        "saveHeader": 2017.8,
+        "fullExportActualCoordinator": 7559.6,
+        "fullRestoreActualCoordinator": 31420.8,
+        "restoredMessageProofExportVerification": 8213.6,
+        "masterPasswordActualUiTransaction": 33147.3
+      },
+      "coldProtectedLoadMs": 1322.7000000001863,
+      "aiRequests": 0,
+      "pageErrors": [],
+      "build": "98a1e79afd40e33f3f3a2b850793315a0c26757d11538217357f7ac9b52788af"
+    }
+  ],
+  "git": {
+    "branch": "Kanata",
+    "head": "62a2b755a622a181f6d530525e15ad070dd33b9f",
+    "p7Committed": false,
+    "pushed": false,
+    "released": false
+  },
+  "remaining": [
+    "100k Web/Android memory",
+    "100k Android rekey latency",
+    "Dense external provenance remains in active graph",
+    "Legacy life reminder integration with chosen Kanata roles",
+    "Whole-app usage aggregation/date trends",
+    "Advanced autonomous emotion/relationship decisions",
+    "Latest complete original fifteen-scenario E2E"
+  ],
+  "bubbleWeb": {
+    "status": "PASS",
+    "at": "2026-10-30T03:59:49.557Z",
+    "build": {
+      "frozenAt": "2026-10-30T11:42:58.4537103+08:00",
+      "productionPreview": true,
+      "syntheticOnly": true,
+      "sourceCheck": "check-reused-descriptor.txt",
+      "resourceCount": 79
+    },
+    "controlledProvider": true,
+    "realModelRequests": 0,
+    "fixtureRequests": 2,
+    "checks": {
+      "atomicBatchAndShowAll": {
+        "status": "PASS",
+        "durableRows": 4,
+        "visibleRows": 2,
+        "batches": 1,
+        "visibleAfter": 4,
+        "fixtureRequests": 1
+      },
+      "reducedMotionImmediate": {
+        "status": "PASS",
+        "visibleRows": 8,
+        "fixtureRequests": 2
+      },
+      "existingHistoryImmediate": {
+        "status": "PASS",
+        "visibleRows": 8
+      },
+      "expiryClearsView": {
+        "status": "PASS"
+      }
+    },
+    "pageErrors": []
+  },
+  "baselineRestore": {
+    "status": "PASS",
+    "at": "2026-10-30T04:02:13.077Z",
+    "syntheticOnly": true,
+    "apkSha256": "98a1e79afd40e33f3f3a2b850793315a0c26757d11538217357f7ac9b52788af",
+    "aiRequests": 0,
+    "pageErrors": [],
+    "value": {
+      "actualCoordinator": true,
+      "restoredMessages": 608,
+      "exactOriginals": true,
+      "exactAudits": true,
+      "saveError": "",
+      "hasPendingSave": false
+    },
+    "memory": {
+      "processes": [
+        {
+          "pid": 21216,
+          "type": "browser",
+          "peakRssKiB": 363220,
+          "currentRssKiB": 217328
+        },
+        {
+          "pid": 21280,
+          "type": "renderer",
+          "peakRssKiB": 379200,
+          "currentRssKiB": 309840
+        }
+      ],
+      "peakResidentMiB": 370.3125,
+      "sumOfProcessPeaksMiB": 725.01953125,
+      "currentTotalRssMiB": 514.8125,
+      "sumIsNotSimultaneousPeak": true,
+      "heapPoint": {
+        "usedSize": 99249960,
+        "totalSize": 130691072
+      }
+    }
+  },
+  "baselineIntegrity": {
+    "status": "PASS",
+    "at": "2026-10-30T05:19:35.195Z",
+    "syntheticOnly": true,
+    "apkSha256": "cc8af561e549278f3c0af97831188538b47d6e5ed819d1d6df57862209274009",
+    "aiRequests": 0,
+    "pageErrors": [],
+    "integrity": {
+      "modules": [
+        "savings",
+        "weight",
+        "mood",
+        "passwords",
+        "schedules",
+        "todos",
+        "chat"
+      ],
+      "settings": true,
+      "metadata": true,
+      "todoRevision": {
+        "before": 3,
+        "after": 27,
+        "advanced": true
+      },
+      "autoLockDelaySeconds": 0
+    },
+    "expiryTriggeredExplicitly": false,
+    "backgroundPlaintextReleased": true
+  },
+  "capacityBuild": "98a1e79afd40e33f3f3a2b850793315a0c26757d11538217357f7ac9b52788af",
+  "featureRegression": {
+    "web": {
+      "status": "PASS",
+      "at": "2026-10-30T05:16:22.727Z",
+      "kind": "web",
+      "syntheticOnly": true,
+      "controlledProvider": true,
+      "realModelRequests": 0,
+      "checks": {
+        "blank-world-zero-and-one-role-cannot-create-a-group": {
+          "status": "PASS",
+          "ms": 265,
+          "value": {
+            "emptyAndOneRoleBlocked": true,
+            "independentInstances": 3,
+            "modelRequests": 0
+          }
+        },
+        "member-selection-validation-and-a-fresh-two-role-group": {
+          "status": "PASS",
+          "ms": 127,
+          "value": {
+            "newConversation": "group-4a5594cd-3095-425e-a098-168866ab3a8f",
+            "roles": 2,
+            "onlyCurrentWorld": true,
+            "noHistoryOrGrants": true,
+            "literalTitle": true
+          }
+        },
+        "a-second-custom-group-has-its-own-identity-and-no-prior-history": {
+          "status": "PASS",
+          "ms": 127,
+          "value": {
+            "differentGroupId": true,
+            "roles": 3,
+            "otherWorldsExact": true,
+            "modelRequests": 0
+          }
+        },
+        "three-actor-four-message-policy-and-validation": {
+          "status": "PASS",
+          "ms": 105,
+          "value": {
+            "speakers": 3,
+            "messages": 4,
+            "noConfigModelCall": true
+          }
+        },
+        "third-provider-failure-keeps-two-actor-batches-and-original-source": {
+          "status": "PASS",
+          "ms": 922,
+          "value": {
+            "completedAiRows": 3,
+            "providerAttempts": 3
+          }
+        },
+        "retry-fills-only-third-actor-and-preserves-every-paragraph": {
+          "status": "PASS",
+          "ms": 116,
+          "value": {
+            "actors": 3,
+            "aiRows": 4,
+            "sourceRows": 1,
+            "paragraphsPreserved": true
+          }
+        },
+        "one-actor-one-message-policy-keeps-history-and-merges-new-full-reply": {
+          "status": "PASS",
+          "ms": 818,
+          "value": {
+            "newAiRows": 1,
+            "previousAiRows": 4,
+            "bodyPreserved": true
+          }
+        },
+        "actual-full-coordinator-restores-scoped-policy-and-entire-conversation": {
+          "status": "PASS",
+          "ms": 223,
+          "value": {
+            "actualCoordinator": true,
+            "policyPreserved": true,
+            "exactRows": 7
+          }
+        },
+        "activity-setting-persists-with-inline-error-and-no-model-request": {
+          "status": "PASS",
+          "ms": 96,
+          "value": {
+            "enabled": true,
+            "waitMs": 30000,
+            "requests": 0
+          }
+        },
+        "busy-source-is-durable-before-charge-and-explicit-immediate-replies-once": {
+          "status": "PASS",
+          "ms": 1019,
+          "value": {
+            "durableBeforeRequest": true,
+            "noInventedBusyMessage": true,
+            "cancelledPending": true,
+            "userRows": 1,
+            "requests": 1
+          }
+        },
+        "cold-owner-loads-pending-activity-task-and-real-foreground-composition-completes-once": {
+          "status": "PASS",
+          "ms": 31132,
+          "value": {
+            "loadedTask": true,
+            "savedConfig": true,
+            "actualForegroundLifecycle": true,
+            "userRows": 2,
+            "aiRows": 6,
+            "requests": 1
+          }
+        },
+        "external-full-restore-retains-activity-policy-but-pauses-the-waiting-send": {
+          "status": "PASS",
+          "ms": 1059,
+          "value": {
+            "actualCoordinator": true,
+            "pendingSendPaused": true,
+            "policyPreserved": true,
+            "noAdditionalRequest": true
+          }
+        },
+        "cold-storage-reload-keeps-policy-and-the-same-seven-rows": {
+          "status": "PASS",
+          "ms": 375,
+          "value": {
+            "rows": 7,
+            "policy": true,
+            "processRestart": false
+          }
+        }
+      },
+      "pageErrors": [],
+      "build": {
+        "syntheticOnly": true,
+        "productionPreview": true,
+        "resourceCount": 78,
+        "sourceCheck": "check-activity-timing.txt",
+        "frozenAt": "2026-10-30T13:15:56.4320543+08:00"
+      },
+      "cleanup": {
+        "status": "PASS",
+        "actualCoordinator": true,
+        "chatRows": 0,
+        "otherModulesAndSettingsPreserved": true
+      },
+      "fixtureRequests": 7
+    },
+    "native": {
+      "status": "PASS",
+      "at": "2026-10-30T05:16:22.727Z",
+      "kind": "native",
+      "syntheticOnly": true,
+      "controlledProvider": true,
+      "realModelRequests": 0,
+      "checks": {
+        "blank-world-zero-and-one-role-cannot-create-a-group": {
+          "status": "PASS",
+          "ms": 5446,
+          "value": {
+            "emptyAndOneRoleBlocked": true,
+            "independentInstances": 3,
+            "modelRequests": 0
+          }
+        },
+        "member-selection-validation-and-a-fresh-two-role-group": {
+          "status": "PASS",
+          "ms": 2374,
+          "value": {
+            "newConversation": "group-d6edc843-cc60-4b59-86d6-2880d2804433",
+            "roles": 2,
+            "onlyCurrentWorld": true,
+            "noHistoryOrGrants": true,
+            "literalTitle": true
+          }
+        },
+        "a-second-custom-group-has-its-own-identity-and-no-prior-history": {
+          "status": "PASS",
+          "ms": 1850,
+          "value": {
+            "differentGroupId": true,
+            "roles": 3,
+            "otherWorldsExact": true,
+            "modelRequests": 0
+          }
+        },
+        "three-actor-four-message-policy-and-validation": {
+          "status": "PASS",
+          "ms": 1702,
+          "value": {
+            "speakers": 3,
+            "messages": 4,
+            "noConfigModelCall": true
+          }
+        },
+        "third-provider-failure-keeps-two-actor-batches-and-original-source": {
+          "status": "PASS",
+          "ms": 6380,
+          "value": {
+            "completedAiRows": 3,
+            "providerAttempts": 3
+          }
+        },
+        "retry-fills-only-third-actor-and-preserves-every-paragraph": {
+          "status": "PASS",
+          "ms": 2311,
+          "value": {
+            "actors": 3,
+            "aiRows": 4,
+            "sourceRows": 1,
+            "paragraphsPreserved": true
+          }
+        },
+        "one-actor-one-message-policy-keeps-history-and-merges-new-full-reply": {
+          "status": "PASS",
+          "ms": 4780,
+          "value": {
+            "newAiRows": 1,
+            "previousAiRows": 4,
+            "bodyPreserved": true
+          }
+        },
+        "actual-full-coordinator-restores-scoped-policy-and-entire-conversation": {
+          "status": "PASS",
+          "ms": 4321,
+          "value": {
+            "actualCoordinator": true,
+            "policyPreserved": true,
+            "exactRows": 7
+          }
+        },
+        "activity-setting-persists-with-inline-error-and-no-model-request": {
+          "status": "PASS",
+          "ms": 2125,
+          "value": {
+            "enabled": true,
+            "waitMs": 30000,
+            "requests": 0
+          }
+        },
+        "busy-source-is-durable-before-charge-and-explicit-immediate-replies-once": {
+          "status": "PASS",
+          "ms": 4584,
+          "value": {
+            "durableBeforeRequest": true,
+            "noInventedBusyMessage": true,
+            "cancelledPending": true,
+            "userRows": 1,
+            "requests": 1
+          }
+        },
+        "cold-owner-loads-pending-activity-task-and-real-foreground-composition-completes-once": {
+          "status": "PASS",
+          "ms": 37287,
+          "value": {
+            "loadedTask": true,
+            "savedConfig": true,
+            "actualForegroundLifecycle": true,
+            "userRows": 2,
+            "aiRows": 6,
+            "requests": 1
+          }
+        },
+        "external-full-restore-retains-activity-policy-but-pauses-the-waiting-send": {
+          "status": "PASS",
+          "ms": 6983,
+          "value": {
+            "actualCoordinator": true,
+            "pendingSendPaused": true,
+            "policyPreserved": true,
+            "noAdditionalRequest": true
+          }
+        },
+        "cold-storage-reload-keeps-policy-and-the-same-seven-rows": {
+          "status": "PASS",
+          "ms": 7732,
+          "value": {
+            "rows": 7,
+            "policy": true,
+            "processRestart": true
+          }
+        }
+      },
+      "pageErrors": [],
+      "build": "cc8af561e549278f3c0af97831188538b47d6e5ed819d1d6df57862209274009",
+      "baselineArtifact": "activity-timing-native-baseline-1793337391346.enc",
+      "cleanup": {
+        "status": "PASS",
+        "actualCoordinator": true,
+        "chatRows": 608,
+        "otherModulesAndSettingsPreserved": true
+      },
+      "fixtureRequests": 7
+    }
+  },
+  "layout": {
+    "status": "PASS",
+    "syntheticOnly": true,
+    "build": {
+      "syntheticOnly": true,
+      "productionPreview": true,
+      "resourceCount": 78,
+      "sourceCheck": "check-activity-timing.txt",
+      "frozenAt": "2026-10-30T13:15:56.4320543+08:00"
+    },
+    "viewport": {
+      "width": 375,
+      "height": 812
+    },
+    "checks": {
+      "group": {
+        "inlineErrors": 2,
+        "currentWorldRoles": 5,
+        "overflow": false
+      },
+      "timing": {
+        "inlineErrors": 1,
+        "overflow": false
+      }
+    },
+    "modelAttempts": 0,
+    "pageErrors": [],
+    "documentOverflow": false
+  },
+  "latestCapacityRerun": "NOT_RUN; group/timing candidate is not a capacity fix. Original 98 failures remain NO_GO.",
+  "bubbleQueueBuild": "98a1e79afd40e33f3f3a2b850793315a0c26757d11538217357f7ac9b52788af"
+}

@@ -1,0 +1,12 @@
+✔ P7 a later cold start preserves every original and reports only the exact existing auto-fill rule (3.8651ms)
+✔ P7 genuine edits, deletion, duplication or manual extra entries never pass as a clock rollover (1.5958ms)
+✔ P7 future/today dates, missing expected days, wrong mood, extra fields or impossible timestamps are rejected (0.5364ms)
+✔ P7 no tracking start authorises no new placeholders and never changes the caller arrays (0.2519ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 143.8326

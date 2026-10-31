@@ -1,0 +1,32 @@
+{
+  "at": "2026-10-29T12:52:41.843Z",
+  "syntheticOnly": true,
+  "kind": "process-counter-probe-not-capacity",
+  "processes": [
+    {
+      "id": 7572,
+      "type": "browser",
+      "readable": true,
+      "counters": [
+        "Name:\tyubin.formyself",
+        "VmHWM:\t  217880 kB",
+        "VmRSS:\t  217248 kB"
+      ]
+    },
+    {
+      "id": 7611,
+      "type": "renderer",
+      "readable": true,
+      "counters": [
+        "Name:\tocessService0:0",
+        "VmHWM:\t  215208 kB",
+        "VmRSS:\t  183676 kB"
+      ]
+    }
+  ],
+  "cdpProcessInfo": true,
+  "inventory": [
+    " 7572   357 com.yubin.formyself",
+    " 7611   890 com.google.android.webview:sandboxed_process0:org.chromium.content.app.SandboxedProcessService0:0"
+  ]
+}

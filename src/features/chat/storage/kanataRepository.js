@@ -1,7 +1,9 @@
 import { Directory, Encoding, Filesystem } from '@capacitor/filesystem'
-import CryptoJS from 'crypto-js'
+import { encryptPassphraseAes, decryptPassphraseAes } from '../../../shared/crypto/passphraseAes.js'
+import { sha256Text } from '../../../shared/crypto/sha256Text.js'
 import { preferenceStorage } from '../../../platform/storage/preferences.js'
-import { validateKanataData } from '../domain/kanataValidation.js'
+import { assertKanataData } from '../domain/kanataValidation.js'
+import { createMessageArchiveRepository } from './messageArchiveRepository.js'
 
 export const KANATA_DATA_DIRECTORY = 'formyself'
 export const KANATA_DATA_PATH = KANATA_DATA_DIRECTORY + '/kanata-v1.enc'
@@ -9,7 +11,7 @@ export const KANATA_TEMP_PATH = KANATA_DATA_DIRECTORY + '/kanata-v1.tmp'
 export const KANATA_BACKUP_PATH = KANATA_DATA_DIRECTORY + '/kanata-v1.bak'
 export const KANATA_RECOVERY_KEY = 'my_kanata_recovery_encrypted_v1'
 const PATHS = Object.freeze([KANATA_DATA_PATH, KANATA_BACKUP_PATH, KANATA_TEMP_PATH])
-const fingerprintOf = value => value ? CryptoJS.SHA256(value).toString() : ''
+const fingerprintOf = value => value ? sha256Text(value) : ''
 const missing = error => error?.code !== undefined
   ? ['ENOENT', 'OS-PLUG-FILE-0008'].includes(error.code)
   : ['File does not exist.', 'Entry does not exist.'].includes(error?.message)
@@ -30,20 +32,23 @@ const problem = (code, failures = []) => new KanataRepositoryError(code, failure
 /** @param {import('../domain/kanataTypes').KanataData} value @param {string} password */
 export function encryptKanataData(value, password) {
   if (typeof password !== 'string' || !password) throw problem('KANATA_PASSWORD_REQUIRED')
-  const data = validateKanataData(value)
-  return CryptoJS.AES.encrypt(JSON.stringify(data), password).toString()
+  // Synchronous serialization does not retain or return the input. Validate every field/reference
+  // without allocating another full header; ordinary Store mutations still own detached drafts.
+  const data = assertKanataData(value)
+  return encryptPassphraseAes(JSON.stringify(data), password)
 }
 /** @param {string} ciphertext @param {string} password @returns {import('../domain/kanataTypes').KanataData} */
 export function decryptKanataData(ciphertext, password) {
   if (typeof password !== 'string' || !password) throw problem('KANATA_PASSWORD_REQUIRED')
   let plaintext
-  try { plaintext = CryptoJS.AES.decrypt(ciphertext, password).toString(CryptoJS.enc.Utf8) }
+  try { plaintext = decryptPassphraseAes(ciphertext, password) }
   catch { throw problem('KANATA_DECRYPT_FAILED') }
   if (!plaintext) throw problem('KANATA_DECRYPT_FAILED')
   let value
   try { value = JSON.parse(plaintext) } catch { throw problem('KANATA_DATA_CORRUPTED') }
   // Preserve the domain's future-version/shape codes. Never try a legacy normalizer.
-  return validateKanataData(value)
+  // JSON.parse already created a private inert graph; do not clone it before returning ownership.
+  return assertKanataData(value)
 }
 
 /**
@@ -52,6 +57,7 @@ export function decryptKanataData(ciphertext, password) {
  * @param {{filesystem?: import('./kanataRepositoryTypes').KanataFilesystem, journal?: import('./kanataRepositoryTypes').KanataJournal, directory?: string}} [options]
  */
 export function createKanataRepository({ filesystem = Filesystem, journal = preferenceStorage, directory = Directory.Data } = {}) {
+  const archives = createMessageArchiveRepository({ filesystem, directory })
   let loaded = false, loadError = '', saveError = '', fingerprint = '', recoveryAvailable = false, reencrypting = false, loadRevision = 0
   let pending = null
   /** @type {Promise<void>} */
@@ -181,7 +187,7 @@ export function createKanataRepository({ filesystem = Filesystem, journal = pref
           selected = { data, ciphertext, path }
           break
         } catch (error) {
-          if (error.code === 'UNSUPPORTED_KANATA_VERSION' || error.code === 'KANATA_PASSWORD_REQUIRED') throw error
+          if (['UNSUPPORTED_KANATA_VERSION','UNSUPPORTED_KANATA_ARCHIVE_VERSION','KANATA_PASSWORD_REQUIRED'].includes(error.code)) throw error
           failures.push(errorCode(error))
         }
       }
@@ -252,5 +258,6 @@ export function createKanataRepository({ filesystem = Filesystem, journal = pref
     await chain.catch(() => {})
     if (pending) throw problem('KANATA_PENDING_SAVE')
   }
-  return { read, write, retry, flush, reencrypt, release, wait: () => chain.catch(() => {}), getState: state }
+  return { read, write, retry, flush, reencrypt, release, archives,
+    retireArchives: (/** @type {string[]} */ keepKeys) => archives.retireExcept(keepKeys), wait: () => chain.catch(() => {}), getState: state }
 }

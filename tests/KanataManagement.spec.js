@@ -30,6 +30,22 @@ const makeFixture=()=>{
 }
 beforeEach(()=>{setActivePinia(createPinia());Object.assign(restoreState,{blocked:false,busy:false})})
 describe('P3 actual management facade with Store save/session/recovery semantics',()=>{
+  it('P7 custom groups require protected loading and preserve the latest creation when persistence fails',async()=>{
+    const h=makeFixture()
+    await expect(h.management.createGroup('world',{title:'合成群',instanceIds:['one','two']})).rejects.toThrow('KANATA_NOT_LOADED')
+    await h.store.load('synthetic')
+    const d=h.store.snapshot,worldId=d.worlds[0].id,instanceIds=d.instances.slice(0,2).map(i=>i.id),before=d.conversations.length
+    h.setFailure(true)
+    await expect(h.management.createGroup(worldId,{title:'合成群',instanceIds})).rejects.toThrow('KANATA_SAVE_FAILED')
+    expect(h.store.snapshot.conversations).toHaveLength(before+1);expect(h.disk().conversations).toHaveLength(before)
+    expect(h.store.hasPendingSave).toBe(true)
+    h.setFailure(false);await h.management.retrySave()
+    expect(h.disk().conversations).toHaveLength(before+1);expect(h.store.hasPendingSave).toBe(false)
+    expect(h.store.snapshot.messages).toHaveLength(0)
+    h.auth.sessionRevision++
+    await expect(h.management.createGroup(worldId,{title:'过期群',instanceIds})).rejects.toThrow('KANATA_SESSION_EXPIRED')
+    expect(h.disk().conversations).toHaveLength(before+1)
+  })
   it('ordinary mutations require a loaded store and acquire a protected lease',async()=>{
     const h=makeFixture()
     await expect(h.management.createWorld(fields)).rejects.toThrow('KANATA_NOT_LOADED')

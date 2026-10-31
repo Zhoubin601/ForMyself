@@ -1,0 +1,6 @@
+fromEntries true
+defined true
+assigned true
+defineProperties true
+spread true
+parsed true

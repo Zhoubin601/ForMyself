@@ -1,0 +1,8 @@
+{
+  "kind": "diagnostic-only-not-device-acceptance",
+  "count": 100,
+  "plainBytes": 27341,
+  "syncEncryptDecryptMs": 426.71090000000004,
+  "nativeCipherKernelMs": 54.59029999999996,
+  "nativeNumberExcludesBase64AndSecondKeyDerivation": true
+}

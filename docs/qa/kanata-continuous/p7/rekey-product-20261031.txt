@@ -1,0 +1,19 @@
+
+ RUN  v3.2.4 D:/2026Autumn Semester File/GitHub/formyself-app/.worktrees/kanata
+
+ ✓ tests/KanataArchiveStore.spec.js (13 tests) 3131ms
+   ✓ P7 large portable restore writes bounded verified pages before the canonical header without an intermediate full monolith  484ms
+   ✓ P7 immutable canonical restore retains sources, allows later normal Store edits and cannot mutate its rollback target  447ms
+   ✓ P7 actual main/bak reencrypt includes all archive bodies, retires orphan copies, old password rejected, and other module untouched  321ms
+   ✓ P7 cleanup failure after reencrypt cannot claim success; old-password compensation restores whole graph and clears gate  370ms
+ ✓ tests/KanataProductRecovery.spec.js (28 tests) 6023ms
+   ✓ Kanata P2 product runtime: actual stores, encrypted files and restore journal > P7 group limits and activity timing survive the actual encrypted full coordinator, and later failure compensates the previous configuration  500ms
+   ✓ Kanata P2 product runtime: actual stores, encrypted files and restore journal > P7 actual full-backup coordinator exports every archived body and compensates a later participant failure without source loss  684ms
+   ✓ Kanata P2 product runtime: actual stores, encrypted files and restore journal > P7 missing archive aborts product full export/capture before restore journal preparation and leaves other modules unchanged  356ms
+   ✓ Kanata P2 product runtime: actual stores, encrypted files and restore journal > P7 compressed self-contained journal survives failed compensation and the actual coordinator recovers every source body  807ms
+
+ Test Files  2 passed (2)
+      Tests  41 passed (41)
+   Start at  13:12:45
+   Duration  15.04s (transform 1.28s, setup 0ms, collect 4.27s, tests 9.15s, environment 9.57s, prepare 1.82s)
+

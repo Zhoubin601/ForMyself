@@ -1,0 +1,21 @@
+
+ RUN  v3.2.4 D:/2026Autumn Semester File/GitHub/formyself-app/.worktrees/kanata
+
+ ✓ tests/KanataArchiveStore.spec.js (10 tests) 3608ms
+   ✓ P7 actual Store archive commits verified pages, keeps old canonical backup, cold loads metadata only and pages stable IDs  459ms
+   ✓ P7 archive failure before header leaves full original graph; failed header save retains latest durable-page draft and retry  339ms
+   ✓ P7 unhydrated synchronous backup fails; actual archive backup is self contained and new restore loses no message or source revision  441ms
+   ✓ P7 actual main/bak reencrypt includes all archive bodies, retires orphan copies, old password rejected, and other module untouched  563ms
+   ✓ P7 cleanup failure after reencrypt cannot claim success; old-password compensation restores whole graph and clears gate  660ms
+   ✓ P7 historical edit reactivates a complete page, keeps stable proof revisions and conservatively retains the encrypted previous copy  348ms
+ ✓ tests/KanataProductRecovery.spec.js (25 tests) 7244ms
+   ✓ Kanata P2 product runtime: actual stores, encrypted files and restore journal > P7 actual full-backup coordinator exports every archived body and compensates a later participant failure without source loss  1435ms
+   ✓ Kanata P2 product runtime: actual stores, encrypted files and restore journal > P7 missing archive aborts product full export/capture before restore journal preparation and leaves other modules unchanged  636ms
+   ✓ Kanata P2 product runtime: actual stores, encrypted files and restore journal > target participant failure compensates actual stores and the complete encrypted Kanata graph  345ms
+   ✓ Kanata P2 product runtime: actual stores, encrypted files and restore journal > rollback failure keeps the real encrypted journal and barrier, then recovers after the fault is fixed  492ms
+
+ Test Files  2 passed (2)
+      Tests  35 passed (35)
+   Start at  16:05:03
+   Duration  13.52s (transform 951ms, setup 0ms, collect 3.02s, tests 10.85s, environment 5.65s, prepare 1.28s)
+

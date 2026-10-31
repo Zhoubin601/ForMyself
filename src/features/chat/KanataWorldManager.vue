@@ -10,6 +10,7 @@ import { previewKanataCardLore } from './lorebook/kanataLorebook.js'
 import { builtinKanataPresets } from './presets/presetCatalog.js'
 import { useKanataStore } from './kanataStore.js'
 import KanataConversationView from './KanataConversationView.vue'
+import KanataGroupCreator from './KanataGroupCreator.vue'
 import KanataExperiencePanel from './experience/KanataExperiencePanel.vue'
 import KanataActivityPanel from './autonomy/KanataActivityPanel.vue'
 import KanataCardLibrary from './cards/KanataCardLibrary.vue'
@@ -39,9 +40,10 @@ watch(selectedWorldId, () => { selectedConversationId.value = ''; identityDraft.
 const instances = computed(() => data.value?.instances.filter(i => i.worldId === world.value?.id) || [])
 const conversations = computed(() => data.value?.conversations.filter(c => c.worldId === world.value?.id && c.type !== 'character') || [])
 const identity = computed(() => data.value?.identities.find(i => i.worldId === world.value?.id))
-const blocked = computed(() => restoreState.blocked || !store.isDataLoaded || Boolean(store.saveError) || store.hasPendingSave)
+const blocked = computed(() => restoreState.blocked || !store.isDataLoaded || Boolean(store.saveError) || Boolean(store.archiveError) || store.hasPendingSave)
 const worldBlocked = computed(() => blocked.value || Boolean(world.value?.archived))
 const issues = computed(() => [
+  ...(store.archiveError ? [{id:'history-read',title:'历史资料未能安全读取',message:'请重新解锁后重试，暂时暂停编辑和导出。已有备份和应用数据需要保留。'}] : []),
   ...(store.saveError ? [{id:'save',title:'更改尚未安全保存',message:'最新资料和待写数据已保留，请先重试保存。',action:'重试保存',retry:management.retrySave}] : []),
   ...(restoreState.blocked ? [{id:'restore',title:'恢复尚未完成',message:'请通过应用恢复流程处理，当前禁止修改。'}] : [])
 ])
@@ -152,7 +154,7 @@ onBeforeUnmount(()=>{mounted=false;identityDraft.value=null;instanceDraft.value=
         <form v-if="instanceDraft" class="kanata-form" novalidate @submit.prevent="saveInstance"><h4>{{ instanceDraft.name }} · 本世界独立覆盖</h4><label>本世界中的称呼<input v-model="instanceDraft.name" maxlength="200" /></label><label>人物概要<textarea v-model="instanceDraft.summary" rows="4" maxlength="20000"></textarea></label><label>说话习惯<textarea v-model="instanceDraft.speechStyle" rows="3" maxlength="10000"></textarea></label><div class="kanata-actions"><button type="submit" :disabled="worldBlocked||busy">保存实例设定</button><button type="button" @click="instanceDraft=null">取消实例编辑</button></div></form>
       </section>
       <section class="kanata-panel" aria-label="世界会话预览">
-        <h3>会话 · 独立保存的相遇</h3><ul class="kanata-conversation-list"><li v-for="conversation in conversations" :key="conversation.id"><button type="button" @click="selectedConversationId=conversation.id">{{ conversation.title }}</button><span>{{ conversation.type==='group'?'群聊':'私聊' }} · {{ conversation.participantIds.length-1 }} 位角色</span></li></ul><p class="kanata-help">选择私聊或群聊开始文字对话。只有主动发送才调用全局 DeepSeek，不会自动生成历史。</p></section>
+        <h3>会话 · 独立保存的相遇</h3><KanataGroupCreator :key="world.id" :data="data" :world-id="world.id" :management="management" :blocked="worldBlocked||busy" @created="selectedConversationId=$event" @message="notice=$event" /><ul class="kanata-conversation-list"><li v-for="conversation in conversations" :key="conversation.id"><button type="button" @click="selectedConversationId=conversation.id">{{ conversation.title }}</button><span>{{ conversation.type==='group'?'群聊':'私聊' }} · {{ conversation.participantIds.length-1 }} 位角色</span></li></ul><p class="kanata-help">选择会话开始文字对话。用户发送会调用全局 DeepSeek；已开启的自主交流与主动联系也可能调用。新群聊不预填历史。</p></section>
       <section class="kanata-panel">
         <h3>另一个世界，从零开始</h3><div class="kanata-actions"><button type="button" :disabled="blocked||busy" @click="createWorld">创建空白世界</button><button type="button" :disabled="blocked||busy" @click="addPreset">从预设创建世界</button></div></section>
     </template>

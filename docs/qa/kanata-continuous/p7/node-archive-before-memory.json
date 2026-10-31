@@ -1,0 +1,424 @@
+{
+  "status": "MEASURED_NOT_DEVICE_ACCEPTED",
+  "kind": "actual-store-node-disk",
+  "syntheticOnly": true,
+  "noForcedGC": true,
+  "deviceAcceptance": false,
+  "fullProductRestoreCoordinator": false,
+  "samples": [
+    {
+      "count": 1000,
+      "phases": [
+        {
+          "phase": "prepare",
+          "count": 1000,
+          "root": "C:\\Users\\a3185\\AppData\\Local\\Temp\\kanata-p7-archive-synthetic-RGDfTI",
+          "metrics": {
+            "initialMonolithSave": {
+              "ms": 153.4,
+              "heapUsedBytes": 44846800,
+              "peakProcessRssKiB": 141416
+            },
+            "archiveConversion": {
+              "ms": 378.3,
+              "heapUsedBytes": 28158336,
+              "peakProcessRssKiB": 172112
+            }
+          },
+          "status": "MEASURED",
+          "fullProductRestoreCoordinator": false,
+          "archive": {
+            "archivedCount": 780,
+            "pages": 16
+          },
+          "mainBytes": 336428,
+          "peakProcessRssKiB": 172112
+        },
+        {
+          "phase": "cold-page-save",
+          "count": 1000,
+          "root": "C:\\Users\\a3185\\AppData\\Local\\Temp\\kanata-p7-archive-synthetic-RGDfTI",
+          "metrics": {
+            "coldStoreLoad": {
+              "ms": 74.8,
+              "heapUsedBytes": 11564424,
+              "peakProcessRssKiB": 81804
+            },
+            "diskPage50": {
+              "ms": 0.8,
+              "heapUsedBytes": 11969528,
+              "peakProcessRssKiB": 81804
+            },
+            "olderDiskPage50": {
+              "ms": 0.2,
+              "heapUsedBytes": 11874984,
+              "peakProcessRssKiB": 81804
+            },
+            "indexedExactSearch": {
+              "ms": 11,
+              "heapUsedBytes": 18366384,
+              "peakProcessRssKiB": 81804
+            },
+            "saveHeader": {
+              "ms": 78.5,
+              "heapUsedBytes": 27140824,
+              "peakProcessRssKiB": 103272
+            }
+          },
+          "status": "MEASURED",
+          "fullProductRestoreCoordinator": false,
+          "io": {
+            "first": {
+              "pages": 0,
+              "bytes": 0
+            },
+            "second": {
+              "pages": 0,
+              "bytes": 0
+            },
+            "search": {
+              "pages": 1,
+              "bytes": 27904
+            }
+          },
+          "mainBytes": 336448,
+          "peakProcessRssKiB": 103272
+        },
+        {
+          "phase": "backup-restore",
+          "count": 1000,
+          "root": "C:\\Users\\a3185\\AppData\\Local\\Temp\\kanata-p7-archive-synthetic-RGDfTI",
+          "metrics": {
+            "coldStoreLoad": {
+              "ms": 72.3,
+              "heapUsedBytes": 11568992,
+              "peakProcessRssKiB": 81664
+            },
+            "hydrateBackupBodies": {
+              "ms": 151.6,
+              "heapUsedBytes": 29297800,
+              "peakProcessRssKiB": 96244
+            },
+            "portableCapture": {
+              "ms": 10,
+              "heapUsedBytes": 19717960,
+              "peakProcessRssKiB": 96244
+            },
+            "restoreStoreNotCoordinator": {
+              "ms": 135.1,
+              "heapUsedBytes": 48981568,
+              "peakProcessRssKiB": 145512
+            },
+            "rearchiveAfterRestore": {
+              "ms": 357.4,
+              "heapUsedBytes": 28632128,
+              "peakProcessRssKiB": 172704
+            }
+          },
+          "status": "MEASURED",
+          "fullProductRestoreCoordinator": false,
+          "mainBytes": 336448,
+          "peakProcessRssKiB": 172704
+        },
+        {
+          "phase": "reencrypt",
+          "count": 1000,
+          "root": "C:\\Users\\a3185\\AppData\\Local\\Temp\\kanata-p7-archive-synthetic-RGDfTI",
+          "metrics": {
+            "coldStoreLoad": {
+              "ms": 73.6,
+              "heapUsedBytes": 11562344,
+              "peakProcessRssKiB": 81672
+            },
+            "pageReencrypt": {
+              "ms": 480.8,
+              "heapUsedBytes": 13237056,
+              "peakProcessRssKiB": 123256
+            }
+          },
+          "status": "MEASURED",
+          "fullProductRestoreCoordinator": false,
+          "oldPasswordRejected": true,
+          "mainBytes": 336448,
+          "peakProcessRssKiB": 140920
+        }
+      ]
+    },
+    {
+      "count": 10000,
+      "phases": [
+        {
+          "phase": "prepare",
+          "count": 10000,
+          "root": "C:\\Users\\a3185\\AppData\\Local\\Temp\\kanata-p7-archive-synthetic-IIDLLA",
+          "metrics": {
+            "initialMonolithSave": {
+              "ms": 1119.3,
+              "heapUsedBytes": 321040528,
+              "peakProcessRssKiB": 575560
+            },
+            "archiveConversion": {
+              "ms": 6066.3,
+              "heapUsedBytes": 316351088,
+              "peakProcessRssKiB": 575560
+            }
+          },
+          "status": "MEASURED",
+          "fullProductRestoreCoordinator": false,
+          "archive": {
+            "archivedCount": 9780,
+            "pages": 196
+          },
+          "mainBytes": 1369432,
+          "peakProcessRssKiB": 575560
+        },
+        {
+          "phase": "cold-page-save",
+          "count": 10000,
+          "root": "C:\\Users\\a3185\\AppData\\Local\\Temp\\kanata-p7-archive-synthetic-IIDLLA",
+          "metrics": {
+            "coldStoreLoad": {
+              "ms": 233.2,
+              "heapUsedBytes": 58645536,
+              "peakProcessRssKiB": 140788
+            },
+            "diskPage50": {
+              "ms": 1.4,
+              "heapUsedBytes": 59174952,
+              "peakProcessRssKiB": 141044
+            },
+            "olderDiskPage50": {
+              "ms": 0.8,
+              "heapUsedBytes": 59111360,
+              "peakProcessRssKiB": 141232
+            },
+            "indexedExactSearch": {
+              "ms": 26.1,
+              "heapUsedBytes": 50733928,
+              "peakProcessRssKiB": 154700
+            },
+            "saveHeader": {
+              "ms": 241,
+              "heapUsedBytes": 164308128,
+              "peakProcessRssKiB": 264988
+            }
+          },
+          "status": "MEASURED",
+          "fullProductRestoreCoordinator": false,
+          "io": {
+            "first": {
+              "pages": 0,
+              "bytes": 0
+            },
+            "second": {
+              "pages": 0,
+              "bytes": 0
+            },
+            "search": {
+              "pages": 2,
+              "bytes": 92908
+            }
+          },
+          "mainBytes": 1369452,
+          "peakProcessRssKiB": 264988
+        },
+        {
+          "phase": "backup-restore",
+          "count": 10000,
+          "root": "C:\\Users\\a3185\\AppData\\Local\\Temp\\kanata-p7-archive-synthetic-IIDLLA",
+          "metrics": {
+            "coldStoreLoad": {
+              "ms": 240,
+              "heapUsedBytes": 62869176,
+              "peakProcessRssKiB": 162388
+            },
+            "hydrateBackupBodies": {
+              "ms": 1500.3,
+              "heapUsedBytes": 79994728,
+              "peakProcessRssKiB": 228312
+            },
+            "portableCapture": {
+              "ms": 73.2,
+              "heapUsedBytes": 67755680,
+              "peakProcessRssKiB": 230712
+            },
+            "restoreStoreNotCoordinator": {
+              "ms": 1260.7,
+              "heapUsedBytes": 354245872,
+              "peakProcessRssKiB": 705080
+            },
+            "rearchiveAfterRestore": {
+              "ms": 8583.2,
+              "heapUsedBytes": 394137328,
+              "peakProcessRssKiB": 705080
+            }
+          },
+          "status": "MEASURED",
+          "fullProductRestoreCoordinator": false,
+          "mainBytes": 1369452,
+          "peakProcessRssKiB": 705080
+        },
+        {
+          "phase": "reencrypt",
+          "count": 10000,
+          "root": "C:\\Users\\a3185\\AppData\\Local\\Temp\\kanata-p7-archive-synthetic-IIDLLA",
+          "metrics": {
+            "coldStoreLoad": {
+              "ms": 256,
+              "heapUsedBytes": 58591680,
+              "peakProcessRssKiB": 140448
+            },
+            "pageReencrypt": {
+              "ms": 9311.2,
+              "heapUsedBytes": 58823432,
+              "peakProcessRssKiB": 319968
+            }
+          },
+          "status": "MEASURED",
+          "fullProductRestoreCoordinator": false,
+          "oldPasswordRejected": true,
+          "mainBytes": 1369452,
+          "peakProcessRssKiB": 329112
+        }
+      ]
+    },
+    {
+      "count": 100000,
+      "phases": [
+        {
+          "phase": "prepare",
+          "count": 100000,
+          "root": "C:\\Users\\a3185\\AppData\\Local\\Temp\\kanata-p7-archive-synthetic-2ReAQ1",
+          "metrics": {
+            "initialMonolithSave": {
+              "ms": 24451.2,
+              "heapUsedBytes": 2285858472,
+              "peakProcessRssKiB": 3921612
+            },
+            "archiveConversion": {
+              "ms": 91943.9,
+              "heapUsedBytes": 728572256,
+              "peakProcessRssKiB": 3921612
+            }
+          },
+          "status": "MEASURED",
+          "fullProductRestoreCoordinator": false,
+          "archive": {
+            "archivedCount": 99780,
+            "pages": 1996
+          },
+          "mainBytes": 11926080,
+          "peakProcessRssKiB": 3921612
+        },
+        {
+          "phase": "cold-page-save",
+          "count": 100000,
+          "root": "C:\\Users\\a3185\\AppData\\Local\\Temp\\kanata-p7-archive-synthetic-2ReAQ1",
+          "metrics": {
+            "coldStoreLoad": {
+              "ms": 2094.6,
+              "heapUsedBytes": 360775232,
+              "peakProcessRssKiB": 520880
+            },
+            "diskPage50": {
+              "ms": 6.3,
+              "heapUsedBytes": 361857224,
+              "peakProcessRssKiB": 520880
+            },
+            "olderDiskPage50": {
+              "ms": 5.6,
+              "heapUsedBytes": 362856840,
+              "peakProcessRssKiB": 520880
+            },
+            "indexedExactSearch": {
+              "ms": 56,
+              "heapUsedBytes": 341120872,
+              "peakProcessRssKiB": 520880
+            },
+            "saveHeader": {
+              "ms": 5218.7,
+              "heapUsedBytes": 276138984,
+              "peakProcessRssKiB": 1185364
+            }
+          },
+          "status": "MEASURED",
+          "fullProductRestoreCoordinator": false,
+          "io": {
+            "first": {
+              "pages": 0,
+              "bytes": 0
+            },
+            "second": {
+              "pages": 0,
+              "bytes": 0
+            },
+            "search": {
+              "pages": 3,
+              "bytes": 139588
+            }
+          },
+          "mainBytes": 11926104,
+          "peakProcessRssKiB": 1185364
+        },
+        {
+          "phase": "backup-restore",
+          "count": 100000,
+          "root": "C:\\Users\\a3185\\AppData\\Local\\Temp\\kanata-p7-archive-synthetic-2ReAQ1",
+          "metrics": {
+            "coldStoreLoad": {
+              "ms": 2124.6,
+              "heapUsedBytes": 360877248,
+              "peakProcessRssKiB": 521008
+            },
+            "hydrateBackupBodies": {
+              "ms": 37124.2,
+              "heapUsedBytes": 628711552,
+              "peakProcessRssKiB": 745856
+            },
+            "portableCapture": {
+              "ms": 1766.2,
+              "heapUsedBytes": 678036896,
+              "peakProcessRssKiB": 798152
+            },
+            "restoreStoreNotCoordinator": {
+              "ms": 27103.5,
+              "heapUsedBytes": 2206380200,
+              "peakProcessRssKiB": 4100576
+            },
+            "rearchiveAfterRestore": {
+              "ms": 90034.8,
+              "heapUsedBytes": 753401904,
+              "peakProcessRssKiB": 4100576
+            }
+          },
+          "status": "MEASURED",
+          "fullProductRestoreCoordinator": false,
+          "mainBytes": 11926104,
+          "peakProcessRssKiB": 4100576
+        },
+        {
+          "phase": "reencrypt",
+          "count": 100000,
+          "root": "C:\\Users\\a3185\\AppData\\Local\\Temp\\kanata-p7-archive-synthetic-2ReAQ1",
+          "metrics": {
+            "coldStoreLoad": {
+              "ms": 1735.4,
+              "heapUsedBytes": 363554848,
+              "peakProcessRssKiB": 520912
+            },
+            "pageReencrypt": {
+              "ms": 121491.7,
+              "heapUsedBytes": 401104216,
+              "peakProcessRssKiB": 1078480
+            }
+          },
+          "status": "MEASURED",
+          "fullProductRestoreCoordinator": false,
+          "oldPasswordRejected": true,
+          "mainBytes": 11926104,
+          "peakProcessRssKiB": 1078480
+        }
+      ]
+    }
+  ]
+}

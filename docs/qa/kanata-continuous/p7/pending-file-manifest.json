@@ -1,0 +1,2184 @@
+{
+  "at": "2026-10-31T06:15:51.000Z",
+  "branch": "Kanata",
+  "baseHead": "62a2b755a622a181f6d530525e15ad070dd33b9f",
+  "scope": "All staged P7 WIP files since P6; source, tests, process records and synthetic QA evidence",
+  "hashBasis": "Git index blob bytes after repository text/EOL normalisation, reproducible on cloud; manifest self-hash omitted",
+  "files": [
+    {
+      "path": "README.md",
+      "kind": "entry-document",
+      "sha256": "618abe99d025e5546ffa8c66a4826357f6a001982bcd12ea08b4da6768556ba9"
+    },
+    {
+      "path": "docs/20261029-kanata-p7-archive-checkpoint-v1.md",
+      "kind": "process-document",
+      "sha256": "6b159f778d22f522c493904aae55cfcb4a923622438c2320adf92f587eff4247"
+    },
+    {
+      "path": "docs/20261029-kanata-p7-archive-format-v1.md",
+      "kind": "process-document",
+      "sha256": "1b7e10da873667cbb6e01e168dd3f4b10e92c649d4b3da07cb226f3ce905093d"
+    },
+    {
+      "path": "docs/20261029-kanata-p7-capacity-contract-v1.md",
+      "kind": "process-document",
+      "sha256": "5b1f9dcce54e7af087b433d902968f145ea67afdbf062cbf4834485b8fa86c45"
+    },
+    {
+      "path": "docs/20261029-kanata-p7-restore-payload-codec-v1.md",
+      "kind": "process-document",
+      "sha256": "dd7b20ff9b45dba6fb89ef839de782bde65d5eaf8d05a4b15bab2d23d3b22298"
+    },
+    {
+      "path": "docs/20261029-kanata-p7-storage-review-v1.md",
+      "kind": "process-document",
+      "sha256": "b3ebedb14700fc3168217092d7043fda8fba5e1d1ab24915120b0d9b2f54415e"
+    },
+    {
+      "path": "docs/20261030-kanata-p7-verification-progress-v1.md",
+      "kind": "process-document",
+      "sha256": "0e8776479d1053bbff147cd47dd57ba75e2902865da8a85680b23010742a5f72"
+    },
+    {
+      "path": "docs/20261030-kanata-requirements-p7-increment-v1.md",
+      "kind": "process-document",
+      "sha256": "5838a9b48bca109ce906df3a90a2edfcb3ad70b3e8b0bbff2d6ab3af82265f62"
+    },
+    {
+      "path": "docs/20261031-kanata-cloud-handoff-v1.md",
+      "kind": "process-document",
+      "sha256": "29c3b950a73f7397b1912ad0d27e0ace76f774e51074aaddc83d929e28c0708a"
+    },
+    {
+      "path": "docs/20261031-kanata-p7-performance-checkpoint-v1.md",
+      "kind": "process-document",
+      "sha256": "bd4959cdb7cd4b333bf52525257ce4767461398802e9b25560b7695fef10e85a"
+    },
+    {
+      "path": "docs/analysis-notes.md",
+      "kind": "process-document",
+      "sha256": "bbb681e0d53571709a55b6f42991f172bd7e2ff7121ffc4122bdecab49276eeb"
+    },
+    {
+      "path": "docs/plan.md",
+      "kind": "process-document",
+      "sha256": "d929a2254080f6b5bb50613e44e1e81e79bed455d503d9b2837d226043cd23e7"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p6/activity-scenarios.mjs",
+      "kind": "synthetic-qa",
+      "sha256": "eba75d09f6e0e48ec557bc19b04e050d8ced9b2dbd96977b7e867135ddba20a2"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/activity-timing-domain-before-backup-shape.txt",
+      "kind": "synthetic-qa",
+      "sha256": "9e32205b2a229b71c7498ee24b5ea952cfa2b7b2512031de2c64ecc1445cf2d7"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/activity-timing-domain.txt",
+      "kind": "synthetic-qa",
+      "sha256": "9e32205b2a229b71c7498ee24b5ea952cfa2b7b2512031de2c64ecc1445cf2d7"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/activity-timing-focused.txt",
+      "kind": "synthetic-qa",
+      "sha256": "c53792311d675c0441b039169f81e7781e3b9cd8ec155703e40ec26fcdbfc5eb"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/activity-timing-form-web.png",
+      "kind": "synthetic-qa",
+      "sha256": "567283fc94b1328bf28d943746cbfac5a77a27d9a41b771a97fca5ab3eb254f4"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/activity-timing-native-baseline-1793337391346.enc",
+      "kind": "synthetic-qa",
+      "sha256": "523ba9ddc4deeae339953bae4b7fa050c0518c64e5b0d08bbbbfdacae088a76c"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/activity-timing-native-results.json",
+      "kind": "synthetic-qa",
+      "sha256": "2b3db90d9e68c8bd04e3b76b85dc799c55562af2f7fe1260bbe4eb262c608bc3"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/activity-timing-native.png",
+      "kind": "synthetic-qa",
+      "sha256": "03ac5d44200a5d38a3d5d4653030853256161d18b297312b28566068443c474d"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/activity-timing-native.txt",
+      "kind": "synthetic-qa",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/activity-timing-scenarios.mjs",
+      "kind": "synthetic-qa",
+      "sha256": "66d20f925702b7710036882c67e8028cacfe221fef5656ee6405c0f4ddab5f42"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/activity-timing-web-results.json",
+      "kind": "synthetic-qa",
+      "sha256": "840081f8c71b43bb9cba041da8a0116c59a3982e28f56d5f3e777249c3fe5ee9"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/activity-timing-web.png",
+      "kind": "synthetic-qa",
+      "sha256": "017f56ca90a5bbe1ffa58c2ce4723ddfb8c78ba1a69b5f017d779011195de297"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/activity-timing-web.txt",
+      "kind": "synthetic-qa",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/aes-native-base64.txt",
+      "kind": "synthetic-qa",
+      "sha256": "f2781826d5ec3a6478d8d52eac85e39b47fb17e51ed3a219bdf2af6f1e00a58e"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/aes-stream-first.txt",
+      "kind": "synthetic-qa",
+      "sha256": "81b1189bb1f323b981e8699e896bc753d0283bf40616196dccef830d7db7fbe6"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/aes-stream-second.txt",
+      "kind": "synthetic-qa",
+      "sha256": "12bfabfc42a1db7f93f7e8982f388a6061602216d702b14a89bc0370a9ef9665"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/android-build-activity-timing.txt",
+      "kind": "synthetic-qa",
+      "sha256": "e517d5fe8407ad3833ec20c99fda9430891481a05d850874ebf3db19b8df3948"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/android-build-archive-optimized.txt",
+      "kind": "synthetic-qa",
+      "sha256": "fbf2b59413a49b0b129ad28f123cc8029c99862f82ee76f5fe5270d72c73d7e8"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/android-build-archive.txt",
+      "kind": "synthetic-qa",
+      "sha256": "7c2b1f3856487a464c121a37ac25e668dc35120c9e03a651648507fedcc2d659"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/android-build-batched.txt",
+      "kind": "synthetic-qa",
+      "sha256": "7fbc6a098ab6e2c54b07f6c277e53f41070fe19123f55d95c0308119a67d977e"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/android-build-bulk.txt",
+      "kind": "synthetic-qa",
+      "sha256": "13d584a704b66dfb5a315ec72de6017a874be8bed0d94c03dc8f3dc6b3d0ecf6"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/android-build-custom-groups.txt",
+      "kind": "synthetic-qa",
+      "sha256": "43c532c73c2e90c19b59b966f16d4d20a3909625421261a3d88ed428ee8b42df"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/android-build-descriptor.txt",
+      "kind": "synthetic-qa",
+      "sha256": "acafef3f88dbefcc5bc477a021f706e71e747b91ab1f6a16190933fa9cc2cf59"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/android-build-group-limits.txt",
+      "kind": "synthetic-qa",
+      "sha256": "81d412dc9ad7f9dcf073f48e286bfb7839b4e8594ebe5ea69fcb113d541c7874"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/android-build-image.txt",
+      "kind": "synthetic-qa",
+      "sha256": "94a6e4cddfaee42a69a11e211cf9f98fb62f8f1f4a5aa7ce1f7ddb76a0894aa0"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/android-build-immutable.txt",
+      "kind": "synthetic-qa",
+      "sha256": "4b67c3cc03ec3eb09de2bb563796e50906495402df9c0df3bdc4b5d8d493b646"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/android-build-iterative.txt",
+      "kind": "synthetic-qa",
+      "sha256": "5b9849372d2f5cbda4592c2d9b9f04b37a81f1a7bcefea4244b594ba327d98a6"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/android-build-journal-release-20261031.txt",
+      "kind": "synthetic-qa",
+      "sha256": "368f9935754c0847e351102d32d4a07f54840311a7e89f0cc3d0a0e5b33511c9"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/android-build-payload.txt",
+      "kind": "synthetic-qa",
+      "sha256": "5c7d3869a0a1b4630addd7a05edf96a64cd89237a19acfc3b5d38f99b8d2af8b"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/android-build-rekey-20261031.txt",
+      "kind": "synthetic-qa",
+      "sha256": "ee41fd78b00190de7261ba5209811211d21d8f027ead1b19fe0eb386b8706330"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/android-build-rekey-reviewed-20261031.txt",
+      "kind": "synthetic-qa",
+      "sha256": "8ef419a9673635c1b8124b48fd3388ff1ed1c9764665b3c972f5fcb9a4b4638d"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/android-build.txt",
+      "kind": "synthetic-qa",
+      "sha256": "685e7aa1081757bfad8ec011de1ef0e498acdba488c7532bdbf2996896990500"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/android-instrumentation-install.txt",
+      "kind": "synthetic-qa",
+      "sha256": "781a31c82430c97897af612ece5e0ca2205e301cb5ff121ce2660541ea5182c7"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/android-instrumentation.txt",
+      "kind": "synthetic-qa",
+      "sha256": "7925dd5f3d2ff6543b48569e6b9e1c72d278ff88ed5fa50c7a7560d276741746"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/android-sync-activity-timing.txt",
+      "kind": "synthetic-qa",
+      "sha256": "cae4f1910dc1a9fa2d6203c95c9212af24db208e40628ea0039129b1e9f23279"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/android-sync-archive-optimized.txt",
+      "kind": "synthetic-qa",
+      "sha256": "8b80c0d6c20fbd4113ccc90bfe33ba86ca1a1ca449ea076ac3de1d5522c78a93"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/android-sync-archive.txt",
+      "kind": "synthetic-qa",
+      "sha256": "7bd3d213d5f7cb1c7be0f4e714f3c41c02c5ea03215e9d254580ce992170d42d"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/android-sync-batched.txt",
+      "kind": "synthetic-qa",
+      "sha256": "6fa591347362ca3347dfe57835efd1e6e6c6fc06adaf65acebb156414fc048c2"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/android-sync-bulk.txt",
+      "kind": "synthetic-qa",
+      "sha256": "adb2759978bc79269c315e83159402c2218ce04c74b13fce10abface455ee183"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/android-sync-custom-groups.txt",
+      "kind": "synthetic-qa",
+      "sha256": "0f579710070893f533e466c35dd714cff7a49f9604f01fcf3a826da8ef89cb1e"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/android-sync-descriptor.txt",
+      "kind": "synthetic-qa",
+      "sha256": "64ac8fa3996fa0431c4b130945d10103a0f5e030b63e165a635722c905196015"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/android-sync-group-limits.txt",
+      "kind": "synthetic-qa",
+      "sha256": "ba32c944e5ea5d6aa71186a4fcbe3135ba94f3afc0b7976b652f3160dbe02f88"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/android-sync-image.txt",
+      "kind": "synthetic-qa",
+      "sha256": "51a2af04b08945b8c440e185823a162d8d9fa6acbf26840db977d9058e8b7c60"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/android-sync-immutable.txt",
+      "kind": "synthetic-qa",
+      "sha256": "5f1290936bb8a8ca85852c4b9564110870b32b12a212030b47afcc850b85218d"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/android-sync-iterative.txt",
+      "kind": "synthetic-qa",
+      "sha256": "cb79ff1db0829c86e1f808319d06cc517b1907920d536eee1dd6ce7494b95f20"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/android-sync-journal-release-20261031.txt",
+      "kind": "synthetic-qa",
+      "sha256": "496419213824cf137ef48cf4112d404751eb8bbfadac6a498606bbd0ba7c12a4"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/android-sync-payload.txt",
+      "kind": "synthetic-qa",
+      "sha256": "96054e8cc7d9b7ec9d6d960e6491d3ebaebabf5da42329269373812aaab3ed51"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/android-sync-rekey-20261031.txt",
+      "kind": "synthetic-qa",
+      "sha256": "e67876566175d87e3fbfc3d5f25e00fc0fe1cf7db8314b84d56d4b548b0a7631"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/android-sync-rekey-reviewed-20261031.txt",
+      "kind": "synthetic-qa",
+      "sha256": "60d496266b9ba57aaaa1126486c2ca8cfb307500a5cb27ded02b4849584c0cb4"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/android-test-install-descriptor.txt",
+      "kind": "synthetic-qa",
+      "sha256": "781a31c82430c97897af612ece5e0ca2205e301cb5ff121ce2660541ea5182c7"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/archive-index-allocation.txt",
+      "kind": "synthetic-qa",
+      "sha256": "80342c4c61a6cec2c73b53828837c332b64c5ce3d29c9e11f0055dd6b3d07f2f"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/archive-packed-restore.txt",
+      "kind": "synthetic-qa",
+      "sha256": "5f6ef529de2cda6b3b5b35e3613500a3350b4d05e58b157244ecf968b99ebb7a"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/archive-product-first.txt",
+      "kind": "synthetic-qa",
+      "sha256": "141948e95d058053d7ad690de01c3023cb8a5f37d31827b2152afd2b53867c85"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/archive-product-second.txt",
+      "kind": "synthetic-qa",
+      "sha256": "f0eb2b114576a1f39d2c0738e2c59881c43c175f133611d740b477d894d91736"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/archive-scenarios.mjs",
+      "kind": "synthetic-qa",
+      "sha256": "98efeb58309f3d315d792c843f49a51428b233a8740681d711d3bbd84a2b710b"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/archive-store-first.txt",
+      "kind": "synthetic-qa",
+      "sha256": "5196eb7d25cde17432d147c458d0056cc10fbf3009cc70fc165405a60e25da1e"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/archive-unit-first.txt",
+      "kind": "synthetic-qa",
+      "sha256": "84eb4532d246a93c272219c05112ea6ebfbfa1e0da599778097b32927470c24d"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/archive-unit-second.txt",
+      "kind": "synthetic-qa",
+      "sha256": "affabd33f06d5286e5b2652f995d99ef229677da84b5dd46554e50bee0a3e288"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/baseline-rollover-regression-20261031.txt",
+      "kind": "synthetic-qa",
+      "sha256": "f7550d147a299006e2bd550097117d0ec8159d1dcdd2a18cd88b54458dd9cc35"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/benchmark-archive.mjs",
+      "kind": "synthetic-qa",
+      "sha256": "6fc70a2065008ea38f123d3eddee452d22c80d5ee20a874a3cee71349390a57e"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/benchmark-repository.mjs",
+      "kind": "synthetic-qa",
+      "sha256": "9033dd02242f9ffa7e3afde8972fa79a3ca1228a1cc57e0b8e1861f778c22c90"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/cap-sync.txt",
+      "kind": "synthetic-qa",
+      "sha256": "25d18e103f44145b1cd1c7d060a156ab816e9c126a13c02177b99286247a0177"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/capacity-evidence.mjs",
+      "kind": "synthetic-qa",
+      "sha256": "bd5b3ef1f91136b81a7d0c57cab8b959a19d9d61fe06930a81beb3ff9fa8e088"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/capacity-gate-regression-20261031.txt",
+      "kind": "synthetic-qa",
+      "sha256": "391b9740da4535a6c57b35ce197a71ff0a5a75ba7c2824041b54498d8794a199"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/check-activity-timing-before-message-fixture.txt",
+      "kind": "synthetic-qa",
+      "sha256": "4b41fe62a42a440d7d0fa6261e0af9807c9946c83cd186738be7fb5256519534"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/check-activity-timing.txt",
+      "kind": "synthetic-qa",
+      "sha256": "95657b4cb024165591a40948709872a2c294157c7c05af4638307a34dc413d6f"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/check-archive-candidate.txt",
+      "kind": "synthetic-qa",
+      "sha256": "3c1758dff2c1cab1e32c4acfb93362b724d34c029ba433fb8b2d808938af21a4"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/check-archive-first.txt",
+      "kind": "synthetic-qa",
+      "sha256": "71cb10f1c25d59e5db68f362e1470011c3b2c90564edf3ff85aafb29aec0b075"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/check-archive-memory.txt",
+      "kind": "synthetic-qa",
+      "sha256": "77ae8e99096ccc8950d9c765b7a2c9ec4aee3faf19388ef91fdafb6d273cd92e"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/check-archive-optimized.txt",
+      "kind": "synthetic-qa",
+      "sha256": "bb10168d0deac6b02330be0a2fedef94143e4816a21a158b832bbb3a1ce12248"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/check-archive-packed-candidate.txt",
+      "kind": "synthetic-qa",
+      "sha256": "04dfcfb1e89b9c4f73c8bd11313faf6544e5352cafe69e6ef97af7bb11741cda"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/check-archive-second.txt",
+      "kind": "synthetic-qa",
+      "sha256": "d589fc9149fe7fd165e17b58e1c0e78e3dd19dee3ff1f53d8fab725b22e6b040"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/check-archive-third.txt",
+      "kind": "synthetic-qa",
+      "sha256": "210abe42e3c3ed8296774661cba8980831d73d4e9149fe6a8ea963b599f0d3a6"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/check-batched-io.txt",
+      "kind": "synthetic-qa",
+      "sha256": "4cc884c1cb87bed372b1385146d2cdfd66c0cc3a260013a58a1739226c9a445a"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/check-bulk-validation.txt",
+      "kind": "synthetic-qa",
+      "sha256": "cd037d0e7cb1a7016c6c3025565542e76559f1c0c07776adfb24eb3d1d976118"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/check-cloud-handoff-20261031.txt",
+      "kind": "synthetic-qa",
+      "sha256": "f4a6d20fc62f51ec501f629e13570ced397ebef3d6d61ccebde5c41f9b5b24b4"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/check-custom-groups-before-cost-copy-assertion.txt",
+      "kind": "synthetic-qa",
+      "sha256": "771110103679adf1cfdec70640e5797c56b16e20d946a4ef4bc2be8d2d5475d0"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/check-custom-groups.txt",
+      "kind": "synthetic-qa",
+      "sha256": "5ea6fef53238ccc2585870a99e4c7b06babf29651b297e75a6b86c676999bdd5"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/check-group-limits-before-social-narrowing.txt",
+      "kind": "synthetic-qa",
+      "sha256": "ccba4ea36bdb35962dc04ee963563a5589920f41b3f7125e325268ef68dbf7f0"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/check-group-limits-before-sync-assertion.txt",
+      "kind": "synthetic-qa",
+      "sha256": "316b61ffbb70f765709af3122b42fbd7c39f586afd7be79fc1f92b3624f79183"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/check-group-limits.txt",
+      "kind": "synthetic-qa",
+      "sha256": "2026fe082daefccdea1661c1db71093c1b3b5b82df837d40ffc55ab0e3d58710"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/check-immutable-canonical.txt",
+      "kind": "synthetic-qa",
+      "sha256": "c13b931a2264108efbd2cb9b719eb47c40cbf7953f676e4116be83d1270e5b72"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/check-immutable-image.txt",
+      "kind": "synthetic-qa",
+      "sha256": "0e1de80ac6c9045ed76cb1b92a93443d088374dfaf5ba98470ade973de9ed977"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/check-iterative-utf8-before-type-fix.txt",
+      "kind": "synthetic-qa",
+      "sha256": "58c6de0f3eb9818326a8787cc3dc89d3c1dc0fe1279de9afaf3e091a8c221f1e"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/check-iterative-utf8.txt",
+      "kind": "synthetic-qa",
+      "sha256": "3eaf4a015d93e3506d6c0d5cbb83c6602f5d2ee813dbe4877eab97350a0eaae8"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/check-journal-release-20261031.txt",
+      "kind": "synthetic-qa",
+      "sha256": "803927a75bb7fc4d39187c84aa7b84e142adb5df7ad7a0288dc6dd5977bad2ee"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/check-native-aes-20261031.txt",
+      "kind": "synthetic-qa",
+      "sha256": "8cf7ec0ee57dcc12b00fd50cff0f538d6de4515aa0314e1b9563642a13b3efb0"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/check-owned-metadata-bubbles.txt",
+      "kind": "synthetic-qa",
+      "sha256": "2a1a4f47e38cd2277e62c46dfbcb3e4356c7fed7a5b32997cc93d191214366ba"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/check-owned-snapshots.txt",
+      "kind": "synthetic-qa",
+      "sha256": "5c9bf7d5f2f0ccba8050fe054290d0a14b20dc1835a965810a1c6f0fd4194ff5"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/check-rekey-20261031.txt",
+      "kind": "synthetic-qa",
+      "sha256": "ffde87a16b47e0be62422934eb2b16f677a4bf4c07d3c8185b8bdbf26451619d"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/check-rekey-reviewed-20261031.txt",
+      "kind": "synthetic-qa",
+      "sha256": "83020914360e2ad3e48b88ef3f4b443a89dfcc6ea15a23b382ccacba9da13ea2"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/check-restore-payload-candidate.txt",
+      "kind": "synthetic-qa",
+      "sha256": "18fd72cf526cd556ef16ac9d290bdeff64b4ffe95e31ad92f7d35365abfa60de"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/check-restore-payload.txt",
+      "kind": "synthetic-qa",
+      "sha256": "55987fc4e508edcd6a2a4722987dcd36ed321562370170378a071dd8598ef4c1"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/check-reused-descriptor.txt",
+      "kind": "synthetic-qa",
+      "sha256": "a83b9c10dccea716903b524e4ba04e1627d0f39d68836ab07064715d6562255c"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/check-validation-final.txt",
+      "kind": "synthetic-qa",
+      "sha256": "297c44280bbf95834810266c62bdf8e90f8af5e90aa826eafe5c47c0605c4995"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/clone-bulk-descriptors.txt",
+      "kind": "synthetic-qa",
+      "sha256": "f1e9b6ee747359f5787e092ac97d3f67d03a8292559ed21dc670fd431d787f7c"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/clone-manual-diagnostic-20261031.json",
+      "kind": "synthetic-qa",
+      "sha256": "2e73f2317dfe2b6ab06cd7b504373863b63f255405e19d64d4108acc9292e3b0"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/clone-native-diagnostic-20261031.json",
+      "kind": "synthetic-qa",
+      "sha256": "aab30896b4f7c9ff17bbc4eac5ecb956620e3ab970b82e0163c13aa2b60f9276"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/clone-shape-diagnostic.txt",
+      "kind": "synthetic-qa",
+      "sha256": "f09c575ad387571df4a9b6a22aacdbfce8a60d3b43d5136763fc4f4eed90e367"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/credential-scan-before-token-boundaries-20261031.json",
+      "kind": "synthetic-qa",
+      "sha256": "34412bae5b8b1bf6974f05ad166779e6bf75336990fecbfd48ca1671da4b56f1"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/credential-scan-cloud-handoff-20261031.json",
+      "kind": "synthetic-qa",
+      "sha256": "d0d1895f01ef7c324c802eb45becfd0379a437e5c55f046242db9b7dc9a17ae6"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/credential-scan-latest.json",
+      "kind": "synthetic-qa",
+      "sha256": "4fb7acb65e06dfa7db90dd940fb6fe81232c64ad578d0245bac51e020be09dc1"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/credential-scan.json",
+      "kind": "synthetic-qa",
+      "sha256": "2a61731d01955daae4f5677709182f64260c268d2cbb419fd1257956d34429df"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/crypto-repository-archive.txt",
+      "kind": "synthetic-qa",
+      "sha256": "c975a1348c91577a82f9bf41f85d87ec70c77810c8d7f3447f49779797a0a267"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/custom-groups-native-baseline-1793336922471.enc",
+      "kind": "synthetic-qa",
+      "sha256": "86b61ddd938609a1059ee3a032196aaea2e7c3f01869c66da2027d770aeeb0d3"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/custom-groups-native-results.json",
+      "kind": "synthetic-qa",
+      "sha256": "4793f0dbc3054551fe1064103bc51b9015748355795e263585842fca8b99c4ef"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/custom-groups-native.png",
+      "kind": "synthetic-qa",
+      "sha256": "035e9466b62d990b09da74740876220c22293cd218eadcbf9a4a756dca02f3c8"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/custom-groups-native.txt",
+      "kind": "synthetic-qa",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/custom-groups-scenarios.mjs",
+      "kind": "synthetic-qa",
+      "sha256": "d012a5d785c16b931c7b78b9fcefbd24ed2cc02b202573fd0a8c076c3a66d13b"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/custom-groups-web-results.json",
+      "kind": "synthetic-qa",
+      "sha256": "bfa667a909729cb33af6ff877387402102c1ba9393bfef1a71863feaed50ab6a"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/custom-groups-web.png",
+      "kind": "synthetic-qa",
+      "sha256": "2112a39f62a6e5c3f002a991b669f07434bc150b162d1202313f938ac57af088"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/custom-groups-web.txt",
+      "kind": "synthetic-qa",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/diff-check-cloud-handoff-20261031.txt",
+      "kind": "synthetic-qa",
+      "sha256": "bd8d534118f853ed86cf82cc4270e91e3150743554e21817ddefef8af131f49e"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/diff-check-latest.txt",
+      "kind": "synthetic-qa",
+      "sha256": "bd8d534118f853ed86cf82cc4270e91e3150743554e21817ddefef8af131f49e"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/group-creation-domain-before-archived-fixture.txt",
+      "kind": "synthetic-qa",
+      "sha256": "7dc9f439ff7d8ea98a101afa80839f5b0bf5b590fc19cf9f354ff6a2d9f1ef5c"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/group-creation-domain.txt",
+      "kind": "synthetic-qa",
+      "sha256": "da34379f9bdc4629a97c9a4e3d36b4477f330e6c8b77cfa37e37413af3ad6c74"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/group-creation-focused.txt",
+      "kind": "synthetic-qa",
+      "sha256": "f02a905a0b5410435b8da703cfc881c266dba9f293c967b2131ff8ad1ee2d736"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/group-creation-form-web.png",
+      "kind": "synthetic-qa",
+      "sha256": "aee37679537ab4d96325f166215e9b7fee92ba84f420df4c7313e7ae6a4cc29d"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/group-limits-domain-before-fixture-key.txt",
+      "kind": "synthetic-qa",
+      "sha256": "b5819c7fa77a652449e461b67be77a478535956beb711245b941506820d31d4c"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/group-limits-domain.txt",
+      "kind": "synthetic-qa",
+      "sha256": "1616e95fd2578007b308d14261458642a80fcb389ccddaa617d8382cd3b6c1c6"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/group-limits-native-baseline-1793335821348.enc",
+      "kind": "synthetic-qa",
+      "sha256": "7615db97abfb1c601b191d1670c9a02e2822365857ab5132e3d41e91d4b6d9d2"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/group-limits-native-results.json",
+      "kind": "synthetic-qa",
+      "sha256": "26024e5c48952f9a01033c5007b58d4ba5ad103d9de19273fc0a7aec3a56b99f"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/group-limits-native.png",
+      "kind": "synthetic-qa",
+      "sha256": "2cbfddd49bc56ff29025f432288cea31c3b991f2cb05568a3ccdc8bbeb0dc5fc"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/group-limits-native.txt",
+      "kind": "synthetic-qa",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/group-limits-runtime.txt",
+      "kind": "synthetic-qa",
+      "sha256": "7bcf0460dff4c1a8f8d591d225645914a2d59bd35f4ed00e5e1c30e3c58c755e"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/group-limits-scenarios.mjs",
+      "kind": "synthetic-qa",
+      "sha256": "1a69a22e7e52ab97c7ff3e0359a4d9d43dc4e8b55252f2e0470be98983c2753e"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/group-limits-ui-social.txt",
+      "kind": "synthetic-qa",
+      "sha256": "6da40a2926691ec9fa9af12ef6b6352c454d827aa208eaa03bcca6a01cc9c799"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/group-limits-web-results.json",
+      "kind": "synthetic-qa",
+      "sha256": "479bc78cbfcb273ddf58c09fcdefa656906f34b129dfe09aec32dc60eb5c6d35"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/group-limits-web.png",
+      "kind": "synthetic-qa",
+      "sha256": "eab5f7d9457b51c57f417f87e5a9f652f74bdbc435c6b92c1d70110d9e3349ff"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/group-limits-web.txt",
+      "kind": "synthetic-qa",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/group-timing-layout-results.json",
+      "kind": "synthetic-qa",
+      "sha256": "a1a80a31c5f7c9ad14df8b93941cf7d421d1f59aa6b550a2848433da8396bfd1"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/group-timing-layout.txt",
+      "kind": "synthetic-qa",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/immutable-canonical-tests.txt",
+      "kind": "synthetic-qa",
+      "sha256": "081538df2e6bbc22c3a52b67be95042eb7915f781768c881d50dd83171c4c8ec"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/index-allocation-benchmark.txt",
+      "kind": "synthetic-qa",
+      "sha256": "d3bd8f661a31969c6e619b707a3118f4c4f86b47e7c9f5d4c9ebd025c45166df"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/instrumentation-activity-timing.txt",
+      "kind": "synthetic-qa",
+      "sha256": "7f0fab67810e881829c0baff3ea86daec0693b760c517be78ac3b7c459385073"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/instrumentation-cloud-handoff-20261031.txt",
+      "kind": "synthetic-qa",
+      "sha256": "51083cc06e8b1139b1a85cec66234f036557b1f0a9dd52f67210016efdc1daf2"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/instrumentation-install-activity-timing.txt",
+      "kind": "synthetic-qa",
+      "sha256": "781a31c82430c97897af612ece5e0ca2205e301cb5ff121ce2660541ea5182c7"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/instrumentation-install-cloud-handoff-20261031.txt",
+      "kind": "synthetic-qa",
+      "sha256": "781a31c82430c97897af612ece5e0ca2205e301cb5ff121ce2660541ea5182c7"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/iterative-codec-tests.txt",
+      "kind": "synthetic-qa",
+      "sha256": "fa092585ee72b1a78656e1fa2afbafc01ddb0720b8e5e6de78e705f5a69c24f8"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/iterative-product-tests.txt",
+      "kind": "synthetic-qa",
+      "sha256": "655f04cf74816fb0090d7e094aa078227d2f95c754a8fece149c36d31152ff4d"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/journal-release-20261031-native-baseline-1793425289128.enc",
+      "kind": "synthetic-qa",
+      "sha256": "5d870385139052355f49003c920e3e1546287aaeb4d2615974367e888190437a"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/journal-release-20261031-native-results.json",
+      "kind": "synthetic-qa",
+      "sha256": "2848e7f06e28db3e0a44a1262b3ff9f2c8f288f0631f335aa92a595764c5ee4d"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/journal-release-20261031-native.png",
+      "kind": "synthetic-qa",
+      "sha256": "8f3f5ef0c283bd6adba2c7619746d46918726fb2d9ca7a461f77a8555fa499a3"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/journal-release-20261031-web-results.json",
+      "kind": "synthetic-qa",
+      "sha256": "fb1b5bcc4df105f09e45bf8409ca1ada37319f7369f51662d1986248af458584"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/journal-release-20261031-web.png",
+      "kind": "synthetic-qa",
+      "sha256": "acc1f6a59eb5b0ce217c1a287d7d37d54bf4fb7c1388f51d55edc4d096751f81"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/journal-release-native-20261031.txt",
+      "kind": "synthetic-qa",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/journal-release-product-20261031.txt",
+      "kind": "synthetic-qa",
+      "sha256": "746894b09681fcb0c5bdc4341911cb311825c505b947dd5ff364c61a58e4a890"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/journal-release-product-before-spy-assertion-20261031.txt",
+      "kind": "synthetic-qa",
+      "sha256": "8a26f78d4e795a625c41b37951f7c7737438db754d1042011068bc3fbf1e04fd"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/journal-release-web-20261031.txt",
+      "kind": "synthetic-qa",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/mood-baseline-comparison.mjs",
+      "kind": "synthetic-qa",
+      "sha256": "19a78c9759d90ad45b9cd9aa5f084c5cb5d44935d07d022c3941239610317fca"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/native-aes-kernel-diagnostic-20261031.json",
+      "kind": "synthetic-qa",
+      "sha256": "b189d59ab4ae9ea64ea4b1e267dcddf9b0a3b8d07d2b36a9dd3bcdb876992887"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/native-archive-first.txt",
+      "kind": "synthetic-qa",
+      "sha256": "88d77ba85624d77357f54a2975dccbc51d8ebd6f7c8dab8768ae3b4138aaa00b"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/native-archive-results.json",
+      "kind": "synthetic-qa",
+      "sha256": "103d31ba2d08d552954b6589df0107501dfed5d9cfc288cd52b5659c011b6cc8"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/native-archive-security-before-codec.json",
+      "kind": "synthetic-qa",
+      "sha256": "839145fa59fe30e7ea7d17fc9e7ef9d9abf15fca83446b6ba4e98c06c95bb55c"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/native-archive-security-results.json",
+      "kind": "synthetic-qa",
+      "sha256": "5ff24f553783c29e6078ca3c97530920ec9e217b83a4fb71d99ddc4e637c18f7"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/native-archive-security.txt",
+      "kind": "synthetic-qa",
+      "sha256": "dce95381d5dbdff0acc5fb4e3996ba30194fd95886e77c5578e225dbce40a0e5"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/native-archive-upgrade-retry.txt",
+      "kind": "synthetic-qa",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/native-archive-upgrade.txt",
+      "kind": "synthetic-qa",
+      "sha256": "47f71167b11f00ae86ab20b1d89f2ab541f35ae68385844cec3b99f143f38b75"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/native-baseline-after-rekey-20261031.txt",
+      "kind": "synthetic-qa",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/native-baseline-before-mood-rollover-rule-20261031.json",
+      "kind": "synthetic-qa",
+      "sha256": "3e4b319d4565cbf5d19ec7789d8251eab0a1af7afda48a962dde07e496de3168"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/native-baseline-diff-cloud-handoff-20261031.json",
+      "kind": "synthetic-qa",
+      "sha256": "422d0ab1d16ca75d7fb3eec0979207388611b60be1841c0d91dcca03af0d6bc9"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/native-baseline-integrity-activity-timing.txt",
+      "kind": "synthetic-qa",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/native-baseline-integrity-before-cas-contract.json",
+      "kind": "synthetic-qa",
+      "sha256": "da8e1ac98c19edc915328cd89f5ad35b417106e6abaa8a2bbdf82c18293d9032"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/native-baseline-integrity-before-cloud-handoff-20261031.json",
+      "kind": "synthetic-qa",
+      "sha256": "4ef907096ae5d48c35429463fc4eb4f4de94d340ebfe0bbdad72235630885531"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/native-baseline-integrity-cloud-handoff-20261031.txt",
+      "kind": "synthetic-qa",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/native-baseline-integrity-descriptor.json",
+      "kind": "synthetic-qa",
+      "sha256": "a5610f1c0541c0e0ae6aa694478f0f09c60dafb625d456e72e792858e2e21cc7"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/native-baseline-integrity-results.json",
+      "kind": "synthetic-qa",
+      "sha256": "b22e7bf0b42cca7dec4f6b297fe10508d73c3195f2c8c0a0ca32b2f0f552e379"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/native-baseline-integrity-with-rollover-cloud-handoff-20261031.txt",
+      "kind": "synthetic-qa",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/native-baseline-integrity.txt",
+      "kind": "synthetic-qa",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/native-baseline-journal-release-20261031.json",
+      "kind": "synthetic-qa",
+      "sha256": "f9b4164af8494dc97ee2b765b6acc9fee40a094fc6922d82dd33edaceb69d87d"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/native-baseline-journal-release-20261031.txt",
+      "kind": "synthetic-qa",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/native-baseline-rekey-reviewed-20261031.json",
+      "kind": "synthetic-qa",
+      "sha256": "f859a07915b6e7e0b76bcbc78ad7cf0de249258b69fb2361d630b355a492db67"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/native-baseline-rollover-before-playwright-cleanup-fix-20261031.txt",
+      "kind": "synthetic-qa",
+      "sha256": "b414e3a7d5fb43556a6d3f2695b3c09a16e7b3f95a5a6e4a9f9987b771350935"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/native-before-capacity.enc",
+      "kind": "synthetic-qa",
+      "sha256": "2943ea7f149a448c95f9d08897445b0b11ba56a59b6249ae0d1ae36a84997b5f"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/native-capacity-1000-20261030T023957218Z-MEASURED_REQUIRES_TIME_GATE_REVIEW.json",
+      "kind": "synthetic-qa",
+      "sha256": "b1426b5db0b836a984464e06d12e52e13e0e2e8be70dd7c78ec90129fdc333e8"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/native-capacity-1000-20261030T034129209Z-PASS.json",
+      "kind": "synthetic-qa",
+      "sha256": "24b96b88696d868937d5cc30f2a92cc4fc6aa6c7217b729c364df8c5e61a8d2f"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/native-capacity-1000-20261030T034624796Z-PASS.json",
+      "kind": "synthetic-qa",
+      "sha256": "f64878c8aa95fea76a71b41f71361dd7a821dd2451508479b1a8a861e5969a8a"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/native-capacity-1000-20261031T052206635Z-PASS.json",
+      "kind": "synthetic-qa",
+      "sha256": "d0848f22502669e9f555979af173ef592004cf75a32bbb62e9e29a3f0a74af7a"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/native-capacity-1000-20261031T054331622Z-PASS.json",
+      "kind": "synthetic-qa",
+      "sha256": "7f0f50226471d858931256b19828f5e167afb7d358599a2a5cd725980fb44e8e"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/native-capacity-1000-before-fixture-guard.json",
+      "kind": "synthetic-qa",
+      "sha256": "a4105ac8ff015a29145ec6a2db0d4d455746e293895658981e8a54417f9d9801"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/native-capacity-1000-bulk.json",
+      "kind": "synthetic-qa",
+      "sha256": "b1426b5db0b836a984464e06d12e52e13e0e2e8be70dd7c78ec90129fdc333e8"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/native-capacity-1000.json",
+      "kind": "synthetic-qa",
+      "sha256": "8ede658f6cd07b3abc3875848475db071fdffdeceda5e158a335c1d157598af2"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/native-capacity-1000.txt",
+      "kind": "synthetic-qa",
+      "sha256": "83458275a70a800cf5c48992932c3dba769e2241f4cbaded10eb5baad0f290b0"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/native-capacity-10000-20261030T024753876Z-MEASURED_REQUIRES_TIME_GATE_REVIEW.json",
+      "kind": "synthetic-qa",
+      "sha256": "04973170f2268f16a0ae771e72b11fbcde034b62e3fe33c1079cdb0c27b5014e"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/native-capacity-10000-20261030T025922189Z-PASS.json",
+      "kind": "synthetic-qa",
+      "sha256": "b8f910fe1b9ec3f567ce1b24bead8394e05114f8d6205271d99c62ca9d487339"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/native-capacity-10000-20261030T034655611Z-PASS.json",
+      "kind": "synthetic-qa",
+      "sha256": "2e31dc0b1b8a9b6eb94803e5982bb5781ca5c1e5254f4d2f4b56252123f2e8f9"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/native-capacity-10000-20261031T052300132Z-PASS.json",
+      "kind": "synthetic-qa",
+      "sha256": "ac720fc12bb3dd9b7383765dbb0c4581d830c5fda496aadf0b0a86a9ea90a7ba"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/native-capacity-10000-20261031T054403986Z-PASS.json",
+      "kind": "synthetic-qa",
+      "sha256": "3f5046017521255d78b11f743751e2f4fab9396f464e0c39a0dce90360698ec0"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/native-capacity-10000.json",
+      "kind": "synthetic-qa",
+      "sha256": "9d237a9c5d92b4793b628df3ce3ce32c81e941b95061f770da4c54d33c4f8c4a"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/native-capacity-10000.txt",
+      "kind": "synthetic-qa",
+      "sha256": "2c6009aaeb9e6eb073187f61ee85549f54bb7398155b8ff55eb6ee62fd734e65"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/native-capacity-100000-20261030T030817916Z-FAIL.json",
+      "kind": "synthetic-qa",
+      "sha256": "620d2ac62d5b722a42b57622c690a3ca42f2ef67b621cbe2e43fbc7b32afe45b"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/native-capacity-100000-20261030T034817659Z-FAIL_CAPACITY_GATE.json",
+      "kind": "synthetic-qa",
+      "sha256": "0e6a46d55261588de6d280ed59c485926cd5e6fab4994a69550a5da118671ca3"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/native-capacity-100000-20261031T052439033Z-FAIL_CAPACITY_GATE.json",
+      "kind": "synthetic-qa",
+      "sha256": "e99625b404ccaf236cb5b633178ca5282074f4eea52960c36f6b67e9577b2605"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/native-capacity-100000-20261031T054510761Z-PASS.json",
+      "kind": "synthetic-qa",
+      "sha256": "85063ed4cb65d48f48e9c4cd3053aef4574522f8fad7e9c8401b7c7d67aa187e"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/native-capacity-100000.json",
+      "kind": "synthetic-qa",
+      "sha256": "4c400ca3d6b17502ced6846ce0a5a3fe04fdd0a1c95fe8d950d74acd8eebf78a"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/native-capacity-baseline-before-rekey-20261031.json",
+      "kind": "synthetic-qa",
+      "sha256": "815dc3391467ff370bfc036ca5cd34d6e36a5ae35227c23e3cee99770f46d555"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/native-capacity-baseline-restored-before-descriptor.json",
+      "kind": "synthetic-qa",
+      "sha256": "d6cda56d9c5168fb93203e9d647198b8c92a44719a4e42a01850321c82854adb"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/native-capacity-baseline-restored.json",
+      "kind": "synthetic-qa",
+      "sha256": "f9b4164af8494dc97ee2b765b6acc9fee40a094fc6922d82dd33edaceb69d87d"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/native-capacity-baseline-restored.txt",
+      "kind": "synthetic-qa",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/native-capacity-batched-10000.txt",
+      "kind": "synthetic-qa",
+      "sha256": "2c6009aaeb9e6eb073187f61ee85549f54bb7398155b8ff55eb6ee62fd734e65"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/native-capacity-batched-100000-diagnostic.txt",
+      "kind": "synthetic-qa",
+      "sha256": "dff37a3a22763848ba5c478b028d718422597bf3eba6f436e014d4db460d376d"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/native-capacity-descriptor-1000.txt",
+      "kind": "synthetic-qa",
+      "sha256": "83458275a70a800cf5c48992932c3dba769e2241f4cbaded10eb5baad0f290b0"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/native-capacity-descriptor-10000.txt",
+      "kind": "synthetic-qa",
+      "sha256": "2c6009aaeb9e6eb073187f61ee85549f54bb7398155b8ff55eb6ee62fd734e65"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/native-capacity-descriptor-100000.txt",
+      "kind": "synthetic-qa",
+      "sha256": "15cb249bb750d0d47b3a3f8b45ea81cd4cb2d0252c7c3afa50a378bca85dfe8f"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/native-capacity-image-1000.txt",
+      "kind": "synthetic-qa",
+      "sha256": "83458275a70a800cf5c48992932c3dba769e2241f4cbaded10eb5baad0f290b0"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/native-capacity-journal-release-20261031-1000-before-gate-fix.json",
+      "kind": "synthetic-qa",
+      "sha256": "7f0f50226471d858931256b19828f5e167afb7d358599a2a5cd725980fb44e8e"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/native-capacity-journal-release-20261031-1000.json",
+      "kind": "synthetic-qa",
+      "sha256": "8ede658f6cd07b3abc3875848475db071fdffdeceda5e158a335c1d157598af2"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/native-capacity-journal-release-20261031-1000.txt",
+      "kind": "synthetic-qa",
+      "sha256": "83458275a70a800cf5c48992932c3dba769e2241f4cbaded10eb5baad0f290b0"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/native-capacity-journal-release-20261031-10000-before-gate-fix.json",
+      "kind": "synthetic-qa",
+      "sha256": "3f5046017521255d78b11f743751e2f4fab9396f464e0c39a0dce90360698ec0"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/native-capacity-journal-release-20261031-10000.json",
+      "kind": "synthetic-qa",
+      "sha256": "9d237a9c5d92b4793b628df3ce3ce32c81e941b95061f770da4c54d33c4f8c4a"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/native-capacity-journal-release-20261031-10000.txt",
+      "kind": "synthetic-qa",
+      "sha256": "2c6009aaeb9e6eb073187f61ee85549f54bb7398155b8ff55eb6ee62fd734e65"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/native-capacity-journal-release-20261031-100000-before-gate-fix.json",
+      "kind": "synthetic-qa",
+      "sha256": "85063ed4cb65d48f48e9c4cd3053aef4574522f8fad7e9c8401b7c7d67aa187e"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/native-capacity-journal-release-20261031-100000.json",
+      "kind": "synthetic-qa",
+      "sha256": "4c400ca3d6b17502ced6846ce0a5a3fe04fdd0a1c95fe8d950d74acd8eebf78a"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/native-capacity-journal-release-20261031-100000.txt",
+      "kind": "synthetic-qa",
+      "sha256": "15cb249bb750d0d47b3a3f8b45ea81cd4cb2d0252c7c3afa50a378bca85dfe8f"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/native-capacity-rekey-reviewed-20261031-1000.json",
+      "kind": "synthetic-qa",
+      "sha256": "d0848f22502669e9f555979af173ef592004cf75a32bbb62e9e29a3f0a74af7a"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/native-capacity-rekey-reviewed-20261031-1000.txt",
+      "kind": "synthetic-qa",
+      "sha256": "83458275a70a800cf5c48992932c3dba769e2241f4cbaded10eb5baad0f290b0"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/native-capacity-rekey-reviewed-20261031-10000.json",
+      "kind": "synthetic-qa",
+      "sha256": "ac720fc12bb3dd9b7383765dbb0c4581d830c5fda496aadf0b0a86a9ea90a7ba"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/native-capacity-rekey-reviewed-20261031-10000.txt",
+      "kind": "synthetic-qa",
+      "sha256": "2c6009aaeb9e6eb073187f61ee85549f54bb7398155b8ff55eb6ee62fd734e65"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/native-capacity-rekey-reviewed-20261031-100000.json",
+      "kind": "synthetic-qa",
+      "sha256": "e99625b404ccaf236cb5b633178ca5282074f4eea52960c36f6b67e9577b2605"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/native-capacity-rekey-reviewed-20261031-100000.txt",
+      "kind": "synthetic-qa",
+      "sha256": "15cb249bb750d0d47b3a3f8b45ea81cd4cb2d0252c7c3afa50a378bca85dfe8f"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/native-capacity-support.mjs",
+      "kind": "synthetic-qa",
+      "sha256": "cd95868ea16d2472844ea13781c479e85241d7fcca721278bb833787c52b61a2"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/native-codec-capabilities.json",
+      "kind": "synthetic-qa",
+      "sha256": "8b8421768e69d3d095c2588f9e39261029c0e08f81c4e2d02f8143a628a0a595"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/native-codec-security.txt",
+      "kind": "synthetic-qa",
+      "sha256": "9821db64b7b11580da444159e3d472e0a37b90ef988cc8c5a63e458d89db2489"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/native-history.png",
+      "kind": "synthetic-qa",
+      "sha256": "f6977893192cafaf5fa35e7bd0ac8d237ace01ea034cc079da393057236aa08a"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/native-instrumentation-descriptor.txt",
+      "kind": "synthetic-qa",
+      "sha256": "e11c2d186c714cc574bd60a9e86031f55f38c8377ca9f087cf108845bfb8b3cc"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/native-memory-counter-probe.json",
+      "kind": "synthetic-qa",
+      "sha256": "c4acc010dd01a96c34cbc686d63c52efa6138c5350004e09e24466ba0003447c"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/native-rekey-observation-20261031.png",
+      "kind": "synthetic-qa",
+      "sha256": "3664c645f34d3130f3f58f0704e67dd140eae45f5bccb8e845870c34e3630b91"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/native-upgrade.txt",
+      "kind": "synthetic-qa",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/native-validation-upgrade-results.json",
+      "kind": "synthetic-qa",
+      "sha256": "09f4a9564be77b2276f50d55f2b2a39a82c913ffd5071b2571aded61de1bad21"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/node-archive-before-memory.json",
+      "kind": "synthetic-qa",
+      "sha256": "bd7196c03e523a44a560d4fc6aadf60b65ad8e8ada0a21d06e91fa1111c75370"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/node-archive-before-memory.txt",
+      "kind": "synthetic-qa",
+      "sha256": "fae70cabb7b9e4df98587ef22b788f6ef92052ab1c94e5684034d0f1d96fa4a4"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/node-archive-before-packed-import.json",
+      "kind": "synthetic-qa",
+      "sha256": "c860fbead01762bb106c93387063e7a385295d78515843059f8f83378ab69c2b"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/node-archive-packed-run.txt",
+      "kind": "synthetic-qa",
+      "sha256": "fae70cabb7b9e4df98587ef22b788f6ef92052ab1c94e5684034d0f1d96fa4a4"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/node-archive-results.json",
+      "kind": "synthetic-qa",
+      "sha256": "1f6283486cdbce6d1a847e6e1ca9301b7a936c59b0f22669417804daab4f7393"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/node-archive-run.txt",
+      "kind": "synthetic-qa",
+      "sha256": "fae70cabb7b9e4df98587ef22b788f6ef92052ab1c94e5684034d0f1d96fa4a4"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/node-capacity-before-index.json",
+      "kind": "synthetic-qa",
+      "sha256": "c0caaeee6bc9d6e7e7cae74122c2d432d8b04c2f604d22edb587891399aadda4"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/node-capacity-before-index.txt",
+      "kind": "synthetic-qa",
+      "sha256": "55b49e59ffdc1f642a979bcd478a3dca31ff136eb93831dfff21a78e3b12f641"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/node-capacity-results.json",
+      "kind": "synthetic-qa",
+      "sha256": "e42e936a82b78212789fa8d3dbf0ebf11c620dffe0ae897a47ddfb2c72c69411"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/node-capacity-run.txt",
+      "kind": "synthetic-qa",
+      "sha256": "f5e67552f25415492cc33b3f834e4c585b4701585426f5a18050ce9fa7be0c1d"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/owned-and-bubble-tests.txt",
+      "kind": "synthetic-qa",
+      "sha256": "bbfdd1515c07db5c7d5078e3b7550966cb75a7185e817616378b880a054ddcec"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/owned-export-registry.txt",
+      "kind": "synthetic-qa",
+      "sha256": "a4eaf4c3117171f1ffc15982bc22849bb49341eeaeb969296df215509972d368"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/owned-page-security.txt",
+      "kind": "synthetic-qa",
+      "sha256": "db3ae75a325b8f07909690023077d962cfb8ce651e2bfed1979f7960c3aeb45a"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/owned-repository-tests.txt",
+      "kind": "synthetic-qa",
+      "sha256": "d217fd8d25913227a7774570aacc75e09d9dc7ceb4a708c7b9deb87dcc9ac594"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/owned-snapshots-unit.txt",
+      "kind": "synthetic-qa",
+      "sha256": "71912293c3cacebc7de985626087d4dbb91b620cf8471f3063bb643edb09f2d0"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/page-shared-crypto.txt",
+      "kind": "synthetic-qa",
+      "sha256": "0994aa254c9b7a2576e74f5cc85427c820fb97414bde03fd04ca5a1b3077b634"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/pending-file-manifest.json",
+      "kind": "synthetic-qa",
+      "sha256": null
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/production-build-activity-timing.json",
+      "kind": "synthetic-qa",
+      "sha256": "9b888de9195eb301e012cdaa614c86cbde24fb6c220d43d079efbf6de2717379"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/production-build-archive-initial.json",
+      "kind": "synthetic-qa",
+      "sha256": "d66d3e5703abc6cd9c75515be3e2af902734967daaa116beb10dedaf73151ad7"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/production-build-archive-optimized.json",
+      "kind": "synthetic-qa",
+      "sha256": "19d99728eacdef48137968509d3999da36285b36b372e05fa62d7ac925cae304"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/production-build-batched.json",
+      "kind": "synthetic-qa",
+      "sha256": "892a3b61630d1491c8e055bf242a990c3b6da307fbef3682e59bbfbdbde40a8b"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/production-build-bulk.json",
+      "kind": "synthetic-qa",
+      "sha256": "de9a8e0fc2108e40b78122807492ee762e50e82aee5518c45869878671140ec4"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/production-build-cloud-handoff-20261031.json",
+      "kind": "synthetic-qa",
+      "sha256": "8dbe3da26a7b20017e9ed188f8425832baa4ff22d18d3691751112097c2e4d2c"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/production-build-custom-groups.json",
+      "kind": "synthetic-qa",
+      "sha256": "74f9cec9576d6b308da035c13fd52dc5b8a08af438f9db3ff846bbe6f25ffae3"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/production-build-descriptor.json",
+      "kind": "synthetic-qa",
+      "sha256": "0a59e28bc5be83894ea5cccff87d311e7ac5bf0efa8f490eb5c367c95f730068"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/production-build-group-limits.json",
+      "kind": "synthetic-qa",
+      "sha256": "5909096a28e9272bb78842ca6e90722aee2bd211e6064fc734d174793eac8c8e"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/production-build-image.json",
+      "kind": "synthetic-qa",
+      "sha256": "84fa3bdf5d3cd6e5fd5991f73832411567fcf68a573f6f6ae35d549b09c04970"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/production-build-immutable.json",
+      "kind": "synthetic-qa",
+      "sha256": "8301ca26736a3d23d8b02d1776e51d3afadaa59156fe9ce3006c13af0de69b1f"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/production-build-iterative.json",
+      "kind": "synthetic-qa",
+      "sha256": "aec26ccda8d7f901742be5d51a37437eed6980ff3aa0176211b2a32f2cb9baca"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/production-build-payload-first.json",
+      "kind": "synthetic-qa",
+      "sha256": "1f081568371bc4de043e091f4f3a36354d5572357671a79b5875bfb60aae4bec"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/production-build-rekey-initial-20261031.json",
+      "kind": "synthetic-qa",
+      "sha256": "b57a099e05174913e29927bc487873cebd84ac7a9947eace2369a5b3a0cd673c"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/production-build-rekey-reviewed-20261031.json",
+      "kind": "synthetic-qa",
+      "sha256": "9e51d42b9b42af9c701950e5be6576babe999fd1fcdf330b34730955883e8322"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/production-build-verification.json",
+      "kind": "synthetic-qa",
+      "sha256": "d8cc904247fb743d6953c65a2f356ef48fd466cc2344731ebebb5a59603d7f3d"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/rekey-domain-20261031.txt",
+      "kind": "synthetic-qa",
+      "sha256": "f779cda2eb582fe4717f62202546fb16be10af9200196b0ab67f8d80cdbb971f"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/rekey-native-aes-domain-20261031.txt",
+      "kind": "synthetic-qa",
+      "sha256": "25095f0fe05d6026e7fe984c9b6d63b961d994db87c91bc642aab6ddc5cf4b71"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/rekey-native-aes-product-20261031.txt",
+      "kind": "synthetic-qa",
+      "sha256": "8dad08498920016b863dfee7d2a6a5d0698c9e06bbcd1953d298c0dfc0433c2f"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/rekey-product-20261031.txt",
+      "kind": "synthetic-qa",
+      "sha256": "7f37cc27604d74c6f5bf5f15c4293e8655aab5a77a5e9f52146f0a5963044040"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/rekey-reviewed-domain-20261031.txt",
+      "kind": "synthetic-qa",
+      "sha256": "52592a812a81b10714924d758202fcbb5e28249e3669c726d890b3399b87d30e"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/rekey-reviewed-product-20261031.txt",
+      "kind": "synthetic-qa",
+      "sha256": "db164b74356be444250981f1e8af79c11214276ed321bb12426ad24174f66b8c"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/restore-native-capacity-baseline.mjs",
+      "kind": "synthetic-qa",
+      "sha256": "639d33547cf68c497bc5bfdf24677c8e5369bb934f1c7c17de7252cb927f0608"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/restore-payload-first.txt",
+      "kind": "synthetic-qa",
+      "sha256": "6a84537248a1d761a93fd7d7b97680b756d5a05edb38daa79c49b9c72f3c6852"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/restore-payload-guidance.txt",
+      "kind": "synthetic-qa",
+      "sha256": "ba22e76c0deba3214fe584938a322720bfe4d8bc3819ecb560101146701e1284"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/restore-payload-product-first.txt",
+      "kind": "synthetic-qa",
+      "sha256": "fc71e65834d88c1d4c2cfe292ffd096d6ba54c83e8d33bf08027d5c560603752"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/restore-payload-second.txt",
+      "kind": "synthetic-qa",
+      "sha256": "8107ceb61ecab49bd1b29636750f8e126e885f9bb7f8527d9b9e6cd14bc0ca95"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/typecheck-archive-first.txt",
+      "kind": "synthetic-qa",
+      "sha256": "5337211df64b88524374885ab89652e0dc51970655e3fd320d01e46419a80e42"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/typecheck-archive-fourth.txt",
+      "kind": "synthetic-qa",
+      "sha256": "12cd775df6301d79c0809c3d7d00a99d0b3fcccbd240b3b0e17da1f58e5f5206"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/typecheck-archive-second.txt",
+      "kind": "synthetic-qa",
+      "sha256": "d3fb26d0242f4985e56aeac0a045ba52539ff0d2b6e1fc5e3067ac591e6050aa"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/typecheck-archive-third.txt",
+      "kind": "synthetic-qa",
+      "sha256": "12cd775df6301d79c0809c3d7d00a99d0b3fcccbd240b3b0e17da1f58e5f5206"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/typecheck-owned-snapshots.txt",
+      "kind": "synthetic-qa",
+      "sha256": "12cd775df6301d79c0809c3d7d00a99d0b3fcccbd240b3b0e17da1f58e5f5206"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/validation-reviewed.txt",
+      "kind": "synthetic-qa",
+      "sha256": "3a81d1d56be9d8cc056b13c5c3ef9166770235071f1ab2e66792627d22c63134"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/verification-summary-before-cloud-handoff-20261031.json",
+      "kind": "synthetic-qa",
+      "sha256": "23a28045f7da247bae93a263882933bb1feaa73ec1f3487af0206280a768342f"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/verification-summary-descriptor.json",
+      "kind": "synthetic-qa",
+      "sha256": "4c6ebd024781273c8daa34b94eaf278452cbc7af2ff2a34a7eaa37644449155d"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/verification-summary-latest.json",
+      "kind": "synthetic-qa",
+      "sha256": "5ae70644aba3b9e662bc936e8736565545f0c0bc86f438bcabe021958ef9fc8e"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/verify-activity-timing.mjs",
+      "kind": "synthetic-qa",
+      "sha256": "7ab697425f18dc7bf7c64d7ee2f5368c532a215d5d277747f6319dad84e572b2"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/verify-archive-native-security.mjs",
+      "kind": "synthetic-qa",
+      "sha256": "2708f434c20f873bd31d659e44a4ba520524f853caf69e0fee26146ebbda4834"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/verify-archive-native.mjs",
+      "kind": "synthetic-qa",
+      "sha256": "37f4ef967f3a6dd2d822a3228ca0a051b9794464c7a1d3146ac64b5770e77032"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/verify-archive-web.mjs",
+      "kind": "synthetic-qa",
+      "sha256": "4e3081ab2a008840465e0dd5da8be79ec33a7fde15f4e21b33b0cd07cc5578bc"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/verify-bubble-web.mjs",
+      "kind": "synthetic-qa",
+      "sha256": "2724150b2220b8b538b54d23394e588df20e8c7218f380facd8b160bf81d94bc"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/verify-capacity-native.mjs",
+      "kind": "synthetic-qa",
+      "sha256": "e1b11dedded1bd39aa965ae65a126f59b7fb2f3733e0d9cb94a8544602edaccc"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/verify-capacity-web.mjs",
+      "kind": "synthetic-qa",
+      "sha256": "73df0b8c906b7021b4b4e20ead1270bc032d88c4822a988422a2a7ef3a584ab7"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/verify-custom-groups.mjs",
+      "kind": "synthetic-qa",
+      "sha256": "4360361a63d0b38278f71bbc31ead9555e15ec82e0b0d515567a0f8c2a0d52a3"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/verify-group-limits.mjs",
+      "kind": "synthetic-qa",
+      "sha256": "b083bd14eeba48b30e4fe9ce26141c4677ddffec4beb6ec2a266db37601d184d"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/verify-group-timing-layout.mjs",
+      "kind": "synthetic-qa",
+      "sha256": "86013473f0c0af111b94970358030f52cc8b82c44ee42d8e2a305e1b0db86b68"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/verify-native-baseline.mjs",
+      "kind": "synthetic-qa",
+      "sha256": "40a9c8810afebada5d17aa5989077e0358c4c11fc3db15d869e78518d79b4e84"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/verify-validation-upgrade.mjs",
+      "kind": "synthetic-qa",
+      "sha256": "b6d5516ef11e6098d753fb1d779aefcd048c9826f672986bc2bb029239765c3f"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/web-archive-first.txt",
+      "kind": "synthetic-qa",
+      "sha256": "88470e28e1241d6a0c9f44a502589b0ea61b5b310132caf0cceaeb91cad3f3be"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/web-archive-results.json",
+      "kind": "synthetic-qa",
+      "sha256": "b4b15236a6b7a0b464c679e6b075f152a136db8c9f90164c6f9d41422e2da7fa"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/web-bubble-batched-results.json",
+      "kind": "synthetic-qa",
+      "sha256": "4a4eed84884f18bca70664f4edddfaa23c1814030099ae37944551f1ca0b5d18"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/web-bubble-before-isolated-extraction.json",
+      "kind": "synthetic-qa",
+      "sha256": "2cccc98d81f3de64b60607ac128ba4e539d515d5b7871d2152b24e224ed6487b"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/web-bubble-descriptor.txt",
+      "kind": "synthetic-qa",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/web-bubble-queue.png",
+      "kind": "synthetic-qa",
+      "sha256": "82b945ba8cc395380ef37695f7f8645dd6fe8f41351e66958af358c38a7883bf"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/web-bubble-results.json",
+      "kind": "synthetic-qa",
+      "sha256": "9e46da2c288025ed36a9d16fc7457b863abdc9ccb24f1f63f9ee04b61b3216ff"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/web-bubble.txt",
+      "kind": "synthetic-qa",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/web-capacity-1000-20261029T122454164Z-MEASURED_REQUIRES_TIME_GATE_REVIEW.json",
+      "kind": "synthetic-qa",
+      "sha256": "4b3a6455e5f3d355db8f35bd4132bb1fc7154d9b38bcad1a2ac311362bd52c97"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/web-capacity-1000-20261030T040151786Z-PASS.json",
+      "kind": "synthetic-qa",
+      "sha256": "b51252b53f24f7af4e09920e48177343a77103d34720f294061802fc00ccc502"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/web-capacity-1000-20261031T055441381Z-PASS.json",
+      "kind": "synthetic-qa",
+      "sha256": "877449d7f7142bf707283ed166fe04fe3bf4c425f22376fd8e4c8b5b86a5a333"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/web-capacity-1000-before-codec.json",
+      "kind": "synthetic-qa",
+      "sha256": "6630508578c8644931f79672a2a23cf5fcd789575b982b3fcd75ac73b5bed9d4"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/web-capacity-1000-before-lease.json",
+      "kind": "synthetic-qa",
+      "sha256": "30a01727321552e9d045573da3f2b1f9a9acc248982c8c83c8e1d2e98b367d93"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/web-capacity-1000.json",
+      "kind": "synthetic-qa",
+      "sha256": "877449d7f7142bf707283ed166fe04fe3bf4c425f22376fd8e4c8b5b86a5a333"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/web-capacity-1000.txt",
+      "kind": "synthetic-qa",
+      "sha256": "8cc11fee9f30fe59329dfe87ce7bbadf478d61f42ae06125cf95f71301e96eac"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/web-capacity-10000-20261029T122503622Z-MEASURED_REQUIRES_TIME_GATE_REVIEW.json",
+      "kind": "synthetic-qa",
+      "sha256": "07620cff337f5a9ee60015fc8f3ac6c6a133a96a39930e3c06314ff39fd0e82b"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/web-capacity-10000-20261030T040200091Z-PASS.json",
+      "kind": "synthetic-qa",
+      "sha256": "057e6cfe655438bb79e85682698b09d2099842e7d4ad9cac3d1a4ba8b1dd1933"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/web-capacity-10000-20261031T055455685Z-PASS.json",
+      "kind": "synthetic-qa",
+      "sha256": "262f7c99e56962f2a546bac2ebe657f44ad82a4ab58b6e3fb5c711db50b3efb5"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/web-capacity-10000-before-codec.json",
+      "kind": "synthetic-qa",
+      "sha256": "0d519fe97b4ae214ae1e52e07fdce41f47ad6cb56cdc539f2a2233990ab03333"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/web-capacity-10000-before-lease.json",
+      "kind": "synthetic-qa",
+      "sha256": "099f128d8c11870bcb7da325263c4b506bda5fbb82525d5ed3b732d8933cbad1"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/web-capacity-10000.json",
+      "kind": "synthetic-qa",
+      "sha256": "262f7c99e56962f2a546bac2ebe657f44ad82a4ab58b6e3fb5c711db50b3efb5"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/web-capacity-10000.txt",
+      "kind": "synthetic-qa",
+      "sha256": "f89a726683a066df1243c3c65ca03afec914347822766d1c4cb4e76b894e2e0c"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/web-capacity-100000-20261030T024339574Z-FAIL_MEMORY_GATE.json",
+      "kind": "synthetic-qa",
+      "sha256": "16f3edc204c944c598dd1a0ff1294b3734d4b691abd9a3bef784dce53d3e8cdc"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/web-capacity-100000-20261030T030346429Z-FAIL_CAPACITY_GATE.json",
+      "kind": "synthetic-qa",
+      "sha256": "a3e8d697313dfa309613548ebd6fde250d629b3781ffe9cdc75549dc2bcbea4f"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/web-capacity-100000-20261030T032209728Z-FAIL_CAPACITY_GATE.json",
+      "kind": "synthetic-qa",
+      "sha256": "3ebc0a02f3c9746f7ef39ecd045b013f9250e936ac745ffabd63c0dc00811438"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/web-capacity-100000-20261030T033523030Z-FAIL_CAPACITY_GATE.json",
+      "kind": "synthetic-qa",
+      "sha256": "de20a3121be194230dd00c2b16d3bd8bfc9a710d33e670d74e3b3241af818959"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/web-capacity-100000-20261030T034410363Z-FAIL_CAPACITY_GATE.json",
+      "kind": "synthetic-qa",
+      "sha256": "6ad8ebd07776d7208d7cb2b50af2140a8fcda76378f0982944530e2259ce3967"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/web-capacity-100000-20261031T055519311Z-FAIL_CAPACITY_GATE.json",
+      "kind": "synthetic-qa",
+      "sha256": "792ec430cd74087616a196e7681eee17eaed2eb4e79a98b1cc246e6825ac809d"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/web-capacity-100000-before-bulk.json",
+      "kind": "synthetic-qa",
+      "sha256": "5b3f3a5761826d85e44f0cccbd46e09ef53f34e241b17aacce2dee9301e87c57"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/web-capacity-100000-before-codec.json",
+      "kind": "synthetic-qa",
+      "sha256": "382006b7fb0bd478cc2c820ea4bb27fdd6508e7fb097de74ec7b57877a73c217"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/web-capacity-100000-before-lease.json",
+      "kind": "synthetic-qa",
+      "sha256": "b2b2787dbf263a55d7752900b3e0757e8bb0e97a7dff434b084f11a5684eac7a"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/web-capacity-100000-before-owned.json",
+      "kind": "synthetic-qa",
+      "sha256": "51619621284d0ded7c99dc55188bfeaa467c7af5a0e3eaa69706d53d3583ad1d"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/web-capacity-100000.json",
+      "kind": "synthetic-qa",
+      "sha256": "792ec430cd74087616a196e7681eee17eaed2eb4e79a98b1cc246e6825ac809d"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/web-capacity-100000.txt",
+      "kind": "synthetic-qa",
+      "sha256": "b9ae830bc899eda9ba54cd9ae6869716d51faedebad2cab843e0341e11ee42af"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/web-capacity-batched-100000.txt",
+      "kind": "synthetic-qa",
+      "sha256": "8b9b3c39c092d84b034a91851cb5d26df139567369586e83995d49d927c1739c"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/web-capacity-bulk-100000.txt",
+      "kind": "synthetic-qa",
+      "sha256": "8b9b3c39c092d84b034a91851cb5d26df139567369586e83995d49d927c1739c"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/web-capacity-codec-1000.txt",
+      "kind": "synthetic-qa",
+      "sha256": "7c4fb21465884162b1c9bb5954d3fb10a8ec615d6a73708741e82fbdbb59ca34"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/web-capacity-codec-10000.txt",
+      "kind": "synthetic-qa",
+      "sha256": "dadf28c53154bf6479c3ca710df5b58f28b21fe2e47ce2def1674f120d3ead93"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/web-capacity-codec-100000.txt",
+      "kind": "synthetic-qa",
+      "sha256": "8b9b3c39c092d84b034a91851cb5d26df139567369586e83995d49d927c1739c"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/web-capacity-descriptor-1000.txt",
+      "kind": "synthetic-qa",
+      "sha256": "7c4fb21465884162b1c9bb5954d3fb10a8ec615d6a73708741e82fbdbb59ca34"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/web-capacity-descriptor-10000.txt",
+      "kind": "synthetic-qa",
+      "sha256": "dadf28c53154bf6479c3ca710df5b58f28b21fe2e47ce2def1674f120d3ead93"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/web-capacity-descriptor-100000.txt",
+      "kind": "synthetic-qa",
+      "sha256": "8b9b3c39c092d84b034a91851cb5d26df139567369586e83995d49d927c1739c"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/web-capacity-image-100000.txt",
+      "kind": "synthetic-qa",
+      "sha256": "8b9b3c39c092d84b034a91851cb5d26df139567369586e83995d49d927c1739c"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/web-capacity-immutable-100000.txt",
+      "kind": "synthetic-qa",
+      "sha256": "8b9b3c39c092d84b034a91851cb5d26df139567369586e83995d49d927c1739c"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/web-capacity-iterative-100000.txt",
+      "kind": "synthetic-qa",
+      "sha256": "8b9b3c39c092d84b034a91851cb5d26df139567369586e83995d49d927c1739c"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/web-capacity-journal-release-20261031-1000.json",
+      "kind": "synthetic-qa",
+      "sha256": "877449d7f7142bf707283ed166fe04fe3bf4c425f22376fd8e4c8b5b86a5a333"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/web-capacity-journal-release-20261031-1000.txt",
+      "kind": "synthetic-qa",
+      "sha256": "7c4fb21465884162b1c9bb5954d3fb10a8ec615d6a73708741e82fbdbb59ca34"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/web-capacity-journal-release-20261031-10000.json",
+      "kind": "synthetic-qa",
+      "sha256": "262f7c99e56962f2a546bac2ebe657f44ad82a4ab58b6e3fb5c711db50b3efb5"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/web-capacity-journal-release-20261031-10000.txt",
+      "kind": "synthetic-qa",
+      "sha256": "dadf28c53154bf6479c3ca710df5b58f28b21fe2e47ce2def1674f120d3ead93"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/web-capacity-journal-release-20261031-100000.json",
+      "kind": "synthetic-qa",
+      "sha256": "792ec430cd74087616a196e7681eee17eaed2eb4e79a98b1cc246e6825ac809d"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/web-capacity-journal-release-20261031-100000.txt",
+      "kind": "synthetic-qa",
+      "sha256": "8b9b3c39c092d84b034a91851cb5d26df139567369586e83995d49d927c1739c"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/web-capacity-owned-1000.txt",
+      "kind": "synthetic-qa",
+      "sha256": "7c4fb21465884162b1c9bb5954d3fb10a8ec615d6a73708741e82fbdbb59ca34"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/web-capacity-owned-10000.txt",
+      "kind": "synthetic-qa",
+      "sha256": "dadf28c53154bf6479c3ca710df5b58f28b21fe2e47ce2def1674f120d3ead93"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/web-capacity-owned-100000.txt",
+      "kind": "synthetic-qa",
+      "sha256": "ee46b7be41fbc3bcae94fbc94fc16c41cfc8a3e8cdadd97b568d2e0a1d87e64f"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/web-capacity-support.mjs",
+      "kind": "synthetic-qa",
+      "sha256": "f00f6722b14c0df1a8764a5dbaba23d419fba1894447aead6a9b08b4b340495e"
+    },
+    {
+      "path": "docs/qa/kanata-continuous/p7/web-history.png",
+      "kind": "synthetic-qa",
+      "sha256": "fdd3f72de1e3d363da28982e77c5c3c2682bef82b0d2cebbdca3fa6dfb347ec4"
+    },
+    {
+      "path": "docs/questions.md",
+      "kind": "process-document",
+      "sha256": "c5bbe8eb47bed5994dc2d8a93db1d07b2b9248bc617b54d0b8a279f559a4fc37"
+    },
+    {
+      "path": "docs/source-notes.md",
+      "kind": "process-document",
+      "sha256": "7f59d35cce50012ddbdc8623130b488b314ccc87f1590437c2b0988d59974371"
+    },
+    {
+      "path": "memory-bank/development-context.md",
+      "kind": "persistent-context",
+      "sha256": "257e93ac83631ec41d19a1362d558e8761ca02ed2c6ca23d70540f396cdfea98"
+    },
+    {
+      "path": "src/application/backupErrors.js",
+      "kind": "source",
+      "sha256": "b5802d5c5ae91f0679eb2c900e26c9818467f86d6cad369b34adc8380a0185bd"
+    },
+    {
+      "path": "src/application/backupRegistry.js",
+      "kind": "source",
+      "sha256": "3c90c0c091757fcd531ecefb6126890c63ecc2c9ea8d54d9600cd769d29f4aa3"
+    },
+    {
+      "path": "src/application/contracts.d.ts",
+      "kind": "source",
+      "sha256": "695ac2b9a99bb3b0a78672e06774a24d4c6a25417ee63d30bef2b15830a6c6ed"
+    },
+    {
+      "path": "src/application/fullBackupRuntime.js",
+      "kind": "source",
+      "sha256": "89c195dd812bf4cf93a14b64fbe5321c863536a775eaaeea6c9663f722cc49c7"
+    },
+    {
+      "path": "src/application/kanataBackupRuntime.js",
+      "kind": "source",
+      "sha256": "21ae2ae402725c2ae621f29d2d7a9f9ddcfdbd671ab792e76ba51cd43f687abb"
+    },
+    {
+      "path": "src/application/kanataChatRuntime.js",
+      "kind": "source",
+      "sha256": "e6ede177dcd00d7bc6024c3f1fe72bf23375c2a857ee5b43cd29743fb206da76"
+    },
+    {
+      "path": "src/application/kanataDeferredRuntime.js",
+      "kind": "source",
+      "sha256": "ad2a248d21842a173faaf4903cd733570f4aeb5b524f6cc41aa1d32fe58588b2"
+    },
+    {
+      "path": "src/application/kanataManagement.js",
+      "kind": "source",
+      "sha256": "5f7b5602a955565b06b0d39549e7c7a2f10ebca1098d81e7ba12ca6d6ba42c5a"
+    },
+    {
+      "path": "src/application/restoreCoordinator.js",
+      "kind": "source",
+      "sha256": "ed798f7f771ba500c141a8ec97fd0a5bce3400bf352467b002ab2a33c17fa16f"
+    },
+    {
+      "path": "src/components/settings/SettingsBackup.vue",
+      "kind": "source",
+      "sha256": "06ff3d330309efcc058e31d219b48cc6868586fd9bf7cfb320920a549714843d"
+    },
+    {
+      "path": "src/composables/settings/useBackupSettings.js",
+      "kind": "source",
+      "sha256": "5f81be9822cc53a03c140bce7c3a07c6a140941c05b561da9e78c6991a4ab764"
+    },
+    {
+      "path": "src/features/chat/KanataConversationView.vue",
+      "kind": "source",
+      "sha256": "064105244586680abacef54b6e1225e0194a1151a12a1101483c9a2c560fff69"
+    },
+    {
+      "path": "src/features/chat/KanataGroupCreator.vue",
+      "kind": "source",
+      "sha256": "d30cf82c56bd99f66799830178b0f6a8d2317c466d6d7d56d2303df2e208e91d"
+    },
+    {
+      "path": "src/features/chat/KanataHistoryPanel.vue",
+      "kind": "source",
+      "sha256": "69c3845aca60c330f709013223238bb23aeea1406b6fd735e862e1c9313d0fbf"
+    },
+    {
+      "path": "src/features/chat/KanataWorldManager.vue",
+      "kind": "source",
+      "sha256": "37cf13001ef8dcaca4b04c8a4663c22cbfc7fe82156a2158bc43a350fd642a05"
+    },
+    {
+      "path": "src/features/chat/autonomy/autonomyValidation.js",
+      "kind": "source",
+      "sha256": "10ead72b6ac35f47175763f2c1a18ea7afbd22120d1aba5a376bfede910c9383"
+    },
+    {
+      "path": "src/features/chat/autonomy/kanataReplyTiming.js",
+      "kind": "source",
+      "sha256": "2c1e3c5b083744a68098c2c855553e4d9a89ddb9635ad3502fec545b212f420a"
+    },
+    {
+      "path": "src/features/chat/autonomy/kanataSocial.js",
+      "kind": "source",
+      "sha256": "738b2ed27944d0179e6da71bedb7e7a53a22e2587dd422b2becb7f10047998ad"
+    },
+    {
+      "path": "src/features/chat/backup/kanataBackup.js",
+      "kind": "source",
+      "sha256": "81193ca7c31fea77ec0f7fac695a910d550bc90cacf3ae477668a5ba7eddae28"
+    },
+    {
+      "path": "src/features/chat/domain/groupReplyLimits.js",
+      "kind": "source",
+      "sha256": "c5865a3b79597bdc07b11bbf8d0d74a42971cc8a4bc08a1e427c2f5ba93df4e5"
+    },
+    {
+      "path": "src/features/chat/domain/kanataConversation.js",
+      "kind": "source",
+      "sha256": "a09fd36e74db394b5975097ea3b77ccb03fa2fc0e4cc639f956eaefc13b082aa"
+    },
+    {
+      "path": "src/features/chat/domain/kanataJson.js",
+      "kind": "source",
+      "sha256": "9cae67b4783a5cae1ee0448f8e62066dc806deb25f7e36bb8b4bed0be695dce7"
+    },
+    {
+      "path": "src/features/chat/domain/kanataManagementCore.js",
+      "kind": "source",
+      "sha256": "00934ea07b5f18c16e7c6cae078cffe385950a0b6468d61f5faad8956f393138"
+    },
+    {
+      "path": "src/features/chat/domain/kanataOwnedImage.js",
+      "kind": "source",
+      "sha256": "cdd7491a379dc34ebd3393d8d4bb56829695c1cfc0ee08c1049bb74de9ac5878"
+    },
+    {
+      "path": "src/features/chat/domain/kanataTypes.d.ts",
+      "kind": "source",
+      "sha256": "79c47188074f1aed3e1cf944b334953e4709b365b234f33928b06baa6e128d0c"
+    },
+    {
+      "path": "src/features/chat/domain/kanataValidation.js",
+      "kind": "source",
+      "sha256": "b334544cf698e05e6b4428b5a6eb840cf2df8ce31be439919929e56ee5436118"
+    },
+    {
+      "path": "src/features/chat/domain/replyTimingPolicy.js",
+      "kind": "source",
+      "sha256": "e09b51b1262172ba6948c8fe8344e21cfc33321294cf57bab71087a158c0510e"
+    },
+    {
+      "path": "src/features/chat/experience/experienceValidation.js",
+      "kind": "source",
+      "sha256": "13e602950b32aba468e6518bb1bdb0399ff430742645f57e5522e748acce964b"
+    },
+    {
+      "path": "src/features/chat/kanataStore.js",
+      "kind": "source",
+      "sha256": "c7202a58797ade7daa2b51ad66eeaf457cc9ec25aed874b6bdd67cb770203b09"
+    },
+    {
+      "path": "src/features/chat/storage/kanataRepository.js",
+      "kind": "source",
+      "sha256": "a1bc58f29bf4aff9d596d80211215d525e4cc068b32fdac186759e3a47d55ac5"
+    },
+    {
+      "path": "src/features/chat/storage/kanataRepositoryTypes.d.ts",
+      "kind": "source",
+      "sha256": "4456c95f2ed0dac262ba3a9ef87b4e1015b87076126128ad1c29a2c37ccb37e3"
+    },
+    {
+      "path": "src/features/chat/storage/messageArchiveCore.js",
+      "kind": "source",
+      "sha256": "3149b2009bff3508295cf96d21b25afbf4f0ca235e7b32c5f9caa0a1a36fb883"
+    },
+    {
+      "path": "src/features/chat/storage/messageArchiveRepository.js",
+      "kind": "source",
+      "sha256": "89fdd0e9df002db25d925c4ebe5e8c0d643fa7c2195576cec47ca09a43507eac"
+    },
+    {
+      "path": "src/features/chat/useKanataBubbleReveal.js",
+      "kind": "source",
+      "sha256": "23f38c8b9746ec89e338a467c1dbb85a764592816015b5a14f8076dd43e6c990"
+    },
+    {
+      "path": "src/platform/storage/restoreJournal.js",
+      "kind": "source",
+      "sha256": "c70f3d6d9f5eeb931efdc687f913a4238cde8245ef4b5bcbe33491b457399df9"
+    },
+    {
+      "path": "src/platform/storage/restorePayloadCodec.js",
+      "kind": "source",
+      "sha256": "866fecd50007f20dba84fa47bd64d577b9eda314b771708c4e4fae6e3604abaa"
+    },
+    {
+      "path": "src/platform/storage/restorePayloadTypes.d.ts",
+      "kind": "source",
+      "sha256": "aa5ad636cfb84637dcb1f53993e811df4cd3a29b2b05caef2d001debfe5dd1b2"
+    },
+    {
+      "path": "src/shared/async/mapInBatches.js",
+      "kind": "source",
+      "sha256": "afe463f24375d3f389359e2bfc5171510c0a6d1f7bbe768e707dbcb94f293f89"
+    },
+    {
+      "path": "src/shared/crypto/passphraseAes.js",
+      "kind": "source",
+      "sha256": "9d676e4fbd8605d1aff6ead96a16b8e0d54a3c5930b450c97d0e1991226709d8"
+    },
+    {
+      "path": "src/shared/crypto/sha256Text.js",
+      "kind": "source",
+      "sha256": "365eb94c5d438394c17eca75763d8d8faf4b0d1cde8c1cf06e1af3307d2897c0"
+    },
+    {
+      "path": "src/shared/crypto/utf8Words.js",
+      "kind": "source",
+      "sha256": "126ea6a6db776de79b759acda50e6b7f5e8947afb4455205dd53e1604abae04e"
+    },
+    {
+      "path": "src/stores/protectedAccess.js",
+      "kind": "source",
+      "sha256": "c8771d5d5cb9041d659391b20d8930d86a33f9653e502226bf30a918703bb1f4"
+    },
+    {
+      "path": "tests/CapabilityRegistry.spec.js",
+      "kind": "test",
+      "sha256": "2a31c27bb61730f09fc10e18a58edf7108fa07b988235b743309f17a1a1c5120"
+    },
+    {
+      "path": "tests/KanataArchiveStore.spec.js",
+      "kind": "test",
+      "sha256": "16e661ba3a80f0398455e581645f6990a40aeb4892a6ed812bc0abac43a96efc"
+    },
+    {
+      "path": "tests/KanataBackupRuntime.spec.js",
+      "kind": "test",
+      "sha256": "c565582c527f5482e4c17129f9c155a00a96737d23e798d4cee170681c5bc3ec"
+    },
+    {
+      "path": "tests/KanataChatRuntime.spec.js",
+      "kind": "test",
+      "sha256": "f6051d362b8a9283f3a849b09fdfb1f3a2985028ee5000213124ccd19aa5310c"
+    },
+    {
+      "path": "tests/KanataConversationView.spec.js",
+      "kind": "test",
+      "sha256": "1744e9820cf7b97cb5060f804c1cb5b9c33cd4916899d5bd4f5459880f19b4a1"
+    },
+    {
+      "path": "tests/KanataDeferredRuntime.spec.js",
+      "kind": "test",
+      "sha256": "d8051c0bd1c8925396e9ac3d5a1bd7194502eebbd6c794e94c3f7ea529e8df1b"
+    },
+    {
+      "path": "tests/KanataGroupCreator.spec.js",
+      "kind": "test",
+      "sha256": "97b85de9bb89cc977834862fa512648d5301d7108707c68f3fafc6b0cd79d4ec"
+    },
+    {
+      "path": "tests/KanataHistoryPanel.spec.js",
+      "kind": "test",
+      "sha256": "8a941b9e2c525932cccc8a4564014130e7e0a544f0413240d7282d3314f571b5"
+    },
+    {
+      "path": "tests/KanataManagement.spec.js",
+      "kind": "test",
+      "sha256": "e33f18391e182c5eac6251721b6151dedeef9c484306b9b25fee2d019d03cfe8"
+    },
+    {
+      "path": "tests/KanataManagementView.spec.js",
+      "kind": "test",
+      "sha256": "3a797dd8d907b8f09b0d2fcd654029241a9194248523eb3bdd2ad9a65997df9e"
+    },
+    {
+      "path": "tests/KanataProductRecovery.spec.js",
+      "kind": "test",
+      "sha256": "5788eb4b6adc818048ea808c979ba3150c7599a32c1429d82e69453040532e98"
+    },
+    {
+      "path": "tests/KanataSocialRuntime.spec.js",
+      "kind": "test",
+      "sha256": "fc78223afd262961c1678782c57dc4c386ac3a0e8a9d77bc81bee347f42ce702"
+    },
+    {
+      "path": "tests/RestoreCoordinator.spec.js",
+      "kind": "test",
+      "sha256": "d384d76a03dead16c758840a13108bc6477d163f7d6f374daabbf5fbcdde6eb8"
+    },
+    {
+      "path": "tests/helpers/kanataArchiveFixture.js",
+      "kind": "test",
+      "sha256": "c4f178d6f5b4ebffdf80d018110fcc17ded8aeaa89e184e9e2bba322cc3887ca"
+    },
+    {
+      "path": "tests/kanataBaselineComparison.test.js",
+      "kind": "test",
+      "sha256": "a7f8a7d40407c377eb3cb19530811ac236c06532cefe4394e86ec44be6a3c6a6"
+    },
+    {
+      "path": "tests/kanataCapacityAssessment.test.js",
+      "kind": "test",
+      "sha256": "373b793c3f4e124ac54d55903aa2bc02972b186ee82e3c0bce97308c29042322"
+    },
+    {
+      "path": "tests/kanataCapacityValidation.test.js",
+      "kind": "test",
+      "sha256": "248889dd35c09065d44b9d188fb23c0f567e689d7301db5efef258077983a66d"
+    },
+    {
+      "path": "tests/kanataGroupLimits.test.js",
+      "kind": "test",
+      "sha256": "2955b783373665674f5a2871d55f5a01e4c135cc292fedc9f225afdc980402e1"
+    },
+    {
+      "path": "tests/kanataMessageArchive.test.js",
+      "kind": "test",
+      "sha256": "8a0b2c7cda510ca47e96087ff8f3f01b8a141424ec53ab56b83cd9b4fa047031"
+    },
+    {
+      "path": "tests/kanataOwnedImage.test.js",
+      "kind": "test",
+      "sha256": "d51f44f084a70393e6ba874838282247b6ccd271d2be730cc0135f6cba854789"
+    },
+    {
+      "path": "tests/kanataReplyTiming.test.js",
+      "kind": "test",
+      "sha256": "d976874d8fcc4cac21374ce25d7e51e1f3a1e113353db49e4e42af796060d665"
+    },
+    {
+      "path": "tests/kanataRepository.test.js",
+      "kind": "test",
+      "sha256": "349820b9859fb34e924e14c9a45169bdaeb15a46a7cef1cdb1053d731b42465e"
+    },
+    {
+      "path": "tests/mapInBatches.test.js",
+      "kind": "test",
+      "sha256": "aa2ba9e02ccf0e6c69d705f41fe6695c4aa2dd12bfd65c8353fa6f58e5787ff3"
+    },
+    {
+      "path": "tests/passphraseAes.test.js",
+      "kind": "test",
+      "sha256": "f048b9af90b5d942a53e8519eff1072b1762fb7ce81a652d278e228732f75292"
+    },
+    {
+      "path": "tests/restorePayloadCodec.test.js",
+      "kind": "test",
+      "sha256": "72b0b08cb88e55fbdf887505a94290f464770a38a186d2ee3ba67795eeaf9a70"
+    },
+    {
+      "path": "tests/types/contracts.ts",
+      "kind": "test",
+      "sha256": "fad108b916843a66ba6ee08630d9ce6c76e37de561fbe385a833f92df4aa1c21"
+    },
+    {
+      "path": "tests/types/kanata.ts",
+      "kind": "test",
+      "sha256": "28807958d685cceec31b62d73efed174b67c49140871b2a2a4fe76fcb4d17eec"
+    },
+    {
+      "path": "架构接口与Agent开发说明书.md",
+      "kind": "entry-document",
+      "sha256": "decd36f2dc128ccc72493417e7cd6ed4f8ed982a6fdad2128832ca1ae0df2656"
+    }
+  ]
+}

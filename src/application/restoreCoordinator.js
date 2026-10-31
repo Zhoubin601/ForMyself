@@ -3,7 +3,26 @@ import { openRestoreRecord } from '../platform/storage/restoreJournal.js'
 
 // Runtime adapters are the same participants used by the product, not a second transaction implementation.
 /** @template Snapshot @param {import('./contracts').RestoreCoordinatorOptions<Snapshot>} options */
-export function createRestoreCoordinator({ journal, state, prepare, capture, apply, validate, validateRecovery = validate, synchronize = async () => {} }) {
+export function createRestoreCoordinator({ journal, state, prepare, capture, apply, validate, validateRecovery = validate, synchronize = async () => {}, journalRollback = false }) {
+  if(typeof journalRollback!=='boolean')throw new Error('INVALID_JOURNAL_ROLLBACK_OPTION')
+  // This helper returns no snapshot in journal mode. Its capture cannot stay in the
+  // long-lived apply closure after the complete authenticated journal has been persisted.
+  const prepareRollback=async (/** @type {Snapshot} */ target,/** @type {string} */ password)=>{
+    const previous=validate(capture())
+    const prepared=await journal.prepare({version:1,previous,target},password)
+    if(journalRollback){
+      if(!prepared||!/^[a-f0-9]{64}$/.test(prepared.digest))throw new Error('RESTORE_ROLLBACK_DIGEST_REQUIRED')
+      return{retained:null,digest:prepared.digest}
+    }
+    return{retained:{previous},digest:''}
+  }
+  const readRollback=async (/** @type {string} */ digest,/** @type {string} */ password)=>{
+    const record=await journal.inspect()
+    if(!record||record.committed||record.digest!==digest)throw new Error('RESTORE_ROLLBACK_RECORD_CHANGED')
+    const snapshots=await openRestoreRecord(record.encrypted,password)
+    if(snapshots.version!==1)throw new Error('UNSUPPORTED_RESTORE_RECORD')
+    return validateRecovery(snapshots.previous)
+  }
   const block = (/** @type {string} */ message) => { state.blocked = true; state.message = message }
   const synchronizeSafely = async () => {
     try { await synchronize(); state.syncError = '' }
@@ -34,12 +53,15 @@ export function createRestoreCoordinator({ journal, state, prepare, capture, app
         let recorded = false
         try {
           await prepare()
-          const previous = validate(capture())
-          await journal.prepare({ version: 1, previous, target }, password)
+          const {retained,digest} = await prepareRollback(target,password)
           recorded = true
+          if(journalRollback){
+            const record=await journal.inspect()
+            if(!record||record.committed||record.digest!==digest)throw new Error('RESTORE_ROLLBACK_RECORD_CHANGED')
+          }
           try { await apply(target) }
           catch (error) {
-            try { await apply(previous); await finish() }
+            try { await apply(retained?retained.previous:await readRollback(digest,password)); await finish() }
             catch {
               if (error instanceof Error) Object.assign(error, { rollbackFailed: true })
               else throw Object.assign(new Error('RESTORE_ROLLBACK_FAILED'), { rollbackFailed: true })

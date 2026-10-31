@@ -20,6 +20,20 @@ const newId = (options, kind, suffix) => {
   need(options && typeof options.idFactory === 'function' && typeof options.key === 'string' && options.key.trim(), 'ID_FACTORY_REQUIRED', 'creation')
   return options.idFactory(kind, JSON.stringify([options.key, suffix]))
 }
+/** Create only a fresh conversation: no history or permissions are copied between participants.
+ * Membership editing of an existing historical group is deliberately a separate policy.
+ * @param {KanataData} input @param {string} worldId
+ * @param {{title:string,instanceIds:string[]}} fields @param {CreationOptions} options */
+export const createKanataGroup = (input,worldId,fields,options) => change(input,data=>{
+  activeWorld(data,worldId)
+  const value=cloneKanataJson(fields)
+  need(value&&typeof value.title==='string'&&value.title.trim().length>0&&value.title.length<=200,'INVALID_GROUP_TITLE','group.title')
+  need(Array.isArray(value.instanceIds)&&value.instanceIds.length>=2&&new Set(value.instanceIds).size===value.instanceIds.length,'INVALID_GROUP_PARTICIPANTS','group.instanceIds')
+  need(value.instanceIds.every(id=>data.instances.some(i=>i.id===id&&i.worldId===worldId)),'GROUP_PARTICIPANT_SCOPE','group.instanceIds')
+  const identity=data.identities.find(i=>i.worldId===worldId)
+  need(identity,'WORLD_IDENTITY_REQUIRED','group.worldId')
+  data.conversations.push({id:newId(options,'group',worldId),worldId,type:'group',title:value.title.trim(),participantIds:[/** @type {NonNullable<typeof identity>} */(identity).id,...value.instanceIds],mode:'inherit',revision:1,lastReadAt:0})
+})
 /** @param {KanataData} data @param {CreationOptions} options @param {{name:string,rules:string,displayName:string,background:string}} fields */
 function appendWorld(data, options, fields) {
   const id = newId(options, 'world', 'world')

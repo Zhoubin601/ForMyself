@@ -1,0 +1,74 @@
+{
+  "status": "PASS",
+  "at": "2026-10-30T04:50:04.467Z",
+  "kind": "native",
+  "syntheticOnly": true,
+  "controlledProvider": true,
+  "realModelRequests": 0,
+  "checks": {
+    "three-actor-four-message-policy-and-validation": {
+      "status": "PASS",
+      "ms": 4709,
+      "value": {
+        "speakers": 3,
+        "messages": 4,
+        "noConfigModelCall": true
+      }
+    },
+    "third-provider-failure-keeps-two-actor-batches-and-original-source": {
+      "status": "PASS",
+      "ms": 17139,
+      "value": {
+        "completedAiRows": 3,
+        "providerAttempts": 3
+      }
+    },
+    "retry-fills-only-third-actor-and-preserves-every-paragraph": {
+      "status": "PASS",
+      "ms": 6163,
+      "value": {
+        "actors": 3,
+        "aiRows": 4,
+        "sourceRows": 1,
+        "paragraphsPreserved": true
+      }
+    },
+    "one-actor-one-message-policy-keeps-history-and-merges-new-full-reply": {
+      "status": "PASS",
+      "ms": 11881,
+      "value": {
+        "newAiRows": 1,
+        "previousAiRows": 4,
+        "bodyPreserved": true
+      }
+    },
+    "actual-full-coordinator-restores-scoped-policy-and-entire-conversation": {
+      "status": "PASS",
+      "ms": 9392,
+      "value": {
+        "actualCoordinator": true,
+        "policyPreserved": true,
+        "exactRows": 7
+      }
+    },
+    "cold-storage-reload-keeps-policy-and-the-same-seven-rows": {
+      "status": "PASS",
+      "ms": 16503,
+      "value": {
+        "rows": 7,
+        "policy": true,
+        "processRestart": true
+      }
+    }
+  },
+  "pageErrors": [],
+  "build": "f1ed92ab24b3080b785c0b7194322e5488387be76f5276be7d70736d98071f7f",
+  "baselineArtifact": "group-limits-native-baseline-1793335821348.enc",
+  "cleanup": {
+    "status": "PASS",
+    "actualCoordinator": true,
+    "chatRows": 608,
+    "otherModulesAndSettingsPreserved": true
+  },
+  "fixtureRequests": 5
+}

@@ -1,0 +1,12 @@
+MEASURED 1000 prepare
+MEASURED 1000 cold-page-save
+MEASURED 1000 backup-restore
+MEASURED 1000 reencrypt
+MEASURED 10000 prepare
+MEASURED 10000 cold-page-save
+MEASURED 10000 backup-restore
+MEASURED 10000 reencrypt
+MEASURED 100000 prepare
+MEASURED 100000 cold-page-save
+MEASURED 100000 backup-restore
+MEASURED 100000 reencrypt

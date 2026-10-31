@@ -1,0 +1,40 @@
+✔ P2-backup new v13 and single preserve all new entities, never call v4 normalizer on chat (33.3333ms)
+✔ P2-backup legacy full v1 preserves nonchat, requires consent and never revives legacy chat (2.7089ms)
+✔ P2-backup legacy full v2 preserves nonchat, requires consent and never revives legacy chat (2.1173ms)
+✔ P2-backup legacy full v3 preserves nonchat, requires consent and never revives legacy chat (2.4118ms)
+✔ P2-backup legacy full v4 preserves nonchat, requires consent and never revives legacy chat (1.9118ms)
+✔ P2-backup legacy full v5 preserves nonchat, requires consent and never revives legacy chat (1.9186ms)
+✔ P2-backup legacy full v6 preserves nonchat, requires consent and never revives legacy chat (2.4955ms)
+✔ P2-backup legacy full v7 preserves nonchat, requires consent and never revives legacy chat (1.7465ms)
+✔ P2-backup legacy full v8 preserves nonchat, requires consent and never revives legacy chat (2.0652ms)
+✔ P2-backup legacy full v9 preserves nonchat, requires consent and never revives legacy chat (2.6924ms)
+✔ P2-backup legacy full v10 preserves nonchat, requires consent and never revives legacy chat (1.7575ms)
+✔ P2-backup legacy full v11 preserves nonchat, requires consent and never revives legacy chat (1.7318ms)
+✔ P2-backup legacy full v12 preserves nonchat, requires consent and never revives legacy chat (1.568ms)
+✔ P2-backup rejects legacy single and future schemas without returning partial new data (9.6499ms)
+✔ P2-backup export pauses sending but rollback capture preserves tasks exactly (9.5203ms)
+✔ P2-backup canonical recovery rejects legacy content injected into empty sentinel (4.0599ms)
+✔ P2-backup review1 rejects present-but-invalid optional Todo parts instead of silently omitting them (7.5695ms)
+✔ P2-backup review1 valid optional Todo and all three independent permissions survive wire roundtrip (8.3964ms)
+✔ P2-backup review2 all nonempty new entities and safe unknown card extensions roundtrip (9.573ms)
+✔ P2-backup review2 hostile task-policy omissions cannot silently resume pending sends (8.0837ms)
+✔ P2-backup review2 canonical journals reject mode confusion and unknown versions (8.162ms)
+✔ P7 JSON clone preserves inert JSON without serialized copies, aliasing or prototype setters (1.3134ms)
+✔ P7 JSON clone still rejects hidden/accessor/runtime/sparse/cyclic/deep/non-finite inputs without invoking getters (0.5807ms)
+✔ P7 archive planner retains source proofs, audits and complete reply components; no fake history or source changes (25.186ms)
+✔ P7 Bloom index never skips an exact normalized match, including Unicode and repeated/single characters (2.384ms)
+✔ P7 encrypted immutable page verifies bytes/hash/scope/index, has no plaintext/password cache and refuses traversal (24.7355ms)
+✔ P7 version2 graph validates unique archive IDs and scope while portable export rejects unhydrated references (14.2362ms)
+✔ P7 disk pagination returns only requested rows and indexed rare search reads one page; canceled reads return no late bodies (44.6899ms)
+✔ P7 query budget exhaustion cannot return a partial page/cursor that skips unchecked history (10.9007ms)
+✔ P7 archive missing/corrupt/readback/cancel failures never alter the canonical file; retire is nonrecursive and confined (3.7122ms)
+✔ P7 raw page payload must match authenticated descriptor metadata, not just valid JSON (8.9443ms)
+✔ P7 future archive header version cannot silently fall back to and overwrite an older full graph (24.9051ms)
+ℹ tests 32
+ℹ suites 0
+ℹ pass 32
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 330.6914

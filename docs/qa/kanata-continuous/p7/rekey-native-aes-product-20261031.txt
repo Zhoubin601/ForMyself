@@ -1,0 +1,22 @@
+
+ RUN  v3.2.4 D:/2026Autumn Semester File/GitHub/formyself-app/.worktrees/kanata
+
+ ✓ tests/KanataArchiveStore.spec.js (15 tests) 4079ms
+   ✓ P7 large portable restore writes bounded verified pages before the canonical header without an intermediate full monolith  561ms
+   ✓ P7 immutable canonical restore retains sources, allows later normal Store edits and cannot mutate its rollback target  518ms
+   ✓ P7 actual main/bak reencrypt includes all archive bodies, retires orphan copies, old password rejected, and other module untouched  381ms
+   ✓ P7 cleanup failure after reencrypt cannot claim success; old-password compensation restores whole graph and clears gate  419ms
+   ✓ P7 a corrupt rekey read-back retains both old headers and every source page; compensation removes the failed gate  347ms
+ ✓ tests/KanataProductRecovery.spec.js (28 tests) 6870ms
+   ✓ Kanata P2 product runtime: actual stores, encrypted files and restore journal > P7 group limits and activity timing survive the actual encrypted full coordinator, and later failure compensates the previous configuration  520ms
+   ✓ Kanata P2 product runtime: actual stores, encrypted files and restore journal > P7 actual full-backup coordinator exports every archived body and compensates a later participant failure without source loss  754ms
+   ✓ Kanata P2 product runtime: actual stores, encrypted files and restore journal > P7 missing archive aborts product full export/capture before restore journal preparation and leaves other modules unchanged  392ms
+   ✓ Kanata P2 product runtime: actual stores, encrypted files and restore journal > P7 compressed self-contained journal survives failed compensation and the actual coordinator recovers every source body  913ms
+   ✓ Kanata P2 product runtime: actual stores, encrypted files and restore journal > P7 settings reports missing large-journal capability accurately and leaves the actual previous data intact  301ms
+   ✓ Kanata P2 product runtime: actual stores, encrypted files and restore journal > rollback failure keeps the real encrypted journal and barrier, then recovers after the fault is fixed  339ms
+
+ Test Files  2 passed (2)
+      Tests  43 passed (43)
+   Start at  13:27:49
+   Duration  14.26s (transform 1.17s, setup 0ms, collect 3.54s, tests 10.95s, environment 7.08s, prepare 1.41s)
+

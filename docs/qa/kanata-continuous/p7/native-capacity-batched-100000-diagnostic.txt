@@ -1,0 +1,9 @@
+MEASURED 100000 portableImportActualCoordinator
+MEASURED 100000 coldPageReloadAndProtectedLoad
+cdpSession.send: Protocol error (Profiler.stop): No recording profiles found
+    at Object.stopProfile (D:\2026Autumn Semester File\GitHub\formyself-app\.worktrees\kanata\docs\qa\kanata-continuous\p7\native-capacity-support.mjs:42:37)
+    at measure (D:\2026Autumn Semester File\GitHub\formyself-app\.worktrees\kanata\docs\qa\kanata-continuous\p7\verify-capacity-native.mjs:40:91)
+    at async file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata/docs/qa/kanata-continuous/p7/verify-capacity-native.mjs:67:3 {
+  log: [],
+  name: 'Error'
+}

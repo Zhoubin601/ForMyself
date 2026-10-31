@@ -1,0 +1,13 @@
+
+ RUN  v3.2.4 D:/2026Autumn Semester File/GitHub/formyself-app/.worktrees/kanata
+
+ ✓ tests/CapabilityRegistry.spec.js (9 tests) 64ms
+ ✓ tests/KanataArchiveStore.spec.js (12 tests) 1593ms
+ ✓ tests/KanataProductRecovery.spec.js (25 tests) 3508ms
+   ✓ Kanata P2 product runtime: actual stores, encrypted files and restore journal > P7 actual full-backup coordinator exports every archived body and compensates a later participant failure without source loss  403ms
+
+ Test Files  3 passed (3)
+      Tests  46 passed (46)
+   Start at  19:58:06
+   Duration  5.88s (transform 357ms, setup 0ms, collect 1.21s, tests 5.17s, environment 3.48s, prepare 696ms)
+

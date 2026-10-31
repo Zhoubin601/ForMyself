@@ -131,7 +131,8 @@ export const createProtectedAccessStore = (registry = protectedModules, id = 'pr
   }
   const runOperation = (modules, action, { recovering = false } = {}) => {
     const task = operationQueue.catch(() => {}).then(() => { if (!recovering) assertOrdinaryWriteAllowed(); return performOperation(modules, action) })
-    operationQueue = task
+    // Keep only settlement in the serialization tail, never an exported plaintext DTO.
+    operationQueue = task.then(() => undefined, () => undefined)
     return task
   }
 

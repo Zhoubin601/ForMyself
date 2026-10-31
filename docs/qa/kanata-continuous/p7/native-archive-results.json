@@ -1,0 +1,88 @@
+{
+  "status": "PASS",
+  "at": "2026-10-29T11:16:34.734Z",
+  "apkSha256": "7adb72acd4863808a04bcd375c7b48c22fa976c13b2fef6d24b19d3a702e83c2",
+  "checks": {
+    "seed-synthetic-history-and-real-source": {
+      "status": "PASS",
+      "ms": 1664,
+      "result": {
+        "worldId": "world-de8d45bf45c446ebe45dbd46f69119fc",
+        "conversationId": "private-3bf694547e20ddc66b1ed64902184663",
+        "title": "小鸟游星野",
+        "priorMessages": 8,
+        "count": 600,
+        "total": 608
+      }
+    },
+    "verified-archive-and-source-retention": {
+      "status": "PASS",
+      "ms": 45,
+      "result": {
+        "active": 209,
+        "archived": 399,
+        "pages": 8,
+        "stableSource": true
+      }
+    },
+    "actual-disk-index-search-and-cross-world-denial": {
+      "status": "PASS",
+      "ms": 119,
+      "result": {
+        "pages": 1,
+        "bytes": 28480,
+        "crossWorldRejected": true
+      }
+    },
+    "actual-page-cursor-and-atomic-stale-cursor-rejection": {
+      "status": "PASS",
+      "ms": 1143,
+      "result": {
+        "rows": 50,
+        "pages": 2,
+        "bytes": 58496,
+        "staleCursorRejected": true
+      }
+    },
+    "archive-activation-uses-production-revision-and-audit": {
+      "status": "PASS",
+      "ms": 64,
+      "result": {
+        "stableId": "p7-history-26",
+        "revision": 2,
+        "audit": true,
+        "derivedReplyStopped": true
+      }
+    },
+    "product-coordinator-hydrates-and-restores-self-contained-history": {
+      "status": "PASS",
+      "ms": 4825,
+      "result": {
+        "version": 13,
+        "messages": 608,
+        "selfContained": true,
+        "actualCoordinator": true
+      }
+    },
+    "native-background-clears-history-body-and-query": {
+      "status": "PASS",
+      "ms": 15,
+      "result": {
+        "protectedSnapshotNull": true,
+        "historyUnmounted": true
+      }
+    },
+    "native-force-stop-cold-read-preserves-entire-portable-history-and-audit": {
+      "status": "PASS",
+      "ms": 20,
+      "result": {
+        "messages": 608,
+        "audit": true,
+        "saved": true
+      }
+    }
+  },
+  "pageErrors": [],
+  "aiRequests": 0,
+  "realDevice": false
+}

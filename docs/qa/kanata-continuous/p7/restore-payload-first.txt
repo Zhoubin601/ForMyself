@@ -1,0 +1,14 @@
+✔ P7 inert JSON streaming matches native JSON including surrogate boundaries, keys and null prototypes (1.9139ms)
+✔ P7 streaming JSON rejects runtime/accessor/cycle/sparse inputs before any hidden getter executes (0.4186ms)
+✔ P7 small payload stays legacy plain JSON; large codec preserves every original byte/field without plaintext logs (28.9159ms)
+✔ P7 authenticated payload length/budget, unknown codec and corrupt gzip reject without partial records (10.4291ms)
+✔ P7 no compression support fails explicitly instead of dropping data or writing a plaintext recovery file (1.0562ms)
+✔ P7 outer AES-GCM/PBKDF2 version1 protocol is unchanged; old small and new compressed records authenticate before unpack (180.6783ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 325.167

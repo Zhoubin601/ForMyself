@@ -1,0 +1,32 @@
+✔ P7 old conversations retain conservative defaults without mutating their schema (15.9559ms)
+✔ P7 invalid limits and non-group scopes are rejected without running getters (2.5571ms)
+✔ P7 configured speaker cap respects ordered mentions, permits silence and filters by topic (4.1373ms)
+✔ P7 lower bubble allowance merges complete paragraphs and preserves RP prose (0.2656ms)
+✖ P7 limits survive portable backup and world copy with independent settings (4.893ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 4
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 174.1512
+
+✖ failing tests:
+
+test at tests\kanataGroupLimits.test.js:42:1
+✖ P7 limits survive portable backup and world copy with independent settings (4.893ms)
+  Error [KanataValidationError]: ID_FACTORY_REQUIRED:creation
+      at requireKanata (file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata/src/features/chat/domain/kanataJson.js:9:25)
+      at newId (file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata/src/features/chat/domain/kanataManagementCore.js:20:3)
+      at appendWorld (file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata/src/features/chat/domain/kanataManagementCore.js:25:14)
+      at file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata/src/features/chat/domain/kanataManagementCore.js:71:19
+      at change (file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata/src/features/chat/domain/kanataManagementCore.js:9:76)
+      at copyKanataWorld (file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata/src/features/chat/domain/kanataManagementCore.js:69:68)
+      at TestContext.<anonymous> (file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata/tests/kanataGroupLimits.test.js:48:16)
+      at Test.runInAsyncScope (node:async_hooks:228:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18) {
+    code: 'ID_FACTORY_REQUIRED',
+    path: 'creation'
+  }

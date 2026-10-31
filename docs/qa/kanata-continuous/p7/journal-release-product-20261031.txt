@@ -1,0 +1,26 @@
+
+ RUN  v3.2.4 D:/2026Autumn Semester File/GitHub/formyself-app/.worktrees/kanata
+
+ ✓ tests/KanataBackupRuntime.spec.js (7 tests) 912ms
+ ✓ tests/RestoreCoordinator.spec.js (18 tests) 1968ms
+ ✓ tests/KanataArchiveStore.spec.js (15 tests) 4617ms
+   ✓ P7 large portable restore writes bounded verified pages before the canonical header without an intermediate full monolith  659ms
+   ✓ P7 immutable canonical restore retains sources, allows later normal Store edits and cannot mutate its rollback target  591ms
+   ✓ P7 unhydrated synchronous backup fails; actual archive backup is self contained and new restore loses no message or source revision  309ms
+   ✓ P7 actual main/bak reencrypt includes all archive bodies, retires orphan copies, old password rejected, and other module untouched  446ms
+   ✓ P7 cleanup failure after reencrypt cannot claim success; old-password compensation restores whole graph and clears gate  472ms
+   ✓ P7 a corrupt rekey read-back retains both old headers and every source page; compensation removes the failed gate  386ms
+ ✓ tests/KanataProductRecovery.spec.js (28 tests) 8092ms
+   ✓ Kanata P2 product runtime: actual stores, encrypted files and restore journal > P7 group limits and activity timing survive the actual encrypted full coordinator, and later failure compensates the previous configuration  676ms
+   ✓ Kanata P2 product runtime: actual stores, encrypted files and restore journal > P7 actual full-backup coordinator exports every archived body and compensates a later participant failure without source loss  938ms
+   ✓ Kanata P2 product runtime: actual stores, encrypted files and restore journal > P7 missing archive aborts product full export/capture before restore journal preparation and leaves other modules unchanged  472ms
+   ✓ Kanata P2 product runtime: actual stores, encrypted files and restore journal > P7 compressed self-contained journal survives failed compensation and the actual coordinator recovers every source body  1076ms
+   ✓ Kanata P2 product runtime: actual stores, encrypted files and restore journal > P7 settings reports missing large-journal capability accurately and leaves the actual previous data intact  350ms
+   ✓ Kanata P2 product runtime: actual stores, encrypted files and restore journal > target participant failure compensates actual stores and the complete encrypted Kanata graph  301ms
+   ✓ Kanata P2 product runtime: actual stores, encrypted files and restore journal > rollback failure keeps the real encrypted journal and barrier, then recovers after the fault is fixed  458ms
+
+ Test Files  4 passed (4)
+      Tests  68 passed (68)
+   Start at  13:35:27
+   Duration  16.94s (transform 1.46s, setup 0ms, collect 5.51s, tests 15.59s, environment 18.08s, prepare 3.23s)
+

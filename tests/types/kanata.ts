@@ -13,6 +13,17 @@ instantiateWorldPreset(empty, preset, { initializationKey: 'first', now: 1000, t
 // @ts-expect-error a legacy chat v4 cannot masquerade as the new namespace
 const legacyVersion: KanataData['version'] = 4
 void legacyVersion
+import type {MessageArchiveDescriptor,MessageHistoryRequest,KanataArchiveRepository} from '../../src/application/contracts'
+declare const archiveRepository: KanataArchiveRepository
+declare const archivePage: MessageArchiveDescriptor
+archiveRepository.read(archivePage, 'synthetic-only', {worldId:'world',conversationId:'conversation'})
+// @ts-expect-error file paths cannot replace validated page descriptors
+archiveRepository.read('../../outside', 'synthetic-only', {worldId:'world',conversationId:'conversation'})
+// @ts-expect-error both world and conversation are mandatory for disk reads
+archiveRepository.read(archivePage, 'synthetic-only', {worldId:'world'})
+// @ts-expect-error native and UI cursors cannot coerce generation strings
+const unsafeHistory: MessageHistoryRequest = {worldId:'world',conversationId:'conversation',cursor:{worldId:'world',conversationId:'conversation',text:'',generation:'1',before:{id:'message',createdAt:1}}}
+void unsafeHistory
 // @ts-expect-error model system/tool roles cannot impersonate a character
 const invalidRole: Message['role'] = 'system'
 void invalidRole
@@ -164,3 +175,54 @@ contactRuntime.run()
 deferredRuntime.run('other-world')
 // @ts-expect-error configuration requires explicit per-instance flags as well as policy and schedules
 worldRuntime.configure('world',1,{policy:{},schedules:[]})
+
+import type {KanataFilesystem} from '../../src/features/chat/storage/kanataRepositoryTypes'
+declare const filesystem:KanataFilesystem
+filesystem.readdir({path:'formyself/kanata-pages-v1',directory:'DATA'}).then(result=>{
+  const size:number|undefined=result.files[0]?.size
+  void size
+})
+// @ts-expect-error byte size metadata cannot be a text value
+const badFileInfo:Awaited<ReturnType<KanataFilesystem['readdir']>>={files:[{name:'page.enc',type:'file',size:'unknown'}]}
+void badFileInfo
+
+import {ownKanataRestoreImage} from '../../src/features/chat/domain/kanataOwnedImage.js'
+// @ts-expect-error an internal immutable image factory still requires the complete Kanata graph
+ownKanataRestoreImage({version:1})
+
+import type {GroupReplyLimits} from '../../src/application/contracts'
+const groupLimits:GroupReplyLimits={maxSpeakers:3,maxMessages:4}
+chatRuntime.setGroupLimits('conversation',1,groupLimits)
+// @ts-expect-error limits require both numeric fields
+chatRuntime.setGroupLimits('conversation',1,{maxSpeakers:3})
+// @ts-expect-error a revision cannot be a text value
+chatRuntime.setGroupLimits('conversation','1',groupLimits)
+// @ts-expect-error speaker limit cannot be text
+const invalidGroupLimit:GroupReplyLimits={maxSpeakers:'3',maxMessages:4}
+void invalidGroupLimit
+management.createGroup('world',{title:'Synthetic group',instanceIds:['one','two']})
+// @ts-expect-error group membership requires an explicit list of IDs
+management.createGroup('world',{title:'Synthetic',instanceIds:'one,two'})
+// @ts-expect-error title cannot be omitted
+management.createGroup('world',{instanceIds:['one','two']})
+import type {ReplyTimingPolicy} from '../../src/application/contracts'
+const timing:ReplyTimingPolicy={enabled:true,waitMs:5000}
+chatRuntime.setReplyTiming('conversation',1,timing)
+chatRuntime.send('conversation',{text:'synthetic',timing:'immediate'})
+// @ts-expect-error a timing policy needs an explicit boolean
+chatRuntime.setReplyTiming('conversation',1,{enabled:'true',waitMs:5000})
+// @ts-expect-error optimistic conversation revision is required
+chatRuntime.setReplyTiming('conversation',timing)
+// @ts-expect-error caller cannot supply an unrecognised timing mode
+chatRuntime.send('conversation',{timing:'background'})
+archiveRepository.reencrypt(archivePage,'synthetic-old','synthetic-next',{worldId:'world',conversationId:'conversation'})
+// @ts-expect-error rekey requires an explicit scope, never an inferred/global page
+archiveRepository.reencrypt(archivePage,'synthetic-old','synthetic-next')
+// @ts-expect-error plaintext passwords are text parameters, never a numeric device credential
+archiveRepository.reencrypt(archivePage,123,'synthetic-next',{worldId:'world',conversationId:'conversation'})
+import {encryptPassphraseAesAsync,decryptPassphraseAesAsync} from '../../src/shared/crypto/passphraseAes.js'
+const encryptedPage:Promise<string>=encryptPassphraseAesAsync('synthetic','synthetic-password')
+void encryptedPage
+// @ts-expect-error asynchronous native crypto cannot be consumed as a synchronous plaintext result
+const insecureSynchronousPage:string=decryptPassphraseAesAsync('synthetic','synthetic-password')
+void insecureSynchronousPage

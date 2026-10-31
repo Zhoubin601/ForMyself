@@ -1,6 +1,6 @@
 # ForMyself 架构接口与 Agent 开发规范
 
-版本：v1.2（增加 Kanata P2 仓库、清理及备份契约；阶段验收以证据为准）。基础架构日期：2026-10-27（北京时间）。基础源码基线：`995a37e41f1835f75025fb3ca24bd9b745a94311`，架构 P1–P6 完成版本；Kanata 增量以第15–16节和对应阶段验收记录为准。
+版本：v1.4（包含 Kanata P7 加密历史页、异步原生AES计算及经摘要绑定的日志回滚能力；阶段验收以证据为准）。基础架构日期：2026-10-27（北京时间）。基础源码基线：`995a37e41f1835f75025fb3ca24bd9b745a94311`，架构 P1–P6 完成版本；Kanata 增量以第15–21节和对应阶段验收记录为准。
 
 位置约定：用户指定本文件放在项目根目录，作为后续 Agent 的长期开发规范；其他正式交付物继续放 output。本文链接和示例路径均以根目录位置为准。
 
@@ -477,3 +477,60 @@ Windows 使用 `npm.cmd`、`npx.cmd` 和 `android/gradlew.bat` 的对应命令�
 - 平台`kanataNotifications`只接target和选项，不导入Store；独立formyself-kanata-v1 channel和910M通知范围，锁屏通用文案。显式UI请求权限使用既有native activity guard，后台不弹权限。dispatching先持久化，崩溃不集中补发旧通知；Web明确unsupported。没有删除其他模块任务/旧通知或使用真实Key作设备资料。
 - UI：WorldManager“世界日常与视角”，独立开关、日程、自由度/场次/通道配置、普通/上帝管理及关联群导航；ConversationView延迟任务提示与取消。schema1/task可选元数据及full v13兼容，新增类型和strict负向样例同步，无数据库/加密协议变更。实际设备/Web/真实模型证据与风险见P6报告。
 - 本轮P7设备范围按用户2026-10-29明确决定，接受raw快捷方式指向的本地隔离模拟器；原架构关于真机局限如实记录，但缺少真机不再单独阻断本次。真分页/容量/峰值、备份/改密和安全门禁仍必须实际执行。
+
+
+## 21. Kanata P7 加密历史页（增量进行中，2026-10-29）
+
+格式与失败顺序以[页格式](docs/20261029-kanata-p7-archive-format-v1.md)和[实际检查点](docs/20261029-kanata-p7-archive-checkpoint-v1.md)为准；P7未放行。
+
+- `KanataData.version` 允许1/2；2仅增加 `messageArchives`，每页元数据/索引位于原加密头，正文为 `formyself/kanata-pages-v1/<SHA256>.enc`、`kanata-message-page/version:1`。原主/tmp/bak/recovery键不变。未知主/归档版本不得回退旧备。没有新增数据库或改变密码派生/密文协议。
+- Store新增 `archiveHistory/readHistory/activateHistoryMessage/prepareBackup/backupSnapshot`；动作仍检查加载、恢复、会话、保存和改密门禁，历史页校验失败禁止空覆盖。新页读回验证后才提交主图；历史原文修订先激活完整页，保留原ID/revision与来源审计。
+- 文件系统注入增加 `readdir`，用于主/备改密验证后清理本功能的严格散列文件名空间；不递归删除，不清理未知文件或其他模块。主密码事务失败沿用逆序补偿，不提前丢旧副本。
+- `BackupParticipant.prepareExport?():Promise<unknown>` 与 `registry.prepareExports(ids?)` 是同步export/capture前的异步正文准备。实际Kanata恢复协调器在prepare中调用；单项导出同样调用，失败中止。外部全备继续v13/单项v1并含全部正文，禁止裸页引用进入备份/日志。旧v1–v12非chat恢复与旧聊天拒绝/确认丢弃不变。
+- `shared/crypto/passphraseAes.js` 和 `sha256Text.js` 只改变大字符串处理内存；固定盐输出须与原CryptoJS逐字节一致，保留旧读新写/新读旧写及负向密文测试。恢复日志仍原AES-GCM/PBKDF2协议，未绕过协调器。
+- 验证增加 `node --test tests/kanataMessageArchive.test.js tests/passphraseAes.test.js`、`npx vitest run tests/KanataArchiveStore.spec.js tests/KanataHistoryPanel.spec.js tests/KanataProductRecovery.spec.js`、完整 `npm run check` 和p7目录真实生产Web/Android驱动。Node容量脚本只作诊断，不能替代生产Android/Web完整协调器与峰值内存门禁。
+
+### 21.1 P7 大恢复载荷与内部快照所有权（2026-10-30）
+
+- 大于256KiB的恢复记录在**原AES-GCM认证加密内部**采用 `formyself-restore-payload/version:2/encoding:gzip-json-v1`，包含经认证的 `plainBytes` 与gzip Base64。外层version1、PBKDF2-SHA256/210000、盐/IV、文件路径、提交标记和恢复协调器不变；小载荷及历史v1日志继续可读。旧应用遇到内部version2应拒绝恢复并保留门禁。256MiB解压上限、未知版本、坏gzip/长度、能力缺失均明确报错，禁止空记录回退。具体设计见[载荷说明](docs/20261029-kanata-p7-restore-payload-codec-v1.md)，新增 `node --test tests/restorePayloadCodec.test.js`。
+- `BackupParticipant.detachedExport?:boolean` 仅在参与者保证返回独立DTO时使用；当前仅chat通过已准备私有快照转交所有权。其他模块继续原JSON转换。共享clone拒绝getter/runtime/cycle/sparse/非有限数，`assertKanataData`只允许内部已私有数据的无复制校验；外部输入和Store写入仍clone。
+- `createKanataBackupRuntime` 仅把本运行时私有工厂产出的完整已校验canonical DTO深冻结后登记到闭包WeakSet，原协调器的validate/capture/apply可复用该不可变对象。未知或磁盘恢复输入仍完整解析和跨引用校验；公开restore每次重新解析调用者输入，不能靠对象身份或自报标记跳过。参与者在写入前仍全量validate，chat Store继续复制其可修改草稿；不增加普通UI直接apply权限。对应异步外部修改、参与者篡改、重复调用、失败补偿及保留日志恢复的测试见 `tests/KanataBackupRuntime.spec.js`、`tests/KanataProductRecovery.spec.js`。
+- 生产Android容量驱动 `docs/qa/kanata-continuous/p7/verify-capacity-native.mjs <1000|10000|100000>` 核验AVD与安装标记、APK资源清单和合成配置；只在当前标记环境通过产品协调器切换样本，保存旧608条合成全备的加密副本并校验，不清数据/卸载/新建用户设备。记录SystemInfo识别的主进程及所有renderer的VmHWM，不能只量Java；完整App冷启和 `protected:chat:load` 分开报告。
+
+
+### 21.2 P7 原生批次与气泡展示（2026-10-30）
+
+- `messageArchiveRepository.inspectAll`一次读取目录元数据，逐项核对存在/类型/字节数；缺size的注入驱动严格stat，缺页、重复信息或错误不当空目录。Filesystem.readdir FileInfo新增可选number size，strict负向样例同步。读取正文继续逐页hash/解密/身份/索引校验。
+- `shared/async/mapInBatches`只接显式参数，最多4页并行（可配置范围1–8）；整批allSettled后才抛首个错误，不启动后批次。归档/大图导入/备份展开/逐页改密/严格退休采用该函数；所有页验证后才提交主头，主/备验证后才删旧页，不改变恢复门禁。
+- Kanata内部备份工厂从registry获得已脱离live Store的parts，完整assert后消费所有权，避免重复clone。公开builder和所有未知导入仍复制，不能从外部传trust标记；返回导出物可修改但不能影响live或下一次导出。
+- `useKanataBubbleReveal`纯展示已原子保存的批次，每650ms显示下个气泡，支持立即全部；既有历史/减少动效直接全部，来源停用立即可见。后台/卸载清timer、订阅及ID缓存，不写业务Store、不发请求，气泡关联不变。对应组件测试和实际受控provider生产Web证据位于P7目录。
+- `shared/crypto/utf8Words`采用原UTF8字节/拒绝孤代理项，增量AES/SHA只接该私有WordArray；固定盐仍和旧CryptoJS完全相同。解码器显式保留开头BOM，避免原文变化。载荷JSON容器栈处理保持相同字节与安全检查，未改变恢复数据类型/加密。
+
+
+### 21.3 P7 恢复图复用与容量驱动校正（2026-10-30）
+
+- 内部 `domain/kanataOwnedImage` 在完整验证、递归冻结、再次验证后登记私有WeakSet。Store.restoreSnapshot仅对该身份采用新的顶层容器/消息数组，复用不可改的后代；未知/浅冻结/带trusted标记对象仍完整clone。所有普通Store.update仍复制可改草稿；新图、外部调用者和回滚目标之间没有可修改别名。工厂是内部DTO能力，不能从导入JSON声明身份；WeakSet不保留明文强引用。新增 `kanataOwnedImage.test.js` 及实际Store后续编辑/原文来源保留测试，strict负向样例同步。
+- 通用clone最终使用一个私有输出PropertyDescriptor同步复用，逐项读取并校验输入描述符，仍以defineProperty创建数据属性，包括__proto__；未采用fromEntries实验路径，不触发继承setter，不把稀疏/Getter/循环/未来版本错误视为空值。
+- 生产Web容量使用全新、带合成标记的独立Chrome profile，冷启阶段真正关闭并重启进程，复用其已加密存储；不请求强制GC。测量分别报告各阶段PID高水位。最初page.reload样本保留，不能冒称完整进程冷启。测试fixture生成与租约闭包分开，恢复后释放无用导入DTO，逐条重建原始合成fixture验证每条原文/关联/来源；不靠第二份长期驻留明文来做比较。
+- 原生100k观察超时为600秒以完整测出慢阶段，判定仍120秒/512MiB，不放宽冻结门槛；无Profiler的最终三档才可用于设备判定。采样诊断明确单列，冷启不跨进程stop旧Profiler。CLI在全部动作/evidence落盘后仅退出自己的进程，不结束App事务、不删除恢复记录。
+
+### 21.4 P7 自建群与单群回复限制（2026-10-30）
+
+- `kanataManagement.createGroup(worldId,{title,instanceIds})`沿受保护会话/操作租约/Store.update；领域只接受同世界至少两名唯一角色及非空<=200字标题，新group包括世界用户身份，revision1/inherit，不复制原文/记忆/事件/任务/生活授权。既有历史群不支持成员编辑，避免无设计授予旧聊天。`KanataGroupCreator`只列本世界实例，错误定位/取消/返回/卸载清理；持久化失败发现Store已有待写群时转全局“重试保存”，避免重复创建。
+- Conversation可选`replyLimits:GroupReplyLimits`只允许group，maxSpeakers整数1–8、maxMessages整数且>=maxSpeakers/<=32；缺省2/8，private/character保持1/4。`kanataChatRuntime.setGroupLimits(conversationId,expectedRevision,limits)`有乐观revision、加载/恢复/保存失败门禁，无Key也能保存且不计费。整轮重新核对revision/限制；已保存角色计入总预算，失败只补未完成，溢出段落合并保留全文。删除整批的显式重试可重新发言。
+- @匹配导入姓名/别名的最长完整字面串，支持空格/标点，无用户正则执行；未知/歧义拒绝。自主群场景同样检查限制，1角色不能进入双人场景；选择另一个合格群，不降级为其他私聊。自主技术策略仍两角色各一段，不因maxSpeakers增大自动加请求。
+
+### 21.5 P7 活动等待（2026-10-30）
+
+- Conversation可选`replyTiming:ReplyTimingPolicy={enabled:boolean,waitMs:number}`，waitMs整数1000–30000，private/group可配置，character不接受。默认缺省关闭；`kanataChatRuntime.setReplyTiming(conversationId,expectedRevision,policy)`沿相同租约/Store和乐观revision写门禁。关闭策略使原activityDelay的pending任务到期，手动等待任务不受影响。
+- 纯决策`autonomy/kanataReplyTiming`仅使用选中发言者、同世界/同成员且world/instance自主开关都开启时的真实虚拟日程或自身能量<=0.25；不使用关系/负面情绪惩罚，不输出私人活动文本，不写假的忙碌消息。手动等待优先，`send(...,{timing:'immediate'})`绕过所有等待并取消同源pending。已有完整回答不重新排等待。
+- 自动等待无论调用者persistDelay是否设置都落既有deferredReply任务，可选`activityDelay:boolean`经严格验证；达到一次等待后，由原前台最长30秒轮询接续，不递归延迟。执行器重新检查源/新问题/期限并构建最新权限/人格上下文，立即回复串行租约防重复；中断running保持失败可观察，外部备份沿pause-sending-v1暂停，锁定/后台不继续AI。
+- 无新增存储键/数据库/加密协议/恢复入口；Kanata schema1/2、完整13/单项1和旧v1–v12非聊天规则不变。类型/contracts/负向例与真实完整恢复/失败补偿同步。实际命令、两轮修复和证据边界见[本轮增量](docs/20261030-kanata-requirements-p7-increment-v1.md)及[P7当前报告](docs/20261030-kanata-p7-verification-progress-v1.md)。容量98候选100k仍FAIL，最新功能候选不得据此标P7通过。
+
+### 21.6 P7 改密计算与回滚图生命周期（2026-10-31）
+
+- 归档仓库新增`reencrypt(descriptor,previousPassword,nextPassword,scope,assertCurrent?)`：旧密文散列/长度、JSON、scope、逐消息元数据及索引完整验证；原明文逐字重加密、新密文字节和新密码解密全文精确读回。复用已验证的索引/分离元数据，不重复mkdir、JSON序列化或构建索引；仍在全部页验证后提交主/备，再退休旧页。取消/异常不能提前删旧页，原改密恢复门禁与反向补偿保留。
+- 普通归档批次共享本仓库的非敏感目录就绪Promise，失败不当成功；mkdir/write失败后正常重试重新检查目录。每个正文仍写回验证，4页有界allSettled不变，没有凭目录缓存跳过文件读取/权限或持久化门禁。
+- `shared/crypto/passphraseAes`新增异步纯参数后端，仅归档页采用有能力平台的AES-CBC计算；缺crypto.subtle才回退既有分块同步实现，原生错误不静默降级。Salted__、8字节盐、EVP/MD5、AES-256-CBC/PKCS7、Base64、严格UTF8/BOM与随机来源均保持原协议；固定盐与原CryptoJS逐字节相同及双向读取已有自动证据。主头原分块算法与AES-GCM恢复信封未变；无密钥/明文缓存。每个await之后重验owner，关闭会话不接受晚到结果。
+- `RestoreJournal.prepare`在完整加密记录读回相同后可返回`{digest:string}`；旧注入适配器仍可返回void。`RestoreCoordinatorOptions.journalRollback?:boolean`默认false，Kanata实际组合根固定true，必须获得有效准备摘要并检查当前uncommitted摘要相同后才开始业务写。捕获回滚图的短生命周期helper在日志持久后只返回摘要/null；完整原文仍自包含在原日志，不保存裸页引用。失败时重读同一未提交digest，认证解密/version及validateRecovery后才补偿；缺失、变更、坏记录或补偿失败保留门禁与现存日志，不回退空值或其他记录。摘要来自prepare实际验证字节，不能仅信任首次inspect遇到的替换记录。原日志/备份版本、存储路径、加密、commit/clear顺序不变。
+- 自动化新增同盐/旧读新写/原生缺能力或失败、三次页I/O/目录单次准备、坏读回/释放会话不提交、真实GCM日志替换/损坏/缺准备摘要/实际recover矩阵。当前完整check557 Node/382组件40文件通过；生产最新候选验收见[2026-10-31检查点](docs/20261031-kanata-p7-performance-checkpoint-v1.md)。早期62d候选100k仍失败，不能把Node诊断或新检查数量当容量通过。

@@ -1,0 +1,36 @@
+✔ P7 page rekey preserves exact verified JSON bytes and unknown fields with three I/O calls and no mkdir (121.0952ms)
+✔ P7 page rekey validates old scope, password, hash and index before any new write (22.2012ms)
+✔ P7 page rekey read-back corruption fails without deleting the old file or exposing plaintext (23.1066ms)
+✔ P7 page rekey cancellation after source read and failed new writes never retire the old copy (19.3263ms)
+✔ P7 concurrent page creation shares only directory readiness and still verifies every encrypted body (63.4054ms)
+✔ P7 failed directory creation or writes never poison later retry readiness (25.2363ms)
+✔ P7 JSON clone preserves inert JSON without serialized copies, aliasing or prototype setters (0.4381ms)
+✔ P7 JSON clone still rejects hidden/accessor/runtime/sparse/cyclic/deep/non-finite inputs without invoking getters (1.1909ms)
+✔ P7 privately owned graph assertion keeps all graph/security checks without claiming detached ownership (12.2562ms)
+✔ P7 archive planner retains source proofs, audits and complete reply components; no fake history or source changes (16.8971ms)
+✔ P7 Bloom index never skips an exact normalized match, including Unicode and repeated/single characters (2.227ms)
+✔ P7 encrypted immutable page verifies bytes/hash/scope/index, has no plaintext/password cache and refuses traversal (26.4708ms)
+✔ P7 version2 graph validates unique archive IDs and scope while portable export rejects unhydrated references (23.8953ms)
+✔ P7 disk pagination returns only requested rows and indexed rare search reads one page; canceled reads return no late bodies (72.4848ms)
+✔ P7 query budget exhaustion cannot return a partial page/cursor that skips unchecked history (18.8191ms)
+✔ P7 archive missing/corrupt/readback/cancel failures never alter the canonical file; retire is nonrecursive and confined (5.4882ms)
+✔ P7 raw page payload must match authenticated descriptor metadata, not just valid JSON (17.4172ms)
+✔ P7 future archive header version cannot silently fall back to and overwrite an older full graph (32.812ms)
+✔ P7 cold archive inspection uses one metadata listing, no bodies or per-page native calls, and rejects missing/changed files (19.5648ms)
+✔ P7 a driver without listing sizes still requires exact per-file stat; forged or ambiguous metadata is rejected (9.0236ms)
+✔ P7 platform AES backend keeps the exact old OpenSSL envelope for a fixed salt and bidirectional legacy compatibility (162.556ms)
+✔ P7 platform AES uses fresh salt and rejects wrong passwords, truncated headers, invalid padding and UTF8 (50.7465ms)
+✔ P7 absence of platform crypto falls back byte-compatibly; available platform errors never silently switch backends (3.3246ms)
+✔ P7 incremental UTF8 SHA256 preserves existing recovery fingerprints including surrogate chunk boundaries (31.8766ms)
+✔ P7 chunked AES emits exactly the existing CryptoJS passphrase wire bytes for the same synthetic salt (59.1339ms)
+✔ P7 native UTF8 conversion rejects malformed surrogate input exactly as the legacy encoder (2.1181ms)
+✔ P7 chunked AES uses fresh random salt and rejects wrong password, malformed/truncated ciphertext and corrupt padding (60.5424ms)
+✔ P7 UTF8 decoding retains multibyte characters across AES blocks and Base64 chunk boundaries (173.5744ms)
+ℹ tests 28
+ℹ suites 0
+ℹ pass 28
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1002.4619

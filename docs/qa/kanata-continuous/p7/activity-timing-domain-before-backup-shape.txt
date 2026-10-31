@@ -1,0 +1,25 @@
+✔ P7 reply timing is optional and off unless the exact world and selected actor are active (17.3968ms)
+✔ P7 availability uses the actual virtual weekday and timezone without reading mood or relationship penalties (1.7545ms)
+✔ P7 reply timing rejects hostile values without invoking accessors or silently accepting extensions (2.0515ms)
+✖ P7 portable schema retains a scoped timing configuration and never seeds history (3.9262ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 3
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 170.8381
+
+✖ failing tests:
+
+test at tests\kanataReplyTiming.test.js:38:1
+✖ P7 portable schema retains a scoped timing configuration and never seeds history (3.9262ms)
+  TypeError: Cannot read properties of undefined (reading 'find')
+      at TestContext.<anonymous> (file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata/tests/kanataReplyTiming.test.js:40:39)
+      at Test.runInAsyncScope (node:async_hooks:228:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7)
