@@ -1,0 +1,241 @@
+{
+  "status": "NO_GO",
+  "phase": "P7_IN_PROGRESS",
+  "at": "2026-11-02T06:04:10.649Z",
+  "handoff": "docs/20261102-kanata-p7-archive-planner-v1.md",
+  "branch": "Kanata",
+  "baseHead": "ddd3f10e2daf1c3675dbd05bac3425157d1a2ef4",
+  "uncommitted": true,
+  "pushed": false,
+  "currentBuild": "04e427d7cce23ecdb2d69f732f3f3cb232507b6477aa5250ec1cd1365a58c220",
+  "fullCheck": {
+    "command": "npm run check",
+    "log": "check-pending-recovery-20261102.txt",
+    "exitCode": 0,
+    "nodePassed": 575,
+    "componentPassed": 388,
+    "componentFiles": 41,
+    "lintErrors": 0,
+    "lintWarnings": 42,
+    "strictBuild": "PASS"
+  },
+  "androidBuild": {
+    "status": "PASS",
+    "log": "android-app-build-pending-recovery-20261102.txt",
+    "verifiedResources": 78,
+    "qaHarnessAbsent": true
+  },
+  "instrumentation": {
+    "pass": 8,
+    "skipped": 1,
+    "failed": 0,
+    "log": "instrumentation-pending-recovery-20261102.txt"
+  },
+  "functional": {
+    "web": {
+      "status": "PASS",
+      "checks": 13,
+      "fixtureRequests": 7,
+      "realModelRequests": 0,
+      "pageErrors": 0,
+      "cleanup": {
+        "status": "PASS",
+        "actualCoordinator": true,
+        "chatRows": 0,
+        "otherModulesAndSettingsPreserved": true
+      },
+      "evidence": "pending-recovery-20261102-web-results.json"
+    },
+    "native": {
+      "status": "PASS",
+      "checks": 13,
+      "fixtureRequests": 7,
+      "realModelRequests": 0,
+      "pageErrors": 0,
+      "cleanup": {
+        "status": "PASS",
+        "actualCoordinator": true,
+        "chatRows": 608,
+        "otherModulesAndSettingsPreserved": true
+      },
+      "evidence": "pending-recovery-20261102-native-results.json"
+    }
+  },
+  "coldRecovery": {
+    "status": "PASS",
+    "ms": 40143,
+    "value": {
+      "loadedTask": true,
+      "savedConfig": true,
+      "actualForegroundLifecycle": true,
+      "userRows": 2,
+      "aiRows": 6,
+      "requests": 1,
+      "coldPersistence": {
+        "recoveredFromBackup": true,
+        "pending": false,
+        "saveError": ""
+      }
+    }
+  },
+  "capacity": {
+    "web": {
+      "sameAsCurrentCandidate": false,
+      "currentCandidateThreeSizes": "NOT_RUN",
+      "measurements": [
+        {
+          "count": 1000,
+          "status": "PASS",
+          "build": {
+            "resourceCount": 78,
+            "filesystemPatch": "67bd20293eb7cff96cfbdb0f6dd54634acc08a14d72b150fa6b11d8e1759e167",
+            "sourceHead": "ddd3f10e2daf1c3675dbd05bac3425157d1a2ef4",
+            "productionPreview": true,
+            "sourceCheck": "check-directory-20261102.txt",
+            "syntheticOnly": true,
+            "frozenAt": "2026-11-02T13:25:39.0223521+08:00"
+          },
+          "peakMiB": 243.53125,
+          "memoryGate": "PASS",
+          "timeGate": "PASS",
+          "failedTimeChecks": [],
+          "evidence": "web-capacity-directory-20261102-1000.json"
+        },
+        {
+          "count": 10000,
+          "status": "PASS",
+          "build": {
+            "resourceCount": 78,
+            "filesystemPatch": "67bd20293eb7cff96cfbdb0f6dd54634acc08a14d72b150fa6b11d8e1759e167",
+            "sourceHead": "ddd3f10e2daf1c3675dbd05bac3425157d1a2ef4",
+            "productionPreview": true,
+            "sourceCheck": "check-directory-20261102.txt",
+            "syntheticOnly": true,
+            "frozenAt": "2026-11-02T13:25:39.0223521+08:00"
+          },
+          "peakMiB": 305.23046875,
+          "memoryGate": "PASS",
+          "timeGate": "PASS",
+          "failedTimeChecks": [],
+          "evidence": "web-capacity-directory-20261102-10000.json"
+        },
+        {
+          "count": 100000,
+          "status": "FAIL_CAPACITY_GATE",
+          "build": {
+            "resourceCount": 78,
+            "filesystemPatch": "67bd20293eb7cff96cfbdb0f6dd54634acc08a14d72b150fa6b11d8e1759e167",
+            "sourceHead": "ddd3f10e2daf1c3675dbd05bac3425157d1a2ef4",
+            "productionPreview": true,
+            "sourceCheck": "check-directory-20261102.txt",
+            "syntheticOnly": true,
+            "frozenAt": "2026-11-02T13:25:39.0223521+08:00"
+          },
+          "peakMiB": 883.00390625,
+          "memoryGate": "FAIL",
+          "timeGate": "PASS",
+          "failedTimeChecks": [],
+          "evidence": "web-capacity-directory-20261102-100000.json"
+        }
+      ]
+    },
+    "native": {
+      "sameAsCurrentCandidate": false,
+      "currentCandidateThreeSizes": "NOT_RUN",
+      "measurements": [
+        {
+          "count": 1000,
+          "status": "PASS",
+          "build": "3f39b1944692dafa1d6412d1c1dab2d6f1fd54c1c0831b026a358543c6196683",
+          "peakMiB": 252.4609375,
+          "memoryGate": "PASS",
+          "timeGate": "PASS",
+          "failedTimeChecks": [],
+          "evidence": "native-capacity-binary-20261102-1000.json"
+        },
+        {
+          "count": 10000,
+          "status": "PASS",
+          "build": "3f39b1944692dafa1d6412d1c1dab2d6f1fd54c1c0831b026a358543c6196683",
+          "peakMiB": 250.2265625,
+          "memoryGate": "PASS",
+          "timeGate": "PASS",
+          "failedTimeChecks": [],
+          "evidence": "native-capacity-binary-20261102-10000.json"
+        },
+        {
+          "count": 100000,
+          "status": "FAIL_CAPACITY_GATE",
+          "build": "3f39b1944692dafa1d6412d1c1dab2d6f1fd54c1c0831b026a358543c6196683",
+          "peakMiB": 496.6015625,
+          "memoryGate": "PASS",
+          "timeGate": "FAIL",
+          "failedTimeChecks": [
+            {
+              "name": "masterPasswordActualUiTransaction",
+              "actualMs": 207900,
+              "limitMs": 120000,
+              "status": "FAIL"
+            }
+          ],
+          "evidence": "native-capacity-binary-20261102-100000.json"
+        }
+      ]
+    }
+  },
+  "baseline": {
+    "status": "PASS",
+    "evidence": "native-baseline-pending-recovery-20261102.json",
+    "modules": [
+      "savings",
+      "weight",
+      "mood",
+      "passwords",
+      "schedules",
+      "todos",
+      "chat"
+    ],
+    "settings": true,
+    "metadata": true,
+    "todoRevision": {
+      "before": 3,
+      "after": 56,
+      "advanced": true
+    },
+    "moodRollover": {
+      "originalRows": 1,
+      "originalsPreserved": true,
+      "automaticMoodRows": [
+        {
+          "id": "1793597001956_s9kl",
+          "date": "2026-10-30"
+        },
+        {
+          "id": "1793597001957_9zs2",
+          "date": "2026-10-31"
+        },
+        {
+          "id": "1793597001957_6pwv",
+          "date": "2026-11-01"
+        }
+      ],
+      "basis": "existing-moodStore-autoFillMissingDays"
+    },
+    "backgroundPlaintextReleased": true,
+    "explicitExpiry": false
+  },
+  "remaining": [
+    "Web100k process RSS",
+    "Android100k complete password transaction including retirement and both directions",
+    "Current-candidate capacity replay",
+    "Dense memory/event/audit source pagination",
+    "Legacy life AI and reminder role bindings",
+    "Application-wide usage aggregation/date trends",
+    "Advanced mood/relationship decisions",
+    "Complete final 15-scenario/preset/legacy/security matrix"
+  ],
+  "physicalPhone": "NOT_RUN; user accepts guarded emulator",
+  "newRealModelQuality": "NOT_RUN; controlled provider only",
+  "files": "docs/qa/kanata-continuous/p7/changed-files-20261102.json",
+  "credentialScan": "docs/qa/kanata-continuous/p7/credential-scan-20261102.json"
+}

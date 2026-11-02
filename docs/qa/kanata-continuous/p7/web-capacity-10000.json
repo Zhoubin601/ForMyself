@@ -1,20 +1,22 @@
 {
   "status": "PASS",
-  "at": "2026-10-31T05:54:55.685Z",
+  "at": "2026-11-02T05:26:26.750Z",
   "count": 10000,
   "syntheticOnly": true,
   "kind": "production-chrome-actual-coordinator",
   "forcedGC": false,
   "build": {
-    "syntheticOnly": true,
     "resourceCount": 78,
-    "frozenAt": "2026-10-31T13:39:09.4840060+08:00",
-    "sourceCheck": "check-journal-release-20261031.txt",
-    "productionPreview": true
+    "filesystemPatch": "67bd20293eb7cff96cfbdb0f6dd54634acc08a14d72b150fa6b11d8e1759e167",
+    "sourceHead": "ddd3f10e2daf1c3675dbd05bac3425157d1a2ef4",
+    "productionPreview": true,
+    "sourceCheck": "check-directory-20261102.txt",
+    "syntheticOnly": true,
+    "frozenAt": "2026-11-02T13:25:39.0223521+08:00"
   },
   "metrics": {
     "portableImportActualCoordinator": {
-      "ms": 2150.3,
+      "ms": 1119.6,
       "value": {
         "active": 220,
         "archived": 9780,
@@ -23,65 +25,65 @@
       "memory": {
         "windowsRendererProcesses": [
           {
-            "Id": 44156,
-            "PeakWorkingSet64": 32661504,
-            "WorkingSet64": 32661504
+            "Id": 13104,
+            "PeakWorkingSet64": 269115392,
+            "WorkingSet64": 264306688
           },
           {
-            "Id": 52192,
-            "PeakWorkingSet64": 91144192,
-            "WorkingSet64": 91144192
+            "Id": 26392,
+            "PeakWorkingSet64": 91693056,
+            "WorkingSet64": 91693056
           },
           {
-            "Id": 53120,
-            "PeakWorkingSet64": 309420032,
-            "WorkingSet64": 266514432
+            "Id": 28556,
+            "PeakWorkingSet64": 35581952,
+            "WorkingSet64": 35581952
           }
         ],
-        "peakResidentMiB": 295.0859375,
+        "peakResidentMiB": 256.6484375,
         "heapPoint": {
-          "usedSize": 33085116,
-          "totalSize": 108478464,
-          "embedderHeapUsedSize": 2670616,
-          "backingStorageSize": 5504903
+          "usedSize": 58690696,
+          "totalSize": 105947136,
+          "embedderHeapUsedSize": 2790776,
+          "backingStorageSize": 14094178
         }
       }
     },
     "coldPageReloadAndProtectedLoad": {
-      "ms": 1446.5,
+      "ms": 989.3,
       "value": {
         "loaded": true,
-        "protectedLoadMs": 356.2999999988824
+        "protectedLoadMs": 238.79999999981374
       },
       "memory": {
         "windowsRendererProcesses": [
           {
-            "Id": 49020,
-            "PeakWorkingSet64": 35360768,
-            "WorkingSet64": 35360768
+            "Id": 18568,
+            "PeakWorkingSet64": 90292224,
+            "WorkingSet64": 90292224
           },
           {
-            "Id": 51692,
-            "PeakWorkingSet64": 89018368,
-            "WorkingSet64": 89018368
+            "Id": 31600,
+            "PeakWorkingSet64": 32694272,
+            "WorkingSet64": 32694272
           },
           {
-            "Id": 54364,
-            "PeakWorkingSet64": 170393600,
-            "WorkingSet64": 150122496
+            "Id": 32356,
+            "PeakWorkingSet64": 173252608,
+            "WorkingSet64": 173252608
           }
         ],
-        "peakResidentMiB": 162.5,
+        "peakResidentMiB": 165.2265625,
         "heapPoint": {
-          "usedSize": 6511696,
-          "totalSize": 26329088,
-          "embedderHeapUsedSize": 3087312,
-          "backingStorageSize": 672855
+          "usedSize": 26502952,
+          "totalSize": 37281792,
+          "embedderHeapUsedSize": 4755408,
+          "backingStorageSize": 4608671
         }
       }
     },
     "diskPage50": {
-      "ms": 16.3,
+      "ms": 11,
       "value": {
         "rows": 50,
         "pages": 2,
@@ -90,32 +92,32 @@
       "memory": {
         "windowsRendererProcesses": [
           {
-            "Id": 49020,
-            "PeakWorkingSet64": 35360768,
-            "WorkingSet64": 35360768
+            "Id": 18568,
+            "PeakWorkingSet64": 90292224,
+            "WorkingSet64": 90292224
           },
           {
-            "Id": 51692,
-            "PeakWorkingSet64": 89030656,
-            "WorkingSet64": 89030656
+            "Id": 31600,
+            "PeakWorkingSet64": 32694272,
+            "WorkingSet64": 32694272
           },
           {
-            "Id": 54364,
-            "PeakWorkingSet64": 170393600,
-            "WorkingSet64": 152948736
+            "Id": 32356,
+            "PeakWorkingSet64": 179179520,
+            "WorkingSet64": 153346048
           }
         ],
-        "peakResidentMiB": 162.5,
+        "peakResidentMiB": 170.87890625,
         "heapPoint": {
-          "usedSize": 15823360,
-          "totalSize": 28000256,
-          "embedderHeapUsedSize": 3088352,
-          "backingStorageSize": 1110361
+          "usedSize": 9518048,
+          "totalSize": 32358400,
+          "embedderHeapUsedSize": 2608216,
+          "backingStorageSize": 1026917
         }
       }
     },
     "indexedExactSearch": {
-      "ms": 14.9,
+      "ms": 6.9,
       "value": {
         "matches": 1,
         "pages": 2,
@@ -124,64 +126,64 @@
       "memory": {
         "windowsRendererProcesses": [
           {
-            "Id": 49020,
-            "PeakWorkingSet64": 35360768,
-            "WorkingSet64": 35360768
+            "Id": 18568,
+            "PeakWorkingSet64": 90292224,
+            "WorkingSet64": 90292224
           },
           {
-            "Id": 51692,
-            "PeakWorkingSet64": 89030656,
-            "WorkingSet64": 89030656
+            "Id": 31600,
+            "PeakWorkingSet64": 32694272,
+            "WorkingSet64": 32694272
           },
           {
-            "Id": 54364,
-            "PeakWorkingSet64": 170393600,
-            "WorkingSet64": 157532160
+            "Id": 32356,
+            "PeakWorkingSet64": 179179520,
+            "WorkingSet64": 153899008
           }
         ],
-        "peakResidentMiB": 162.5,
+        "peakResidentMiB": 170.87890625,
         "heapPoint": {
-          "usedSize": 7069776,
-          "totalSize": 34455552,
-          "embedderHeapUsedSize": 3088352,
-          "backingStorageSize": 1528651
+          "usedSize": 13702296,
+          "totalSize": 32358400,
+          "embedderHeapUsedSize": 2608216,
+          "backingStorageSize": 1445207
         }
       }
     },
     "saveHeader": {
-      "ms": 395.9,
+      "ms": 179.7,
       "value": {
         "saved": true
       },
       "memory": {
         "windowsRendererProcesses": [
           {
-            "Id": 49020,
-            "PeakWorkingSet64": 35446784,
-            "WorkingSet64": 35446784
+            "Id": 18568,
+            "PeakWorkingSet64": 90308608,
+            "WorkingSet64": 90308608
           },
           {
-            "Id": 51692,
-            "PeakWorkingSet64": 89067520,
-            "WorkingSet64": 89067520
+            "Id": 31600,
+            "PeakWorkingSet64": 32694272,
+            "WorkingSet64": 32694272
           },
           {
-            "Id": 54364,
-            "PeakWorkingSet64": 237051904,
-            "WorkingSet64": 229044224
+            "Id": 32356,
+            "PeakWorkingSet64": 222507008,
+            "WorkingSet64": 213331968
           }
         ],
-        "peakResidentMiB": 226.0703125,
+        "peakResidentMiB": 212.19921875,
         "heapPoint": {
-          "usedSize": 23632260,
-          "totalSize": 75816960,
-          "embedderHeapUsedSize": 2397568,
-          "backingStorageSize": 9437818
+          "usedSize": 20367348,
+          "totalSize": 75251712,
+          "embedderHeapUsedSize": 2494088,
+          "backingStorageSize": 5064868
         }
       }
     },
     "fullExportActualCoordinator": {
-      "ms": 1184.1,
+      "ms": 380.9,
       "value": {
         "version": 13,
         "messages": 10000,
@@ -190,32 +192,32 @@
       "memory": {
         "windowsRendererProcesses": [
           {
-            "Id": 49020,
-            "PeakWorkingSet64": 35454976,
-            "WorkingSet64": 35454976
+            "Id": 18568,
+            "PeakWorkingSet64": 90353664,
+            "WorkingSet64": 90353664
           },
           {
-            "Id": 51692,
-            "PeakWorkingSet64": 89083904,
-            "WorkingSet64": 89083904
+            "Id": 31600,
+            "PeakWorkingSet64": 32780288,
+            "WorkingSet64": 32780288
           },
           {
-            "Id": 54364,
-            "PeakWorkingSet64": 267517952,
-            "WorkingSet64": 251203584
+            "Id": 32356,
+            "PeakWorkingSet64": 270856192,
+            "WorkingSet64": 233725952
           }
         ],
-        "peakResidentMiB": 255.125,
+        "peakResidentMiB": 258.30859375,
         "heapPoint": {
-          "usedSize": 44225120,
-          "totalSize": 103559168,
-          "embedderHeapUsedSize": 2347328,
-          "backingStorageSize": 8129777
+          "usedSize": 12490400,
+          "totalSize": 92651520,
+          "embedderHeapUsedSize": 2144696,
+          "backingStorageSize": 18930922
         }
       }
     },
     "fullRestoreActualCoordinator": {
-      "ms": 4332.4,
+      "ms": 3086.6,
       "value": {
         "actualCoordinator": true,
         "expectedCount": 10000
@@ -223,32 +225,32 @@
       "memory": {
         "windowsRendererProcesses": [
           {
-            "Id": 49020,
-            "PeakWorkingSet64": 35491840,
-            "WorkingSet64": 35180544
+            "Id": 18568,
+            "PeakWorkingSet64": 90374144,
+            "WorkingSet64": 90374144
           },
           {
-            "Id": 51692,
-            "PeakWorkingSet64": 89108480,
-            "WorkingSet64": 87724032
+            "Id": 31600,
+            "PeakWorkingSet64": 32788480,
+            "WorkingSet64": 32788480
           },
           {
-            "Id": 54364,
-            "PeakWorkingSet64": 320843776,
-            "WorkingSet64": 281911296
+            "Id": 32356,
+            "PeakWorkingSet64": 311107584,
+            "WorkingSet64": 275423232
           }
         ],
-        "peakResidentMiB": 305.98046875,
+        "peakResidentMiB": 296.6953125,
         "heapPoint": {
-          "usedSize": 37067720,
-          "totalSize": 103755776,
-          "embedderHeapUsedSize": 2818664,
-          "backingStorageSize": 7347983
+          "usedSize": 38519980,
+          "totalSize": 103776256,
+          "embedderHeapUsedSize": 2906672,
+          "backingStorageSize": 7348515
         }
       }
     },
     "restoredMessageProofExportVerification": {
-      "ms": 1346.2,
+      "ms": 722.9,
       "value": {
         "messages": 10000,
         "exactOriginalMessageProofs": true,
@@ -259,32 +261,32 @@
       "memory": {
         "windowsRendererProcesses": [
           {
-            "Id": 49020,
-            "PeakWorkingSet64": 35491840,
-            "WorkingSet64": 35180544
+            "Id": 18568,
+            "PeakWorkingSet64": 90374144,
+            "WorkingSet64": 90374144
           },
           {
-            "Id": 51692,
-            "PeakWorkingSet64": 89108480,
-            "WorkingSet64": 87724032
+            "Id": 31600,
+            "PeakWorkingSet64": 32788480,
+            "WorkingSet64": 32788480
           },
           {
-            "Id": 54364,
-            "PeakWorkingSet64": 328806400,
-            "WorkingSet64": 253227008
+            "Id": 32356,
+            "PeakWorkingSet64": 320057344,
+            "WorkingSet64": 265580544
           }
         ],
-        "peakResidentMiB": 313.57421875,
+        "peakResidentMiB": 305.23046875,
         "heapPoint": {
-          "usedSize": 38378844,
-          "totalSize": 101675008,
-          "embedderHeapUsedSize": 2553168,
-          "backingStorageSize": 10636534
+          "usedSize": 48406140,
+          "totalSize": 100610048,
+          "embedderHeapUsedSize": 2471448,
+          "backingStorageSize": 11472597
         }
       }
     },
     "masterPasswordActualUiTransaction": {
-      "ms": 4386.7,
+      "ms": 3226.9,
       "value": {
         "newCredential": true,
         "oldPasswordRejected": true,
@@ -293,86 +295,88 @@
       "memory": {
         "windowsRendererProcesses": [
           {
-            "Id": 49020,
-            "PeakWorkingSet64": 35491840,
-            "WorkingSet64": 35180544
+            "Id": 18568,
+            "PeakWorkingSet64": 90390528,
+            "WorkingSet64": 89071616
           },
           {
-            "Id": 51692,
-            "PeakWorkingSet64": 89108480,
-            "WorkingSet64": 18546688
+            "Id": 31600,
+            "PeakWorkingSet64": 32821248,
+            "WorkingSet64": 32514048
           },
           {
-            "Id": 54364,
-            "PeakWorkingSet64": 328806400,
-            "WorkingSet64": 197070848
+            "Id": 32356,
+            "PeakWorkingSet64": 320057344,
+            "WorkingSet64": 273055744
           }
         ],
-        "peakResidentMiB": 313.57421875,
+        "peakResidentMiB": 305.23046875,
         "heapPoint": {
-          "usedSize": 30474468,
-          "totalSize": 87773184,
-          "embedderHeapUsedSize": 2860616,
-          "backingStorageSize": 5357604
+          "usedSize": 30064588,
+          "totalSize": 86986752,
+          "embedderHeapUsedSize": 2789808,
+          "backingStorageSize": 5358107
         }
       }
     }
   },
   "pageErrors": [],
   "aiRequests": 0,
+  "profilerDiagnostic": false,
   "coldBrowserProcessRestart": true,
   "timeChecks": [
     {
       "name": "protectedColdLoad",
-      "actualMs": 356.2999999988824,
+      "actualMs": 238.79999999981374,
       "limitMs": 10000,
       "status": "PASS"
     },
     {
       "name": "saveHeader",
-      "actualMs": 395.9,
+      "actualMs": 179.7,
       "limitMs": 10000,
       "status": "PASS"
     },
     {
       "name": "diskPage50",
-      "actualMs": 16.3,
+      "actualMs": 11,
       "limitMs": 1000,
       "status": "PASS"
     },
     {
       "name": "indexedExactSearch",
-      "actualMs": 14.9,
+      "actualMs": 6.9,
       "limitMs": 2000,
       "status": "PASS"
     },
     {
       "name": "portableImportActualCoordinator",
-      "actualMs": 2150.3,
+      "actualMs": 1119.6,
       "limitMs": 120000,
       "status": "PASS"
     },
     {
       "name": "fullExportActualCoordinator",
-      "actualMs": 1184.1,
+      "actualMs": 380.9,
       "limitMs": 120000,
       "status": "PASS"
     },
     {
       "name": "fullRestoreActualCoordinator",
-      "actualMs": 4332.4,
+      "actualMs": 3086.6,
       "limitMs": 120000,
       "status": "PASS"
     },
     {
       "name": "masterPasswordActualUiTransaction",
-      "actualMs": 4386.7,
+      "actualMs": 3226.9,
       "limitMs": 120000,
       "status": "PASS"
     }
   ],
-  "peakAppProcessResidentMiB": 313.57421875,
+  "peakAppProcessResidentMiB": 305.23046875,
   "memoryThresholdMiB": 768,
   "memoryGate": "PASS",
-  "timeGate": "PASS"
+  "timeGate": "PASS",
+  "assessmentVersion": "capacity-gates-v2-return-rekey"
 }

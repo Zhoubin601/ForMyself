@@ -1,0 +1,13 @@
+✔ P7 Web filesystem listing reads at most four stored bodies concurrently while preserving every metadata field and order (64.8317ms)
+✔ P7 failed Web listing settles its bounded batch, starts no later batch and never substitutes an empty list (16.0544ms)
+✔ P7 empty/missing folders and legacy slash-directory lookup keep the existing Web filesystem behavior (1.5714ms)
+✔ P7 filesystem patch is idempotent for installed ESM/CJS/browser bundles and refuses incompatible or partial sources (2.7228ms)
+✔ P7 malformed directory keys reject instead of being treated as an empty directory (1.1774ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 147.4752

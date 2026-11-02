@@ -1,7 +1,7 @@
 // @ts-check
 import { computed, readonly, ref, shallowRef } from 'vue'
 import { defineStore } from 'pinia'
-import { assertOrdinaryWriteAllowed } from '../../platform/storage/restoreState.js'
+import { assertOrdinaryWriteAllowed, restoreState } from '../../platform/storage/restoreState.js'
 import { createEmptyKanataData } from './domain/kanataCore.js'
 import { instantiateWorldPreset } from './domain/presetCore.js'
 import { isKanataInitializationAllowed } from './domain/initializationGate.js'
@@ -142,6 +142,14 @@ export function createKanataStore(repository, id = 'kanata', { userId = 'user-lo
             : validateKanataData(result.data)
           await archives.inspectAll(value.messageArchives ?? [])
           if (session !== revision) return false
+          // A valid interrupted save is already authorized ciphertext, not a new seed.
+          // Finish it only after the complete graph and archive metadata have passed.
+          // Full-backup recovery owns its own flush while its global barrier is raised.
+          if (repository.getState().hasPendingSave && !restoreState.blocked && !restoreState.busy) {
+            await repository.flush()
+            if (session !== revision) return false
+            if (repository.getState().hasPendingSave || repository.getState().saveError) throw failure('KANATA_PENDING_RECOVERY')
+          }
           password = nextPassword
           commitDraft(value)
           recoveredFromBackup.value = result.recovered

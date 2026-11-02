@@ -72,6 +72,10 @@ try{
 finally{
   if(baseline&&page){
     try{
+      // cold() can attach a new WebView before its unlock/UI wait throws. Use that
+      // current owner and recreate the QA facade, rather than the disconnected old page.
+      if(native)page=native.page
+      if(!await page.evaluate(()=>typeof window.__groupTest?.run==='function'))await attachGroupRuntime(page,asset)
       await groupRestore(page,baseline,PASSWORD)
       const after=await groupExport(page)
       const comparable=value=>{const data=JSON.parse(JSON.stringify(value));if(data.data.todos)delete data.data.todos.revision;delete data.createdAt;return JSON.stringify(data)}

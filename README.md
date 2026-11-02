@@ -1,5 +1,9 @@
 # ForMyself — 我的自留地
 
+最新远端检查点入口（2026-11-02）：[Kanata 云端交接 v2](docs/20261102-kanata-cloud-handoff-v2.md)。用户已明确要求提交推送本轮P7 WIP；P7仍No-Go，实际提交以Git历史为准。
+
+2026-11-02 当前续作：[P7规划器、字节转换与Web目录读取检查点](docs/20261102-kanata-p7-archive-planner-v1.md)。用户已要求继续开发；P7仍No-Go，旧云端交接不是暂停要求。自动化与生产实测按各自候选区分，未自动推送或发布。
+
 云端接续入口（2026-10-31）：[Kanata 云端交接](docs/20261031-kanata-cloud-handoff-v1.md)。P1–P6已有验收，P7仍No-Go；本次按用户明确要求推送未完成检查点，不能当成P7完成或安装包发布。
 
 个人生活记录应用：省钱计划、体重、心情、每日待办、日程、密码库、月度报告与 AI 陪伴。采用 Vue 3、Pinia、Vite 和 Capacitor，支持 Web 与 Android。本机保存业务数据；启用 AI 时，聊天和选中的生活上下文会发送给用户配置的服务商。
@@ -35,7 +39,7 @@ adb -s emulator-5554 install -r -t android/app/build/outputs/apk/androidTest/deb
 npm run test:e2e:android
 ```
 
-Android 需要 JDK 21、匹配的 SDK/build-tools。`postinstall` 对通知、生物凭据和 Preferences 插件应用可重复的原生修补；遇到不支持的依赖源码会明确失败，升级依赖时必须重新验证。不要将 `node_modules` 的手动修改当成可交付修复。
+Android 需要 JDK 21、匹配的 SDK/build-tools。`postinstall` 对通知、生物凭据和 Preferences 插件应用可重复的原生修补，并对 Filesystem 8.1.2 的 Web 目录列表应用有界读取补丁；遇到不支持的依赖源码/版本会明确失败，升级依赖时必须重新验证。不要将 `node_modules` 的手动修改当成可交付修复。
 
 JS/Java Todo 规则共用 `tests/fixtures/todo-contract.json`；Java 规则与真实通知/存储检查由 instrumentation 执行。P1–P6 的验收记录位于 `docs/20261026-architecture-stage-*-verification-v1.md`，Playwright 浏览器、实际 WebView 驱动及合成证据位于 `docs/qa/architecture-20261026/`；驱动不打入正式 APK，只能指向隔离测试资料。
 

@@ -1,0 +1,30 @@
+{
+  "syntheticOnly": true,
+  "at": "2026-11-02T05:39:26.290Z",
+  "requestsBlocked": 0,
+  "state": {
+    "view": "chat",
+    "hidden": false,
+    "authenticated": true,
+    "access": "ready",
+    "loaded": true,
+    "loadError": "",
+    "saveError": "KANATA_PENDING_RECOVERY",
+    "pending": true,
+    "worlds": 3,
+    "messages": 620,
+    "manager": false,
+    "setup": true,
+    "errors": [],
+    "headings": [
+      "彼方 · Kanata",
+      "彼方 · Kanata"
+    ]
+  },
+  "restored": {
+    "actualCoordinator": true,
+    "messages": 608,
+    "allModulesSettingsMetadata": true
+  },
+  "status": "PASS"
+}

@@ -5,6 +5,19 @@ import {encryptPassphraseAes,decryptPassphraseAes,encryptPassphraseAesAsync,decr
 import {sha256Text} from '../src/shared/crypto/sha256Text.js'
 const password='synthetic-streaming-password'
 
+test('P7 large binary conversion keeps every legacy ciphertext byte across many Base64 and Unicode boundaries',async()=>{
+  const salt=CryptoJS.enc.Hex.parse('ffeeddccbbaa9988'),original=CryptoJS.lib.WordArray.random
+  const plaintext='\ufeff'+Array.from({length:40000},(_,n)=>String.fromCodePoint(0x20+n%90,0x4e00+n%2000,0x1f300+n%500)).join('')
+  try{
+    CryptoJS.lib.WordArray.random=()=>salt.clone()
+    const legacy=CryptoJS.AES.encrypt(plaintext,password,{salt}).toString()
+    assert.equal(encryptPassphraseAes(plaintext,password),legacy)
+    assert.equal(await encryptPassphraseAesAsync(plaintext,password),legacy)
+    assert.equal(decryptPassphraseAes(legacy,password),plaintext)
+    assert.equal(await decryptPassphraseAesAsync(legacy,password),plaintext)
+  }finally{CryptoJS.lib.WordArray.random=original}
+})
+
 test('P7 platform AES backend keeps the exact old OpenSSL envelope for a fixed salt and bidirectional legacy compatibility',async()=>{
   const salt=CryptoJS.enc.Hex.parse('0011223344556677'),original=CryptoJS.lib.WordArray.random
   try{

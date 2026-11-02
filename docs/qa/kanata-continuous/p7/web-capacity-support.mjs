@@ -26,6 +26,19 @@ export async function connectCapacityWeb(count,build){
       const rows=JSON.parse(stdout),values=Array.isArray(rows)?rows:[rows]
       return{windowsRendererProcesses:values,peakResidentMiB:Math.max(...values.map(p=>p.PeakWorkingSet64))/1048576,heapPoint:await pageCdp.send('Runtime.getHeapUsage')}
     },
+    async startAllocationProfile(){
+      await pageCdp.send('HeapProfiler.startSampling',{samplingInterval:32768,includeObjectsCollectedByMajorGC:true,includeObjectsCollectedByMinorGC:true})
+    },
+    async stopAllocationProfile(){
+      const {profile}=await pageCdp.send('HeapProfiler.stopSampling'),totals=new Map()
+      const visit=node=>{
+        const {functionName,url,lineNumber,columnNumber}=node.callFrame,key=JSON.stringify({functionName,url,lineNumber,columnNumber})
+        totals.set(key,(totals.get(key)||0)+node.selfSize)
+        for(const child of node.children)visit(child)
+      }
+      visit(profile.head)
+      return [...totals].sort((a,b)=>b[1]-a[1]).slice(0,40).map(([key,bytes])=>({...JSON.parse(key),sampledAllocatedMiB:bytes/1048576}))
+    },
     async close(){await context.close()}
   }
 }

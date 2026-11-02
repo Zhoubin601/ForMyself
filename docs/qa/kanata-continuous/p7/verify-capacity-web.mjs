@@ -5,6 +5,7 @@ import {readFile,readdir,writeFile} from 'node:fs/promises'
 import {resolve} from 'node:path'
 import {initializeApp,unlockApp,PASSWORD} from '../p3/management-scenarios.mjs'
 const count=Number(process.argv[2]),root=process.cwd()
+const diagnostic=process.argv.includes('--allocation-diagnostic')
 if(![1000,10000,100000].includes(count))throw Error('SYNTHETIC_CAPACITY_SIZE_REQUIRED')
 const tag=process.argv[3]||'p7-archive-optimized',port=Number(process.argv[4]||4175)
 if(!/^p7-[a-z0-9-]+$/.test(tag)||!Number.isInteger(port)||port<4175||port>4190)throw Error('INVALID_LOCAL_CAPACITY_BUILD')
@@ -12,6 +13,7 @@ const frozen=resolve(root,'.kanata-web-dist.local/'+tag),marker=JSON.parse(await
 if(marker.syntheticOnly!==true||!marker.productionPreview)throw Error('UNMARKED_FROZEN_BUILD')
 const asset=(await readdir(resolve(frozen,'assets'))).find(name=>name.startsWith('fullBackupRuntime-')&&name.endsWith('.js'))
 const result={status:'RUNNING',at:new Date().toISOString(),count,syntheticOnly:true,kind:'production-chrome-actual-coordinator',forcedGC:false,build:marker,metrics:{},pageErrors:[],aiRequests:0}
+result.profilerDiagnostic=diagnostic
 const web=await connectCapacityWeb(count,marker)
 let page=web.page
 const observe=async()=>{
@@ -27,12 +29,14 @@ const memory=()=>web.memory()
 const measure=async(name,action)=>{
   result.activeOperation={name,at:new Date().toISOString()};await save()
   const start=performance.now();let timer
+  const profileThis=diagnostic&&name==='fullRestoreActualCoordinator'
+  if(profileThis)await web.startAllocationProfile()
   try{
     const task=action();task.catch(()=>{})
     const value=await Promise.race([task,new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error('CAPACITY_OPERATION_TIMEOUT:'+name)),180000)})])
     result.metrics[name]={ms:Math.round((performance.now()-start)*10)/10,value,memory:await memory()};delete result.activeOperation;console.log('MEASURED',count,name);await save();return value
   }catch(error){result.metrics[name]={status:'FAIL',ms:Math.round((performance.now()-start)*10)/10,error:error.message};await save();throw error}
-  finally{clearTimeout(timer)}
+  finally{clearTimeout(timer);if(profileThis){result.metrics[name].allocationProfile=await web.stopAllocationProfile();await save()}}
 }
 try{
   await page.goto('http://127.0.0.1:'+port);await initializeApp(page)
@@ -134,6 +138,7 @@ try{
   })
   if(result.pageErrors.length||result.aiRequests||result.rendererCrashed)throw Error('UNEXPECTED_PAGE_OR_MODEL_EVENT')
   assessCapacity(result,768)
+  if(diagnostic&&result.status==='PASS')result.status='MEASURED_DIAGNOSTIC_NOT_ACCEPTED'
   if(result.status!=='PASS')process.exitCode=1
 }catch(error){result.status='FAIL';result.error=error.message;process.exitCode=1;console.error(error)}
 finally{await save();await preserveCapacityEvidence(destination);await web.close()}

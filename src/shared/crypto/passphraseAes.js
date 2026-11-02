@@ -31,7 +31,7 @@ export function encryptPassphraseAes(plaintext,password){
     pending.concat(part)
     const complete=pending.sigBytes-pending.sigBytes%3,bytes=wordBytes(pending),tail=bytes.slice(complete)
     // 8190 is divisible by three: native Base64 needs no inter-chunk padding or giant character arrays.
-    for(let start=0;start<complete;start+=8190)chunks.push(btoa(String.fromCharCode(...bytes.subarray(start,Math.min(start+8190,complete)))))
+    for(let start=0;start<complete;start+=8190)chunks.push(btoa(String.fromCharCode.apply(null,bytes.subarray(start,Math.min(start+8190,complete)))))
     pending=CryptoJS.lib.WordArray.create(tail)
   }
   for(let start=0;start<plaintext.length;){
@@ -40,7 +40,7 @@ export function encryptPassphraseAes(plaintext,password){
     append(cipher.process(utf8Words(plaintext.slice(start,end))));start=end
   }
   append(cipher.finalize())
-  if(pending.sigBytes)chunks.push(btoa(String.fromCharCode(...wordBytes(pending))))
+  if(pending.sigBytes)chunks.push(btoa(String.fromCharCode.apply(null,wordBytes(pending))))
   return chunks.join('')
 }
 
@@ -74,7 +74,9 @@ export function decryptPassphraseAes(ciphertext,password){
 // asynchronously; no password/key/plaintext cache or business dependency is introduced.
 const encodeBytes=bytes=>{
   const parts=[]
-  for(let start=0;start<bytes.length;start+=8190)parts.push(btoa(String.fromCharCode(...bytes.subarray(start,start+8190))))
+  // apply reads the bounded typed-array indices directly; spread creates an iterator
+  // result per byte on WebView, multiplying allocation across thousands of pages.
+  for(let start=0;start<bytes.length;start+=8190)parts.push(btoa(String.fromCharCode.apply(null,bytes.subarray(start,start+8190))))
   return parts.join('')
 }
 /** Byte-compatible asynchronous backend; missing capability uses the existing implementation.
@@ -101,7 +103,8 @@ export async function decryptPassphraseAesAsync(ciphertext,password){
   if(!subtle)return decryptPassphraseAes(ciphertext,password)
   if(typeof ciphertext!=='string'||ciphertext.length<44||ciphertext.length%4||!/^[A-Za-z0-9+/]*={0,2}$/.test(ciphertext))throw invalid()
   try{
-    const binary=atob(ciphertext),wire=Uint8Array.from(binary,ch=>ch.charCodeAt(0))
+    const binary=atob(ciphertext),wire=new Uint8Array(binary.length)
+    for(let i=0;i<binary.length;++i)wire[i]=binary.charCodeAt(i)
     if(wire.length<=16||(wire.length-16)%16||wire[0]!==0x53||wire[1]!==0x61||wire[2]!==0x6c||wire[3]!==0x74||wire[4]!==0x65||wire[5]!==0x64||wire[6]!==0x5f||wire[7]!==0x5f)throw invalid()
     const derived=derive(password,CryptoJS.lib.WordArray.create(wire.subarray(8,16)))
     const key=await subtle.importKey('raw',wordBytes(derived.key),'AES-CBC',false,['decrypt'])

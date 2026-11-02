@@ -1,0 +1,28 @@
+{
+  "status": "DIAGNOSTIC_ONLY",
+  "syntheticOnly": true,
+  "mode": "baseline",
+  "baseline": "ddd3f10e2daf1c3675dbd05bac3425157d1a2ef4",
+  "sourceSha256": "3149b2009bff3508295cf96d21b25afbf4f0ca235e7b32c5f9caa0a1a36fb883",
+  "count": 100000,
+  "ms": 164.05440000000002,
+  "before": {
+    "rss": 96243712,
+    "heapTotal": 64671744,
+    "heapUsed": 45738576,
+    "external": 2230597,
+    "arrayBuffers": 24811
+  },
+  "after": {
+    "rss": 247644160,
+    "heapTotal": 231456768,
+    "heapUsed": 111375880,
+    "external": 2272704,
+    "arrayBuffers": 24811
+  },
+  "peakRssKiB": 241844,
+  "pages": 1996,
+  "archived": 99780,
+  "retained": 220,
+  "forcedGC": false
+}

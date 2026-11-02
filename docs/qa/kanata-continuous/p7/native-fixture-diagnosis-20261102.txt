@@ -1,0 +1,1 @@
+{"syntheticOnly":true,"at":"2026-11-02T05:38:29.873Z","requestsBlocked":0,"state":{"view":"chat","hidden":false,"authenticated":true,"access":"ready","loaded":true,"loadError":"","saveError":"KANATA_PENDING_RECOVERY","pending":true,"worlds":3,"messages":620,"manager":false,"setup":true,"errors":[],"headings":["彼方 · Kanata","彼方 · Kanata"]},"status":"PASS"}

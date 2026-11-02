@@ -1,0 +1,117 @@
+{
+  "status": "FAIL",
+  "at": "2026-11-02T05:30:54.870Z",
+  "kind": "native",
+  "syntheticOnly": true,
+  "controlledProvider": true,
+  "realModelRequests": 0,
+  "checks": {
+    "blank-world-zero-and-one-role-cannot-create-a-group": {
+      "status": "PASS",
+      "ms": 10865,
+      "value": {
+        "emptyAndOneRoleBlocked": true,
+        "independentInstances": 3,
+        "modelRequests": 0
+      }
+    },
+    "member-selection-validation-and-a-fresh-two-role-group": {
+      "status": "PASS",
+      "ms": 5223,
+      "value": {
+        "newConversation": "group-d8aae86f-877e-490e-9713-6e5693aabdab",
+        "roles": 2,
+        "onlyCurrentWorld": true,
+        "noHistoryOrGrants": true,
+        "literalTitle": true
+      }
+    },
+    "a-second-custom-group-has-its-own-identity-and-no-prior-history": {
+      "status": "PASS",
+      "ms": 5238,
+      "value": {
+        "differentGroupId": true,
+        "roles": 3,
+        "otherWorldsExact": true,
+        "modelRequests": 0
+      }
+    },
+    "three-actor-four-message-policy-and-validation": {
+      "status": "PASS",
+      "ms": 3927,
+      "value": {
+        "speakers": 3,
+        "messages": 4,
+        "noConfigModelCall": true
+      }
+    },
+    "third-provider-failure-keeps-two-actor-batches-and-original-source": {
+      "status": "PASS",
+      "ms": 13010,
+      "value": {
+        "completedAiRows": 3,
+        "providerAttempts": 3
+      }
+    },
+    "retry-fills-only-third-actor-and-preserves-every-paragraph": {
+      "status": "PASS",
+      "ms": 5260,
+      "value": {
+        "actors": 3,
+        "aiRows": 4,
+        "sourceRows": 1,
+        "paragraphsPreserved": true
+      }
+    },
+    "one-actor-one-message-policy-keeps-history-and-merges-new-full-reply": {
+      "status": "PASS",
+      "ms": 9013,
+      "value": {
+        "newAiRows": 1,
+        "previousAiRows": 4,
+        "bodyPreserved": true
+      }
+    },
+    "actual-full-coordinator-restores-scoped-policy-and-entire-conversation": {
+      "status": "PASS",
+      "ms": 6487,
+      "value": {
+        "actualCoordinator": true,
+        "policyPreserved": true,
+        "exactRows": 7
+      }
+    },
+    "activity-setting-persists-with-inline-error-and-no-model-request": {
+      "status": "PASS",
+      "ms": 3303,
+      "value": {
+        "enabled": true,
+        "waitMs": 30000,
+        "requests": 0
+      }
+    },
+    "busy-source-is-durable-before-charge-and-explicit-immediate-replies-once": {
+      "status": "PASS",
+      "ms": 8019,
+      "value": {
+        "durableBeforeRequest": true,
+        "noInventedBusyMessage": true,
+        "cancelledPending": true,
+        "userRows": 1,
+        "requests": 1
+      }
+    },
+    "cold-owner-loads-pending-activity-task-and-real-foreground-composition-completes-once": {
+      "status": "RUNNING"
+    }
+  },
+  "pageErrors": [],
+  "build": "27894fe1181fce3c713224c9a40d74297caeca23df96c704a239e4781dda6a8b",
+  "baselineArtifact": "directory-20261102-native-baseline-1793597463839.enc",
+  "error": "locator.waitFor: Timeout 180000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.kanata-manager') to be visible\u001b[22m\n",
+  "cleanup": {
+    "status": "FAIL",
+    "error": "page.evaluate: TypeError: Cannot read properties of undefined (reading 'run')\n    at eval (eval at evaluate (:311:30), <anonymous>:1:53)\n    at UtilityScript.evaluate (<anonymous>:313:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)"
+  },
+  "fixtureRequests": 6
+}

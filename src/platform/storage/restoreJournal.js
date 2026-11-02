@@ -8,10 +8,14 @@ const TEMP_PATH = 'formyself/restore-v1.tmp'
 const missing = e => /(?:not found|does not exist|不存在|ENOENT)/i.test(String(e?.message || e))
 const base64 = bytes => {
   let text = ''
-  for (let i = 0; i < bytes.length; i += 8192) text += String.fromCharCode(...bytes.subarray(i, i + 8192))
+  for (let i = 0; i < bytes.length; i += 8192) text += String.fromCharCode.apply(null, bytes.subarray(i, i + 8192))
   return btoa(text)
 }
-const bytes = value => Uint8Array.from(atob(value), ch => ch.charCodeAt(0))
+const bytes = value => {
+  const binary = atob(value), result = new Uint8Array(binary.length)
+  for (let i = 0; i < binary.length; ++i) result[i] = binary.charCodeAt(i)
+  return result
+}
 const derive = async (password, salt) => {
   if (!password) throw new Error('RESTORE_PASSWORD_REQUIRED')
   const material = await crypto.subtle.importKey('raw', new TextEncoder().encode(password), 'PBKDF2', false, ['deriveKey'])

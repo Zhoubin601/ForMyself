@@ -1159,3 +1159,8 @@ raw/完整需求清单.txt 4.1/4.4/8.3及最新连续执行v3驱动当前实现�
 ### 2026-10-31 用户转云端交接
 
 用户明确要求“推送远端，附上交接文档，我在云端开发”。本地业务实现到此停止，普通提交/推送P7 WIP并保留No-Go。最新数据/门禁和必要复现路径见docs/20261031-kanata-cloud-handoff-v1.md。最后发现两个QA差异并修复：改回凭据同为真实改密，148057.7ms必须按120s失败，不能沿用初版漏判PASS；冷启动跨日的额外心情记录为原模块合法autoFilled空占位，严格正反例与实际验证保留原记录并单列，不删除或当手工记录吞掉。565 Node/382组件完整check、8PASS/1SKIP原生、两端各13生产回归、基线及后台释放已执行；全部容量已结束。0真实模型，无真实Key/设备数据清理，无main变更或发布。
+# 2026-11-02 P7 接续来源
+
+读取 raw/完整需求清单.txt（原始资料保持只读），依 v3 阶段计划、五人规格、clean-start v2 和20261031云端交接继续。fetch Kanata后HEAD仍ddd3f10；没有云端新增提交。新切片来源为实际 messageArchiveCore.js 的规划分配及旧生产Web100k恢复峰值，不用猜测代替测量；过程见20261102-kanata-p7-archive-planner-v1.md。
+
+平台补丁来源：本地package-lock锁定的`@capacitor/filesystem@8.1.2`，`node_modules/@capacitor/filesystem/dist/esm/web.js`的readdir/getAllKeys+Promise.all及package.json（MIT、上游ionic-team/capacitor-filesystem）；读取日期2026-11-02。直接修补其Web批次调度，通过scripts/postinstall复现，未复制官方IP素材或改raw资料。未进行新的联网资料研究。累计分配profile只作采样诊断，不能视为RSS峰值；最新门禁以候选分别落盘的生产结果为准。

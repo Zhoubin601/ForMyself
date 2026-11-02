@@ -54,7 +54,7 @@ export function* restoreJsonChunks(value) {
 
 const base64 = bytes => {
   let value=''
-  for(let start=0;start<bytes.length;start+=8190)value+=btoa(String.fromCharCode(...bytes.subarray(start,start+8190)))
+  for(let start=0;start<bytes.length;start+=8190)value+=btoa(String.fromCharCode.apply(null,bytes.subarray(start,start+8190)))
   return value
 }
 const decodeBase64 = value => {

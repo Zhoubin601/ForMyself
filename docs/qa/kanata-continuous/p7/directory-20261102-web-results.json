@@ -1,0 +1,153 @@
+{
+  "status": "PASS",
+  "at": "2026-11-02T05:30:26.306Z",
+  "kind": "web",
+  "syntheticOnly": true,
+  "controlledProvider": true,
+  "realModelRequests": 0,
+  "checks": {
+    "blank-world-zero-and-one-role-cannot-create-a-group": {
+      "status": "PASS",
+      "ms": 213,
+      "value": {
+        "emptyAndOneRoleBlocked": true,
+        "independentInstances": 3,
+        "modelRequests": 0
+      }
+    },
+    "member-selection-validation-and-a-fresh-two-role-group": {
+      "status": "PASS",
+      "ms": 130,
+      "value": {
+        "newConversation": "group-c947234b-eee0-4a98-b6ad-c12d595d9428",
+        "roles": 2,
+        "onlyCurrentWorld": true,
+        "noHistoryOrGrants": true,
+        "literalTitle": true
+      }
+    },
+    "a-second-custom-group-has-its-own-identity-and-no-prior-history": {
+      "status": "PASS",
+      "ms": 121,
+      "value": {
+        "differentGroupId": true,
+        "roles": 3,
+        "otherWorldsExact": true,
+        "modelRequests": 0
+      }
+    },
+    "three-actor-four-message-policy-and-validation": {
+      "status": "PASS",
+      "ms": 91,
+      "value": {
+        "speakers": 3,
+        "messages": 4,
+        "noConfigModelCall": true
+      }
+    },
+    "third-provider-failure-keeps-two-actor-batches-and-original-source": {
+      "status": "PASS",
+      "ms": 815,
+      "value": {
+        "completedAiRows": 3,
+        "providerAttempts": 3
+      }
+    },
+    "retry-fills-only-third-actor-and-preserves-every-paragraph": {
+      "status": "PASS",
+      "ms": 91,
+      "value": {
+        "actors": 3,
+        "aiRows": 4,
+        "sourceRows": 1,
+        "paragraphsPreserved": true
+      }
+    },
+    "one-actor-one-message-policy-keeps-history-and-merges-new-full-reply": {
+      "status": "PASS",
+      "ms": 767,
+      "value": {
+        "newAiRows": 1,
+        "previousAiRows": 4,
+        "bodyPreserved": true
+      }
+    },
+    "actual-full-coordinator-restores-scoped-policy-and-entire-conversation": {
+      "status": "PASS",
+      "ms": 262,
+      "value": {
+        "actualCoordinator": true,
+        "policyPreserved": true,
+        "exactRows": 7
+      }
+    },
+    "activity-setting-persists-with-inline-error-and-no-model-request": {
+      "status": "PASS",
+      "ms": 141,
+      "value": {
+        "enabled": true,
+        "waitMs": 30000,
+        "requests": 0
+      }
+    },
+    "busy-source-is-durable-before-charge-and-explicit-immediate-replies-once": {
+      "status": "PASS",
+      "ms": 1034,
+      "value": {
+        "durableBeforeRequest": true,
+        "noInventedBusyMessage": true,
+        "cancelledPending": true,
+        "userRows": 1,
+        "requests": 1
+      }
+    },
+    "cold-owner-loads-pending-activity-task-and-real-foreground-composition-completes-once": {
+      "status": "PASS",
+      "ms": 31289,
+      "value": {
+        "loadedTask": true,
+        "savedConfig": true,
+        "actualForegroundLifecycle": true,
+        "userRows": 2,
+        "aiRows": 6,
+        "requests": 1
+      }
+    },
+    "external-full-restore-retains-activity-policy-but-pauses-the-waiting-send": {
+      "status": "PASS",
+      "ms": 1137,
+      "value": {
+        "actualCoordinator": true,
+        "pendingSendPaused": true,
+        "policyPreserved": true,
+        "noAdditionalRequest": true
+      }
+    },
+    "cold-storage-reload-keeps-policy-and-the-same-seven-rows": {
+      "status": "PASS",
+      "ms": 589,
+      "value": {
+        "rows": 7,
+        "policy": true,
+        "processRestart": false
+      }
+    }
+  },
+  "pageErrors": [],
+  "build": {
+    "resourceCount": 78,
+    "filesystemPatch": "67bd20293eb7cff96cfbdb0f6dd54634acc08a14d72b150fa6b11d8e1759e167",
+    "sourceHead": "ddd3f10e2daf1c3675dbd05bac3425157d1a2ef4",
+    "productionPreview": true,
+    "sourceCheck": "check-directory-20261102.txt",
+    "syntheticOnly": true,
+    "frozenAt": "2026-11-02T13:25:39.0223521+08:00"
+  },
+  "cleanup": {
+    "status": "PASS",
+    "actualCoordinator": true,
+    "chatRows": 0,
+    "otherModulesAndSettingsPreserved": true
+  },
+  "fixtureRequests": 7
+}

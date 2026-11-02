@@ -1,0 +1,664 @@
+{
+  "status": "FAIL_CAPACITY_GATE",
+  "at": "2026-11-02T04:59:30.714Z",
+  "count": 100000,
+  "syntheticOnly": true,
+  "kind": "production-chrome-actual-coordinator",
+  "forcedGC": false,
+  "build": {
+    "sourceCheck": "check-planner-20261102.txt",
+    "sourceHead": "ddd3f10e2daf1c3675dbd05bac3425157d1a2ef4",
+    "sourceSha256": "9155c2ed7da45352992ba15acb6463b5ee469e3aae471257f23258b368df32f2",
+    "syntheticOnly": true,
+    "resourceCount": 78,
+    "frozenAt": "2026-11-02T12:55:05.4611289+08:00",
+    "productionPreview": true
+  },
+  "metrics": {
+    "portableImportActualCoordinator": {
+      "ms": 27064.7,
+      "value": {
+        "active": 220,
+        "archived": 99780,
+        "saved": true
+      },
+      "memory": {
+        "windowsRendererProcesses": [
+          {
+            "Id": 4380,
+            "PeakWorkingSet64": 32858112,
+            "WorkingSet64": 32542720
+          },
+          {
+            "Id": 16700,
+            "PeakWorkingSet64": 704978944,
+            "WorkingSet64": 518725632
+          },
+          {
+            "Id": 30824,
+            "PeakWorkingSet64": 91705344,
+            "WorkingSet64": 90329088
+          }
+        ],
+        "peakResidentMiB": 672.3203125,
+        "heapPoint": {
+          "usedSize": 164110408,
+          "totalSize": 259887104,
+          "embedderHeapUsedSize": 2991864,
+          "backingStorageSize": 31238444
+        }
+      }
+    },
+    "coldPageReloadAndProtectedLoad": {
+      "ms": 1722.5,
+      "value": {
+        "loaded": true,
+        "protectedLoadMs": 809.1000000000931
+      },
+      "memory": {
+        "windowsRendererProcesses": [
+          {
+            "Id": 13372,
+            "PeakWorkingSet64": 503382016,
+            "WorkingSet64": 342360064
+          },
+          {
+            "Id": 14184,
+            "PeakWorkingSet64": 32702464,
+            "WorkingSet64": 32702464
+          },
+          {
+            "Id": 30396,
+            "PeakWorkingSet64": 89305088,
+            "WorkingSet64": 89305088
+          }
+        ],
+        "peakResidentMiB": 480.0625,
+        "heapPoint": {
+          "usedSize": 16605516,
+          "totalSize": 91353088,
+          "embedderHeapUsedSize": 4309600,
+          "backingStorageSize": 673006
+        }
+      }
+    },
+    "diskPage50": {
+      "ms": 10.9,
+      "value": {
+        "rows": 50,
+        "pages": 2,
+        "bytes": 88940
+      },
+      "memory": {
+        "windowsRendererProcesses": [
+          {
+            "Id": 13372,
+            "PeakWorkingSet64": 503382016,
+            "WorkingSet64": 344358912
+          },
+          {
+            "Id": 14184,
+            "PeakWorkingSet64": 32702464,
+            "WorkingSet64": 32702464
+          },
+          {
+            "Id": 30396,
+            "PeakWorkingSet64": 89305088,
+            "WorkingSet64": 89305088
+          }
+        ],
+        "peakResidentMiB": 480.0625,
+        "heapPoint": {
+          "usedSize": 28455396,
+          "totalSize": 92442624,
+          "embedderHeapUsedSize": 4324184,
+          "backingStorageSize": 1111497
+        }
+      }
+    },
+    "indexedExactSearch": {
+      "ms": 22.2,
+      "value": {
+        "matches": 1,
+        "pages": 3,
+        "bytes": 166276
+      },
+      "memory": {
+        "windowsRendererProcesses": [
+          {
+            "Id": 13372,
+            "PeakWorkingSet64": 503382016,
+            "WorkingSet64": 347045888
+          },
+          {
+            "Id": 14184,
+            "PeakWorkingSet64": 32702464,
+            "WorkingSet64": 32702464
+          },
+          {
+            "Id": 30396,
+            "PeakWorkingSet64": 89325568,
+            "WorkingSet64": 89325568
+          }
+        ],
+        "peakResidentMiB": 480.0625,
+        "heapPoint": {
+          "usedSize": 19883828,
+          "totalSize": 92237824,
+          "embedderHeapUsedSize": 4324184,
+          "backingStorageSize": 1737147
+        }
+      }
+    },
+    "saveHeader": {
+      "ms": 2232.8,
+      "value": {
+        "saved": true
+      },
+      "memory": {
+        "windowsRendererProcesses": [
+          {
+            "Id": 13372,
+            "PeakWorkingSet64": 637911040,
+            "WorkingSet64": 433483776
+          },
+          {
+            "Id": 14184,
+            "PeakWorkingSet64": 32718848,
+            "WorkingSet64": 32718848
+          },
+          {
+            "Id": 30396,
+            "PeakWorkingSet64": 89346048,
+            "WorkingSet64": 89346048
+          }
+        ],
+        "peakResidentMiB": 608.359375,
+        "heapPoint": {
+          "usedSize": 88388184,
+          "totalSize": 149127168,
+          "embedderHeapUsedSize": 2821016,
+          "backingStorageSize": 14305484
+        }
+      }
+    },
+    "fullExportActualCoordinator": {
+      "ms": 12133.3,
+      "value": {
+        "version": 13,
+        "messages": 100000,
+        "selfContained": true
+      },
+      "memory": {
+        "windowsRendererProcesses": [
+          {
+            "Id": 13372,
+            "PeakWorkingSet64": 637911040,
+            "WorkingSet64": 376631296
+          },
+          {
+            "Id": 14184,
+            "PeakWorkingSet64": 32780288,
+            "WorkingSet64": 32468992
+          },
+          {
+            "Id": 30396,
+            "PeakWorkingSet64": 89366528,
+            "WorkingSet64": 87969792
+          }
+        ],
+        "peakResidentMiB": 608.359375,
+        "heapPoint": {
+          "usedSize": 74198372,
+          "totalSize": 196919296,
+          "embedderHeapUsedSize": 2207624,
+          "backingStorageSize": 76168915
+        }
+      }
+    },
+    "fullRestoreActualCoordinator": {
+      "ms": 46071.5,
+      "value": {
+        "actualCoordinator": true,
+        "expectedCount": 100000
+      },
+      "memory": {
+        "windowsRendererProcesses": [
+          {
+            "Id": 13372,
+            "PeakWorkingSet64": 943525888,
+            "WorkingSet64": 639168512
+          },
+          {
+            "Id": 14184,
+            "PeakWorkingSet64": 32780288,
+            "WorkingSet64": 32477184
+          },
+          {
+            "Id": 30396,
+            "PeakWorkingSet64": 90947584,
+            "WorkingSet64": 82497536
+          }
+        ],
+        "peakResidentMiB": 899.81640625,
+        "heapPoint": {
+          "usedSize": 220640572,
+          "totalSize": 315604992,
+          "embedderHeapUsedSize": 3195192,
+          "backingStorageSize": 20913413
+        }
+      },
+      "allocationProfile": [
+        {
+          "functionName": "next",
+          "url": "",
+          "lineNumber": -1,
+          "columnNumber": -1,
+          "sampledAllocatedMiB": 5311.6126708984375
+        },
+        {
+          "functionName": "d",
+          "url": "http://127.0.0.1:4189/assets/sha256Text-BMmx_ktR.js",
+          "lineNumber": 1,
+          "columnNumber": 1420,
+          "sampledAllocatedMiB": 3879.443775177002
+        },
+        {
+          "functionName": "from",
+          "url": "",
+          "lineNumber": -1,
+          "columnNumber": -1,
+          "sampledAllocatedMiB": 2835.0663299560547
+        },
+        {
+          "functionName": "getOwnPropertyDescriptor",
+          "url": "",
+          "lineNumber": -1,
+          "columnNumber": -1,
+          "sampledAllocatedMiB": 1475.2775192260742
+        },
+        {
+          "functionName": "ve",
+          "url": "http://127.0.0.1:4189/assets/kanataStore-Bkyn_cCl.js",
+          "lineNumber": 0,
+          "columnNumber": 43694,
+          "sampledAllocatedMiB": 1375.7133827209473
+        },
+        {
+          "functionName": "_doProcessBlock",
+          "url": "http://127.0.0.1:4189/assets/crypto-js-CiVKIBfJ.js",
+          "lineNumber": 0,
+          "columnNumber": 14524,
+          "sampledAllocatedMiB": 1051.1379890441895
+        },
+        {
+          "functionName": "splice",
+          "url": "",
+          "lineNumber": -1,
+          "columnNumber": -1,
+          "sampledAllocatedMiB": 715.7898559570312
+        },
+        {
+          "functionName": "yt",
+          "url": "http://127.0.0.1:4189/assets/index-BIxH816_.js",
+          "lineNumber": 1,
+          "columnNumber": 2452,
+          "sampledAllocatedMiB": 658.4177894592285
+        },
+        {
+          "functionName": "o.onsuccess",
+          "url": "http://127.0.0.1:4189/assets/web-CmfLYa0s.js",
+          "lineNumber": 0,
+          "columnNumber": 2043,
+          "sampledAllocatedMiB": 436.45639419555664
+        },
+        {
+          "functionName": "u",
+          "url": "http://127.0.0.1:4189/assets/sha256Text-BMmx_ktR.js",
+          "lineNumber": 1,
+          "columnNumber": 943,
+          "sampledAllocatedMiB": 265.66130447387695
+        },
+        {
+          "functionName": "getOwnPropertyNames",
+          "url": "",
+          "lineNumber": -1,
+          "columnNumber": -1,
+          "sampledAllocatedMiB": 263.82031631469727
+        },
+        {
+          "functionName": "concat",
+          "url": "http://127.0.0.1:4189/assets/crypto-js-CiVKIBfJ.js",
+          "lineNumber": 0,
+          "columnNumber": 2679,
+          "sampledAllocatedMiB": 234.93345260620117
+        },
+        {
+          "functionName": "k",
+          "url": "http://127.0.0.1:4189/assets/kanataStore-Bkyn_cCl.js",
+          "lineNumber": 0,
+          "columnNumber": 13862,
+          "sampledAllocatedMiB": 204.92554092407227
+        },
+        {
+          "functionName": "",
+          "url": "http://127.0.0.1:4189/assets/web-CmfLYa0s.js",
+          "lineNumber": 0,
+          "columnNumber": 1948,
+          "sampledAllocatedMiB": 189.51156997680664
+        },
+        {
+          "functionName": "c",
+          "url": "http://127.0.0.1:4189/assets/kanataStore-Bkyn_cCl.js",
+          "lineNumber": 0,
+          "columnNumber": 42428,
+          "sampledAllocatedMiB": 171.6761589050293
+        },
+        {
+          "functionName": "join",
+          "url": "",
+          "lineNumber": -1,
+          "columnNumber": -1,
+          "sampledAllocatedMiB": 144.70227432250977
+        },
+        {
+          "functionName": "l",
+          "url": "http://127.0.0.1:4189/assets/kanataStore-Bkyn_cCl.js",
+          "lineNumber": 0,
+          "columnNumber": 46368,
+          "sampledAllocatedMiB": 141.42721939086914
+        },
+        {
+          "functionName": "i",
+          "url": "http://127.0.0.1:4189/assets/kanataStore-Bkyn_cCl.js",
+          "lineNumber": 0,
+          "columnNumber": 12365,
+          "sampledAllocatedMiB": 141.32725143432617
+        },
+        {
+          "functionName": "add",
+          "url": "",
+          "lineNumber": -1,
+          "columnNumber": -1,
+          "sampledAllocatedMiB": 138.37353515625
+        },
+        {
+          "functionName": "set",
+          "url": "",
+          "lineNumber": -1,
+          "columnNumber": -1,
+          "sampledAllocatedMiB": 118.25002670288086
+        },
+        {
+          "functionName": "d",
+          "url": "http://127.0.0.1:4189/assets/kanataStore-Bkyn_cCl.js",
+          "lineNumber": 0,
+          "columnNumber": 47316,
+          "sampledAllocatedMiB": 111.63945007324219
+        },
+        {
+          "functionName": "fromCharCode",
+          "url": "",
+          "lineNumber": -1,
+          "columnNumber": -1,
+          "sampledAllocatedMiB": 97.63543319702148
+        },
+        {
+          "functionName": "Ot",
+          "url": "http://127.0.0.1:4189/assets/index-BIxH816_.js",
+          "lineNumber": 1,
+          "columnNumber": 6007,
+          "sampledAllocatedMiB": 83.46772003173828
+        },
+        {
+          "functionName": "bt",
+          "url": "http://127.0.0.1:4189/assets/index-BIxH816_.js",
+          "lineNumber": 1,
+          "columnNumber": 3612,
+          "sampledAllocatedMiB": 62.62973403930664
+        },
+        {
+          "functionName": "",
+          "url": "http://127.0.0.1:4189/assets/kanataStore-Bkyn_cCl.js",
+          "lineNumber": 0,
+          "columnNumber": 28116,
+          "sampledAllocatedMiB": 51.49830627441406
+        },
+        {
+          "functionName": "",
+          "url": "http://127.0.0.1:4189/assets/kanataStore-Bkyn_cCl.js",
+          "lineNumber": 0,
+          "columnNumber": 878,
+          "sampledAllocatedMiB": 35.73600769042969
+        },
+        {
+          "functionName": "M",
+          "url": "http://127.0.0.1:4189/assets/kanataStore-Bkyn_cCl.js",
+          "lineNumber": 0,
+          "columnNumber": 17413,
+          "sampledAllocatedMiB": 34.355186462402344
+        },
+        {
+          "functionName": "",
+          "url": "http://127.0.0.1:4189/assets/kanataStore-Bkyn_cCl.js",
+          "lineNumber": 0,
+          "columnNumber": 22131,
+          "sampledAllocatedMiB": 33.73506164550781
+        },
+        {
+          "functionName": "slice",
+          "url": "",
+          "lineNumber": -1,
+          "columnNumber": -1,
+          "sampledAllocatedMiB": 33.485816955566406
+        },
+        {
+          "functionName": "toString",
+          "url": "",
+          "lineNumber": -1,
+          "columnNumber": -1,
+          "sampledAllocatedMiB": 32.85178756713867
+        },
+        {
+          "functionName": "padStart",
+          "url": "",
+          "lineNumber": -1,
+          "columnNumber": -1,
+          "sampledAllocatedMiB": 29.132110595703125
+        },
+        {
+          "functionName": "ie",
+          "url": "http://127.0.0.1:4189/assets/kanataStore-Bkyn_cCl.js",
+          "lineNumber": 0,
+          "columnNumber": 21363,
+          "sampledAllocatedMiB": 27.509273529052734
+        },
+        {
+          "functionName": "String",
+          "url": "",
+          "lineNumber": -1,
+          "columnNumber": -1,
+          "sampledAllocatedMiB": 27.383289337158203
+        },
+        {
+          "functionName": "j",
+          "url": "http://127.0.0.1:4189/assets/kanataStore-Bkyn_cCl.js",
+          "lineNumber": 0,
+          "columnNumber": 14587,
+          "sampledAllocatedMiB": 21.25619888305664
+        },
+        {
+          "functionName": "Ie",
+          "url": "http://127.0.0.1:4189/assets/kanataStore-Bkyn_cCl.js",
+          "lineNumber": 0,
+          "columnNumber": 51336,
+          "sampledAllocatedMiB": 19.355854034423828
+        },
+        {
+          "functionName": "values",
+          "url": "",
+          "lineNumber": -1,
+          "columnNumber": -1,
+          "sampledAllocatedMiB": 18.69861602783203
+        },
+        {
+          "functionName": "I",
+          "url": "http://127.0.0.1:4189/assets/kanataStore-Bkyn_cCl.js",
+          "lineNumber": 0,
+          "columnNumber": 19799,
+          "sampledAllocatedMiB": 17.38135528564453
+        },
+        {
+          "functionName": "map",
+          "url": "",
+          "lineNumber": -1,
+          "columnNumber": -1,
+          "sampledAllocatedMiB": 17.293434143066406
+        },
+        {
+          "functionName": "init",
+          "url": "http://127.0.0.1:4189/assets/crypto-js-CiVKIBfJ.js",
+          "lineNumber": 0,
+          "columnNumber": 2541,
+          "sampledAllocatedMiB": 16.011402130126953
+        },
+        {
+          "functionName": "extend",
+          "url": "http://127.0.0.1:4189/assets/crypto-js-CiVKIBfJ.js",
+          "lineNumber": 0,
+          "columnNumber": 2042,
+          "sampledAllocatedMiB": 14.701896667480469
+        }
+      ]
+    },
+    "restoredMessageProofExportVerification": {
+      "ms": 12689.2,
+      "value": {
+        "messages": 100000,
+        "exactOriginalMessageProofs": true,
+        "memories": 20,
+        "actualCoordinator": true,
+        "fixtureRegeneratedWithoutRetainedPlaintextCopy": true
+      },
+      "memory": {
+        "windowsRendererProcesses": [
+          {
+            "Id": 13372,
+            "PeakWorkingSet64": 943525888,
+            "WorkingSet64": 599388160
+          },
+          {
+            "Id": 14184,
+            "PeakWorkingSet64": 32780288,
+            "WorkingSet64": 32477184
+          },
+          {
+            "Id": 30396,
+            "PeakWorkingSet64": 90947584,
+            "WorkingSet64": 82497536
+          }
+        ],
+        "peakResidentMiB": 899.81640625,
+        "heapPoint": {
+          "usedSize": 189292628,
+          "totalSize": 262844416,
+          "embedderHeapUsedSize": 4651976,
+          "backingStorageSize": 79387108
+        }
+      }
+    },
+    "masterPasswordActualUiTransaction": {
+      "ms": 47578.8,
+      "value": {
+        "newCredential": true,
+        "oldPasswordRejected": true,
+        "pagedBodyPreserved": true
+      },
+      "memory": {
+        "windowsRendererProcesses": [
+          {
+            "Id": 13372,
+            "PeakWorkingSet64": 943525888,
+            "WorkingSet64": 424996864
+          },
+          {
+            "Id": 14184,
+            "PeakWorkingSet64": 32780288,
+            "WorkingSet64": 32477184
+          },
+          {
+            "Id": 30396,
+            "PeakWorkingSet64": 90947584,
+            "WorkingSet64": 82513920
+          }
+        ],
+        "peakResidentMiB": 899.81640625,
+        "heapPoint": {
+          "usedSize": 112994820,
+          "totalSize": 171032576,
+          "embedderHeapUsedSize": 5132432,
+          "backingStorageSize": 997434
+        }
+      }
+    }
+  },
+  "pageErrors": [],
+  "aiRequests": 0,
+  "profilerDiagnostic": true,
+  "coldBrowserProcessRestart": true,
+  "timeChecks": [
+    {
+      "name": "protectedColdLoad",
+      "actualMs": 809.1000000000931,
+      "limitMs": 30000,
+      "status": "PASS"
+    },
+    {
+      "name": "saveHeader",
+      "actualMs": 2232.8,
+      "limitMs": 30000,
+      "status": "PASS"
+    },
+    {
+      "name": "diskPage50",
+      "actualMs": 10.9,
+      "limitMs": 1000,
+      "status": "PASS"
+    },
+    {
+      "name": "indexedExactSearch",
+      "actualMs": 22.2,
+      "limitMs": 2000,
+      "status": "PASS"
+    },
+    {
+      "name": "portableImportActualCoordinator",
+      "actualMs": 27064.7,
+      "limitMs": 120000,
+      "status": "PASS"
+    },
+    {
+      "name": "fullExportActualCoordinator",
+      "actualMs": 12133.3,
+      "limitMs": 120000,
+      "status": "PASS"
+    },
+    {
+      "name": "fullRestoreActualCoordinator",
+      "actualMs": 46071.5,
+      "limitMs": 120000,
+      "status": "PASS"
+    },
+    {
+      "name": "masterPasswordActualUiTransaction",
+      "actualMs": 47578.8,
+      "limitMs": 120000,
+      "status": "PASS"
+    }
+  ],
+  "peakAppProcessResidentMiB": 899.81640625,
+  "memoryThresholdMiB": 768,
+  "memoryGate": "FAIL",
+  "timeGate": "PASS",
+  "assessmentVersion": "capacity-gates-v2-return-rekey"
+}

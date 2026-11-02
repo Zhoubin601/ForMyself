@@ -1,5 +1,13 @@
 # ForMyself 架构接口与 Agent 开发规范
 
+2026-11-02 P7 内部规划增量：`messageArchiveCore.planMessageArchive`改用索引并查集和定长链接/保留数组，减少每消息邻接数组与逐组件集合分配；同会话回复连通分量、外部来源（含未知扩展）、最近消息、50条页上限和确定性顺序保持。无接口/格式/加密或恢复门禁变更。验证以[本轮记录](docs/20261102-kanata-p7-archive-planner-v1.md)为准，不能据此认为P7容量通过。
+
+同轮字节转换增量：归档AES、恢复载荷和原GCM日志的Base64转换采用有界apply直接读取typed-array索引，解密采用定长byte数组逐索引复制，避免spread/from的逐字节迭代临时分配。参数上限仍8190/8192，原密码派生/盐/填充/UTF8/BOM/密文字节、摘要绑定、读回和补偿语义均保留；新增长正文固定盐旧CryptoJS双向互读回归。没有凭据缓存或协议迁移。
+
+同轮 Web 平台增量：`scripts/patch-capacitor-filesystem.mjs`由postinstall验证`@capacitor/filesystem@8.1.2`的ESM/CJS/browser源码并幂等修补readdir。原实现Promise.all读取目录所有包含完整密文content的IndexedDB条目；现最多4条一批allSettled，保留全部元数据/顺序/斜杠回退，失败先settle本批再拒绝，不启动后批或以空结果代替。未知版本/源码/残缺补丁拒绝，移除不再适用的上游sourceMappingURL注释，不删除map文件。没有变更DB/键/原生Java/文件或加密格式。`node --test tests/filesystemWebPatch.test.js`测试真实安装包Web类的行为；生产验收仍见本轮记录。
+
+同轮冷启动恢复修复：Store.load在原图/版本及归档metadata校验通过后，仅对仓库确实存在的pending加密工作完成flush，确认无待写/保存错误后再发布ready；不存在的仓库不因此创建种子或写入。失败保持旧主/恢复材料与未加载，可再次认证重试；blocked/busy的完整恢复期间跳过自动flush，由实际协调器按原流程处理。恢复后待回复任务仍由原前台运行时按源/时限/权限重查，不在load中调用AI。`KanataPendingRecovery.spec.js`覆盖真实仓库成功/失败重试/缺页/未来版本/恢复门禁/会话释放，无存储格式或接口变更。
+
 版本：v1.4（包含 Kanata P7 加密历史页、异步原生AES计算及经摘要绑定的日志回滚能力；阶段验收以证据为准）。基础架构日期：2026-10-27（北京时间）。基础源码基线：`995a37e41f1835f75025fb3ca24bd9b745a94311`，架构 P1–P6 完成版本；Kanata 增量以第15–21节和对应阶段验收记录为准。
 
 位置约定：用户指定本文件放在项目根目录，作为后续 Agent 的长期开发规范；其他正式交付物继续放 output。本文链接和示例路径均以根目录位置为准。
@@ -14,7 +22,7 @@
 2. 执行 `git status --short --branch`、`git rev-parse HEAD`、`git diff --stat`，识别已有修改、删除和未跟踪文件。保留其他工作；不得用 reset/clean/强制检出来获得干净工作区，也不自动恢复用户删除项。
 3. 明确当前授权范围、数据/格式/界面影响与验收方式。复杂任务在 docs 留下来源和计划；本地已有证据不等于本轮重新验证。
 4. 仅按任务需要读取 raw，遵守只读、来源与敏感资料规则。测试默认使用合成记录，不把真实凭据或私人备份写入夹具。
-5. 依赖准备使用 `npm ci`，版本以 package-lock 为准；postinstall 会应用受控原生补丁。不要绕过失败补丁继续交付，也不要在不需要时顺带升级依赖。
+5. 依赖准备使用 `npm ci`，版本以 package-lock 为准；postinstall 会应用受控原生及Web补丁。不要绕过失败补丁继续交付，也不要在不需要时顺带升级依赖。
 
 ## 2. 架构地图与依赖方向
 
@@ -315,7 +323,7 @@ void add
 - 禁止另建桌面组件私有业务数据源，或从 JS 直接整体覆盖 canonical Todo 键绕过原生 revision。
 - Todo 重复规则变化同步更新 [共享夹具](./tests/fixtures/todo-contract.json)，分别执行 JS 与 Java 实现。不能把双方相同错误产生的结果互相比对当成独立预期。
 - 首页/日程 widget 沿版本化展示快照；修改快照协议需兼容原生消费者并检查恢复门禁。
-- 持久化、通知与生物凭据依赖补丁由 scripts/patch-capacitor-*.mjs 与 postinstall 管理，必须幂等，不支持的源码明确失败；不要把 node_modules 的手改当成实现。
+- 持久化、通知、生物凭据与Filesystem Web有界目录读取的依赖补丁由 scripts/patch-capacitor-*.mjs 与 postinstall 管理，必须幂等，不支持的源码/版本明确失败；不要把 node_modules 的手改当成实现。
 - 当前 Android 配置见 [variables.gradle](./android/variables.gradle)：minSdk 24、compile/target 36；构建使用 JDK 21。设备与 WebView 能力不同，版本声明不能代替实际运行。
 
 ## 12. 验证命令与变更矩阵

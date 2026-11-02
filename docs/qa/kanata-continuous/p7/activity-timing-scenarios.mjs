@@ -42,13 +42,15 @@ export async function verifyActivityTiming(initialPage,groupScope,record,network
     const d=await appData(page);source=d.messages.filter(m=>m.conversationId===scope.conversationId&&m.role==='user').at(-1).id
     page=await reconnect();await openGroup(page,scope)
     const loaded=await appData(page),task=loaded.tasks.find(t=>t.deferredReply?.sourceMessageId===source)
+    const coldPersistence=await page.evaluate(()=>{const store=document.querySelector('#app').__vue_app__.config.globalProperties.$pinia._s.get('kanata');return{recoveredFromBackup:store.recoveredFromBackup,pending:store.hasPendingSave,saveError:store.saveError}})
+    assert(!coldPersistence.pending&&!coldPersistence.saveError,'COLD_PENDING_SAVE_NOT_SETTLED')
     assert(task?.deferredReply.activityDelay,'COLD_ACTIVITY_TASK_LOST')
     assert(loaded.conversations.find(c=>c.id===scope.conversationId).replyTiming.waitMs===30000,'COLD_ACTIVITY_CONFIG_LOST')
     // No clock rewrite, direct executor call or forced GC: wait for the actual composition tick.
     await page.waitForFunction(id=>document.querySelector('#app').__vue_app__.config.globalProperties.$pinia._s.get('kanata').snapshot.tasks.some(t=>t.deferredReply?.sourceMessageId===id&&t.state==='succeeded'),source,{timeout:70000})
     const after=await appData(page),rows=after.messages.filter(m=>m.conversationId===scope.conversationId)
     assert(network.requests===beforeRequests+2&&rows.filter(m=>m.role==='user').length===2&&rows.filter(m=>m.role==='assistant').length===6,'RESUME_DUPLICATED_SOURCE_OR_CALL')
-    return{loadedTask:true,savedConfig:true,actualForegroundLifecycle:true,userRows:2,aiRows:6,requests:1}
+    return{loadedTask:true,savedConfig:true,actualForegroundLifecycle:true,userRows:2,aiRows:6,requests:1,coldPersistence}
   })
   await record('external-full-restore-retains-activity-policy-but-pauses-the-waiting-send',async()=>{
     await send('第三条合成活动等待问题。')

@@ -87,39 +87,63 @@ export function planMessageArchive(data, { worldId, conversationId, keepRecent =
   const conversation = data.conversations.find(c => c.id === conversationId && c.worldId === worldId)
   check(conversation, 'KANATA_ARCHIVE_SCOPE_DENIED')
   const messages = data.messages.filter(m => m.worldId === worldId && m.conversationId === conversationId).sort(messageOrder)
-  const byId = new Map(messages.map(m => [m.id, m])), neighbours = new Map(messages.map(m => [m.id, []]))
-  for (const m of messages) if (m.replyToMessageId && byId.has(m.replyToMessageId)) {
-    neighbours.get(m.id).push(m.replyToMessageId); neighbours.get(m.replyToMessageId).push(m.id)
+  // A compact disjoint-set forest replaces one adjacency array per message. All links
+  // are local indices: no message bodies, credentials or reusable graph cache are kept.
+  const count = messages.length, byId = new Map()
+  const parent = new Uint32Array(count), sizes = new Uint32Array(count)
+  for (let i = 0; i < count; ++i) { byId.set(messages[i].id, i); parent[i] = i; sizes[i] = 1 }
+  const rootOf = index => {
+    while (parent[index] !== index) { parent[index] = parent[parent[index]]; index = parent[index] }
+    return index
   }
-  const retained = new Set(messages.slice(-keepRecent).map(m => m.id))
+  for (let i = 0; i < count; ++i) {
+    const reply = byId.get(messages[i].replyToMessageId)
+    if (reply === undefined) continue
+    let first = rootOf(i), second = rootOf(reply)
+    if (first === second) continue
+    if (sizes[first] < sizes[second]) [first, second] = [second, first]
+    parent[second] = first; sizes[first] += sizes[second]
+  }
+  const retained = new Uint8Array(count)
+  for (let i = Math.max(0, count - keepRecent); i < count; ++i) retained[rootOf(i)] = 1
   // Inspect all non-message entities: sourceRefs, audits, custom imported fields, etc.
   // Unknown exact references are conservatively protected too, rather than risking data loss.
   const visit = value => {
-    if (typeof value === 'string') { if (byId.has(value)) retained.add(value); return }
+    if (typeof value === 'string') {
+      const index = byId.get(value)
+      if (index !== undefined) retained[rootOf(index)] = 1
+      return
+    }
     if (value && typeof value === 'object') for (const child of Object.values(value)) visit(child)
   }
   for (const [key, value] of Object.entries(data)) if (key !== 'messages' && key !== 'messageArchives') visit(value)
-  const seen = new Set(), components = []
-  for (const message of messages) {
-    if (seen.has(message.id)) continue
-    const queue = [message.id], component = []
-    seen.add(message.id)
-    for (let i = 0; i < queue.length; ++i) {
-      const id = queue[i]; component.push(byId.get(id))
-      for (const next of neighbours.get(id)) if (!seen.has(next)) { seen.add(next); queue.push(next) }
-    }
-    component.sort(messageOrder)
-    if (component.length <= ARCHIVE_PAGE_SIZE && !component.some(m => retained.has(m.id))) components.push(component)
+  // Build each component's ordered linked list in one pass over the sorted rows.
+  // `count` is an out-of-range sentinel, so index zero is a valid component head.
+  const heads = new Uint32Array(count).fill(count), tails = new Uint32Array(count)
+  const next = new Uint32Array(count).fill(count)
+  for (let i = 0; i < count; ++i) {
+    const root = rootOf(i)
+    if (heads[root] === count) heads[root] = i
+    else next[tails[root]] = i
+    tails[root] = i
   }
-  const pages = []
+  const pages = [], archived = new Uint8Array(count)
+  let archivedCount = 0
   let current = []
-  for (const component of components) {
-    if (current.length + component.length > ARCHIVE_PAGE_SIZE) { pages.push(current.sort(messageOrder)); current = [] }
-    current.push(...component)
+  for (let i = 0; i < count; ++i) {
+    const root = rootOf(i)
+    // The head gives exactly the former earliest-message component traversal order.
+    if (heads[root] !== i || retained[root] || sizes[root] > ARCHIVE_PAGE_SIZE) continue
+    if (current.length + sizes[root] > ARCHIVE_PAGE_SIZE) { pages.push(current.sort(messageOrder)); current = [] }
+    for (let index = i; index !== count; index = next[index]) {
+      current.push(messages[index]); archived[index] = 1; ++archivedCount
+    }
   }
   if (current.length) pages.push(current.sort(messageOrder))
-  const archivedIds = new Set(pages.flatMap(rows => rows.map(m => m.id)))
-  return { pages, remaining: data.messages.filter(m => !archivedIds.has(m.id)), archivedCount: archivedIds.size }
+  return { pages, remaining: data.messages.filter(m => {
+    const index = byId.get(m.id)
+    return index === undefined || !archived[index]
+  }), archivedCount }
 }
 
 export function validateArchivePage(input, descriptor) {
