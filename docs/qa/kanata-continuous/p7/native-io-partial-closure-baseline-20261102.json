@@ -1,0 +1,2563 @@
+{
+  "status": "MEASURED_PARTIAL_DIAGNOSTIC_NOT_ACCEPTED",
+  "syntheticOnly": true,
+  "build": "04e427d7cce23ecdb2d69f732f3f3cb232507b6477aa5250ec1cd1365a58c220",
+  "at": "2026-11-02T07:24:10.528Z",
+  "partialFirstDirection": true,
+  "acceptanceEvidence": false,
+  "observations": [
+    {
+      "at": "2026-11-02T07:24:10.628Z",
+      "operation": "masterPasswordActualUiTransaction",
+      "io": {
+        "rows": {},
+        "active": 0,
+        "peakConcurrentCalls": 0
+      }
+    },
+    {
+      "at": "2026-11-02T07:24:15.664Z",
+      "operation": "masterPasswordActualUiTransaction",
+      "io": {
+        "rows": {
+          "writeFile:archive": {
+            "calls": 32,
+            "failed": 0,
+            "totalMs": 3991.9000000003725,
+            "maxMs": 261.80000000074506
+          },
+          "readFile:archive": {
+            "calls": 58,
+            "failed": 0,
+            "totalMs": 9663.900000002235,
+            "maxMs": 379.69999999925494
+          }
+        },
+        "active": 4,
+        "peakConcurrentCalls": 4
+      }
+    },
+    {
+      "at": "2026-11-02T07:24:20.774Z",
+      "operation": "masterPasswordActualUiTransaction",
+      "io": {
+        "rows": {
+          "writeFile:archive": {
+            "calls": 60,
+            "failed": 0,
+            "totalMs": 8572.39999999851,
+            "maxMs": 359.30000000074506
+          },
+          "readFile:archive": {
+            "calls": 120,
+            "failed": 0,
+            "totalMs": 19271.500000011176,
+            "maxMs": 442.7999999988824
+          }
+        },
+        "active": 3,
+        "peakConcurrentCalls": 4
+      }
+    },
+    {
+      "at": "2026-11-02T07:24:25.813Z",
+      "operation": "masterPasswordActualUiTransaction",
+      "io": {
+        "rows": {
+          "writeFile:archive": {
+            "calls": 88,
+            "failed": 0,
+            "totalMs": 12296.500000001863,
+            "maxMs": 359.30000000074506
+          },
+          "readFile:archive": {
+            "calls": 176,
+            "failed": 0,
+            "totalMs": 30256.70000001043,
+            "maxMs": 538.1999999992549
+          }
+        },
+        "active": 0,
+        "peakConcurrentCalls": 4
+      }
+    },
+    {
+      "at": "2026-11-02T07:24:30.876Z",
+      "operation": "masterPasswordActualUiTransaction",
+      "io": {
+        "rows": {
+          "writeFile:archive": {
+            "calls": 112,
+            "failed": 0,
+            "totalMs": 18195.900000002235,
+            "maxMs": 765.0999999996275
+          },
+          "readFile:archive": {
+            "calls": 220,
+            "failed": 0,
+            "totalMs": 39081.800000015646,
+            "maxMs": 538.1999999992549
+          }
+        },
+        "active": 3,
+        "peakConcurrentCalls": 4
+      }
+    },
+    {
+      "at": "2026-11-02T07:24:36.071Z",
+      "operation": "masterPasswordActualUiTransaction",
+      "io": {
+        "rows": {
+          "writeFile:archive": {
+            "calls": 134,
+            "failed": 0,
+            "totalMs": 22635.70000000298,
+            "maxMs": 765.0999999996275
+          },
+          "readFile:archive": {
+            "calls": 264,
+            "failed": 0,
+            "totalMs": 50075.30000001192,
+            "maxMs": 729.5
+          }
+        },
+        "active": 2,
+        "peakConcurrentCalls": 4
+      }
+    },
+    {
+      "at": "2026-11-02T07:24:41.147Z",
+      "operation": "masterPasswordActualUiTransaction",
+      "io": {
+        "rows": {
+          "writeFile:archive": {
+            "calls": 156,
+            "failed": 0,
+            "totalMs": 27681,
+            "maxMs": 765.0999999996275
+          },
+          "readFile:archive": {
+            "calls": 308,
+            "failed": 0,
+            "totalMs": 60940.70000001043,
+            "maxMs": 729.5
+          }
+        },
+        "active": 2,
+        "peakConcurrentCalls": 4
+      }
+    },
+    {
+      "at": "2026-11-02T07:24:46.269Z",
+      "operation": "masterPasswordActualUiTransaction",
+      "io": {
+        "rows": {
+          "writeFile:archive": {
+            "calls": 180,
+            "failed": 0,
+            "totalMs": 32358.90000000596,
+            "maxMs": 765.0999999996275
+          },
+          "readFile:archive": {
+            "calls": 354,
+            "failed": 0,
+            "totalMs": 71397.30000000447,
+            "maxMs": 729.5
+          }
+        },
+        "active": 4,
+        "peakConcurrentCalls": 4
+      }
+    },
+    {
+      "at": "2026-11-02T07:24:51.298Z",
+      "operation": "masterPasswordActualUiTransaction",
+      "io": {
+        "rows": {
+          "writeFile:archive": {
+            "calls": 204,
+            "failed": 0,
+            "totalMs": 36460.80000000261,
+            "maxMs": 765.0999999996275
+          },
+          "readFile:archive": {
+            "calls": 408,
+            "failed": 0,
+            "totalMs": 81792.09999999776,
+            "maxMs": 729.5
+          }
+        },
+        "active": 4,
+        "peakConcurrentCalls": 4
+      }
+    },
+    {
+      "at": "2026-11-02T07:24:56.452Z",
+      "operation": "masterPasswordActualUiTransaction",
+      "io": {
+        "rows": {
+          "writeFile:archive": {
+            "calls": 232,
+            "failed": 0,
+            "totalMs": 39988.80000000447,
+            "maxMs": 765.0999999996275
+          },
+          "readFile:archive": {
+            "calls": 464,
+            "failed": 0,
+            "totalMs": 94173.99999999255,
+            "maxMs": 834.0999999996275
+          }
+        },
+        "active": 4,
+        "peakConcurrentCalls": 4
+      }
+    },
+    {
+      "at": "2026-11-02T07:25:01.491Z",
+      "operation": "masterPasswordActualUiTransaction",
+      "io": {
+        "rows": {
+          "writeFile:archive": {
+            "calls": 256,
+            "failed": 0,
+            "totalMs": 44000.10000000149,
+            "maxMs": 765.0999999996275
+          },
+          "readFile:archive": {
+            "calls": 512,
+            "failed": 0,
+            "totalMs": 105375.29999998212,
+            "maxMs": 834.0999999996275
+          }
+        },
+        "active": 4,
+        "peakConcurrentCalls": 4
+      }
+    },
+    {
+      "at": "2026-11-02T07:25:06.554Z",
+      "operation": "masterPasswordActualUiTransaction",
+      "io": {
+        "rows": {
+          "writeFile:archive": {
+            "calls": 280,
+            "failed": 0,
+            "totalMs": 47507.10000000149,
+            "maxMs": 765.0999999996275
+          },
+          "readFile:archive": {
+            "calls": 555,
+            "failed": 0,
+            "totalMs": 116941.29999998026,
+            "maxMs": 834.0999999996275
+          }
+        },
+        "active": 4,
+        "peakConcurrentCalls": 4
+      }
+    },
+    {
+      "at": "2026-11-02T07:25:11.644Z",
+      "operation": "masterPasswordActualUiTransaction",
+      "io": {
+        "rows": {
+          "writeFile:archive": {
+            "calls": 300,
+            "failed": 0,
+            "totalMs": 51690.40000000596,
+            "maxMs": 765.0999999996275
+          },
+          "readFile:archive": {
+            "calls": 596,
+            "failed": 0,
+            "totalMs": 125290.59999996983,
+            "maxMs": 894
+          }
+        },
+        "active": 0,
+        "peakConcurrentCalls": 4
+      }
+    },
+    {
+      "at": "2026-11-02T07:25:25.207Z",
+      "operation": "masterPasswordActualUiTransaction",
+      "io": {
+        "rows": {
+          "writeFile:archive": {
+            "calls": 300,
+            "failed": 0,
+            "totalMs": 51690.40000000596,
+            "maxMs": 765.0999999996275
+          },
+          "readFile:archive": {
+            "calls": 596,
+            "failed": 0,
+            "totalMs": 125290.59999996983,
+            "maxMs": 894
+          },
+          "mkdir:other": {
+            "calls": 1,
+            "failed": 1,
+            "totalMs": 263,
+            "maxMs": 263
+          },
+          "writeFile:other": {
+            "calls": 1,
+            "failed": 0,
+            "totalMs": 0,
+            "maxMs": 0
+          }
+        },
+        "active": 1,
+        "peakConcurrentCalls": 4
+      }
+    },
+    {
+      "at": "2026-11-02T07:25:30.277Z",
+      "operation": "masterPasswordActualUiTransaction",
+      "io": {
+        "rows": {
+          "writeFile:archive": {
+            "calls": 300,
+            "failed": 0,
+            "totalMs": 51690.40000000596,
+            "maxMs": 765.0999999996275
+          },
+          "readFile:archive": {
+            "calls": 596,
+            "failed": 0,
+            "totalMs": 125290.59999996983,
+            "maxMs": 894
+          },
+          "mkdir:other": {
+            "calls": 1,
+            "failed": 1,
+            "totalMs": 263,
+            "maxMs": 263
+          },
+          "writeFile:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 1724.4000000003725,
+            "maxMs": 1724.4000000003725
+          },
+          "readFile:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 4961.5,
+            "maxMs": 2543.5999999996275
+          },
+          "stat:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 221.59999999776483,
+            "maxMs": 112.69999999925494
+          },
+          "deleteFile:other": {
+            "calls": 1,
+            "failed": 0,
+            "totalMs": 114.5,
+            "maxMs": 114.5
+          },
+          "rename:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 376.40000000037253,
+            "maxMs": 195.80000000074506
+          }
+        },
+        "active": 1,
+        "peakConcurrentCalls": 4
+      }
+    },
+    {
+      "at": "2026-11-02T07:25:39.356Z",
+      "operation": "masterPasswordActualUiTransaction",
+      "io": {
+        "rows": {
+          "writeFile:archive": {
+            "calls": 300,
+            "failed": 0,
+            "totalMs": 51690.40000000596,
+            "maxMs": 765.0999999996275
+          },
+          "readFile:archive": {
+            "calls": 596,
+            "failed": 0,
+            "totalMs": 125290.59999996983,
+            "maxMs": 894
+          },
+          "mkdir:other": {
+            "calls": 1,
+            "failed": 1,
+            "totalMs": 263,
+            "maxMs": 263
+          },
+          "writeFile:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 3331.199999999255,
+            "maxMs": 1724.4000000003725
+          },
+          "readFile:other": {
+            "calls": 3,
+            "failed": 0,
+            "totalMs": 7000.800000000745,
+            "maxMs": 2543.5999999996275
+          },
+          "stat:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 221.59999999776483,
+            "maxMs": 112.69999999925494
+          },
+          "deleteFile:other": {
+            "calls": 1,
+            "failed": 0,
+            "totalMs": 114.5,
+            "maxMs": 114.5
+          },
+          "rename:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 376.40000000037253,
+            "maxMs": 195.80000000074506
+          },
+          "deleteFile:archive": {
+            "calls": 48,
+            "failed": 0,
+            "totalMs": 7970.800000000745,
+            "maxMs": 553
+          }
+        },
+        "active": 3,
+        "peakConcurrentCalls": 4
+      }
+    },
+    {
+      "at": "2026-11-02T07:25:44.460Z",
+      "operation": "masterPasswordActualUiTransaction",
+      "io": {
+        "rows": {
+          "writeFile:archive": {
+            "calls": 300,
+            "failed": 0,
+            "totalMs": 51690.40000000596,
+            "maxMs": 765.0999999996275
+          },
+          "readFile:archive": {
+            "calls": 596,
+            "failed": 0,
+            "totalMs": 125290.59999996983,
+            "maxMs": 894
+          },
+          "mkdir:other": {
+            "calls": 1,
+            "failed": 1,
+            "totalMs": 263,
+            "maxMs": 263
+          },
+          "writeFile:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 3331.199999999255,
+            "maxMs": 1724.4000000003725
+          },
+          "readFile:other": {
+            "calls": 3,
+            "failed": 0,
+            "totalMs": 7000.800000000745,
+            "maxMs": 2543.5999999996275
+          },
+          "stat:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 221.59999999776483,
+            "maxMs": 112.69999999925494
+          },
+          "deleteFile:other": {
+            "calls": 1,
+            "failed": 0,
+            "totalMs": 114.5,
+            "maxMs": 114.5
+          },
+          "rename:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 376.40000000037253,
+            "maxMs": 195.80000000074506
+          },
+          "deleteFile:archive": {
+            "calls": 192,
+            "failed": 0,
+            "totalMs": 29022.69999998994,
+            "maxMs": 654.8000000007451
+          }
+        },
+        "active": 4,
+        "peakConcurrentCalls": 4
+      }
+    },
+    {
+      "at": "2026-11-02T07:25:49.516Z",
+      "operation": "masterPasswordActualUiTransaction",
+      "io": {
+        "rows": {
+          "writeFile:archive": {
+            "calls": 300,
+            "failed": 0,
+            "totalMs": 51690.40000000596,
+            "maxMs": 765.0999999996275
+          },
+          "readFile:archive": {
+            "calls": 596,
+            "failed": 0,
+            "totalMs": 125290.59999996983,
+            "maxMs": 894
+          },
+          "mkdir:other": {
+            "calls": 1,
+            "failed": 1,
+            "totalMs": 263,
+            "maxMs": 263
+          },
+          "writeFile:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 3331.199999999255,
+            "maxMs": 1724.4000000003725
+          },
+          "readFile:other": {
+            "calls": 3,
+            "failed": 0,
+            "totalMs": 7000.800000000745,
+            "maxMs": 2543.5999999996275
+          },
+          "stat:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 221.59999999776483,
+            "maxMs": 112.69999999925494
+          },
+          "deleteFile:other": {
+            "calls": 1,
+            "failed": 0,
+            "totalMs": 114.5,
+            "maxMs": 114.5
+          },
+          "rename:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 376.40000000037253,
+            "maxMs": 195.80000000074506
+          },
+          "deleteFile:archive": {
+            "calls": 316,
+            "failed": 0,
+            "totalMs": 48309.99999997206,
+            "maxMs": 654.8000000007451
+          }
+        },
+        "active": 4,
+        "peakConcurrentCalls": 4
+      }
+    },
+    {
+      "at": "2026-11-02T07:25:54.579Z",
+      "operation": "masterPasswordActualUiTransaction",
+      "io": {
+        "rows": {
+          "writeFile:archive": {
+            "calls": 300,
+            "failed": 0,
+            "totalMs": 51690.40000000596,
+            "maxMs": 765.0999999996275
+          },
+          "readFile:archive": {
+            "calls": 596,
+            "failed": 0,
+            "totalMs": 125290.59999996983,
+            "maxMs": 894
+          },
+          "mkdir:other": {
+            "calls": 1,
+            "failed": 1,
+            "totalMs": 263,
+            "maxMs": 263
+          },
+          "writeFile:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 3331.199999999255,
+            "maxMs": 1724.4000000003725
+          },
+          "readFile:other": {
+            "calls": 3,
+            "failed": 0,
+            "totalMs": 7000.800000000745,
+            "maxMs": 2543.5999999996275
+          },
+          "stat:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 221.59999999776483,
+            "maxMs": 112.69999999925494
+          },
+          "deleteFile:other": {
+            "calls": 1,
+            "failed": 0,
+            "totalMs": 114.5,
+            "maxMs": 114.5
+          },
+          "rename:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 376.40000000037253,
+            "maxMs": 195.80000000074506
+          },
+          "deleteFile:archive": {
+            "calls": 464,
+            "failed": 0,
+            "totalMs": 66769.89999996126,
+            "maxMs": 654.8000000007451
+          }
+        },
+        "active": 4,
+        "peakConcurrentCalls": 4
+      }
+    },
+    {
+      "at": "2026-11-02T07:25:59.628Z",
+      "operation": "masterPasswordActualUiTransaction",
+      "io": {
+        "rows": {
+          "writeFile:archive": {
+            "calls": 300,
+            "failed": 0,
+            "totalMs": 51690.40000000596,
+            "maxMs": 765.0999999996275
+          },
+          "readFile:archive": {
+            "calls": 596,
+            "failed": 0,
+            "totalMs": 125290.59999996983,
+            "maxMs": 894
+          },
+          "mkdir:other": {
+            "calls": 1,
+            "failed": 1,
+            "totalMs": 263,
+            "maxMs": 263
+          },
+          "writeFile:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 3331.199999999255,
+            "maxMs": 1724.4000000003725
+          },
+          "readFile:other": {
+            "calls": 3,
+            "failed": 0,
+            "totalMs": 7000.800000000745,
+            "maxMs": 2543.5999999996275
+          },
+          "stat:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 221.59999999776483,
+            "maxMs": 112.69999999925494
+          },
+          "deleteFile:other": {
+            "calls": 1,
+            "failed": 0,
+            "totalMs": 114.5,
+            "maxMs": 114.5
+          },
+          "rename:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 376.40000000037253,
+            "maxMs": 195.80000000074506
+          },
+          "deleteFile:archive": {
+            "calls": 596,
+            "failed": 0,
+            "totalMs": 85539.79999996349,
+            "maxMs": 654.8000000007451
+          }
+        },
+        "active": 4,
+        "peakConcurrentCalls": 4
+      }
+    },
+    {
+      "at": "2026-11-02T07:26:04.683Z",
+      "operation": "masterPasswordActualUiTransaction",
+      "io": {
+        "rows": {
+          "writeFile:archive": {
+            "calls": 300,
+            "failed": 0,
+            "totalMs": 51690.40000000596,
+            "maxMs": 765.0999999996275
+          },
+          "readFile:archive": {
+            "calls": 596,
+            "failed": 0,
+            "totalMs": 125290.59999996983,
+            "maxMs": 894
+          },
+          "mkdir:other": {
+            "calls": 1,
+            "failed": 1,
+            "totalMs": 263,
+            "maxMs": 263
+          },
+          "writeFile:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 3331.199999999255,
+            "maxMs": 1724.4000000003725
+          },
+          "readFile:other": {
+            "calls": 3,
+            "failed": 0,
+            "totalMs": 7000.800000000745,
+            "maxMs": 2543.5999999996275
+          },
+          "stat:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 221.59999999776483,
+            "maxMs": 112.69999999925494
+          },
+          "deleteFile:other": {
+            "calls": 1,
+            "failed": 0,
+            "totalMs": 114.5,
+            "maxMs": 114.5
+          },
+          "rename:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 376.40000000037253,
+            "maxMs": 195.80000000074506
+          },
+          "deleteFile:archive": {
+            "calls": 708,
+            "failed": 0,
+            "totalMs": 104549.59999995865,
+            "maxMs": 654.8000000007451
+          }
+        },
+        "active": 3,
+        "peakConcurrentCalls": 4
+      }
+    },
+    {
+      "at": "2026-11-02T07:26:09.746Z",
+      "operation": "masterPasswordActualUiTransaction",
+      "io": {
+        "rows": {
+          "writeFile:archive": {
+            "calls": 300,
+            "failed": 0,
+            "totalMs": 51690.40000000596,
+            "maxMs": 765.0999999996275
+          },
+          "readFile:archive": {
+            "calls": 596,
+            "failed": 0,
+            "totalMs": 125290.59999996983,
+            "maxMs": 894
+          },
+          "mkdir:other": {
+            "calls": 1,
+            "failed": 1,
+            "totalMs": 263,
+            "maxMs": 263
+          },
+          "writeFile:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 3331.199999999255,
+            "maxMs": 1724.4000000003725
+          },
+          "readFile:other": {
+            "calls": 3,
+            "failed": 0,
+            "totalMs": 7000.800000000745,
+            "maxMs": 2543.5999999996275
+          },
+          "stat:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 221.59999999776483,
+            "maxMs": 112.69999999925494
+          },
+          "deleteFile:other": {
+            "calls": 1,
+            "failed": 0,
+            "totalMs": 114.5,
+            "maxMs": 114.5
+          },
+          "rename:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 376.40000000037253,
+            "maxMs": 195.80000000074506
+          },
+          "deleteFile:archive": {
+            "calls": 848,
+            "failed": 0,
+            "totalMs": 123468.59999994747,
+            "maxMs": 654.8000000007451
+          }
+        },
+        "active": 4,
+        "peakConcurrentCalls": 4
+      }
+    },
+    {
+      "at": "2026-11-02T07:26:14.835Z",
+      "operation": "masterPasswordActualUiTransaction",
+      "io": {
+        "rows": {
+          "writeFile:archive": {
+            "calls": 300,
+            "failed": 0,
+            "totalMs": 51690.40000000596,
+            "maxMs": 765.0999999996275
+          },
+          "readFile:archive": {
+            "calls": 596,
+            "failed": 0,
+            "totalMs": 125290.59999996983,
+            "maxMs": 894
+          },
+          "mkdir:other": {
+            "calls": 1,
+            "failed": 1,
+            "totalMs": 263,
+            "maxMs": 263
+          },
+          "writeFile:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 3331.199999999255,
+            "maxMs": 1724.4000000003725
+          },
+          "readFile:other": {
+            "calls": 3,
+            "failed": 0,
+            "totalMs": 7000.800000000745,
+            "maxMs": 2543.5999999996275
+          },
+          "stat:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 221.59999999776483,
+            "maxMs": 112.69999999925494
+          },
+          "deleteFile:other": {
+            "calls": 1,
+            "failed": 0,
+            "totalMs": 114.5,
+            "maxMs": 114.5
+          },
+          "rename:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 376.40000000037253,
+            "maxMs": 195.80000000074506
+          },
+          "deleteFile:archive": {
+            "calls": 980,
+            "failed": 0,
+            "totalMs": 142475.09999994934,
+            "maxMs": 654.8000000007451
+          }
+        },
+        "active": 4,
+        "peakConcurrentCalls": 4
+      }
+    },
+    {
+      "at": "2026-11-02T07:26:19.892Z",
+      "operation": "masterPasswordActualUiTransaction",
+      "io": {
+        "rows": {
+          "writeFile:archive": {
+            "calls": 300,
+            "failed": 0,
+            "totalMs": 51690.40000000596,
+            "maxMs": 765.0999999996275
+          },
+          "readFile:archive": {
+            "calls": 596,
+            "failed": 0,
+            "totalMs": 125290.59999996983,
+            "maxMs": 894
+          },
+          "mkdir:other": {
+            "calls": 1,
+            "failed": 1,
+            "totalMs": 263,
+            "maxMs": 263
+          },
+          "writeFile:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 3331.199999999255,
+            "maxMs": 1724.4000000003725
+          },
+          "readFile:other": {
+            "calls": 3,
+            "failed": 0,
+            "totalMs": 7000.800000000745,
+            "maxMs": 2543.5999999996275
+          },
+          "stat:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 221.59999999776483,
+            "maxMs": 112.69999999925494
+          },
+          "deleteFile:other": {
+            "calls": 1,
+            "failed": 0,
+            "totalMs": 114.5,
+            "maxMs": 114.5
+          },
+          "rename:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 376.40000000037253,
+            "maxMs": 195.80000000074506
+          },
+          "deleteFile:archive": {
+            "calls": 1104,
+            "failed": 0,
+            "totalMs": 160648.19999994896,
+            "maxMs": 654.8000000007451
+          }
+        },
+        "active": 3,
+        "peakConcurrentCalls": 4
+      }
+    },
+    {
+      "at": "2026-11-02T07:26:25.017Z",
+      "operation": "masterPasswordActualUiTransaction",
+      "io": {
+        "rows": {
+          "writeFile:archive": {
+            "calls": 300,
+            "failed": 0,
+            "totalMs": 51690.40000000596,
+            "maxMs": 765.0999999996275
+          },
+          "readFile:archive": {
+            "calls": 596,
+            "failed": 0,
+            "totalMs": 125290.59999996983,
+            "maxMs": 894
+          },
+          "mkdir:other": {
+            "calls": 1,
+            "failed": 1,
+            "totalMs": 263,
+            "maxMs": 263
+          },
+          "writeFile:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 3331.199999999255,
+            "maxMs": 1724.4000000003725
+          },
+          "readFile:other": {
+            "calls": 3,
+            "failed": 0,
+            "totalMs": 7000.800000000745,
+            "maxMs": 2543.5999999996275
+          },
+          "stat:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 221.59999999776483,
+            "maxMs": 112.69999999925494
+          },
+          "deleteFile:other": {
+            "calls": 1,
+            "failed": 0,
+            "totalMs": 114.5,
+            "maxMs": 114.5
+          },
+          "rename:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 376.40000000037253,
+            "maxMs": 195.80000000074506
+          },
+          "deleteFile:archive": {
+            "calls": 1216,
+            "failed": 0,
+            "totalMs": 179596.19999996945,
+            "maxMs": 654.8000000007451
+          }
+        },
+        "active": 4,
+        "peakConcurrentCalls": 4
+      }
+    },
+    {
+      "at": "2026-11-02T07:26:30.106Z",
+      "operation": "masterPasswordActualUiTransaction",
+      "io": {
+        "rows": {
+          "writeFile:archive": {
+            "calls": 300,
+            "failed": 0,
+            "totalMs": 51690.40000000596,
+            "maxMs": 765.0999999996275
+          },
+          "readFile:archive": {
+            "calls": 596,
+            "failed": 0,
+            "totalMs": 125290.59999996983,
+            "maxMs": 894
+          },
+          "mkdir:other": {
+            "calls": 1,
+            "failed": 1,
+            "totalMs": 263,
+            "maxMs": 263
+          },
+          "writeFile:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 3331.199999999255,
+            "maxMs": 1724.4000000003725
+          },
+          "readFile:other": {
+            "calls": 3,
+            "failed": 0,
+            "totalMs": 7000.800000000745,
+            "maxMs": 2543.5999999996275
+          },
+          "stat:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 221.59999999776483,
+            "maxMs": 112.69999999925494
+          },
+          "deleteFile:other": {
+            "calls": 1,
+            "failed": 0,
+            "totalMs": 114.5,
+            "maxMs": 114.5
+          },
+          "rename:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 376.40000000037253,
+            "maxMs": 195.80000000074506
+          },
+          "deleteFile:archive": {
+            "calls": 1336,
+            "failed": 0,
+            "totalMs": 199480.59999997914,
+            "maxMs": 654.8000000007451
+          }
+        },
+        "active": 4,
+        "peakConcurrentCalls": 4
+      }
+    },
+    {
+      "at": "2026-11-02T07:26:35.192Z",
+      "operation": "masterPasswordActualUiTransaction",
+      "io": {
+        "rows": {
+          "writeFile:archive": {
+            "calls": 300,
+            "failed": 0,
+            "totalMs": 51690.40000000596,
+            "maxMs": 765.0999999996275
+          },
+          "readFile:archive": {
+            "calls": 596,
+            "failed": 0,
+            "totalMs": 125290.59999996983,
+            "maxMs": 894
+          },
+          "mkdir:other": {
+            "calls": 1,
+            "failed": 1,
+            "totalMs": 263,
+            "maxMs": 263
+          },
+          "writeFile:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 3331.199999999255,
+            "maxMs": 1724.4000000003725
+          },
+          "readFile:other": {
+            "calls": 3,
+            "failed": 0,
+            "totalMs": 7000.800000000745,
+            "maxMs": 2543.5999999996275
+          },
+          "stat:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 221.59999999776483,
+            "maxMs": 112.69999999925494
+          },
+          "deleteFile:other": {
+            "calls": 1,
+            "failed": 0,
+            "totalMs": 114.5,
+            "maxMs": 114.5
+          },
+          "rename:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 376.40000000037253,
+            "maxMs": 195.80000000074506
+          },
+          "deleteFile:archive": {
+            "calls": 1448,
+            "failed": 0,
+            "totalMs": 217519.89999999106,
+            "maxMs": 654.8000000007451
+          }
+        },
+        "active": 2,
+        "peakConcurrentCalls": 4
+      }
+    },
+    {
+      "at": "2026-11-02T07:26:40.236Z",
+      "operation": "masterPasswordActualUiTransaction",
+      "io": {
+        "rows": {
+          "writeFile:archive": {
+            "calls": 300,
+            "failed": 0,
+            "totalMs": 51690.40000000596,
+            "maxMs": 765.0999999996275
+          },
+          "readFile:archive": {
+            "calls": 596,
+            "failed": 0,
+            "totalMs": 125290.59999996983,
+            "maxMs": 894
+          },
+          "mkdir:other": {
+            "calls": 1,
+            "failed": 1,
+            "totalMs": 263,
+            "maxMs": 263
+          },
+          "writeFile:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 3331.199999999255,
+            "maxMs": 1724.4000000003725
+          },
+          "readFile:other": {
+            "calls": 3,
+            "failed": 0,
+            "totalMs": 7000.800000000745,
+            "maxMs": 2543.5999999996275
+          },
+          "stat:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 221.59999999776483,
+            "maxMs": 112.69999999925494
+          },
+          "deleteFile:other": {
+            "calls": 1,
+            "failed": 0,
+            "totalMs": 114.5,
+            "maxMs": 114.5
+          },
+          "rename:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 376.40000000037253,
+            "maxMs": 195.80000000074506
+          },
+          "deleteFile:archive": {
+            "calls": 1592,
+            "failed": 0,
+            "totalMs": 236553.69999999553,
+            "maxMs": 654.8000000007451
+          }
+        },
+        "active": 4,
+        "peakConcurrentCalls": 4
+      }
+    },
+    {
+      "at": "2026-11-02T07:26:45.301Z",
+      "operation": "masterPasswordActualUiTransaction",
+      "io": {
+        "rows": {
+          "writeFile:archive": {
+            "calls": 300,
+            "failed": 0,
+            "totalMs": 51690.40000000596,
+            "maxMs": 765.0999999996275
+          },
+          "readFile:archive": {
+            "calls": 596,
+            "failed": 0,
+            "totalMs": 125290.59999996983,
+            "maxMs": 894
+          },
+          "mkdir:other": {
+            "calls": 1,
+            "failed": 1,
+            "totalMs": 263,
+            "maxMs": 263
+          },
+          "writeFile:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 3331.199999999255,
+            "maxMs": 1724.4000000003725
+          },
+          "readFile:other": {
+            "calls": 3,
+            "failed": 0,
+            "totalMs": 7000.800000000745,
+            "maxMs": 2543.5999999996275
+          },
+          "stat:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 221.59999999776483,
+            "maxMs": 112.69999999925494
+          },
+          "deleteFile:other": {
+            "calls": 1,
+            "failed": 0,
+            "totalMs": 114.5,
+            "maxMs": 114.5
+          },
+          "rename:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 376.40000000037253,
+            "maxMs": 195.80000000074506
+          },
+          "deleteFile:archive": {
+            "calls": 1712,
+            "failed": 0,
+            "totalMs": 255131.89999998733,
+            "maxMs": 654.8000000007451
+          }
+        },
+        "active": 4,
+        "peakConcurrentCalls": 4
+      }
+    },
+    {
+      "at": "2026-11-02T07:26:50.403Z",
+      "operation": "masterPasswordActualUiTransaction",
+      "io": {
+        "rows": {
+          "writeFile:archive": {
+            "calls": 300,
+            "failed": 0,
+            "totalMs": 51690.40000000596,
+            "maxMs": 765.0999999996275
+          },
+          "readFile:archive": {
+            "calls": 596,
+            "failed": 0,
+            "totalMs": 125290.59999996983,
+            "maxMs": 894
+          },
+          "mkdir:other": {
+            "calls": 1,
+            "failed": 1,
+            "totalMs": 263,
+            "maxMs": 263
+          },
+          "writeFile:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 3331.199999999255,
+            "maxMs": 1724.4000000003725
+          },
+          "readFile:other": {
+            "calls": 3,
+            "failed": 0,
+            "totalMs": 7000.800000000745,
+            "maxMs": 2543.5999999996275
+          },
+          "stat:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 221.59999999776483,
+            "maxMs": 112.69999999925494
+          },
+          "deleteFile:other": {
+            "calls": 1,
+            "failed": 0,
+            "totalMs": 114.5,
+            "maxMs": 114.5
+          },
+          "rename:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 376.40000000037253,
+            "maxMs": 195.80000000074506
+          },
+          "deleteFile:archive": {
+            "calls": 1820,
+            "failed": 0,
+            "totalMs": 273792.2999999691,
+            "maxMs": 654.8000000007451
+          }
+        },
+        "active": 4,
+        "peakConcurrentCalls": 4
+      }
+    },
+    {
+      "at": "2026-11-02T07:26:55.467Z",
+      "operation": "masterPasswordActualUiTransaction",
+      "io": {
+        "rows": {
+          "writeFile:archive": {
+            "calls": 300,
+            "failed": 0,
+            "totalMs": 51690.40000000596,
+            "maxMs": 765.0999999996275
+          },
+          "readFile:archive": {
+            "calls": 596,
+            "failed": 0,
+            "totalMs": 125290.59999996983,
+            "maxMs": 894
+          },
+          "mkdir:other": {
+            "calls": 1,
+            "failed": 1,
+            "totalMs": 263,
+            "maxMs": 263
+          },
+          "writeFile:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 3331.199999999255,
+            "maxMs": 1724.4000000003725
+          },
+          "readFile:other": {
+            "calls": 3,
+            "failed": 0,
+            "totalMs": 7000.800000000745,
+            "maxMs": 2543.5999999996275
+          },
+          "stat:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 221.59999999776483,
+            "maxMs": 112.69999999925494
+          },
+          "deleteFile:other": {
+            "calls": 1,
+            "failed": 0,
+            "totalMs": 114.5,
+            "maxMs": 114.5
+          },
+          "rename:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 376.40000000037253,
+            "maxMs": 195.80000000074506
+          },
+          "deleteFile:archive": {
+            "calls": 1940,
+            "failed": 0,
+            "totalMs": 292570.6999999657,
+            "maxMs": 654.8000000007451
+          }
+        },
+        "active": 3,
+        "peakConcurrentCalls": 4
+      }
+    },
+    {
+      "at": "2026-11-02T07:27:00.602Z",
+      "operation": "masterPasswordActualUiTransaction",
+      "io": {
+        "rows": {
+          "writeFile:archive": {
+            "calls": 300,
+            "failed": 0,
+            "totalMs": 51690.40000000596,
+            "maxMs": 765.0999999996275
+          },
+          "readFile:archive": {
+            "calls": 596,
+            "failed": 0,
+            "totalMs": 125290.59999996983,
+            "maxMs": 894
+          },
+          "mkdir:other": {
+            "calls": 1,
+            "failed": 1,
+            "totalMs": 263,
+            "maxMs": 263
+          },
+          "writeFile:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 3331.199999999255,
+            "maxMs": 1724.4000000003725
+          },
+          "readFile:other": {
+            "calls": 3,
+            "failed": 0,
+            "totalMs": 7000.800000000745,
+            "maxMs": 2543.5999999996275
+          },
+          "stat:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 221.59999999776483,
+            "maxMs": 112.69999999925494
+          },
+          "deleteFile:other": {
+            "calls": 1,
+            "failed": 0,
+            "totalMs": 114.5,
+            "maxMs": 114.5
+          },
+          "rename:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 376.40000000037253,
+            "maxMs": 195.80000000074506
+          },
+          "deleteFile:archive": {
+            "calls": 2064,
+            "failed": 0,
+            "totalMs": 312254.0999999549,
+            "maxMs": 654.8000000007451
+          }
+        },
+        "active": 4,
+        "peakConcurrentCalls": 4
+      }
+    },
+    {
+      "at": "2026-11-02T07:27:05.692Z",
+      "operation": "masterPasswordActualUiTransaction",
+      "io": {
+        "rows": {
+          "writeFile:archive": {
+            "calls": 300,
+            "failed": 0,
+            "totalMs": 51690.40000000596,
+            "maxMs": 765.0999999996275
+          },
+          "readFile:archive": {
+            "calls": 596,
+            "failed": 0,
+            "totalMs": 125290.59999996983,
+            "maxMs": 894
+          },
+          "mkdir:other": {
+            "calls": 1,
+            "failed": 1,
+            "totalMs": 263,
+            "maxMs": 263
+          },
+          "writeFile:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 3331.199999999255,
+            "maxMs": 1724.4000000003725
+          },
+          "readFile:other": {
+            "calls": 3,
+            "failed": 0,
+            "totalMs": 7000.800000000745,
+            "maxMs": 2543.5999999996275
+          },
+          "stat:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 221.59999999776483,
+            "maxMs": 112.69999999925494
+          },
+          "deleteFile:other": {
+            "calls": 1,
+            "failed": 0,
+            "totalMs": 114.5,
+            "maxMs": 114.5
+          },
+          "rename:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 376.40000000037253,
+            "maxMs": 195.80000000074506
+          },
+          "deleteFile:archive": {
+            "calls": 2168,
+            "failed": 0,
+            "totalMs": 331135.29999995045,
+            "maxMs": 654.8000000007451
+          }
+        },
+        "active": 3,
+        "peakConcurrentCalls": 4
+      }
+    },
+    {
+      "at": "2026-11-02T07:27:10.740Z",
+      "operation": "masterPasswordActualUiTransaction",
+      "io": {
+        "rows": {
+          "writeFile:archive": {
+            "calls": 300,
+            "failed": 0,
+            "totalMs": 51690.40000000596,
+            "maxMs": 765.0999999996275
+          },
+          "readFile:archive": {
+            "calls": 596,
+            "failed": 0,
+            "totalMs": 125290.59999996983,
+            "maxMs": 894
+          },
+          "mkdir:other": {
+            "calls": 1,
+            "failed": 1,
+            "totalMs": 263,
+            "maxMs": 263
+          },
+          "writeFile:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 3331.199999999255,
+            "maxMs": 1724.4000000003725
+          },
+          "readFile:other": {
+            "calls": 3,
+            "failed": 0,
+            "totalMs": 7000.800000000745,
+            "maxMs": 2543.5999999996275
+          },
+          "stat:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 221.59999999776483,
+            "maxMs": 112.69999999925494
+          },
+          "deleteFile:other": {
+            "calls": 1,
+            "failed": 0,
+            "totalMs": 114.5,
+            "maxMs": 114.5
+          },
+          "rename:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 376.40000000037253,
+            "maxMs": 195.80000000074506
+          },
+          "deleteFile:archive": {
+            "calls": 2300,
+            "failed": 0,
+            "totalMs": 349217.79999995604,
+            "maxMs": 684.3999999985099
+          }
+        },
+        "active": 4,
+        "peakConcurrentCalls": 4
+      }
+    },
+    {
+      "at": "2026-11-02T07:27:15.804Z",
+      "operation": "masterPasswordActualUiTransaction",
+      "io": {
+        "rows": {
+          "writeFile:archive": {
+            "calls": 300,
+            "failed": 0,
+            "totalMs": 51690.40000000596,
+            "maxMs": 765.0999999996275
+          },
+          "readFile:archive": {
+            "calls": 596,
+            "failed": 0,
+            "totalMs": 125290.59999996983,
+            "maxMs": 894
+          },
+          "mkdir:other": {
+            "calls": 1,
+            "failed": 1,
+            "totalMs": 263,
+            "maxMs": 263
+          },
+          "writeFile:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 3331.199999999255,
+            "maxMs": 1724.4000000003725
+          },
+          "readFile:other": {
+            "calls": 3,
+            "failed": 0,
+            "totalMs": 7000.800000000745,
+            "maxMs": 2543.5999999996275
+          },
+          "stat:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 221.59999999776483,
+            "maxMs": 112.69999999925494
+          },
+          "deleteFile:other": {
+            "calls": 1,
+            "failed": 0,
+            "totalMs": 114.5,
+            "maxMs": 114.5
+          },
+          "rename:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 376.40000000037253,
+            "maxMs": 195.80000000074506
+          },
+          "deleteFile:archive": {
+            "calls": 2416,
+            "failed": 0,
+            "totalMs": 368404.4999999646,
+            "maxMs": 684.3999999985099
+          }
+        },
+        "active": 4,
+        "peakConcurrentCalls": 4
+      }
+    },
+    {
+      "at": "2026-11-02T07:27:20.858Z",
+      "operation": "masterPasswordActualUiTransaction",
+      "io": {
+        "rows": {
+          "writeFile:archive": {
+            "calls": 300,
+            "failed": 0,
+            "totalMs": 51690.40000000596,
+            "maxMs": 765.0999999996275
+          },
+          "readFile:archive": {
+            "calls": 596,
+            "failed": 0,
+            "totalMs": 125290.59999996983,
+            "maxMs": 894
+          },
+          "mkdir:other": {
+            "calls": 1,
+            "failed": 1,
+            "totalMs": 263,
+            "maxMs": 263
+          },
+          "writeFile:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 3331.199999999255,
+            "maxMs": 1724.4000000003725
+          },
+          "readFile:other": {
+            "calls": 3,
+            "failed": 0,
+            "totalMs": 7000.800000000745,
+            "maxMs": 2543.5999999996275
+          },
+          "stat:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 221.59999999776483,
+            "maxMs": 112.69999999925494
+          },
+          "deleteFile:other": {
+            "calls": 1,
+            "failed": 0,
+            "totalMs": 114.5,
+            "maxMs": 114.5
+          },
+          "rename:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 376.40000000037253,
+            "maxMs": 195.80000000074506
+          },
+          "deleteFile:archive": {
+            "calls": 2548,
+            "failed": 0,
+            "totalMs": 386909.59999996796,
+            "maxMs": 684.3999999985099
+          }
+        },
+        "active": 4,
+        "peakConcurrentCalls": 4
+      }
+    },
+    {
+      "at": "2026-11-02T07:27:25.947Z",
+      "operation": "masterPasswordActualUiTransaction",
+      "io": {
+        "rows": {
+          "writeFile:archive": {
+            "calls": 300,
+            "failed": 0,
+            "totalMs": 51690.40000000596,
+            "maxMs": 765.0999999996275
+          },
+          "readFile:archive": {
+            "calls": 596,
+            "failed": 0,
+            "totalMs": 125290.59999996983,
+            "maxMs": 894
+          },
+          "mkdir:other": {
+            "calls": 1,
+            "failed": 1,
+            "totalMs": 263,
+            "maxMs": 263
+          },
+          "writeFile:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 3331.199999999255,
+            "maxMs": 1724.4000000003725
+          },
+          "readFile:other": {
+            "calls": 3,
+            "failed": 0,
+            "totalMs": 7000.800000000745,
+            "maxMs": 2543.5999999996275
+          },
+          "stat:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 221.59999999776483,
+            "maxMs": 112.69999999925494
+          },
+          "deleteFile:other": {
+            "calls": 1,
+            "failed": 0,
+            "totalMs": 114.5,
+            "maxMs": 114.5
+          },
+          "rename:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 376.40000000037253,
+            "maxMs": 195.80000000074506
+          },
+          "deleteFile:archive": {
+            "calls": 2660,
+            "failed": 0,
+            "totalMs": 406062.99999995343,
+            "maxMs": 684.3999999985099
+          }
+        },
+        "active": 4,
+        "peakConcurrentCalls": 4
+      }
+    },
+    {
+      "at": "2026-11-02T07:27:30.995Z",
+      "operation": "masterPasswordActualUiTransaction",
+      "io": {
+        "rows": {
+          "writeFile:archive": {
+            "calls": 300,
+            "failed": 0,
+            "totalMs": 51690.40000000596,
+            "maxMs": 765.0999999996275
+          },
+          "readFile:archive": {
+            "calls": 596,
+            "failed": 0,
+            "totalMs": 125290.59999996983,
+            "maxMs": 894
+          },
+          "mkdir:other": {
+            "calls": 1,
+            "failed": 1,
+            "totalMs": 263,
+            "maxMs": 263
+          },
+          "writeFile:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 3331.199999999255,
+            "maxMs": 1724.4000000003725
+          },
+          "readFile:other": {
+            "calls": 3,
+            "failed": 0,
+            "totalMs": 7000.800000000745,
+            "maxMs": 2543.5999999996275
+          },
+          "stat:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 221.59999999776483,
+            "maxMs": 112.69999999925494
+          },
+          "deleteFile:other": {
+            "calls": 1,
+            "failed": 0,
+            "totalMs": 114.5,
+            "maxMs": 114.5
+          },
+          "rename:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 376.40000000037253,
+            "maxMs": 195.80000000074506
+          },
+          "deleteFile:archive": {
+            "calls": 2792,
+            "failed": 0,
+            "totalMs": 425179.29999996163,
+            "maxMs": 684.3999999985099
+          }
+        },
+        "active": 4,
+        "peakConcurrentCalls": 4
+      }
+    },
+    {
+      "at": "2026-11-02T07:27:36.079Z",
+      "operation": "masterPasswordActualUiTransaction",
+      "io": {
+        "rows": {
+          "writeFile:archive": {
+            "calls": 300,
+            "failed": 0,
+            "totalMs": 51690.40000000596,
+            "maxMs": 765.0999999996275
+          },
+          "readFile:archive": {
+            "calls": 596,
+            "failed": 0,
+            "totalMs": 125290.59999996983,
+            "maxMs": 894
+          },
+          "mkdir:other": {
+            "calls": 1,
+            "failed": 1,
+            "totalMs": 263,
+            "maxMs": 263
+          },
+          "writeFile:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 3331.199999999255,
+            "maxMs": 1724.4000000003725
+          },
+          "readFile:other": {
+            "calls": 3,
+            "failed": 0,
+            "totalMs": 7000.800000000745,
+            "maxMs": 2543.5999999996275
+          },
+          "stat:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 221.59999999776483,
+            "maxMs": 112.69999999925494
+          },
+          "deleteFile:other": {
+            "calls": 1,
+            "failed": 0,
+            "totalMs": 114.5,
+            "maxMs": 114.5
+          },
+          "rename:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 376.40000000037253,
+            "maxMs": 195.80000000074506
+          },
+          "deleteFile:archive": {
+            "calls": 2896,
+            "failed": 0,
+            "totalMs": 444197.1999999471,
+            "maxMs": 684.3999999985099
+          }
+        },
+        "active": 4,
+        "peakConcurrentCalls": 4
+      }
+    },
+    {
+      "at": "2026-11-02T07:27:41.146Z",
+      "operation": "masterPasswordActualUiTransaction",
+      "io": {
+        "rows": {
+          "writeFile:archive": {
+            "calls": 300,
+            "failed": 0,
+            "totalMs": 51690.40000000596,
+            "maxMs": 765.0999999996275
+          },
+          "readFile:archive": {
+            "calls": 596,
+            "failed": 0,
+            "totalMs": 125290.59999996983,
+            "maxMs": 894
+          },
+          "mkdir:other": {
+            "calls": 1,
+            "failed": 1,
+            "totalMs": 263,
+            "maxMs": 263
+          },
+          "writeFile:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 3331.199999999255,
+            "maxMs": 1724.4000000003725
+          },
+          "readFile:other": {
+            "calls": 3,
+            "failed": 0,
+            "totalMs": 7000.800000000745,
+            "maxMs": 2543.5999999996275
+          },
+          "stat:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 221.59999999776483,
+            "maxMs": 112.69999999925494
+          },
+          "deleteFile:other": {
+            "calls": 1,
+            "failed": 0,
+            "totalMs": 114.5,
+            "maxMs": 114.5
+          },
+          "rename:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 376.40000000037253,
+            "maxMs": 195.80000000074506
+          },
+          "deleteFile:archive": {
+            "calls": 3024,
+            "failed": 0,
+            "totalMs": 462830.39999995567,
+            "maxMs": 684.3999999985099
+          }
+        },
+        "active": 4,
+        "peakConcurrentCalls": 4
+      }
+    },
+    {
+      "at": "2026-11-02T07:27:46.183Z",
+      "operation": "masterPasswordActualUiTransaction",
+      "io": {
+        "rows": {
+          "writeFile:archive": {
+            "calls": 300,
+            "failed": 0,
+            "totalMs": 51690.40000000596,
+            "maxMs": 765.0999999996275
+          },
+          "readFile:archive": {
+            "calls": 596,
+            "failed": 0,
+            "totalMs": 125290.59999996983,
+            "maxMs": 894
+          },
+          "mkdir:other": {
+            "calls": 1,
+            "failed": 1,
+            "totalMs": 263,
+            "maxMs": 263
+          },
+          "writeFile:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 3331.199999999255,
+            "maxMs": 1724.4000000003725
+          },
+          "readFile:other": {
+            "calls": 3,
+            "failed": 0,
+            "totalMs": 7000.800000000745,
+            "maxMs": 2543.5999999996275
+          },
+          "stat:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 221.59999999776483,
+            "maxMs": 112.69999999925494
+          },
+          "deleteFile:other": {
+            "calls": 1,
+            "failed": 0,
+            "totalMs": 114.5,
+            "maxMs": 114.5
+          },
+          "rename:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 376.40000000037253,
+            "maxMs": 195.80000000074506
+          },
+          "deleteFile:archive": {
+            "calls": 3156,
+            "failed": 0,
+            "totalMs": 481677.2999999523,
+            "maxMs": 684.3999999985099
+          }
+        },
+        "active": 4,
+        "peakConcurrentCalls": 4
+      }
+    },
+    {
+      "at": "2026-11-02T07:27:51.348Z",
+      "operation": "masterPasswordActualUiTransaction",
+      "io": {
+        "rows": {
+          "writeFile:archive": {
+            "calls": 300,
+            "failed": 0,
+            "totalMs": 51690.40000000596,
+            "maxMs": 765.0999999996275
+          },
+          "readFile:archive": {
+            "calls": 596,
+            "failed": 0,
+            "totalMs": 125290.59999996983,
+            "maxMs": 894
+          },
+          "mkdir:other": {
+            "calls": 1,
+            "failed": 1,
+            "totalMs": 263,
+            "maxMs": 263
+          },
+          "writeFile:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 3331.199999999255,
+            "maxMs": 1724.4000000003725
+          },
+          "readFile:other": {
+            "calls": 3,
+            "failed": 0,
+            "totalMs": 7000.800000000745,
+            "maxMs": 2543.5999999996275
+          },
+          "stat:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 221.59999999776483,
+            "maxMs": 112.69999999925494
+          },
+          "deleteFile:other": {
+            "calls": 1,
+            "failed": 0,
+            "totalMs": 114.5,
+            "maxMs": 114.5
+          },
+          "rename:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 376.40000000037253,
+            "maxMs": 195.80000000074506
+          },
+          "deleteFile:archive": {
+            "calls": 3288,
+            "failed": 0,
+            "totalMs": 501415.999999959,
+            "maxMs": 684.3999999985099
+          }
+        },
+        "active": 3,
+        "peakConcurrentCalls": 4
+      }
+    },
+    {
+      "at": "2026-11-02T07:27:56.378Z",
+      "operation": "masterPasswordActualUiTransaction",
+      "io": {
+        "rows": {
+          "writeFile:archive": {
+            "calls": 300,
+            "failed": 0,
+            "totalMs": 51690.40000000596,
+            "maxMs": 765.0999999996275
+          },
+          "readFile:archive": {
+            "calls": 596,
+            "failed": 0,
+            "totalMs": 125290.59999996983,
+            "maxMs": 894
+          },
+          "mkdir:other": {
+            "calls": 1,
+            "failed": 1,
+            "totalMs": 263,
+            "maxMs": 263
+          },
+          "writeFile:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 3331.199999999255,
+            "maxMs": 1724.4000000003725
+          },
+          "readFile:other": {
+            "calls": 3,
+            "failed": 0,
+            "totalMs": 7000.800000000745,
+            "maxMs": 2543.5999999996275
+          },
+          "stat:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 221.59999999776483,
+            "maxMs": 112.69999999925494
+          },
+          "deleteFile:other": {
+            "calls": 1,
+            "failed": 0,
+            "totalMs": 114.5,
+            "maxMs": 114.5
+          },
+          "rename:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 376.40000000037253,
+            "maxMs": 195.80000000074506
+          },
+          "deleteFile:archive": {
+            "calls": 3388,
+            "failed": 0,
+            "totalMs": 520088.29999996535,
+            "maxMs": 684.3999999985099
+          }
+        },
+        "active": 4,
+        "peakConcurrentCalls": 4
+      }
+    },
+    {
+      "at": "2026-11-02T07:28:01.445Z",
+      "operation": "masterPasswordActualUiTransaction",
+      "io": {
+        "rows": {
+          "writeFile:archive": {
+            "calls": 300,
+            "failed": 0,
+            "totalMs": 51690.40000000596,
+            "maxMs": 765.0999999996275
+          },
+          "readFile:archive": {
+            "calls": 596,
+            "failed": 0,
+            "totalMs": 125290.59999996983,
+            "maxMs": 894
+          },
+          "mkdir:other": {
+            "calls": 1,
+            "failed": 1,
+            "totalMs": 263,
+            "maxMs": 263
+          },
+          "writeFile:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 3331.199999999255,
+            "maxMs": 1724.4000000003725
+          },
+          "readFile:other": {
+            "calls": 3,
+            "failed": 0,
+            "totalMs": 7000.800000000745,
+            "maxMs": 2543.5999999996275
+          },
+          "stat:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 221.59999999776483,
+            "maxMs": 112.69999999925494
+          },
+          "deleteFile:other": {
+            "calls": 1,
+            "failed": 0,
+            "totalMs": 114.5,
+            "maxMs": 114.5
+          },
+          "rename:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 376.40000000037253,
+            "maxMs": 195.80000000074506
+          },
+          "deleteFile:archive": {
+            "calls": 3520,
+            "failed": 0,
+            "totalMs": 538887.0999999624,
+            "maxMs": 684.3999999985099
+          }
+        },
+        "active": 4,
+        "peakConcurrentCalls": 4
+      }
+    },
+    {
+      "at": "2026-11-02T07:28:06.527Z",
+      "operation": "masterPasswordActualUiTransaction",
+      "io": {
+        "rows": {
+          "writeFile:archive": {
+            "calls": 300,
+            "failed": 0,
+            "totalMs": 51690.40000000596,
+            "maxMs": 765.0999999996275
+          },
+          "readFile:archive": {
+            "calls": 596,
+            "failed": 0,
+            "totalMs": 125290.59999996983,
+            "maxMs": 894
+          },
+          "mkdir:other": {
+            "calls": 1,
+            "failed": 1,
+            "totalMs": 263,
+            "maxMs": 263
+          },
+          "writeFile:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 3331.199999999255,
+            "maxMs": 1724.4000000003725
+          },
+          "readFile:other": {
+            "calls": 3,
+            "failed": 0,
+            "totalMs": 7000.800000000745,
+            "maxMs": 2543.5999999996275
+          },
+          "stat:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 221.59999999776483,
+            "maxMs": 112.69999999925494
+          },
+          "deleteFile:other": {
+            "calls": 1,
+            "failed": 0,
+            "totalMs": 114.5,
+            "maxMs": 114.5
+          },
+          "rename:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 376.40000000037253,
+            "maxMs": 195.80000000074506
+          },
+          "deleteFile:archive": {
+            "calls": 3652,
+            "failed": 0,
+            "totalMs": 558193.2999999449,
+            "maxMs": 684.3999999985099
+          }
+        },
+        "active": 4,
+        "peakConcurrentCalls": 4
+      }
+    },
+    {
+      "at": "2026-11-02T07:28:11.579Z",
+      "operation": "masterPasswordActualUiTransaction",
+      "io": {
+        "rows": {
+          "writeFile:archive": {
+            "calls": 300,
+            "failed": 0,
+            "totalMs": 51690.40000000596,
+            "maxMs": 765.0999999996275
+          },
+          "readFile:archive": {
+            "calls": 596,
+            "failed": 0,
+            "totalMs": 125290.59999996983,
+            "maxMs": 894
+          },
+          "mkdir:other": {
+            "calls": 1,
+            "failed": 1,
+            "totalMs": 263,
+            "maxMs": 263
+          },
+          "writeFile:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 3331.199999999255,
+            "maxMs": 1724.4000000003725
+          },
+          "readFile:other": {
+            "calls": 3,
+            "failed": 0,
+            "totalMs": 7000.800000000745,
+            "maxMs": 2543.5999999996275
+          },
+          "stat:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 221.59999999776483,
+            "maxMs": 112.69999999925494
+          },
+          "deleteFile:other": {
+            "calls": 1,
+            "failed": 0,
+            "totalMs": 114.5,
+            "maxMs": 114.5
+          },
+          "rename:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 376.40000000037253,
+            "maxMs": 195.80000000074506
+          },
+          "deleteFile:archive": {
+            "calls": 3788,
+            "failed": 0,
+            "totalMs": 577198.8999999613,
+            "maxMs": 684.3999999985099
+          }
+        },
+        "active": 4,
+        "peakConcurrentCalls": 4
+      }
+    },
+    {
+      "at": "2026-11-02T07:28:16.657Z",
+      "operation": "masterPasswordActualUiTransaction",
+      "io": {
+        "rows": {
+          "writeFile:archive": {
+            "calls": 300,
+            "failed": 0,
+            "totalMs": 51690.40000000596,
+            "maxMs": 765.0999999996275
+          },
+          "readFile:archive": {
+            "calls": 596,
+            "failed": 0,
+            "totalMs": 125290.59999996983,
+            "maxMs": 894
+          },
+          "mkdir:other": {
+            "calls": 1,
+            "failed": 1,
+            "totalMs": 263,
+            "maxMs": 263
+          },
+          "writeFile:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 3331.199999999255,
+            "maxMs": 1724.4000000003725
+          },
+          "readFile:other": {
+            "calls": 3,
+            "failed": 0,
+            "totalMs": 7000.800000000745,
+            "maxMs": 2543.5999999996275
+          },
+          "stat:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 221.59999999776483,
+            "maxMs": 112.69999999925494
+          },
+          "deleteFile:other": {
+            "calls": 1,
+            "failed": 0,
+            "totalMs": 114.5,
+            "maxMs": 114.5
+          },
+          "rename:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 376.40000000037253,
+            "maxMs": 195.80000000074506
+          },
+          "deleteFile:archive": {
+            "calls": 3920,
+            "failed": 0,
+            "totalMs": 595943.6999999676,
+            "maxMs": 684.3999999985099
+          }
+        },
+        "active": 4,
+        "peakConcurrentCalls": 4
+      }
+    },
+    {
+      "at": "2026-11-02T07:28:21.703Z",
+      "operation": "masterPasswordActualUiTransaction",
+      "io": {
+        "rows": {
+          "writeFile:archive": {
+            "calls": 300,
+            "failed": 0,
+            "totalMs": 51690.40000000596,
+            "maxMs": 765.0999999996275
+          },
+          "readFile:archive": {
+            "calls": 596,
+            "failed": 0,
+            "totalMs": 125290.59999996983,
+            "maxMs": 894
+          },
+          "mkdir:other": {
+            "calls": 1,
+            "failed": 1,
+            "totalMs": 263,
+            "maxMs": 263
+          },
+          "writeFile:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 3331.199999999255,
+            "maxMs": 1724.4000000003725
+          },
+          "readFile:other": {
+            "calls": 3,
+            "failed": 0,
+            "totalMs": 7000.800000000745,
+            "maxMs": 2543.5999999996275
+          },
+          "stat:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 221.59999999776483,
+            "maxMs": 112.69999999925494
+          },
+          "deleteFile:other": {
+            "calls": 1,
+            "failed": 0,
+            "totalMs": 114.5,
+            "maxMs": 114.5
+          },
+          "rename:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 376.40000000037253,
+            "maxMs": 195.80000000074506
+          },
+          "deleteFile:archive": {
+            "calls": 3992,
+            "failed": 0,
+            "totalMs": 607364.2999999672,
+            "maxMs": 684.3999999985099
+          },
+          "readdir:archive": {
+            "calls": 1,
+            "failed": 0,
+            "totalMs": 0,
+            "maxMs": 0
+          }
+        },
+        "active": 1,
+        "peakConcurrentCalls": 4
+      }
+    },
+    {
+      "at": "2026-11-02T07:28:26.774Z",
+      "operation": "masterPasswordActualUiTransaction",
+      "io": {
+        "rows": {
+          "writeFile:archive": {
+            "calls": 300,
+            "failed": 0,
+            "totalMs": 51690.40000000596,
+            "maxMs": 765.0999999996275
+          },
+          "readFile:archive": {
+            "calls": 596,
+            "failed": 0,
+            "totalMs": 125290.59999996983,
+            "maxMs": 894
+          },
+          "mkdir:other": {
+            "calls": 1,
+            "failed": 1,
+            "totalMs": 263,
+            "maxMs": 263
+          },
+          "writeFile:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 3331.199999999255,
+            "maxMs": 1724.4000000003725
+          },
+          "readFile:other": {
+            "calls": 3,
+            "failed": 0,
+            "totalMs": 7000.800000000745,
+            "maxMs": 2543.5999999996275
+          },
+          "stat:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 221.59999999776483,
+            "maxMs": 112.69999999925494
+          },
+          "deleteFile:other": {
+            "calls": 1,
+            "failed": 0,
+            "totalMs": 114.5,
+            "maxMs": 114.5
+          },
+          "rename:other": {
+            "calls": 2,
+            "failed": 0,
+            "totalMs": 376.40000000037253,
+            "maxMs": 195.80000000074506
+          },
+          "deleteFile:archive": {
+            "calls": 4136,
+            "failed": 0,
+            "totalMs": 623538.6999999788,
+            "maxMs": 684.3999999985099
+          },
+          "readdir:archive": {
+            "calls": 1,
+            "failed": 0,
+            "totalMs": 2692.699999999255,
+            "maxMs": 2692.699999999255
+          }
+        },
+        "active": 3,
+        "peakConcurrentCalls": 4
+      }
+    }
+  ]
+}

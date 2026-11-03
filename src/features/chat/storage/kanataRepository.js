@@ -4,6 +4,7 @@ import { sha256Text } from '../../../shared/crypto/sha256Text.js'
 import { preferenceStorage } from '../../../platform/storage/preferences.js'
 import { assertKanataData } from '../domain/kanataValidation.js'
 import { createMessageArchiveRepository } from './messageArchiveRepository.js'
+import {createArchiveFilesystem} from '../../../platform/storage/archiveFileBatch.js'
 
 export const KANATA_DATA_DIRECTORY = 'formyself'
 export const KANATA_DATA_PATH = KANATA_DATA_DIRECTORY + '/kanata-v1.enc'
@@ -57,7 +58,7 @@ export function decryptKanataData(ciphertext, password) {
  * @param {{filesystem?: import('./kanataRepositoryTypes').KanataFilesystem, journal?: import('./kanataRepositoryTypes').KanataJournal, directory?: string}} [options]
  */
 export function createKanataRepository({ filesystem = Filesystem, journal = preferenceStorage, directory = Directory.Data } = {}) {
-  const archives = createMessageArchiveRepository({ filesystem, directory })
+  const archives = createMessageArchiveRepository({ filesystem:createArchiveFilesystem(filesystem,directory), directory })
   let loaded = false, loadError = '', saveError = '', fingerprint = '', recoveryAvailable = false, reencrypting = false, loadRevision = 0
   let pending = null
   /** @type {Promise<void>} */

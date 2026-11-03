@@ -31,10 +31,11 @@ export async function connectCapacityWeb(count,build){
     },
     async stopAllocationProfile(){
       const {profile}=await pageCdp.send('HeapProfiler.stopSampling'),totals=new Map()
-      const visit=node=>{
-        const {functionName,url,lineNumber,columnNumber}=node.callFrame,key=JSON.stringify({functionName,url,lineNumber,columnNumber})
+      const visit=(node,parents=[])=>{
+        const {functionName,url,lineNumber,columnNumber}=node.callFrame
+        const frame={functionName,url,lineNumber,columnNumber},stack=[...parents,frame],key=JSON.stringify({functionName,url,lineNumber,columnNumber,stack})
         totals.set(key,(totals.get(key)||0)+node.selfSize)
-        for(const child of node.children)visit(child)
+        for(const child of node.children)visit(child,stack)
       }
       visit(profile.head)
       return [...totals].sort((a,b)=>b[1]-a[1]).slice(0,40).map(([key,bytes])=>({...JSON.parse(key),sampledAllocatedMiB:bytes/1048576}))

@@ -1,0 +1,12 @@
+{
+  "status": "NO_GO_PRESERVE_STATE",
+  "at": "2026-11-02T07:50:52.600Z",
+  "freshInstalledAfterAgpCleanup": true,
+  "syntheticOnly": true,
+  "build": "8e67b74a192fd89e340cd4829b4137dc67ae6e43e65611b9551d987847473f35",
+  "encryptedFixtureSha256": "2943ea7f149a448c95f9d08897445b0b11ba56a59b6249ae0d1ae36a84997b5f",
+  "noUninstallOrClearRequestedByThisRecovery": true,
+  "aiRequests": 0,
+  "pageErrors": [],
+  "error": "page.evaluate: Error: BASELINE_MOOD_ROLLOVER_MISMATCH\n    at need (file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata/docs/qa/kanata-continuous/p7/mood-baseline-comparison.mjs:4:40)\n    at compareMoodBaseline (file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata/docs/qa/kanata-continuous/p7/mood-baseline-comparison.mjs:16:48)\n    at binding (D:\\2026Autumn Semester File\\GitHub\\formyself-app\\.worktrees\\kanata\\node_modules\\playwright-core\\lib\\coreBundle.js:61153:48)\n    at BindingCall.call (D:\\2026Autumn Semester File\\GitHub\\formyself-app\\.worktrees\\kanata\\node_modules\\playwright-core\\lib\\coreBundle.js:61638:33)\n    at _Page._onBinding (D:\\2026Autumn Semester File\\GitHub\\formyself-app\\.worktrees\\kanata\\node_modules\\playwright-core\\lib\\coreBundle.js:61056:29)\n    at Proxy.<anonymous> (D:\\2026Autumn Semester File\\GitHub\\formyself-app\\.worktrees\\kanata\\node_modules\\playwright-core\\lib\\coreBundle.js:60971:63)\n    at Proxy._callHandler (D:\\2026Autumn Semester File\\GitHub\\formyself-app\\.worktrees\\kanata\\node_modules\\playwright-core\\lib\\coreBundle.js:10746:33)\n    at Proxy.emit (D:\\2026Autumn Semester File\\GitHub\\formyself-app\\.worktrees\\kanata\\node_modules\\playwright-core\\lib\\coreBundle.js:10736:16)\n    at Connection.dispatch (D:\\2026Autumn Semester File\\GitHub\\formyself-app\\.worktrees\\kanata\\node_modules\\playwright-core\\lib\\coreBundle.js:63525:25)\n    at Immediate._onImmediate (D:\\2026Autumn Semester File\\GitHub\\formyself-app\\.worktrees\\kanata\\node_modules\\playwright-core\\lib\\coreBundle.js:63586:85)"
+}

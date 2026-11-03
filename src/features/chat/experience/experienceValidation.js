@@ -13,7 +13,9 @@ export function validateKanataExperience(data) {
   const worlds=new Map(data.worlds.map(w=>[w.id,w])),instances=new Map(data.instances.map(i=>[i.id,i]))
   const conversations=new Map(data.conversations.map(c=>[c.id,c])),memories=new Map(data.memories.map(m=>[m.id,m])),events=new Map(data.events.map(e=>[e.id,e]))
   const grants=new Map(data.lifeGrants.map(g=>[g.id,g]))
-  const messages=new Map(data.messages.map(m=>[m.id,m]))
+  /** @type {Map<string,import('../domain/kanataTypes').Message>} */
+  const messages=new Map()
+  for(const message of data.messages)messages.set(message.id,message)
   /** @param {unknown} value @param {string} worldId */
   const lifeSources=(value,worldId)=>{
     if(value===undefined)return

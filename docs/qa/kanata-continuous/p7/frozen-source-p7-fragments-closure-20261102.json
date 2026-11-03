@@ -1,0 +1,1187 @@
+{
+  "root": "D:\\2026Autumn Semester File\\GitHub\\formyself-app\\.worktrees\\kanata",
+  "tag": "p7-fragments-closure-20261102",
+  "syntheticOnly": true,
+  "productionPreview": true,
+  "sourceHead": "9ebf3484cdd3ae67e68af05a6e55a27e0b2cef0f",
+  "sourceDigest": "b351303056b760aafe618f6e00c4139f4c33cd01a60ad82313099fb0e2e24cc2",
+  "sourceCheck": "check-retirement-fragments-reviewed-20261102.txt",
+  "apkSha256": "2d363af594436a4bc6e2bd844560769a2efba833b63c45084fc75548bf052082",
+  "resourceCount": 78,
+  "archiveFileBatchRequired": true,
+  "frozenAt": "2026-11-02T08:32:22.142Z",
+  "sources": [
+    {
+      "path": "android/app/build.gradle",
+      "sha256": "f7287f4bb82cf62292ae600ac1f55580af3426f1f9f28174e5d8eb15af099f0c"
+    },
+    {
+      "path": "android/app/src/androidTest/java/com/getcapacitor/myapp/ExampleInstrumentedTest.java",
+      "sha256": "af2efba2da7e74c5fead4d78bb44e8337e0d3272b2ab81ce3a1ef8c6c5cb9cd0"
+    },
+    {
+      "path": "android/app/src/androidTest/java/com/yubin/formyself/ArchitectureContractTest.java",
+      "sha256": "f3f87f7e991b044ea5c23720453cc34c6d9ceb083fce0f4273665b81badff0ca"
+    },
+    {
+      "path": "android/app/src/androidTest/java/com/yubin/formyself/ArchiveFileBatchTest.java",
+      "sha256": "56e03ab5e933b12bc119b963bc48bf945e6315a1a5614388afc1b9b9c63c25af"
+    },
+    {
+      "path": "android/app/src/androidTest/java/com/yubin/formyself/QaBackgroundActivity.java",
+      "sha256": "786af08cbff7633490ca886ff7d15d2e37e6b0f59b3b680692fd2b30d51f8c5f"
+    },
+    {
+      "path": "android/app/src/androidTest/java/com/yubin/formyself/TodoNativeTest.java",
+      "sha256": "515c7a9142458839cba8df685f02e76fa69b7e4deb2b99a8f6faf2bf4458625c"
+    },
+    {
+      "path": "android/app/src/androidTest/java/com/yubin/formyself/TodoWidgetHarness.java",
+      "sha256": "a75c9a6e81ebbd88c95eaba41cd4f5094217b98e282ae65e1b315830d582cc7a"
+    },
+    {
+      "path": "android/app/src/main/java/com/yubin/formyself/ArchiveFileBatchPlugin.java",
+      "sha256": "a0586f00f44b1b62a520e1f7fc4adabe1c52fb1677668a8d6fbdc917b56c8bcb"
+    },
+    {
+      "path": "android/app/src/main/java/com/yubin/formyself/ArchiveFileBatchStore.java",
+      "sha256": "d622b8b3e95b8170cac276e9811064c990cbe165ba7d065249e34b84f1641d0b"
+    },
+    {
+      "path": "android/app/src/main/java/com/yubin/formyself/ForMyselfWidgetPlugin.java",
+      "sha256": "112e688d498368d93017297de8346f498abb78dbb0df68c8146ecd9ad937d8e4"
+    },
+    {
+      "path": "android/app/src/main/java/com/yubin/formyself/ForMyselfWidgetProvider.java",
+      "sha256": "7812a74179930d0d3b5dff725b97359533151664a973402610ac67c6ffd65691"
+    },
+    {
+      "path": "android/app/src/main/java/com/yubin/formyself/MainActivity.java",
+      "sha256": "50f6b76451f23188db144320f836836b829055a0a6510494783dc26fc8e38b4c"
+    },
+    {
+      "path": "android/app/src/main/java/com/yubin/formyself/ScheduleWidgetProvider.java",
+      "sha256": "332c2446b802497c67ca8daf54443c5a04ff7e9dd0962c4f4c1bc7af171932b4"
+    },
+    {
+      "path": "android/app/src/main/java/com/yubin/formyself/TodoPlugin.java",
+      "sha256": "3d23106a8952065b237950fd33cee5015c4843505aadbfb1fee1b4ac8abfc3b1"
+    },
+    {
+      "path": "android/app/src/main/java/com/yubin/formyself/TodoReminderReceiver.java",
+      "sha256": "57156ede548859d01332059c02fbec217aead73d5a7ceb834cf9f321eeb8ec7a"
+    },
+    {
+      "path": "android/app/src/main/java/com/yubin/formyself/TodoRepository.java",
+      "sha256": "b144d7009001593b3feddba9515c2033957b90bc106b2654199287b6f964aadb"
+    },
+    {
+      "path": "android/app/src/main/java/com/yubin/formyself/TodoWidgetAnimation.java",
+      "sha256": "870ede8cb347ae341858e37ae7d691ccdf8b69866a3fc24b9abe91cd6b41ef60"
+    },
+    {
+      "path": "android/app/src/main/java/com/yubin/formyself/TodoWidgetProvider.java",
+      "sha256": "0ad35366b67e704eccec327694cd4445c5ce9479d6d825b1871af23a2bd407ef"
+    },
+    {
+      "path": "android/app/src/main/java/com/yubin/formyself/TodoWidgetRing.java",
+      "sha256": "86b1c5621e189da2b5a583f751262f1fafc53b808f8eedab2f72c35c373eb88f"
+    },
+    {
+      "path": "android/app/src/main/java/com/yubin/formyself/TodoWidgetService.java",
+      "sha256": "602ebb2bb1b0a8baa6c70f5a945e21830f96d469ad70776967dabcd13330c760"
+    },
+    {
+      "path": "android/app/src/main/java/com/yubin/formyself/TodoWidgetSpacing.java",
+      "sha256": "778727feee03218709e2d624288672f0a86f2d380d5c04fa7ed467629735ddc5"
+    },
+    {
+      "path": "android/variables.gradle",
+      "sha256": "80ca02724ff4a95d1192481c68b00474cb1f8c5767eabbcea00deb28049d06dd"
+    },
+    {
+      "path": "capacitor.config.json",
+      "sha256": "60c711cf93da1bc09aad6d27b9bebe6bf72379e9bf03f1684a5539f68a2ea1ea"
+    },
+    {
+      "path": "package-lock.json",
+      "sha256": "099f29c0eec6c8206490eae6555551b18b2425de9aad66dda48dd2d1d78f40ee"
+    },
+    {
+      "path": "package.json",
+      "sha256": "129be483ac5192a017ee4f54af63bf270f1b43333309f82c02624294849a6c5d"
+    },
+    {
+      "path": "scripts/architecture-benchmark.mjs",
+      "sha256": "4127b86e3e3c7d0e2635bf1eb4cf8b6c47864fc52cababdd5c8eda0c2cd9b9e0"
+    },
+    {
+      "path": "scripts/build-kanata-native-qa.mjs",
+      "sha256": "f48488d37bd136b553a6faf2dbe0e01ca7c5a9d1c2d7cc1914080a43408b0c7e"
+    },
+    {
+      "path": "scripts/emulator-realism-regression.mjs",
+      "sha256": "0db65180fe83cf5a8f0da089dd392e195c090a5efbcd93732613c66729644e55"
+    },
+    {
+      "path": "scripts/emulator-world-draft-regression.mjs",
+      "sha256": "d4641d5fe65670b5939653e7c20c568b877acd6c04d2aee5403f3b83630c3b3f"
+    },
+    {
+      "path": "scripts/generate-app-icons.mjs",
+      "sha256": "45f0e71731abdbdf2b9e584a956c724b8c52c5bb3606047d130898b43da8f5e8"
+    },
+    {
+      "path": "scripts/generate-widget-icon.mjs",
+      "sha256": "b6f80a59dc7e6a4989d47ae84343f0f451b0d792b9d5c149637c96aa24e41949"
+    },
+    {
+      "path": "scripts/kanata-device-guard.mjs",
+      "sha256": "89c41666281b6678647b9dfa8879dc3997feab9ca29b59bbe1162516a155328d"
+    },
+    {
+      "path": "scripts/mock-chat-lifecycle-server.mjs",
+      "sha256": "a528d0dc6d8b6a7daf7dd5d094f3f78fa2548f85e5307e78f6a15c76c69d98a7"
+    },
+    {
+      "path": "scripts/patch-capacitor-filesystem.mjs",
+      "sha256": "67bd20293eb7cff96cfbdb0f6dd54634acc08a14d72b150fa6b11d8e1759e167"
+    },
+    {
+      "path": "scripts/patch-capacitor-local-notifications.mjs",
+      "sha256": "0ae629a62bcaa8597ab963a3f10be320f46e6af023918f068362ba006f02678a"
+    },
+    {
+      "path": "scripts/patch-capacitor-native-biometric.mjs",
+      "sha256": "43a023a4941483a66aecde5eb8d92031e12c3dbcc2855b362e72cc66168c302a"
+    },
+    {
+      "path": "scripts/patch-capacitor-preferences.mjs",
+      "sha256": "70729f8c43e6e643ab1a82991c2fbfd4b35b00db443bdd75bb147fdb64c8701b"
+    },
+    {
+      "path": "scripts/savings-browser-regression.mjs",
+      "sha256": "caa62a4e7d9361123196764241cb18cdd747cae5b9b0bffeda658cc5c84522b4"
+    },
+    {
+      "path": "scripts/start-kanata-qa.ps1",
+      "sha256": "f0472e2e746f0313934296f5331b896d9244c2f57646c7cc8c96450c13e36c3e"
+    },
+    {
+      "path": "scripts/todo-deeplink-qa.mjs",
+      "sha256": "b04f2e13181931b46954c912e322790dc092a21a759a7e6cd4b37ee8279a181e"
+    },
+    {
+      "path": "scripts/todo-emulator-qa.mjs",
+      "sha256": "bf869c270f381daf9e04d5357ba141a19a3ed3eb31a22e9d0cee9b783af26a3d"
+    },
+    {
+      "path": "scripts/todo-qa-client.mjs",
+      "sha256": "ccdede9171d118f55d1ff359155ebcd3e371116b0b8998f78763b4c417493753"
+    },
+    {
+      "path": "scripts/todo-reboot-qa.py",
+      "sha256": "635d233839e3a1db6a060d5095729645d3c2caccdb7bbc599b572c5e7e4e13f7"
+    },
+    {
+      "path": "scripts/todo-v3-qa.mjs",
+      "sha256": "6c0bf133ab4222d10760207976de8d2c7c629e7381291c2540838c1938fb751b"
+    },
+    {
+      "path": "scripts/todo-v4-editor-qa.mjs",
+      "sha256": "85150e21d447bd1d267da467d309f4ce5264203a9cf027543b715cb7ff659309"
+    },
+    {
+      "path": "scripts/todo-v4-widget-animation-qa.py",
+      "sha256": "876b6eb9bd34d53ac5f0b8132eae8f74b32f9bc4289dab1c9e51027442470d5d"
+    },
+    {
+      "path": "scripts/todo-v4-widget-resize-qa.py",
+      "sha256": "41e450438bddfbe3fff150150313a96143868731dce15508b681f469c3382825"
+    },
+    {
+      "path": "scripts/todo-v5-widget-spacing-qa.py",
+      "sha256": "e73fce7a3ed65182f3b1d7eace9abdd5e8940536f26c343c61b84b38bf163dc0"
+    },
+    {
+      "path": "scripts/todo-v6-emulator-qa.ps1",
+      "sha256": "8355e1a80e7b1d71bbf3f916c320f5d121932591fe3de72f05fd3caa0a7a2e33"
+    },
+    {
+      "path": "scripts/todo-v6-widget-animation-qa.py",
+      "sha256": "e34d4248b3a5d952e9f5054d076bceb317614c351ce250a2d279ee2c27fc46c0"
+    },
+    {
+      "path": "scripts/todo-v6-widget-preview-qa.py",
+      "sha256": "a791e42c8107171ab0b0762ec6862622b64397dcb0b1b0d4c1c0bc0c7aea6032"
+    },
+    {
+      "path": "scripts/todo-v6-widget-spacing-qa.py",
+      "sha256": "eb1f576a126be1427af8e4e2e358430eff2890380d6fddcfa7acb5cae14a8a48"
+    },
+    {
+      "path": "scripts/todo-v6-widget-stress-qa.py",
+      "sha256": "076fc3aa27611848ac84bb14817312e37e26082ce6ab1e45b2d96e1f1d2ece08"
+    },
+    {
+      "path": "scripts/todo-v7-emulator-qa.ps1",
+      "sha256": "7147dd76c1e09aa03a073013f6c37bbfab47dcf3db962ae5fd1b406ed4adb858"
+    },
+    {
+      "path": "scripts/todo-v7-widget-preview-qa.py",
+      "sha256": "aec27c0b14bd4902ba051c8bf6a0f7ad5cce0732275cc18211edc90a9018ee15"
+    },
+    {
+      "path": "scripts/todo-v7-widget-spacing-qa.py",
+      "sha256": "64e11a8c7476d3ca41ecb7d10c2364a6f1bb8d03fcbfd5da6637df0495ad7f1c"
+    },
+    {
+      "path": "scripts/todo-v7-widget-stress-qa.py",
+      "sha256": "d86f43572c7a50a5dccf6ca8119d058be6364628718f23fd9af5ca1bf4776cf4"
+    },
+    {
+      "path": "scripts/todo-v8-emulator-qa.ps1",
+      "sha256": "1c2c8655f38948b47a75d4d3a5404d3a00922031461d1b039d1d5d7771d101b4"
+    },
+    {
+      "path": "scripts/todo-v8-widget-animation-qa.py",
+      "sha256": "4e40dfcf64bd2c4972fa38d2ed352849cbfc2e6047c06dcd3b2265862d51a1ca"
+    },
+    {
+      "path": "scripts/todo-v8-widget-spacing-qa.py",
+      "sha256": "65ac9d0d6e08c073deb96154b964724106c94988894744772a84c405d24ba884"
+    },
+    {
+      "path": "scripts/todo-v8-widget-stress-qa.py",
+      "sha256": "35d5bb336c9f33fc51d6112da81d1cde5d9cbabc6746a6dde20e901f9005982d"
+    },
+    {
+      "path": "scripts/todo-widget-animation-qa.py",
+      "sha256": "9db25db7460726f153535f497ba5d8f4bdedff2364a5919722c84d35d57207db"
+    },
+    {
+      "path": "scripts/todo-widget-open-qa.py",
+      "sha256": "fe7db71ec90578a7dce82a31c404d262a5bdc66b0f2753a9a975b626c08caf87"
+    },
+    {
+      "path": "scripts/todo-widget-pin-qa.py",
+      "sha256": "18b1926124c2bb79b6fae0b0ddd93568c8452d088c2fe08e2b29b59b7280c418"
+    },
+    {
+      "path": "scripts/todo-widget-qa.mjs",
+      "sha256": "1d3af86d236bba44c248a21a64d248bd1e5200e448798f8197c2099c1aa4bb2a"
+    },
+    {
+      "path": "scripts/todo-widget-restore-qa.py",
+      "sha256": "49e84fee9c4fac2bb86c77c1d723df40376ff67e321c0b9bf7aedefb869fb7c9"
+    },
+    {
+      "path": "scripts/verify-kanata-apk.ps1",
+      "sha256": "e84403f9b25c7de627fd8df040e1612b8dcbdce3a0c39d9e08080edd3331528e"
+    },
+    {
+      "path": "scripts/webview-eval.mjs",
+      "sha256": "8d4c80d831f69147aa096345f5eb803bad599fa1096076e6c63dce238e4c1e03"
+    },
+    {
+      "path": "src/App.vue",
+      "sha256": "6df39c3cd8a86466301dd20dd961b2651e4d2f73e41bd88b488f80d58ae34b51"
+    },
+    {
+      "path": "src/application/aiClient.js",
+      "sha256": "d9ccfd5945235e0b21bbedf1b68e9e72cff395d0657ed0ec486bb98ef294811b"
+    },
+    {
+      "path": "src/application/appNavigation.js",
+      "sha256": "09c84d2cbc19d6ded9b660f1fc489688a743919ee57c45f95968fc9b273e1740"
+    },
+    {
+      "path": "src/application/backupErrors.js",
+      "sha256": "b5802d5c5ae91f0679eb2c900e26c9818467f86d6cad369b34adc8380a0185bd"
+    },
+    {
+      "path": "src/application/backupParticipants.js",
+      "sha256": "599478a03bb39dc37a895ea91079668e02b317138efe3c53e4a398fe3f0cbdad"
+    },
+    {
+      "path": "src/application/backupRegistry.js",
+      "sha256": "2717f60b4d4b02521290db14a0b8755d9920d2985222a669224a03779c76c864"
+    },
+    {
+      "path": "src/application/companionContext.js",
+      "sha256": "c9a0e7d6be70121e89fe45256d28e9b2ff0906877e78a091bfee791a49fc3415"
+    },
+    {
+      "path": "src/application/contracts.d.ts",
+      "sha256": "3bc16027bb0315631f97b7907f50d3066944c3250b58cfd0e92fa2f60d78f6c7"
+    },
+    {
+      "path": "src/application/fullBackupRuntime.js",
+      "sha256": "98b30ac3b6716309d6789f11f0d5f109d3738d52f74d97583c90280bf03a8774"
+    },
+    {
+      "path": "src/application/kanataActivityLifecycle.js",
+      "sha256": "dfe70af388c9ac62718785b98c54b5cd06a4198024c77a67c9801f69820e00bd"
+    },
+    {
+      "path": "src/application/kanataBackupRuntime.js",
+      "sha256": "0c0533988fef2623f2f2a35d799a49618b1ce1e5c8f73475fc500b58c93041a7"
+    },
+    {
+      "path": "src/application/kanataChatRuntime.js",
+      "sha256": "da7aa3b00917b52ce7b0b205095cbf9e2d8ec95df0f089ca358c09bbe1f6171a"
+    },
+    {
+      "path": "src/application/kanataContactRuntime.js",
+      "sha256": "f4cbe2cc651d0698e82074ea2b45c84218b2376060857a848b863d7e03015a4e"
+    },
+    {
+      "path": "src/application/kanataDeferredRuntime.js",
+      "sha256": "ad2a248d21842a173faaf4903cd733570f4aeb5b524f6cc41aa1d32fe58588b2"
+    },
+    {
+      "path": "src/application/kanataExperienceRuntime.js",
+      "sha256": "1f3a6c09c5ca62c6085453253009d2266490948988b53fa7c6a992439e11024d"
+    },
+    {
+      "path": "src/application/kanataLifeCompanion.js",
+      "sha256": "822c350cd79cf41757a027af3f6b85a8e04127e3049cc98f543b32efacd303ab"
+    },
+    {
+      "path": "src/application/kanataLifeContext.js",
+      "sha256": "3ebbfd5b680373471a2b1fa87f8c65e9813c388e221f46651230606b41e3e627"
+    },
+    {
+      "path": "src/application/kanataManagement.js",
+      "sha256": "5f7b5602a955565b06b0d39549e7c7a2f10ebca1098d81e7ba12ca6d6ba42c5a"
+    },
+    {
+      "path": "src/application/kanataRuntime.js",
+      "sha256": "3e40f7c944c83dac9f3cc9b62f33d33038131e31729cc5fa0fd071587718461d"
+    },
+    {
+      "path": "src/application/kanataSocialRuntime.js",
+      "sha256": "2966e02e7f3c16dfdbcc4824096e737fea00b2ab484073f926a9be3bbf661718"
+    },
+    {
+      "path": "src/application/kanataWorldRuntime.js",
+      "sha256": "15fe11aca3799f76bee70324d2b1135754bed755eb2debc735e7ab8fe37e4470"
+    },
+    {
+      "path": "src/application/moduleLifecycle.js",
+      "sha256": "8bb0a165c90b3773bda7edf85d32f51ace5398e5adbbc68982a02a6da9df2d01"
+    },
+    {
+      "path": "src/application/moduleRegistry.js",
+      "sha256": "f82c627f00670b11665f60a44377311a3f23912259d7d7b080729fc9a74efdb7"
+    },
+    {
+      "path": "src/application/ordinaryModules.js",
+      "sha256": "4efc85a8f59ad928825a1bb76a64ef79d6fed7207b440aa02c6ff113f21b2180"
+    },
+    {
+      "path": "src/application/protectedModules.js",
+      "sha256": "3c87811c2e14b461e25ba55265f21cad82364f397cfef46a16682f0120e9c0d7"
+    },
+    {
+      "path": "src/application/restoreCoordinator.js",
+      "sha256": "5d4b33b5df4273e3d7f339b4786ae19f6d5e824ec286e7aa3616491a68492a55"
+    },
+    {
+      "path": "src/application/settingsModels.js",
+      "sha256": "a85bd7a31f3da361377885b72f65bb78ebe42daa1fdedcf55806d8ab5629e585"
+    },
+    {
+      "path": "src/assets/hero.png",
+      "sha256": "881ffbcaafc212e49addad08846a5b82761355fa20624253af3477ba33262c5c"
+    },
+    {
+      "path": "src/assets/vite.svg",
+      "sha256": "2f1f6c6f90a0ef7422cbb4cfafcd8ad329c507a18afdc34cc21fa72179b9c54a"
+    },
+    {
+      "path": "src/assets/vue.svg",
+      "sha256": "5532db34f1c52841881bab8aeca6c3e8d092bd21a689a65f4d8f8cf8041eef9d"
+    },
+    {
+      "path": "src/components/AppColorPalette.vue",
+      "sha256": "a29a4ac8833cdc95b375453849c20c5439e466ab4fad00d937508497255787bd"
+    },
+    {
+      "path": "src/components/AppDateField.vue",
+      "sha256": "8bbf33cd982b7c00bf16b2c8e2a8b973574d2c9776d63374593fd3c92a926ee8"
+    },
+    {
+      "path": "src/components/AppFeedbackHost.vue",
+      "sha256": "bbc26940f1f2d672ba95aa9aa86363333f3a19a8936aa51f38ad312f711a7161"
+    },
+    {
+      "path": "src/components/AppTimeField.vue",
+      "sha256": "083ffa90a8f8fbc7d1cb5ae6c08677da5e79a325de2d05b984a9afb927dd4b9a"
+    },
+    {
+      "path": "src/components/BackgroundCropper.vue",
+      "sha256": "84272999868335b68eaf44cf585ac9cf9761f002af790818006643101ede0ca5"
+    },
+    {
+      "path": "src/components/CommonNoteField.vue",
+      "sha256": "1d43221369f1c59cc29d40fa4e8b320cc9f648ee851714ffb7b68e7297b30046"
+    },
+    {
+      "path": "src/components/DataStatusBanner.vue",
+      "sha256": "a49ba0cbca5e45ee221b26af19d3bcadff546883a0bfebeaed1113ab5ed91c2b"
+    },
+    {
+      "path": "src/components/DebtListView.vue",
+      "sha256": "8857a8e34d59f11810aa74254262568f4c39e4eb1f48da9883073df453ad4c60"
+    },
+    {
+      "path": "src/components/HomeScheduleCard.vue",
+      "sha256": "cc5d9803aa7ae56c81ef1e6856ae8d9e04fce4629aa6e3ccbe154d2dabe6d2f1"
+    },
+    {
+      "path": "src/components/HomeTodayCards.vue",
+      "sha256": "39e24a16652d3bee3657ba4a7f84eb662b6d16472e45026848ef403939b920b0"
+    },
+    {
+      "path": "src/components/HomeView.vue",
+      "sha256": "9f04c688fab18b0d1541de210710ecf083c3368973126f492fe2221b29fc04a0"
+    },
+    {
+      "path": "src/components/KanataLifeCompanion.vue",
+      "sha256": "9ea02f4b8c7e052c8195f3ce5d4496c1d2054bd2723a4cf6ffd85b04a153e3f4"
+    },
+    {
+      "path": "src/components/MonthlyReportView.vue",
+      "sha256": "692b56224f4b443fae5333b98b6fb4705ef36536439a9de672f8069a7cbf1ee9"
+    },
+    {
+      "path": "src/components/PasswordVaultView.vue",
+      "sha256": "4b4b2509d85a76a4f39ece4c502956503043a064c4cf81041ea67ca21f99ded5"
+    },
+    {
+      "path": "src/components/SettingsView.vue",
+      "sha256": "509a2e4ff7cc07119d6f116fbd5f8496aab830a9502a0b5f040757c6067e3c0a"
+    },
+    {
+      "path": "src/components/WeightView.vue",
+      "sha256": "172800abc946f4eba811b8b81b7da7d9da48381e7fac42ca6a820dc98dbdec47"
+    },
+    {
+      "path": "src/components/home.css",
+      "sha256": "9ae8d41d7896f0798bafc38a89d08a8d56d99f451c04657a999026a045d88511"
+    },
+    {
+      "path": "src/components/settings/SettingsAi.vue",
+      "sha256": "fd0aa10a3b4d908d8e0f7d12ddd5dfd3965aa892bec773d36957150bcaa0395d"
+    },
+    {
+      "path": "src/components/settings/SettingsAppearance.vue",
+      "sha256": "ca976f38ca1623f8ba1e86323c29e9ac90cfc2ee67bdbc2ebaf6270b29595ac0"
+    },
+    {
+      "path": "src/components/settings/SettingsBackup.vue",
+      "sha256": "0ea1ab3969bbfaaa290ba4fb2028fe32c0407b3aa389c76e6c9ca2138186be03"
+    },
+    {
+      "path": "src/components/settings/SettingsCatalogs.vue",
+      "sha256": "174fe7a13558226d905221974ab609c8c45be853e0be11d532043b00d9519ea2"
+    },
+    {
+      "path": "src/components/settings/SettingsChat.vue",
+      "sha256": "e6a73dbee8230917d192721822b0049d2019446c55e25d6944d9921360e5891e"
+    },
+    {
+      "path": "src/components/settings/SettingsHealth.vue",
+      "sha256": "b7bfed030130086bc6588618022ec41a32309aa91685d700e05b755ec38a08a2"
+    },
+    {
+      "path": "src/components/settings/SettingsNotifications.vue",
+      "sha256": "febc22421949ccb7149a10795d96874772b88137f311b478f450222f20bc23c3"
+    },
+    {
+      "path": "src/components/settings/SettingsOverview.vue",
+      "sha256": "adf1bd0adad61375fdf1f80249129e273b1639f5ca4954a38154a2a21913f0f1"
+    },
+    {
+      "path": "src/components/settings/SettingsPickers.vue",
+      "sha256": "f5a14b81e151d7c74938e995f3a419cd3ffef09293ebe7045ad7a3f89b70c066"
+    },
+    {
+      "path": "src/components/settings/SettingsSecurity.vue",
+      "sha256": "ecfa0dced7a89d125649b5bb272f2f0c6f4dda1037cc35c1ba4a8a97573c7809"
+    },
+    {
+      "path": "src/components/settings/SettingsWidgets.vue",
+      "sha256": "5060fa4291897626a7a54439078590bd34e373da9548946e194bb074daf70f3f"
+    },
+    {
+      "path": "src/composables/settings/useAppearanceSettings.js",
+      "sha256": "3d6a5d5b2f54c80a9c3bb67e33b7c52464dd48d61a625d6646f384fd816753d3"
+    },
+    {
+      "path": "src/composables/settings/useBackupSettings.js",
+      "sha256": "4f4bf94f5acaf817cf921e8478015ce8898aa8171bf5e164c05125932b7250a2"
+    },
+    {
+      "path": "src/composables/settings/useCatalogSettings.js",
+      "sha256": "ff38da53dbbf937ac7b41342b4e768f09f41da2b68df06551662d7392cf2e8bd"
+    },
+    {
+      "path": "src/composables/settings/useChatSettings.js",
+      "sha256": "fd1fed0b6ea4ba62f0a61632e4fdc77bab0519a78482b7073753d69462b4a9cc"
+    },
+    {
+      "path": "src/composables/settings/useHealthSettings.js",
+      "sha256": "b66062bacf14f416e124bc7a4d685f33f6dca9a18f95051275eb360187da7d2d"
+    },
+    {
+      "path": "src/composables/settings/useReminderSettings.js",
+      "sha256": "b3f9b6dbbfa9c88a8599dd5944f436d9ea523dad2d48656b8318e3efb50e3cc8"
+    },
+    {
+      "path": "src/composables/settings/useSecuritySettings.js",
+      "sha256": "2c9fd8155928b36a65a1bb742115898cc9897bfd2aef91af41d79ce62dd97eb6"
+    },
+    {
+      "path": "src/composables/settings/useSettingsNavigation.js",
+      "sha256": "4d3d6cbd749d388c8c7a85654695926df50d24d4718afa2ecde001d6b01c7a41"
+    },
+    {
+      "path": "src/composables/useAppController.js",
+      "sha256": "7519a9152c425b0750c4198dec8d63845eb4d8039a6e34f5b1b755bb8195678d"
+    },
+    {
+      "path": "src/composables/useDebtDrag.js",
+      "sha256": "0fc05484978a2d1a2b550b26a740731c27cc1aa01d608d0c6e2edf70e395931a"
+    },
+    {
+      "path": "src/composables/useKanataLifeCompanion.js",
+      "sha256": "a82ff3016079d613455ca6ea152c54ae6a6ff43fba0092ecc327c00e05839b38"
+    },
+    {
+      "path": "src/composables/useSortableDrag.js",
+      "sha256": "5afbabd7b0f5f60d1fab1eb75d4668ca0a7798760d42c4702934e3af6edd7fa1"
+    },
+    {
+      "path": "src/features/chat/ChatComposer.vue",
+      "sha256": "4a8b3bb0a544e82ea0b09ecd82be42a6eae656e23bad1cc8b3b2c71134ef9606"
+    },
+    {
+      "path": "src/features/chat/ChatMessageActions.vue",
+      "sha256": "494ba6f2be4f3e82bd62d18cefba59d40b99e338491eca089a34084a545caea2"
+    },
+    {
+      "path": "src/features/chat/ChatTimeline.vue",
+      "sha256": "545a7ccca5742d2110d71cd9d74e68dd07a4aa8c7400ec4007a543328f39d912"
+    },
+    {
+      "path": "src/features/chat/ChatView.vue",
+      "sha256": "80705f491706cd764e68553b581fc02706067f39245f153df4ae942e2eb77e41"
+    },
+    {
+      "path": "src/features/chat/KanataConversationView.vue",
+      "sha256": "a781101bb3b1d94a15eb99dcb19ce502b69782504bb970a0d31d3e83d0fbb26d"
+    },
+    {
+      "path": "src/features/chat/KanataGroupCreator.vue",
+      "sha256": "d30cf82c56bd99f66799830178b0f6a8d2317c466d6d7d56d2303df2e208e91d"
+    },
+    {
+      "path": "src/features/chat/KanataHistoryPanel.vue",
+      "sha256": "69c3845aca60c330f709013223238bb23aeea1406b6fd735e862e1c9313d0fbf"
+    },
+    {
+      "path": "src/features/chat/KanataSetupView.vue",
+      "sha256": "de0024f15a38d3a022833a6e12cc0161cbd8980251c0e8f2720aaf21d0614915"
+    },
+    {
+      "path": "src/features/chat/KanataView.vue",
+      "sha256": "d2a9512349177b2561c6e25a56661f46af22ea419e7ea3be0caf964bf8e6395a"
+    },
+    {
+      "path": "src/features/chat/KanataWorldManager.vue",
+      "sha256": "78246c3da877f1d7c941461dc9ff562340e492fa8b9ed1505c6bafc086a0205e"
+    },
+    {
+      "path": "src/features/chat/autonomy/KanataActivityPanel.vue",
+      "sha256": "a075ca944f0493f2aa20ef91236bd712ca645e6ea854766c4ce90d7152c567c9"
+    },
+    {
+      "path": "src/features/chat/autonomy/autonomyValidation.js",
+      "sha256": "10ead72b6ac35f47175763f2c1a18ea7afbd22120d1aba5a376bfede910c9383"
+    },
+    {
+      "path": "src/features/chat/autonomy/kanataAutonomy.js",
+      "sha256": "df82c65c897feb242cf5ac26a95ee931df15da63a7e4b188d929456f3a0d025d"
+    },
+    {
+      "path": "src/features/chat/autonomy/kanataContact.js",
+      "sha256": "7287b56902830445fcef5de932654fee84469efc8d97c0a807367ac4cdecbad9"
+    },
+    {
+      "path": "src/features/chat/autonomy/kanataReplyTiming.js",
+      "sha256": "2c1e3c5b083744a68098c2c855553e4d9a89ddb9635ad3502fec545b212f420a"
+    },
+    {
+      "path": "src/features/chat/autonomy/kanataSocial.js",
+      "sha256": "738b2ed27944d0179e6da71bedb7e7a53a22e2587dd422b2becb7f10047998ad"
+    },
+    {
+      "path": "src/features/chat/backup/kanataBackup.js",
+      "sha256": "49514bbd06d05f10f9111ad3218babd57cca019c51511806a5d4d6c31e504b28"
+    },
+    {
+      "path": "src/features/chat/cards/KanataCardLibrary.vue",
+      "sha256": "8618c93cbb6b4856ece85fd21325ac58183bfba5b8fdbabbfbd98de40184deba"
+    },
+    {
+      "path": "src/features/chat/cards/characterCardImport.js",
+      "sha256": "282ecc984cc851dad288833cb7205c7e7b8e9b661acd19e12f4d1c7813a7fd60"
+    },
+    {
+      "path": "src/features/chat/cards/characterCardTypes.d.ts",
+      "sha256": "f7aa66f37b8320e63af12c944e7f1e8bd671828a53de92a8f071681747da0dd5"
+    },
+    {
+      "path": "src/features/chat/cards/useKanataFilePicker.js",
+      "sha256": "bf3cf9b9adfeb976ce64a16a430b36a4072a886a6f4ec843ab9688f38d1efc82"
+    },
+    {
+      "path": "src/features/chat/chat.css",
+      "sha256": "b6c477375e4a432558db9c29a0312a5becea44db22ad23de99d1248b8f8bd3d1"
+    },
+    {
+      "path": "src/features/chat/chatAvatar.js",
+      "sha256": "2a521624266e89d412458b08fecf2d59b0557f8f3b981d0fb7b38c2fd89ed2e4"
+    },
+    {
+      "path": "src/features/chat/chatCompanion.js",
+      "sha256": "4162a51433d595ee0f991b7adbae954eba170f590f1f1488f0bdc1b100acf1a8"
+    },
+    {
+      "path": "src/features/chat/chatFollowup.js",
+      "sha256": "bd718879b5da16abd37be51edcb13e7dd8ae62d306e6a7bae786b33105117ef7"
+    },
+    {
+      "path": "src/features/chat/chatInteraction.js",
+      "sha256": "b0d04fd82c37940f85aea2cfde56cc86315e47a1c837d512bfe80e298efd43a7"
+    },
+    {
+      "path": "src/features/chat/chatPersistence.js",
+      "sha256": "c5acc435c502e72199ee4144dd75fb7bfa27248d9b062426cedd5fb2e269e58d"
+    },
+    {
+      "path": "src/features/chat/chatProactive.js",
+      "sha256": "4506d841d420e4cc3a8e424f3403726cf1cb8cd40a2435f60dd90d504db3861b"
+    },
+    {
+      "path": "src/features/chat/chatRealism.js",
+      "sha256": "97ec1a49aea7d282b1b57be8835dcd9d33fbd2939092be3801fcc207dba99ead"
+    },
+    {
+      "path": "src/features/chat/chatRecords.js",
+      "sha256": "bd34be3add086c0a1313952d4f015add7bdc11c4f8744c85b9dcbd8b00cc18b9"
+    },
+    {
+      "path": "src/features/chat/chatRelationship.js",
+      "sha256": "9ca929fcf8d0606ffd0043420d966e910de6e08c88c1ba2a69baee88399ff37b"
+    },
+    {
+      "path": "src/features/chat/chatStorage.js",
+      "sha256": "908ee95bd44b4580215629d65490b6b98d4df149fe9f1fd87094e8df716f6550"
+    },
+    {
+      "path": "src/features/chat/chatStore.js",
+      "sha256": "63450208e097da4ed998aca56d731b4c9be59ee12301d446869956bc649791e2"
+    },
+    {
+      "path": "src/features/chat/companionPrompts.js",
+      "sha256": "e79da8c7e26543d03d0d041b2fb826d7d7663e0fb1abb8d69c113fccb3a50fff"
+    },
+    {
+      "path": "src/features/chat/domain/groupReplyLimits.js",
+      "sha256": "c5865a3b79597bdc07b11bbf8d0d74a42971cc8a4bc08a1e427c2f5ba93df4e5"
+    },
+    {
+      "path": "src/features/chat/domain/initializationGate.js",
+      "sha256": "6d995c1934effae6d72edefae603eb667785a210fb083b1ae46b2253a450fe15"
+    },
+    {
+      "path": "src/features/chat/domain/kanataConversation.js",
+      "sha256": "a09fd36e74db394b5975097ea3b77ccb03fa2fc0e4cc639f956eaefc13b082aa"
+    },
+    {
+      "path": "src/features/chat/domain/kanataCore.js",
+      "sha256": "29ce23e804d53220231542b84c4e17af4fd2c2ad08c8eb5aa6e2f475eb372332"
+    },
+    {
+      "path": "src/features/chat/domain/kanataJson.js",
+      "sha256": "948a7d8a9bd29c648c3c6a2b4e99a7acbc6da71c8a768639e2cfc68a62a8659e"
+    },
+    {
+      "path": "src/features/chat/domain/kanataManagementCore.js",
+      "sha256": "00934ea07b5f18c16e7c6cae078cffe385950a0b6468d61f5faad8956f393138"
+    },
+    {
+      "path": "src/features/chat/domain/kanataOwnedImage.js",
+      "sha256": "c6c10291c64de7b2eddc8432b4b56423051c578c367f1d1b258a26d995ffbf88"
+    },
+    {
+      "path": "src/features/chat/domain/kanataReadPermission.js",
+      "sha256": "41a1791e2f2ab66f9410e7689263caa3addfb33eb796e2c7cc390d234a942b4f"
+    },
+    {
+      "path": "src/features/chat/domain/kanataTypes.d.ts",
+      "sha256": "e35cda643c2e6c651f90b4576b1801cfdcf4dbfa3a59d17fc5bc3e8a8ed33553"
+    },
+    {
+      "path": "src/features/chat/domain/kanataUsage.js",
+      "sha256": "a21a0a0bd12cb992070eb81ed88e59e74123330caa3ae8e6771425af5a372b6b"
+    },
+    {
+      "path": "src/features/chat/domain/kanataValidation.js",
+      "sha256": "dd18dfa6558e7424f81794ed8fe2a55778690b0970b6a61f9fa50153116caad1"
+    },
+    {
+      "path": "src/features/chat/domain/presetCore.js",
+      "sha256": "3bcd7acc53b349e41403289b93ad2c01cdba29d4b97193023f8fe10a89b6bb8e"
+    },
+    {
+      "path": "src/features/chat/domain/replyTimingPolicy.js",
+      "sha256": "e09b51b1262172ba6948c8fe8344e21cfc33321294cf57bab71087a158c0510e"
+    },
+    {
+      "path": "src/features/chat/experience/KanataEventsPanel.vue",
+      "sha256": "ceb69cec718d0c2e416c9c57afa734c20b3d5f47a32afc66b4fd965ac7393b26"
+    },
+    {
+      "path": "src/features/chat/experience/KanataExperiencePanel.vue",
+      "sha256": "2df54a18a8c24d3c86863ebeed1d1f9a62a4b5b75020c808cf026120057384f7"
+    },
+    {
+      "path": "src/features/chat/experience/KanataMemoryPanel.vue",
+      "sha256": "95cceeeeddb743ebb4168db7ef8d9523e6aad2b1e6c37bf903224e35096b338c"
+    },
+    {
+      "path": "src/features/chat/experience/KanataPermissionsPanel.vue",
+      "sha256": "793e4b90fdbcd0c8e39c59d96a44b95b50f6d1d9d880f783120e0849b825d64a"
+    },
+    {
+      "path": "src/features/chat/experience/experienceValidation.js",
+      "sha256": "50e7671e4033723e91f47774f74649fde415663c6cc9cb4f9c9f9626b385eefc"
+    },
+    {
+      "path": "src/features/chat/experience/kanataEvents.js",
+      "sha256": "c8652f19edcc5c7a2402d9c4dd455c5b59b356446642adc2e6d942f9d4ab11df"
+    },
+    {
+      "path": "src/features/chat/experience/kanataKnowledge.js",
+      "sha256": "e4a369430f508dfaf0930e096a8fed49dc16076f2df5d47b40887f1b782de0de"
+    },
+    {
+      "path": "src/features/chat/experience/kanataMemory.js",
+      "sha256": "a37daeb2f5cee0d92c7ddcdff9031d71d35a8141cfc606b484bb82c44bc43629"
+    },
+    {
+      "path": "src/features/chat/kanataManagement.css",
+      "sha256": "ad7d58b6e10ea0b6ee81c7ef832866f00f641e5efd5698679dc36a2282dcdc88"
+    },
+    {
+      "path": "src/features/chat/kanataStore.js",
+      "sha256": "b363da4611640c80fc626e206a7b2b1ebc7ef93a4dbf1ea58e9426390aed4849"
+    },
+    {
+      "path": "src/features/chat/legacy/legacyChatCleanup.js",
+      "sha256": "9c53fd9dc1fbc4232fb8fd37c649fca24f53a97c2ad80d2655f276992c25408a"
+    },
+    {
+      "path": "src/features/chat/lorebook/KanataLorebookPanel.vue",
+      "sha256": "ea0ba6ea6f55a81d03a664856456f0a119eaf0e594c058fc24066845a312b6b3"
+    },
+    {
+      "path": "src/features/chat/lorebook/kanataLorebook.js",
+      "sha256": "4be2c12bf6b87f387506bd2ef0f957e726341a655f1763f6c96a2794804a144d"
+    },
+    {
+      "path": "src/features/chat/presets/abydos.v1.json",
+      "sha256": "f6e47a7388c0f17f923ab4f14d0ac23bd3fa70b9787161652aa2f452edfb1b43"
+    },
+    {
+      "path": "src/features/chat/presets/presetCatalog.js",
+      "sha256": "da81fcff104660f45a88ddf2b675663fa8cadaa9f7d026139360ecb393388a00"
+    },
+    {
+      "path": "src/features/chat/storage/kanataRepository.js",
+      "sha256": "b1d01d3d21a38fc5710761d1bed45df4c326db1597df9d020db900ea0425de4c"
+    },
+    {
+      "path": "src/features/chat/storage/kanataRepositoryTypes.d.ts",
+      "sha256": "530d46a44ef389aec42b9bb31735c791308564643af3fa6702ea826d1fdc6daf"
+    },
+    {
+      "path": "src/features/chat/storage/messageArchiveCore.js",
+      "sha256": "9155c2ed7da45352992ba15acb6463b5ee469e3aae471257f23258b368df32f2"
+    },
+    {
+      "path": "src/features/chat/storage/messageArchiveRepository.js",
+      "sha256": "ed8dc253b1140073be33ec5ac61db46b89659d3a1c17f203105b3f040e7402f8"
+    },
+    {
+      "path": "src/features/chat/useKanataBubbleReveal.js",
+      "sha256": "23f38c8b9746ec89e338a467c1dbb85a764592816015b5a14f8076dd43e6c990"
+    },
+    {
+      "path": "src/features/mood/MoodView.vue",
+      "sha256": "fb421afba5d458005ad7c55b25094839e3a0d7d625a7c1821476a89e29169bbf"
+    },
+    {
+      "path": "src/features/mood/moodRecords.js",
+      "sha256": "edec150bd73be3c96d0c939f9ba131a9b2cf096819c74a6a689498102c69ed22"
+    },
+    {
+      "path": "src/features/mood/moodRepository.js",
+      "sha256": "cd2ebb95ab73f4b3ee0ea102d0369a51a2cc2d41846cd2c7ab14b5c986250725"
+    },
+    {
+      "path": "src/features/mood/moodStore.js",
+      "sha256": "c4caae1e189231420bb2319004a5f003c233037afb845a7c7f72333ab6e043f9"
+    },
+    {
+      "path": "src/features/savings/DebtListView.vue",
+      "sha256": "5f02ff163cd122cc8ba92f3ac406c083404f4d0b64d28756cd7f0a5e8222929a"
+    },
+    {
+      "path": "src/features/savings/savingsRepository.js",
+      "sha256": "a728a8e7edb63041ec055912ca4563eac7f65e7112aa213aed3b5e0781359d23"
+    },
+    {
+      "path": "src/features/savings/savingsStore.js",
+      "sha256": "5b75bf73691051162995d82955c9196bccac129f494c3fe28e3ce691468a20e7"
+    },
+    {
+      "path": "src/features/schedule/ScheduleView.vue",
+      "sha256": "5f0042e01539b46f7b6f4413ee852def6b996943ec74ab2291a53dbc46f26c25"
+    },
+    {
+      "path": "src/features/schedule/scheduleCore.js",
+      "sha256": "512e2b67b36f63e1f82b35fdff7de9d47a5a33410edc451151f1d0440b6ea0f4"
+    },
+    {
+      "path": "src/features/schedule/scheduleNotificationService.js",
+      "sha256": "0c16bb58b3068d9546fc75c15404795c1c2fadb3b3f5965d7a4c2939cec12247"
+    },
+    {
+      "path": "src/features/schedule/scheduleRepository.js",
+      "sha256": "2ffa08bb506682a3213a8ce16ffc6212234cf2013ad75ff20e3ec1f6ae080949"
+    },
+    {
+      "path": "src/features/schedule/scheduleStore.js",
+      "sha256": "7acb578a090e20ff60c84ba4dad2afdc6b4bf6b09bbc123180a55c7e72372337"
+    },
+    {
+      "path": "src/features/todo/TodoProgressCard.vue",
+      "sha256": "a4c5d6d413ad090512130e496771fc53bfe2e2c07f301269cb836711a82fa03e"
+    },
+    {
+      "path": "src/features/todo/TodoView.vue",
+      "sha256": "360b4754a62209674f2ca5a40a8ef03e479362bea26d7dd17f79589b1d533f42"
+    },
+    {
+      "path": "src/features/todo/todoCore.js",
+      "sha256": "aee86bc033492ddee42a2752d15b111a939bb30e320184b71ae0827c1aa68240"
+    },
+    {
+      "path": "src/features/todo/todoNotificationService.js",
+      "sha256": "25c3658e20f78ee1d7fa17b659508774afcb002c12ecb2033e4f93704198d9fb"
+    },
+    {
+      "path": "src/features/todo/todoPresentation.js",
+      "sha256": "0ed6a6efa8fa80c670049dcd935b5a031eaa4184520f7c1ab429ddb68589694a"
+    },
+    {
+      "path": "src/features/todo/todoRepository.js",
+      "sha256": "768e301891dd6c0033a21b32347799d5ea390e98d4ee2e6a2d472b1ef7f0992d"
+    },
+    {
+      "path": "src/features/todo/todoStore.js",
+      "sha256": "098bd380511f786c6aa9b3a93acbaf2ac12a3b8a149df70d46f2785f7cd4f728"
+    },
+    {
+      "path": "src/features/vault/PasswordVaultView.vue",
+      "sha256": "967df0757095c3b1dc335d0810a1e84061634e996afc321dfa101481412825ca"
+    },
+    {
+      "path": "src/features/vault/vaultRepository.js",
+      "sha256": "cc8ebdc40d0b802644498b79d9b44c81f4d90a8239d0243f2623935e10898a21"
+    },
+    {
+      "path": "src/features/vault/vaultStore.js",
+      "sha256": "ebb56ea17c6c56c16422a411b709e762a8adf203b1289d0546a3c66be2f0f4f7"
+    },
+    {
+      "path": "src/features/weight/WeightView.vue",
+      "sha256": "0b0ff4d84d9ac014fdc39e6ae642b6d03243fceec247602332e39dcb851ca887"
+    },
+    {
+      "path": "src/features/weight/weightRepository.js",
+      "sha256": "00929ae472f7e1685a968e2899ac60aeed5a013739a6feb62e3ef7929ac21840"
+    },
+    {
+      "path": "src/features/weight/weightStore.js",
+      "sha256": "3dd3c6510fbe04985af4d068c7f7d9816bee3204f8228118bb46f3fdac130fbb"
+    },
+    {
+      "path": "src/main.js",
+      "sha256": "56fbc97a19938df7c6d6fed70f110f1d1f59b7dfd4593840ad48ceb4eda88eab"
+    },
+    {
+      "path": "src/platform/ai/client.js",
+      "sha256": "64f76a9d0a8b699a8a054c3b02db12afa74137060235b322016abc6ba4287b0e"
+    },
+    {
+      "path": "src/platform/ai/completion.js",
+      "sha256": "991a5dd837d5343fe18615b3d13dae9ccd442f8e8f62ed0e5b4de9a704ec6f5d"
+    },
+    {
+      "path": "src/platform/ai/completionTypes.d.ts",
+      "sha256": "9ba8894ed00b9ca936cad2c874ea604f1b782c721b39b73e3c60740a9af9b784"
+    },
+    {
+      "path": "src/platform/kanataNotifications.js",
+      "sha256": "58b0473816f33605142622a2147dae07ed32f03d47d1d5244bc7646f05ef330a"
+    },
+    {
+      "path": "src/platform/security/secureCredentials.js",
+      "sha256": "c58b28658bb2550917ccbf9f77e18a1246d55d0f158cb08dc75df6708cbb79a3"
+    },
+    {
+      "path": "src/platform/storage/archiveFileBatch.js",
+      "sha256": "6c0116b949a6d5d89ec1018e5b83ef6e07b759fc0a5b4a1d5018b8ecd5f11200"
+    },
+    {
+      "path": "src/platform/storage/archiveFileBatchTypes.d.ts",
+      "sha256": "a5ca9e237067e4f48b23bdc3a97a975b2e9ea712f295c90cc43c7c82a774eec0"
+    },
+    {
+      "path": "src/platform/storage/keys.js",
+      "sha256": "f44256f8c1cba25c29af58a3b6c0667fdbb7289d89f4a1d0ae20cdac02057ac3"
+    },
+    {
+      "path": "src/platform/storage/preferenceRepository.js",
+      "sha256": "3d96382ba0545bdd9fb039d26bf1caf91e6ed3c8ce67e9d3f286aaea55d442b3"
+    },
+    {
+      "path": "src/platform/storage/preferences.js",
+      "sha256": "6a126125bbec5de7c36a91ae9bfc6ddface5ea9c1e6941386de7600cf9e81b90"
+    },
+    {
+      "path": "src/platform/storage/restoreJournal.js",
+      "sha256": "33f12f6a59672e9f22f198efd06122c27d4655cf9f7341b7658796dfffe31651"
+    },
+    {
+      "path": "src/platform/storage/restorePayloadCodec.js",
+      "sha256": "d646f8c378799a76be2cf02b59d58a22a7d6bbd678e183a3bfe49cf4b99b0c06"
+    },
+    {
+      "path": "src/platform/storage/restorePayloadTypes.d.ts",
+      "sha256": "aa5ad636cfb84637dcb1f53993e811df4cd3a29b2b05caef2d001debfe5dd1b2"
+    },
+    {
+      "path": "src/platform/storage/restoreState.js",
+      "sha256": "34651fa609bef70bc6fa319bff9db167e56c43afaa5e982032a37a6a9afb86d1"
+    },
+    {
+      "path": "src/platform/storage/storePersistence.js",
+      "sha256": "8f4d00de76fcf138cd106c4d7adff11017c76c850ae1293c4729bc28607488d5"
+    },
+    {
+      "path": "src/services/aiEngine.js",
+      "sha256": "6866df7b158f0d1154e8f7107684d076558048ea8e26078a475f99e0a763aa14"
+    },
+    {
+      "path": "src/services/appDeepLink.js",
+      "sha256": "06e8f41c00744219e94574616f0469fcee56f0db35d5da902397318714d7ad56"
+    },
+    {
+      "path": "src/services/appPerformance.js",
+      "sha256": "e89864ab5ec816c24587119aacdc1e6ca6d28cb854caedc2dfb9f390a5c710f2"
+    },
+    {
+      "path": "src/services/autoLockPolicy.js",
+      "sha256": "4642bd23380025f83f78ac1507fa9f928ad38d79f880d71299a21ea164ea784b"
+    },
+    {
+      "path": "src/services/backNavigation.js",
+      "sha256": "28edad47e18ac06514fb0ee4887b0415f10760edda97f2f170d3d03db5588b8d"
+    },
+    {
+      "path": "src/services/backgroundCrop.js",
+      "sha256": "59ab5d8f6fcfba0d8321b367fb18b7db057e4e50113c2fbf439b3193685bc168"
+    },
+    {
+      "path": "src/services/backgroundSettings.js",
+      "sha256": "22028b9f91bbf50b5c52472c9d30591ef1d55a21a35b93e220af81c7861ca028"
+    },
+    {
+      "path": "src/services/colorPicker.js",
+      "sha256": "4e330492481db617459b70d7237f0720ccef55dcb7ef0821eff963cc717257cc"
+    },
+    {
+      "path": "src/services/commonNotes.js",
+      "sha256": "6a440ab4e5632d43ba12e0f23ed63b5e5c0359d500bf3f90e8fd3175ad2cc6bc"
+    },
+    {
+      "path": "src/services/componentAppearance.js",
+      "sha256": "d9b334d663fceedf755f7d46ac336091060f728a012d637dd18d7273a5f6bbfe"
+    },
+    {
+      "path": "src/services/debtIcon.js",
+      "sha256": "ea773725c407126bef1316a4d46f7c960b58ff11a19ab1e62e01fdba15490b8c"
+    },
+    {
+      "path": "src/services/debtOrdering.js",
+      "sha256": "43e16f32c4f8a381ffe2dc6d8141701bd9e29d3246d02b8f9689b76bb8b53a12"
+    },
+    {
+      "path": "src/services/fullBackup.js",
+      "sha256": "4455989b130b699f979b5385b01a568bfc48b860818755fe23e74e55b1c10694"
+    },
+    {
+      "path": "src/services/homeWidget.js",
+      "sha256": "c28f9c79febd518d434d7f914918862d0c4af63e181cae08b01bcdef2f7e675c"
+    },
+    {
+      "path": "src/services/homeWidgetSnapshot.js",
+      "sha256": "76789929504b8990304a4015917b1bc09a6cb8b59b598ef19c4772c4ca26312b"
+    },
+    {
+      "path": "src/services/masterPasswordChange.js",
+      "sha256": "782d976f041b99b8b7afa412ed7d7fa027fc748dc50693dbec8f4af0b5bad82c"
+    },
+    {
+      "path": "src/services/masterPasswordSecurity.js",
+      "sha256": "c66cf855393108ce74c738b73655edc921baf4d81762d8763055b08d181f1762"
+    },
+    {
+      "path": "src/services/monthlyReport.js",
+      "sha256": "ad9f7eef9502107c0501dab310c7db86c07cc0bae7ac23d788db6199cd86807a"
+    },
+    {
+      "path": "src/services/nativeActivityGuard.js",
+      "sha256": "9593a7daf81cc8af8102c7196de3f89f851b080c7ab3d2bc2e234ab8ef4f5b50"
+    },
+    {
+      "path": "src/services/navigationHistory.js",
+      "sha256": "a71ee29204f8c3a4f22c7110b29f35a42d31f39b9b5ecb3ae9826e82ffc776f9"
+    },
+    {
+      "path": "src/services/notificationPersonalizer.js",
+      "sha256": "bc363da9e22d7699ea32fa4078ea7c30466efa974a714a711a0431466e389541"
+    },
+    {
+      "path": "src/services/notificationPersonalizerCore.js",
+      "sha256": "14513c85a25fa2d5dc459d8c6e3596930526befdab1fdf1bd4f0c66fecc321c7"
+    },
+    {
+      "path": "src/services/notificationService.js",
+      "sha256": "d0ac510c7a540ac18f3120512b296c7054b2aa9e80800736b8fe2ba1bf4b180c"
+    },
+    {
+      "path": "src/services/passwordVaultRecords.js",
+      "sha256": "b8bc7011695c8a54f3a60eea94d824cf6875d0bd2d5e7ff3650d241fbe0e483a"
+    },
+    {
+      "path": "src/services/reminderContext.js",
+      "sha256": "417bdad8fa776f3f6d8c6aa4fde7a5cf520e9dcdac25a578939b3145da662043"
+    },
+    {
+      "path": "src/services/reminderSchedule.js",
+      "sha256": "35208a00363a90f1f593394b28a4a1344649d056ca5c8b9dc82bd5c2799234a4"
+    },
+    {
+      "path": "src/services/securitySettings.js",
+      "sha256": "ac2c75e3dc4115e57bfb2b3b728b2024e6ff4aa725c81363eab819e3b4258d4f"
+    },
+    {
+      "path": "src/services/themeSystem.js",
+      "sha256": "e029087594c34d22190bbcf4103880017e897eac9d091418845b757e8983aa05"
+    },
+    {
+      "path": "src/services/uiFeedback.js",
+      "sha256": "0947571b581652cf089de732acf354a6c680f7ca89f205727f974bef34a2ba2b"
+    },
+    {
+      "path": "src/services/vaultAccessGuard.js",
+      "sha256": "cac4bfecbf3342a3a1e1ea654fe6d62ce61736140877c5398749f37a194a820f"
+    },
+    {
+      "path": "src/services/weightInsights.js",
+      "sha256": "0873f8926edfbf25a60e9c43a3344fa04d3110f4e9023c989e205bfdacf5cc50"
+    },
+    {
+      "path": "src/shared/async/mapInBatches.js",
+      "sha256": "afe463f24375d3f389359e2bfc5171510c0a6d1f7bbe768e707dbcb94f293f89"
+    },
+    {
+      "path": "src/shared/crypto/passphraseAes.js",
+      "sha256": "3e6c133272208a3420e19c9f7e48fbcf7a9dc9f5c8c5c5652555d35af3699731"
+    },
+    {
+      "path": "src/shared/crypto/sha256Text.js",
+      "sha256": "802e2dca9264b8a2ee10656fb793cf55afe032970790400a34ba90d4de4aece1"
+    },
+    {
+      "path": "src/shared/crypto/utf8Words.js",
+      "sha256": "9578ce848876eb936fa367d6fdd487fece3ba389b988b517b1ef818bf654dc8c"
+    },
+    {
+      "path": "src/shared/date.js",
+      "sha256": "ad036881bf50524a4b2a0cfb5dea2d65413dfe9b0f6b783dd7e0e3ee09000557"
+    },
+    {
+      "path": "src/stores/auth.js",
+      "sha256": "810a030515af97716fe66b81b4cdd2b8e13d2d13cc9e9df85d648bc83a8a8e6b"
+    },
+    {
+      "path": "src/stores/debt.js",
+      "sha256": "031b1d37aa70b935296273c0340476b3ddc2aac789e5c5dd9b8d2652a0beec19"
+    },
+    {
+      "path": "src/stores/passwordVault.js",
+      "sha256": "8e425488bb88ba87e72a75e90f52699e4f76f2d0c7468474268be9c0828c75d0"
+    },
+    {
+      "path": "src/stores/protectedAccess.js",
+      "sha256": "8c272f263eac9bec562de7172632a34ebce239fc996fc44d3a1fc075f58c516e"
+    },
+    {
+      "path": "src/stores/settings.js",
+      "sha256": "89e913dd31f3ae8ac76c160d30abce1089c1a1c671fe28385fa6ccecce644de2"
+    },
+    {
+      "path": "src/stores/weight.js",
+      "sha256": "3425fab5a03e598fb315a8cf4f98990a4109de1208312017a78a4fe82c38702d"
+    },
+    {
+      "path": "src/styles/app.css",
+      "sha256": "83030b7e5b3e0242025beb1192a5f6e066f127cff39c5d5744e41c20019a726b"
+    },
+    {
+      "path": "src/styles/settings.css",
+      "sha256": "1a6adce3f07a2d9550e567d2ed81dda1f62323beb8ddefe16094442598fb04f6"
+    },
+    {
+      "path": "src/vue-shim.d.ts",
+      "sha256": "e280684b8829fb7781d2038cad1296aa5cad446ce13222d2b6ec9c054dcc8af2"
+    },
+    {
+      "path": "src/workers/masterPasswordWorker.js",
+      "sha256": "f5b706718e69abada2b822f3f0d2eddad4bb9d1da8d587d6b3bc9aac832a0608"
+    },
+    {
+      "path": "vite.config.js",
+      "sha256": "b728753d7bf531cc6fecd090a0ea3602b39ef81868f50111564eee9540fb38b1"
+    }
+  ]
+}

@@ -1,0 +1,48 @@
+{
+  "status": "PASS",
+  "at": "2026-11-02T08:10:18.264Z",
+  "syntheticOnly": true,
+  "apkSha256": "8e67b74a192fd89e340cd4829b4137dc67ae6e43e65611b9551d987847473f35",
+  "aiRequests": 0,
+  "pageErrors": [],
+  "integrity": {
+    "modules": [
+      "savings",
+      "weight",
+      "mood",
+      "passwords",
+      "schedules",
+      "todos",
+      "chat"
+    ],
+    "settings": true,
+    "metadata": true,
+    "todoRevision": {
+      "before": 3,
+      "after": 8,
+      "advanced": true
+    },
+    "moodRollover": {
+      "originalRows": 1,
+      "originalsPreserved": true,
+      "automaticMoodRows": [
+        {
+          "id": "1793607016633_4x6w",
+          "date": "2026-10-30"
+        },
+        {
+          "id": "1793607016634_dea9",
+          "date": "2026-10-31"
+        },
+        {
+          "id": "1793607016634_gohh",
+          "date": "2026-11-01"
+        }
+      ],
+      "basis": "existing-moodStore-autoFillMissingDays"
+    },
+    "autoLockDelaySeconds": 0
+  },
+  "expiryTriggeredExplicitly": false,
+  "backgroundPlaintextReleased": true
+}

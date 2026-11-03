@@ -7,6 +7,9 @@ export { KanataValidationError, requireKanata, cloneKanataJson } from './kanataJ
 import { validateMessageArchives } from '../storage/messageArchiveCore.js'
 import {validateGroupReplyLimits} from './groupReplyLimits.js'
 import {validateReplyTimingPolicy} from './replyTimingPolicy.js'
+// Only this module's full validation + recursive freeze factory can register an identity.
+// Weak membership retains neither a plaintext graph nor a credential after its owner releases it.
+const immutableImages=new WeakSet()
 /** @param {unknown} value @param {string} path */
 const object = (value, path) => requireKanata(value !== null && typeof value === 'object' && !Array.isArray(value), 'INVALID_OBJECT', path)
 /** @param {unknown} value @param {string} path @param {boolean} [empty] */
@@ -54,8 +57,31 @@ export function validateKanataData(input) {
 /** Validate a privately owned detached graph, without making another copy. Does not transfer ownership.
  * @param {unknown} input @returns {KanataData} */
 export function assertKanataData(input) {
+  if(input&&typeof input==='object'&&immutableImages.has(input))return /** @type {KanataData} */(input)
   assertKanataJson(input)
   return validateKanataGraph(input)
+}
+/** Internal immutable DTO factory. Unknown/wire inputs still require ordinary detachment;
+ * there is no trust flag, shallow-freeze shortcut, or registration without both full checks.
+ * @param {KanataData} input @returns {KanataData} */
+export function ownImmutableKanataData(input){
+  const data=assertKanataData(input)
+  if(immutableImages.has(data))return data
+  const seen=new WeakSet()
+  /** @param {unknown} value */
+  const freeze=value=>{
+    if(!value||typeof value!=='object'||seen.has(value))return
+    seen.add(value)
+    for(const key of Object.getOwnPropertyNames(value)){
+      const descriptor=Object.getOwnPropertyDescriptor(value,key)
+      if(descriptor&&Object.hasOwn(descriptor,'value'))freeze(descriptor.value)
+    }
+    Object.freeze(value)
+  }
+  freeze(data)
+  assertKanataData(data)
+  immutableImages.add(data)
+  return data
 }
 /** @param {unknown} copied @returns {KanataData} */
 function validateKanataGraph(copied) {
@@ -82,7 +108,9 @@ function validateKanataGraph(copied) {
   const identities = new Map(data.identities.map(u => [u.id, u]))
   const instances = new Map(data.instances.map(c => [c.id, c]))
   const conversations = new Map(data.conversations.map(c => [c.id, c]))
-  const messages = new Map(data.messages.map(m => [m.id, m]))
+  /** @type {Map<string,import('./kanataTypes').Message>} */
+  const messages = new Map()
+  for(const message of data.messages)messages.set(message.id,message)
   if (data.usageEvents !== undefined) {
     rows(data.usageEvents, 'usageEvents')
     const seen = new Set()

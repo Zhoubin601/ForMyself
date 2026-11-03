@@ -1,5 +1,41 @@
 import { createEmptyKanataData } from '../../src/features/chat/domain/kanataCore.js'
 import { validateKanataData } from '../../src/features/chat/domain/kanataValidation.js'
+import {ownImmutableKanataData} from '../../src/features/chat/domain/kanataValidation.js'
+import type {ImmutableKanataFactory} from '../../src/application/contracts'
+const immutableFactory: ImmutableKanataFactory = ownImmutableKanataData
+void immutableFactory
+// @ts-expect-error a trust flag cannot substitute for a complete typed graph
+ownImmutableKanataData({trusted:true,version:2})
+import {sha256TextAsync} from '../../src/shared/crypto/sha256Text.js'
+import {utf8Bytes} from '../../src/shared/crypto/utf8Words.js'
+import type {ArchiveTextFingerprint,StrictUtf8Encoder} from '../../src/application/contracts'
+const archiveHashOperation: ArchiveTextFingerprint = sha256TextAsync
+const archiveUtf8Operation: StrictUtf8Encoder = utf8Bytes
+void archiveHashOperation
+void archiveUtf8Operation
+// @ts-expect-error archive fingerprints settle asynchronously
+const unsafeSynchronousHash: ArchiveTextFingerprint = (_text: string) => 'digest'
+void unsafeSynchronousHash
+const archiveDigest: Promise<string> = sha256TextAsync('synthetic-only')
+const strictBytes: Uint8Array = utf8Bytes('synthetic-only')
+void archiveDigest
+void strictBytes
+import type {ArchiveFileBatchDriver} from '../../src/application/contracts'
+declare const archiveFileBatch: ArchiveFileBatchDriver
+archiveFileBatch.execute({operations:[{operation:'read',key:'synthetic-hash'}]})
+import type {ArchiveFilesystemDriver} from '../../src/application/contracts'
+declare const archiveFiles: ArchiveFilesystemDriver
+archiveFiles.deleteArchiveKeys?.(['synthetic-hash'])
+// @ts-expect-error retirement cannot coerce a non-string key
+archiveFiles.deleteArchiveKeys?.([42])
+// @ts-expect-error the native adapter cannot accept arbitrary file paths
+archiveFileBatch.execute({operations:[{operation:'delete',path:'../../outside'}]})
+// @ts-expect-error write bodies must remain explicit ciphertext strings
+archiveFileBatch.execute({operations:[{operation:'write',key:'hash',data:{plaintext:'disallowed'}}]})
+// @ts-expect-error the asynchronous digest accepts explicit text only
+sha256TextAsync({trusted:true})
+// @ts-expect-error strict UTF8 conversion never coerces input
+utf8Bytes(42)
 import { instantiateWorldPreset } from '../../src/features/chat/domain/presetCore.js'
 import type { KanataData, WorldPreset, Message, LifeGrant } from '../../src/application/contracts'
 declare const preset: WorldPreset

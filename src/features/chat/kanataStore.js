@@ -63,7 +63,7 @@ export function createKanataStore(repository, id = 'kanata', { userId = 'user-lo
     /** @param {unknown} error */
     const noteArchiveFailure = error => {
       const code = safeErrorCode(error, 'KANATA_ARCHIVE_READ_FAILED')
-      if (['KANATA_ARCHIVE_READ_FAILED','KANATA_ARCHIVE_VERIFY_FAILED','KANATA_ARCHIVE_DECRYPT_FAILED','KANATA_ARCHIVE_INDEX_MISMATCH','KANATA_ARCHIVE_INVALID','UNSUPPORTED_KANATA_ARCHIVE_VERSION'].includes(code)) archiveError.value = code
+      if (['KANATA_ARCHIVE_READ_FAILED','KANATA_ARCHIVE_VERIFY_FAILED','KANATA_ARCHIVE_DECRYPT_FAILED','KANATA_ARCHIVE_INDEX_MISMATCH','KANATA_ARCHIVE_INVALID','UNSUPPORTED_KANATA_ARCHIVE_VERSION','SHA256_PLATFORM_FAILED'].includes(code)) archiveError.value = code
     }
 
     const syncPersistence = () => {
@@ -319,7 +319,8 @@ export function createKanataStore(repository, id = 'kanata', { userId = 'user-lo
         if (session === revision) {
           commitDraft(value)
           password = nextPassword
-          retiredArchives = previousPages
+          const currentKeys=new Set(nextPages.map(page=>page.key))
+          retiredArchives = previousPages.filter(page=>!currentKeys.has(page.key))
           await archives.retire(retiredArchives)
           // Also retire verified-unreferenced files left by an interrupted conversion or an older restore.
           await repository.retireArchives?.(nextPages.map(page=>page.key))

@@ -8,6 +8,7 @@ import {encryptKanataData,decryptKanataData,KANATA_DATA_PATH,KANATA_BACKUP_PATH}
 import {KANATA_ARCHIVE_DIRECTORY} from '../src/features/chat/storage/messageArchiveRepository.js'
 import {buildKanataChatBackupSnapshot,readKanataChatBackupSnapshot} from '../src/features/chat/backup/kanataBackup.js'
 import {ownKanataRestoreImage} from '../src/features/chat/domain/kanataOwnedImage.js'
+import CryptoJS from 'crypto-js'
 let sequence=0
 beforeEach(()=>{vi.stubGlobal('crypto',webcrypto);setActivePinia(createPinia());Object.assign(restoreState,{blocked:false,busy:false})})
 afterEach(()=>{vi.unstubAllGlobals()})
@@ -18,6 +19,32 @@ async function harness(count=400){
   return{...h,data,store,options}
 }
 const logical=value=>({...value,version:1,messages:[...value.messages].sort((a,b)=>a.id.localeCompare(b.id))})
+it('P7 rekey retirement never removes a still-referenced content key, including deterministic same-password compensation',async()=>{
+  const salt=CryptoJS.enc.Hex.parse('0011223344556677'),random=vi.spyOn(CryptoJS.lib.WordArray,'random').mockImplementation(()=>salt.clone())
+  try{
+    const h=await harness();await h.store.archiveHistory(h.options)
+    const keys=h.store.snapshot.messageArchives.map(page=>page.key)
+    await h.store.reencrypt(password)
+    expect(h.store.snapshot.messageArchives.map(page=>page.key)).toEqual(keys)
+    for(const key of keys)expect(h.files.has(KANATA_ARCHIVE_DIRECTORY+'/'+key+'.enc')).toBe(true)
+    await h.store.release();expect(await h.store.load(password)).toBe(true)
+    await h.store.prepareBackup();expect(logical(h.store.backupSnapshot())).toEqual(logical(h.data))
+  }finally{random.mockRestore()}
+})
+it('P7 platform hash failure closes ordinary Store writes without changing canonical bytes, and a fresh authenticated load can retry',async()=>{
+  const h=await harness();await h.store.archiveHistory(h.options)
+  const original=h.files.get(KANATA_DATA_PATH),offset=h.calls.length
+  vi.stubGlobal('crypto',{subtle:{digest:async()=>{throw Error('synthetic-backend-error')}}})
+  await expect(h.store.readHistory({...h.options,text:'星河'})).rejects.toThrow('SHA256_PLATFORM_FAILED')
+  expect(h.store.archiveError).toBe('SHA256_PLATFORM_FAILED')
+  await expect(h.store.update(d=>{d.worlds[0].name='must not write'})).rejects.toThrow('SHA256_PLATFORM_FAILED')
+  expect(h.files.get(KANATA_DATA_PATH)).toBe(original)
+  expect(h.calls.slice(offset).some(c=>['write','rename','delete'].includes(c.operation))).toBe(false)
+  vi.stubGlobal('crypto',webcrypto)
+  await h.store.release();expect(await h.store.load(password)).toBe(true)
+  const found=await h.store.readHistory({...h.options,text:'星河'})
+  expect(found.messages.some(m=>m.id==='synthetic-message-26')).toBe(true)
+})
 it('P7 large portable restore writes bounded verified pages before the canonical header without an intermediate full monolith',async()=>{
   const h=await harness(1002);h.calls.length=0
   await h.store.restoreSnapshot(h.data)

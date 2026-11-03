@@ -19,6 +19,20 @@ test('P7 inert JSON streaming matches native JSON including surrogate boundaries
   assert.equal(chunks.join(''),JSON.stringify(data));assert(chunks.every(c=>c.length<=8192))
   assert.deepEqual(JSON.parse(chunks.join('')),JSON.parse(JSON.stringify(data)))
 })
+
+test('P7 fragment buffering preserves exact multi-chunk JSON bytes and cancellation never evaluates later properties',()=>{
+  for(const length of [8180,8191,8192,8193,17000]){
+    const data={['合成"键'+length]:Array.from({length:150},(_,n)=>({n,text:'a'.repeat(n%80)+'🚀中文'})),large:'a'.repeat(length)+'𠮷'.repeat(6000)}
+    const chunks=[...restoreJsonChunks(data)]
+    assert.equal(chunks.join(''),JSON.stringify(data));assert(chunks.every(chunk=>chunk.length<=8192))
+    for(let i=0;i<chunks.length-1;++i)assert(!/[\ud800-\udbff]$/.test(chunks[i]))
+  }
+  let calls=0
+  const value={large:'合成🚀'.repeat(10000),get later(){++calls;return'not evaluated'}}
+  const iterator=restoreJsonChunks(value)
+  assert.equal(iterator.next().done,false);iterator.return();assert.equal(iterator.next().done,true)
+  assert.equal(calls,0)
+})
 test('P7 streaming JSON rejects runtime/accessor/cycle/sparse inputs before any hidden getter executes',()=>{
   let calls=0;const getter={get secret(){calls++;return'synthetic'}};const cycle={};cycle.self=cycle
   for(const value of [getter,cycle,new Date(),Array(2),{hidden:undefined},{func:()=>1},{n:Infinity},{[Symbol('synthetic')]:1}])assert.throws(()=>[...restoreJsonChunks(value)],code('RESTORE_PAYLOAD_INVALID_JSON'))

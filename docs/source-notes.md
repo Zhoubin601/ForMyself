@@ -1164,3 +1164,6 @@ raw/完整需求清单.txt 4.1/4.4/8.3及最新连续执行v3驱动当前实现�
 读取 raw/完整需求清单.txt（原始资料保持只读），依 v3 阶段计划、五人规格、clean-start v2 和20261031云端交接继续。fetch Kanata后HEAD仍ddd3f10；没有云端新增提交。新切片来源为实际 messageArchiveCore.js 的规划分配及旧生产Web100k恢复峰值，不用猜测代替测量；过程见20261102-kanata-p7-archive-planner-v1.md。
 
 平台补丁来源：本地package-lock锁定的`@capacitor/filesystem@8.1.2`，`node_modules/@capacitor/filesystem/dist/esm/web.js`的readdir/getAllKeys+Promise.all及package.json（MIT、上游ionic-team/capacitor-filesystem）；读取日期2026-11-02。直接修补其Web批次调度，通过scripts/postinstall复现，未复制官方IP素材或改raw资料。未进行新的联网资料研究。累计分配profile只作采样诊断，不能视为RSS峰值；最新门禁以候选分别落盘的生产结果为准。
+
+## 2026-11-02 P7 最终收口续作
+来源：当前用户指令、AGENTS、根架构规范、cloud-handoff-v2、archive-planner-v1、latest summary、连续执行计划v3、raw/完整需求清单.txt及冻结容量契约；以9ebf3484实际源码/驱动为准。raw只读，无外部研究。过程见20261102-kanata-p7-final-closure-v1.md。

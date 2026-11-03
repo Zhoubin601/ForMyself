@@ -1,5 +1,5 @@
 // @ts-check
-import {assertKanataData,validateKanataData} from './kanataValidation.js'
+import {ownImmutableKanataData,validateKanataData} from './kanataValidation.js'
 /** @typedef {import('./kanataTypes').KanataData} Data */
 /** Private process-local identities; no wire flag can authorize adoption. */
 const images=new WeakSet()
@@ -9,21 +9,7 @@ const images=new WeakSet()
  * @param {Data} data @returns {Data}
  */
 export function ownKanataRestoreImage(data){
-  // Validate inert properties before traversing; never execute an accessor or runtime toJSON.
-  assertKanataData(data)
-  const seen=new WeakSet()
-  /** @param {unknown} value */
-  const freeze=value=>{
-    if(!value||typeof value!=='object'||seen.has(value))return
-    seen.add(value)
-    for(const key of Object.getOwnPropertyNames(value)){
-      const descriptor=Object.getOwnPropertyDescriptor(value,key)
-      if(descriptor&&Object.hasOwn(descriptor,'value'))freeze(descriptor.value)
-    }
-    Object.freeze(value)
-  }
-  freeze(data)
-  assertKanataData(data)
+  ownImmutableKanataData(data)
   images.add(data)
   return data
 }

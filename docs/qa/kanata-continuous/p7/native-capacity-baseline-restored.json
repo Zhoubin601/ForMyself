@@ -1,8 +1,8 @@
 {
   "status": "PASS",
-  "at": "2026-11-02T05:22:28.600Z",
+  "at": "2026-11-02T08:09:39.754Z",
   "syntheticOnly": true,
-  "apkSha256": "3f39b1944692dafa1d6412d1c1dab2d6f1fd54c1c0831b026a358543c6196683",
+  "apkSha256": "8e67b74a192fd89e340cd4829b4137dc67ae6e43e65611b9551d987847473f35",
   "aiRequests": 0,
   "pageErrors": [],
   "value": {
@@ -16,25 +16,25 @@
   "memory": {
     "processes": [
       {
-        "pid": 12289,
+        "pid": 20123,
         "type": "browser",
-        "peakRssKiB": 365024,
-        "currentRssKiB": 219632
+        "peakRssKiB": 365500,
+        "currentRssKiB": 219052
       },
       {
-        "pid": 12349,
+        "pid": 20187,
         "type": "renderer",
-        "peakRssKiB": 358344,
-        "currentRssKiB": 351344
+        "peakRssKiB": 359876,
+        "currentRssKiB": 239268
       }
     ],
-    "peakResidentMiB": 356.46875,
-    "sumOfProcessPeaksMiB": 706.4140625,
-    "currentTotalRssMiB": 557.59375,
+    "peakResidentMiB": 356.93359375,
+    "sumOfProcessPeaksMiB": 708.375,
+    "currentTotalRssMiB": 447.578125,
     "sumIsNotSimultaneousPeak": true,
     "heapPoint": {
-      "usedSize": 128134620,
-      "totalSize": 149647360
+      "usedSize": 28884968,
+      "totalSize": 58458112
     }
   }
 }

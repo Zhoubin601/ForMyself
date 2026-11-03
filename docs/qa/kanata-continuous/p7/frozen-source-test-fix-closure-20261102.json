@@ -1,0 +1,13 @@
+{
+  "status": "CURRENT_PRODUCTION_MATCHES_FROZEN_BUILD",
+  "apk": "8e67b74a192fd89e340cd4829b4137dc67ae6e43e65611b9551d987847473f35",
+  "testApk": "6c12b86e42f42acb7c68b54c4aa51730537c4c751a42e2f69ba063878b0dd4f1",
+  "changedTestSources": [
+    {
+      "path": "android/app/src/androidTest/java/com/yubin/formyself/ArchiveFileBatchTest.java",
+      "frozen": "29c480ff475ae5a803802f6574dad27bca8964397df3e6fc5feb57057862626a",
+      "current": "eba8ad7eced61044d61d8617ec5d73ef3deae42ea5b1f13aff6ef185638212f4"
+    }
+  ],
+  "at": "2026-11-02T07:56:50.513Z"
+}

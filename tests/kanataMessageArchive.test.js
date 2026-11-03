@@ -14,6 +14,36 @@ const code = value => error => error.code === value || error.message === value
 const scope = data => ({worldId:data.worlds[0].id,conversationId:data.conversations.find(c=>c.type==='private').id})
 const path = page => KANATA_ARCHIVE_DIRECTORY+'/'+page.key+'.enc'
 
+test('P7 page hashing rechecks the owner after a late platform digest and never writes after release',async()=>{
+  const descriptor=Object.getOwnPropertyDescriptor(globalThis,'crypto'),native=globalThis.crypto.subtle
+  const h=archiveFilesystem(),repo=createMessageArchiveRepository({filesystem:h.filesystem}),data=archiveData(50)
+  let resume,entered,current=true
+  const waiting=new Promise(resolve=>{entered=resolve})
+  try{
+    Object.defineProperty(globalThis,'crypto',{configurable:true,value:{subtle:{
+      importKey:native.importKey.bind(native),encrypt:native.encrypt.bind(native),decrypt:native.decrypt.bind(native),
+      digest:async(...args)=>{entered();await new Promise(resolve=>{resume=resolve});return native.digest(...args)}
+    }}})
+    const work=repo.write(data.messages,password,scope(data),()=>{if(!current)throw Error('SYNTHETIC_SESSION_EXPIRED')})
+    await waiting;current=false;resume()
+    await assert.rejects(work,/SYNTHETIC_SESSION_EXPIRED/)
+    assert.equal(h.files.size,0);assert.equal(h.calls.length,0)
+  }finally{if(descriptor)Object.defineProperty(globalThis,'crypto',descriptor);else delete globalThis.crypto}
+})
+
+test('P7 platform digest failure preserves old archive bytes and cannot fall back or start a rekey write',async()=>{
+  const h=archiveFilesystem(),repo=createMessageArchiveRepository({filesystem:h.filesystem}),data=archiveData(50),target=scope(data)
+  const page=await repo.write(data.messages,password,target),ciphertext=h.files.get(path(page)),offset=h.calls.length
+  const descriptor=Object.getOwnPropertyDescriptor(globalThis,'crypto')
+  try{
+    Object.defineProperty(globalThis,'crypto',{configurable:true,value:{subtle:{digest:async()=>{throw Error('synthetic-private-backend-error')}}}})
+    await assert.rejects(repo.read(page,password,target),code('SHA256_PLATFORM_FAILED'))
+    await assert.rejects(repo.reencrypt(page,password,'synthetic-next',target),code('SHA256_PLATFORM_FAILED'))
+    assert.equal(h.files.get(path(page)),ciphertext)
+    assert.deepEqual(h.calls.slice(offset).map(call=>call.operation),['read','read'])
+  }finally{if(descriptor)Object.defineProperty(globalThis,'crypto',descriptor);else delete globalThis.crypto}
+})
+
 test('P7 page rekey preserves exact verified JSON bytes and unknown fields with three I/O calls and no mkdir',async()=>{
   const h=archiveFilesystem(),repo=createMessageArchiveRepository({filesystem:h.filesystem}),data=archiveData(50),target=scope(data)
   const initial=await repo.write(data.messages,password,target)

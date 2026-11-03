@@ -10,46 +10,57 @@ const check = condition => {if(!condition)throw jsonFailure()}
  * @param {unknown} value @returns {Generator<string,void,unknown>} */
 export function* restoreJsonChunks(value) {
   const ancestors=new Set(),frames=[]
-  let item=value,depth=0,hasValue=true,buffer=''
+  let item=value,depth=0,hasValue=true,length=0
+  const fragments=[]
+  const append=text=>{fragments.push(text);length+=text.length}
   // Keep one frame per container, instead of a delegated generator for every primitive/key.
   // Descriptor-only reads preserve the no-getter/no-toJSON boundary and exact JSON byte order.
   try{
     while(hasValue||frames.length){
       if(hasValue){
         check(depth<=128)
-        if(item===null||typeof item==='string'||typeof item==='boolean')buffer+=JSON.stringify(item)
-        else if(typeof item==='number'){check(Number.isFinite(item));buffer+=JSON.stringify(item)}
+        if(item===null||typeof item==='string'||typeof item==='boolean')append(JSON.stringify(item))
+        else if(typeof item==='number'){check(Number.isFinite(item));append(JSON.stringify(item))}
         else{
           check(item!==null&&typeof item==='object')
           check(!ancestors.has(item)&&!Object.getOwnPropertySymbols(item).length)
           const array=Array.isArray(item)
           check(array||Object.getPrototypeOf(item)===Object.prototype||Object.getPrototypeOf(item)===null)
           const names=Object.getOwnPropertyNames(item)
-          if(array)check(names.length===item.length+1&&names.filter(k=>k!=='length').every((key,index)=>key===String(index)))
+          if(array){
+            check(names.length===item.length+1&&names[item.length]==='length')
+            for(let index=0;index<item.length;++index)check(names[index]===String(index))
+          }
           ancestors.add(item);frames.push({item,array,names,index:0,first:true,depth})
-          buffer+=array?'[':'{'
+          append(array?'[':'{')
         }
         hasValue=false
       }else{
         const frame=frames[frames.length-1]
         const key=frame.names[frame.index++]
-        if(key===undefined){buffer+=frame.array?']':'}';ancestors.delete(frame.item);frames.pop()}
+        if(key===undefined){append(frame.array?']':'}');ancestors.delete(frame.item);frames.pop()}
         else if(!(frame.array&&key==='length')){
           const descriptor=Object.getOwnPropertyDescriptor(frame.item,key)
           check(descriptor&&Object.hasOwn(descriptor,'value')&&descriptor.enumerable)
-          if(!frame.first)buffer+=',';frame.first=false
-          if(!frame.array)buffer+=JSON.stringify(key)+':'
+          if(!frame.first)append(',');frame.first=false
+          if(!frame.array){append(JSON.stringify(key));append(':')}
           item=descriptor.value;depth=frame.depth+1;hasValue=true
         }
       }
-      while(buffer.length>=8192){
-        let end=8192
-        if(buffer.charCodeAt(end-1)>=0xd800&&buffer.charCodeAt(end-1)<=0xdbff&&buffer.charCodeAt(end)>=0xdc00&&buffer.charCodeAt(end)<=0xdfff)--end
-        yield buffer.slice(0,end);buffer=buffer.slice(end)
+      if(length>=8192){
+        const buffer=fragments.join('')
+        fragments.length=0;length=0
+        let start=0
+        while(buffer.length-start>=8192){
+          let end=start+8192
+          if(buffer.charCodeAt(end-1)>=0xd800&&buffer.charCodeAt(end-1)<=0xdbff&&buffer.charCodeAt(end)>=0xdc00&&buffer.charCodeAt(end)<=0xdfff)--end
+          yield buffer.slice(start,end);start=end
+        }
+        if(start<buffer.length)append(buffer.slice(start))
       }
     }
-    if(buffer)yield buffer
-  }finally{ancestors.clear()}
+    if(length)yield fragments.join('')
+  }finally{ancestors.clear();frames.length=0;fragments.length=0;item=null}
 }
 
 const base64 = bytes => {

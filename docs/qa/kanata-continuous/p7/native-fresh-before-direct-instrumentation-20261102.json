@@ -1,0 +1,50 @@
+{
+  "status": "PASS",
+  "at": "2026-11-02T07:53:18.196Z",
+  "syntheticOnly": true,
+  "apkSha256": "8e67b74a192fd89e340cd4829b4137dc67ae6e43e65611b9551d987847473f35",
+  "aiRequests": 0,
+  "pageErrors": [],
+  "casContinuity": "NEW_INSTALL_EPOCH_AFTER_AGP_UNINSTALL; historical revision is not claimed continuous",
+  "integrity": {
+    "modules": [
+      "savings",
+      "weight",
+      "mood",
+      "passwords",
+      "schedules",
+      "todos",
+      "chat"
+    ],
+    "settings": true,
+    "metadata": true,
+    "todoRevision": {
+      "historicalFixture": 3,
+      "after": 1,
+      "installEpochChangedByAgp": true,
+      "continuityPreserved": false
+    },
+    "moodRollover": {
+      "originalRows": 1,
+      "originalsPreserved": true,
+      "automaticMoodRows": [
+        {
+          "id": "1793605992379_foz6",
+          "date": "2026-10-30"
+        },
+        {
+          "id": "1793605992386_nls6",
+          "date": "2026-10-31"
+        },
+        {
+          "id": "1793605992388_3imh",
+          "date": "2026-11-01"
+        }
+      ],
+      "basis": "existing-moodStore-autoFillMissingDays"
+    },
+    "autoLockDelaySeconds": 0
+  },
+  "expiryTriggeredExplicitly": false,
+  "backgroundPlaintextReleased": true
+}

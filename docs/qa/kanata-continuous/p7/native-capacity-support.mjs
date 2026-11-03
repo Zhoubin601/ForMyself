@@ -18,7 +18,7 @@ export async function connectNativeCapacity({onPage}={}){
   if(build.status!=='PASS'||!build.qaHarnessAbsent||build.apkSha256!==createHash('sha256').update(await readFile(apk)).digest('hex'))throw Error('UNVERIFIED_CAPACITY_APK')
   const device=(await _android.devices()).find(d=>d.serial()===serial),browsers=[],ports=[]
   if(!device)throw Error('MISSING_TASK_DEVICE')
-  let browser,page,pageCdp,system,protectedLoadMs
+  let browser,page,pageCdp,system,protectedLoadMs,archiveFileBatchAvailable
   const stop=async()=>{await run(['shell','am','force-stop',pkg]);const end=Date.now()+20000;while(device.webViews().some(v=>v.pkg()===pkg)){if(Date.now()>end)throw Error('STALE_CAPACITY_VIEW');await new Promise(resolve=>setTimeout(resolve,100))}}
   const attach=async()=>{
     await run(['shell','am','start','-n',pkg+'/.MainActivity'])
@@ -28,6 +28,8 @@ export async function connectNativeCapacity({onPage}={}){
     // Synthetic controlled-provider drivers must intercept before unlock can resume a due task.
     if(onPage)await onPage(page)
     await unlockApp(page)
+    archiveFileBatchAvailable=await page.evaluate(()=>window.Capacitor.isPluginAvailable('ArchiveFileBatch'))
+    if(build.archiveFileBatchRequired&&!archiveFileBatchAvailable)throw Error('EXPECTED_ARCHIVE_FILE_BATCH_PLUGIN_MISSING')
     protectedLoadMs=await page.evaluate(()=>performance.getEntriesByName('protected:chat:load','measure').at(-1)?.duration)
     if(!Number.isFinite(protectedLoadMs))throw Error('PROTECTED_COLD_LOAD_COUNTER_UNAVAILABLE')
     await page.evaluate(()=>{
@@ -37,7 +39,7 @@ export async function connectNativeCapacity({onPage}={}){
   }
   await run(['install','-r','-t',apk]);await stop();await attach()
   return{
-    build,get page(){return page},get protectedLoadMs(){return protectedLoadMs},
+    build,get page(){return page},get protectedLoadMs(){return protectedLoadMs},get archiveFileBatchAvailable(){return archiveFileBatchAvailable},
     async cold(){await stop();await attach();return page},
     async startProfile(){await pageCdp.send('Profiler.enable');await pageCdp.send('Profiler.start')},
     async stopProfile(){

@@ -1,5 +1,5 @@
 import CryptoJS from 'crypto-js'
-import {utf8Words} from './utf8Words.js'
+import {utf8Words,utf8Bytes} from './utf8Words.js'
 
 // Byte-compatible with CryptoJS.AES.encrypt(text, password): OpenSSL Salted__, 8-byte salt,
 // EVP/MD5 key+IV derivation, AES-256-CBC, PKCS7, Base64. Only the processing memory changes.
@@ -87,7 +87,7 @@ export async function encryptPassphraseAesAsync(plaintext,password){
   const subtle=globalThis.crypto?.subtle
   if(!subtle)return encryptPassphraseAes(plaintext,password)
   // Preserve strict rejection of unpaired UTF16 rather than TextEncoder replacement.
-  const plain=wordBytes(utf8Words(plaintext)),salt=CryptoJS.lib.WordArray.random(8),derived=derive(password,salt)
+  const plain=utf8Bytes(plaintext),salt=CryptoJS.lib.WordArray.random(8),derived=derive(password,salt)
   try{
     const key=await subtle.importKey('raw',wordBytes(derived.key),'AES-CBC',false,['encrypt'])
     const cipher=new Uint8Array(await subtle.encrypt({name:'AES-CBC',iv:wordBytes(derived.iv)},key,plain))

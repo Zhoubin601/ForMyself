@@ -2,8 +2,45 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 import CryptoJS from 'crypto-js'
 import {encryptPassphraseAes,decryptPassphraseAes,encryptPassphraseAesAsync,decryptPassphraseAesAsync} from '../src/shared/crypto/passphraseAes.js'
-import {sha256Text} from '../src/shared/crypto/sha256Text.js'
+import {sha256Text,sha256TextAsync} from '../src/shared/crypto/sha256Text.js'
+import {utf8Bytes} from '../src/shared/crypto/utf8Words.js'
 const password='synthetic-streaming-password'
+
+test('P7 platform SHA256 and direct strict UTF8 bytes preserve legacy digests including BOM and surrogate boundaries',async()=>{
+  for(const text of ['', '\ufeff合成BOM','合成中文🚀𠮷','a'.repeat(8191)+'🚀'.repeat(8192),'0'.repeat(250000)]){
+    assert.equal(await sha256TextAsync(text),CryptoJS.SHA256(text).toString())
+    assert.deepEqual(utf8Bytes(text),new TextEncoder().encode(text))
+  }
+  for(const text of ['\ud800','\udfff','a\ud800z']){
+    assert.throws(()=>utf8Bytes(text),URIError)
+    await assert.rejects(sha256TextAsync(text),URIError)
+  }
+  await assert.rejects(sha256TextAsync(null),TypeError)
+})
+
+test('P7 platform SHA256 falls back only on absent capability and sanitizes available-backend failure',async()=>{
+  const descriptor=Object.getOwnPropertyDescriptor(globalThis,'crypto'),text='仅合成的哈希能力检查'
+  try{
+    Object.defineProperty(globalThis,'crypto',{configurable:true,value:{}})
+    assert.equal(await sha256TextAsync(text),sha256Text(text))
+    let calls=0
+    Object.defineProperty(globalThis,'crypto',{configurable:true,value:{subtle:{digest:async()=>{++calls;throw Error(text)}}}})
+    await assert.rejects(sha256TextAsync(text),error=>error.code==='SHA256_PLATFORM_FAILED'&&!error.message.includes(text))
+    assert.equal(calls,1)
+    Object.defineProperty(globalThis,'crypto',{configurable:true,value:{subtle:{digest:async()=>{throw new URIError(text)}}}})
+    await assert.rejects(sha256TextAsync(text),error=>error.code==='SHA256_PLATFORM_FAILED'&&!error.message.includes(text))
+  }finally{if(descriptor)Object.defineProperty(globalThis,'crypto',descriptor);else delete globalThis.crypto}
+})
+
+test('P7 oversized hash input chooses bounded legacy processing before native byte allocation',async()=>{
+  const descriptor=Object.getOwnPropertyDescriptor(globalThis,'crypto'),text='合'.repeat(256*1024+1)
+  try{
+    let calls=0
+    Object.defineProperty(globalThis,'crypto',{configurable:true,value:{subtle:{digest:async()=>{++calls;throw Error('native path must not start')}}}})
+    assert.equal(await sha256TextAsync(text),CryptoJS.SHA256(text).toString())
+    assert.equal(calls,0)
+  }finally{if(descriptor)Object.defineProperty(globalThis,'crypto',descriptor);else delete globalThis.crypto}
+})
 
 test('P7 large binary conversion keeps every legacy ciphertext byte across many Base64 and Unicode boundaries',async()=>{
   const salt=CryptoJS.enc.Hex.parse('ffeeddccbbaa9988'),original=CryptoJS.lib.WordArray.random

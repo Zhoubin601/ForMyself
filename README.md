@@ -1,5 +1,7 @@
 # ForMyself — 我的自留地
 
+当前本地执行入口（2026-11-02）：[P7最终收口记录](docs/20261102-kanata-p7-final-closure-v1.md)。基线9ebf3484，性能/需求门禁仍No-Go；按当前授权只在Kanata开发，不默认推送或发布。
+
 最新远端检查点入口（2026-11-02）：[Kanata 云端交接 v2](docs/20261102-kanata-cloud-handoff-v2.md)。用户已明确要求提交推送本轮P7 WIP；P7仍No-Go，实际提交以Git历史为准。
 
 2026-11-02 当前续作：[P7规划器、字节转换与Web目录读取检查点](docs/20261102-kanata-p7-archive-planner-v1.md)。用户已要求继续开发；P7仍No-Go，旧云端交接不是暂停要求。自动化与生产实测按各自候选区分，未自动推送或发布。

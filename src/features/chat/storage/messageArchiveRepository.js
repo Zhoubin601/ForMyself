@@ -1,12 +1,12 @@
 import { Directory, Encoding, Filesystem } from '@capacitor/filesystem'
 import {encryptPassphraseAesAsync,decryptPassphraseAesAsync} from '../../../shared/crypto/passphraseAes.js'
-import {sha256Text} from '../../../shared/crypto/sha256Text.js'
+import {sha256TextAsync} from '../../../shared/crypto/sha256Text.js'
 import {mapInBatches} from '../../../shared/async/mapInBatches.js'
 import { createArchiveIndex, validateArchivePage, messageOrder, archiveMayMatch, normalizeArchiveQuery } from './messageArchiveCore.js'
 
 export const KANATA_ARCHIVE_DIRECTORY = 'formyself/kanata-pages-v1'
 const fail = code => Object.assign(new Error(code), { code })
-const fingerprint = value => sha256Text(value)
+const fingerprint = value => sha256TextAsync(value)
 const pathOf = key => {
   if (typeof key !== 'string' || !/^[a-f0-9]{64}$/.test(key)) throw fail('KANATA_ARCHIVE_PATH_INVALID')
   return KANATA_ARCHIVE_DIRECTORY + '/' + key + '.enc'
@@ -16,7 +16,9 @@ const checkScope = (page, scope) => {
   if (page.worldId !== scope.worldId || page.conversationId !== scope.conversationId) throw fail('KANATA_ARCHIVE_SCOPE_DENIED')
 }
 
-/** Immutable encrypted files; no password, plaintext cache or second source of truth is retained. */
+/** Immutable encrypted files; no password, plaintext cache or second source of truth is retained.
+ * @param {{filesystem?:import('../../../platform/storage/archiveFileBatchTypes').ArchiveFilesystemDriver,directory?:string}} [options]
+ */
 export function createMessageArchiveRepository({ filesystem = Filesystem, directory = Directory.Data } = {}) {
   const options = path => ({ path, directory, encoding: Encoding.UTF8 })
   /** Non-sensitive directory readiness only; failures are never cached as success.
@@ -37,7 +39,7 @@ export function createMessageArchiveRepository({ filesystem = Filesystem, direct
     let result
     try { result = await filesystem.readFile(options(path)) }
     catch { throw fail('KANATA_ARCHIVE_READ_FAILED') }
-    if (typeof result.data !== 'string' || result.data.length !== descriptor.bytes || fingerprint(result.data) !== descriptor.key) throw fail('KANATA_ARCHIVE_VERIFY_FAILED')
+    if (typeof result.data !== 'string' || result.data.length !== descriptor.bytes || await fingerprint(result.data) !== descriptor.key) throw fail('KANATA_ARCHIVE_VERIFY_FAILED')
     return result.data
   }
   /** Returns privately detached verified DTOs, with no retained plaintext reference.
@@ -76,7 +78,7 @@ export function createMessageArchiveRepository({ filesystem = Filesystem, direct
     const ciphertext=await encryptPassphraseAesAsync(plaintext,nextPassword)
     assertCurrent()
     // Derive metadata from the validated page, rather than sharing mutable caller rows.
-    const next={version:1,key:fingerprint(ciphertext),worldId:descriptor.worldId,conversationId:descriptor.conversationId,bytes:ciphertext.length,index:descriptor.index,messages:value.messages.map(({id,revision,createdAt})=>({id,revision,createdAt}))}
+    const next={version:1,key:await fingerprint(ciphertext),worldId:descriptor.worldId,conversationId:descriptor.conversationId,bytes:ciphertext.length,index:descriptor.index,messages:value.messages.map(({id,revision,createdAt})=>({id,revision,createdAt}))}
     assertCurrent()
     try{await filesystem.writeFile({...options(pathOf(next.key)),data:ciphertext})}
     catch{throw fail('KANATA_ARCHIVE_WRITE_FAILED')}
@@ -101,7 +103,8 @@ export function createMessageArchiveRepository({ filesystem = Filesystem, direct
     const ciphertext = await encryptPassphraseAesAsync(JSON.stringify({ type: 'kanata-message-page', version: 1, ...scope, messages: ordered }),password)
     assertCurrent()
     /** @type {import('../domain/kanataTypes').MessageArchiveDescriptor} */
-    const descriptor = { version: 1, key: fingerprint(ciphertext), ...scope, bytes: ciphertext.length, index: createArchiveIndex(ordered), messages: ordered.map(({ id, revision, createdAt }) => ({ id, revision, createdAt })) }
+    const descriptor = { version: 1, key: await fingerprint(ciphertext), ...scope, bytes: ciphertext.length, index: createArchiveIndex(ordered), messages: ordered.map(({ id, revision, createdAt }) => ({ id, revision, createdAt })) }
+    assertCurrent()
     // Shape/scope proof before I/O. New files are unreferenced until their owner commits its header.
     validateArchivePage({ type: 'kanata-message-page', version: 1, ...scope, messages: ordered }, descriptor)
     await ensureDirectory()
@@ -174,6 +177,15 @@ export function createMessageArchiveRepository({ filesystem = Filesystem, direct
    * Files outside this feature's strict hash namespace are never removed.
    */
   const retire = async descriptors => {
+    // Capacitor's base plugin Proxy fabricates functions even for unknown method names.
+    // Only this adapter's explicit own capability can authorize the bounded native path.
+    if(Object.hasOwn(filesystem,'deleteArchiveKeys')&&typeof filesystem.deleteArchiveKeys==='function'){
+      // Validate every key before any retirement, including later batches. The Store
+      // still invokes this only after both new-password canonical headers verify.
+      const keys=descriptors.map(descriptor=>{pathOf(descriptor.key);return descriptor.key})
+      try{await filesystem.deleteArchiveKeys(keys)}catch{throw fail('KANATA_ARCHIVE_RETIRE_FAILED')}
+      return
+    }
     await mapInBatches(descriptors,async descriptor=>{
       try { await filesystem.deleteFile({ path: pathOf(descriptor.key), directory }) }
       catch (error) { if (!['ENOENT','OS-PLUG-FILE-0008'].includes(error?.code)) throw fail('KANATA_ARCHIVE_RETIRE_FAILED') }

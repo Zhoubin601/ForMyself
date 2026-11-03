@@ -1,5 +1,11 @@
 # ForMyself 架构接口与 Agent 开发规范
 
+2026-11-02后续P7切片（仍待容量复测）：原生页读写保持每批<=4；只有纯退休键批次允许<=64，整批预检/结算、失败不启动后批，无正文进入大批次。`ArchiveFilesystemDriver.deleteArchiveKeys?`由平台适配器显式own capability提供，原Capacitor Proxy的未知方法不可当能力；无能力仍用原4页路径。退休排除新主/备仍引用的内容键。恢复JSON采用碎片缓冲合并再8Ki字符切片，保持相同字节/严格属性与256MiB预算；验证复用只限`ownImmutableKanataData`执行完整校验→递归冻结→完整校验后登记的私有WeakSet身份，未知输入/浅冻结/自报标记不走捷径，普通clone仍完整复制，WeakSet不强留明文。预备实测和异常/自查记录见[P7最终收口](docs/20261102-kanata-p7-final-closure-v1.md)，不把本节当放行。
+
+2026-11-02有界原生归档I/O：`platform/storage/archiveFileBatch`仅为生产Native/Data原Filesystem代理固定hash命名空间，每批<=4个密文读写删、最多一批在途，完整结算/错误无降级；超256KiB页预先选择原单文件路径。`MainActivity`注册`ArchiveFileBatchPlugin`，固定内部目录、整批预检canonical路径/非目录/无symlink/有效加密文本和写入hash，写后fsync；JS仍逐项hash/解密/索引与精确读回。主头/日志/备份格式/其他模块I/O与权限/恢复写门禁不变。契约为`ArchiveFileCommand/Result/BatchDriver`，strict正负例实际导入；新`ArchiveFileBatchTest`只在目标App cache的新随机合成子目录做文件行为，不使用其files目录。已有合成资料的本地驱动采用`adb install -r -t`及`am instrument -w -r`；不得以Gradle connected任务默认保留已安装数据（本轮发现其自动卸载，失败/恢复/CAS新世代证据见[执行记录](docs/20261102-kanata-p7-final-closure-v1.md)）。未经实测不得宣称P7通过。
+
+2026-11-02 P7 最终收口计算切片：归档页密文散列使用 `sha256TextAsync(string):Promise<string>` 的平台SHA256；缺subtle或输入超过256Ki字符时预先选择原分块同步散列，避免超长页整串bytes分配。已选择平台后失败传播固定错误码，不降级重试。严格UTF8校验抽为 `utf8Bytes(string):Uint8Array`，异步AES直接使用字节，避免WordArray往返。所有新await之后保留owner复核，密文/盐/派生/散列/读回、主头与GCM恢复协议不变；实际结果见[执行记录](docs/20261102-kanata-p7-final-closure-v1.md)，不得提前当性能放行。
+
 2026-11-02 P7 内部规划增量：`messageArchiveCore.planMessageArchive`改用索引并查集和定长链接/保留数组，减少每消息邻接数组与逐组件集合分配；同会话回复连通分量、外部来源（含未知扩展）、最近消息、50条页上限和确定性顺序保持。无接口/格式/加密或恢复门禁变更。验证以[本轮记录](docs/20261102-kanata-p7-archive-planner-v1.md)为准，不能据此认为P7容量通过。
 
 同轮字节转换增量：归档AES、恢复载荷和原GCM日志的Base64转换采用有界apply直接读取typed-array索引，解密采用定长byte数组逐索引复制，避免spread/from的逐字节迭代临时分配。参数上限仍8190/8192，原密码派生/盐/填充/UTF8/BOM/密文字节、摘要绑定、读回和补偿语义均保留；新增长正文固定盐旧CryptoJS双向互读回归。没有凭据缓存或协议迁移。

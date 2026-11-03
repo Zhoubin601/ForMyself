@@ -15,6 +15,7 @@ public class MainActivity extends BridgeActivity {
     protected void onCreate(Bundle savedInstanceState) {
         registerPlugin(ForMyselfWidgetPlugin.class);
         registerPlugin(TodoPlugin.class);
+        registerPlugin(ArchiveFileBatchPlugin.class);
         super.onCreate(savedInstanceState);
         WebSettings webSettings = getBridge().getWebView().getSettings();
         webSettings.setSupportZoom(false);

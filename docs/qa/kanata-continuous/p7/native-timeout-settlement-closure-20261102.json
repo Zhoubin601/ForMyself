@@ -1,0 +1,17 @@
+{
+  "status": "SETTLED_READY_FOR_BASELINE_COORDINATOR",
+  "syntheticOnly": true,
+  "at": "2026-11-02T07:30:07.008Z",
+  "acceptanceEvidence": false,
+  "settled": {
+    "oldSyntheticCredential": false,
+    "nextSyntheticCredential": true,
+    "active": 220,
+    "archived": 99780,
+    "pending": false,
+    "saveError": ""
+  },
+  "returnCredentialMs": 514134,
+  "returnTimeGate": "FAIL",
+  "restoredCredential": true
+}

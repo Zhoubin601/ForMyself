@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 import {archiveData} from './helpers/kanataArchiveFixture.js'
 import {ownKanataRestoreImage,kanataRestoreDraft} from '../src/features/chat/domain/kanataOwnedImage.js'
+import {assertKanataData,validateKanataData,ownImmutableKanataData} from '../src/features/chat/domain/kanataValidation.js'
 test('canonical image adoption shares only recursively frozen validated descendants; draft arrays remain independent',()=>{
   const data=archiveData(100),image=ownKanataRestoreImage(data),draft=kanataRestoreDraft(image)
   assert.notEqual(draft,image);assert.notEqual(draft.messages,image.messages)
@@ -31,4 +32,21 @@ test('immutable image factory rejects invalid references or accessors before reg
   Object.defineProperty(data,'messages',{enumerable:true,get(){called=true;return[]}})
   assert.throws(()=>ownKanataRestoreImage(data),/INVALID_JSON_PROPERTY/)
   assert.equal(called,false)
+})
+
+test('validation reuse is restricted to fully checked recursively immutable identities; assertions and wire-shaped copies cannot acquire it',()=>{
+  const mutable=archiveData(10);assertKanataData(mutable)
+  mutable.messages[1].replyToRevision=999
+  assert.throws(()=>assertKanataData(mutable),/INVALID_REPLY_SOURCE_REVISION/)
+  Object.freeze(mutable)
+  assert.throws(()=>assertKanataData(mutable),/INVALID_REPLY_SOURCE_REVISION/)
+  const image=ownImmutableKanataData(archiveData(10))
+  assert.equal(assertKanataData(image),image);assert.equal(ownImmutableKanataData(image),image)
+  assert.throws(()=>{image.messages[1].replyToRevision=999},TypeError)
+  assert.throws(()=>Object.setPrototypeOf(image.messages[1],{}),TypeError)
+  const detached=validateKanataData(image)
+  assert.notEqual(detached.messages[1],image.messages[1])
+  detached.messages[1].replyToRevision=999;detached.validated=true
+  assert.throws(()=>assertKanataData(detached),/INVALID_REPLY_SOURCE_REVISION/)
+  assert.equal(image.messages[1].replyToRevision,1)
 })

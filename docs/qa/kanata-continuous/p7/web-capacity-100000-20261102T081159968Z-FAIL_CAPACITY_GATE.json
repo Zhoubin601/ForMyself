@@ -1,0 +1,2810 @@
+{
+  "status": "FAIL_CAPACITY_GATE",
+  "at": "2026-11-02T08:11:59.968Z",
+  "count": 100000,
+  "syntheticOnly": true,
+  "kind": "production-chrome-actual-coordinator",
+  "forcedGC": false,
+  "build": {
+    "syntheticOnly": true,
+    "productionPreview": true,
+    "sourceHead": "9ebf3484cdd3ae67e68af05a6e55a27e0b2cef0f",
+    "sourceDigest": "29a804ea0acfcdae4b6533dbe03a886f7e664b2e08d34b44e60190ad3588264a",
+    "sourceCheck": "check-closure-reviewed-20261102.txt",
+    "apkSha256": "8e67b74a192fd89e340cd4829b4137dc67ae6e43e65611b9551d987847473f35",
+    "resourceCount": 78,
+    "archiveFileBatchRequired": true,
+    "frozenAt": "2026-11-02T07:45:37.829Z"
+  },
+  "metrics": {
+    "portableImportActualCoordinator": {
+      "ms": 7339.1,
+      "value": {
+        "active": 220,
+        "archived": 99780,
+        "saved": true
+      },
+      "memory": {
+        "windowsRendererProcesses": [
+          {
+            "Id": 8164,
+            "PeakWorkingSet64": 89382912,
+            "WorkingSet64": 89382912
+          },
+          {
+            "Id": 37328,
+            "PeakWorkingSet64": 700121088,
+            "WorkingSet64": 663310336
+          },
+          {
+            "Id": 43236,
+            "PeakWorkingSet64": 32796672,
+            "WorkingSet64": 32796672
+          }
+        ],
+        "peakResidentMiB": 667.6875,
+        "heapPoint": {
+          "usedSize": 218455688,
+          "totalSize": 351379456,
+          "embedderHeapUsedSize": 2895560,
+          "backingStorageSize": 55146136
+        }
+      }
+    },
+    "coldPageReloadAndProtectedLoad": {
+      "ms": 1751.9,
+      "value": {
+        "loaded": true,
+        "protectedLoadMs": 1009.6999999992549
+      },
+      "memory": {
+        "windowsRendererProcesses": [
+          {
+            "Id": 13456,
+            "PeakWorkingSet64": 32735232,
+            "WorkingSet64": 32735232
+          },
+          {
+            "Id": 41192,
+            "PeakWorkingSet64": 92213248,
+            "WorkingSet64": 92213248
+          },
+          {
+            "Id": 44972,
+            "PeakWorkingSet64": 494686208,
+            "WorkingSet64": 330653696
+          }
+        ],
+        "peakResidentMiB": 471.76953125,
+        "heapPoint": {
+          "usedSize": 16625072,
+          "totalSize": 87408640,
+          "embedderHeapUsedSize": 3998768,
+          "backingStorageSize": 675920
+        }
+      }
+    },
+    "diskPage50": {
+      "ms": 8.3,
+      "value": {
+        "rows": 50,
+        "pages": 2,
+        "bytes": 88940
+      },
+      "memory": {
+        "windowsRendererProcesses": [
+          {
+            "Id": 13456,
+            "PeakWorkingSet64": 32735232,
+            "WorkingSet64": 32735232
+          },
+          {
+            "Id": 41192,
+            "PeakWorkingSet64": 92229632,
+            "WorkingSet64": 92229632
+          },
+          {
+            "Id": 44972,
+            "PeakWorkingSet64": 494686208,
+            "WorkingSet64": 331948032
+          }
+        ],
+        "peakResidentMiB": 471.76953125,
+        "heapPoint": {
+          "usedSize": 20480140,
+          "totalSize": 87408640,
+          "embedderHeapUsedSize": 3998768,
+          "backingStorageSize": 1114507
+        }
+      }
+    },
+    "indexedExactSearch": {
+      "ms": 16.3,
+      "value": {
+        "matches": 1,
+        "pages": 3,
+        "bytes": 166276
+      },
+      "memory": {
+        "windowsRendererProcesses": [
+          {
+            "Id": 13456,
+            "PeakWorkingSet64": 32735232,
+            "WorkingSet64": 32735232
+          },
+          {
+            "Id": 41192,
+            "PeakWorkingSet64": 92229632,
+            "WorkingSet64": 92229632
+          },
+          {
+            "Id": 44972,
+            "PeakWorkingSet64": 494686208,
+            "WorkingSet64": 334069760
+          }
+        ],
+        "peakResidentMiB": 471.76953125,
+        "heapPoint": {
+          "usedSize": 32126764,
+          "totalSize": 87670784,
+          "embedderHeapUsedSize": 3998768,
+          "backingStorageSize": 1742813
+        }
+      }
+    },
+    "saveHeader": {
+      "ms": 1275.7,
+      "value": {
+        "saved": true
+      },
+      "memory": {
+        "windowsRendererProcesses": [
+          {
+            "Id": 13456,
+            "PeakWorkingSet64": 32735232,
+            "WorkingSet64": 32735232
+          },
+          {
+            "Id": 41192,
+            "PeakWorkingSet64": 92237824,
+            "WorkingSet64": 92237824
+          },
+          {
+            "Id": 44972,
+            "PeakWorkingSet64": 627445760,
+            "WorkingSet64": 424615936
+          }
+        ],
+        "peakResidentMiB": 598.37890625,
+        "heapPoint": {
+          "usedSize": 87722832,
+          "totalSize": 149323776,
+          "embedderHeapUsedSize": 2829848,
+          "backingStorageSize": 14308398
+        }
+      }
+    },
+    "fullExportActualCoordinator": {
+      "ms": 2481.1,
+      "value": {
+        "version": 13,
+        "messages": 100000,
+        "selfContained": true
+      },
+      "memory": {
+        "windowsRendererProcesses": [
+          {
+            "Id": 13456,
+            "PeakWorkingSet64": 32751616,
+            "WorkingSet64": 32751616
+          },
+          {
+            "Id": 41192,
+            "PeakWorkingSet64": 92250112,
+            "WorkingSet64": 92250112
+          },
+          {
+            "Id": 44972,
+            "PeakWorkingSet64": 627445760,
+            "WorkingSet64": 435744768
+          }
+        ],
+        "peakResidentMiB": 598.37890625,
+        "heapPoint": {
+          "usedSize": 147825136,
+          "totalSize": 214474752,
+          "embedderHeapUsedSize": 3067416,
+          "backingStorageSize": 36638329
+        }
+      }
+    },
+    "fullRestoreActualCoordinator": {
+      "ms": 16857.5,
+      "value": {
+        "actualCoordinator": true,
+        "expectedCount": 100000
+      },
+      "memory": {
+        "windowsRendererProcesses": [
+          {
+            "Id": 13456,
+            "PeakWorkingSet64": 32813056,
+            "WorkingSet64": 32473088
+          },
+          {
+            "Id": 41192,
+            "PeakWorkingSet64": 92270592,
+            "WorkingSet64": 20238336
+          },
+          {
+            "Id": 44972,
+            "PeakWorkingSet64": 922587136,
+            "WorkingSet64": 693612544
+          }
+        ],
+        "peakResidentMiB": 879.84765625,
+        "heapPoint": {
+          "usedSize": 303469976,
+          "totalSize": 422010880,
+          "embedderHeapUsedSize": 3242752,
+          "backingStorageSize": 68567060
+        }
+      },
+      "allocationProfile": [
+        {
+          "functionName": "yt",
+          "url": "http://127.0.0.1:4187/assets/index-C7hQz9rg.js",
+          "lineNumber": 1,
+          "columnNumber": 2457,
+          "stack": [
+            {
+              "functionName": "(root)",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "pull",
+              "url": "http://127.0.0.1:4187/assets/index-C7hQz9rg.js",
+              "lineNumber": 1,
+              "columnNumber": 4347
+            },
+            {
+              "functionName": "yt",
+              "url": "http://127.0.0.1:4187/assets/index-C7hQz9rg.js",
+              "lineNumber": 1,
+              "columnNumber": 2457
+            }
+          ],
+          "sampledAllocatedMiB": 635.6042747497559
+        },
+        {
+          "functionName": "o.onsuccess",
+          "url": "http://127.0.0.1:4187/assets/web-Cdt40ME2.js",
+          "lineNumber": 0,
+          "columnNumber": 2043,
+          "stack": [
+            {
+              "functionName": "(root)",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "o.onsuccess",
+              "url": "http://127.0.0.1:4187/assets/web-Cdt40ME2.js",
+              "lineNumber": 0,
+              "columnNumber": 2043
+            }
+          ],
+          "sampledAllocatedMiB": 438.47063064575195
+        },
+        {
+          "functionName": "Se",
+          "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+          "lineNumber": 0,
+          "columnNumber": 43786,
+          "stack": [
+            {
+              "functionName": "(root)",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "Ce",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 43933
+            },
+            {
+              "functionName": "Se",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 43786
+            }
+          ],
+          "sampledAllocatedMiB": 312.56262969970703
+        },
+        {
+          "functionName": "",
+          "url": "http://127.0.0.1:4187/assets/web-Cdt40ME2.js",
+          "lineNumber": 0,
+          "columnNumber": 1948,
+          "stack": [
+            {
+              "functionName": "(root)",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "",
+              "url": "http://127.0.0.1:4187/assets/web-Cdt40ME2.js",
+              "lineNumber": 0,
+              "columnNumber": 1933
+            },
+            {
+              "functionName": "Promise",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "",
+              "url": "http://127.0.0.1:4187/assets/web-Cdt40ME2.js",
+              "lineNumber": 0,
+              "columnNumber": 1948
+            }
+          ],
+          "sampledAllocatedMiB": 193.17410278320312
+        },
+        {
+          "functionName": "s",
+          "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+          "lineNumber": 0,
+          "columnNumber": 46508,
+          "stack": [
+            {
+              "functionName": "(root)",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "s",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 46508
+            }
+          ],
+          "sampledAllocatedMiB": 139.1130828857422
+        },
+        {
+          "functionName": "getOwnPropertyDescriptor",
+          "url": "",
+          "lineNumber": -1,
+          "columnNumber": -1,
+          "stack": [
+            {
+              "functionName": "(root)",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "pull",
+              "url": "http://127.0.0.1:4187/assets/index-C7hQz9rg.js",
+              "lineNumber": 1,
+              "columnNumber": 4347
+            },
+            {
+              "functionName": "yt",
+              "url": "http://127.0.0.1:4187/assets/index-C7hQz9rg.js",
+              "lineNumber": 1,
+              "columnNumber": 2457
+            },
+            {
+              "functionName": "getOwnPropertyDescriptor",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            }
+          ],
+          "sampledAllocatedMiB": 135.83184814453125
+        },
+        {
+          "functionName": "getOwnPropertyDescriptor",
+          "url": "",
+          "lineNumber": -1,
+          "columnNumber": -1,
+          "stack": [
+            {
+              "functionName": "(root)",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "b",
+              "url": "http://127.0.0.1:4187/assets/index-C7hQz9rg.js",
+              "lineNumber": 1,
+              "columnNumber": 37830
+            },
+            {
+              "functionName": "",
+              "url": "",
+              "lineNumber": 3,
+              "columnNumber": 34
+            },
+            {
+              "functionName": "restore",
+              "url": "http://127.0.0.1:4187/assets/fullBackupRuntime-DZgUkbne.js",
+              "lineNumber": 0,
+              "columnNumber": 12606
+            },
+            {
+              "functionName": "l",
+              "url": "http://127.0.0.1:4187/assets/fullBackupRuntime-DZgUkbne.js",
+              "lineNumber": 0,
+              "columnNumber": 11597
+            },
+            {
+              "functionName": "Ye",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 58493
+            },
+            {
+              "functionName": "G",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 21399
+            },
+            {
+              "functionName": "T",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 13450
+            },
+            {
+              "functionName": "C",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 12340
+            },
+            {
+              "functionName": "i",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 12428
+            },
+            {
+              "functionName": "i",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 12428
+            },
+            {
+              "functionName": "i",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 12428
+            },
+            {
+              "functionName": "getOwnPropertyDescriptor",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            }
+          ],
+          "sampledAllocatedMiB": 132.92454147338867
+        },
+        {
+          "functionName": "getOwnPropertyDescriptor",
+          "url": "",
+          "lineNumber": -1,
+          "columnNumber": -1,
+          "stack": [
+            {
+              "functionName": "(root)",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "",
+              "url": "http://127.0.0.1:4187/assets/fullBackupRuntime-DZgUkbne.js",
+              "lineNumber": 0,
+              "columnNumber": 6820
+            },
+            {
+              "functionName": "l",
+              "url": "http://127.0.0.1:4187/assets/fullBackupRuntime-DZgUkbne.js",
+              "lineNumber": 0,
+              "columnNumber": 5739
+            },
+            {
+              "functionName": "capture",
+              "url": "http://127.0.0.1:4187/assets/fullBackupRuntime-DZgUkbne.js",
+              "lineNumber": 0,
+              "columnNumber": 11950
+            },
+            {
+              "functionName": "l",
+              "url": "http://127.0.0.1:4187/assets/fullBackupRuntime-DZgUkbne.js",
+              "lineNumber": 0,
+              "columnNumber": 11597
+            },
+            {
+              "functionName": "Ye",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 58493
+            },
+            {
+              "functionName": "G",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 21399
+            },
+            {
+              "functionName": "T",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 13450
+            },
+            {
+              "functionName": "C",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 12340
+            },
+            {
+              "functionName": "i",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 12428
+            },
+            {
+              "functionName": "i",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 12428
+            },
+            {
+              "functionName": "i",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 12428
+            },
+            {
+              "functionName": "getOwnPropertyDescriptor",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            }
+          ],
+          "sampledAllocatedMiB": 127.76643753051758
+        },
+        {
+          "functionName": "getOwnPropertyDescriptor",
+          "url": "",
+          "lineNumber": -1,
+          "columnNumber": -1,
+          "stack": [
+            {
+              "functionName": "(root)",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "s",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 46508
+            },
+            {
+              "functionName": "N",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 17480
+            },
+            {
+              "functionName": "i",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 12428
+            },
+            {
+              "functionName": "i",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 12428
+            },
+            {
+              "functionName": "i",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 12428
+            },
+            {
+              "functionName": "getOwnPropertyDescriptor",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            }
+          ],
+          "sampledAllocatedMiB": 115.07422637939453
+        },
+        {
+          "functionName": "l",
+          "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+          "lineNumber": 0,
+          "columnNumber": 47463,
+          "stack": [
+            {
+              "functionName": "(root)",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 45317
+            },
+            {
+              "functionName": "",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 62555
+            },
+            {
+              "functionName": "l",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 47463
+            }
+          ],
+          "sampledAllocatedMiB": 109.86698913574219
+        },
+        {
+          "functionName": "concat",
+          "url": "http://127.0.0.1:4187/assets/crypto-js-CiVKIBfJ.js",
+          "lineNumber": 0,
+          "columnNumber": 2679,
+          "stack": [
+            {
+              "functionName": "(root)",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "ae",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 61932
+            },
+            {
+              "functionName": "I",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 60295
+            },
+            {
+              "functionName": "O",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 57661
+            },
+            {
+              "functionName": "Ge",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 53286
+            },
+            {
+              "functionName": "be",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 42279
+            },
+            {
+              "functionName": "c",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 42504
+            },
+            {
+              "functionName": "concat",
+              "url": "http://127.0.0.1:4187/assets/crypto-js-CiVKIBfJ.js",
+              "lineNumber": 0,
+              "columnNumber": 2679
+            }
+          ],
+          "sampledAllocatedMiB": 108.89270782470703
+        },
+        {
+          "functionName": "concat",
+          "url": "http://127.0.0.1:4187/assets/crypto-js-CiVKIBfJ.js",
+          "lineNumber": 0,
+          "columnNumber": 2679,
+          "stack": [
+            {
+              "functionName": "(root)",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "C",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 54533
+            },
+            {
+              "functionName": "Ve",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 52708
+            },
+            {
+              "functionName": "p",
+              "url": "http://127.0.0.1:4187/assets/sha256Text-BhRK5XSE.js",
+              "lineNumber": 1,
+              "columnNumber": 1461
+            },
+            {
+              "functionName": "update",
+              "url": "http://127.0.0.1:4187/assets/crypto-js-CiVKIBfJ.js",
+              "lineNumber": 0,
+              "columnNumber": 4720
+            },
+            {
+              "functionName": "concat",
+              "url": "http://127.0.0.1:4187/assets/crypto-js-CiVKIBfJ.js",
+              "lineNumber": 0,
+              "columnNumber": 2679
+            }
+          ],
+          "sampledAllocatedMiB": 108.0325698852539
+        },
+        {
+          "functionName": "join",
+          "url": "",
+          "lineNumber": -1,
+          "columnNumber": -1,
+          "stack": [
+            {
+              "functionName": "(root)",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "Ce",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 43933
+            },
+            {
+              "functionName": "Se",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 43786
+            },
+            {
+              "functionName": "join",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            }
+          ],
+          "sampledAllocatedMiB": 107.62459945678711
+        },
+        {
+          "functionName": "concat",
+          "url": "http://127.0.0.1:4187/assets/crypto-js-CiVKIBfJ.js",
+          "lineNumber": 0,
+          "columnNumber": 2679,
+          "stack": [
+            {
+              "functionName": "(root)",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "l",
+              "url": "http://127.0.0.1:4187/assets/index-C7hQz9rg.js",
+              "lineNumber": 1,
+              "columnNumber": 7481
+            },
+            {
+              "functionName": "p",
+              "url": "http://127.0.0.1:4187/assets/sha256Text-BhRK5XSE.js",
+              "lineNumber": 1,
+              "columnNumber": 1461
+            },
+            {
+              "functionName": "update",
+              "url": "http://127.0.0.1:4187/assets/crypto-js-CiVKIBfJ.js",
+              "lineNumber": 0,
+              "columnNumber": 4720
+            },
+            {
+              "functionName": "concat",
+              "url": "http://127.0.0.1:4187/assets/crypto-js-CiVKIBfJ.js",
+              "lineNumber": 0,
+              "columnNumber": 2679
+            }
+          ],
+          "sampledAllocatedMiB": 104.69931030273438
+        },
+        {
+          "functionName": "ne",
+          "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+          "lineNumber": 0,
+          "columnNumber": 13927,
+          "stack": [
+            {
+              "functionName": "(root)",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "s",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 46508
+            },
+            {
+              "functionName": "N",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 17480
+            },
+            {
+              "functionName": "ne",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 13927
+            }
+          ],
+          "sampledAllocatedMiB": 98.21131134033203
+        },
+        {
+          "functionName": "fromCharCode",
+          "url": "",
+          "lineNumber": -1,
+          "columnNumber": -1,
+          "stack": [
+            {
+              "functionName": "(root)",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "Ce",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 43933
+            },
+            {
+              "functionName": "Se",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 43786
+            },
+            {
+              "functionName": "fromCharCode",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            }
+          ],
+          "sampledAllocatedMiB": 79.11947250366211
+        },
+        {
+          "functionName": "concat",
+          "url": "http://127.0.0.1:4187/assets/crypto-js-CiVKIBfJ.js",
+          "lineNumber": 0,
+          "columnNumber": 2679,
+          "stack": [
+            {
+              "functionName": "(root)",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "ae",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 61932
+            },
+            {
+              "functionName": "I",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 60295
+            },
+            {
+              "functionName": "O",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 57661
+            },
+            {
+              "functionName": "Ge",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 53286
+            },
+            {
+              "functionName": "be",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 42279
+            },
+            {
+              "functionName": "process",
+              "url": "http://127.0.0.1:4187/assets/crypto-js-CiVKIBfJ.js",
+              "lineNumber": 0,
+              "columnNumber": 29671
+            },
+            {
+              "functionName": "concat",
+              "url": "http://127.0.0.1:4187/assets/crypto-js-CiVKIBfJ.js",
+              "lineNumber": 0,
+              "columnNumber": 2679
+            }
+          ],
+          "sampledAllocatedMiB": 70.54391098022461
+        },
+        {
+          "functionName": "getOwnPropertyDescriptor",
+          "url": "",
+          "lineNumber": -1,
+          "columnNumber": -1,
+          "stack": [
+            {
+              "functionName": "(root)",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "oe",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 63984
+            },
+            {
+              "functionName": "G",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 21399
+            },
+            {
+              "functionName": "T",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 13450
+            },
+            {
+              "functionName": "C",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 12340
+            },
+            {
+              "functionName": "i",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 12428
+            },
+            {
+              "functionName": "i",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 12428
+            },
+            {
+              "functionName": "i",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 12428
+            },
+            {
+              "functionName": "getOwnPropertyDescriptor",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            }
+          ],
+          "sampledAllocatedMiB": 67.18131256103516
+        },
+        {
+          "functionName": "getOwnPropertyDescriptor",
+          "url": "",
+          "lineNumber": -1,
+          "columnNumber": -1,
+          "stack": [
+            {
+              "functionName": "(root)",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "",
+              "url": "http://127.0.0.1:4187/assets/fullBackupRuntime-DZgUkbne.js",
+              "lineNumber": 0,
+              "columnNumber": 6820
+            },
+            {
+              "functionName": "l",
+              "url": "http://127.0.0.1:4187/assets/fullBackupRuntime-DZgUkbne.js",
+              "lineNumber": 0,
+              "columnNumber": 5739
+            },
+            {
+              "functionName": "capture",
+              "url": "http://127.0.0.1:4187/assets/fullBackupRuntime-DZgUkbne.js",
+              "lineNumber": 0,
+              "columnNumber": 11950
+            },
+            {
+              "functionName": "capture",
+              "url": "http://127.0.0.1:4187/assets/fullBackupRuntime-DZgUkbne.js",
+              "lineNumber": 0,
+              "columnNumber": 9921
+            },
+            {
+              "functionName": "J",
+              "url": "http://127.0.0.1:4187/assets/fullBackupRuntime-DZgUkbne.js",
+              "lineNumber": 0,
+              "columnNumber": 9205
+            },
+            {
+              "functionName": "V",
+              "url": "http://127.0.0.1:4187/assets/fullBackupRuntime-DZgUkbne.js",
+              "lineNumber": 0,
+              "columnNumber": 8009
+            },
+            {
+              "functionName": "G",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 21399
+            },
+            {
+              "functionName": "T",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 13450
+            },
+            {
+              "functionName": "C",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 12340
+            },
+            {
+              "functionName": "i",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 12428
+            },
+            {
+              "functionName": "i",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 12428
+            },
+            {
+              "functionName": "i",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 12428
+            },
+            {
+              "functionName": "getOwnPropertyDescriptor",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            }
+          ],
+          "sampledAllocatedMiB": 65.61835479736328
+        },
+        {
+          "functionName": "getOwnPropertyDescriptor",
+          "url": "",
+          "lineNumber": -1,
+          "columnNumber": -1,
+          "stack": [
+            {
+              "functionName": "(root)",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "b",
+              "url": "http://127.0.0.1:4187/assets/index-C7hQz9rg.js",
+              "lineNumber": 1,
+              "columnNumber": 37830
+            },
+            {
+              "functionName": "",
+              "url": "",
+              "lineNumber": 3,
+              "columnNumber": 34
+            },
+            {
+              "functionName": "restore",
+              "url": "http://127.0.0.1:4187/assets/fullBackupRuntime-DZgUkbne.js",
+              "lineNumber": 0,
+              "columnNumber": 12606
+            },
+            {
+              "functionName": "Z",
+              "url": "http://127.0.0.1:4187/assets/fullBackupRuntime-DZgUkbne.js",
+              "lineNumber": 0,
+              "columnNumber": 10023
+            },
+            {
+              "functionName": "w",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 13421
+            },
+            {
+              "functionName": "C",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 12340
+            },
+            {
+              "functionName": "i",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 12428
+            },
+            {
+              "functionName": "i",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 12428
+            },
+            {
+              "functionName": "i",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 12428
+            },
+            {
+              "functionName": "i",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 12428
+            },
+            {
+              "functionName": "i",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 12428
+            },
+            {
+              "functionName": "getOwnPropertyDescriptor",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            }
+          ],
+          "sampledAllocatedMiB": 65.05549621582031
+        },
+        {
+          "functionName": "getOwnPropertyDescriptor",
+          "url": "",
+          "lineNumber": -1,
+          "columnNumber": -1,
+          "stack": [
+            {
+              "functionName": "(root)",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "",
+              "url": "http://127.0.0.1:4187/assets/fullBackupRuntime-DZgUkbne.js",
+              "lineNumber": 0,
+              "columnNumber": 6820
+            },
+            {
+              "functionName": "apply",
+              "url": "http://127.0.0.1:4187/assets/fullBackupRuntime-DZgUkbne.js",
+              "lineNumber": 0,
+              "columnNumber": 11975
+            },
+            {
+              "functionName": "restoreAll",
+              "url": "http://127.0.0.1:4187/assets/fullBackupRuntime-DZgUkbne.js",
+              "lineNumber": 0,
+              "columnNumber": 4850
+            },
+            {
+              "functionName": "forEach",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "",
+              "url": "http://127.0.0.1:4187/assets/fullBackupRuntime-DZgUkbne.js",
+              "lineNumber": 0,
+              "columnNumber": 5016
+            },
+            {
+              "functionName": "validate",
+              "url": "http://127.0.0.1:4187/assets/fullBackupRuntime-DZgUkbne.js",
+              "lineNumber": 0,
+              "columnNumber": 11522
+            },
+            {
+              "functionName": "validate",
+              "url": "http://127.0.0.1:4187/assets/fullBackupRuntime-DZgUkbne.js",
+              "lineNumber": 0,
+              "columnNumber": 13015
+            },
+            {
+              "functionName": "G",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 21399
+            },
+            {
+              "functionName": "T",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 13450
+            },
+            {
+              "functionName": "C",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 12340
+            },
+            {
+              "functionName": "i",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 12428
+            },
+            {
+              "functionName": "i",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 12428
+            },
+            {
+              "functionName": "i",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 12428
+            },
+            {
+              "functionName": "getOwnPropertyDescriptor",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            }
+          ],
+          "sampledAllocatedMiB": 64.89929962158203
+        },
+        {
+          "functionName": "getOwnPropertyDescriptor",
+          "url": "",
+          "lineNumber": -1,
+          "columnNumber": -1,
+          "stack": [
+            {
+              "functionName": "(root)",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "",
+              "url": "http://127.0.0.1:4187/assets/fullBackupRuntime-DZgUkbne.js",
+              "lineNumber": 0,
+              "columnNumber": 6820
+            },
+            {
+              "functionName": "l",
+              "url": "http://127.0.0.1:4187/assets/fullBackupRuntime-DZgUkbne.js",
+              "lineNumber": 0,
+              "columnNumber": 5739
+            },
+            {
+              "functionName": "capture",
+              "url": "http://127.0.0.1:4187/assets/fullBackupRuntime-DZgUkbne.js",
+              "lineNumber": 0,
+              "columnNumber": 11950
+            },
+            {
+              "functionName": "capture",
+              "url": "http://127.0.0.1:4187/assets/fullBackupRuntime-DZgUkbne.js",
+              "lineNumber": 0,
+              "columnNumber": 9921
+            },
+            {
+              "functionName": "",
+              "url": "http://127.0.0.1:4187/assets/fullBackupRuntime-DZgUkbne.js",
+              "lineNumber": 0,
+              "columnNumber": 11562
+            },
+            {
+              "functionName": "exportAll",
+              "url": "http://127.0.0.1:4187/assets/fullBackupRuntime-DZgUkbne.js",
+              "lineNumber": 0,
+              "columnNumber": 4685
+            },
+            {
+              "functionName": "map",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "",
+              "url": "http://127.0.0.1:4187/assets/fullBackupRuntime-DZgUkbne.js",
+              "lineNumber": 0,
+              "columnNumber": 4742
+            },
+            {
+              "functionName": "export",
+              "url": "http://127.0.0.1:4187/assets/fullBackupRuntime-DZgUkbne.js",
+              "lineNumber": 0,
+              "columnNumber": 13091
+            },
+            {
+              "functionName": "i",
+              "url": "http://127.0.0.1:4187/assets/preferences-HIxXJFKs.js",
+              "lineNumber": 1,
+              "columnNumber": 71837
+            },
+            {
+              "functionName": "backupSnapshot",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 66993
+            },
+            {
+              "functionName": "G",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 21399
+            },
+            {
+              "functionName": "T",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 13450
+            },
+            {
+              "functionName": "C",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 12340
+            },
+            {
+              "functionName": "i",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 12428
+            },
+            {
+              "functionName": "i",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 12428
+            },
+            {
+              "functionName": "i",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 12428
+            },
+            {
+              "functionName": "getOwnPropertyDescriptor",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            }
+          ],
+          "sampledAllocatedMiB": 64.43025970458984
+        },
+        {
+          "functionName": "getOwnPropertyDescriptor",
+          "url": "",
+          "lineNumber": -1,
+          "columnNumber": -1,
+          "stack": [
+            {
+              "functionName": "(root)",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "b",
+              "url": "http://127.0.0.1:4187/assets/index-C7hQz9rg.js",
+              "lineNumber": 1,
+              "columnNumber": 37830
+            },
+            {
+              "functionName": "",
+              "url": "",
+              "lineNumber": 3,
+              "columnNumber": 34
+            },
+            {
+              "functionName": "restore",
+              "url": "http://127.0.0.1:4187/assets/fullBackupRuntime-DZgUkbne.js",
+              "lineNumber": 0,
+              "columnNumber": 12606
+            },
+            {
+              "functionName": "Z",
+              "url": "http://127.0.0.1:4187/assets/fullBackupRuntime-DZgUkbne.js",
+              "lineNumber": 0,
+              "columnNumber": 10023
+            },
+            {
+              "functionName": "U",
+              "url": "http://127.0.0.1:4187/assets/fullBackupRuntime-DZgUkbne.js",
+              "lineNumber": 0,
+              "columnNumber": 8140
+            },
+            {
+              "functionName": "G",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 21399
+            },
+            {
+              "functionName": "T",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 13450
+            },
+            {
+              "functionName": "C",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 12340
+            },
+            {
+              "functionName": "i",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 12428
+            },
+            {
+              "functionName": "i",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 12428
+            },
+            {
+              "functionName": "i",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 12428
+            },
+            {
+              "functionName": "getOwnPropertyDescriptor",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            }
+          ],
+          "sampledAllocatedMiB": 64.36784744262695
+        },
+        {
+          "functionName": "getOwnPropertyDescriptor",
+          "url": "",
+          "lineNumber": -1,
+          "columnNumber": -1,
+          "stack": [
+            {
+              "functionName": "(root)",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "b",
+              "url": "http://127.0.0.1:4187/assets/index-C7hQz9rg.js",
+              "lineNumber": 1,
+              "columnNumber": 37830
+            },
+            {
+              "functionName": "",
+              "url": "",
+              "lineNumber": 3,
+              "columnNumber": 34
+            },
+            {
+              "functionName": "restore",
+              "url": "http://127.0.0.1:4187/assets/fullBackupRuntime-DZgUkbne.js",
+              "lineNumber": 0,
+              "columnNumber": 12606
+            },
+            {
+              "functionName": "l",
+              "url": "http://127.0.0.1:4187/assets/fullBackupRuntime-DZgUkbne.js",
+              "lineNumber": 0,
+              "columnNumber": 11597
+            },
+            {
+              "functionName": "Ye",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 58493
+            },
+            {
+              "functionName": "n",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 58522
+            },
+            {
+              "functionName": "n",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 58522
+            },
+            {
+              "functionName": "n",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 58522
+            },
+            {
+              "functionName": "getOwnPropertyDescriptor",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            }
+          ],
+          "sampledAllocatedMiB": 63.83629608154297
+        },
+        {
+          "functionName": "getOwnPropertyDescriptor",
+          "url": "",
+          "lineNumber": -1,
+          "columnNumber": -1,
+          "stack": [
+            {
+              "functionName": "(root)",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "b",
+              "url": "http://127.0.0.1:4187/assets/index-C7hQz9rg.js",
+              "lineNumber": 1,
+              "columnNumber": 37830
+            },
+            {
+              "functionName": "",
+              "url": "",
+              "lineNumber": 3,
+              "columnNumber": 34
+            },
+            {
+              "functionName": "restore",
+              "url": "http://127.0.0.1:4187/assets/fullBackupRuntime-DZgUkbne.js",
+              "lineNumber": 0,
+              "columnNumber": 12606
+            },
+            {
+              "functionName": "Z",
+              "url": "http://127.0.0.1:4187/assets/fullBackupRuntime-DZgUkbne.js",
+              "lineNumber": 0,
+              "columnNumber": 10023
+            },
+            {
+              "functionName": "V",
+              "url": "http://127.0.0.1:4187/assets/fullBackupRuntime-DZgUkbne.js",
+              "lineNumber": 0,
+              "columnNumber": 8009
+            },
+            {
+              "functionName": "G",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 21399
+            },
+            {
+              "functionName": "T",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 13450
+            },
+            {
+              "functionName": "C",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 12340
+            },
+            {
+              "functionName": "i",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 12428
+            },
+            {
+              "functionName": "i",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 12428
+            },
+            {
+              "functionName": "i",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 12428
+            },
+            {
+              "functionName": "getOwnPropertyDescriptor",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            }
+          ],
+          "sampledAllocatedMiB": 63.77370834350586
+        },
+        {
+          "functionName": "getOwnPropertyDescriptor",
+          "url": "",
+          "lineNumber": -1,
+          "columnNumber": -1,
+          "stack": [
+            {
+              "functionName": "(root)",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "",
+              "url": "http://127.0.0.1:4187/assets/fullBackupRuntime-DZgUkbne.js",
+              "lineNumber": 0,
+              "columnNumber": 6820
+            },
+            {
+              "functionName": "l",
+              "url": "http://127.0.0.1:4187/assets/fullBackupRuntime-DZgUkbne.js",
+              "lineNumber": 0,
+              "columnNumber": 5739
+            },
+            {
+              "functionName": "capture",
+              "url": "http://127.0.0.1:4187/assets/fullBackupRuntime-DZgUkbne.js",
+              "lineNumber": 0,
+              "columnNumber": 11950
+            },
+            {
+              "functionName": "capture",
+              "url": "http://127.0.0.1:4187/assets/fullBackupRuntime-DZgUkbne.js",
+              "lineNumber": 0,
+              "columnNumber": 9921
+            },
+            {
+              "functionName": "J",
+              "url": "http://127.0.0.1:4187/assets/fullBackupRuntime-DZgUkbne.js",
+              "lineNumber": 0,
+              "columnNumber": 9205
+            },
+            {
+              "functionName": "T",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 13450
+            },
+            {
+              "functionName": "C",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 12340
+            },
+            {
+              "functionName": "i",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 12428
+            },
+            {
+              "functionName": "i",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 12428
+            },
+            {
+              "functionName": "i",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 12428
+            },
+            {
+              "functionName": "i",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 12428
+            },
+            {
+              "functionName": "i",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 12428
+            },
+            {
+              "functionName": "getOwnPropertyDescriptor",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            }
+          ],
+          "sampledAllocatedMiB": 63.58618927001953
+        },
+        {
+          "functionName": "getOwnPropertyDescriptor",
+          "url": "",
+          "lineNumber": -1,
+          "columnNumber": -1,
+          "stack": [
+            {
+              "functionName": "(root)",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "",
+              "url": "http://127.0.0.1:4187/assets/fullBackupRuntime-DZgUkbne.js",
+              "lineNumber": 0,
+              "columnNumber": 6820
+            },
+            {
+              "functionName": "l",
+              "url": "http://127.0.0.1:4187/assets/fullBackupRuntime-DZgUkbne.js",
+              "lineNumber": 0,
+              "columnNumber": 5739
+            },
+            {
+              "functionName": "capture",
+              "url": "http://127.0.0.1:4187/assets/fullBackupRuntime-DZgUkbne.js",
+              "lineNumber": 0,
+              "columnNumber": 11950
+            },
+            {
+              "functionName": "l",
+              "url": "http://127.0.0.1:4187/assets/fullBackupRuntime-DZgUkbne.js",
+              "lineNumber": 0,
+              "columnNumber": 11597
+            },
+            {
+              "functionName": "Ye",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 58493
+            },
+            {
+              "functionName": "n",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 58522
+            },
+            {
+              "functionName": "n",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 58522
+            },
+            {
+              "functionName": "n",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 58522
+            },
+            {
+              "functionName": "getOwnPropertyDescriptor",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            }
+          ],
+          "sampledAllocatedMiB": 63.1485481262207
+        },
+        {
+          "functionName": "getOwnPropertyDescriptor",
+          "url": "",
+          "lineNumber": -1,
+          "columnNumber": -1,
+          "stack": [
+            {
+              "functionName": "(root)",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "l",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 47463
+            },
+            {
+              "functionName": "N",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 17480
+            },
+            {
+              "functionName": "i",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 12428
+            },
+            {
+              "functionName": "i",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 12428
+            },
+            {
+              "functionName": "i",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 12428
+            },
+            {
+              "functionName": "getOwnPropertyDescriptor",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            }
+          ],
+          "sampledAllocatedMiB": 62.961124420166016
+        },
+        {
+          "functionName": "getOwnPropertyDescriptor",
+          "url": "",
+          "lineNumber": -1,
+          "columnNumber": -1,
+          "stack": [
+            {
+              "functionName": "(root)",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "",
+              "url": "http://127.0.0.1:4187/assets/fullBackupRuntime-DZgUkbne.js",
+              "lineNumber": 0,
+              "columnNumber": 6820
+            },
+            {
+              "functionName": "apply",
+              "url": "http://127.0.0.1:4187/assets/fullBackupRuntime-DZgUkbne.js",
+              "lineNumber": 0,
+              "columnNumber": 11975
+            },
+            {
+              "functionName": "restoreAll",
+              "url": "http://127.0.0.1:4187/assets/fullBackupRuntime-DZgUkbne.js",
+              "lineNumber": 0,
+              "columnNumber": 4850
+            },
+            {
+              "functionName": "forEach",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "",
+              "url": "http://127.0.0.1:4187/assets/fullBackupRuntime-DZgUkbne.js",
+              "lineNumber": 0,
+              "columnNumber": 5016
+            },
+            {
+              "functionName": "validate",
+              "url": "http://127.0.0.1:4187/assets/fullBackupRuntime-DZgUkbne.js",
+              "lineNumber": 0,
+              "columnNumber": 11522
+            },
+            {
+              "functionName": "G",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 21399
+            },
+            {
+              "functionName": "T",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 13450
+            },
+            {
+              "functionName": "C",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 12340
+            },
+            {
+              "functionName": "i",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 12428
+            },
+            {
+              "functionName": "i",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 12428
+            },
+            {
+              "functionName": "i",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 12428
+            },
+            {
+              "functionName": "getOwnPropertyDescriptor",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            }
+          ],
+          "sampledAllocatedMiB": 62.210655212402344
+        },
+        {
+          "functionName": "concat",
+          "url": "http://127.0.0.1:4187/assets/crypto-js-CiVKIBfJ.js",
+          "lineNumber": 0,
+          "columnNumber": 2679,
+          "stack": [
+            {
+              "functionName": "(root)",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "prepare",
+              "url": "http://127.0.0.1:4187/assets/index-C7hQz9rg.js",
+              "lineNumber": 1,
+              "columnNumber": 7738
+            },
+            {
+              "functionName": "p",
+              "url": "http://127.0.0.1:4187/assets/sha256Text-BhRK5XSE.js",
+              "lineNumber": 1,
+              "columnNumber": 1461
+            },
+            {
+              "functionName": "update",
+              "url": "http://127.0.0.1:4187/assets/crypto-js-CiVKIBfJ.js",
+              "lineNumber": 0,
+              "columnNumber": 4720
+            },
+            {
+              "functionName": "concat",
+              "url": "http://127.0.0.1:4187/assets/crypto-js-CiVKIBfJ.js",
+              "lineNumber": 0,
+              "columnNumber": 2679
+            }
+          ],
+          "sampledAllocatedMiB": 52.82916259765625
+        },
+        {
+          "functionName": "ne",
+          "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+          "lineNumber": 0,
+          "columnNumber": 13927,
+          "stack": [
+            {
+              "functionName": "(root)",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "l",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 47463
+            },
+            {
+              "functionName": "ne",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 13927
+            }
+          ],
+          "sampledAllocatedMiB": 52.36819839477539
+        },
+        {
+          "functionName": "ne",
+          "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+          "lineNumber": 0,
+          "columnNumber": 13927,
+          "stack": [
+            {
+              "functionName": "(root)",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "l",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 47463
+            },
+            {
+              "functionName": "N",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 17480
+            },
+            {
+              "functionName": "ne",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 13927
+            }
+          ],
+          "sampledAllocatedMiB": 51.270572662353516
+        },
+        {
+          "functionName": "concat",
+          "url": "http://127.0.0.1:4187/assets/crypto-js-CiVKIBfJ.js",
+          "lineNumber": 0,
+          "columnNumber": 2679,
+          "stack": [
+            {
+              "functionName": "(root)",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "ae",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 61932
+            },
+            {
+              "functionName": "I",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 60295
+            },
+            {
+              "functionName": "O",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 57661
+            },
+            {
+              "functionName": "Ge",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 53286
+            },
+            {
+              "functionName": "be",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 42279
+            },
+            {
+              "functionName": "process",
+              "url": "http://127.0.0.1:4187/assets/crypto-js-CiVKIBfJ.js",
+              "lineNumber": 0,
+              "columnNumber": 29671
+            },
+            {
+              "functionName": "_append",
+              "url": "http://127.0.0.1:4187/assets/crypto-js-CiVKIBfJ.js",
+              "lineNumber": 0,
+              "columnNumber": 4100
+            },
+            {
+              "functionName": "concat",
+              "url": "http://127.0.0.1:4187/assets/crypto-js-CiVKIBfJ.js",
+              "lineNumber": 0,
+              "columnNumber": 2679
+            }
+          ],
+          "sampledAllocatedMiB": 49.49622344970703
+        },
+        {
+          "functionName": "c",
+          "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+          "lineNumber": 0,
+          "columnNumber": 42504,
+          "stack": [
+            {
+              "functionName": "(root)",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "ae",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 61932
+            },
+            {
+              "functionName": "I",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 60295
+            },
+            {
+              "functionName": "O",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 57661
+            },
+            {
+              "functionName": "Ge",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 53286
+            },
+            {
+              "functionName": "be",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 42279
+            },
+            {
+              "functionName": "c",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 42504
+            }
+          ],
+          "sampledAllocatedMiB": 40.07832717895508
+        },
+        {
+          "functionName": "d",
+          "url": "http://127.0.0.1:4187/assets/sha256Text-BhRK5XSE.js",
+          "lineNumber": 1,
+          "columnNumber": 1278,
+          "stack": [
+            {
+              "functionName": "(root)",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "C",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 54533
+            },
+            {
+              "functionName": "Ve",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 52708
+            },
+            {
+              "functionName": "p",
+              "url": "http://127.0.0.1:4187/assets/sha256Text-BhRK5XSE.js",
+              "lineNumber": 1,
+              "columnNumber": 1461
+            },
+            {
+              "functionName": "d",
+              "url": "http://127.0.0.1:4187/assets/sha256Text-BhRK5XSE.js",
+              "lineNumber": 1,
+              "columnNumber": 1278
+            }
+          ],
+          "sampledAllocatedMiB": 39.86186981201172
+        },
+        {
+          "functionName": "_doProcessBlock",
+          "url": "http://127.0.0.1:4187/assets/crypto-js-CiVKIBfJ.js",
+          "lineNumber": 0,
+          "columnNumber": 14524,
+          "stack": [
+            {
+              "functionName": "(root)",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "C",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 54533
+            },
+            {
+              "functionName": "Ve",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 52708
+            },
+            {
+              "functionName": "p",
+              "url": "http://127.0.0.1:4187/assets/sha256Text-BhRK5XSE.js",
+              "lineNumber": 1,
+              "columnNumber": 1461
+            },
+            {
+              "functionName": "update",
+              "url": "http://127.0.0.1:4187/assets/crypto-js-CiVKIBfJ.js",
+              "lineNumber": 0,
+              "columnNumber": 4720
+            },
+            {
+              "functionName": "_process",
+              "url": "http://127.0.0.1:4187/assets/crypto-js-CiVKIBfJ.js",
+              "lineNumber": 0,
+              "columnNumber": 4207
+            },
+            {
+              "functionName": "_doProcessBlock",
+              "url": "http://127.0.0.1:4187/assets/crypto-js-CiVKIBfJ.js",
+              "lineNumber": 0,
+              "columnNumber": 14524
+            }
+          ],
+          "sampledAllocatedMiB": 39.72602462768555
+        },
+        {
+          "functionName": "d",
+          "url": "http://127.0.0.1:4187/assets/sha256Text-BhRK5XSE.js",
+          "lineNumber": 1,
+          "columnNumber": 1278,
+          "stack": [
+            {
+              "functionName": "(root)",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "l",
+              "url": "http://127.0.0.1:4187/assets/index-C7hQz9rg.js",
+              "lineNumber": 1,
+              "columnNumber": 7481
+            },
+            {
+              "functionName": "p",
+              "url": "http://127.0.0.1:4187/assets/sha256Text-BhRK5XSE.js",
+              "lineNumber": 1,
+              "columnNumber": 1461
+            },
+            {
+              "functionName": "d",
+              "url": "http://127.0.0.1:4187/assets/sha256Text-BhRK5XSE.js",
+              "lineNumber": 1,
+              "columnNumber": 1278
+            }
+          ],
+          "sampledAllocatedMiB": 38.93965148925781
+        },
+        {
+          "functionName": "_doProcessBlock",
+          "url": "http://127.0.0.1:4187/assets/crypto-js-CiVKIBfJ.js",
+          "lineNumber": 0,
+          "columnNumber": 14524,
+          "stack": [
+            {
+              "functionName": "(root)",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "l",
+              "url": "http://127.0.0.1:4187/assets/index-C7hQz9rg.js",
+              "lineNumber": 1,
+              "columnNumber": 7481
+            },
+            {
+              "functionName": "p",
+              "url": "http://127.0.0.1:4187/assets/sha256Text-BhRK5XSE.js",
+              "lineNumber": 1,
+              "columnNumber": 1461
+            },
+            {
+              "functionName": "update",
+              "url": "http://127.0.0.1:4187/assets/crypto-js-CiVKIBfJ.js",
+              "lineNumber": 0,
+              "columnNumber": 4720
+            },
+            {
+              "functionName": "_process",
+              "url": "http://127.0.0.1:4187/assets/crypto-js-CiVKIBfJ.js",
+              "lineNumber": 0,
+              "columnNumber": 4207
+            },
+            {
+              "functionName": "_doProcessBlock",
+              "url": "http://127.0.0.1:4187/assets/crypto-js-CiVKIBfJ.js",
+              "lineNumber": 0,
+              "columnNumber": 14524
+            }
+          ],
+          "sampledAllocatedMiB": 37.694400787353516
+        },
+        {
+          "functionName": "next",
+          "url": "",
+          "lineNumber": -1,
+          "columnNumber": -1,
+          "stack": [
+            {
+              "functionName": "(root)",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "s",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 46508
+            },
+            {
+              "functionName": "N",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 17480
+            },
+            {
+              "functionName": "ne",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 13927
+            },
+            {
+              "functionName": "from",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "next",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            }
+          ],
+          "sampledAllocatedMiB": 36.91751480102539
+        },
+        {
+          "functionName": "slice",
+          "url": "",
+          "lineNumber": -1,
+          "columnNumber": -1,
+          "stack": [
+            {
+              "functionName": "(root)",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "ae",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 61932
+            },
+            {
+              "functionName": "I",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 60295
+            },
+            {
+              "functionName": "O",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 57661
+            },
+            {
+              "functionName": "Ge",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 53286
+            },
+            {
+              "functionName": "be",
+              "url": "http://127.0.0.1:4187/assets/kanataStore-DnQeJC1a.js",
+              "lineNumber": 0,
+              "columnNumber": 42279
+            },
+            {
+              "functionName": "process",
+              "url": "http://127.0.0.1:4187/assets/crypto-js-CiVKIBfJ.js",
+              "lineNumber": 0,
+              "columnNumber": 29671
+            },
+            {
+              "functionName": "_process",
+              "url": "http://127.0.0.1:4187/assets/crypto-js-CiVKIBfJ.js",
+              "lineNumber": 0,
+              "columnNumber": 4207
+            },
+            {
+              "functionName": "_doProcessBlock",
+              "url": "http://127.0.0.1:4187/assets/crypto-js-CiVKIBfJ.js",
+              "lineNumber": 0,
+              "columnNumber": 31451
+            },
+            {
+              "functionName": "processBlock",
+              "url": "http://127.0.0.1:4187/assets/crypto-js-CiVKIBfJ.js",
+              "lineNumber": 0,
+              "columnNumber": 30448
+            },
+            {
+              "functionName": "slice",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            }
+          ],
+          "sampledAllocatedMiB": 34.11125946044922
+        }
+      ]
+    },
+    "restoredMessageProofExportVerification": {
+      "ms": 4768.6,
+      "value": {
+        "messages": 100000,
+        "exactOriginalMessageProofs": true,
+        "memories": 20,
+        "actualCoordinator": true,
+        "fixtureRegeneratedWithoutRetainedPlaintextCopy": true
+      },
+      "memory": {
+        "windowsRendererProcesses": [
+          {
+            "Id": 13456,
+            "PeakWorkingSet64": 32813056,
+            "WorkingSet64": 32415744
+          },
+          {
+            "Id": 41192,
+            "PeakWorkingSet64": 92270592,
+            "WorkingSet64": 31752192
+          },
+          {
+            "Id": 44972,
+            "PeakWorkingSet64": 922587136,
+            "WorkingSet64": 499310592
+          }
+        ],
+        "peakResidentMiB": 879.84765625,
+        "heapPoint": {
+          "usedSize": 153072964,
+          "totalSize": 231395328,
+          "embedderHeapUsedSize": 3851496,
+          "backingStorageSize": 91092806
+        }
+      }
+    },
+    "masterPasswordActualUiTransaction": {
+      "ms": 22603.4,
+      "value": {
+        "newCredential": true,
+        "oldPasswordRejected": true,
+        "pagedBodyPreserved": true
+      },
+      "memory": {
+        "windowsRendererProcesses": [
+          {
+            "Id": 13456,
+            "PeakWorkingSet64": 32813056,
+            "WorkingSet64": 32473088
+          },
+          {
+            "Id": 41192,
+            "PeakWorkingSet64": 92270592,
+            "WorkingSet64": 30101504
+          },
+          {
+            "Id": 44972,
+            "PeakWorkingSet64": 922587136,
+            "WorkingSet64": 485425152
+          }
+        ],
+        "peakResidentMiB": 879.84765625,
+        "heapPoint": {
+          "usedSize": 186651644,
+          "totalSize": 247676928,
+          "embedderHeapUsedSize": 6037672,
+          "backingStorageSize": 1008698
+        }
+      }
+    }
+  },
+  "pageErrors": [],
+  "aiRequests": 0,
+  "profilerDiagnostic": true,
+  "coldBrowserProcessRestart": true,
+  "timeChecks": [
+    {
+      "name": "protectedColdLoad",
+      "actualMs": 1009.6999999992549,
+      "limitMs": 30000,
+      "status": "PASS"
+    },
+    {
+      "name": "saveHeader",
+      "actualMs": 1275.7,
+      "limitMs": 30000,
+      "status": "PASS"
+    },
+    {
+      "name": "diskPage50",
+      "actualMs": 8.3,
+      "limitMs": 1000,
+      "status": "PASS"
+    },
+    {
+      "name": "indexedExactSearch",
+      "actualMs": 16.3,
+      "limitMs": 2000,
+      "status": "PASS"
+    },
+    {
+      "name": "portableImportActualCoordinator",
+      "actualMs": 7339.1,
+      "limitMs": 120000,
+      "status": "PASS"
+    },
+    {
+      "name": "fullExportActualCoordinator",
+      "actualMs": 2481.1,
+      "limitMs": 120000,
+      "status": "PASS"
+    },
+    {
+      "name": "fullRestoreActualCoordinator",
+      "actualMs": 16857.5,
+      "limitMs": 120000,
+      "status": "PASS"
+    },
+    {
+      "name": "masterPasswordActualUiTransaction",
+      "actualMs": 22603.4,
+      "limitMs": 120000,
+      "status": "PASS"
+    }
+  ],
+  "peakAppProcessResidentMiB": 879.84765625,
+  "memoryThresholdMiB": 768,
+  "memoryGate": "FAIL",
+  "timeGate": "PASS",
+  "assessmentVersion": "capacity-gates-v2-return-rekey"
+}

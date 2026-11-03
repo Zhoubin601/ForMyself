@@ -44,8 +44,8 @@ export function createKanataBackupRuntime({ participants, journal, state, prepar
       for (const child of Object.values(object)) freeze(child)
       Object.freeze(object)
     }
-    freeze(value)
     if(value.kanata)ownKanataRestoreImage(value.kanata)
+    freeze(value)
     owned.add(value)
     return value
   }

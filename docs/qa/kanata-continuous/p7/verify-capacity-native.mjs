@@ -3,6 +3,7 @@ import {preserveCapacityEvidence,assessCapacity} from './capacity-evidence.mjs'
 import {writeFile} from 'node:fs/promises'
 import {createHash} from 'node:crypto'
 import {connectNativeCapacity} from './native-capacity-support.mjs'
+import {installCapacityIODiagnostics} from './capacity-io-diagnostics.mjs'
 import {PASSWORD} from '../p3/management-scenarios.mjs'
 import {createEmptyKanataData} from '../../../../src/features/chat/domain/kanataCore.js'
 import {instantiateWorldPreset} from '../../../../src/features/chat/domain/presetCore.js'
@@ -10,8 +11,9 @@ import preset from '../../../../src/features/chat/presets/abydos.v1.json' with {
 const count=Number(process.argv[2])
 // Observe slow 100k phases to completion; capacity pass limits remain the frozen 120s/512MiB.
 const diagnostic=process.argv.includes('--profile-diagnostic'),operationTimeout=diagnostic||count===100000?600000:180000
+const ioDiagnostic=process.argv.includes('--io-diagnostic')
 if(![1000,10000,100000].includes(count))throw Error('SYNTHETIC_CAPACITY_SIZE_REQUIRED')
-const native=await connectNativeCapacity()
+const native=await connectNativeCapacity(ioDiagnostic?{onPage:installCapacityIODiagnostics}:{})
 let page=native.page
 page.setDefaultTimeout(operationTimeout)
 const asset=native.build.resources.find(r=>/^assets\/fullBackupRuntime-.*\.js$/.test(r.path))?.path.split('/').pop()
@@ -20,6 +22,8 @@ let sequence=0
 const baseline=instantiateWorldPreset(createEmptyKanataData('synthetic-capacity-user'),preset,{initializationKey:'native-capacity',now:Date.UTC(2026,9,29),timeZone:'Asia/Shanghai',idFactory:kind=>kind+'-'+createHash('sha256').update(kind+'-'+(++sequence)).digest('hex').slice(0,32)})
 const result={status:'RUNNING',at:new Date().toISOString(),count,syntheticOnly:true,kind:'production-android-actual-coordinator',forcedGC:false,build:native.build.apkSha256,metrics:{},pageErrors:[],aiRequests:0}
 result.profilerDiagnostic=diagnostic
+result.ioDiagnostic=ioDiagnostic
+result.archiveFileBatchAvailable=native.archiveFileBatchAvailable
 const observe=async()=>{
   page.on('pageerror',error=>result.pageErrors.push(error.message));page.on('crash',()=>{result.rendererCrashed=true})
   await page.route('https://api.deepseek.com/**',route=>{++result.aiRequests;return route.abort()})
@@ -34,12 +38,13 @@ const measure=async(name,action)=>{
   const start=performance.now();let timer
   const profileThis=diagnostic&&name!=='coldPageReloadAndProtectedLoad'
   if(profileThis)await native.startProfile()
+  if(ioDiagnostic)await page.evaluate(()=>window.__capacityIO.reset())
   try{
     const task=action();task.catch(()=>{})
     const value=await Promise.race([task,new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error('CAPACITY_OPERATION_TIMEOUT:'+name)),operationTimeout)})])
     result.metrics[name]={ms:Math.round((performance.now()-start)*10)/10,value,memory:await memory()};delete result.activeOperation;console.log('MEASURED',count,name);await save();return value
   }catch(error){result.metrics[name]={status:'FAIL',ms:Math.round((performance.now()-start)*10)/10,error:error.message};await save();throw error}
-  finally{clearTimeout(timer);if(profileThis){result.metrics[name].cpuProfile=await native.stopProfile();await save()}}
+  finally{clearTimeout(timer);if(profileThis){result.metrics[name].cpuProfile=await native.stopProfile();await save()}if(ioDiagnostic){result.metrics[name].io=await page.evaluate(()=>window.__capacityIO.snapshot());await save()}}
 }
 try{
   await page.exposeFunction('__preserveOriginal',backup=>native.preserveOriginal(backup))
@@ -154,7 +159,7 @@ try{
   })
   if(result.pageErrors.length||result.aiRequests||result.rendererCrashed)throw Error('UNEXPECTED_PAGE_OR_MODEL_EVENT')
   assessCapacity(result,512)
-  if(diagnostic&&result.status==='PASS')result.status='MEASURED_DIAGNOSTIC_NOT_ACCEPTED'
+  if((diagnostic||ioDiagnostic)&&result.status==='PASS')result.status='MEASURED_DIAGNOSTIC_NOT_ACCEPTED'
   if(result.status!=='PASS')process.exitCode=1
 }catch(error){result.status='FAIL';result.error=error.message;process.exitCode=1;console.error(error)}
 finally{await save();await preserveCapacityEvidence(destination);await native.close()}

@@ -109,6 +109,12 @@ export type { KanataUsageEvent } from '../features/chat/domain/kanataTypes'
 export type { MessageArchiveDescriptor, MessageHistoryRequest } from '../features/chat/domain/kanataTypes'
 /** reencrypt verifies old plaintext and exact new read-back before its caller commits headers. */
 export type KanataArchiveRepository = ReturnType<typeof import('../features/chat/storage/messageArchiveRepository.js').createMessageArchiveRepository>
+/** Pure explicit-data crypto helpers used by archive I/O; no Store or retained credentials. */
+export type ArchiveTextFingerprint = typeof import('../shared/crypto/sha256Text.js').sha256TextAsync
+export type StrictUtf8Encoder = typeof import('../shared/crypto/utf8Words.js').utf8Bytes
+/** Internal checked immutable DTO factory; it cannot confer trust through wire flags. */
+export type ImmutableKanataFactory = typeof import('../features/chat/domain/kanataValidation.js').ownImmutableKanataData
+export type {ArchiveFileCommand,ArchiveFileResult,ArchiveFileBatchDriver,ArchiveFilesystemDriver} from '../platform/storage/archiveFileBatchTypes'
 export type KanataChatRuntime = ReturnType<typeof import('./kanataChatRuntime.js').createKanataChatRuntime>
 export type {LifeSource,MemoryPolicy,RoleBinding,KanataRoleBindings,EffectBaseline,EventAudit} from '../features/chat/domain/kanataTypes'
 export type KanataExperienceRuntime = ReturnType<typeof import('./kanataExperienceRuntime.js').createKanataExperienceRuntime>
