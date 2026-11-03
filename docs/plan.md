@@ -1,6 +1,12 @@
 # 执行计划
 
-> **⚠ Kanata 当前执行入口（2026-10-28）：** [连续开发计划 v3](20261028-kanata-continuous-execution-plan-v3.md)（P1–P7 的当前验收标准）、[阿拜多斯五人预设详细规格](20261028-kanata-abydos-preset-spec-v1.md)、[AI Agent 总控提示词](20261028-kanata-agent-master-prompt-v1.md)。本文件先前的 Kanata P1/P2「旧聊天 v4→v5 无损迁移」「旧 chat 单项备份导入」属历史方案，**已经失效，不得作为执行要求**；旧内容保留仅供审计。新版方案也不得绕过原有安全/备份/主密码规范。
+> **当前执行入口（2026-11-03）：** 先在 [M 分支](https://github.com/Zhoubin601/ForMyself/tree/M) 完成 [彼方 SQLite 迁移计划 M v1](20261103-kanata-sqlite-migration-plan-v1.md) 的 M0–M7。M 从 Kanata 的 73158a058d35124e1572b2161fe0f364f2140c48 创建，当前仅完成分支和计划文档，SQLite 实现尚未开始。
+>
+> **分支顺序：** Kanata（P7 No-Go 基线）→ M（SQLite 迁移与性能重构）→ M7 验收后审查并合并回 Kanata → 继续 P7。M 未完成前，P7 暂停在 Kanata，不并行修改同一套存储代码；不合并 main。
+>
+> **P7 原始验收标准仍然有效：** [连续开发计划 v3](20261028-kanata-continuous-execution-plan-v3.md) 保存 P1–P7 的原始需求与验收门槛。P1–P6 已有阶段验收记录，P7 仍为 No-Go；SQLite 迁移成功不代表 P7 自动通过。阿拜多斯预设仍以 [五人预设规格](20261028-kanata-abydos-preset-spec-v1.md) 为准。
+>
+> 下方 2026-07 至 2026-10 的计划条目作为历史实施记录保留；其中已被后续决策替代的内容仅供审计，不作为当前执行入口。所有数据安全、主密码、备份恢复和真实数据保护规范继续有效。
 
 
 ## 2026-07-26 女朋友式 AI 多日陪伴提示词
