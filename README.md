@@ -1,12 +1,10 @@
 # ForMyself — 我的自留地
 
-当前本地执行入口（2026-11-02）：[P7最终收口记录](docs/20261102-kanata-p7-final-closure-v1.md)。基线9ebf3484，性能/需求门禁仍No-Go；按当前授权只在Kanata开发，不默认推送或发布。
+当前执行入口（2026-11-03）：[彼方 SQLite 迁移计划 M v1](docs/20261103-kanata-sqlite-migration-plan-v1.md)。SQLite 迁移只在 M 分支进行；M 从 Kanata 的 73158a058d35124e1572b2161fe0f364f2140c48 创建。当前仅创建分支和计划文档，M0–M7 尚未开始。
 
-最新远端检查点入口（2026-11-02）：[Kanata 云端交接 v2](docs/20261102-kanata-cloud-handoff-v2.md)。用户已明确要求提交推送本轮P7 WIP；P7仍No-Go，实际提交以Git历史为准。
+当前分支路线：Kanata（P7 No-Go 稳定基线）→ M（M0–M7 SQLite 迁移）→ M7 通过并审查后合并回 Kanata → 继续 P7。M 未完成前不在 Kanata 并行修改同一套存储模块；不自动合并 main 或发布。
 
-2026-11-02 当前续作：[P7规划器、字节转换与Web目录读取检查点](docs/20261102-kanata-p7-archive-planner-v1.md)。用户已要求继续开发；P7仍No-Go，旧云端交接不是暂停要求。自动化与生产实测按各自候选区分，未自动推送或发布。
-
-云端接续入口（2026-10-31）：[Kanata 云端交接](docs/20261031-kanata-cloud-handoff-v1.md)。P1–P6已有验收，P7仍No-Go；本次按用户明确要求推送未完成检查点，不能当成P7完成或安装包发布。
+P7 原始门槛仍然有效，见[连续开发计划 v3](docs/20261028-kanata-continuous-execution-plan-v3.md)与[P7 最终收口记录](docs/20261102-kanata-p7-final-closure-v1.md)。SQLite 迁移完成不等于 P7 自动通过，合并后必须重新执行相关容量、安全、备份和完整需求验收。
 
 个人生活记录应用：省钱计划、体重、心情、每日待办、日程、密码库、月度报告与 AI 陪伴。采用 Vue 3、Pinia、Vite 和 Capacitor，支持 Web 与 Android。本机保存业务数据；启用 AI 时，聊天和选中的生活上下文会发送给用户配置的服务商。
 
