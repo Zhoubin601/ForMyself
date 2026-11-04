@@ -1179,3 +1179,10 @@ raw/完整需求清单.txt 4.1/4.4/8.3及最新连续执行v3驱动当前实现�
 ## 2026-11-03 M0 模拟器补测
 
 用户追问并授权安装模拟器。读取环境状态/网络技能与策略；官方Emulator37.2.13、AOSP ATD API34 r2及官方checksum；Debian官方e2fsprogs1.47.2仅解包work。新增真实Android原生/HTMLViewer对照来源见20261103-kanata-sqlite-m0-emulator-verification-v1.md。
+
+## 2026-11-04 M0 Windows 接续
+
+- 原始需求取自 [完整需求清单](../raw/完整需求清单.txt) 的聊天分页、历史查询和既有安全生命周期条款。[Kanata 技术设计](../raw/彼方%20·%20Kanata%20技术设计.txt) 要求接入既有保存、主密码和恢复流程。[开源技术审查报告](../raw/开源技术审查报告.txt) 记录了加密快照和有界历史访问的约束。
+- 本轮基线为远端 M 的 `98fd0a3`，使用 [M0 交接](20261104-kanata-sqlite-m0-handoff-v1.md)、[迁移计划](20261103-kanata-sqlite-migration-plan-v1.md)、锁定 SQLite 插件的 Android 源码及 SQLCipher 4.17.0 AAR 的 Java 接口。设备与验证证据见 [Windows 接续记录](20261104-kanata-sqlite-m0-windows-v1.md)。
+- 用户随后指定用主工作区 `raw/Android - 快捷方式.lnk` 所指模拟器承担 M0 设备验收。只读解析目标 `E:\Android`，使用其 SDK 和任务专用 `kanata_m0_api34`。测试记录来自 `dataset.mjs`，原始备份未读取。
+- 会话与 KDF 校准依据为现有 `src/services/masterPasswordSecurity.js`、M0 便携信封、锁定 Capacitor 的 Android 生命周期接口与 SQLCipher 4.17.0 字节密钥接口。来源和结果收录于 [M0 会话与门禁](20261104-kanata-sqlite-m0-direct-gate-v1.md)。

@@ -5,7 +5,11 @@ import assert from 'node:assert/strict'
 const root=new URL('.',import.meta.url),evidence=new URL('./evidence/',root)
 const r=JSON.parse(await fs.readFile(new URL('host-final.json',evidence),'utf8'))
 assert.equal(r.status,'HOST_COMPLETED_ANDROID_BLOCKED');assert.equal(r.repetitions,5);assert.equal(r.runs.length,30)
-for(const [name,sha] of Object.entries(r.harnessHashes))assert.equal(createHash('sha256').update(await fs.readFile(new URL(name,root))).digest('hex'),sha,`QA_SOURCE_CHANGED_${name}`)
+for(const [name,sha] of Object.entries(r.harnessHashes)){
+  // The recorded hashes use LF text. Git may materialize the same scripts with CRLF on Windows.
+  const source=await fs.readFile(new URL(name,root),'utf8')
+  assert.equal(createHash('sha256').update(source.replaceAll('\r\n','\n')).digest('hex'),sha,`QA_SOURCE_CHANGED_${name}`)
+}
 for(const count of [1000,10000,100000])for(const engine of ['json-archive','sqlcipher']){
   const runs=r.runs.filter(x=>x.count===count&&x.engine===engine)
   assert.equal(runs.length,5);assert.equal(new Set(runs.map(x=>x.repeat)).size,5)
@@ -27,4 +31,4 @@ for(const version of ['8.3.1','8.4.1']){
   const build=JSON.parse(await fs.readFile(new URL(`android-${version}-result.json`,evidence),'utf8'))
   assert.equal(build.exitCode,0);assert.equal(build.runtime,'NOT RUN')
 }
-console.log('PASS: 30 host runs, 360 operation samples, hashes, bounds, plans, integrity. This validates the original host/build evidence only; consult emulator supplement for device runs. M0 acceptance remains BLOCKED.')
+console.log('PASS: 30 original host runs, 360 operation samples, hashes, bounds, plans, integrity. See validate-direct-gate.mjs for the separate M0 device acceptance.')

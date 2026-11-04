@@ -548,3 +548,8 @@ Windows 使用 `npm.cmd`、`npx.cmd` 和 `android/gradlew.bat` 的对应命令�
 - `shared/crypto/passphraseAes`新增异步纯参数后端，仅归档页采用有能力平台的AES-CBC计算；缺crypto.subtle才回退既有分块同步实现，原生错误不静默降级。Salted__、8字节盐、EVP/MD5、AES-256-CBC/PKCS7、Base64、严格UTF8/BOM与随机来源均保持原协议；固定盐与原CryptoJS逐字节相同及双向读取已有自动证据。主头原分块算法与AES-GCM恢复信封未变；无密钥/明文缓存。每个await之后重验owner，关闭会话不接受晚到结果。
 - `RestoreJournal.prepare`在完整加密记录读回相同后可返回`{digest:string}`；旧注入适配器仍可返回void。`RestoreCoordinatorOptions.journalRollback?:boolean`默认false，Kanata实际组合根固定true，必须获得有效准备摘要并检查当前uncommitted摘要相同后才开始业务写。捕获回滚图的短生命周期helper在日志持久后只返回摘要/null；完整原文仍自包含在原日志，不保存裸页引用。失败时重读同一未提交digest，认证解密/version及validateRecovery后才补偿；缺失、变更、坏记录或补偿失败保留门禁与现存日志，不回退空值或其他记录。摘要来自prepare实际验证字节，不能仅信任首次inspect遇到的替换记录。原日志/备份版本、存储路径、加密、commit/clear顺序不变。
 - 自动化新增同盐/旧读新写/原生缺能力或失败、三次页I/O/目录单次准备、坏读回/释放会话不提交、真实GCM日志替换/损坏/缺准备摘要/实际recover矩阵。当前完整check557 Node/382组件40文件通过；生产最新候选验收见[2026-10-31检查点](docs/20261031-kanata-p7-performance-checkpoint-v1.md)。早期62d候选100k仍失败，不能把Node诊断或新检查数量当容量通过。
+
+## 22. Kanata SQLite M0 验证入口（2026-11-04）
+
+- M0 原型位于 `docs/qa/kanata-sqlite-m0/`，只装入独立合成 QA 包。原型的 SQLCipher 直接字节密钥、版本化信封、前台租约和有界查询作为 M 分支设计依据。生产 Schema、Repository、主密码改密、恢复协调和旧数据迁移仍按 M1–M7 分阶段验收。
+- 在用户指定的隔离 AVD 上运行 `run-direct-session.mjs` 验证冷打开、强停回滚、后台撤销和密钥取证，再用 `validate-direct-gate.mjs` 核对样本与门槛。参数和状态见 [M0 会话与门禁](docs/20261104-kanata-sqlite-m0-direct-gate-v1.md)。

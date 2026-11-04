@@ -1,5 +1,13 @@
 # Kanata SQLite M0 提交与交接 v1
 
+## 放行后接续（2026-11-04）
+
+**M0 隔离技术验证通过，M1 尚未开始。** 当前结论以 [M0 放行报告](20261104-kanata-sqlite-m0-direct-gate-v1.md) 为准。用户授权把 M0 原型、冻结参数和验证证据提交到远端 M。云端接续时从 `origin/M` 取本次放行提交，读 [迁移计划](20261103-kanata-sqlite-migration-plan-v1.md) 的 M1 门禁。
+
+云端可继续 Schema、Repository、迁移器与故障测试。Android 会话、Keystore、进程中断和最终容量对照使用已确认的本地隔离 AVD 配置。设备和生成文件位于本机忽略目录，可按 [QA 复现说明](qa/kanata-sqlite-m0/README.md) 重建。M0 结果限定于隔离探针，产品接入与 M7/P7 门禁按各阶段验收。
+
+## 历史检查点（`98fd0a3`）
+
 日期：2026-11-04（北京时间）。用户本次明确授权“提交远端”。目标仅 **M**，保存 M0 原型、脚本、报告与证据，不代表 M0 验收通过，不进入 M1，不合并 Kanata/main 或发布 APK。
 
 提交前本地与远端 M 均为 `ac74f0b817ac32f65d9f5e506f094b1515477cc6`，差异0/0。工作区已有修改均为本会话 M0 产物；未改生产 src、android、根 package/lock。当前 checkpoint 的实际提交号查看 Git 历史，无需将尚未生成的提交 hash 填入自身文件。

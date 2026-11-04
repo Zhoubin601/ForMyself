@@ -1,0 +1,852 @@
+{
+  "complete": true,
+  "repetitions": 5,
+  "apkSha256": "f2c67f6c1f5d75f000964c8714c21baf450dadcf38ea535aecad032f2bd2d825",
+  "runs": [
+    {
+      "sample": 1,
+      "seed": {
+        "status": "PASS_DIRECT_SEED",
+        "timings": [
+          {
+            "name": "kdf",
+            "ms": 99.40000000002328
+          },
+          {
+            "name": "unlock",
+            "ms": 129.40000000002328
+          },
+          {
+            "name": "bulk_write",
+            "ms": 12728.79999999993
+          },
+          {
+            "name": "recent_50",
+            "ms": 9.29999999993015
+          },
+          {
+            "name": "next_50",
+            "ms": 9.400000000023283
+          },
+          {
+            "name": "deep_50",
+            "ms": 9.899999999906868
+          },
+          {
+            "name": "single_write",
+            "ms": 3.200000000069849
+          },
+          {
+            "name": "single_update",
+            "ms": 2.699999999953434
+          },
+          {
+            "name": "single_write",
+            "ms": 2.900000000023283
+          },
+          {
+            "name": "single_update",
+            "ms": 2.5
+          },
+          {
+            "name": "single_write",
+            "ms": 2.699999999953434
+          },
+          {
+            "name": "single_update",
+            "ms": 2.5
+          },
+          {
+            "name": "single_write",
+            "ms": 3.099999999976717
+          },
+          {
+            "name": "single_update",
+            "ms": 2.599999999976717
+          },
+          {
+            "name": "single_write",
+            "ms": 2.799999999930151
+          },
+          {
+            "name": "single_update",
+            "ms": 2.6000000000931323
+          }
+        ],
+        "verified": {
+          "rows": 100000,
+          "cipher": "4.17.0 community",
+          "plan": "SEARCH messages USING INDEX scope_time (world_id=? AND conversation_id=? AND (created_at,id)<(?,?))",
+          "integrity": true,
+          "wal": "wal",
+          "synchronous": "2",
+          "cacheSize": "-2048",
+          "checkpoint": "1000"
+        },
+        "pid": "8771",
+        "pageReadyMs": 1298.0034,
+        "audit": {
+          "portableEnvelope": true,
+          "prefsFilesScanned": 5,
+          "logCanary": true,
+          "passwordKekDekAbsent": true
+        },
+        "processes": [
+          {
+            "type": "browser",
+            "pid": 8771,
+            "cpuSeconds": 14.12,
+            "peakRssKiB": 253700
+          },
+          {
+            "type": "renderer",
+            "pid": 8806,
+            "cpuSeconds": 1.85,
+            "peakRssKiB": 164248
+          }
+        ]
+      },
+      "resume": {
+        "status": "PASS_DIRECT_RESUME",
+        "timings": [
+          {
+            "name": "kdf",
+            "ms": 80.79999999993015
+          },
+          {
+            "name": "unlock",
+            "ms": 102
+          },
+          {
+            "name": "recent_50",
+            "ms": 37.20000000006985
+          },
+          {
+            "name": "next_50",
+            "ms": 36.699999999953434
+          },
+          {
+            "name": "deep_50",
+            "ms": 35.20000000006985
+          }
+        ],
+        "verified": {
+          "rows": 100000,
+          "cipher": "4.17.0 community",
+          "plan": "SEARCH messages USING INDEX scope_time (world_id=? AND conversation_id=? AND (created_at,id)<(?,?))",
+          "integrity": true,
+          "wal": "wal",
+          "synchronous": "2",
+          "cacheSize": "-2048",
+          "checkpoint": "1000"
+        },
+        "pid": "8962",
+        "pageReadyMs": 1247.3118,
+        "audit": {
+          "portableEnvelope": true,
+          "prefsFilesScanned": 5,
+          "logCanary": true,
+          "passwordKekDekAbsent": true
+        },
+        "interruptedTransaction": {
+          "priorPid": "8771",
+          "forceStop": true,
+          "integrityPassed": true,
+          "uncommittedRowAbsent": true
+        },
+        "pause": "PASS_DIRECT_PAUSE",
+        "closedDatabaseBytes": 117665792,
+        "processes": [
+          {
+            "type": "browser",
+            "pid": 8962,
+            "cpuSeconds": 3.12,
+            "peakRssKiB": 211188
+          },
+          {
+            "type": "renderer",
+            "pid": 8991,
+            "cpuSeconds": 0.43,
+            "peakRssKiB": 147800
+          }
+        ]
+      }
+    },
+    {
+      "sample": 2,
+      "seed": {
+        "status": "PASS_DIRECT_SEED",
+        "timings": [
+          {
+            "name": "kdf",
+            "ms": 83.30000000004657
+          },
+          {
+            "name": "unlock",
+            "ms": 117.70000000006985
+          },
+          {
+            "name": "bulk_write",
+            "ms": 12574.79999999993
+          },
+          {
+            "name": "recent_50",
+            "ms": 8.599999999976717
+          },
+          {
+            "name": "next_50",
+            "ms": 9.900000000023283
+          },
+          {
+            "name": "deep_50",
+            "ms": 9.199999999953434
+          },
+          {
+            "name": "single_write",
+            "ms": 3.199999999953434
+          },
+          {
+            "name": "single_update",
+            "ms": 2.5
+          },
+          {
+            "name": "single_write",
+            "ms": 4.199999999953434
+          },
+          {
+            "name": "single_update",
+            "ms": 2.800000000046566
+          },
+          {
+            "name": "single_write",
+            "ms": 2.400000000023283
+          },
+          {
+            "name": "single_update",
+            "ms": 2.400000000023283
+          },
+          {
+            "name": "single_write",
+            "ms": 2.300000000046566
+          },
+          {
+            "name": "single_update",
+            "ms": 2.300000000046566
+          },
+          {
+            "name": "single_write",
+            "ms": 2.299999999930151
+          },
+          {
+            "name": "single_update",
+            "ms": 2.5
+          }
+        ],
+        "verified": {
+          "rows": 100000,
+          "cipher": "4.17.0 community",
+          "plan": "SEARCH messages USING INDEX scope_time (world_id=? AND conversation_id=? AND (created_at,id)<(?,?))",
+          "integrity": true,
+          "wal": "wal",
+          "synchronous": "2",
+          "cacheSize": "-2048",
+          "checkpoint": "1000"
+        },
+        "pid": "9197",
+        "pageReadyMs": 1301.7394,
+        "audit": {
+          "portableEnvelope": true,
+          "prefsFilesScanned": 5,
+          "logCanary": true,
+          "passwordKekDekAbsent": true
+        },
+        "processes": [
+          {
+            "type": "browser",
+            "pid": 9197,
+            "cpuSeconds": 13.94,
+            "peakRssKiB": 254016
+          },
+          {
+            "type": "renderer",
+            "pid": 9230,
+            "cpuSeconds": 1.84,
+            "peakRssKiB": 164204
+          }
+        ]
+      },
+      "resume": {
+        "status": "PASS_DIRECT_RESUME",
+        "timings": [
+          {
+            "name": "kdf",
+            "ms": 79.30000000004657
+          },
+          {
+            "name": "unlock",
+            "ms": 102.90000000002328
+          },
+          {
+            "name": "recent_50",
+            "ms": 36.29999999993015
+          },
+          {
+            "name": "next_50",
+            "ms": 34.60000000009313
+          },
+          {
+            "name": "deep_50",
+            "ms": 35.5
+          }
+        ],
+        "verified": {
+          "rows": 100000,
+          "cipher": "4.17.0 community",
+          "plan": "SEARCH messages USING INDEX scope_time (world_id=? AND conversation_id=? AND (created_at,id)<(?,?))",
+          "integrity": true,
+          "wal": "wal",
+          "synchronous": "2",
+          "cacheSize": "-2048",
+          "checkpoint": "1000"
+        },
+        "pid": "9358",
+        "pageReadyMs": 1276.6849,
+        "audit": {
+          "portableEnvelope": true,
+          "prefsFilesScanned": 5,
+          "logCanary": true,
+          "passwordKekDekAbsent": true
+        },
+        "interruptedTransaction": {
+          "priorPid": "9197",
+          "forceStop": true,
+          "integrityPassed": true,
+          "uncommittedRowAbsent": true
+        },
+        "pause": "PASS_DIRECT_PAUSE",
+        "closedDatabaseBytes": 117665792,
+        "processes": [
+          {
+            "type": "browser",
+            "pid": 9358,
+            "cpuSeconds": 3.13,
+            "peakRssKiB": 210612
+          },
+          {
+            "type": "renderer",
+            "pid": 9388,
+            "cpuSeconds": 0.43,
+            "peakRssKiB": 147404
+          }
+        ]
+      }
+    },
+    {
+      "sample": 3,
+      "seed": {
+        "status": "PASS_DIRECT_SEED",
+        "timings": [
+          {
+            "name": "kdf",
+            "ms": 82.09999999997672
+          },
+          {
+            "name": "unlock",
+            "ms": 111
+          },
+          {
+            "name": "bulk_write",
+            "ms": 12624.099999999977
+          },
+          {
+            "name": "recent_50",
+            "ms": 9.099999999976717
+          },
+          {
+            "name": "next_50",
+            "ms": 8.79999999993015
+          },
+          {
+            "name": "deep_50",
+            "ms": 9.5
+          },
+          {
+            "name": "single_write",
+            "ms": 3.199999999953434
+          },
+          {
+            "name": "single_update",
+            "ms": 2.5
+          },
+          {
+            "name": "single_write",
+            "ms": 2.3999999999068677
+          },
+          {
+            "name": "single_update",
+            "ms": 3.1000000000931323
+          },
+          {
+            "name": "single_write",
+            "ms": 2.599999999976717
+          },
+          {
+            "name": "single_update",
+            "ms": 2.300000000046566
+          },
+          {
+            "name": "single_write",
+            "ms": 2.300000000046566
+          },
+          {
+            "name": "single_update",
+            "ms": 2.599999999976717
+          },
+          {
+            "name": "single_write",
+            "ms": 2.300000000046566
+          },
+          {
+            "name": "single_update",
+            "ms": 2.3999999999068677
+          }
+        ],
+        "verified": {
+          "rows": 100000,
+          "cipher": "4.17.0 community",
+          "plan": "SEARCH messages USING INDEX scope_time (world_id=? AND conversation_id=? AND (created_at,id)<(?,?))",
+          "integrity": true,
+          "wal": "wal",
+          "synchronous": "2",
+          "cacheSize": "-2048",
+          "checkpoint": "1000"
+        },
+        "pid": "9578",
+        "pageReadyMs": 1363.24,
+        "audit": {
+          "portableEnvelope": true,
+          "prefsFilesScanned": 5,
+          "logCanary": true,
+          "passwordKekDekAbsent": true
+        },
+        "processes": [
+          {
+            "type": "browser",
+            "pid": 9578,
+            "cpuSeconds": 14.09,
+            "peakRssKiB": 252324
+          },
+          {
+            "type": "renderer",
+            "pid": 9612,
+            "cpuSeconds": 1.65,
+            "peakRssKiB": 159628
+          }
+        ]
+      },
+      "resume": {
+        "status": "PASS_DIRECT_RESUME",
+        "timings": [
+          {
+            "name": "kdf",
+            "ms": 85.69999999995343
+          },
+          {
+            "name": "unlock",
+            "ms": 106.09999999997672
+          },
+          {
+            "name": "recent_50",
+            "ms": 39.59999999997672
+          },
+          {
+            "name": "next_50",
+            "ms": 34
+          },
+          {
+            "name": "deep_50",
+            "ms": 34.59999999997672
+          }
+        ],
+        "verified": {
+          "rows": 100000,
+          "cipher": "4.17.0 community",
+          "plan": "SEARCH messages USING INDEX scope_time (world_id=? AND conversation_id=? AND (created_at,id)<(?,?))",
+          "integrity": true,
+          "wal": "wal",
+          "synchronous": "2",
+          "cacheSize": "-2048",
+          "checkpoint": "1000"
+        },
+        "pid": "9740",
+        "pageReadyMs": 1234.8009,
+        "audit": {
+          "portableEnvelope": true,
+          "prefsFilesScanned": 5,
+          "logCanary": true,
+          "passwordKekDekAbsent": true
+        },
+        "interruptedTransaction": {
+          "priorPid": "9578",
+          "forceStop": true,
+          "integrityPassed": true,
+          "uncommittedRowAbsent": true
+        },
+        "pause": "PASS_DIRECT_PAUSE",
+        "closedDatabaseBytes": 117665792,
+        "processes": [
+          {
+            "type": "browser",
+            "pid": 9740,
+            "cpuSeconds": 3.14,
+            "peakRssKiB": 211032
+          },
+          {
+            "type": "renderer",
+            "pid": 9772,
+            "cpuSeconds": 0.43,
+            "peakRssKiB": 146988
+          }
+        ]
+      }
+    },
+    {
+      "sample": 4,
+      "seed": {
+        "status": "PASS_DIRECT_SEED",
+        "timings": [
+          {
+            "name": "kdf",
+            "ms": 97.39999999990687
+          },
+          {
+            "name": "unlock",
+            "ms": 124.79999999993015
+          },
+          {
+            "name": "bulk_write",
+            "ms": 12681
+          },
+          {
+            "name": "recent_50",
+            "ms": 9.099999999976717
+          },
+          {
+            "name": "next_50",
+            "ms": 8.5
+          },
+          {
+            "name": "deep_50",
+            "ms": 9.300000000046566
+          },
+          {
+            "name": "single_write",
+            "ms": 2.799999999930151
+          },
+          {
+            "name": "single_update",
+            "ms": 2.199999999953434
+          },
+          {
+            "name": "single_write",
+            "ms": 2.300000000046566
+          },
+          {
+            "name": "single_update",
+            "ms": 2.099999999976717
+          },
+          {
+            "name": "single_write",
+            "ms": 2
+          },
+          {
+            "name": "single_update",
+            "ms": 2.200000000069849
+          },
+          {
+            "name": "single_write",
+            "ms": 2.299999999930151
+          },
+          {
+            "name": "single_update",
+            "ms": 1.900000000023283
+          },
+          {
+            "name": "single_write",
+            "ms": 2.099999999976717
+          },
+          {
+            "name": "single_update",
+            "ms": 2.400000000023283
+          }
+        ],
+        "verified": {
+          "rows": 100000,
+          "cipher": "4.17.0 community",
+          "plan": "SEARCH messages USING INDEX scope_time (world_id=? AND conversation_id=? AND (created_at,id)<(?,?))",
+          "integrity": true,
+          "wal": "wal",
+          "synchronous": "2",
+          "cacheSize": "-2048",
+          "checkpoint": "1000"
+        },
+        "pid": "9961",
+        "pageReadyMs": 1317.8015000000003,
+        "audit": {
+          "portableEnvelope": true,
+          "prefsFilesScanned": 5,
+          "logCanary": true,
+          "passwordKekDekAbsent": true
+        },
+        "processes": [
+          {
+            "type": "browser",
+            "pid": 9961,
+            "cpuSeconds": 14.11,
+            "peakRssKiB": 253256
+          },
+          {
+            "type": "renderer",
+            "pid": 10001,
+            "cpuSeconds": 1.63,
+            "peakRssKiB": 159184
+          }
+        ]
+      },
+      "resume": {
+        "status": "PASS_DIRECT_RESUME",
+        "timings": [
+          {
+            "name": "kdf",
+            "ms": 89.79999999993015
+          },
+          {
+            "name": "unlock",
+            "ms": 110.90000000002328
+          },
+          {
+            "name": "recent_50",
+            "ms": 34.59999999997672
+          },
+          {
+            "name": "next_50",
+            "ms": 34.09999999997672
+          },
+          {
+            "name": "deep_50",
+            "ms": 34.79999999993015
+          }
+        ],
+        "verified": {
+          "rows": 100000,
+          "cipher": "4.17.0 community",
+          "plan": "SEARCH messages USING INDEX scope_time (world_id=? AND conversation_id=? AND (created_at,id)<(?,?))",
+          "integrity": true,
+          "wal": "wal",
+          "synchronous": "2",
+          "cacheSize": "-2048",
+          "checkpoint": "1000"
+        },
+        "pid": "10156",
+        "pageReadyMs": 1254.385,
+        "audit": {
+          "portableEnvelope": true,
+          "prefsFilesScanned": 5,
+          "logCanary": true,
+          "passwordKekDekAbsent": true
+        },
+        "interruptedTransaction": {
+          "priorPid": "9961",
+          "forceStop": true,
+          "integrityPassed": true,
+          "uncommittedRowAbsent": true
+        },
+        "pause": "PASS_DIRECT_PAUSE",
+        "closedDatabaseBytes": 117665792,
+        "processes": [
+          {
+            "type": "browser",
+            "pid": 10156,
+            "cpuSeconds": 3.14,
+            "peakRssKiB": 211248
+          },
+          {
+            "type": "renderer",
+            "pid": 10187,
+            "cpuSeconds": 0.44,
+            "peakRssKiB": 148432
+          }
+        ]
+      }
+    },
+    {
+      "sample": 5,
+      "seed": {
+        "status": "PASS_DIRECT_SEED",
+        "timings": [
+          {
+            "name": "kdf",
+            "ms": 91.10000000009313
+          },
+          {
+            "name": "unlock",
+            "ms": 120.5
+          },
+          {
+            "name": "bulk_write",
+            "ms": 12585.099999999977
+          },
+          {
+            "name": "recent_50",
+            "ms": 8.900000000023283
+          },
+          {
+            "name": "next_50",
+            "ms": 8.800000000046566
+          },
+          {
+            "name": "deep_50",
+            "ms": 9.5
+          },
+          {
+            "name": "single_write",
+            "ms": 3
+          },
+          {
+            "name": "single_update",
+            "ms": 2.599999999976717
+          },
+          {
+            "name": "single_write",
+            "ms": 2.900000000023283
+          },
+          {
+            "name": "single_update",
+            "ms": 3
+          },
+          {
+            "name": "single_write",
+            "ms": 2.3999999999068677
+          },
+          {
+            "name": "single_update",
+            "ms": 2.400000000023283
+          },
+          {
+            "name": "single_write",
+            "ms": 2.300000000046566
+          },
+          {
+            "name": "single_update",
+            "ms": 2.5
+          },
+          {
+            "name": "single_write",
+            "ms": 2.700000000069849
+          },
+          {
+            "name": "single_update",
+            "ms": 2.400000000023283
+          }
+        ],
+        "verified": {
+          "rows": 100000,
+          "cipher": "4.17.0 community",
+          "plan": "SEARCH messages USING INDEX scope_time (world_id=? AND conversation_id=? AND (created_at,id)<(?,?))",
+          "integrity": true,
+          "wal": "wal",
+          "synchronous": "2",
+          "cacheSize": "-2048",
+          "checkpoint": "1000"
+        },
+        "pid": "10382",
+        "pageReadyMs": 1310.7222000000002,
+        "audit": {
+          "portableEnvelope": true,
+          "prefsFilesScanned": 5,
+          "logCanary": true,
+          "passwordKekDekAbsent": true
+        },
+        "processes": [
+          {
+            "type": "browser",
+            "pid": 10382,
+            "cpuSeconds": 13.97,
+            "peakRssKiB": 253748
+          },
+          {
+            "type": "renderer",
+            "pid": 10419,
+            "cpuSeconds": 1.62,
+            "peakRssKiB": 159080
+          }
+        ]
+      },
+      "resume": {
+        "status": "PASS_DIRECT_RESUME",
+        "timings": [
+          {
+            "name": "kdf",
+            "ms": 84.69999999995343
+          },
+          {
+            "name": "unlock",
+            "ms": 111.70000000006985
+          },
+          {
+            "name": "recent_50",
+            "ms": 45.5
+          },
+          {
+            "name": "next_50",
+            "ms": 37.199999999953434
+          },
+          {
+            "name": "deep_50",
+            "ms": 33.29999999993015
+          }
+        ],
+        "verified": {
+          "rows": 100000,
+          "cipher": "4.17.0 community",
+          "plan": "SEARCH messages USING INDEX scope_time (world_id=? AND conversation_id=? AND (created_at,id)<(?,?))",
+          "integrity": true,
+          "wal": "wal",
+          "synchronous": "2",
+          "cacheSize": "-2048",
+          "checkpoint": "1000"
+        },
+        "pid": "10548",
+        "pageReadyMs": 1248.3863,
+        "audit": {
+          "portableEnvelope": true,
+          "prefsFilesScanned": 5,
+          "logCanary": true,
+          "passwordKekDekAbsent": true
+        },
+        "interruptedTransaction": {
+          "priorPid": "10382",
+          "forceStop": true,
+          "integrityPassed": true,
+          "uncommittedRowAbsent": true
+        },
+        "pause": "PASS_DIRECT_PAUSE",
+        "closedDatabaseBytes": 117665792,
+        "processes": [
+          {
+            "type": "browser",
+            "pid": 10548,
+            "cpuSeconds": 3.15,
+            "peakRssKiB": 211108
+          },
+          {
+            "type": "renderer",
+            "pid": 10580,
+            "cpuSeconds": 0.44,
+            "peakRssKiB": 149636
+          }
+        ]
+      }
+    }
+  ]
+}

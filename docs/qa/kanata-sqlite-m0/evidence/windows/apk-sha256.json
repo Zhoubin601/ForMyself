@@ -1,0 +1,10 @@
+{
+  "8.3.1": {
+    "app-debug-androidTest.apk": "ef4903c359bc16af5be94ba46c8836ebd5ba8b2ddf0f95fd6e31c0328ed96ed7",
+    "app-debug.apk": "00845a3b7d5b460b983fef324a5f382e66ce522bad30eea324a94b7939740f0a"
+  },
+  "8.4.1": {
+    "app-debug-androidTest.apk": "eb6dfef3c7ea2311c26b3c60ec0122821a28a11448dc16738483e7f6d41b04fc",
+    "app-debug.apk": "eafd91a9e1d3ca362b5c86cdde109243c347fbbe8603b2a5e18910aa477aba20"
+  }
+}

@@ -1,0 +1,275 @@
+{
+  "status": "PASS_TARGET_SAMPLE",
+  "engine": "sqlcipher",
+  "count": 1000,
+  "fixtureVersion": "m0-synthetic-v1-seed-20261103",
+  "records": [
+    {
+      "name": "initial_open",
+      "ms": 15.900000000023283,
+      "heapPointBytes": 10000000
+    },
+    {
+      "name": "bulk_write",
+      "ms": 1345.2999999999884,
+      "heapPointBytes": 10000000
+    },
+    {
+      "name": "recent_50",
+      "ms": 60.70000000001164,
+      "heapPointBytes": 10000000
+    },
+    {
+      "name": "history_page_50",
+      "ms": 59.100000000034925,
+      "heapPointBytes": 10000000
+    },
+    {
+      "name": "single_write",
+      "ms": 16.70000000001164,
+      "heapPointBytes": 10000000
+    },
+    {
+      "name": "single_update",
+      "ms": 18.29999999998836,
+      "heapPointBytes": 10000000
+    },
+    {
+      "name": "single_delete",
+      "ms": 12.5,
+      "heapPointBytes": 10000000
+    },
+    {
+      "name": "recent_50",
+      "ms": 55.5,
+      "heapPointBytes": 10000000
+    },
+    {
+      "name": "history_page_50",
+      "ms": 62.29999999998836,
+      "heapPointBytes": 10000000
+    },
+    {
+      "name": "single_write",
+      "ms": 18,
+      "heapPointBytes": 10000000
+    },
+    {
+      "name": "single_update",
+      "ms": 13,
+      "heapPointBytes": 10000000
+    },
+    {
+      "name": "single_delete",
+      "ms": 17.599999999976717,
+      "heapPointBytes": 10000000
+    },
+    {
+      "name": "recent_50",
+      "ms": 60.20000000001164,
+      "heapPointBytes": 10000000
+    },
+    {
+      "name": "history_page_50",
+      "ms": 51.70000000001164,
+      "heapPointBytes": 10000000
+    },
+    {
+      "name": "single_write",
+      "ms": 8.600000000034925,
+      "heapPointBytes": 10000000
+    },
+    {
+      "name": "single_update",
+      "ms": 6.7000000000116415,
+      "heapPointBytes": 10000000
+    },
+    {
+      "name": "single_delete",
+      "ms": 7.7000000000116415,
+      "heapPointBytes": 10000000
+    },
+    {
+      "name": "recent_50",
+      "ms": 38.90000000002328,
+      "heapPointBytes": 10000000
+    },
+    {
+      "name": "history_page_50",
+      "ms": 30.70000000001164,
+      "heapPointBytes": 10000000
+    },
+    {
+      "name": "single_write",
+      "ms": 8.600000000034925,
+      "heapPointBytes": 10000000
+    },
+    {
+      "name": "single_update",
+      "ms": 10.700000000011642,
+      "heapPointBytes": 10000000
+    },
+    {
+      "name": "single_delete",
+      "ms": 14.400000000023283,
+      "heapPointBytes": 10000000
+    },
+    {
+      "name": "recent_50",
+      "ms": 28.900000000023283,
+      "heapPointBytes": 10000000
+    },
+    {
+      "name": "history_page_50",
+      "ms": 23.70000000001164,
+      "heapPointBytes": 10000000
+    },
+    {
+      "name": "single_write",
+      "ms": 7.7000000000116415,
+      "heapPointBytes": 10000000
+    },
+    {
+      "name": "single_update",
+      "ms": 7.199999999953434,
+      "heapPointBytes": 10000000
+    },
+    {
+      "name": "single_delete",
+      "ms": 10.200000000011642,
+      "heapPointBytes": 10000000
+    },
+    {
+      "name": "close",
+      "ms": 10,
+      "heapPointBytes": 10000000
+    },
+    {
+      "name": "same_process_reopen",
+      "ms": 632.2000000000116,
+      "heapPointBytes": 10000000
+    }
+  ],
+  "nearIds": [
+    "m0-message-000000993",
+    "m0-message-000000992",
+    "m0-message-000000977",
+    "m0-message-000000976",
+    "m0-message-000000961",
+    "m0-message-000000960",
+    "m0-message-000000945",
+    "m0-message-000000944",
+    "m0-message-000000929",
+    "m0-message-000000928",
+    "m0-message-000000913",
+    "m0-message-000000912",
+    "m0-message-000000897",
+    "m0-message-000000896",
+    "m0-message-000000881",
+    "m0-message-000000880",
+    "m0-message-000000865",
+    "m0-message-000000864",
+    "m0-message-000000849",
+    "m0-message-000000848",
+    "m0-message-000000833",
+    "m0-message-000000832",
+    "m0-message-000000817",
+    "m0-message-000000816",
+    "m0-message-000000801",
+    "m0-message-000000800",
+    "m0-message-000000785",
+    "m0-message-000000784",
+    "m0-message-000000769",
+    "m0-message-000000768",
+    "m0-message-000000753",
+    "m0-message-000000752",
+    "m0-message-000000737",
+    "m0-message-000000736",
+    "m0-message-000000721",
+    "m0-message-000000720",
+    "m0-message-000000705",
+    "m0-message-000000704",
+    "m0-message-000000689",
+    "m0-message-000000688",
+    "m0-message-000000673",
+    "m0-message-000000672",
+    "m0-message-000000657",
+    "m0-message-000000656",
+    "m0-message-000000641",
+    "m0-message-000000640",
+    "m0-message-000000625",
+    "m0-message-000000624",
+    "m0-message-000000609",
+    "m0-message-000000608"
+  ],
+  "olderIds": [
+    "m0-message-000000593",
+    "m0-message-000000592",
+    "m0-message-000000577",
+    "m0-message-000000576",
+    "m0-message-000000561",
+    "m0-message-000000560",
+    "m0-message-000000545",
+    "m0-message-000000544",
+    "m0-message-000000529",
+    "m0-message-000000528",
+    "m0-message-000000513",
+    "m0-message-000000512",
+    "m0-message-000000497",
+    "m0-message-000000496",
+    "m0-message-000000481",
+    "m0-message-000000480",
+    "m0-message-000000465",
+    "m0-message-000000464",
+    "m0-message-000000449",
+    "m0-message-000000448",
+    "m0-message-000000433",
+    "m0-message-000000432",
+    "m0-message-000000417",
+    "m0-message-000000416",
+    "m0-message-000000401",
+    "m0-message-000000400",
+    "m0-message-000000385",
+    "m0-message-000000384",
+    "m0-message-000000369",
+    "m0-message-000000368",
+    "m0-message-000000353",
+    "m0-message-000000352",
+    "m0-message-000000337",
+    "m0-message-000000336",
+    "m0-message-000000321",
+    "m0-message-000000320",
+    "m0-message-000000305",
+    "m0-message-000000304",
+    "m0-message-000000289",
+    "m0-message-000000288",
+    "m0-message-000000273",
+    "m0-message-000000272",
+    "m0-message-000000257",
+    "m0-message-000000256",
+    "m0-message-000000241",
+    "m0-message-000000240",
+    "m0-message-000000225",
+    "m0-message-000000224",
+    "m0-message-000000209",
+    "m0-message-000000208"
+  ],
+  "plan": [
+    "SEARCH qa_messages USING INDEX qa_scope_time (world_id=? AND conversation_id=? AND (created_at,id)<(?,?))"
+  ],
+  "bytes": 1130496,
+  "processes": [
+    {
+      "type": "browser",
+      "pid": 5716,
+      "cpuSeconds": 5.06,
+      "peakRssKiB": 231132
+    },
+    {
+      "type": "renderer",
+      "pid": 5783,
+      "cpuSeconds": 0.39,
+      "peakRssKiB": 153260
+    }
+  ]
+}

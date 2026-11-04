@@ -1,0 +1,29 @@
+{
+  "status": "FAIL_TARGET_SAMPLE",
+  "engine": "sqlcipher",
+  "count": 1000,
+  "fixtureVersion": "m0-synthetic-v1-seed-20261103",
+  "records": [
+    {
+      "name": "initial_open",
+      "ms": 25.29999999998836,
+      "heapPointBytes": 10000000
+    }
+  ],
+  "stage": "initial_open",
+  "code": "QA_OPERATION_FAILED",
+  "processes": [
+    {
+      "type": "browser",
+      "pid": 5329,
+      "cpuSeconds": 2.47,
+      "peakRssKiB": 206096
+    },
+    {
+      "type": "renderer",
+      "pid": 5394,
+      "cpuSeconds": -0.01,
+      "peakRssKiB": 143372
+    }
+  ]
+}

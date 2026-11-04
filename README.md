@@ -1,6 +1,6 @@
 # ForMyself — 我的自留地
 
-当前执行入口（2026-11-03）：[彼方 SQLite 迁移计划 M v1](docs/20261103-kanata-sqlite-migration-plan-v1.md)。SQLite 迁移只在 M 分支进行；M 从 Kanata 的 73158a058d35124e1572b2161fe0f364f2140c48 创建。当前仅创建分支和计划文档，M0–M7 尚未开始。
+SQLite 迁移按 [彼方 SQLite 迁移计划 M v1](docs/20261103-kanata-sqlite-migration-plan-v1.md) 在 M 分支执行。M 从 Kanata 的 `73158a0` 创建。M0 隔离技术验证已通过，M1 尚未开始。选型、冻结参数和实测见 [M0 放行报告](docs/20261104-kanata-sqlite-m0-direct-gate-v1.md)，云端接续见 [M0 交接](docs/20261104-kanata-sqlite-m0-handoff-v1.md)。
 
 当前分支路线：Kanata（P7 No-Go 稳定基线）→ M（M0–M7 SQLite 迁移）→ M7 通过并审查后合并回 Kanata → 继续 P7。M 未完成前不在 Kanata 并行修改同一套存储模块；不自动合并 main 或发布。
 

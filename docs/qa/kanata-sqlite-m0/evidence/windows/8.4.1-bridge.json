@@ -1,0 +1,32 @@
+{
+  "status": "SMOKE_ONLY_LIFECYCLE_BLOCKED",
+  "results": [
+    {
+      "test": "cipher_version",
+      "values": [
+        {
+          "cipher_version": "4.17.0 community"
+        }
+      ]
+    },
+    {
+      "test": "crud_batch_rollback",
+      "status": "PASS"
+    },
+    {
+      "test": "commit_reopen_integrity",
+      "status": "PASS",
+      "integrity": [
+        {
+          "integrity_check": "ok"
+        }
+      ],
+      "cipherIntegrity": []
+    },
+    {
+      "test": "wrong_key_plain_sqlite_force_stop_log_scan",
+      "status": "NOT RUN",
+      "reason": "Requires native instrumentation, extracted synthetic database and device-side process/log evidence; bridge smoke alone is insufficient."
+    }
+  ]
+}

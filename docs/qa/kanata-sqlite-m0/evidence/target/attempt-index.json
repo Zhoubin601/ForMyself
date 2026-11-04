@@ -1,0 +1,44 @@
+{
+  "status": "FAIL_TARGET_SAMPLE",
+  "engine": "sqlcipher",
+  "count": 1000,
+  "fixtureVersion": "m0-synthetic-v1-seed-20261103",
+  "records": [
+    {
+      "name": "initial_open",
+      "ms": 15.89999999999418,
+      "heapPointBytes": 10000000
+    },
+    {
+      "name": "bulk_write",
+      "ms": 1550.5,
+      "heapPointBytes": 10000000
+    },
+    {
+      "name": "recent_50",
+      "ms": 64.10000000000582,
+      "heapPointBytes": 10000000
+    },
+    {
+      "name": "history_page_50",
+      "ms": 67,
+      "heapPointBytes": 10000000
+    }
+  ],
+  "stage": "history_page_50",
+  "code": "QA_INDEX_REQUIRED",
+  "processes": [
+    {
+      "type": "browser",
+      "pid": 4846,
+      "cpuSeconds": 4.28,
+      "peakRssKiB": 228272
+    },
+    {
+      "type": "renderer",
+      "pid": 4896,
+      "cpuSeconds": -0.01,
+      "peakRssKiB": 149128
+    }
+  ]
+}

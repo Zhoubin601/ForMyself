@@ -13,4 +13,4 @@ if(!text.includes('androidx.sqlite:sqlite:2.4.0'))text+='\ndependencies { androi
 await fs.writeFile(gradle,text)
 const testDir='android/app/src/androidTest/java/com/formyself/qa/m0'
 await fs.mkdir(testDir,{recursive:true})
-await fs.copyFile('SqlCipherM0Test.java',testDir+'/SqlCipherM0Test.java')
+for(const file of ['SqlCipherM0Test.java','SqlCipherM0SessionTest.java','M0KeystoreTest.java'])await fs.copyFile(file,testDir+'/'+file)

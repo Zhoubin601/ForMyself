@@ -14,6 +14,7 @@ dist-ssr
 
 # Local encrypted test data
 /Test_data/
+/work/m0/
 /raw/*
 # Generated outputs stay local; the development manual lives at repository root.
 /[Oo]utput/*

@@ -1,0 +1,381 @@
+{
+  "target": "kanata_m0_api34",
+  "androidApi": 34,
+  "capacitor": "8.4.1",
+  "plugin": "8.1.1",
+  "testApkSha256": "a97a4aba78488445787851328db688fa6198f5c73259f26e84c84e8394107cdd",
+  "samples": {
+    "1000-sqlcipher": {
+      "status": "PASS_TARGET_SAMPLE",
+      "bytes": 1130496,
+      "processes": [
+        {
+          "type": "browser",
+          "pid": 5716,
+          "cpuSeconds": 5.06,
+          "peakRssKiB": 231132
+        },
+        {
+          "type": "renderer",
+          "pid": 5783,
+          "cpuSeconds": 0.39,
+          "peakRssKiB": 153260
+        }
+      ],
+      "operations": {
+        "initial_open": {
+          "n": 1,
+          "ms": 15.900000000023283
+        },
+        "bulk_write": {
+          "n": 1,
+          "ms": 1345.2999999999884
+        },
+        "recent_50": {
+          "n": 5,
+          "p50Ms": 55.5,
+          "p95Ms": 60.70000000001164
+        },
+        "history_page_50": {
+          "n": 5,
+          "p50Ms": 51.70000000001164,
+          "p95Ms": 62.29999999998836
+        },
+        "single_write": {
+          "n": 5,
+          "p50Ms": 8.600000000034925,
+          "p95Ms": 18
+        },
+        "single_update": {
+          "n": 5,
+          "p50Ms": 10.700000000011642,
+          "p95Ms": 18.29999999998836
+        },
+        "single_delete": {
+          "n": 5,
+          "p50Ms": 12.5,
+          "p95Ms": 17.599999999976717
+        },
+        "close": {
+          "n": 1,
+          "ms": 10
+        },
+        "same_process_reopen": {
+          "n": 1,
+          "ms": 632.2000000000116
+        }
+      },
+      "pageFingerprint": "051a61dc3bad2668be603b892d266c7ee7c13132d0bfb50663ba96c3e8542836"
+    },
+    "1000-json-archive": {
+      "status": "PASS_TARGET_SAMPLE",
+      "bytes": 2442308,
+      "processes": [
+        {
+          "type": "browser",
+          "pid": 5936,
+          "cpuSeconds": 9.66,
+          "peakRssKiB": 213624
+        },
+        {
+          "type": "renderer",
+          "pid": 5973,
+          "cpuSeconds": 6.63,
+          "peakRssKiB": 183440
+        }
+      ],
+      "operations": {
+        "initial_open": {
+          "n": 1,
+          "ms": 71.90000000002328
+        },
+        "bulk_write": {
+          "n": 1,
+          "ms": 1405.0999999999767
+        },
+        "recent_50": {
+          "n": 5,
+          "p50Ms": 0.7999999999883585,
+          "p95Ms": 2.3999999999650754
+        },
+        "history_page_50": {
+          "n": 5,
+          "p50Ms": 0.40000000002328306,
+          "p95Ms": 1.5
+        },
+        "single_write": {
+          "n": 5,
+          "p50Ms": 760.2000000000116,
+          "p95Ms": 802.7000000000116
+        },
+        "single_update": {
+          "n": 5,
+          "p50Ms": 712.2000000000116,
+          "p95Ms": 765.0999999999767
+        },
+        "single_delete": {
+          "n": 5,
+          "p50Ms": 631.5999999999767,
+          "p95Ms": 810.1999999999534
+        },
+        "close": {
+          "n": 1,
+          "ms": 0.20000000001164153
+        },
+        "same_process_reopen": {
+          "n": 1,
+          "ms": 293.0999999999767
+        }
+      },
+      "pageFingerprint": "051a61dc3bad2668be603b892d266c7ee7c13132d0bfb50663ba96c3e8542836"
+    },
+    "10000-sqlcipher": {
+      "status": "PASS_TARGET_SAMPLE",
+      "bytes": 11747328,
+      "processes": [
+        {
+          "type": "browser",
+          "pid": 6380,
+          "cpuSeconds": 10.59,
+          "peakRssKiB": 271896
+        },
+        {
+          "type": "renderer",
+          "pid": 6418,
+          "cpuSeconds": 0.5,
+          "peakRssKiB": 160492
+        }
+      ],
+      "operations": {
+        "initial_open": {
+          "n": 1,
+          "ms": 16.29999999998836
+        },
+        "bulk_write": {
+          "n": 1,
+          "ms": 7892
+        },
+        "recent_50": {
+          "n": 5,
+          "p50Ms": 21.70000000001164,
+          "p95Ms": 27.599999999976717
+        },
+        "history_page_50": {
+          "n": 5,
+          "p50Ms": 24.599999999976717,
+          "p95Ms": 30.900000000023283
+        },
+        "single_write": {
+          "n": 5,
+          "p50Ms": 8,
+          "p95Ms": 8.900000000023283
+        },
+        "single_update": {
+          "n": 5,
+          "p50Ms": 6.599999999976717,
+          "p95Ms": 6.7000000000116415
+        },
+        "single_delete": {
+          "n": 5,
+          "p50Ms": 7.7000000000116415,
+          "p95Ms": 8.300000000046566
+        },
+        "close": {
+          "n": 1,
+          "ms": 13.799999999988358
+        },
+        "same_process_reopen": {
+          "n": 1,
+          "ms": 554.6000000000349
+        }
+      },
+      "pageFingerprint": "e6482b31a9b3fa30077b3b2bd65302c0d7f2e18ebeceb8ba9d224c36192c48f9"
+    },
+    "10000-json-archive": {
+      "status": "PASS_TARGET_SAMPLE",
+      "bytes": 15913124,
+      "processes": [
+        {
+          "type": "browser",
+          "pid": 6155,
+          "cpuSeconds": 21.92,
+          "peakRssKiB": 255864
+        },
+        {
+          "type": "renderer",
+          "pid": 6200,
+          "cpuSeconds": 17.53,
+          "peakRssKiB": 257572
+        }
+      ],
+      "operations": {
+        "initial_open": {
+          "n": 1,
+          "ms": 58.70000000001164
+        },
+        "bulk_write": {
+          "n": 1,
+          "ms": 6463.5
+        },
+        "recent_50": {
+          "n": 5,
+          "p50Ms": 2,
+          "p95Ms": 6
+        },
+        "history_page_50": {
+          "n": 5,
+          "p50Ms": 0.7000000000116415,
+          "p95Ms": 0.9000000000232831
+        },
+        "single_write": {
+          "n": 5,
+          "p50Ms": 1761.4000000000233,
+          "p95Ms": 1986.899999999965
+        },
+        "single_update": {
+          "n": 5,
+          "p50Ms": 1655.7999999999884,
+          "p95Ms": 1912.5999999999767
+        },
+        "single_delete": {
+          "n": 5,
+          "p50Ms": 1678.7999999999884,
+          "p95Ms": 3439.7999999999884
+        },
+        "close": {
+          "n": 1,
+          "ms": 0.1000000000349246
+        },
+        "same_process_reopen": {
+          "n": 1,
+          "ms": 687.7000000000116
+        }
+      },
+      "pageFingerprint": "e6482b31a9b3fa30077b3b2bd65302c0d7f2e18ebeceb8ba9d224c36192c48f9"
+    },
+    "100000-sqlcipher": {
+      "status": "PASS_TARGET_SAMPLE",
+      "bytes": 117661696,
+      "processes": [
+        {
+          "type": "browser",
+          "pid": 6572,
+          "cpuSeconds": 57.27,
+          "peakRssKiB": 271440
+        },
+        {
+          "type": "renderer",
+          "pid": 6612,
+          "cpuSeconds": 4.91,
+          "peakRssKiB": 162320
+        }
+      ],
+      "operations": {
+        "initial_open": {
+          "n": 1,
+          "ms": 94.40000000002328
+        },
+        "bulk_write": {
+          "n": 1,
+          "ms": 54676.09999999998
+        },
+        "recent_50": {
+          "n": 5,
+          "p50Ms": 14.599999999976717,
+          "p95Ms": 26.79999999993015
+        },
+        "history_page_50": {
+          "n": 5,
+          "p50Ms": 17,
+          "p95Ms": 40.90000000002328
+        },
+        "single_write": {
+          "n": 5,
+          "p50Ms": 11.900000000023283,
+          "p95Ms": 18.79999999993015
+        },
+        "single_update": {
+          "n": 5,
+          "p50Ms": 13.5,
+          "p95Ms": 32.10000000009313
+        },
+        "single_delete": {
+          "n": 5,
+          "p50Ms": 15.099999999976717,
+          "p95Ms": 18.699999999953434
+        },
+        "close": {
+          "n": 1,
+          "ms": 31.70000000006985
+        },
+        "same_process_reopen": {
+          "n": 1,
+          "ms": 633.4000000000233
+        }
+      },
+      "pageFingerprint": "64fea11d0021f9c7b88572c26c5dbabea12989e5b280caf9d2d20d7ad8d2ce91"
+    },
+    "100000-json-archive": {
+      "status": "PASS_TARGET_SAMPLE",
+      "bytes": 145005576,
+      "processes": [
+        {
+          "type": "browser",
+          "pid": 6778,
+          "cpuSeconds": 94.87,
+          "peakRssKiB": 341300
+        },
+        {
+          "type": "renderer",
+          "pid": 6820,
+          "cpuSeconds": 107.05,
+          "peakRssKiB": 676952
+        }
+      ],
+      "operations": {
+        "initial_open": {
+          "n": 1,
+          "ms": 60.699999999953434
+        },
+        "bulk_write": {
+          "n": 1,
+          "ms": 59308
+        },
+        "recent_50": {
+          "n": 5,
+          "p50Ms": 3.599999999976717,
+          "p95Ms": 5.699999999953434
+        },
+        "history_page_50": {
+          "n": 5,
+          "p50Ms": 2.799999999930151,
+          "p95Ms": 4.100000000093132
+        },
+        "single_write": {
+          "n": 5,
+          "p50Ms": 8437,
+          "p95Ms": 9794.399999999907
+        },
+        "single_update": {
+          "n": 5,
+          "p50Ms": 8109.400000000023,
+          "p95Ms": 8365.400000000023
+        },
+        "single_delete": {
+          "n": 5,
+          "p50Ms": 8107.599999999977,
+          "p95Ms": 9192.79999999993
+        },
+        "close": {
+          "n": 1,
+          "ms": 10.699999999953434
+        },
+        "same_process_reopen": {
+          "n": 1,
+          "ms": 4283.400000000023
+        }
+      },
+      "pageFingerprint": "64fea11d0021f9c7b88572c26c5dbabea12989e5b280caf9d2d20d7ad8d2ce91"
+    }
+  }
+}

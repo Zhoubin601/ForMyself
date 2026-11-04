@@ -52,7 +52,9 @@ node docs/qa/kanata-sqlite-m0/build-android.mjs 8.4.1
 
 脚本生成独立 `com.formyself.qa.m0` 应用并构建 Debug/AndroidTest APK，关闭系统备份/迁移；不操作生产 Android。8.3.1 使用随附 prototype 锁；8.4.1 优先使用 evidence 固定锁。只有首次建立 8.4.1 证据时才解析并冻结新 QA 锁。生成物都在 work，最终不发布 APK。
 
-在新环境构建时，work 下目录后缀由 mkdtemp 生成。设备驱动可显式接收该次构建输出路径：`node docs/qa/kanata-sqlite-m0/verify-emulator.mjs 8.3.1 --build-dir work/m0/android-8.3.1-REPLACE`。参数必须指向 work/m0 下、名称/包身份/Capacitor 版本均匹配的独立 QA 项目；省略参数沿用本轮记录中的目录。
+在新环境构建时，work 下目录后缀由 mkdtemp 生成。设备驱动可显式接收该次构建输出路径：`node docs/qa/kanata-sqlite-m0/verify-emulator.mjs 8.3.1 --build-dir work/m0/android-8.3.1-REPLACE`。参数必须指向 work/m0 下、名称/包身份/Capacitor 版本均匹配的独立 QA 项目；省略参数沿用首次记录中的目录，新测试应使用本次构建路径。驱动从 `ANDROID_HOME`、`ANDROID_SDK_ROOT` 或 work 内 SDK 定位 adb，核验 `emulator-5580`、AVD 名 `kanata_m0_api34`、API 34 和启动状态。可用 `--bridge-only` 只复测 WebView。
+
+Windows 可使用已安装的 Android 14 Google APIs x86_64 镜像，在任务专用 `ANDROID_AVD_HOME` 创建全新同名 AVD，使用 `-port 5580 -accel on -no-snapshot` 启动，待 `sys.boot_completed=1` 再运行驱动。Windows 构建脚本使用 npm/npx 的 .cmd 入口和 gradlew.bat。[Windows 接续记录](../../20261104-kanata-sqlite-m0-windows-v1.md) 区分本次设备证据与历史软件模拟器结果。
 
 无设备时不要运行 connectedAndroidTest。之后仅可在明确隔离的合成设备上，安装生成的 QA App/Test 包，并执行：
 
@@ -64,8 +66,12 @@ adb -s QA_SERIAL install -r -t work/m0/android-VERSION-RUN/android/app/build/out
 adb -s QA_SERIAL shell am instrument -w -r com.formyself.qa.m0.test/androidx.test.runner.AndroidJUnitRunner
 ```
 
-`SqlCipherM0Test` 验证引擎；QA 页按钮才经过 Capacitor 桥接。两者均不能替代进程强停、偏好/日志抓取、Keystore、100k 真机性能与完整会话生命周期测试。桥接 secret 仍经原插件持久加密偏好存储，是已记录限制，不能作为生产设计。
+`SqlCipherM0Test` 验证引擎。`SqlCipherM0SessionTest` 验证 Android PBKDF2 + AES-GCM 信封、直接 SQLCipher 字节密钥 API、连接关闭和原型持有缓冲区清零。QA 页按钮走社区插件的 Capacitor 桥接，仍使用插件持久加密偏好接口。三项均为隔离探针，正式会话接入、进程强停恢复、Keystore、全面偏好/日志取证与真机性能另行验证。
 
 ## 待补门禁
+
+2026-11-04 用户指定以 `raw` 快捷方式所指的隔离模拟器作为本轮 M0 目标设备。构建、同机容量、强停与 Keystore 检查见 [目标模拟器验证](../../20261104-kanata-sqlite-m0-target-emulator-v1.md)。下方为原检查清单，当前门禁结论以新记录为准。
+
+直接密钥会话使用同一 QA 构建流程。构建 App APK 后运行 `node docs/qa/kanata-sqlite-m0/run-direct-session.mjs work/m0/android-8.4.1-REPLACE 5`。它在指定 AVD 上完成五轮 100k 导入和强停后的冷打开，合成口令经 stdin 传递并仅保留在运行时。运行时不得并发执行会清除同一 QA 包数据的设备脚本。接口、参数和放行边界见 [M0 会话与门禁](../../20261104-kanata-sqlite-m0-direct-gate-v1.md)。
 
 真实目标手机及型号/系统/RAM/CPU/存储/电源温度；Android 桥接运行与强停；密钥/日志/Preferences 扫描与 Keystore 失效；安全临时密钥 API；Android KDF 校准与完整改密/恢复中断；原 P7 所有 Android/Web 门槛。M0 BLOCKED 时不进入 M1。

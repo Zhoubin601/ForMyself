@@ -1,0 +1,19 @@
+{
+  "stage": {
+    "status": "PASS_CRASH_STAGE",
+    "committedId": 1,
+    "uncommittedId": 2,
+    "pid": "7119"
+  },
+  "resume": {
+    "status": "PASS_CRASH_RESUME",
+    "ids": [
+      1
+    ],
+    "integrity": "ok",
+    "cipherIntegrity": [],
+    "pid": "7268"
+  },
+  "resumeForceStop": true,
+  "resumeClearedData": false
+}
