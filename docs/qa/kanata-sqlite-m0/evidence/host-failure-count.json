@@ -1,0 +1,154 @@
+{
+  "status": "HOST_FAILED",
+  "scope": "Linux host only; NOT Android, NOT device acceptance",
+  "fixtureVersion": "m0-synthetic-v1-seed-20261103",
+  "forcedGC": false,
+  "repetitions": 1,
+  "counts": [
+    1000
+  ],
+  "startedAt": "2026-11-03T09:29:16.319Z",
+  "environment": {
+    "platform": "linux",
+    "release": "6.18.57",
+    "arch": "x64",
+    "cpu": "AMD EPYC 9V74 80-Core Processor",
+    "logicalCpus": 3,
+    "ramBytes": 10452459520,
+    "node": "v24.19.0",
+    "python": "Python 3.12.14",
+    "git": "ac74f0b817ac32f65d9f5e506f094b1515477cc6",
+    "cgroupMemoryMax": "8589934592\n",
+    "coldDefinition": "fresh Node and Python processes; filesystem cache retained",
+    "power": "cloud VM unknown",
+    "temperature": "unavailable",
+    "storage": "overlay filesystem; physical medium unknown"
+  },
+  "datasets": [
+    {
+      "count": 1000,
+      "fingerprint": "728c7c3019d3e2b80a06e005f268fdd54774bc9ba67225d88e61ca2d05502ccf",
+      "scopeHashes": [
+        "7475dcf21325b0bdcd1e33a9a95dc3728b99b048fffbb761e1148ce97a12602e",
+        "fe0bb4506da6e3ec639841c3d3ddbacf40b0f2a1b6d9898160cfa85d2851c39c",
+        "b2b21f3db5a31abc6aaa05c56689c1338a2d76bd94199e59b1533c59da8d9dda",
+        "a0cb75f2858e905731a80e61834406fdcfa13f810b25c9ccc5c64db171ab041b",
+        "33adb0df3dd917f3079e10a3b70203cfa17338b31a52fa6f1c9d356f723e3439",
+        "5f33bd037798096c05a1a62ec2ed104344be01f322372f5d71b73cdb2f5ac82f",
+        "5252c402e8c7e5ee5dc42f431be9aeae1420986160a9b20fa3df807620d219e4",
+        "c31125304b3f1c66bf79af8f3e38b1b57e7de6a796e52f671148a7380e0a6527"
+      ],
+      "worlds": 2,
+      "conversationsWithMessages": 8,
+      "timestampTies": true,
+      "lengthsUTF16": [
+        64,
+        128,
+        256,
+        1024
+      ],
+      "distribution": "pairs distributed round-robin over 8 conversations, 4 each in 2 worlds; user/assistant 50/50; adjacent reply pairs; repeated timestamp every 32 global messages"
+    }
+  ],
+  "runs": [],
+  "failure": {
+    "failed": true,
+    "code": "ERR_ASSERTION",
+    "location": [
+      "    at file:///workspace/ForMyself/docs/qa/kanata-sqlite-m0/host-worker.mjs:114:12"
+    ],
+    "records": [
+      {
+        "operation": "cold_open",
+        "ms": 103.64515399999999,
+        "cpuMs": 146.755,
+        "jsHeapUsed": 24433520,
+        "jsHeapDelta": 10995712,
+        "jsExternal": 2825689,
+        "nodePeakRssKiB": 75976,
+        "enginePeakRssKiB": 0,
+        "dbBytes": null,
+        "walBytes": null,
+        "io": {
+          "reads": 1,
+          "bytes": 1220952,
+          "writes": 0
+        }
+      },
+      {
+        "operation": "recent_50",
+        "ms": 1.3109640000000127,
+        "cpuMs": 1.429,
+        "jsHeapUsed": 24684392,
+        "jsHeapDelta": 217040,
+        "jsExternal": 2825689,
+        "nodePeakRssKiB": 76360,
+        "enginePeakRssKiB": 0,
+        "dbBytes": null,
+        "walBytes": null,
+        "io": {
+          "reads": 0,
+          "bytes": 0,
+          "writes": 0
+        }
+      },
+      {
+        "operation": "history_page_50",
+        "ms": 0.40957700000001296,
+        "cpuMs": 0.517,
+        "jsHeapUsed": 24818696,
+        "jsHeapDelta": 131840,
+        "jsExternal": 2825689,
+        "nodePeakRssKiB": 76360,
+        "enginePeakRssKiB": 0,
+        "dbBytes": null,
+        "walBytes": null,
+        "io": {
+          "reads": 0,
+          "bytes": 0,
+          "writes": 0
+        }
+      },
+      {
+        "operation": "locate_id",
+        "ms": 1.6063090000000102,
+        "cpuMs": 4.427,
+        "jsHeapUsed": 24886464,
+        "jsHeapDelta": 57128,
+        "jsExternal": 2855896,
+        "nodePeakRssKiB": 76360,
+        "enginePeakRssKiB": 0,
+        "dbBytes": null,
+        "walBytes": null,
+        "io": {
+          "reads": 0,
+          "bytes": 0,
+          "writes": 0
+        }
+      },
+      {
+        "operation": "conversation_count",
+        "ms": 1.1923659999999927,
+        "cpuMs": 2.152,
+        "jsHeapUsed": 25048672,
+        "jsHeapDelta": 159272,
+        "jsExternal": 2855896,
+        "nodePeakRssKiB": 76360,
+        "enginePeakRssKiB": 0,
+        "dbBytes": null,
+        "walBytes": null,
+        "io": {
+          "reads": 0,
+          "bytes": 0,
+          "writes": 0
+        }
+      }
+    ],
+    "sampledTreePeakRssKiB": 0,
+    "gcObservedHeapPeakBytes": 25048672,
+    "gcEvents": 0,
+    "stderrBytes": 0,
+    "exitCode": 1
+  },
+  "finishedAt": "2026-11-03T09:29:17.052Z"
+}

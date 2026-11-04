@@ -1,0 +1,140 @@
+{
+  "status": "OFFICIAL_IMAGE_INSTALLED_SPARSE",
+  "archiveSha1": "9ce4068934b26fa99ca104ffe6d10dec22abb317",
+  "logicalBytes": 8743920093,
+  "allocatedBytes": 1281261568,
+  "files": [
+    {
+      "name": "x86_64/NOTICE.txt",
+      "bytes": 4717856,
+      "allocatedBytes": 4718592,
+      "sha256": "96fb1d9bd0aeafb26110cc5a16f1f663a763ca6c0fecaab3a0805d767843e008"
+    },
+    {
+      "name": "x86_64/VerifiedBootParams.textproto",
+      "bytes": 356,
+      "allocatedBytes": 4096,
+      "sha256": "79dd642a005be9bf49d57708a8afcc43ebc3a731b74b4e075b3c443f461833b8"
+    },
+    {
+      "name": "x86_64/advancedFeatures.ini",
+      "bytes": 689,
+      "allocatedBytes": 4096,
+      "sha256": "9ddf76483ab34538f36ff86fb00603894230da2fc18f44b9dd795c33e84626fe"
+    },
+    {
+      "name": "x86_64/build.prop",
+      "bytes": 4737,
+      "allocatedBytes": 8192,
+      "sha256": "b1425e2322b5f39330c226b229a1ef92619c071fd3fd37b400c2c793673bc0b8"
+    },
+    {
+      "name": "x86_64/encryptionkey.img",
+      "bytes": 18874368,
+      "allocatedBytes": 4194304,
+      "sha256": "522bd0b6a2c92e37de465059bb9487bb9597a9aae032b469a8ebe0b38146d8c3"
+    },
+    {
+      "name": "x86_64/kernel-ranchu",
+      "bytes": 17374688,
+      "allocatedBytes": 17375232,
+      "sha256": "b1e5cd842220175a4c07be9a2bcf5beb7b336794b00cf9b7b53abf35557b24df"
+    },
+    {
+      "name": "x86_64/ramdisk.img",
+      "bytes": 1820507,
+      "allocatedBytes": 1822720,
+      "sha256": "ce39429f5c8bc2dcf15e346943d6a7ed48d0e8e1005e688a5928ee1d26d8e404"
+    },
+    {
+      "name": "x86_64/source.properties",
+      "bytes": 296,
+      "allocatedBytes": 4096,
+      "sha256": "4006dc3249752562339687e540491fabc4e78edf5a404d795d278fffd635ebea"
+    },
+    {
+      "name": "x86_64/system.img",
+      "bytes": 8601468928,
+      "allocatedBytes": 1154486272,
+      "sha256": "48a6b39cf0bc6710e8d343be54a8db066ea48f71915eec11748a98ad4727758e"
+    },
+    {
+      "name": "x86_64/userdata.img",
+      "bytes": 1048576,
+      "allocatedBytes": 0,
+      "sha256": "30e14955ebf1352266dc2ff8067e68104607e750abb9d3b36582b8af909fcb58"
+    },
+    {
+      "name": "x86_64/vendor.img",
+      "bytes": 98566144,
+      "allocatedBytes": 98566144,
+      "sha256": "6dfbf549af270f65c1335e788225f175cb7ea0abf7bcc0b8de5fee4c725a370f"
+    },
+    {
+      "name": "x86_64/data/local.prop",
+      "bytes": 46,
+      "allocatedBytes": 4096,
+      "sha256": "49b05d093a46d35d85df01fb99133f077fcc725cc49efe1a1bedae884d24e20b"
+    },
+    {
+      "name": "x86_64/data/misc/apns/apns-conf.xml",
+      "bytes": 6575,
+      "allocatedBytes": 8192,
+      "sha256": "c35b899f2b6296aee4a9742302651cce9eb64622669d4d8fe8d276ca11060eb6"
+    },
+    {
+      "name": "x86_64/data/misc/emulator/version.txt",
+      "bytes": 61,
+      "allocatedBytes": 4096,
+      "sha256": "a5ed9f83bcf53d75473ee57c82b658f4d59793e7a00c791132b7c62e4806219b"
+    },
+    {
+      "name": "x86_64/data/misc/emulator/config/radioconfig.xml",
+      "bytes": 1433,
+      "allocatedBytes": 4096,
+      "sha256": "534a81b662ad62fc70ec0ea22715670524a05a066afc9fdac8e7c0f5a7789cd7"
+    },
+    {
+      "name": "x86_64/data/misc/gceconfigs/gpu.config",
+      "bytes": 94,
+      "allocatedBytes": 4096,
+      "sha256": "9d658aeada68a4c7330868e9d44b76f8b8039452954fc4aea8174375adc520b4"
+    },
+    {
+      "name": "x86_64/data/misc/modem_simulator/iccprofile_for_carrierapitests.xml",
+      "bytes": 16537,
+      "allocatedBytes": 20480,
+      "sha256": "dc4b5f5344f084fc44f89250bbcf2b12e452eb98c104e4ef3ec115366eb6ce32"
+    },
+    {
+      "name": "x86_64/data/misc/modem_simulator/iccprofile_for_sim0.xml",
+      "bytes": 14647,
+      "allocatedBytes": 16384,
+      "sha256": "a2744726a306b18d7547251026201aa5c6a9e120aa1555992eeb8b0a3b4aa6d9"
+    },
+    {
+      "name": "x86_64/data/misc/modem_simulator/etc/modem_simulator/files/numeric_operator.xml",
+      "bytes": 297,
+      "allocatedBytes": 4096,
+      "sha256": "c2557e604beea20b67642cdbb14ae7b792f804e4476b3f6cf47035690234f436"
+    },
+    {
+      "name": "x86_64/data/misc/pixel_fold/display_settings.xml",
+      "bytes": 303,
+      "allocatedBytes": 4096,
+      "sha256": "2adca8f98a2c8ee0f780e10ca16587ac92641df5e93ab4437c3c47ad41b0041d"
+    },
+    {
+      "name": "x86_64/data/misc/pixel_fold/devicestate/device_state_configuration.xml",
+      "bytes": 1644,
+      "allocatedBytes": 4096,
+      "sha256": "8bebf4943ed3fc50973ac428ab8c8c0d71700af81419f44fc95a59f52f873838"
+    },
+    {
+      "name": "x86_64/data/misc/pixel_fold/displayconfig/display_layout_configuration.xml",
+      "bytes": 1311,
+      "allocatedBytes": 4096,
+      "sha256": "a64e2eca65bc2f9196215fb72a88c9035a584319f8b3da3606fff161be642be8"
+    }
+  ]
+}

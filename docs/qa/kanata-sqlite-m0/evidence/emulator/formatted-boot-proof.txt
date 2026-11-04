@@ -1,0 +1,163 @@
+INFO         | Android emulator version 37.2.13.0 (build_id 16740729) (CL:N/A)
+TCG doesn't support requested feature: CPUID.01H:ECX.avx [bit 28]
+TCG doesn't support requested feature: CPUID.01H:ECX.f16c [bit 29]
+TCG doesn't support requested feature: CPUID.01H:ECX.avx [bit 28]
+TCG doesn't support requested feature: CPUID.01H:ECX.f16c [bit 29]
+[    1.902537] Freeing unused kernel image (rodata/data gap) memory: 1980K
+[   26.301842] init: [libfs_mgr] check_fs(): mount(/dev/block/vdc,/data,ext4)=0: Success
+[   26.369603] init: [libfs_mgr] umount_retry(): unmount(/data) succeeded
+[   27.510380] init: [libfs_mgr] __mount(source=/dev/block/vdc,target=/data,type=ext4)=0: Success
+[   27.562049] init: [libfs_mgr] umount_retry(): unmount(/data) succeeded
+[   27.562798] init: Calling: /system/bin/vdc cryptfs encryptFstab /dev/block/vdc /data false ext4 
+[   34.166252] init: starting service 'exec 6 (/system/bin/vdc --wait cryptfs enablefilecrypto)'...
+[   34.208139] init: ... started service 'exec 6 (/system/bin/vdc --wait cryptfs enablefilecrypto)' has pid 191
+[   34.213664] init: SVC_EXEC service 'exec 6 (/system/bin/vdc --wait cryptfs enablefilecrypto)' pid 191 (uid 0 gid 0+0 context default) started; waiting...
+[   34.214805] init: Command 'installkey /data' action=post-fs-data (/system/etc/init/hw/init.rc:692) took 59ms and succeeded
+[   34.490360] init: Service 'exec 6 (/system/bin/vdc --wait cryptfs enablefilecrypto)' (pid 191) exited with status 0 waiting took 0.311000 seconds
+[   34.490683] init: Sending signal 9 to service 'exec 6 (/system/bin/vdc --wait cryptfs enablefilecrypto)' (pid 191) process group...
+[   34.503567] init: Encryption policy of /data/bootchart set to 18a50a0239bac32d408db28f9876e4e3 v2 modes 1/4 flags 0x2
+[   34.507600] init: Command 'copy /data/system/entropy.dat /dev/urandom' action=post-fs-data (/system/etc/init/hw/init.rc:700) took 0ms and failed: Could not read input file '/data/system/entropy.dat': open() failed: No such file or directory
+[   34.512315] init: Encryption policy of /data/vendor set to 18a50a0239bac32d408db28f9876e4e3 v2 modes 1/4 flags 0x2
+[   34.520585] init: Encryption policy of /data/anr set to 18a50a0239bac32d408db28f9876e4e3 v2 modes 1/4 flags 0x2
+[   34.524397] init: Encryption policy of /data/tombstones set to 18a50a0239bac32d408db28f9876e4e3 v2 modes 1/4 flags 0x2
+[   34.615277] init: Encryption policy of /data/misc set to 18a50a0239bac32d408db28f9876e4e3 v2 modes 1/4 flags 0x2
+[   35.231536] init: Encryption policy of /data/property set to 18a50a0239bac32d408db28f9876e4e3 v2 modes 1/4 flags 0x2
+[   35.295368] init: Not setting encryption policy on: /data/apex
+[   35.317185] init: Encryption policy of /data/apex/decompressed set to 18a50a0239bac32d408db28f9876e4e3 v2 modes 1/4 flags 0x2
+[   35.336141] init: Encryption policy of /data/app-staging set to 18a50a0239bac32d408db28f9876e4e3 v2 modes 1/4 flags 0x2
+[   35.349567] init: Encryption policy of /data/apex/ota_reserved set to 18a50a0239bac32d408db28f9876e4e3 v2 modes 1/4 flags 0x2
+[   35.439628] init: Command 'copy /data/misc/recovery/ro.build.fingerprint /data/misc/recovery/ro.build.fingerprint.1' action=post-fs-data (/system/etc/init/hw/init.rc:774) took 0ms and failed: Could not read input file '/data/misc/recovery/ro.build.fingerprint': open() failed: No such file or directory
+[   35.467465] init: Command 'copy /data/misc/recovery/proc/version /data/misc/recovery/proc/version.1' action=post-fs-data (/system/etc/init/hw/init.rc:781) took 0ms and failed: Could not read input file '/data/misc/recovery/proc/version': open() failed: No such file or directory
+[   35.603542] logd: Cannot read /data/misc/logd/event-log-tags
+[   35.763147] init: Encryption policy of /data/local set to 18a50a0239bac32d408db28f9876e4e3 v2 modes 1/4 flags 0x2
+[   35.882741] init: starting service 'exec 8 (/bin/rm -rf /data/misc/virtualizationservice)'...
+[   35.939021] init: ... started service 'exec 8 (/bin/rm -rf /data/misc/virtualizationservice)' has pid 200
+[   35.939617] init: SVC_EXEC service 'exec 8 (/bin/rm -rf /data/misc/virtualizationservice)' pid 200 (uid 1081 gid 1000+0 context default) started; waiting...
+[   35.940150] init: Command 'exec - virtualizationservice system -- /bin/rm -rf /data/misc/virtualizationservice' action=post-fs-data (/system/etc/init/hw/init.rc:854) took 63ms and succeeded
+[   36.203334] apexd: Scanning /data/apex/active for data ApexFiles
+[   36.218089] apexd: Decompressing/system/apex/com.android.wifi.capex to /data/apex/decompressed/com.android.wifi@342090000.decompressed.apex
+[   36.463950] init: Service 'exec 8 (/bin/rm -rf /data/misc/virtualizationservice)' (pid 200) exited with status 0 waiting took 0.565000 seconds
+[   36.464414] init: Sending signal 9 to service 'exec 8 (/bin/rm -rf /data/misc/virtualizationservice)' (pid 200) process group...
+[   36.479500] init: Not setting encryption policy on: /data/preloads
+[   36.504300] init: Encryption policy of /data/app-private set to 18a50a0239bac32d408db28f9876e4e3 v2 modes 1/4 flags 0x2
+[   36.514587] init: Encryption policy of /data/app-ephemeral set to 18a50a0239bac32d408db28f9876e4e3 v2 modes 1/4 flags 0x2
+[   36.522497] init: Encryption policy of /data/app-asec set to 18a50a0239bac32d408db28f9876e4e3 v2 modes 1/4 flags 0x2
+[   36.531338] init: Encryption policy of /data/app-lib set to 18a50a0239bac32d408db28f9876e4e3 v2 modes 1/4 flags 0x2
+[   36.540248] init: Encryption policy of /data/app set to 18a50a0239bac32d408db28f9876e4e3 v2 modes 1/4 flags 0x2
+[   36.551493] init: Encryption policy of /data/fonts set to 18a50a0239bac32d408db28f9876e4e3 v2 modes 1/4 flags 0x2
+[   36.605589] init: Encryption policy of /data/dalvik-cache set to 18a50a0239bac32d408db28f9876e4e3 v2 modes 1/4 flags 0x2
+[   36.608564] init: Encryption policy of /data/ota set to 18a50a0239bac32d408db28f9876e4e3 v2 modes 1/4 flags 0x2
+[   36.621040] init: Encryption policy of /data/ota_package set to 18a50a0239bac32d408db28f9876e4e3 v2 modes 1/4 flags 0x2
+[   36.629590] init: Encryption policy of /data/resource-cache set to 18a50a0239bac32d408db28f9876e4e3 v2 modes 1/4 flags 0x2
+[   36.630695] init: Not setting encryption policy on: /data/lost+found
+[   36.645140] init: Encryption policy of /data/drm set to 18a50a0239bac32d408db28f9876e4e3 v2 modes 1/4 flags 0x2
+[   36.658099] init: Encryption policy of /data/mediadrm set to 18a50a0239bac32d408db28f9876e4e3 v2 modes 1/4 flags 0x2
+[   36.667338] init: Encryption policy of /data/nfc set to 18a50a0239bac32d408db28f9876e4e3 v2 modes 1/4 flags 0x2
+[   36.698628] init: Encryption policy of /data/backup set to 18a50a0239bac32d408db28f9876e4e3 v2 modes 1/4 flags 0x2
+[   36.707938] init: Encryption policy of /data/ss set to 18a50a0239bac32d408db28f9876e4e3 v2 modes 1/4 flags 0x2
+[   36.721565] init: Encryption policy of /data/system set to 18a50a0239bac32d408db28f9876e4e3 v2 modes 1/4 flags 0x2
+[   36.779429] init: Not setting encryption policy on: /data/media
+[   36.791785] init: Not setting encryption policy on: /data/misc_ce
+[   36.799392] init: Not setting encryption policy on: /data/misc_de
+[   36.803379] init: Not setting encryption policy on: /data/system_ce
+[   36.810076] init: Not setting encryption policy on: /data/system_de
+[   36.817703] init: Not setting encryption policy on: /data/user
+[   36.820251] init: Not setting encryption policy on: /data/user_de
+[   36.827049] init: Not setting encryption policy on: /data/vendor_ce
+[   36.833754] init: Not setting encryption policy on: /data/vendor_de
+[   36.841820] init: starting service 'exec 9 (/system/bin/chattr +F /data/media)'...
+[   36.926081] init: ... started service 'exec 9 (/system/bin/chattr +F /data/media)' has pid 201
+[   36.926514] init: SVC_EXEC service 'exec 9 (/system/bin/chattr +F /data/media)' pid 201 (uid 1023 gid 1023+0 context default) started; waiting...
+[   36.926932] init: Command 'exec - media_rw media_rw -- /system/bin/chattr +F /data/media' action=post-fs-data (/system/etc/init/hw/init.rc:955) took 91ms and succeeded
+[   36.940595] apexd: Decompressing/system/apex/com.android.media.swcodec.capex to /data/apex/decompressed/com.android.media.swcodec@342090000.decompressed.apex
+[   37.314941] init: Service 'exec 9 (/system/bin/chattr +F /data/media)' (pid 201) exited with status 0 waiting took 0.462000 seconds
+[   37.315267] init: Sending signal 9 to service 'exec 9 (/system/bin/chattr +F /data/media)' (pid 201) process group...
+[   37.516630] init: Encryption policy of /data/cache set to 18a50a0239bac32d408db28f9876e4e3 v2 modes 1/4 flags 0x2
+[   37.551540] init: Encryption policy of /data/rollback set to 18a50a0239bac32d408db28f9876e4e3 v2 modes 1/4 flags 0x2
+[   37.566615] init: Encryption policy of /data/rollback-observer set to 18a50a0239bac32d408db28f9876e4e3 v2 modes 1/4 flags 0x2
+[   37.576246] init: Encryption policy of /data/rollback-history set to 18a50a0239bac32d408db28f9876e4e3 v2 modes 1/4 flags 0x2
+[   37.590734] init: Encryption policy of /data/incremental set to 18a50a0239bac32d408db28f9876e4e3 v2 modes 1/4 flags 0x2
+[   38.450888] apexd: Decompressing/system/apex/com.android.adbd.capex to /data/apex/decompressed/com.android.adbd@342090000.decompressed.apex
+[   38.819936] apexd: Decompressing/system/apex/com.android.tethering.capex to /data/apex/decompressed/com.android.tethering@342090000.decompressed.apex
+[   39.746882] apexd: Decompressing/system/apex/com.android.extservices.capex to /data/apex/decompressed/com.android.extservices@342090000.decompressed.apex
+[   40.250206] apexd: Decompressing/system/apex/com.android.uwb.capex to /data/apex/decompressed/com.android.uwb@342090000.decompressed.apex
+[   40.518193] apexd: Decompressing/system/apex/com.android.permission.capex to /data/apex/decompressed/com.android.permission@342090000.decompressed.apex
+[   41.374822] apexd: Decompressing/system/apex/com.android.art.capex to /data/apex/decompressed/com.android.art@342090000.decompressed.apex
+[   43.415971] apexd: Decompressing/system/apex/com.android.conscrypt.capex to /data/apex/decompressed/com.android.conscrypt@342090000.decompressed.apex
+[   43.641832] apexd: Decompressing/system/apex/com.android.media.capex to /data/apex/decompressed/com.android.media@342090000.decompressed.apex
+[   44.007722] apexd: Decompressing/system/apex/com.android.mediaprovider.capex to /data/apex/decompressed/com.android.mediaprovider@342090000.decompressed.apex
+[   44.536115] apexd: Decompressing/system/apex/com.android.resolv.capex to /data/apex/decompressed/com.android.resolv@342090000.decompressed.apex
+[   44.831847] apexd: Decompressing/system/apex/com.android.configinfrastructure.capex to /data/apex/decompressed/com.android.configinfrastructure@342090000.decompressed.apex
+[   44.865619] apexd: Decompressing/system/apex/com.android.adservices.capex to /data/apex/decompressed/com.android.adservices@342090000.decompressed.apex
+[   46.173897] apexd: Decompressing/system/apex/com.android.appsearch.capex to /data/apex/decompressed/com.android.appsearch@342090000.decompressed.apex
+[   46.370378] apexd: Decompressing/system/apex/com.android.neuralnetworks.capex to /data/apex/decompressed/com.android.neuralnetworks@342090000.decompressed.apex
+[   46.610588] apexd: Decompressing/system/apex/com.android.cellbroadcast.capex to /data/apex/decompressed/com.android.cellbroadcast@342090000.decompressed.apex
+[   47.223052] apexd: Decompressing/system/apex/com.android.ondevicepersonalization.capex to /data/apex/decompressed/com.android.ondevicepersonalization@342090000.decompressed.apex
+[   47.378704] apexd: Decompressing/system/apex/com.android.ipsec.capex to /data/apex/decompressed/com.android.ipsec@342090000.decompressed.apex
+[   47.434052] apexd: Decompressing/system/apex/com.android.scheduling.capex to /data/apex/decompressed/com.android.scheduling@342090000.decompressed.apex
+[   48.687654] apexd: Successfully mounted package /data/apex/decompressed/com.android.art@342090000.decompressed.apex on /apex/com.android.art@342090000 duration=1097
+[   49.049940] apexd: Successfully mounted package /data/apex/decompressed/com.android.wifi@342090000.decompressed.apex on /apex/com.android.wifi@342090000 duration=1512
+[   49.695632] apexd: Successfully mounted package /data/apex/decompressed/com.android.media.swcodec@342090000.decompressed.apex on /apex/com.android.media.swcodec@342090000 duration=2156
+[   49.913974] apexd: Successfully mounted package /data/apex/decompressed/com.android.adbd@342090000.decompressed.apex on /apex/com.android.adbd@342090000 duration=2340
+[   50.502407] apexd: Successfully mounted package /data/apex/decompressed/com.android.tethering@342090000.decompressed.apex on /apex/com.android.tethering@342090000 duration=2927
+[   50.812395] apexd: Successfully mounted package /data/apex/decompressed/com.android.extservices@342090000.decompressed.apex on /apex/com.android.extservices@342090000 duration=3236
+[   50.978088] apexd: Successfully mounted package /data/apex/decompressed/com.android.uwb@342090000.decompressed.apex on /apex/com.android.uwb@342090000 duration=3391
+[   51.495960] apexd: Successfully mounted package /data/apex/decompressed/com.android.permission@342090000.decompressed.apex on /apex/com.android.permission@342090000 duration=3907
+[   51.658446] apexd: Successfully mounted package /data/apex/decompressed/com.android.conscrypt@342090000.decompressed.apex on /apex/com.android.conscrypt@342090000 duration=4067
+[   52.001936] apexd: Successfully mounted package /data/apex/decompressed/com.android.media@342090000.decompressed.apex on /apex/com.android.media@342090000 duration=4402
+[   52.283639] apexd: Successfully mounted package /data/apex/decompressed/com.android.resolv@342090000.decompressed.apex on /apex/com.android.resolv@342090000 duration=4689
+[   52.663713] apexd: Successfully mounted package /data/apex/decompressed/com.android.mediaprovider@342090000.decompressed.apex on /apex/com.android.mediaprovider@342090000 duration=5071
+[   52.732591] apexd: Successfully mounted package /data/apex/decompressed/com.android.configinfrastructure@342090000.decompressed.apex on /apex/com.android.configinfrastructure@342090000 duration=5129
+[   53.373760] apexd: Successfully mounted package /data/apex/decompressed/com.android.adservices@342090000.decompressed.apex on /apex/com.android.adservices@342090000 duration=5769
+[   53.625754] apexd: Successfully mounted package /data/apex/decompressed/com.android.appsearch@342090000.decompressed.apex on /apex/com.android.appsearch@342090000 duration=6013
+[   53.843266] apexd: Successfully mounted package /data/apex/decompressed/com.android.neuralnetworks@342090000.decompressed.apex on /apex/com.android.neuralnetworks@342090000 duration=6236
+[   54.491381] apexd: Successfully mounted package /data/apex/decompressed/com.android.cellbroadcast@342090000.decompressed.apex on /apex/com.android.cellbroadcast@342090000 duration=6883
+[   54.719300] apexd: Successfully mounted package /data/apex/decompressed/com.android.ondevicepersonalization@342090000.decompressed.apex on /apex/com.android.ondevicepersonalization@342090000 duration=7058
+[   54.773642] apexd: Successfully mounted package /data/apex/decompressed/com.android.ipsec@342090000.decompressed.apex on /apex/com.android.ipsec@342090000 duration=7114
+[   54.854033] apexd: Successfully mounted package /data/apex/decompressed/com.android.scheduling@342090000.decompressed.apex on /apex/com.android.scheduling@342090000 duration=7193
+[   56.526675] init: Encryption policy of /data/bootanim set to 18a50a0239bac32d408db28f9876e4e3 v2 modes 1/4 flags 0x2
+[   56.882796] init: starting service 'exec 10 (/system/bin/vdc --wait cryptfs init_user0)'...
+[   56.927472] init: ... started service 'exec 10 (/system/bin/vdc --wait cryptfs init_user0)' has pid 290
+[   56.928311] init: SVC_EXEC service 'exec 10 (/system/bin/vdc --wait cryptfs init_user0)' pid 290 (uid 0 gid 0+0 context default) started; waiting...
+[   56.933214] init: Command 'init_user0' action=post-fs-data (/system/etc/init/hw/init.rc:1017) took 54ms and succeeded
+[   57.967478] init: Service 'exec 10 (/system/bin/vdc --wait cryptfs init_user0)' (pid 290) exited with status 0 waiting took 1.072000 seconds
+[   57.967872] init: Sending signal 9 to service 'exec 10 (/system/bin/vdc --wait cryptfs init_user0)' (pid 290) process group...
+[   58.825660] selinux: SELinux: Skipping restorecon on directory(/data/system/shutdown-checkpoints)
+[   58.933985] init: Command 'restorecon --recursive --skip-ce /data' action=post-fs-data (/system/etc/init/hw/init.rc:1020) took 958ms and succeeded
+[   63.974878] init: Encryption policy of /data/adb set to 18a50a0239bac32d408db28f9876e4e3 v2 modes 1/4 flags 0x2
+[   64.512185] init: Not setting encryption policy on: /data/gsi
+[   64.579691] init: Command 'mkdir /data/gsi 0700 root root encryption=None' action=post-fs-data (/system/etc/init/gsid.rc:20) took 67ms and succeeded
+[   64.745905] init: Command 'mkdir /data/misc/logd 0750 logd log' action=post-fs-data (/system/etc/init/logtagd.rc:5) took 77ms and succeeded
+[   66.575953] selinux: SELinux:  Could not stat /data/dalvik-cache/arm: No such file or directory.
+[   66.578207] selinux: SELinux:  Could not stat /data/dalvik-cache/arm64: No such file or directory.
+[   66.578829] selinux: SELinux:  Could not stat /data/dalvik-cache/riscv64: No such file or directory.
+[   66.579488] selinux: SELinux:  Could not stat /data/dalvik-cache/x86: No such file or directory.
+[   66.580032] selinux: SELinux:  Could not stat /data/dalvik-cache/x86_64: No such file or directory.
+[   66.582160] init: Command 'rm /data/misc/perfetto-traces/.guardraildata' action=post-fs-data (/system/etc/init/perfetto.rc:74) took 1ms and failed: unlink() failed: No such file or directory
+[   66.731679] selinux: SELinux: Skipping restorecon on directory(/data/misc/apexdata/com.android.wifi)
+[   96.606010] init: Command 'mkdir /data/misc/dmesgd 0700 dmesgd system' action=bootreceiver.enable=1 && ro.product.cpu.abilist64=* (/system/etc/init/dmesgd.rc:8) took 217ms and succeeded
+[   96.607339] init: Command 'rm /data/misc/dmesgd/sent_reports.txt' action=bootreceiver.enable=1 && ro.product.cpu.abilist64=* (/system/etc/init/dmesgd.rc:9) took 0ms and failed: unlink() failed: No such file or directory
+[   97.475159] init: Command 'mkdir /data/misc/perfetto-traces/bugreport 0773 root shell' action=persist.traced.enable=1 (/system/etc/init/perfetto.rc:58) took 64ms and succeeded
+[   97.590083] init: Command 'mkdir /data/misc/perfetto-configs 0775 root shell' action=persist.traced.enable=1 (/system/etc/init/perfetto.rc:63) took 114ms and succeeded
+[  108.984478] init: Encryption policy of /data/server_configurable_flags set to 18a50a0239bac32d408db28f9876e4e3 v2 modes 1/4 flags 0x2
+[  109.025642] init: Command 'mkdir /data/server_configurable_flags 0775 system system encryption=Require' action=load_persist_props_action (/system/etc/init/flags_health_check.rc:4) took 251ms and succeeded
+[  360.392141] init: starting service 'exec 20 (/bin/rm -rf /data/per_boot)'...
+[  360.686923] init: ... started service 'exec 20 (/bin/rm -rf /data/per_boot)' has pid 1068
+[  360.687541] init: SVC_EXEC service 'exec 20 (/bin/rm -rf /data/per_boot)' pid 1068 (uid 1000 gid 1000+0 context default) started; waiting...
+[  360.688557] init: Command 'exec - system system -- /bin/rm -rf /data/per_boot' action=sys.boot_completed=1 (/system/etc/init/hw/init.rc:1227) took 298ms and succeeded
+[  361.413605] init: Service 'exec 20 (/bin/rm -rf /data/per_boot)' (pid 1068) exited with status 0 waiting took 0.963000 seconds
+[  361.414123] init: Sending signal 9 to service 'exec 20 (/bin/rm -rf /data/per_boot)' (pid 1068) process group...
+[  361.462259] init: Encryption policy of /data/per_boot set to 07d019b819128d293fd9f62dea11904b v2 modes 1/4 flags 0x2
+[  362.047852] init: starting service 'exec 22 (/system/bin/perfetto -c /data/misc/perfetto-configs/stopboottracetrigger.pbtxt --txt)'...
+[  362.159051] init: ... started service 'exec 22 (/system/bin/perfetto -c /data/misc/perfetto-configs/stopboottracetrigger.pbtxt --txt)' has pid 1082
+[  362.159570] init: SVC_EXEC service 'exec 22 (/system/bin/perfetto -c /data/misc/perfetto-configs/stopboottracetrigger.pbtxt --txt)' pid 1082 (uid 0 gid 0+0 context default) started; waiting...
+[  362.160349] init: Command 'exec -- /system/bin/perfetto -c /data/misc/perfetto-configs/stopboottracetrigger.pbtxt --txt' action=sys.boot_completed=1 (/system/etc/init/perfetto.rc:131) took 114ms and succeeded
+[  363.059419] init: Service 'exec 22 (/system/bin/perfetto -c /data/misc/perfetto-configs/stopboottracetrigger.pbtxt --txt)' (pid 1082) exited with status 1 waiting took 0.988000 seconds
+[  363.060423] init: Sending signal 9 to service 'exec 22 (/system/bin/perfetto -c /data/misc/perfetto-configs/stopboottracetrigger.pbtxt --txt)' (pid 1082) process group...
+INFO         | Boot completed in 369647 ms
+[  371.617767] init: Command 'restorecon_recursive /data/misc_ce/0/apexdata/com.android.wifi' action=sys.user.0.ce_available=true (/system/etc/init/wifi.rc:22) took 144ms and succeeded
+[  775.755569] logd: start watching /data/system/packages.list ...
+[  962.221527] logd: start watching /data/system/packages.list ...
+[  967.606060] logd: start watching /data/system/packages.list ...
+[ 1173.239970] logd: start watching /data/system/packages.list ...
+[ 1363.781181] logd: start watching /data/system/packages.list ...

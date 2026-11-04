@@ -1,0 +1,10 @@
+{"test":"QA_ENVELOPE_HOST_ONLY","samples":5,"wrapMs":[87.18442299999992,87.77351199999976,91.36146299999996,102.66626100000002,106.72896899999978],"p50":91.36146299999996,"p95":106.72896899999978,"androidKDF":"BLOCKED","globalChangeJournal":"NOT IMPLEMENTED M6"}
+✔ random 256-bit DEK: correct/wrong password, AAD/cipher corruption, version, rewrap preserves DEK (4109.464587ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 4175.230061

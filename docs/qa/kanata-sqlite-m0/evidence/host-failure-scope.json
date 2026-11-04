@@ -1,0 +1,421 @@
+{
+  "status": "HOST_FAILED",
+  "scope": "Linux host only; NOT Android, NOT device acceptance",
+  "fixtureVersion": "m0-synthetic-v1-seed-20261103",
+  "forcedGC": false,
+  "repetitions": 1,
+  "counts": [
+    1000
+  ],
+  "startedAt": "2026-11-03T09:30:05.405Z",
+  "environment": {
+    "platform": "linux",
+    "release": "6.18.57",
+    "arch": "x64",
+    "cpu": "AMD EPYC 9V74 80-Core Processor",
+    "logicalCpus": 3,
+    "ramBytes": 10452459520,
+    "node": "v24.19.0",
+    "python": "Python 3.12.14",
+    "git": "ac74f0b817ac32f65d9f5e506f094b1515477cc6",
+    "cgroupMemoryMax": "8589934592\n",
+    "coldDefinition": "fresh Node and Python processes; filesystem cache retained",
+    "power": "cloud VM unknown",
+    "temperature": "unavailable",
+    "storage": "overlay filesystem; physical medium unknown"
+  },
+  "datasets": [
+    {
+      "count": 1000,
+      "fingerprint": "728c7c3019d3e2b80a06e005f268fdd54774bc9ba67225d88e61ca2d05502ccf",
+      "scopeHashes": [
+        "7475dcf21325b0bdcd1e33a9a95dc3728b99b048fffbb761e1148ce97a12602e",
+        "fe0bb4506da6e3ec639841c3d3ddbacf40b0f2a1b6d9898160cfa85d2851c39c",
+        "b2b21f3db5a31abc6aaa05c56689c1338a2d76bd94199e59b1533c59da8d9dda",
+        "a0cb75f2858e905731a80e61834406fdcfa13f810b25c9ccc5c64db171ab041b",
+        "33adb0df3dd917f3079e10a3b70203cfa17338b31a52fa6f1c9d356f723e3439",
+        "5f33bd037798096c05a1a62ec2ed104344be01f322372f5d71b73cdb2f5ac82f",
+        "5252c402e8c7e5ee5dc42f431be9aeae1420986160a9b20fa3df807620d219e4",
+        "c31125304b3f1c66bf79af8f3e38b1b57e7de6a796e52f671148a7380e0a6527"
+      ],
+      "scopeCounts": [
+        126,
+        126,
+        126,
+        126,
+        124,
+        124,
+        124,
+        124
+      ],
+      "worlds": 2,
+      "conversationsWithMessages": 8,
+      "timestampTies": true,
+      "lengthsUTF16": [
+        64,
+        128,
+        256,
+        1024
+      ],
+      "distribution": "pairs distributed round-robin over 8 conversations, 4 each in 2 worlds; user/assistant 50/50; adjacent reply pairs; repeated timestamp every 32 global messages"
+    }
+  ],
+  "runs": [
+    {
+      "count": 1000,
+      "engine": "json-archive",
+      "repeat": 0,
+      "imported": {
+        "records": [
+          {
+            "operation": "bulk_write",
+            "ms": 154.304514,
+            "cpuMs": 225.292,
+            "jsHeapUsed": 29494448,
+            "jsHeapDelta": 15234512,
+            "jsExternal": 3857672,
+            "nodePeakRssKiB": 101980,
+            "enginePeakRssKiB": 0,
+            "dbBytes": null,
+            "walBytes": null,
+            "io": {
+              "reads": 2,
+              "bytes": 2441904,
+              "writes": 1
+            }
+          }
+        ],
+        "meta": {
+          "fingerprint": "728c7c3019d3e2b80a06e005f268fdd54774bc9ba67225d88e61ca2d05502ccf",
+          "active": 1000,
+          "archiveMetadata": 0,
+          "pages": 0
+        },
+        "sampledTreePeakRssKiB": 101564,
+        "gcObservedHeapPeakBytes": 29494448,
+        "gcEvents": 0,
+        "stderrBytes": 0,
+        "exitCode": 0
+      },
+      "queried": {
+        "records": [
+          {
+            "operation": "cold_open",
+            "ms": 113.50944700000002,
+            "cpuMs": 148.818,
+            "jsHeapUsed": 21934328,
+            "jsHeapDelta": 8027536,
+            "jsExternal": 2782681,
+            "nodePeakRssKiB": 74372,
+            "enginePeakRssKiB": 0,
+            "dbBytes": null,
+            "walBytes": null,
+            "io": {
+              "reads": 1,
+              "bytes": 1220952,
+              "writes": 0
+            }
+          },
+          {
+            "operation": "recent_50",
+            "ms": 1.4630319999999983,
+            "cpuMs": 3.996,
+            "jsHeapUsed": 22185064,
+            "jsHeapDelta": 216904,
+            "jsExternal": 2782681,
+            "nodePeakRssKiB": 74372,
+            "enginePeakRssKiB": 0,
+            "dbBytes": null,
+            "walBytes": null,
+            "io": {
+              "reads": 0,
+              "bytes": 0,
+              "writes": 0
+            }
+          },
+          {
+            "operation": "history_page_50",
+            "ms": 0.41056800000001203,
+            "cpuMs": 0.53,
+            "jsHeapUsed": 22318960,
+            "jsHeapDelta": 131432,
+            "jsExternal": 2782681,
+            "nodePeakRssKiB": 74372,
+            "enginePeakRssKiB": 0,
+            "dbBytes": null,
+            "walBytes": null,
+            "io": {
+              "reads": 0,
+              "bytes": 0,
+              "writes": 0
+            }
+          },
+          {
+            "operation": "locate_id",
+            "ms": 2.058637000000033,
+            "cpuMs": 2.868,
+            "jsHeapUsed": 22386728,
+            "jsHeapDelta": 57128,
+            "jsExternal": 2812888,
+            "nodePeakRssKiB": 74372,
+            "enginePeakRssKiB": 0,
+            "dbBytes": null,
+            "walBytes": null,
+            "io": {
+              "reads": 0,
+              "bytes": 0,
+              "writes": 0
+            }
+          },
+          {
+            "operation": "conversation_count",
+            "ms": 1.923644999999965,
+            "cpuMs": 3.348,
+            "jsHeapUsed": 22578280,
+            "jsHeapDelta": 188616,
+            "jsExternal": 2812888,
+            "nodePeakRssKiB": 74372,
+            "enginePeakRssKiB": 0,
+            "dbBytes": null,
+            "walBytes": null,
+            "io": {
+              "reads": 0,
+              "bytes": 0,
+              "writes": 0
+            }
+          },
+          {
+            "operation": "batch_read_all",
+            "ms": 13.456713000000036,
+            "cpuMs": 17.026,
+            "jsHeapUsed": 22215256,
+            "jsHeapDelta": -365296,
+            "jsExternal": 2726607,
+            "nodePeakRssKiB": 75144,
+            "enginePeakRssKiB": 0,
+            "dbBytes": null,
+            "walBytes": null,
+            "io": {
+              "reads": 0,
+              "bytes": 0,
+              "writes": 0
+            }
+          },
+          {
+            "operation": "single_write",
+            "ms": 140.84738099999998,
+            "cpuMs": 195.511,
+            "jsHeapUsed": 32543776,
+            "jsHeapDelta": 10320768,
+            "jsExternal": 2810176,
+            "nodePeakRssKiB": 110432,
+            "enginePeakRssKiB": 0,
+            "dbBytes": null,
+            "walBytes": null,
+            "io": {
+              "reads": 2,
+              "bytes": 2443696,
+              "writes": 1
+            }
+          },
+          {
+            "operation": "single_update",
+            "ms": 137.15280700000005,
+            "cpuMs": 172.029,
+            "jsHeapUsed": 51562976,
+            "jsHeapDelta": 18994440,
+            "jsExternal": 3334200,
+            "nodePeakRssKiB": 139944,
+            "enginePeakRssKiB": 0,
+            "dbBytes": null,
+            "walBytes": null,
+            "io": {
+              "reads": 2,
+              "bytes": 2442752,
+              "writes": 1
+            }
+          },
+          {
+            "operation": "single_delete",
+            "ms": 115.43702199999996,
+            "cpuMs": 138.74,
+            "jsHeapUsed": 78443064,
+            "jsHeapDelta": 26877680,
+            "jsExternal": 7950306,
+            "nodePeakRssKiB": 168664,
+            "enginePeakRssKiB": 0,
+            "dbBytes": null,
+            "walBytes": null,
+            "io": {
+              "reads": 2,
+              "bytes": 2441904,
+              "writes": 1
+            }
+          },
+          {
+            "operation": "close",
+            "ms": 0.1290640000000849,
+            "cpuMs": 0.154,
+            "jsHeapUsed": 78466448,
+            "jsHeapDelta": 8968,
+            "jsExternal": 7950306,
+            "nodePeakRssKiB": 168664,
+            "enginePeakRssKiB": 0,
+            "dbBytes": null,
+            "walBytes": null,
+            "io": {
+              "reads": 0,
+              "bytes": 0,
+              "writes": 0
+            }
+          },
+          {
+            "operation": "hot_open",
+            "ms": 72.776073,
+            "cpuMs": 99.689,
+            "jsHeapUsed": 70169360,
+            "jsHeapDelta": -8299304,
+            "jsExternal": 3055203,
+            "nodePeakRssKiB": 173400,
+            "enginePeakRssKiB": 0,
+            "dbBytes": null,
+            "walBytes": null,
+            "io": {
+              "reads": 1,
+              "bytes": 1220952,
+              "writes": 0
+            }
+          }
+        ],
+        "batch": {
+          "total": 1000,
+          "maxRows": 50
+        },
+        "proof": {
+          "active": 1000,
+          "archiveMetadata": 0
+        },
+        "plan": null,
+        "integrity": null,
+        "files": {
+          "totalBytes": 2442328,
+          "dbBytes": null,
+          "walBytesAfterClose": null
+        },
+        "sampledTreePeakRssKiB": 170808,
+        "gcObservedHeapPeakBytes": 78466448,
+        "gcEvents": 0,
+        "stderrBytes": 0,
+        "exitCode": 0
+      }
+    }
+  ],
+  "failure": {
+    "failed": true,
+    "code": "QA_SQLCIPHER_OPERATION_FAILED",
+    "location": [
+      "    at Interface.<anonymous> (file:///workspace/ForMyself/docs/qa/kanata-sqlite-m0/host-worker.mjs:30:66)",
+      "    at Interface.emit (node:events:509:28)",
+      "    at [_onLine] [as _onLine] (node:internal/readline/interface:465:12)"
+    ],
+    "records": [
+      {
+        "operation": "cold_open",
+        "ms": 23.388621999999998,
+        "cpuMs": 3.194,
+        "jsHeapUsed": 13690784,
+        "jsHeapDelta": 374968,
+        "jsExternal": 2699847,
+        "nodePeakRssKiB": 57148,
+        "enginePeakRssKiB": 16300,
+        "dbBytes": 1130496,
+        "walBytes": 0,
+        "io": null
+      },
+      {
+        "operation": "recent_50",
+        "ms": 2.3871719999999925,
+        "cpuMs": 2.039,
+        "jsHeapUsed": 13594096,
+        "jsHeapDelta": 161072,
+        "jsExternal": 2745536,
+        "nodePeakRssKiB": 57404,
+        "enginePeakRssKiB": 16812,
+        "dbBytes": 1130496,
+        "walBytes": 0,
+        "io": null
+      },
+      {
+        "operation": "history_page_50",
+        "ms": 2.1367549999999937,
+        "cpuMs": 1.742,
+        "jsHeapUsed": 13854104,
+        "jsHeapDelta": 247928,
+        "jsExternal": 2790841,
+        "nodePeakRssKiB": 57660,
+        "enginePeakRssKiB": 17068,
+        "dbBytes": 1130496,
+        "walBytes": 0,
+        "io": null
+      },
+      {
+        "operation": "locate_id",
+        "ms": 1.9975059999999871,
+        "cpuMs": 1.981,
+        "jsHeapUsed": 13915616,
+        "jsHeapDelta": 39616,
+        "jsExternal": 2821935,
+        "nodePeakRssKiB": 57788,
+        "enginePeakRssKiB": 17196,
+        "dbBytes": 1130496,
+        "walBytes": 0,
+        "io": null
+      },
+      {
+        "operation": "conversation_count",
+        "ms": 0.3039269999999874,
+        "cpuMs": 0.396,
+        "jsHeapUsed": 13939312,
+        "jsHeapDelta": 12728,
+        "jsExternal": 2822411,
+        "nodePeakRssKiB": 57788,
+        "enginePeakRssKiB": 17196,
+        "dbBytes": 1130496,
+        "walBytes": 0,
+        "io": null
+      },
+      {
+        "operation": "batch_read_all",
+        "ms": 73.18539799999999,
+        "cpuMs": 40.188,
+        "jsHeapUsed": 15380440,
+        "jsHeapDelta": 1419704,
+        "jsExternal": 3064772,
+        "nodePeakRssKiB": 60092,
+        "enginePeakRssKiB": 18212,
+        "dbBytes": 1130496,
+        "walBytes": 0,
+        "io": null
+      },
+      {
+        "operation": "single_write",
+        "ms": 2.492890999999986,
+        "cpuMs": 0.779,
+        "jsHeapUsed": 15404112,
+        "jsHeapDelta": 7632,
+        "jsExternal": 3065247,
+        "nodePeakRssKiB": 60092,
+        "enginePeakRssKiB": 18212,
+        "dbBytes": 1130496,
+        "walBytes": 12392,
+        "io": null
+      }
+    ],
+    "sampledTreePeakRssKiB": 78620,
+    "gcObservedHeapPeakBytes": 15404112,
+    "gcEvents": 0,
+    "stderrBytes": 0,
+    "exitCode": 1
+  },
+  "finishedAt": "2026-11-03T09:30:07.167Z"
+}

@@ -1,0 +1,30 @@
+INFO         | Android emulator version 37.2.13.0 (build_id 16740729) (CL:N/A)
+INFO         | Graphics backend: gfxstream
+INFO         | Found systemPath /workspace/ForMyself/work/m0/android-sdk/system-images/android-34/aosp_atd/x86_64/
+INFO         | Saving last run QEMU version for the AVD to 2
+INFO         | Feature 'Vulkan' (21) is overridden to 'disabled'
+INFO         | Increasing RAM size to 2560MB
+##############################################################################
+##                        WARNING - ACTION REQUIRED                         ##
+##  Consider using the '-metrics-collection' flag to help improve the       ##
+##  emulator by sending anonymized usage data. Or use the '-no-metrics'     ##
+##  flag to bypass this warning and turn off the metrics collection.        ##
+##  In a future release this warning will turn into a one-time blocking     ##
+##  prompt to ask for explicit user input regarding metrics collection.     ##
+##                                                                          ##
+##  Please see '-help-metrics-collection' for more details. You can use     ##
+##  '-metrics-to-file' or '-metrics-to-console' flags to see what type of   ##
+##  data is being collected by emulator as part of usage statistics.        ##
+##############################################################################
+INFO         | Guest GLES Driver: Auto (ext controls)
+INFO         | emuglConfig_init: vulkan_mode_selected:swiftshader gles_mode_selected:swiftshader
+INFO         | Checking system compatibility:
+INFO         |   Checking: hasSufficientDiskSpace
+INFO         |      Ok: Disk space requirements to run avd: `kanata_m0_api34` are met
+INFO         |   Checking: hasSufficientHwGpu
+INFO         |      Ok: Hardware GPU compatibility checks are not required
+INFO         |   Checking: hasSufficientSystem
+INFO         |      Warning: AVD 'kanata_m0_api34' will run more smoothly with 4 CPU cores (currently using 3)
+USER_WARNING | AVD 'kanata_m0_api34' will run more smoothly with 4 CPU cores (currently using 3).
+WARNING      | File System is not ext4, disable QuickbootFileBacked feature
+FATAL        | Not enough space to create userdata partition. Available: 2187.72 MB at /workspace/ForMyself/work/m0/emulator/avd/kanata_m0_api34.avd, need 7372.80 MB.

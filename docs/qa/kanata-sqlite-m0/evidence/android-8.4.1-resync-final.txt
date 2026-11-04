@@ -1,0 +1,16 @@
+
+> build
+> esbuild app.mjs --bundle --format=esm --outfile=www/app.js
+
+
+  www/app.js  40.7kb
+
+⚡ Done in 11ms
+✔ Copying web assets from www to android/app/src/main/assets/public in 6.62ms
+✔ Creating capacitor.config.json in android/app/src/main/assets in 675.10μs
+✔ copy android in 17.01ms
+✔ Updating Android plugins in 958.87μs
+[info] Found 1 Capacitor plugin for android:
+       @capacitor-community/sqlite@8.1.1
+✔ update android in 98.89ms
+[info] Sync finished in 0.139s

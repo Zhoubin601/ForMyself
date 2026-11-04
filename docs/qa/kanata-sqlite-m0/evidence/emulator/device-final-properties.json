@@ -1,0 +1,7 @@
+{
+  "boot": "1",
+  "FBE": "encrypted",
+  "encryptionType": "file",
+  "SELinux": "Enforcing",
+  "AVD": "kanata_m0_api34\nOK"
+}

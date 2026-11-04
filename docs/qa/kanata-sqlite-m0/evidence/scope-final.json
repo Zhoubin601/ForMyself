@@ -1,0 +1,19 @@
+{
+  "status": "PASS_SCOPE_ONLY",
+  "branch": "M",
+  "HEAD": "ac74f0b817ac32f65d9f5e506f094b1515477cc6",
+  "productionFilesUnchanged": true,
+  "userDataAccessed": false,
+  "M1Started": false,
+  "commitPushMergePublish": false,
+  "formalRuns": 30,
+  "samplesPerOperation": 5,
+  "performanceRows": 72,
+  "benchmarkSourceHashesMatch": true,
+  "realDevice": "BLOCKED",
+  "M0": "BLOCKED",
+  "enterM1": false,
+  "emulatorInstalled": true,
+  "androidNative": "PASS_EMULATOR_ONLY",
+  "bridge": "BLOCKED_WEBVIEW_CONTROL_CRASH"
+}

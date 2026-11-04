@@ -1,0 +1,53 @@
+INSTRUMENTATION_STATUS: class=com.formyself.qa.m0.SqlCipherM0Test
+INSTRUMENTATION_STATUS: current=1
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=1
+INSTRUMENTATION_STATUS: stream=
+com.formyself.qa.m0.SqlCipherM0Test:
+INSTRUMENTATION_STATUS: test=encryptionRollbackReopen
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.formyself.qa.m0.SqlCipherM0Test
+INSTRUMENTATION_STATUS: current=1
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=1
+INSTRUMENTATION_STATUS: stack=android.database.sqlite.SQLiteException: unknown error (code 0): Queries can be performed using SQLiteDatabase query or rawQuery methods only.
+	at net.zetetic.database.sqlcipher.SQLiteConnection.nativeExecuteForChangedRowCount(Native Method)
+	at net.zetetic.database.sqlcipher.SQLiteConnection.executeForChangedRowCount(SQLiteConnection.java:818)
+	at net.zetetic.database.sqlcipher.SQLiteSession.executeForChangedRowCount(SQLiteSession.java:759)
+	at net.zetetic.database.sqlcipher.SQLiteStatement.executeUpdateDelete(SQLiteStatement.java:90)
+	at net.zetetic.database.sqlcipher.SQLiteDatabase.executeSql(SQLiteDatabase.java:1998)
+	at net.zetetic.database.sqlcipher.SQLiteDatabase.execSQL(SQLiteDatabase.java:1906)
+	at com.formyself.qa.m0.SqlCipherM0Test.encryptionRollbackReopen(SqlCipherM0Test.java:31)
+
+INSTRUMENTATION_STATUS: stream=
+Error in encryptionRollbackReopen(com.formyself.qa.m0.SqlCipherM0Test):
+android.database.sqlite.SQLiteException: unknown error (code 0): Queries can be performed using SQLiteDatabase query or rawQuery methods only.
+	at net.zetetic.database.sqlcipher.SQLiteConnection.nativeExecuteForChangedRowCount(Native Method)
+	at net.zetetic.database.sqlcipher.SQLiteConnection.executeForChangedRowCount(SQLiteConnection.java:818)
+	at net.zetetic.database.sqlcipher.SQLiteSession.executeForChangedRowCount(SQLiteSession.java:759)
+	at net.zetetic.database.sqlcipher.SQLiteStatement.executeUpdateDelete(SQLiteStatement.java:90)
+	at net.zetetic.database.sqlcipher.SQLiteDatabase.executeSql(SQLiteDatabase.java:1998)
+	at net.zetetic.database.sqlcipher.SQLiteDatabase.execSQL(SQLiteDatabase.java:1906)
+	at com.formyself.qa.m0.SqlCipherM0Test.encryptionRollbackReopen(SqlCipherM0Test.java:31)
+
+INSTRUMENTATION_STATUS: test=encryptionRollbackReopen
+INSTRUMENTATION_STATUS_CODE: -2
+INSTRUMENTATION_RESULT: stream=
+
+Time: 13.899
+There was 1 failure:
+1) encryptionRollbackReopen(com.formyself.qa.m0.SqlCipherM0Test)
+android.database.sqlite.SQLiteException: unknown error (code 0): Queries can be performed using SQLiteDatabase query or rawQuery methods only.
+	at net.zetetic.database.sqlcipher.SQLiteConnection.nativeExecuteForChangedRowCount(Native Method)
+	at net.zetetic.database.sqlcipher.SQLiteConnection.executeForChangedRowCount(SQLiteConnection.java:818)
+	at net.zetetic.database.sqlcipher.SQLiteSession.executeForChangedRowCount(SQLiteSession.java:759)
+	at net.zetetic.database.sqlcipher.SQLiteStatement.executeUpdateDelete(SQLiteStatement.java:90)
+	at net.zetetic.database.sqlcipher.SQLiteDatabase.executeSql(SQLiteDatabase.java:1998)
+	at net.zetetic.database.sqlcipher.SQLiteDatabase.execSQL(SQLiteDatabase.java:1906)
+	at com.formyself.qa.m0.SqlCipherM0Test.encryptionRollbackReopen(SqlCipherM0Test.java:31)
+
+FAILURES!!!
+Tests run: 1,  Failures: 1
+
+
+INSTRUMENTATION_CODE: -1

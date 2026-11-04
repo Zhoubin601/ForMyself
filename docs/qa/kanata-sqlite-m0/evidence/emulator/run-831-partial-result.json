@@ -1,0 +1,73 @@
+{
+  "version": "8.3.1",
+  "device": "AOSP ATD API34 emulator only",
+  "realDeviceGate": "BLOCKED",
+  "status": "BLOCKED_OR_FAILED",
+  "commands": [
+    [
+      "get-state"
+    ],
+    [
+      "emu",
+      "avd",
+      "name"
+    ],
+    [
+      "shell",
+      "getprop",
+      "sys.boot_completed"
+    ],
+    [
+      "shell",
+      "getprop",
+      "ro.build.fingerprint"
+    ],
+    [
+      "shell",
+      "getprop",
+      "ro.build.version.release"
+    ],
+    [
+      "shell",
+      "dumpsys",
+      "webviewupdate"
+    ],
+    [
+      "install",
+      "-r",
+      "-t",
+      "/workspace/ForMyself/work/m0/android-8.3.1-izwXPq/android/app/build/outputs/apk/debug/app-debug.apk"
+    ],
+    [
+      "install",
+      "-r",
+      "-t",
+      "/workspace/ForMyself/work/m0/android-8.3.1-izwXPq/android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk"
+    ],
+    [
+      "shell",
+      "am",
+      "instrument",
+      "-w",
+      "-r",
+      "-e",
+      "class",
+      "com.formyself.qa.m0.SqlCipherM0Test",
+      "com.formyself.qa.m0.test/androidx.test.runner.AndroidJUnitRunner"
+    ],
+    [
+      "shell",
+      "am",
+      "start",
+      "-n",
+      "com.formyself.qa.m0/.MainActivity"
+    ],
+    [
+      "shell",
+      "pidof",
+      "com.formyself.qa.m0"
+    ]
+  ],
+  "native": "PASS_EMULATOR_ONLY",
+  "code": "QA_DEVICE_COMMAND_FAILED"
+}

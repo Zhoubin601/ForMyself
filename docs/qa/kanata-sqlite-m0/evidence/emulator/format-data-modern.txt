@@ -1,0 +1,14 @@
+Warning: label too long; will be truncated to 'm0-synthetic-dat'
+
+mke2fs 1.47.2 (1-Jan-2025)
+Discarding device blocks:      0/524288             done                            
+Creating filesystem with 524288 4k blocks and 131072 inodes
+Filesystem UUID: 99afe7cb-91b9-4044-afe2-371e15a108dd
+Superblock backups stored on blocks: 
+	32768, 98304, 163840, 229376, 294912
+
+Allocating group tables:  0/16     done                            
+Writing inode tables:  0/16     done                            
+Creating journal (16384 blocks): done
+Writing superblocks and filesystem accounting information:  0/16     done
+

@@ -1287,3 +1287,15 @@ planMessageArchive现有Map<string, Message[]>/逐组件对象数组/归档Set�
 
 ## 2026-11-02 P7 最终收口归因
 旧候选Web100k883MiB及Android首次改密207.9s为历史失败，不能套用当前04e4。先复测当前字节一致候选并分阶段定位，尚不认定根因或优化收益。
+
+
+## 2026-11-03 Kanata SQLite M0 分析
+
+现有归档已有有界正文读取，但主头/Pinia 保留全部历史元数据，普通 update 仍全图复制/校验/序列化和主头加密重写；备份 hydrate 仍构造全量图。SQLite 收益必须来自有界访问模型，不能只换文件。插件8.1.1两版Capacitor App/Test构建通过；其标准 secret API 持久写 EncryptedSharedPreferences（不是普通明文），却不满足仅主密码会话内持有随机DEK的要求。需先补M0密钥接口/原生生命周期验证，不直接接生产。
+
+主机真实 SQLCipher4.12五轮安全/强杀恢复及1k/10k/100k各五次对照完成；Android插件为4.17，不能互代。100k主机单写P50 JSON1561.609ms、SQL原型2.268ms，最近50为2.703/1.954ms；1k最近JSON更快。原型缺完整生产领域语义，不能宣传Android倍率。原始数据/限制/两轮修正记录见M0报告和QA evidence。没有Android设备，M0最终BLOCKED；P7原512MiB/120秒/768MiB全部保留，禁止进入M1。
+
+
+## 2026-11-03 M0 模拟器补测
+
+软件模拟器成功完整启动，FBE encrypted/file且SELinux Enforcing。两套原生SQLCipher4.17测试通过；首次真实运行暴露QA WAL execSQL错误，修正API并重测。WebView113在QA App及无SQLite的系统HTMLViewer均SIGTRAP，桥接仍阻塞，不能归罪SQLite或宣称插件已完整通过。真机性能/密钥生命周期仍BLOCKED。

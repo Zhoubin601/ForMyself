@@ -1,0 +1,30 @@
+{
+  "version": "8.2.16",
+  "peerDependencies": {
+    "@capacitor/core": ">=8.0.0"
+  },
+  "license": "MPL-2.0",
+  "repository": {
+    "url": "git+https://github.com/Cap-go/capacitor-fast-sql.git",
+    "type": "git"
+  },
+  "dist": {
+    "shasum": "664ece6e67380d30f392f97cd58ced402ec4b3ba",
+    "tarball": "https://registry.npmjs.org/@capgo/capacitor-fast-sql/-/capacitor-fast-sql-8.2.16.tgz",
+    "integrity": "sha512-Z+YOoakTeukdbfBAxEHNNDPbfLqqU/OvP2y0vYIoQKNDpuzmtcjhawlftk+aXf9u90eMOYbek+vnVs0MqNH1/g==",
+    "fileCount": 55,
+    "unpackedSize": 2295225,
+    "attestations": {
+      "url": "https://registry.npmjs.org/-/npm/v1/attestations/@capgo%2fcapacitor-fast-sql@8.2.16",
+      "provenance": {
+        "predicateType": "https://slsa.dev/provenance/v1"
+      }
+    },
+    "signatures": [
+      {
+        "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U",
+        "sig": "MEYCIQDZDN33FMH/R+6/5mrPUfdcJ7Jo2ipDPA4/gHnU71oLYAIhANiS4uI1td4a0IpgNza81E8gz+FU+V0kDNnzctuPcJwN"
+      }
+    ]
+  }
+}

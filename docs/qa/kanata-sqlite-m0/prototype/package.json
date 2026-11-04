@@ -1,0 +1,8 @@
+{
+  "name": "kanata-sqlite-m0-isolated-qa",
+  "private": true,
+  "type": "module",
+  "scripts": {"build": "esbuild app.mjs --bundle --format=esm --outfile=www/app.js", "sync": "npm run build && cap sync android"},
+  "dependencies": {"@capacitor/core": "8.3.1", "@capacitor/android": "8.3.1", "@capacitor-community/sqlite": "8.1.1"},
+  "devDependencies": {"@capacitor/cli": "8.3.1", "esbuild": "0.25.12"}
+}

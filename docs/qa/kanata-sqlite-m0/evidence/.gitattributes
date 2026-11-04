@@ -1,0 +1,5 @@
+# Preserve captured terminal output bytes, including CRLF and trailing spaces.
+# Preserve the captured upstream changelog verbatim as well.
+# Formatting checks still apply to our source, reports, JSON and CSV evidence.
+*.txt -text -whitespace
+upstream-changelog.md -text -whitespace

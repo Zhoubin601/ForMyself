@@ -1,0 +1,1 @@
+{"status": "OFFICIAL_IMAGE_INSTALLED_SPARSE", "archiveSha1": "9ce4068934b26fa99ca104ffe6d10dec22abb317", "logicalBytes": 8743920093, "allocatedBytes": 1281261568}

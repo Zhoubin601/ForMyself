@@ -1,0 +1,2 @@
+mke2fs 1.42.13 (17-May-2015)
+Invalid filesystem option set: encrypt

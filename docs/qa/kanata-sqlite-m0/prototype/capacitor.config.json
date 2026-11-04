@@ -1,0 +1,7 @@
+{
+  "appId": "com.formyself.qa.m0",
+  "appName": "Kanata M0 Synthetic QA",
+  "webDir": "www",
+  "loggingBehavior": "none",
+  "plugins": {"CapacitorSQLite": {"androidIsEncryption": true, "androidBiometric": {"biometricAuth": false}}}
+}

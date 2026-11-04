@@ -1,0 +1,26 @@
+[
+  {
+    "capacitor": "8.3.1",
+    "file": "work/m0/android-8.3.1-izwXPq/android/app/build/outputs/apk/debug/app-debug.apk",
+    "bytes": 13166428,
+    "sha256": "fd84b94b4f8796fb0e1612c3560df3be506c84eb27400f104317c133b2017160"
+  },
+  {
+    "capacitor": "8.3.1",
+    "file": "work/m0/android-8.3.1-izwXPq/android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk",
+    "bytes": 570346,
+    "sha256": "01c6dd5ddb070b0aa96adc9801661f1c267c67afba8b88abe9c84c1a0494d0e5"
+  },
+  {
+    "capacitor": "8.4.1",
+    "file": "work/m0/android-8.4.1-14xBaJ/android/app/build/outputs/apk/debug/app-debug.apk",
+    "bytes": 13166428,
+    "sha256": "51d302da61d6ba0234eed08bd0006f5b9fb72d773f2ac2ade141b07d9a6a7d20"
+  },
+  {
+    "capacitor": "8.4.1",
+    "file": "work/m0/android-8.4.1-14xBaJ/android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk",
+    "bytes": 570346,
+    "sha256": "01c6dd5ddb070b0aa96adc9801661f1c267c67afba8b88abe9c84c1a0494d0e5"
+  }
+]

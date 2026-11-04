@@ -1,0 +1,2 @@
+Auto-selecting single ABI x86_64
+Do you wish to create a custom hardware profile? [no] 

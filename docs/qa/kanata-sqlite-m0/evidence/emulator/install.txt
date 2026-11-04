@@ -1,0 +1,2 @@
+Picked up JAVA_TOOL_OPTIONS: -Dhttp.proxyHost=proxy -Dhttp.proxyPort=8080 -Dhttps.proxyHost=proxy -Dhttps.proxyPort=8080 -Djavax.net.ssl.trustStore=/workspace/ForMyself/work/m0/qa-cacerts -Djavax.net.ssl.trustStorePassword=changeit
+                                                                                Warning: An error occurred while preparing SDK package AOSP ATD Intel x86_64 Atom System Image: No space left on device.

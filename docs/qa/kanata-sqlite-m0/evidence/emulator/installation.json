@@ -1,0 +1,32 @@
+{
+  "sdkEmulator": "37.2.13.0 build 16740729",
+  "systemImage": "system-images;android-34;aosp_atd;x86_64 revision 2",
+  "systemArchiveUrl": "https://dl.google.com/android/repository/sys-img/aosp_atd/x86_64-34_r02.zip",
+  "archiveSha1": "9ce4068934b26fa99ca104ffe6d10dec22abb317",
+  "archiveBytes": 614898904,
+  "logicalImageBytes": 8743920093,
+  "sparseAllocatedBytes": 1281261568,
+  "KVM": false,
+  "acceleration": "TCG software",
+  "AVD": "kanata_m0_api34",
+  "serial": "emulator-5580",
+  "guestMemoryMiB": 2560,
+  "cpuCores": 2,
+  "display": "320x640 160dpi",
+  "userdataGiB": 2,
+  "graphics": "SwiftShader",
+  "SELinux": "Enforcing",
+  "ro.crypto.state": "encrypted",
+  "ro.crypto.type": "file",
+  "sys.boot_completed": "1",
+  "realTargetPhone": "BLOCKED",
+  "nativeTests": {
+    "8.3.1": "PASS_EMULATOR_ONLY",
+    "8.4.1": "PASS_EMULATOR_ONLY"
+  },
+  "bridgeTests": "BLOCKED_WEBVIEW_RENDERER_CRASH",
+  "control": "Stock HTMLViewer reproduces same WebView renderer crash without Capacitor/SQLite",
+  "M0": "BLOCKED",
+  "M1Started": false,
+  "endState": "QA synthetic app data cleared; emulator shut down, SDK/AVD retained"
+}

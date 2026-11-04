@@ -1,0 +1,28 @@
+{
+  "status": "APP_BUILD_PASS_DEVICE_BLOCKED",
+  "exitCode": 0,
+  "command": ":app:assembleDebug :app:assembleDebugAndroidTest",
+  "capacitor": "8.3.1",
+  "plugin": "8.1.1",
+  "jdk": "Temurin 21.0.9+10",
+  "gradle": "8.14.3",
+  "AGP": "8.13.0",
+  "minSdk": 24,
+  "compileSdk": 36,
+  "targetSdk": 36,
+  "sqliteAndroidX": "2.4.0",
+  "sqlcipher": "4.17.0",
+  "runtime": "NOT RUN",
+  "artifacts": [
+    {
+      "path": "work/m0/android-8.3.1-izwXPq/android/app/build/outputs/apk/debug/app-debug.apk",
+      "bytes": 13166428,
+      "sha256": "fd84b94b4f8796fb0e1612c3560df3be506c84eb27400f104317c133b2017160"
+    },
+    {
+      "path": "work/m0/android-8.3.1-izwXPq/android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk",
+      "bytes": 566435,
+      "sha256": "1b0319049bed060207077fcf7229e8fe1d1620d81df671ef83dada2747ac15de"
+    }
+  ]
+}

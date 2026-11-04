@@ -1167,3 +1167,15 @@ raw/完整需求清单.txt 4.1/4.4/8.3及最新连续执行v3驱动当前实现�
 
 ## 2026-11-02 P7 最终收口续作
 来源：当前用户指令、AGENTS、根架构规范、cloud-handoff-v2、archive-planner-v1、latest summary、连续执行计划v3、raw/完整需求清单.txt及冻结容量契约；以9ebf3484实际源码/驱动为准。raw只读，无外部研究。过程见20261102-kanata-p7-final-closure-v1.md。
+
+
+## 2026-11-03 Kanata SQLite M0 来源
+
+用户授权仅 M0，随后明确授权拉取最新 M 开发。基线 M / ac74f0b817ac32f65d9f5e506f094b1515477cc6；开始无用户修改，未改 Kanata/main。读取 AGENTS、架构说明书、20261103 M 计划、20261028 连贯计划及真实 Kanata/归档/加密/受保护会话/改密/备份/恢复源码。生产 lock 实际 Capacitor 8.4.1，与计划 8.3.1 有差异，隔离测试覆盖两版，生产依赖未改。
+
+外部来源（引用日2026-11-03）：community sqlite 官方 v8.1.1 README/CHANGELOG/release/npm 元数据及包源码；SQLCipher v4.17.0 LICENSE、官方 Android Maven AAR/POM、Zetetic raw key/API；Capgo fast-sql 官方源码/npm 8.2.16；Capawesome 官方 SQLite 文档（私有包无许可，未安装）。链接与来源指纹见 docs/qa/kanata-sqlite-m0/evidence/commands.md。全部数据来自合成生成器，无用户聊天/私人备份。报告：docs/20261103-kanata-sqlite-m0-report-v1.md。
+
+
+## 2026-11-03 M0 模拟器补测
+
+用户追问并授权安装模拟器。读取环境状态/网络技能与策略；官方Emulator37.2.13、AOSP ATD API34 r2及官方checksum；Debian官方e2fsprogs1.47.2仅解包work。新增真实Android原生/HTMLViewer对照来源见20261103-kanata-sqlite-m0-emulator-verification-v1.md。

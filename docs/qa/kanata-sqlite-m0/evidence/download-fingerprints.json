@@ -1,0 +1,17 @@
+[
+  {
+    "file": "capacitor-community-sqlite-8.1.1.tgz",
+    "bytes": 271508,
+    "sha256": "f6edcc030e910eac92c53400bed2464e9057139c9c99bed61b975ee6af92c90f"
+  },
+  {
+    "file": "sqlcipher3_binary-0.6.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl",
+    "bytes": 3247275,
+    "sha256": "c8a7076a18b4f6fc9b580b0f24aa526d6a47605b1e3e6491ee3e9f2977940d8e"
+  },
+  {
+    "file": "sqlcipher-android-4.17.0.aar",
+    "bytes": 4007507,
+    "sha256": "44fc40c33d1de597c8339072a71fa0ff20e12d01ab352d6abe4ad5df668ead94"
+  }
+]

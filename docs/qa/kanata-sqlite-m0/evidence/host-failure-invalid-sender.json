@@ -1,0 +1,65 @@
+{
+  "status": "HOST_FAILED",
+  "scope": "Linux host only; NOT Android, NOT device acceptance",
+  "fixtureVersion": "m0-synthetic-v1-seed-20261103",
+  "forcedGC": false,
+  "repetitions": 1,
+  "counts": [
+    1000
+  ],
+  "startedAt": "2026-11-03T09:28:39.965Z",
+  "environment": {
+    "platform": "linux",
+    "release": "6.18.57",
+    "arch": "x64",
+    "cpu": "AMD EPYC 9V74 80-Core Processor",
+    "logicalCpus": 3,
+    "ramBytes": 10452459520,
+    "node": "v24.19.0",
+    "python": "Python 3.12.14",
+    "git": "ac74f0b817ac32f65d9f5e506f094b1515477cc6",
+    "cgroupMemoryMax": "8589934592\n",
+    "coldDefinition": "fresh Node and Python processes; filesystem cache retained",
+    "power": "cloud VM unknown",
+    "temperature": "unavailable",
+    "storage": "overlay filesystem; physical medium unknown"
+  },
+  "datasets": [
+    {
+      "count": 1000,
+      "fingerprint": "cadf3b1a536fd1e1d3b597950361fdea494af4312d2e91d5af43b5851dc7e001",
+      "scopeHashes": [
+        "0d9c11f86664841b79d255aad50956011441de30edc6909b8293a8340579af43",
+        "f6aaae9fc0ee10fe8e3381a6b04cf81fb81b260cece4b5e49b0f5083d9463dbe",
+        "1e07a58c40bb9346752d27034069377b6676d376e2bbb595cfe145a039e63e30",
+        "b6e85c62d732ac44e8ae80075876205b70868db33072cc2929efd71bed3d50f8",
+        "3b672a43f09f9d0b67fd8c8cc97c4a760ccb211c12abaddcce271717ec554cc9",
+        "391540f28cb39491fc029f0dac4d979871f8e98000f17c900b1678f77d70e239",
+        "7c2ccb4e96b00e387e45c2fa871f87f3acafe096af2fd773bb336d2fd5e5a0aa",
+        "45021a92003cee74354d445db67e4a5f26f78f12c120e2742d0f33ac9f7b8adc"
+      ],
+      "worlds": 2,
+      "conversationsWithMessages": 8,
+      "timestampTies": true,
+      "lengthsUTF16": [
+        64,
+        128,
+        256,
+        1024
+      ],
+      "distribution": "pairs distributed round-robin over 8 conversations, 4 each in 2 worlds; user/assistant 50/50; adjacent reply pairs; repeated timestamp every 32 global messages"
+    }
+  ],
+  "runs": [],
+  "failure": {
+    "failed": true,
+    "code": "QA_HOST_FAILED",
+    "records": [],
+    "sampledTreePeakRssKiB": 0,
+    "gcObservedHeapPeakBytes": 0,
+    "gcEvents": 0,
+    "stderrBytes": 0,
+    "exitCode": 1
+  },
+  "finishedAt": "2026-11-03T09:28:40.260Z"
+}

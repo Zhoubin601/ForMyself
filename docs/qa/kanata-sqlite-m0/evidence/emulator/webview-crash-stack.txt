@@ -1,0 +1,13 @@
+11-03 15:58:04.829  1266  1505 F libc    : Fatal signal 6 (SIGABRT), code -1 (SI_QUEUE) in tid 1505 (bt_stack_manage), pid 1266 (droid.bluetooth)
+11-03 16:04:18.102  2859  2881 F DEBUG   : Cmdline: com.android.webview:sandboxed_process0:org.chromium.content.app.SandboxedProcessService0:0
+11-03 16:04:18.102  2859  2881 F DEBUG   : signal 0 (SIGTRAP), code 128 (SI_KERNEL), fault addr --------
+11-03 16:04:18.109  2859  2881 F DEBUG   : backtrace:
+11-03 16:04:18.110  2859  2881 F DEBUG   :       #00 pc 000000000191356a  /product/app/webview/webview.apk!libwebviewchromium.so (offset 0x6f1b000) (BuildId: f91274aba2c3932b2c24b5323fd164aceb07dba8)
+11-03 16:04:18.900  2816  2816 E chromium: [ERROR:aw_browser_terminator.cc(156)] Renderer process (2859) crash detected (code 5).
+11-03 16:04:18.964  2816  2816 F chromium: [FATAL:crashpad_client_linux.cc(732)] Render process (2859)'s crash wasn't handled by all associated  webviews, triggering application crash.
+11-03 16:04:18.967  2816  2816 F libc    : Fatal signal 5 (SIGTRAP), code 128 (SI_KERNEL), fault addr 0x0 in tid 2816 (formyself.qa.m0), pid 2816 (formyself.qa.m0)
+11-03 16:04:22.990  2935  2935 F DEBUG   : Cmdline: com.formyself.qa.m0
+11-03 16:04:22.994  2935  2935 F DEBUG   : signal 5 (SIGTRAP), code 128 (SI_KERNEL), fault addr 0x0000000000000000
+11-03 16:04:22.994  2935  2935 F DEBUG   : Abort message: '[FATAL:crashpad_client_linux.cc(732)] Render process (2859)'s crash wasn't handled by all associated  webviews, triggering application crash.'
+11-03 16:04:23.007  2935  2935 F DEBUG   : backtrace:
+11-03 16:04:23.010  2935  2935 F DEBUG   :       #00 pc 0000000001ceec8f  /product/app/webview/webview.apk!libwebviewchromium.so (offset 0x6f1b000) (BuildId: f91274aba2c3932b2c24b5323fd164aceb07dba8)
