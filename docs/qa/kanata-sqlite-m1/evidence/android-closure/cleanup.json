@@ -1,0 +1,33 @@
+{
+  "scope": "only this newly-created synthetic temporary AVD and QA package",
+  "commands": [
+    {
+      "args": [
+        "shell",
+        "am",
+        "force-stop",
+        "com.formyself.qa.m0"
+      ],
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "args": [
+        "shell",
+        "pm",
+        "clear",
+        "com.formyself.qa.m0"
+      ],
+      "exitCode": 0,
+      "output": "Success"
+    },
+    {
+      "args": [
+        "emu",
+        "kill"
+      ],
+      "exitCode": 0,
+      "output": "OK: killing emulator, bye bye\nOK"
+    }
+  ]
+}

@@ -553,3 +553,12 @@ Windows 使用 `npm.cmd`、`npx.cmd` 和 `android/gradlew.bat` 的对应命令�
 
 - M0 原型位于 `docs/qa/kanata-sqlite-m0/`，只装入独立合成 QA 包。原型的 SQLCipher 直接字节密钥、版本化信封、前台租约和有界查询作为 M 分支设计依据。生产 Schema、Repository、主密码改密、恢复协调和旧数据迁移仍按 M1–M7 分阶段验收。
 - 在用户指定的隔离 AVD 上运行 `run-direct-session.mjs` 验证冷打开、强停回滚、后台撤销和密钥取证，再用 `validate-direct-gate.mjs` 核对样本与门槛。参数和状态见 [M0 会话与门禁](docs/20261104-kanata-sqlite-m0-direct-gate-v1.md)。
+
+## 23. Kanata SQLite M1 Schema（2026-11-06，阶段已通过）
+
+- 实际定义在 [kanataSchema.js](src/features/chat/storage/sqlite/kanataSchema.js)，升级入口为 [migrateKanataSchema](src/features/chat/storage/sqlite/kanataSchemaMigrator.js)。SQL Schema版本独立于KanataData和备份版本：001核心表/防护、002访问索引。没有接入生产组合根或Store；不根据这些文件的存在判定迁移已启用。
+- `KanataSchemaConnection.transaction<T>`提供独占BEGIN IMMEDIATE与提交/回调失败回滚，回调只取得`execute/query`；调用者预先持有受保护租约并开启foreign_keys。签名与strict负向例见contracts及tests/types/kanataSqlite.ts。它是DDL专用接口，不代替M2需要的CAS/affectedRows业务驱动。
+- 空库必须确实为空；已有库核对application_id、user_version、完整结构与迁移日志SHA256。未知未来版本、损坏/缺失结构或日志拒绝，固定错误码不包含SQL/原生错误正文；不删除、降级或初始化覆盖。整个待升级链在一个事务内完成。稳定ID和world_id不可变，实际表的复合外键负责世界隔离，entity_ids的显式RAISE防止OR IGNORE/REPLACE绕过全局唯一性。
+- 消息来源保留原revision；旧来源仍可管理，禁止未来revision/当前revision倒退。消息内容/删除变化必须增加revision，但审计写入、派生stale/needsReview、知识权限和CAS仍由后续领域命令负责。SQL约束不替代全部领域校验。角色绑定允许保留失效选择（现有契约），运行时仍拒绝解析到其他实例。可选布尔列的NULL表示原字段未提供，不能未经兼容处理一律改成false。
+- Android打开约定显式`NO_LOCALIZED_COLLATORS`保证二进制排序，每次打开用`setForeignKeyConstraintsEnabled(true)`配置整个连接池。SQLCipher4.17默认首次打开在codec存在时不创建android_metadata；本轮错误的相反对照预期已用真实测试纠正，不通过删除表或忽略未知结构取巧。
+- 验证：`node --test tests/kanataSqliteSchema.test.js`与`npm run check`；额外主机SQLCipher及隔离Android的命令见 [M1 QA](docs/qa/kanata-sqlite-m1/README.md)。精确DDL/PK/外键/索引/CHECK目录由write-catalog.mjs生成。原磁盘阻塞已通过独立临时卷解除，实际Android SQLCipher4.17新增结构/回滚/重开测试通过，见 [M1验收v2](docs/20261106-kanata-sqlite-m1-report-v2.md)。旧失败保留，M2尚未开始，生产路径未接入。

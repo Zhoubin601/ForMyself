@@ -1,0 +1,47 @@
+[
+  {
+    "check": "docs/qa/kanata-sqlite-m1/prepare-android.mjs",
+    "exitCode": 0
+  },
+  {
+    "check": "docs/qa/kanata-sqlite-m1/verify-android.mjs",
+    "exitCode": 0
+  },
+  {
+    "check": "docs/qa/kanata-sqlite-m1/verify-sqlcipher.mjs",
+    "exitCode": 0
+  },
+  {
+    "check": "docs/qa/kanata-sqlite-m1/write-catalog.mjs",
+    "exitCode": 0
+  },
+  {
+    "check": "prepare-android.mjs rejects production root before touching device",
+    "exitCode": 1,
+    "expectedFailure": true
+  },
+  {
+    "check": "verify-android.mjs rejects production root before touching device",
+    "exitCode": 1,
+    "expectedFailure": true
+  },
+  {
+    "check": "missing QA Python fails closed without hanging",
+    "exitCode": 1,
+    "expectedFailure": true
+  },
+  {
+    "check": "schema/fixture fingerprints match and unconnected schema absent from production bundle",
+    "exitCode": 0
+  },
+  {
+    "check": "local Markdown links and whitespace, including untracked files",
+    "exitCode": 0
+  },
+  {
+    "check": "credential-pattern scan and no binary/database artifacts",
+    "exitCode": 0,
+    "files": 39,
+    "findings": []
+  }
+]

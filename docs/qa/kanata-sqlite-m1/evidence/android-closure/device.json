@@ -1,0 +1,76 @@
+{
+  "syntheticOnly": true,
+  "avd": "kanata_m1_schema_api34",
+  "serial": "emulator-5580",
+  "ramMiB": 2560,
+  "cores": 2,
+  "dataPartitionMiB": 1024,
+  "acceleration": "TCG",
+  "gpu": "SwiftShader",
+  "screen": "320x640@160dpi",
+  "storage": "independent /tmp mount",
+  "commands": [
+    {
+      "args": [
+        "emu",
+        "avd",
+        "name"
+      ],
+      "exitCode": 0,
+      "output": "kanata_m1_schema_api34\nOK"
+    },
+    {
+      "args": [
+        "shell",
+        "getprop",
+        "sys.boot_completed"
+      ],
+      "exitCode": 0,
+      "output": "1"
+    },
+    {
+      "args": [
+        "shell",
+        "getprop",
+        "ro.build.version.sdk"
+      ],
+      "exitCode": 0,
+      "output": "34"
+    },
+    {
+      "args": [
+        "shell",
+        "getprop",
+        "ro.build.fingerprint"
+      ],
+      "exitCode": 0,
+      "output": "Android/sdk_slim_x86_64/emulator64_x86_64:14/UE1A.230829.036.A1/11228894:userdebug/test-keys"
+    },
+    {
+      "args": [
+        "shell",
+        "getprop",
+        "ro.crypto.state"
+      ],
+      "exitCode": 0,
+      "output": "encrypted"
+    },
+    {
+      "args": [
+        "shell",
+        "getprop",
+        "ro.crypto.type"
+      ],
+      "exitCode": 0,
+      "output": "file"
+    },
+    {
+      "args": [
+        "shell",
+        "getenforce"
+      ],
+      "exitCode": 0,
+      "output": "Enforcing"
+    }
+  ]
+}

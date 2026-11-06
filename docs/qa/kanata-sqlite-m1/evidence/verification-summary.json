@@ -1,0 +1,48 @@
+{
+  "baseline": "bda1a58c242585864d9d97d0daad9e840d8f73b5",
+  "branch": "M",
+  "m1Acceptance": "BLOCKED",
+  "m0HistoricalAcceptance": "PASS",
+  "m2Started": false,
+  "check": {
+    "exitCode": 0,
+    "nodeTests": 605,
+    "componentTests": 392,
+    "componentFiles": 42,
+    "lintErrors": 0,
+    "existingLintWarnings": 42,
+    "typecheck": "PASS",
+    "build": "PASS"
+  },
+  "schemaTests": 15,
+  "emptyUpgradeFaultPoints": 202,
+  "hostSqlcipher": "4.12.0 community",
+  "schemaSha256": "0f9bda8f7fb594adcbba1860e05922f5936e61bc876b5c632cab086baf18cfbe",
+  "fixtureSha256": "12173bac784fc02bd14b4ded8b6b47cd097897e3717350e99c104ea6f7d984c1",
+  "schemaObjects": {
+    "tables": 47,
+    "triggers": 114,
+    "explicitIndexes": 36
+  },
+  "android": {
+    "build": "PASS",
+    "instrumentation": "NOT_RUN",
+    "deviceGate": "BLOCKED",
+    "reason": "Emulator startup disk-space preflight failed"
+  },
+  "filesSha256": {
+    "docs/qa/kanata-sqlite-m1/SqlCipherM1SchemaTest.java": "b769960ec93dfb1275ee344d4415592ad31636ed17eb1fa7bfc0c6289b8b6255",
+    "docs/qa/kanata-sqlite-m1/prepare-android.mjs": "acbeacd6eb4637aa5c6c026fbc495278ee4e81ad5d51bebcafb05278305bd0ec",
+    "docs/qa/kanata-sqlite-m1/sqlcipher-connection.py": "2fac89ed21c39f5014076e5d8b96332d1a076b462df0416e897163310e0b9c18",
+    "docs/qa/kanata-sqlite-m1/verify-android.mjs": "a9ee4a8a13dc0b76f17ccb688c985e94203efcb6d8a9037ed00a40b58c05353d",
+    "docs/qa/kanata-sqlite-m1/verify-sqlcipher.mjs": "527f73f212ccfd28510e7ed64542fb9978e8dc5e28603b3cf8ca7d569f7fa834",
+    "docs/qa/kanata-sqlite-m1/write-catalog.mjs": "669bb6b98ecd0277f63f388e778b90ce0f7300f3c62b3546a82f3f8667560e54",
+    "src/features/chat/storage/sqlite/kanataSchema.js": "d86536b886f5ead02c3aea99d6e91ee1b9c74a678a7dd40b765cdfc12f77685e",
+    "src/features/chat/storage/sqlite/kanataSchemaMigrator.js": "63c06f783fcd74f93487355bfa0d4bf0367f35732c2aeb8d9125f0c53beea301",
+    "src/features/chat/storage/sqlite/kanataSchemaTypes.d.ts": "ae120889d6182bffd67d3fc2a3a7b3e6303dc40db1a75730f7c0871893d8d509",
+    "tests/helpers/kanataSqliteFixture.js": "dbcdbeccc97164cc2d51049c19f1243ae11465f6aef6e4803bd53fd37acec246",
+    "tests/helpers/kanataSqliteHarness.js": "48a2aea1a565c19f55d127e9ee7c87d7b77de378fa81506b4333567345eda25d",
+    "tests/kanataSqliteSchema.test.js": "e95b8ccabcf1b41423e6a5401f41d4623cf643f1665e3d09904e42ebdf5f41e4",
+    "tests/types/kanataSqlite.ts": "677bb479abc2d098402a64d0ca9f16040837684f65403d30a4bf6e17c0533503"
+  }
+}

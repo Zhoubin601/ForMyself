@@ -1,0 +1,11 @@
+{
+  "status": "BUILD_PASS_DEVICE_BLOCKED",
+  "capacitor": "8.4.1",
+  "sqlcipher": "4.17.0",
+  "sha256": {
+    "app-debug.apk": "51d302da61d6ba0234eed08bd0006f5b9fb72d773f2ac2ade141b07d9a6a7d20",
+    "app-debug-androidTest.apk": "99f18dcd22e69ac1e71ac7c7426efded65e7fbc63b22b99649462759717fc226"
+  },
+  "nativeInstrumentation": "NOT_RUN",
+  "reason": "Emulator disk-space preflight failed; no booted device"
+}

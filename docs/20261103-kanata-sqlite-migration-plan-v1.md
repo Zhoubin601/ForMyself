@@ -10,7 +10,8 @@
 
 - [x] M 分支已创建，起点为 Kanata HEAD：73158a058d35124e1572b2161fe0f364f2140c48。
 - [x] M0 隔离技术验证通过。冻结候选、目标模拟器实测和证据见 [M0 会话与门禁](20261104-kanata-sqlite-m0-direct-gate-v1.md)。
-- [ ] M1–M7 待实施与各阶段验收。
+- [x] M1 Schema、约束与版本升级通过，Android新增结构测试已在本轮隔离临时AVD实跑。见[M1验收v2](20261106-kanata-sqlite-m1-report-v2.md)；[v1磁盘BLOCKED历史](20261106-kanata-sqlite-m1-report-v1.md)保留。
+- [ ] M2–M7 待实施与各阶段验收；尚未切换生产数据访问。
 - [ ] Kanata 原 P7 当前仍为 No-Go；在 M 合并前，Kanata 分支保持为 M 的稳定基线，不在 Kanata 上并行实施 SQLite 改造。
 - [ ] M 完成并通过独立验收后，才允许合并回 Kanata；合并之后继续 P7，不重置或跳过原 P7 门禁。
 

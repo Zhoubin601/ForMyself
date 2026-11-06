@@ -1,0 +1,26 @@
+node:internal/errors:985
+  const err = new Error(message);
+              ^
+
+Error: Command failed: /workspace/ForMyself/work/m0/android-sdk/platform-tools/adb -s emulator-5580 emu avd name
+error: could not connect to TCP port 5580: Connection refused
+
+    at genericNodeError (node:internal/errors:985:15)
+    at wrappedFn (node:internal/errors:539:14)
+    at checkExecSyncError (node:child_process:942:11)
+    at execFileSync (node:child_process:978:15)
+    at call (file:///workspace/ForMyself/docs/qa/kanata-sqlite-m1/verify-android.mjs:17:18)
+    at file:///workspace/ForMyself/docs/qa/kanata-sqlite-m1/verify-android.mjs:18:4 {
+  status: 1,
+  signal: null,
+  output: [
+    null,
+    '',
+    'error: could not connect to TCP port 5580: Connection refused\n'
+  ],
+  pid: 8614,
+  stdout: '',
+  stderr: 'error: could not connect to TCP port 5580: Connection refused\n'
+}
+
+Node.js v24.19.0

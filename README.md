@@ -1,6 +1,6 @@
 # ForMyself — 我的自留地
 
-SQLite 迁移按 [彼方 SQLite 迁移计划 M v1](docs/20261103-kanata-sqlite-migration-plan-v1.md) 在 M 分支执行。M 从 Kanata 的 `73158a0` 创建。M0 隔离技术验证已通过，M1 尚未开始。选型、冻结参数和实测见 [M0 放行报告](docs/20261104-kanata-sqlite-m0-direct-gate-v1.md)，云端接续见 [M0 交接](docs/20261104-kanata-sqlite-m0-handoff-v1.md)。
+SQLite 迁移按 [彼方 SQLite 迁移计划 M v1](docs/20261103-kanata-sqlite-migration-plan-v1.md) 在 M 分支执行。M 从 Kanata 的 `73158a0` 创建。M0已通过，选型与实测见 [M0放行](docs/20261104-kanata-sqlite-m0-direct-gate-v1.md)。2026-11-06：M1 Schema、约束与事务式升级器通过主机及Android SQLCipher4.17验证，原设备磁盘阻塞已通过独立临时卷解除，M2未开始。当前入口为[M1验收v2](docs/20261106-kanata-sqlite-m1-report-v2.md)，原BLOCKED记录保留。
 
 当前分支路线：Kanata（P7 No-Go 稳定基线）→ M（M0–M7 SQLite 迁移）→ M7 通过并审查后合并回 Kanata → 继续 P7。M 未完成前不在 Kanata 并行修改同一套存储模块；不自动合并 main 或发布。
 

@@ -1,0 +1,14 @@
+INFO         | Android emulator version 37.2.13.0 (build_id 16740729) (CL:N/A)
+INFO         | Graphics backend: gfxstream
+INFO         | Found systemPath /workspace/ForMyself/work/m0/android-sdk/system-images/android-34/aosp_atd/x86_64/
+INFO         | Feature 'Vulkan' (21) is overridden to 'disabled'
+INFO         | Guest GLES Driver: Auto (ext controls)
+INFO         | emuglConfig_init: vulkan_mode_selected:swiftshader gles_mode_selected:swiftshader
+INFO         | Checking system compatibility:
+INFO         |   Checking: hasSufficientDiskSpace
+INFO         |      Error: Your device does not have enough disk space to run avd: `kanata_m0_api34`
+INFO         |   Checking: hasSufficientHwGpu
+INFO         |      Ok: Hardware GPU compatibility checks are not required
+INFO         |   Checking: hasSufficientSystem
+INFO         |      Warning: AVD 'kanata_m0_api34' will run more smoothly with 4 CPU cores (currently using 3)
+FATAL        | Your device does not have enough disk space to run avd: `kanata_m0_api34`.

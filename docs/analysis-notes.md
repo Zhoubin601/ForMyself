@@ -1299,3 +1299,10 @@ planMessageArchive现有Map<string, Message[]>/逐组件对象数组/归档Set�
 ## 2026-11-03 M0 模拟器补测
 
 软件模拟器成功完整启动，FBE encrypted/file且SELinux Enforcing。两套原生SQLCipher4.17测试通过；首次真实运行暴露QA WAL execSQL错误，修正API并重测。WebView113在QA App及无SQLite的系统HTMLViewer均SIGTRAP，桥接仍阻塞，不能归罪SQLite或宣称插件已完整通过。真机性能/密钥生命周期仍BLOCKED。
+# 2026-11-06 M1 自查结论
+
+补测覆盖：已发现独立/tmp挂载并实际启动API34隔离AVD，M1原生SQLCipher4.17结构/回滚/完整性/关闭重开通过，解除原BLOCKED。第一次真实对照因错误预期android_metadata为1而失败，实际4.17检测codec跳过首次locale初始化；纠正为验证空库为0，保留失败。连接约定明确二进制排序和池级外键API，未修改DDL或放宽未知结构拒绝。最新完整check605/392通过，M1 PASS，接续以20261106-kanata-sqlite-m1-report-v2.md为准；M2未开始。
+
+当前47表、114触发器、36显式索引以真实领域类型/校验器为准，版本链001基础与所有防护、002访问索引。DDL/日志/版本单事务升级，结构或日志不完整不初始化覆盖。全部202个空库升级写入点及6种已有v1故障验证回滚/重试；实际SIGKILL在未提交DDL中断，重开无半套结构。全局ID使用显式RAISE，避免外层OR IGNORE/REPLACE覆盖默认UNIQUE行为；来源原revision保留，可选布尔缺省用NULL避免丢失旧语义。角色绑定失效ID是现有契约，不随意补外键改变产品行为。
+
+两轮审查修复及证据完整记录于20261106-kanata-sqlite-m1-report-v1.md。完整check605/392通过，主机SQLCipher通过，Android原生新测试已编译但因云磁盘预检未启动AVD，M1整体BLOCKED。M0原放行不受影响；不把裸原型性能套给含完整FK/触发器的Schema。生产Store、旧文件、主密码/恢复/备份无改动，M2未开始。

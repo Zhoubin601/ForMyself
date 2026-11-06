@@ -1,0 +1,2 @@
+# Preserve captured terminal output; project source/reports keep normal whitespace checks.
+*.txt -text -whitespace

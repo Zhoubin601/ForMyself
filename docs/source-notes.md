@@ -1186,3 +1186,10 @@ raw/完整需求清单.txt 4.1/4.4/8.3及最新连续执行v3驱动当前实现�
 - 本轮基线为远端 M 的 `98fd0a3`，使用 [M0 交接](20261104-kanata-sqlite-m0-handoff-v1.md)、[迁移计划](20261103-kanata-sqlite-migration-plan-v1.md)、锁定 SQLite 插件的 Android 源码及 SQLCipher 4.17.0 AAR 的 Java 接口。设备与验证证据见 [Windows 接续记录](20261104-kanata-sqlite-m0-windows-v1.md)。
 - 用户随后指定用主工作区 `raw/Android - 快捷方式.lnk` 所指模拟器承担 M0 设备验收。只读解析目标 `E:\Android`，使用其 SDK 和任务专用 `kanata_m0_api34`。测试记录来自 `dataset.mjs`，原始备份未读取。
 - 会话与 KDF 校准依据为现有 `src/services/masterPasswordSecurity.js`、M0 便携信封、锁定 Capacitor 的 Android 生命周期接口与 SQLCipher 4.17.0 字节密钥接口。来源和结果收录于 [M0 会话与门禁](20261104-kanata-sqlite-m0-direct-gate-v1.md)。
+# 2026-11-06 M1 来源
+
+- 后续设备补测：本轮独立临时卷的kanata_m1_schema_api34，实际API34/FBE/SELinux Enforcing；SQLCipher4.17.0 community运行输出、JUnit/数据集/Schema/APK指纹见docs/qa/kanata-sqlite-m1/evidence/android-closure。旧磁盘失败与错误对照保留；不是复用M0设备成绩。
+
+- 基线：origin/M bda1a58；docs/20261103-kanata-sqlite-migration-plan-v1.md 的 M1 五项门禁；M0 direct-gate 与 target-emulator 为已提交历史证据，本轮仅重跑离线核验器。
+- 当前源码：src/features/chat/domain/kanataTypes.d.ts、kanataValidation.js；experience/experienceValidation.js、kanataEvents.js、kanataMemory.js；autonomy/autonomyValidation.js；platform/ai/completionTypes.d.ts；storage/kanataRepository.js；application/contracts.d.ts。
+- 开发规范：根 AGENTS.md、架构接口与Agent开发说明书.md；连续执行计划 v3 保留全部 P7 门槛。package-lock 的 Capacitor 为8.4.1，M0冻结 SQLCipher4.17.0；本轮不升级生产依赖。

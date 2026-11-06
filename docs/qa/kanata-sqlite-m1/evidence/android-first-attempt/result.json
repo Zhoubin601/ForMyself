@@ -1,0 +1,12 @@
+{
+  "status": "FAIL",
+  "avd": "kanata_m1_schema_api34",
+  "api": 34,
+  "apkSha256": "51d302da61d6ba0234eed08bd0006f5b9fb72d773f2ac2ade141b07d9a6a7d20",
+  "testApkSha256": "0e8db2815ebeadbeb4039fe6af3baf8ee3aa452142ec11e04c37fd0649e717e0",
+  "schemaSha256": "0f9bda8f7fb594adcbba1860e05922f5936e61bc876b5c632cab086baf18cfbe",
+  "fixtureSha256": "12173bac784fc02bd14b4ded8b6b47cd097897e3717350e99c104ea6f7d984c1",
+  "jsMigrator": "NOT_TESTED_BY_NATIVE_JUNIT",
+  "productionIntegration": "NOT_CONNECTED",
+  "dir": "/workspace/ForMyself/work/m0/m1-android-K1yuJ9"
+}

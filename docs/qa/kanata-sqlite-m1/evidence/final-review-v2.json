@@ -1,0 +1,10 @@
+{
+  "status": "PASS",
+  "filesReviewed": 56,
+  "links": "PASS",
+  "whitespace": "PASS",
+  "credentialPatterns": "no findings",
+  "artifactScope": "no database/APK/key binaries",
+  "sourceHashes": "match v2 receipt",
+  "productionAccessPaths": "unchanged"
+}

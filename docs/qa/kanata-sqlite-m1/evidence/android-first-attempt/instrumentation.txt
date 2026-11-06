@@ -1,0 +1,51 @@
+INSTRUMENTATION_STATUS: class=com.formyself.qa.m0.SqlCipherM1SchemaTest
+INSTRUMENTATION_STATUS: current=1
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=1
+INSTRUMENTATION_STATUS: stream=
+com.formyself.qa.m0.SqlCipherM1SchemaTest:
+INSTRUMENTATION_STATUS: test=schemaConstraintsRollbackAndReopen
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: stream=M1_SCHEMA_SHA256=0f9bda8f7fb594adcbba1860e05922f5936e61bc876b5c632cab086baf18cfbe
+M1_FIXTURE_SHA256=12173bac784fc02bd14b4ded8b6b47cd097897e3717350e99c104ea6f7d984c1
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: class=com.formyself.qa.m0.SqlCipherM1SchemaTest
+INSTRUMENTATION_STATUS: current=1
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=1
+INSTRUMENTATION_STATUS: stack=java.lang.AssertionError: expected:<1> but was:<0>
+	at org.junit.Assert.fail(Assert.java:89)
+	at org.junit.Assert.failNotEquals(Assert.java:835)
+	at org.junit.Assert.assertEquals(Assert.java:647)
+	at org.junit.Assert.assertEquals(Assert.java:633)
+	at com.formyself.qa.m0.SqlCipherM1SchemaTest.schemaConstraintsRollbackAndReopen(SqlCipherM1SchemaTest.java:64)
+
+INSTRUMENTATION_STATUS: stream=
+Error in schemaConstraintsRollbackAndReopen(com.formyself.qa.m0.SqlCipherM1SchemaTest):
+java.lang.AssertionError: expected:<1> but was:<0>
+	at org.junit.Assert.fail(Assert.java:89)
+	at org.junit.Assert.failNotEquals(Assert.java:835)
+	at org.junit.Assert.assertEquals(Assert.java:647)
+	at org.junit.Assert.assertEquals(Assert.java:633)
+	at com.formyself.qa.m0.SqlCipherM1SchemaTest.schemaConstraintsRollbackAndReopen(SqlCipherM1SchemaTest.java:64)
+
+INSTRUMENTATION_STATUS: test=schemaConstraintsRollbackAndReopen
+INSTRUMENTATION_STATUS_CODE: -2
+INSTRUMENTATION_RESULT: stream=
+
+Time: 6.178
+There was 1 failure:
+1) schemaConstraintsRollbackAndReopen(com.formyself.qa.m0.SqlCipherM1SchemaTest)
+java.lang.AssertionError: expected:<1> but was:<0>
+	at org.junit.Assert.fail(Assert.java:89)
+	at org.junit.Assert.failNotEquals(Assert.java:835)
+	at org.junit.Assert.assertEquals(Assert.java:647)
+	at org.junit.Assert.assertEquals(Assert.java:633)
+	at com.formyself.qa.m0.SqlCipherM1SchemaTest.schemaConstraintsRollbackAndReopen(SqlCipherM1SchemaTest.java:64)
+
+FAILURES!!!
+Tests run: 1,  Failures: 1
+
+
+INSTRUMENTATION_CODE: -1

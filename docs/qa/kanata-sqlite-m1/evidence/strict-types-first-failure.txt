@@ -1,0 +1,45 @@
+
+> formyself-app@0.0.0 typecheck
+> vue-tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.contracts.json
+
+src/features/chat/storage/sqlite/kanataSchema.js(4,12): error TS7006: Parameter 'name' implicitly has an 'any' type.
+src/features/chat/storage/sqlite/kanataSchema.js(5,14): error TS7006: Parameter 'name' implicitly has an 'any' type.
+src/features/chat/storage/sqlite/kanataSchema.js(6,18): error TS7006: Parameter 'name' implicitly has an 'any' type.
+src/features/chat/storage/sqlite/kanataSchema.js(7,14): error TS7006: Parameter 'name' implicitly has an 'any' type.
+src/features/chat/storage/sqlite/kanataSchema.js(8,22): error TS7006: Parameter 'name' implicitly has an 'any' type.
+src/features/chat/storage/sqlite/kanataSchema.js(8,28): error TS7006: Parameter 'values' implicitly has an 'any' type.
+src/features/chat/storage/sqlite/kanataSchema.js(8,93): error TS7006: Parameter 'v' implicitly has an 'any' type.
+src/features/chat/storage/sqlite/kanataSchema.js(9,15): error TS7006: Parameter 'name' implicitly has an 'any' type.
+src/features/chat/storage/sqlite/kanataSchema.js(14,13): error TS7006: Parameter 'columns' implicitly has an 'any' type.
+src/features/chat/storage/sqlite/kanataSchema.js(14,22): error TS7006: Parameter 'table' implicitly has an 'any' type.
+src/features/chat/storage/sqlite/kanataSchema.js(15,17): error TS7006: Parameter 'column' implicitly has an 'any' type.
+src/features/chat/storage/sqlite/kanataSchema.js(15,25): error TS7006: Parameter 'table' implicitly has an 'any' type.
+src/features/chat/storage/sqlite/kanataSchema.js(23,16): error TS7006: Parameter 'name' implicitly has an 'any' type.
+src/features/chat/storage/sqlite/kanataSchema.js(23,22): error TS7006: Parameter 'columns' implicitly has an 'any' type.
+src/features/chat/storage/sqlite/kanataSchema.js(24,24): error TS7006: Parameter 'column' implicitly has an 'any' type.
+src/features/chat/storage/sqlite/kanataSchema.js(25,57): error TS7006: Parameter 'c' implicitly has an 'any' type.
+src/features/chat/storage/sqlite/kanataSchema.js(27,17): error TS7006: Parameter 'name' implicitly has an 'any' type.
+src/features/chat/storage/sqlite/kanataSchema.js(27,23): error TS7006: Parameter 'columns' implicitly has an 'any' type.
+src/features/chat/storage/sqlite/kanataSchema.js(31,18): error TS7006: Parameter 'name' implicitly has an 'any' type.
+src/features/chat/storage/sqlite/kanataSchema.js(31,24): error TS7006: Parameter 'timing' implicitly has an 'any' type.
+src/features/chat/storage/sqlite/kanataSchema.js(31,32): error TS7006: Parameter 'tableName' implicitly has an 'any' type.
+src/features/chat/storage/sqlite/kanataSchema.js(31,43): error TS7006: Parameter 'body' implicitly has an 'any' type.
+src/features/chat/storage/sqlite/kanataSchema.js(32,17): error TS7006: Parameter 'condition' implicitly has an 'any' type.
+src/features/chat/storage/sqlite/kanataSchema.js(32,28): error TS7006: Parameter 'code' implicitly has an 'any' type.
+src/features/chat/storage/sqlite/kanataSchema.js(33,16): error TS7006: Parameter 'name' implicitly has an 'any' type.
+src/features/chat/storage/sqlite/kanataSchema.js(33,22): error TS7006: Parameter 'on' implicitly has an 'any' type.
+src/features/chat/storage/sqlite/kanataSchema.js(33,26): error TS7006: Parameter 'columns' implicitly has an 'any' type.
+src/features/chat/storage/sqlite/kanataSchema.js(143,15): error TS7006: Parameter 'name' implicitly has an 'any' type.
+src/features/chat/storage/sqlite/kanataSchema.js(143,21): error TS7006: Parameter 'ownerColumn' implicitly has an 'any' type.
+src/features/chat/storage/sqlite/kanataSchema.js(143,34): error TS7006: Parameter 'ownerTable' implicitly has an 'any' type.
+src/features/chat/storage/sqlite/kanataSchema.js(143,46): error TS7006: Parameter 'targetColumn' implicitly has an 'any' type.
+src/features/chat/storage/sqlite/kanataSchema.js(143,60): error TS7006: Parameter 'targetTable' implicitly has an 'any' type.
+src/features/chat/storage/sqlite/kanataSchema.js(143,73): error TS7006: Parameter 'other' implicitly has an 'any[]' type.
+src/features/chat/storage/sqlite/kanataSchemaMigrator.js(9,15): error TS7006: Parameter 'condition' implicitly has an 'any' type.
+src/features/chat/storage/sqlite/kanataSchemaMigrator.js(9,26): error TS7006: Parameter 'code' implicitly has an 'any' type.
+src/features/chat/storage/sqlite/kanataSchemaMigrator.js(10,18): error TS7006: Parameter 'migration' implicitly has an 'any' type.
+src/features/chat/storage/sqlite/kanataSchemaMigrator.js(11,19): error TS7006: Parameter 'sql' implicitly has an 'any' type.
+src/features/chat/storage/sqlite/kanataSchemaMigrator.js(12,19): error TS7006: Parameter 'version' implicitly has an 'any' type.
+src/features/chat/storage/sqlite/kanataSchemaMigrator.js(26,29): error TS7006: Parameter 'sql' implicitly has an 'any' type.
+src/features/chat/storage/sqlite/kanataSchemaMigrator.js(26,34): error TS7006: Parameter 'key' implicitly has an 'any' type.
+src/features/chat/storage/sqlite/kanataSchemaMigrator.js(36,35): error TS7006: Parameter 'current' implicitly has an 'any' type.
