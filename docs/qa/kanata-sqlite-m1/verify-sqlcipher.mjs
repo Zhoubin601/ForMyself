@@ -3,7 +3,7 @@ import {spawn} from 'node:child_process'
 import {createInterface} from 'node:readline'
 import {createHash} from 'node:crypto'
 import os from 'node:os'
-import {KANATA_SCHEMA_MIGRATIONS as migrations} from '../../../src/features/chat/storage/sqlite/kanataSchema.js'
+import {KANATA_SCHEMA_MIGRATIONS as migrations,KANATA_SCHEMA_VERSION as version} from '../../../src/features/chat/storage/sqlite/kanataSchema.js'
 import {migrateKanataSchema} from '../../../src/features/chat/storage/sqlite/kanataSchemaMigrator.js'
 import {kanataSqliteFixture,kanataFixtureCommands,insertSql} from '../../../tests/helpers/kanataSqliteFixture.js'
 
@@ -25,7 +25,7 @@ const checks=[]
 try {
   const cipherVersion=(await tx.query('PRAGMA cipher_version'))[0].cipher_version
   const sqliteVersion=(await tx.query('SELECT sqlite_version() AS version'))[0].version
-  assert.equal((await migrateKanataSchema(connection)).version,2);checks.push('empty-to-latest')
+  assert.equal((await migrateKanataSchema(connection)).version,version);checks.push('empty-to-latest')
   const data=kanataSqliteFixture(),commands=kanataFixtureCommands(data),w=data.worlds[0].id,w2=data.worlds[1].id,c=data.conversations[0].id
   await connection.transaction(async()=>{for(const s of commands)await tx.execute(s.sql,s.parameters)});checks.push('actual-domain-fixture')
   const before=executionCount
@@ -46,7 +46,7 @@ try {
   await call('reopen');await migrateKanataSchema(connection);checks.push('encrypted-reopen')
   await tx.execute('PRAGMA user_version=999');const writes=executionCount
   await assert.rejects(migrateKanataSchema(connection),e=>e.code==='KANATA_SCHEMA_FUTURE_VERSION')
-  assert.equal(executionCount,writes);await tx.execute('PRAGMA user_version=2');checks.push('future-version-zero-write')
+  assert.equal(executionCount,writes);await tx.execute(`PRAGMA user_version=${version}`);checks.push('future-version-zero-write')
   assert.deepEqual(await tx.query('PRAGMA foreign_key_check'),[])
   assert.equal((await tx.query('PRAGMA integrity_check'))[0].integrity_check,'ok')
   assert.deepEqual(await tx.query('PRAGMA cipher_integrity_check'),[])

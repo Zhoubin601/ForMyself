@@ -5,6 +5,11 @@ declare const connection: KanataSchemaConnection
 declare const transaction: KanataSchemaTransaction
 const migrate: KanataSchemaMigrator = migrateKanataSchema
 const result: Promise<KanataSchemaResult> = migrate(connection)
+migrate(connection,{now:()=>Date.UTC(2026,10,7)})
+// @ts-expect-error UTC wall clock returns a number, never an ISO string
+migrate(connection,{now:()=>new Date().toISOString()})
+// @ts-expect-error a built timestamp string cannot be used as an execution clock
+migrate(connection,{now:'2026-11-07'})
 const ordered: readonly KanataSchemaMigration[] = KANATA_SCHEMA_MIGRATIONS
 void result
 void ordered

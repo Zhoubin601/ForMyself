@@ -1,0 +1,112 @@
+✖ R1-01 成功版本保存真实注入UTC毫秒，回拨不伪造单调时间，幂等不重写 (23.297827ms)
+✖ R1-02 001/002原checksum保持，有数据旧库未知旧时间不回填，新增版本使用本次真实时间 (74.037441ms)
+✖ R1-03 时钟非法/抛错、提交失败不能留下成功时间，重启可重试 (12.618293ms)
+✔ R2 NOT-A-DEFECT：实例空地点可往返；NULL/缺失拒绝，日程和事件位置分别按领域处理 (52.968632ms)
+✖ R3-01 连续和有缺口的真实快照可表达；同世界错误会话/发言角色/非文本内容拒绝 (37.803072ms)
+✖ R4-01 审计已提交后普通UPDATE/DELETE及OR REPLACE/IGNORE均不得篡改或重复 (31.782324ms)
+✖ R4-02 保留已有删除隐私语义：仅允许当前已删除记录的确定性不可逆正文脱敏 (33.902127ms)
+✖ R3/R4 旧库有冲突必须零修改拒绝，不自动合并/补造历史 (37.714188ms)
+✔ R4 业务值与审计同事务回滚；显式缺少审计的业务命令责任仍属于M2/M3 (52.095737ms)
+✔ R6 NOT-A-DEFECT：NO ACTION保留引用，未引用叶子可删，延迟FK与回滚不留悬挂 (39.282209ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 3
+ℹ fail 7
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 518.778651
+
+✖ failing tests:
+
+test at tests/kanataSqliteRemediation.test.js:19:1
+✖ R1-01 成功版本保存真实注入UTC毫秒，回拨不伪造单调时间，幂等不重写 (23.297827ms)
+  Error: no such table: schema_migration_applications
+      at q (file:///workspace/ForMyself/work/m0/m1-r-20261107/before/tests/kanataSqliteRemediation.test.js:13:28)
+      at TestContext.<anonymous> (file:///workspace/ForMyself/work/m0/m1-r-20261107/before/tests/kanataSqliteRemediation.test.js:22:19)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    code: 'ERR_SQLITE_ERROR',
+    errcode: 1,
+    errstr: 'SQL logic error'
+  }
+
+test at tests/kanataSqliteRemediation.test.js:32:1
+✖ R1-02 001/002原checksum保持，有数据旧库未知旧时间不回填，新增版本使用本次真实时间 (74.037441ms)
+  Error: no such table: schema_migration_applications
+      at q (file:///workspace/ForMyself/work/m0/m1-r-20261107/before/tests/kanataSqliteRemediation.test.js:13:28)
+      at TestContext.<anonymous> (file:///workspace/ForMyself/work/m0/m1-r-20261107/before/tests/kanataSqliteRemediation.test.js:39:17)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    code: 'ERR_SQLITE_ERROR',
+    errcode: 1,
+    errstr: 'SQL logic error'
+  }
+
+test at tests/kanataSqliteRemediation.test.js:45:1
+✖ R1-03 时钟非法/抛错、提交失败不能留下成功时间，重启可重试 (12.618293ms)
+  AssertionError [ERR_ASSERTION]: Missing expected rejection.
+      at async TestContext.<anonymous> (file:///workspace/ForMyself/work/m0/m1-r-20261107/before/tests/kanataSqliteRemediation.test.js:48:3)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    operator: 'rejects',
+    diff: 'simple'
+  }
+
+test at tests/kanataSqliteRemediation.test.js:69:1
+✖ R3-01 连续和有缺口的真实快照可表达；同世界错误会话/发言角色/非文本内容拒绝 (37.803072ms)
+  AssertionError [ERR_ASSERTION]: Missing expected exception.
+      at TestContext.<anonymous> (file:///workspace/ForMyself/work/m0/m1-r-20261107/before/tests/kanataSqliteRemediation.test.js:74:10)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: /KANATA_AUDIT_SNAPSHOT_INVALID/,
+    operator: 'throws',
+    diff: 'simple'
+  }
+
+test at tests/kanataSqliteRemediation.test.js:85:1
+✖ R4-01 审计已提交后普通UPDATE/DELETE及OR REPLACE/IGNORE均不得篡改或重复 (31.782324ms)
+  AssertionError [ERR_ASSERTION]: Missing expected exception.
+      at TestContext.<anonymous> (file:///workspace/ForMyself/work/m0/m1-r-20261107/before/tests/kanataSqliteRemediation.test.js:89:10)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: /KANATA_AUDIT_IMMUTABLE/,
+    operator: 'throws',
+    diff: 'simple'
+  }
+
+test at tests/kanataSqliteRemediation.test.js:98:1
+✖ R4-02 保留已有删除隐私语义：仅允许当前已删除记录的确定性不可逆正文脱敏 (33.902127ms)
+  AssertionError [ERR_ASSERTION]: Missing expected exception.
+      at TestContext.<anonymous> (file:///workspace/ForMyself/work/m0/m1-r-20261107/before/tests/kanataSqliteRemediation.test.js:101:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: /KANATA_AUDIT_IMMUTABLE/,
+    operator: 'throws',
+    diff: 'simple'
+  }
+
+test at tests/kanataSqliteRemediation.test.js:111:1
+✖ R3/R4 旧库有冲突必须零修改拒绝，不自动合并/补造历史 (37.714188ms)
+  AssertionError [ERR_ASSERTION]: Missing expected rejection.
+      at async TestContext.<anonymous> (file:///workspace/ForMyself/work/m0/m1-r-20261107/before/tests/kanataSqliteRemediation.test.js:123:34)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    operator: 'rejects',
+    diff: 'simple'
+  }

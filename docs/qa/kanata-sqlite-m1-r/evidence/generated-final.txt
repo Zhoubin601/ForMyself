@@ -1,0 +1,1 @@
+{"fieldRows":347,"foreignKeyRelations":108,"root":"docs/qa/kanata-sqlite-m1-r/generated"}

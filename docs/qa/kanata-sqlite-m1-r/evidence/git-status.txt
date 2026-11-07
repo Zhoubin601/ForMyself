@@ -1,0 +1,21 @@
+## M
+ M README.md
+ M docs/20261103-kanata-sqlite-migration-plan-v1.md
+ M docs/plan.md
+ M docs/qa/kanata-sqlite-m1/verify-sqlcipher.mjs
+ M docs/source-notes.md
+ M src/application/contracts.d.ts
+ M src/features/chat/storage/sqlite/kanataSchema.js
+ M src/features/chat/storage/sqlite/kanataSchemaMigrator.js
+ M src/features/chat/storage/sqlite/kanataSchemaTypes.d.ts
+ M tests/kanataSqliteSchema.test.js
+ M tests/types/kanataSqlite.ts
+ M "\346\236\266\346\236\204\346\216\245\345\217\243\344\270\216Agent\345\274\200\345\217\221\350\257\264\346\230\216\344\271\246.md"
+?? docs/20261107-kanata-sqlite-m1-r-audit-v1.md
+?? docs/20261107-kanata-sqlite-m1-r-field-mapping-v1.md
+?? docs/20261107-kanata-sqlite-m1-r-foreign-keys-v1.md
+?? docs/qa/kanata-sqlite-m1-r/
+?? src/features/chat/storage/sqlite/kanataSchemaHardening.js
+?? tests/helpers/kanataSqliteLegacy.js
+?? tests/kanataSqliteMapping.test.js
+?? tests/kanataSqliteRemediation.test.js

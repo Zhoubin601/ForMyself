@@ -1,0 +1,2002 @@
+[
+  {
+    "caseId": "R6-PRAGMA-001",
+    "parent": "world_identities",
+    "child": "worlds",
+    "id": 0,
+    "columns": [
+      "id",
+      "identity_id"
+    ],
+    "targetColumns": [
+      "world_id",
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "关系存在时拒绝悬挂；可在领域允许时先显式解绑/删除自有明细，再删除无引用父项。",
+    "evidence": "PRAGMA foreign_key_list(worlds)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-002",
+    "parent": "card_versions",
+    "child": "character_cards",
+    "id": 0,
+    "columns": [
+      "id",
+      "current_version_id"
+    ],
+    "targetColumns": [
+      "card_id",
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "原卡版本与实例锁定版本分离；不能因更新当前版本删掉既有来源。",
+    "evidence": "PRAGMA foreign_key_list(character_cards)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-003",
+    "parent": "character_cards",
+    "child": "card_versions",
+    "id": 0,
+    "columns": [
+      "card_id"
+    ],
+    "targetColumns": [
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "原卡版本与实例锁定版本分离；不能因更新当前版本删掉既有来源。",
+    "evidence": "PRAGMA foreign_key_list(card_versions)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-004",
+    "parent": "dataset_metadata",
+    "child": "world_identities",
+    "id": 0,
+    "columns": [
+      "user_id"
+    ],
+    "targetColumns": [
+      "user_id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "关系存在时拒绝悬挂；可在领域允许时先显式解绑/删除自有明细，再删除无引用父项。",
+    "evidence": "PRAGMA foreign_key_list(world_identities)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-005",
+    "parent": "worlds",
+    "child": "world_identities",
+    "id": 1,
+    "columns": [
+      "world_id"
+    ],
+    "targetColumns": [
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "世界归档/隐藏不擦除实例、会话及历史；物删需显式处理引用。",
+    "evidence": "PRAGMA foreign_key_list(world_identities)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-006",
+    "parent": "card_versions",
+    "child": "character_instances",
+    "id": 0,
+    "columns": [
+      "card_id",
+      "card_version_id"
+    ],
+    "targetColumns": [
+      "card_id",
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "原卡版本与实例锁定版本分离；不能因更新当前版本删掉既有来源。",
+    "evidence": "PRAGMA foreign_key_list(character_instances)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-007",
+    "parent": "worlds",
+    "child": "character_instances",
+    "id": 1,
+    "columns": [
+      "world_id"
+    ],
+    "targetColumns": [
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "世界归档/隐藏不擦除实例、会话及历史；物删需显式处理引用。",
+    "evidence": "PRAGMA foreign_key_list(character_instances)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-008",
+    "parent": "character_instances",
+    "child": "participants",
+    "id": 0,
+    "columns": [
+      "world_id",
+      "instance_id"
+    ],
+    "targetColumns": [
+      "world_id",
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "关系存在时拒绝悬挂；可在领域允许时先显式解绑/删除自有明细，再删除无引用父项。",
+    "evidence": "PRAGMA foreign_key_list(participants)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-009",
+    "parent": "world_identities",
+    "child": "participants",
+    "id": 1,
+    "columns": [
+      "world_id",
+      "identity_id"
+    ],
+    "targetColumns": [
+      "world_id",
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "关系存在时拒绝悬挂；可在领域允许时先显式解绑/删除自有明细，再删除无引用父项。",
+    "evidence": "PRAGMA foreign_key_list(participants)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-010",
+    "parent": "worlds",
+    "child": "participants",
+    "id": 2,
+    "columns": [
+      "world_id"
+    ],
+    "targetColumns": [
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "世界归档/隐藏不擦除实例、会话及历史；物删需显式处理引用。",
+    "evidence": "PRAGMA foreign_key_list(participants)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-011",
+    "parent": "worlds",
+    "child": "conversations",
+    "id": 0,
+    "columns": [
+      "world_id"
+    ],
+    "targetColumns": [
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "世界归档/隐藏不擦除实例、会话及历史；物删需显式处理引用。",
+    "evidence": "PRAGMA foreign_key_list(conversations)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-012",
+    "parent": "participants",
+    "child": "conversation_participants",
+    "id": 0,
+    "columns": [
+      "world_id",
+      "participant_id",
+      "kind"
+    ],
+    "targetColumns": [
+      "world_id",
+      "id",
+      "kind"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "关系存在时拒绝悬挂；可在领域允许时先显式解绑/删除自有明细，再删除无引用父项。",
+    "evidence": "PRAGMA foreign_key_list(conversation_participants)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-013",
+    "parent": "conversations",
+    "child": "conversation_participants",
+    "id": 1,
+    "columns": [
+      "world_id",
+      "conversation_id"
+    ],
+    "targetColumns": [
+      "world_id",
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "关系存在时拒绝悬挂；可在领域允许时先显式解绑/删除自有明细，再删除无引用父项。",
+    "evidence": "PRAGMA foreign_key_list(conversation_participants)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-014",
+    "parent": "worlds",
+    "child": "conversation_participants",
+    "id": 2,
+    "columns": [
+      "world_id"
+    ],
+    "targetColumns": [
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "世界归档/隐藏不擦除实例、会话及历史；物删需显式处理引用。",
+    "evidence": "PRAGMA foreign_key_list(conversation_participants)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-015",
+    "parent": "messages",
+    "child": "messages",
+    "id": 0,
+    "columns": [
+      "world_id",
+      "conversation_id",
+      "reply_to_message_id"
+    ],
+    "targetColumns": [
+      "world_id",
+      "conversation_id",
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "保留原消息稳定ID、reply与旧revision来源；软删除清正文，不能级联审计/记忆/事件。",
+    "evidence": "PRAGMA foreign_key_list(messages)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-016",
+    "parent": "conversation_participants",
+    "child": "messages",
+    "id": 1,
+    "columns": [
+      "world_id",
+      "conversation_id",
+      "sender_id",
+      "sender_type"
+    ],
+    "targetColumns": [
+      "world_id",
+      "conversation_id",
+      "participant_id",
+      "kind"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "关系存在时拒绝悬挂；可在领域允许时先显式解绑/删除自有明细，再删除无引用父项。",
+    "evidence": "PRAGMA foreign_key_list(messages)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-017",
+    "parent": "conversations",
+    "child": "messages",
+    "id": 2,
+    "columns": [
+      "world_id",
+      "conversation_id"
+    ],
+    "targetColumns": [
+      "world_id",
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "关系存在时拒绝悬挂；可在领域允许时先显式解绑/删除自有明细，再删除无引用父项。",
+    "evidence": "PRAGMA foreign_key_list(messages)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-018",
+    "parent": "worlds",
+    "child": "messages",
+    "id": 3,
+    "columns": [
+      "world_id"
+    ],
+    "targetColumns": [
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "世界归档/隐藏不擦除实例、会话及历史；物删需显式处理引用。",
+    "evidence": "PRAGMA foreign_key_list(messages)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-019",
+    "parent": "character_instances",
+    "child": "lorebook_entries",
+    "id": 0,
+    "columns": [
+      "world_id",
+      "owner_instance_id"
+    ],
+    "targetColumns": [
+      "world_id",
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "关系存在时拒绝悬挂；可在领域允许时先显式解绑/删除自有明细，再删除无引用父项。",
+    "evidence": "PRAGMA foreign_key_list(lorebook_entries)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-020",
+    "parent": "worlds",
+    "child": "lorebook_entries",
+    "id": 1,
+    "columns": [
+      "world_id"
+    ],
+    "targetColumns": [
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "世界归档/隐藏不擦除实例、会话及历史；物删需显式处理引用。",
+    "evidence": "PRAGMA foreign_key_list(lorebook_entries)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-021",
+    "parent": "conversations",
+    "child": "memories",
+    "id": 0,
+    "columns": [
+      "world_id",
+      "conversation_id"
+    ],
+    "targetColumns": [
+      "world_id",
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "关系存在时拒绝悬挂；可在领域允许时先显式解绑/删除自有明细，再删除无引用父项。",
+    "evidence": "PRAGMA foreign_key_list(memories)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-022",
+    "parent": "character_instances",
+    "child": "memories",
+    "id": 1,
+    "columns": [
+      "world_id",
+      "owner_instance_id"
+    ],
+    "targetColumns": [
+      "world_id",
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "关系存在时拒绝悬挂；可在领域允许时先显式解绑/删除自有明细，再删除无引用父项。",
+    "evidence": "PRAGMA foreign_key_list(memories)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-023",
+    "parent": "worlds",
+    "child": "memories",
+    "id": 2,
+    "columns": [
+      "world_id"
+    ],
+    "targetColumns": [
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "世界归档/隐藏不擦除实例、会话及历史；物删需显式处理引用。",
+    "evidence": "PRAGMA foreign_key_list(memories)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-024",
+    "parent": "participants",
+    "child": "relationships",
+    "id": 0,
+    "columns": [
+      "world_id",
+      "to_id"
+    ],
+    "targetColumns": [
+      "world_id",
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "关系存在时拒绝悬挂；可在领域允许时先显式解绑/删除自有明细，再删除无引用父项。",
+    "evidence": "PRAGMA foreign_key_list(relationships)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-025",
+    "parent": "participants",
+    "child": "relationships",
+    "id": 1,
+    "columns": [
+      "world_id",
+      "from_id"
+    ],
+    "targetColumns": [
+      "world_id",
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "关系存在时拒绝悬挂；可在领域允许时先显式解绑/删除自有明细，再删除无引用父项。",
+    "evidence": "PRAGMA foreign_key_list(relationships)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-026",
+    "parent": "worlds",
+    "child": "relationships",
+    "id": 2,
+    "columns": [
+      "world_id"
+    ],
+    "targetColumns": [
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "世界归档/隐藏不擦除实例、会话及历史；物删需显式处理引用。",
+    "evidence": "PRAGMA foreign_key_list(relationships)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-027",
+    "parent": "world_events",
+    "child": "world_events",
+    "id": 0,
+    "columns": [
+      "world_id",
+      "replaces_event_id"
+    ],
+    "targetColumns": [
+      "world_id",
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "事件撤销/重建不是物删；保留effects、审计和因果引用。",
+    "evidence": "PRAGMA foreign_key_list(world_events)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-028",
+    "parent": "relationships",
+    "child": "world_events",
+    "id": 1,
+    "columns": [
+      "world_id",
+      "action_relationship_id"
+    ],
+    "targetColumns": [
+      "world_id",
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "关系存在时拒绝悬挂；可在领域允许时先显式解绑/删除自有明细，再删除无引用父项。",
+    "evidence": "PRAGMA foreign_key_list(world_events)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-029",
+    "parent": "character_instances",
+    "child": "world_events",
+    "id": 2,
+    "columns": [
+      "world_id",
+      "action_instance_id"
+    ],
+    "targetColumns": [
+      "world_id",
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "关系存在时拒绝悬挂；可在领域允许时先显式解绑/删除自有明细，再删除无引用父项。",
+    "evidence": "PRAGMA foreign_key_list(world_events)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-030",
+    "parent": "worlds",
+    "child": "world_events",
+    "id": 3,
+    "columns": [
+      "world_id"
+    ],
+    "targetColumns": [
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "世界归档/隐藏不擦除实例、会话及历史；物删需显式处理引用。",
+    "evidence": "PRAGMA foreign_key_list(world_events)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-031",
+    "parent": "world_events",
+    "child": "world_effects",
+    "id": 0,
+    "columns": [
+      "world_id",
+      "event_id"
+    ],
+    "targetColumns": [
+      "world_id",
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "事件撤销/重建不是物删；保留effects、审计和因果引用。",
+    "evidence": "PRAGMA foreign_key_list(world_effects)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-032",
+    "parent": "relationships",
+    "child": "world_effects",
+    "id": 1,
+    "columns": [
+      "world_id",
+      "target_relationship_id"
+    ],
+    "targetColumns": [
+      "world_id",
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "关系存在时拒绝悬挂；可在领域允许时先显式解绑/删除自有明细，再删除无引用父项。",
+    "evidence": "PRAGMA foreign_key_list(world_effects)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-033",
+    "parent": "character_instances",
+    "child": "world_effects",
+    "id": 2,
+    "columns": [
+      "world_id",
+      "target_instance_id"
+    ],
+    "targetColumns": [
+      "world_id",
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "关系存在时拒绝悬挂；可在领域允许时先显式解绑/删除自有明细，再删除无引用父项。",
+    "evidence": "PRAGMA foreign_key_list(world_effects)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-034",
+    "parent": "worlds",
+    "child": "world_effects",
+    "id": 3,
+    "columns": [
+      "world_id"
+    ],
+    "targetColumns": [
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "世界归档/隐藏不擦除实例、会话及历史；物删需显式处理引用。",
+    "evidence": "PRAGMA foreign_key_list(world_effects)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-035",
+    "parent": "relationships",
+    "child": "effect_baselines",
+    "id": 0,
+    "columns": [
+      "world_id",
+      "target_relationship_id"
+    ],
+    "targetColumns": [
+      "world_id",
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "关系存在时拒绝悬挂；可在领域允许时先显式解绑/删除自有明细，再删除无引用父项。",
+    "evidence": "PRAGMA foreign_key_list(effect_baselines)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-036",
+    "parent": "character_instances",
+    "child": "effect_baselines",
+    "id": 1,
+    "columns": [
+      "world_id",
+      "target_instance_id"
+    ],
+    "targetColumns": [
+      "world_id",
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "关系存在时拒绝悬挂；可在领域允许时先显式解绑/删除自有明细，再删除无引用父项。",
+    "evidence": "PRAGMA foreign_key_list(effect_baselines)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-037",
+    "parent": "worlds",
+    "child": "effect_baselines",
+    "id": 2,
+    "columns": [
+      "world_id"
+    ],
+    "targetColumns": [
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "世界归档/隐藏不擦除实例、会话及历史；物删需显式处理引用。",
+    "evidence": "PRAGMA foreign_key_list(effect_baselines)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-038",
+    "parent": "messages",
+    "child": "background_tasks",
+    "id": 0,
+    "columns": [
+      "world_id",
+      "conversation_id",
+      "deferred_message_id"
+    ],
+    "targetColumns": [
+      "world_id",
+      "conversation_id",
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "保留原消息稳定ID、reply与旧revision来源；软删除清正文，不能级联审计/记忆/事件。",
+    "evidence": "PRAGMA foreign_key_list(background_tasks)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-039",
+    "parent": "background_tasks",
+    "child": "background_tasks",
+    "id": 1,
+    "columns": [
+      "world_id",
+      "window_task_id"
+    ],
+    "targetColumns": [
+      "world_id",
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "关系存在时拒绝悬挂；可在领域允许时先显式解绑/删除自有明细，再删除无引用父项。",
+    "evidence": "PRAGMA foreign_key_list(background_tasks)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-040",
+    "parent": "character_instances",
+    "child": "background_tasks",
+    "id": 2,
+    "columns": [
+      "world_id",
+      "instance_id"
+    ],
+    "targetColumns": [
+      "world_id",
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "关系存在时拒绝悬挂；可在领域允许时先显式解绑/删除自有明细，再删除无引用父项。",
+    "evidence": "PRAGMA foreign_key_list(background_tasks)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-041",
+    "parent": "conversations",
+    "child": "background_tasks",
+    "id": 3,
+    "columns": [
+      "world_id",
+      "conversation_id"
+    ],
+    "targetColumns": [
+      "world_id",
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "关系存在时拒绝悬挂；可在领域允许时先显式解绑/删除自有明细，再删除无引用父项。",
+    "evidence": "PRAGMA foreign_key_list(background_tasks)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-042",
+    "parent": "worlds",
+    "child": "background_tasks",
+    "id": 4,
+    "columns": [
+      "world_id"
+    ],
+    "targetColumns": [
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "世界归档/隐藏不擦除实例、会话及历史；物删需显式处理引用。",
+    "evidence": "PRAGMA foreign_key_list(background_tasks)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-043",
+    "parent": "character_instances",
+    "child": "life_grants",
+    "id": 0,
+    "columns": [
+      "world_id",
+      "instance_id"
+    ],
+    "targetColumns": [
+      "world_id",
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "关系存在时拒绝悬挂；可在领域允许时先显式解绑/删除自有明细，再删除无引用父项。",
+    "evidence": "PRAGMA foreign_key_list(life_grants)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-044",
+    "parent": "worlds",
+    "child": "life_grants",
+    "id": 1,
+    "columns": [
+      "world_id"
+    ],
+    "targetColumns": [
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "世界归档/隐藏不擦除实例、会话及历史；物删需显式处理引用。",
+    "evidence": "PRAGMA foreign_key_list(life_grants)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-045",
+    "parent": "worlds",
+    "child": "preset_applications",
+    "id": 0,
+    "columns": [
+      "world_id"
+    ],
+    "targetColumns": [
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "世界归档/隐藏不擦除实例、会话及历史；物删需显式处理引用。",
+    "evidence": "PRAGMA foreign_key_list(preset_applications)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-046",
+    "parent": "conversation_participants",
+    "child": "usage_events",
+    "id": 0,
+    "columns": [
+      "world_id",
+      "conversation_id",
+      "instance_id",
+      "participant_kind"
+    ],
+    "targetColumns": [
+      "world_id",
+      "conversation_id",
+      "participant_id",
+      "kind"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "关系存在时拒绝悬挂；可在领域允许时先显式解绑/删除自有明细，再删除无引用父项。",
+    "evidence": "PRAGMA foreign_key_list(usage_events)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-047",
+    "parent": "character_instances",
+    "child": "usage_events",
+    "id": 1,
+    "columns": [
+      "world_id",
+      "instance_id"
+    ],
+    "targetColumns": [
+      "world_id",
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "关系存在时拒绝悬挂；可在领域允许时先显式解绑/删除自有明细，再删除无引用父项。",
+    "evidence": "PRAGMA foreign_key_list(usage_events)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-048",
+    "parent": "worlds",
+    "child": "usage_events",
+    "id": 2,
+    "columns": [
+      "world_id"
+    ],
+    "targetColumns": [
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "世界归档/隐藏不擦除实例、会话及历史；物删需显式处理引用。",
+    "evidence": "PRAGMA foreign_key_list(usage_events)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-049",
+    "parent": "character_instances",
+    "child": "virtual_schedules",
+    "id": 0,
+    "columns": [
+      "world_id",
+      "instance_id"
+    ],
+    "targetColumns": [
+      "world_id",
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "关系存在时拒绝悬挂；可在领域允许时先显式解绑/删除自有明细，再删除无引用父项。",
+    "evidence": "PRAGMA foreign_key_list(virtual_schedules)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-050",
+    "parent": "worlds",
+    "child": "virtual_schedules",
+    "id": 1,
+    "columns": [
+      "world_id"
+    ],
+    "targetColumns": [
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "世界归档/隐藏不擦除实例、会话及历史；物删需显式处理引用。",
+    "evidence": "PRAGMA foreign_key_list(virtual_schedules)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-051",
+    "parent": "virtual_schedules",
+    "child": "virtual_schedule_days",
+    "id": 0,
+    "columns": [
+      "world_id",
+      "schedule_id"
+    ],
+    "targetColumns": [
+      "world_id",
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "关系存在时拒绝悬挂；可在领域允许时先显式解绑/删除自有明细，再删除无引用父项。",
+    "evidence": "PRAGMA foreign_key_list(virtual_schedule_days)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-052",
+    "parent": "worlds",
+    "child": "virtual_schedule_days",
+    "id": 1,
+    "columns": [
+      "world_id"
+    ],
+    "targetColumns": [
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "世界归档/隐藏不擦除实例、会话及历史；物删需显式处理引用。",
+    "evidence": "PRAGMA foreign_key_list(virtual_schedule_days)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-053",
+    "parent": "conversation_participants",
+    "child": "task_social_participants",
+    "id": 0,
+    "columns": [
+      "world_id",
+      "conversation_id",
+      "instance_id",
+      "kind"
+    ],
+    "targetColumns": [
+      "world_id",
+      "conversation_id",
+      "participant_id",
+      "kind"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "关系存在时拒绝悬挂；可在领域允许时先显式解绑/删除自有明细，再删除无引用父项。",
+    "evidence": "PRAGMA foreign_key_list(task_social_participants)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-054",
+    "parent": "background_tasks",
+    "child": "task_social_participants",
+    "id": 1,
+    "columns": [
+      "world_id",
+      "task_id",
+      "conversation_id"
+    ],
+    "targetColumns": [
+      "world_id",
+      "id",
+      "conversation_id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "关系存在时拒绝悬挂；可在领域允许时先显式解绑/删除自有明细，再删除无引用父项。",
+    "evidence": "PRAGMA foreign_key_list(task_social_participants)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-055",
+    "parent": "worlds",
+    "child": "task_social_participants",
+    "id": 2,
+    "columns": [
+      "world_id"
+    ],
+    "targetColumns": [
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "世界归档/隐藏不擦除实例、会话及历史；物删需显式处理引用。",
+    "evidence": "PRAGMA foreign_key_list(task_social_participants)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-056",
+    "parent": "worlds",
+    "child": "memory_policies",
+    "id": 0,
+    "columns": [
+      "world_id"
+    ],
+    "targetColumns": [
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "世界归档/隐藏不擦除实例、会话及历史；物删需显式处理引用。",
+    "evidence": "PRAGMA foreign_key_list(memory_policies)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-057",
+    "parent": "worlds",
+    "child": "autonomy_policies",
+    "id": 0,
+    "columns": [
+      "world_id"
+    ],
+    "targetColumns": [
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "世界归档/隐藏不擦除实例、会话及历史；物删需显式处理引用。",
+    "evidence": "PRAGMA foreign_key_list(autonomy_policies)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-058",
+    "parent": "role_binding_state",
+    "child": "role_bindings",
+    "id": 0,
+    "columns": [
+      "state_id"
+    ],
+    "targetColumns": [
+      "singleton"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "绑定state与选择同时管理；world/instance允许失效选择，此处没有伪造额外FK。",
+    "evidence": "PRAGMA foreign_key_list(role_bindings)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-059",
+    "parent": "participants",
+    "child": "lorebook_known_by",
+    "id": 0,
+    "columns": [
+      "world_id",
+      "participant_id"
+    ],
+    "targetColumns": [
+      "world_id",
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "关系存在时拒绝悬挂；可在领域允许时先显式解绑/删除自有明细，再删除无引用父项。",
+    "evidence": "PRAGMA foreign_key_list(lorebook_known_by)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-060",
+    "parent": "lorebook_entries",
+    "child": "lorebook_known_by",
+    "id": 1,
+    "columns": [
+      "world_id",
+      "entry_id"
+    ],
+    "targetColumns": [
+      "world_id",
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "关系存在时拒绝悬挂；可在领域允许时先显式解绑/删除自有明细，再删除无引用父项。",
+    "evidence": "PRAGMA foreign_key_list(lorebook_known_by)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-061",
+    "parent": "worlds",
+    "child": "lorebook_known_by",
+    "id": 2,
+    "columns": [
+      "world_id"
+    ],
+    "targetColumns": [
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "世界归档/隐藏不擦除实例、会话及历史；物删需显式处理引用。",
+    "evidence": "PRAGMA foreign_key_list(lorebook_known_by)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-062",
+    "parent": "character_instances",
+    "child": "memory_known_by",
+    "id": 0,
+    "columns": [
+      "world_id",
+      "instance_id"
+    ],
+    "targetColumns": [
+      "world_id",
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "关系存在时拒绝悬挂；可在领域允许时先显式解绑/删除自有明细，再删除无引用父项。",
+    "evidence": "PRAGMA foreign_key_list(memory_known_by)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-063",
+    "parent": "memories",
+    "child": "memory_known_by",
+    "id": 1,
+    "columns": [
+      "world_id",
+      "memory_id"
+    ],
+    "targetColumns": [
+      "world_id",
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "关系存在时拒绝悬挂；可在领域允许时先显式解绑/删除自有明细，再删除无引用父项。",
+    "evidence": "PRAGMA foreign_key_list(memory_known_by)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-064",
+    "parent": "worlds",
+    "child": "memory_known_by",
+    "id": 2,
+    "columns": [
+      "world_id"
+    ],
+    "targetColumns": [
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "世界归档/隐藏不擦除实例、会话及历史；物删需显式处理引用。",
+    "evidence": "PRAGMA foreign_key_list(memory_known_by)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-065",
+    "parent": "participants",
+    "child": "event_participants",
+    "id": 0,
+    "columns": [
+      "world_id",
+      "participant_id"
+    ],
+    "targetColumns": [
+      "world_id",
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "关系存在时拒绝悬挂；可在领域允许时先显式解绑/删除自有明细，再删除无引用父项。",
+    "evidence": "PRAGMA foreign_key_list(event_participants)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-066",
+    "parent": "world_events",
+    "child": "event_participants",
+    "id": 1,
+    "columns": [
+      "world_id",
+      "event_id"
+    ],
+    "targetColumns": [
+      "world_id",
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "事件撤销/重建不是物删；保留effects、审计和因果引用。",
+    "evidence": "PRAGMA foreign_key_list(event_participants)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-067",
+    "parent": "worlds",
+    "child": "event_participants",
+    "id": 2,
+    "columns": [
+      "world_id"
+    ],
+    "targetColumns": [
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "世界归档/隐藏不擦除实例、会话及历史；物删需显式处理引用。",
+    "evidence": "PRAGMA foreign_key_list(event_participants)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-068",
+    "parent": "world_events",
+    "child": "event_causes",
+    "id": 0,
+    "columns": [
+      "world_id",
+      "cause_event_id"
+    ],
+    "targetColumns": [
+      "world_id",
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "事件撤销/重建不是物删；保留effects、审计和因果引用。",
+    "evidence": "PRAGMA foreign_key_list(event_causes)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-069",
+    "parent": "world_events",
+    "child": "event_causes",
+    "id": 1,
+    "columns": [
+      "world_id",
+      "event_id"
+    ],
+    "targetColumns": [
+      "world_id",
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "事件撤销/重建不是物删；保留effects、审计和因果引用。",
+    "evidence": "PRAGMA foreign_key_list(event_causes)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-070",
+    "parent": "worlds",
+    "child": "event_causes",
+    "id": 2,
+    "columns": [
+      "world_id"
+    ],
+    "targetColumns": [
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "世界归档/隐藏不擦除实例、会话及历史；物删需显式处理引用。",
+    "evidence": "PRAGMA foreign_key_list(event_causes)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-071",
+    "parent": "world_events",
+    "child": "relationship_events",
+    "id": 0,
+    "columns": [
+      "world_id",
+      "event_id"
+    ],
+    "targetColumns": [
+      "world_id",
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "事件撤销/重建不是物删；保留effects、审计和因果引用。",
+    "evidence": "PRAGMA foreign_key_list(relationship_events)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-072",
+    "parent": "relationships",
+    "child": "relationship_events",
+    "id": 1,
+    "columns": [
+      "world_id",
+      "relationship_id"
+    ],
+    "targetColumns": [
+      "world_id",
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "关系存在时拒绝悬挂；可在领域允许时先显式解绑/删除自有明细，再删除无引用父项。",
+    "evidence": "PRAGMA foreign_key_list(relationship_events)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-073",
+    "parent": "worlds",
+    "child": "relationship_events",
+    "id": 2,
+    "columns": [
+      "world_id"
+    ],
+    "targetColumns": [
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "世界归档/隐藏不擦除实例、会话及历史；物删需显式处理引用。",
+    "evidence": "PRAGMA foreign_key_list(relationship_events)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-074",
+    "parent": "world_events",
+    "child": "memory_events",
+    "id": 0,
+    "columns": [
+      "world_id",
+      "event_id"
+    ],
+    "targetColumns": [
+      "world_id",
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "事件撤销/重建不是物删；保留effects、审计和因果引用。",
+    "evidence": "PRAGMA foreign_key_list(memory_events)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-075",
+    "parent": "memories",
+    "child": "memory_events",
+    "id": 1,
+    "columns": [
+      "world_id",
+      "memory_id"
+    ],
+    "targetColumns": [
+      "world_id",
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "关系存在时拒绝悬挂；可在领域允许时先显式解绑/删除自有明细，再删除无引用父项。",
+    "evidence": "PRAGMA foreign_key_list(memory_events)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-076",
+    "parent": "worlds",
+    "child": "memory_events",
+    "id": 2,
+    "columns": [
+      "world_id"
+    ],
+    "targetColumns": [
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "世界归档/隐藏不擦除实例、会话及历史；物删需显式处理引用。",
+    "evidence": "PRAGMA foreign_key_list(memory_events)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-077",
+    "parent": "world_events",
+    "child": "task_result_events",
+    "id": 0,
+    "columns": [
+      "world_id",
+      "event_id"
+    ],
+    "targetColumns": [
+      "world_id",
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "事件撤销/重建不是物删；保留effects、审计和因果引用。",
+    "evidence": "PRAGMA foreign_key_list(task_result_events)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-078",
+    "parent": "background_tasks",
+    "child": "task_result_events",
+    "id": 1,
+    "columns": [
+      "world_id",
+      "task_id"
+    ],
+    "targetColumns": [
+      "world_id",
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "关系存在时拒绝悬挂；可在领域允许时先显式解绑/删除自有明细，再删除无引用父项。",
+    "evidence": "PRAGMA foreign_key_list(task_result_events)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-079",
+    "parent": "worlds",
+    "child": "task_result_events",
+    "id": 2,
+    "columns": [
+      "world_id"
+    ],
+    "targetColumns": [
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "世界归档/隐藏不擦除实例、会话及历史；物删需显式处理引用。",
+    "evidence": "PRAGMA foreign_key_list(task_result_events)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-080",
+    "parent": "memories",
+    "child": "task_result_memories",
+    "id": 0,
+    "columns": [
+      "world_id",
+      "memory_id"
+    ],
+    "targetColumns": [
+      "world_id",
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "关系存在时拒绝悬挂；可在领域允许时先显式解绑/删除自有明细，再删除无引用父项。",
+    "evidence": "PRAGMA foreign_key_list(task_result_memories)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-081",
+    "parent": "background_tasks",
+    "child": "task_result_memories",
+    "id": 1,
+    "columns": [
+      "world_id",
+      "task_id"
+    ],
+    "targetColumns": [
+      "world_id",
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "关系存在时拒绝悬挂；可在领域允许时先显式解绑/删除自有明细，再删除无引用父项。",
+    "evidence": "PRAGMA foreign_key_list(task_result_memories)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-082",
+    "parent": "worlds",
+    "child": "task_result_memories",
+    "id": 2,
+    "columns": [
+      "world_id"
+    ],
+    "targetColumns": [
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "世界归档/隐藏不擦除实例、会话及历史；物删需显式处理引用。",
+    "evidence": "PRAGMA foreign_key_list(task_result_memories)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-083",
+    "parent": "memories",
+    "child": "memory_links",
+    "id": 0,
+    "columns": [
+      "world_id",
+      "target_memory_id"
+    ],
+    "targetColumns": [
+      "world_id",
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "关系存在时拒绝悬挂；可在领域允许时先显式解绑/删除自有明细，再删除无引用父项。",
+    "evidence": "PRAGMA foreign_key_list(memory_links)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-084",
+    "parent": "memories",
+    "child": "memory_links",
+    "id": 1,
+    "columns": [
+      "world_id",
+      "memory_id"
+    ],
+    "targetColumns": [
+      "world_id",
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "关系存在时拒绝悬挂；可在领域允许时先显式解绑/删除自有明细，再删除无引用父项。",
+    "evidence": "PRAGMA foreign_key_list(memory_links)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-085",
+    "parent": "worlds",
+    "child": "memory_links",
+    "id": 2,
+    "columns": [
+      "world_id"
+    ],
+    "targetColumns": [
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "世界归档/隐藏不擦除实例、会话及历史；物删需显式处理引用。",
+    "evidence": "PRAGMA foreign_key_list(memory_links)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-086",
+    "parent": "messages",
+    "child": "memory_sources",
+    "id": 0,
+    "columns": [
+      "world_id",
+      "message_id"
+    ],
+    "targetColumns": [
+      "world_id",
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "保留原消息稳定ID、reply与旧revision来源；软删除清正文，不能级联审计/记忆/事件。",
+    "evidence": "PRAGMA foreign_key_list(memory_sources)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-087",
+    "parent": "memories",
+    "child": "memory_sources",
+    "id": 1,
+    "columns": [
+      "world_id",
+      "memory_id"
+    ],
+    "targetColumns": [
+      "world_id",
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "关系存在时拒绝悬挂；可在领域允许时先显式解绑/删除自有明细，再删除无引用父项。",
+    "evidence": "PRAGMA foreign_key_list(memory_sources)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-088",
+    "parent": "worlds",
+    "child": "memory_sources",
+    "id": 2,
+    "columns": [
+      "world_id"
+    ],
+    "targetColumns": [
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "世界归档/隐藏不擦除实例、会话及历史；物删需显式处理引用。",
+    "evidence": "PRAGMA foreign_key_list(memory_sources)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-089",
+    "parent": "messages",
+    "child": "event_sources",
+    "id": 0,
+    "columns": [
+      "world_id",
+      "message_id"
+    ],
+    "targetColumns": [
+      "world_id",
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "保留原消息稳定ID、reply与旧revision来源；软删除清正文，不能级联审计/记忆/事件。",
+    "evidence": "PRAGMA foreign_key_list(event_sources)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-090",
+    "parent": "world_events",
+    "child": "event_sources",
+    "id": 1,
+    "columns": [
+      "world_id",
+      "event_id"
+    ],
+    "targetColumns": [
+      "world_id",
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "事件撤销/重建不是物删；保留effects、审计和因果引用。",
+    "evidence": "PRAGMA foreign_key_list(event_sources)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-091",
+    "parent": "worlds",
+    "child": "event_sources",
+    "id": 2,
+    "columns": [
+      "world_id"
+    ],
+    "targetColumns": [
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "世界归档/隐藏不擦除实例、会话及历史；物删需显式处理引用。",
+    "evidence": "PRAGMA foreign_key_list(event_sources)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-092",
+    "parent": "messages",
+    "child": "task_sources",
+    "id": 0,
+    "columns": [
+      "world_id",
+      "message_id"
+    ],
+    "targetColumns": [
+      "world_id",
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "保留原消息稳定ID、reply与旧revision来源；软删除清正文，不能级联审计/记忆/事件。",
+    "evidence": "PRAGMA foreign_key_list(task_sources)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-093",
+    "parent": "background_tasks",
+    "child": "task_sources",
+    "id": 1,
+    "columns": [
+      "world_id",
+      "task_id"
+    ],
+    "targetColumns": [
+      "world_id",
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "关系存在时拒绝悬挂；可在领域允许时先显式解绑/删除自有明细，再删除无引用父项。",
+    "evidence": "PRAGMA foreign_key_list(task_sources)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-094",
+    "parent": "worlds",
+    "child": "task_sources",
+    "id": 2,
+    "columns": [
+      "world_id"
+    ],
+    "targetColumns": [
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "世界归档/隐藏不擦除实例、会话及历史；物删需显式处理引用。",
+    "evidence": "PRAGMA foreign_key_list(task_sources)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-095",
+    "parent": "life_grants",
+    "child": "message_life_sources",
+    "id": 0,
+    "columns": [
+      "world_id",
+      "grant_id",
+      "instance_id",
+      "module_id"
+    ],
+    "targetColumns": [
+      "world_id",
+      "id",
+      "instance_id",
+      "module_id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "撤权用flags/revision使来源失效，保留历史grant身份，不隐式擦除历史。",
+    "evidence": "PRAGMA foreign_key_list(message_life_sources)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-096",
+    "parent": "messages",
+    "child": "message_life_sources",
+    "id": 1,
+    "columns": [
+      "world_id",
+      "message_id"
+    ],
+    "targetColumns": [
+      "world_id",
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "保留原消息稳定ID、reply与旧revision来源；软删除清正文，不能级联审计/记忆/事件。",
+    "evidence": "PRAGMA foreign_key_list(message_life_sources)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-097",
+    "parent": "worlds",
+    "child": "message_life_sources",
+    "id": 2,
+    "columns": [
+      "world_id"
+    ],
+    "targetColumns": [
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "世界归档/隐藏不擦除实例、会话及历史；物删需显式处理引用。",
+    "evidence": "PRAGMA foreign_key_list(message_life_sources)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-098",
+    "parent": "life_grants",
+    "child": "memory_life_sources",
+    "id": 0,
+    "columns": [
+      "world_id",
+      "grant_id",
+      "instance_id",
+      "module_id"
+    ],
+    "targetColumns": [
+      "world_id",
+      "id",
+      "instance_id",
+      "module_id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "撤权用flags/revision使来源失效，保留历史grant身份，不隐式擦除历史。",
+    "evidence": "PRAGMA foreign_key_list(memory_life_sources)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-099",
+    "parent": "memories",
+    "child": "memory_life_sources",
+    "id": 1,
+    "columns": [
+      "world_id",
+      "memory_id"
+    ],
+    "targetColumns": [
+      "world_id",
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "关系存在时拒绝悬挂；可在领域允许时先显式解绑/删除自有明细，再删除无引用父项。",
+    "evidence": "PRAGMA foreign_key_list(memory_life_sources)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-100",
+    "parent": "worlds",
+    "child": "memory_life_sources",
+    "id": 2,
+    "columns": [
+      "world_id"
+    ],
+    "targetColumns": [
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "世界归档/隐藏不擦除实例、会话及历史；物删需显式处理引用。",
+    "evidence": "PRAGMA foreign_key_list(memory_life_sources)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-101",
+    "parent": "life_grants",
+    "child": "event_life_sources",
+    "id": 0,
+    "columns": [
+      "world_id",
+      "grant_id",
+      "instance_id",
+      "module_id"
+    ],
+    "targetColumns": [
+      "world_id",
+      "id",
+      "instance_id",
+      "module_id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "撤权用flags/revision使来源失效，保留历史grant身份，不隐式擦除历史。",
+    "evidence": "PRAGMA foreign_key_list(event_life_sources)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-102",
+    "parent": "world_events",
+    "child": "event_life_sources",
+    "id": 1,
+    "columns": [
+      "world_id",
+      "event_id"
+    ],
+    "targetColumns": [
+      "world_id",
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "事件撤销/重建不是物删；保留effects、审计和因果引用。",
+    "evidence": "PRAGMA foreign_key_list(event_life_sources)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-103",
+    "parent": "worlds",
+    "child": "event_life_sources",
+    "id": 2,
+    "columns": [
+      "world_id"
+    ],
+    "targetColumns": [
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "世界归档/隐藏不擦除实例、会话及历史；物删需显式处理引用。",
+    "evidence": "PRAGMA foreign_key_list(event_life_sources)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-104",
+    "parent": "messages",
+    "child": "message_audits",
+    "id": 0,
+    "columns": [
+      "world_id",
+      "message_id"
+    ],
+    "targetColumns": [
+      "world_id",
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "保留原消息稳定ID、reply与旧revision来源；软删除清正文，不能级联审计/记忆/事件。",
+    "evidence": "PRAGMA foreign_key_list(message_audits)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-105",
+    "parent": "worlds",
+    "child": "message_audits",
+    "id": 1,
+    "columns": [
+      "world_id"
+    ],
+    "targetColumns": [
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "世界归档/隐藏不擦除实例、会话及历史；物删需显式处理引用。",
+    "evidence": "PRAGMA foreign_key_list(message_audits)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-106",
+    "parent": "world_events",
+    "child": "event_audits",
+    "id": 0,
+    "columns": [
+      "world_id",
+      "event_id"
+    ],
+    "targetColumns": [
+      "world_id",
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "事件撤销/重建不是物删；保留effects、审计和因果引用。",
+    "evidence": "PRAGMA foreign_key_list(event_audits)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-107",
+    "parent": "worlds",
+    "child": "event_audits",
+    "id": 1,
+    "columns": [
+      "world_id"
+    ],
+    "targetColumns": [
+      "id"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "世界归档/隐藏不擦除实例、会话及历史；物删需显式处理引用。",
+    "evidence": "PRAGMA foreign_key_list(event_audits)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  },
+  {
+    "caseId": "R6-PRAGMA-108",
+    "parent": "schema_migrations",
+    "child": "schema_migration_applications",
+    "id": 0,
+    "columns": [
+      "version"
+    ],
+    "targetColumns": [
+      "version"
+    ],
+    "onDelete": "NO ACTION",
+    "onUpdate": "NO ACTION",
+    "recommendation": "保留NO ACTION；按引用/逻辑解绑语义显式处理，不自动CASCADE",
+    "reason": "升级日志与应用时间一一对应；普通改删被显式保护，不是M5 journal。",
+    "evidence": "PRAGMA foreign_key_list(schema_migration_applications)；R6元数据全量断言；关键父项/叶子/延迟提交见M1-06、R6运行测试"
+  }
+]

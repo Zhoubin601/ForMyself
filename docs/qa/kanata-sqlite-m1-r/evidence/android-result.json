@@ -1,0 +1,51 @@
+{
+  "status": "PASS_NATIVE_DDL_M1_R",
+  "schemaSha256": "1cf50ef2944831ea6d3b66a871ba59944e03d48b889171588b550b9b4eedea45",
+  "fixtureSha256": "12173bac784fc02bd14b4ded8b6b47cd097897e3717350e99c104ea6f7d984c1",
+  "apkSha256": "51d302da61d6ba0234eed08bd0006f5b9fb72d773f2ac2ade141b07d9a6a7d20",
+  "testApkSha256": "9dd28ba567579b1be6eaaf7daeffef342fba52c780f9f779f6506c1fd23250ee",
+  "avd": "kanata_m1_schema_api34",
+  "api": 34,
+  "scope": "native DDL/constraints/v2->v3 rollback/reopen only; no JS migration, clock execution or production Driver",
+  "dir": "/workspace/ForMyself/work/m0/m1-r-native-QlivYZ",
+  "commands": [
+    [
+      "emu",
+      "avd",
+      "name"
+    ],
+    [
+      "shell",
+      "getprop",
+      "sys.boot_completed"
+    ],
+    [
+      "shell",
+      "getprop",
+      "ro.build.version.sdk"
+    ],
+    [
+      "install",
+      "-r",
+      "-t",
+      "/workspace/ForMyself/work/m0/android-8.4.1-14xBaJ/android/app/build/outputs/apk/debug/app-debug.apk"
+    ],
+    [
+      "install",
+      "-r",
+      "-t",
+      "/workspace/ForMyself/work/m0/android-8.4.1-14xBaJ/android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk"
+    ],
+    [
+      "shell",
+      "am",
+      "instrument",
+      "-w",
+      "-r",
+      "-e",
+      "class",
+      "com.formyself.qa.m0.SqlCipherM1RTest",
+      "com.formyself.qa.m0.test/androidx.test.runner.AndroidJUnitRunner"
+    ]
+  ]
+}

@@ -6,10 +6,11 @@ import {join} from 'node:path'
 import {spawn} from 'node:child_process'
 import {once} from 'node:events'
 import {sha256Text} from '../src/shared/crypto/sha256Text.js'
-import {KANATA_SCHEMA_MIGRATIONS as migrations,KANATA_SCHEMA_APPLICATION_ID as appId} from '../src/features/chat/storage/sqlite/kanataSchema.js'
+import {KANATA_SCHEMA_MIGRATIONS as migrations,KANATA_SCHEMA_APPLICATION_ID as appId,KANATA_SCHEMA_VERSION as version} from '../src/features/chat/storage/sqlite/kanataSchema.js'
 import {migrateKanataSchema} from '../src/features/chat/storage/sqlite/kanataSchemaMigrator.js'
 import {schemaHarness} from './helpers/kanataSqliteHarness.js'
 import {kanataSqliteFixture,kanataFixtureCommands,insertSql} from './helpers/kanataSqliteFixture.js'
+import {installLegacySchema} from './helpers/kanataSqliteLegacy.js'
 
 const code=expected=>error=>error.code===expected
 const rows=(h,sql,...parameters)=>h.db.prepare(sql).all(...parameters)
@@ -27,8 +28,8 @@ async function openFixture(t) {
 
 test('M1-01 空库逐版升级、迁移日志与重复打开；全部真实领域集合可插入',async t=>{
   const h=await openFixture(t)
-  assert.deepEqual(rows(h,'SELECT version FROM schema_migrations').map(r=>r.version),[1,2])
-  assert.deepEqual(await migrateKanataSchema(h.connection),{version:2,appliedVersions:[]})
+  assert.deepEqual(rows(h,'SELECT version FROM schema_migrations').map(r=>r.version),migrations.map(m=>m.version))
+  assert.deepEqual(await migrateKanataSchema(h.connection),{version,appliedVersions:[]})
   assert.deepEqual(rows(h,'PRAGMA foreign_key_check'),[])
   assert.equal(rows(h,'PRAGMA integrity_check')[0].integrity_check,'ok')
   assert.equal(rows(h,'SELECT count(*) n FROM worlds')[0].n,2)
@@ -51,7 +52,7 @@ test('M1-02 有数据v1逐版升级保留原记录；日志指纹固定且重复
     for(const s of kanataFixtureCommands())await tx.execute(s.sql,s.parameters)
   })
   const before=rows(h,'SELECT * FROM messages')
-  assert.deepEqual(await migrateKanataSchema(h.connection),{version:2,appliedVersions:[2]})
+  assert.deepEqual(await migrateKanataSchema(h.connection),{version,appliedVersions:[2,3]})
   assert.deepEqual(rows(h,'SELECT * FROM messages'),before)
   h.writes.length=0
   await migrateKanataSchema(h.connection)
@@ -64,7 +65,7 @@ test('M1-03 未来版本、不相关库、未完成结构、篡改日志和缺�
     [h=>h.db.exec('PRAGMA application_id=5'),'KANATA_SCHEMA_WRONG_DATABASE'],
     [h=>h.db.exec('CREATE TABLE other(value TEXT)'),'KANATA_SCHEMA_STRUCTURE_MISMATCH'],
     [h=>h.db.exec('CREATE TABLE android_metadata(locale TEXT)'),'KANATA_SCHEMA_STRUCTURE_MISMATCH'],
-    [async h=>{await migrateKanataSchema(h.connection);h.db.exec("UPDATE schema_migrations SET checksum='"+'0'.repeat(64)+"'")},'KANATA_SCHEMA_JOURNAL_MISMATCH'],
+    [async h=>{await installLegacySchema(h,2);h.db.exec("UPDATE schema_migrations SET checksum='"+'0'.repeat(64)+"'")},'KANATA_SCHEMA_JOURNAL_MISMATCH'],
     [async h=>{await migrateKanataSchema(h.connection);h.db.exec('DROP INDEX messages_scope_time')},'KANATA_SCHEMA_STRUCTURE_MISMATCH']
   ]){
     const h=schemaHarness();t.after(h.close)
@@ -84,7 +85,7 @@ test('M1-04 未开启外键拒绝；原生执行错误不向外泄漏SQL和参�
 
 test('M1-05 任意DDL/日志写入失败整事务回滚，新连接安全重试',async t=>{
   const dir=mkdtempSync(join(tmpdir(),'kanata-m1-'));t.after(()=>rmSync(dir,{recursive:true,force:true}))
-  const statements=migrations.reduce((n,m)=>n+m.statements.length+2,0)+1
+  const statements=migrations.reduce((n,m)=>n+m.statements.length+2,0)+1+migrations.length
   for(let failAt=1;failAt<=statements;failAt++){
     let n=0;const path=join(dir,`failure-${failAt}.db`)
     const h=schemaHarness(path,{beforeExecute:()=>{if(++n===failAt)throw Error('injected')}})
@@ -92,7 +93,7 @@ test('M1-05 任意DDL/日志写入失败整事务回滚，新连接安全重试'
     assert.equal(rows(h,'PRAGMA user_version')[0].user_version,0)
     assert.equal(rows(h,'SELECT count(*) n FROM sqlite_schema')[0].n,0);h.close()
     const next=schemaHarness(path)
-    assert.equal((await migrateKanataSchema(next.connection)).version,2);next.close()
+    assert.equal((await migrateKanataSchema(next.connection)).version,version);next.close()
   }
 })
 
@@ -122,7 +123,7 @@ test('M1-15 已有v1记录升级失败保留逐字节文件，新运行时重试
     assert.deepEqual(readFileSync(path),readFileSync(base))
     const reopened=schemaHarness(path)
     assert.equal(rows(reopened,'PRAGMA user_version')[0].user_version,1)
-    assert.deepEqual((await migrateKanataSchema(reopened.connection)).appliedVersions,[2])
+    assert.deepEqual((await migrateKanataSchema(reopened.connection)).appliedVersions,[2,3])
     assert.equal(rows(reopened,'SELECT count(*) n FROM messages')[0].n,2);reopened.close()
   }
 })
@@ -199,7 +200,7 @@ test('M1-13 冲突策略不能绕过全局ID；无revision编辑、延迟任务�
   assert.throws(()=>insert(h,'background_tasks',{...deferred,id:'deferred-two',idempotency_key:'synthetic-deferred-2',deferred_message_id:'message-two'}),/KANATA_DEFERRED_SOURCE_DENIED/)
   assert.throws(()=>insert(h,'background_tasks',{...task,id:'social-cross',idempotency_key:'social-cross',kind:'world',window_task_id:h.data.tasks[0].id,world_id:h.w2,conversation_id:null,instance_id:null}),/FOREIGN KEY/)
   const audit=rows(h,'SELECT * FROM message_audits')[0], previous=JSON.parse(audit.previous_json)
-  assert.throws(()=>run(h,'UPDATE message_audits SET previous_json=?',JSON.stringify({...previous,senderId:h.i2,senderType:'character'})),/KANATA_AUDIT_SENDER_DENIED/)
+  assert.throws(()=>run(h,'UPDATE message_audits SET previous_json=?',JSON.stringify({...previous,senderId:h.i2,senderType:'character'})),/KANATA_AUDIT_IMMUTABLE/)
 })
 
 test('M1-14 JSON类型、实例基线范围和策略边界；未知扩展与原卡payload按字节保留',async t=>{
@@ -258,7 +259,7 @@ test('M1-12 第二连接不能穿插升级事务；实际SIGKILL后DDL和版本�
   const next=schemaHarness(path);t.after(next.close)
   assert.equal(rows(next,'PRAGMA user_version')[0].user_version,0)
   assert.equal(rows(next,'SELECT count(*) n FROM sqlite_schema')[0].n,0)
-  assert.equal((await migrateKanataSchema(next.connection)).version,2)
+  assert.equal((await migrateKanataSchema(next.connection)).version,version)
   assert.equal(rows(next,'PRAGMA integrity_check')[0].integrity_check,'ok')
   assert.ok(readFileSync(path).length>0)
 })

@@ -1,0 +1,38 @@
+{
+  "startedAt": "2026-11-07T05:13:17.597Z",
+  "head": "a33eda7c608c425f144cfb861f60dba2e3e85422",
+  "node": "v24.19.0",
+  "platform": "linux",
+  "arch": "x64",
+  "kernel": "6.18.57",
+  "schemaSha256": "1cf50ef2944831ea6d3b66a871ba59944e03d48b889171588b550b9b4eedea45",
+  "fixtureSha256": "12173bac784fc02bd14b4ded8b6b47cd097897e3717350e99c104ea6f7d984c1",
+  "steps": [
+    {
+      "name": "directed",
+      "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+      "args": [
+        "--test",
+        "tests/kanataSqliteSchema.test.js",
+        "tests/kanataSqliteRemediation.test.js",
+        "tests/kanataSqliteMapping.test.js"
+      ],
+      "startedAt": "2026-11-07T05:13:17.630Z",
+      "finishedAt": "2026-11-07T05:13:25.348Z",
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "name": "check",
+      "command": "npm",
+      "args": [
+        "run",
+        "check"
+      ],
+      "startedAt": "2026-11-07T05:13:25.348Z",
+      "finishedAt": "2026-11-07T05:14:39.263Z",
+      "exitCode": 0,
+      "signal": null
+    }
+  ]
+}

@@ -1,0 +1,45 @@
+{
+  "node": "v24.19.0",
+  "schemaSha256": "1cf50ef2944831ea6d3b66a871ba59944e03d48b889171588b550b9b4eedea45",
+  "version": 3,
+  "findings": {
+    "R1": {
+      "journalColumns": [
+        "version",
+        "name",
+        "checksum"
+      ],
+      "applicationTimesTable": true
+    },
+    "R2": {
+      "empty": "ALLOWED",
+      "null": "REJECTED",
+      "scheduleEmpty": "REJECTED",
+      "actionEmpty": "ALLOWED",
+      "actionNull": "ALLOWED"
+    },
+    "R3": {
+      "wrongSameWorldConversation": "REJECTED"
+    },
+    "R4": {
+      "duplicateRevision": "REJECTED",
+      "changeAt": "REJECTED",
+      "deleteEventAudit": "REJECTED"
+    },
+    "registry": {
+      "deleteOwned": "REJECTED",
+      "insertAnotherTypeWithAuditId": "REJECTED",
+      "duplicateIdAcrossMemoryAndAudit": 1,
+      "insertPhantom": "REJECTED"
+    },
+    "R6": {
+      "actions": [
+        "NO ACTION"
+      ],
+      "referencedMessage": "REJECTED",
+      "unreferencedMessage": "ALLOWED",
+      "foreignKeys": 1,
+      "violations": []
+    }
+  }
+}

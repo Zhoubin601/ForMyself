@@ -1,0 +1,161 @@
+{
+  "status": "PASS_M1_R",
+  "recommendEnterM2": "YES_RECOMMENDATION_ONLY_M2_NOT_STARTED",
+  "date": "2026-11-07",
+  "timezone": "Asia/Shanghai",
+  "headAtFirstInspection": "a753ad3",
+  "baselineHead": "a33eda7c608c425f144cfb861f60dba2e3e85422",
+  "endHead": "a33eda7c608c425f144cfb861f60dba2e3e85422",
+  "branch": "M",
+  "committed": false,
+  "pushed": false,
+  "schemaVersion": 3,
+  "counts": {
+    "tables": 48,
+    "triggers": 130,
+    "explicitIndexes": 38
+  },
+  "fieldRows": 347,
+  "foreignKeyGroups": 108,
+  "schemaSha256": "1cf50ef2944831ea6d3b66a871ba59944e03d48b889171588b550b9b4eedea45",
+  "fixtureSha256": "12173bac784fc02bd14b4ded8b6b47cd097897e3717350e99c104ea6f7d984c1",
+  "regressionReceipt": "regression-receipt.json",
+  "commands": [
+    {
+      "command": "node --test tests/kanataSqliteSchema.test.js (baseline)",
+      "exitCode": 0,
+      "tests": 15,
+      "evidence": "baseline.txt"
+    },
+    {
+      "command": "node --test tests/kanataSqliteRemediation.test.js (initial 10 tests in archived a33eda7 snapshot)",
+      "exitCode": 1,
+      "passed": 3,
+      "failed": 7,
+      "expectedFailureReproduction": true,
+      "evidence": "remediation-before.txt"
+    },
+    {
+      "command": "node docs/qa/kanata-sqlite-m1-r/reproduce.mjs (both baseline snapshot and current)",
+      "exitCode": 0,
+      "evidence": [
+        "reproduction-before.json",
+        "reproduction-after.json"
+      ]
+    },
+    {
+      "command": "node docs/qa/kanata-sqlite-m1-r/run-regression.mjs",
+      "exitCode": 0,
+      "directedTests": 34,
+      "nodeTests": 624,
+      "componentTests": 392,
+      "componentFiles": 42,
+      "allSkipped": 0,
+      "evidence": [
+        "regression-receipt.json",
+        "regression-directed.txt",
+        "regression-check.txt"
+      ]
+    },
+    {
+      "command": "node docs/qa/kanata-sqlite-m1/verify-sqlcipher.mjs",
+      "exitCode": 0,
+      "checks": 10,
+      "evidence": "host-original-tool-final.json"
+    },
+    {
+      "command": "node docs/qa/kanata-sqlite-m1-r/verify-host.mjs",
+      "exitCode": 0,
+      "checks": 9,
+      "actualSigkillScenarios": 2,
+      "evidence": "host-final.json"
+    },
+    {
+      "command": "Gradle --offline --no-daemon --max-workers=1 :app:assembleDebug :app:assembleDebugAndroidTest (exact environment in README)",
+      "exitCode": 0,
+      "evidence": "android-build-final.txt"
+    },
+    {
+      "command": "node docs/qa/kanata-sqlite-m1-r/verify-android.mjs work/m0/android-8.4.1-14xBaJ work/m0/m1-tmp-avd-i6zlMu/manifest.json",
+      "exitCode": 0,
+      "junitTests": 1,
+      "scope": "native DDL/constraints/v2->v3 rollback/reopen only; no JS migration, clock execution or production Driver",
+      "evidence": [
+        "android-result.json",
+        "android-instrumentation.txt"
+      ]
+    },
+    {
+      "command": "git diff --check / node --check QA modules / added/new Markdown link checks",
+      "exitCode": 0,
+      "evidence": "link-check.json"
+    }
+  ],
+  "faultCoverage": {
+    "freshEveryWrite": 226,
+    "legacyV2EveryUpgradeWrite": 24,
+    "legacyV2CommitFailure": true,
+    "legacyV1RepresentativeFailurePointsAndCommit": 6,
+    "hostRealSigkill": true
+  },
+  "environment": {
+    "node": "v24.19.0",
+    "platform": "linux",
+    "arch": "x64",
+    "kernel": "6.18.57",
+    "nodeSQLite": "3.53.3",
+    "hostSQLCipher": "4.12.0 community / SQLite3.51.1",
+    "android": {
+      "avd": "kanata_m1_schema_api34",
+      "serial": "emulator-5580",
+      "api": 34,
+      "arch": "x86_64",
+      "accelerator": "TCG/SwiftShader",
+      "ramMiB": 2560,
+      "cores": 2,
+      "userdataGiB": 1,
+      "encryption": "FBE",
+      "selinux": "Enforcing",
+      "capacitorQA": "8.4.1",
+      "cipher": "4.17.0 community",
+      "buildType": "debug/androidTest",
+      "apkSha256": "51d302da61d6ba0234eed08bd0006f5b9fb72d773f2ac2ade141b07d9a6a7d20",
+      "testApkSha256": "9dd28ba567579b1be6eaaf7daeffef342fba52c780f9f779f6506c1fd23250ee",
+      "isPhysicalPhone": false
+    }
+  },
+  "auditResults": {
+    "R1": "PASS",
+    "R2": "NOT-A-DEFECT",
+    "R3": "PASS",
+    "R4": "PASS",
+    "R5": "PASS",
+    "R6": "NOT-A-DEFECT"
+  },
+  "notRun": [
+    "Android JS migrator/production Driver E2E (M2)",
+    "production message/conversation CAS and transaction command (M2/M3)",
+    "production JSON/archive import and complete DTO roundtrip (M5)",
+    "global backup/restore/rekey lifecycle (M6)",
+    "1k/10k/100k application performance, physical target phone and M7/P7 gates"
+  ],
+  "originalGateThresholds": {
+    "androidPeakMiB": 512,
+    "androidFullRekeySeconds": 120,
+    "webPeakMiB": 768,
+    "p7": "No-Go unchanged"
+  },
+  "processNotes": [
+    "Intermediate two check runs mistakenly shared one log; mixed file was not accepted as evidence. Final regression reran in unique directory with real receipt.",
+    "Archived scratch directory was missing; corrected and reran baseline probes successfully."
+  ],
+  "originalM1Evidence": "unchanged",
+  "m1rVerdict": "PASS",
+  "sourceHashes": "code-sha256.json",
+  "evidenceHashes": "evidence-sha256.json",
+  "selfReviewRounds": 2,
+  "linkCheck": "link-check.json",
+  "finalReport": "output/20261107-kanata-sqlite-m1-r-acceptance-v1.md",
+  "finalReportGitIgnored": true,
+  "qaEmulatorShutdown": "emulator-stop.txt"
+}

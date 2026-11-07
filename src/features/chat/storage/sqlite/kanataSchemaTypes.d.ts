@@ -22,3 +22,9 @@ export interface KanataSchemaResult {
   readonly version: number
   readonly appliedVersions: readonly number[]
 }
+export interface KanataSchemaMigrationOptions {
+  /** Wall clock Unix epoch UTC milliseconds, sampled after each version's DDL.
+   * Persisted only if the encompassing transaction commits. Not a physical COMMIT
+   * timestamp, monotonic clock or reconstructed time for legacy 001/002. */
+  now?: () => number
+}

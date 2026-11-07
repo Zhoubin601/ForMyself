@@ -1193,3 +1193,9 @@ raw/完整需求清单.txt 4.1/4.4/8.3及最新连续执行v3驱动当前实现�
 - 基线：origin/M bda1a58；docs/20261103-kanata-sqlite-migration-plan-v1.md 的 M1 五项门禁；M0 direct-gate 与 target-emulator 为已提交历史证据，本轮仅重跑离线核验器。
 - 当前源码：src/features/chat/domain/kanataTypes.d.ts、kanataValidation.js；experience/experienceValidation.js、kanataEvents.js、kanataMemory.js；autonomy/autonomyValidation.js；platform/ai/completionTypes.d.ts；storage/kanataRepository.js；application/contracts.d.ts。
 - 开发规范：根 AGENTS.md、架构接口与Agent开发说明书.md；连续执行计划 v3 保留全部 P7 门槛。package-lock 的 Capacitor 为8.4.1，M0冻结 SQLCipher4.17.0；本轮不升级生产依赖。
+# 2026-11-07 M1-R
+
+来源：a33eda7任务书、根规范/开发背景、M0放行、M1 v1/v2和原47表目录/原始输出；当前kanataSchema/Migrator/Types和15项基线测试；kanataTypes、基础/经历/自治校验器、kanataEvents.reviseKanataMessage及kanataBackup。
+关键实际契约：实例state.location允许''（kanataValidation和手动新世界初始化），日程location非空；删除消息会将旧messageAudits前后正文置为“（已删除的原始记录）”及deleted=true。审计不可变性不能误封这项既有隐私语义。001/002原校验和见未改动的M1 schema-catalog.json。
+
+补充来源（2026-11-07）：actual TypeScript AST `kanataTypes.d.ts`、`characterCardTypes.d.ts`、`completionTypes.d.ts`用于347字段映射；真实PRAGMA用于108组外键。隔离QA使用既有Capacitor8.4.1/SQLCipher4.17缓存，无新外部资料或版本选型。`work/m0/m1-r-20261107`记录修复前后复现，完整回归由M1-R `run-regression.mjs`生成独立目录和退出码；与主机SQLCipher4.12/隔离Android4.17同DDL指纹交叉核对。

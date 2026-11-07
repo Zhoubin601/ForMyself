@@ -1,6 +1,6 @@
 # 执行计划
 
-> **当前执行入口（2026-11-03）：** 先在 [M 分支](https://github.com/Zhoubin601/ForMyself/tree/M) 完成 [彼方 SQLite 迁移计划 M v1](20261103-kanata-sqlite-migration-plan-v1.md) 的 M0–M7。M 从 Kanata 的 73158a058d35124e1572b2161fe0f364f2140c48 创建，当前仅完成分支和计划文档，SQLite 实现尚未开始。
+> **当前执行入口（2026-11-03）：** 先在 [M 分支](https://github.com/Zhoubin601/ForMyself/tree/M) 完成 [彼方 SQLite 迁移计划 M v1](20261103-kanata-sqlite-migration-plan-v1.md) 的 M0–M7。M 从 Kanata 的 73158a058d35124e1572b2161fe0f364f2140c48 创建，M0、M1已有独立验收；2026-11-07本轮执行M1-R补充审计，当前入口见[审计记录](20261107-kanata-sqlite-m1-r-audit-v1.md)，M2未实施。
 >
 > **分支顺序：** Kanata（P7 No-Go 基线）→ M（SQLite 迁移与性能重构）→ M7 验收后审查并合并回 Kanata → 继续 P7。M 未完成前，P7 暂停在 Kanata，不并行修改同一套存储代码；不合并 main。
 >
@@ -1105,3 +1105,13 @@ P6最终PASS/Go：501 Node/317组件、Web12/6布局、Android17、原生8通过
 4. 两轮自查并修复，运行 npm run check，记录本次命令与边界。未经过本轮 Android 设备运行的内容不冒称已验证。
 
 本轮结果：上述源码、结构映射、15项真实SQLite/故障用例、10组主机SQLCipher检查、strict类型及完整check已完成（605 Node/392组件）。独立Android App/Test构建成功；原M0与新M1 AVD均在磁盘预检阶段拒绝，设备门禁BLOCKED，未开始M2。来源与两轮修正见[本轮报告](20261106-kanata-sqlite-m1-report-v1.md)，生成DDL/目录与日志保留docs/qa/kanata-sqlite-m1。代码和报告留在本地未提交、未推送；远端M仍bda1a58。
+# 2026-11-07：M1-R
+
+用户明确要求完整执行M1-R任务书，不进入M2、不推送。开始M分支工作区干净，a753ad3；快进至a33eda7，仅新增任务书。基线15项实际通过，证据存work/m0/m1-r-20261107，最终新证据增量存docs/qa/kanata-sqlite-m1-r，正式报告放output。
+
+1. 六项最小复现，已满足的location/NO ACTION等先证明，不盲改；逐字段映射和FK目录覆盖现有真实类型。
+2. 001/002 DDL及checksum冻结，追加003以补成功应用时间记录、审计归属/唯一/不可篡改约束；旧时间未知保留未知，不倒填假历史。
+3. 审计保护须兼容现有显式删消息清除历史正文语义，只允许不可逆的确定性隐私脱敏，事件审计不开放修改；不实施M2命令。
+4. 空库/v1/v2升级、非法旧库拒绝、全写入点故障、SIGKILL、完整check、主机SQLCipher及隔离Android实际复测；两轮自查后生成报告，保留原M1历史证据。
+
+本轮完成：R1真实应用时间、R3快照归属、R4不可变审计/重复区间及全局ID登记保护；R2/R6复测无须改动。347字段映射、108外键定义逐条输出。最终证据、两轮自检和阶段交接统一见M1-R审计/验收报告；不改动历史M1报告，不推送。

@@ -1,6 +1,6 @@
 import type { Component } from 'vue'
 export type {KanataSqlValue, KanataSqlRow, KanataSchemaTransaction, KanataSchemaConnection,
-  KanataSchemaMigration, KanataSchemaResult} from '../features/chat/storage/sqlite/kanataSchemaTypes'
+  KanataSchemaMigration, KanataSchemaResult, KanataSchemaMigrationOptions} from '../features/chat/storage/sqlite/kanataSchemaTypes'
 export type KanataSchemaMigrator = typeof import('../features/chat/storage/sqlite/kanataSchemaMigrator.js').migrateKanataSchema
 export type { KanataData, World, CharacterCard, CharacterCardVersion, CharacterInstance,
   WorldPreset, WorldUserIdentity, Conversation, GroupReplyLimits, ReplyTimingPolicy, Message, LorebookEntry, Memory,

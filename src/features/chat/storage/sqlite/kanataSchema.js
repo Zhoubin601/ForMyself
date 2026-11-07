@@ -1,5 +1,6 @@
 // @ts-check
 // M1 definitions only. No connection, plugin registration or production data access.
+import {createKanataSchemaHardening, createKanataRegistryValidationQueries} from './kanataSchemaHardening.js'
 const MAX = Number.MAX_SAFE_INTEGER
 /** @param {string} name */
 const id = name => `${name} TEXT NOT NULL CHECK(length(${name}) BETWEEN 1 AND 200 AND substr(${name},1,1) GLOB '[A-Za-z0-9]' AND ${name} NOT GLOB '*[^A-Za-z0-9._:-]*')`
@@ -269,7 +270,10 @@ const accessIndexes = guards.filter(sql => !sql.startsWith('CREATE TRIGGER '))
 /** Immutable ordered DDL; one execute call per statement, including each whole trigger. */
 export const KANATA_SCHEMA_MIGRATIONS = Object.freeze([
   Object.freeze({version: 1, name: 'kanata-core', statements: Object.freeze(core)}),
-  Object.freeze({version: 2, name: 'kanata-access-indexes', statements: Object.freeze(accessIndexes)})
+  Object.freeze({version: 2, name: 'kanata-access-indexes', statements: Object.freeze(accessIndexes)}),
+  createKanataSchemaHardening(entityTables)
 ])
-export const KANATA_SCHEMA_VERSION = 2
+export const KANATA_SCHEMA_VERSION = 3
 export const KANATA_SCHEMA_APPLICATION_ID = 0x4b4e5441
+
+export const KANATA_REGISTRY_VALIDATION_QUERIES = createKanataRegistryValidationQueries(entityTables)

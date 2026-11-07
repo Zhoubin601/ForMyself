@@ -1,0 +1,147 @@
+{
+  "status": "PASS",
+  "scope": "all links in new Markdown and added lines of tracked Markdown",
+  "checked": 28,
+  "links": [
+    {
+      "source": "README.md",
+      "target": "docs/20261107-kanata-sqlite-m1-r-audit-v1.md",
+      "exists": true
+    },
+    {
+      "source": "README.md",
+      "target": "docs/20261107-kanata-sqlite-m1-r-field-mapping-v1.md",
+      "exists": true
+    },
+    {
+      "source": "README.md",
+      "target": "docs/20261107-kanata-sqlite-m1-r-foreign-keys-v1.md",
+      "exists": true
+    },
+    {
+      "source": "README.md",
+      "target": "docs/qa/kanata-sqlite-m1-r/README.md",
+      "exists": true
+    },
+    {
+      "source": "docs/20261103-kanata-sqlite-migration-plan-v1.md",
+      "target": "20261107-kanata-sqlite-m1-r-audit-v1.md",
+      "exists": true
+    },
+    {
+      "source": "docs/20261107-kanata-sqlite-m1-r-audit-v1.md",
+      "target": "20261106-kanata-sqlite-m1-r-remediation-task-v1.md",
+      "exists": true
+    },
+    {
+      "source": "docs/20261107-kanata-sqlite-m1-r-audit-v1.md",
+      "target": "../output/20261107-kanata-sqlite-m1-r-acceptance-v1.md",
+      "exists": true
+    },
+    {
+      "source": "docs/20261107-kanata-sqlite-m1-r-audit-v1.md",
+      "target": "qa/kanata-sqlite-m1-r/README.md",
+      "exists": true
+    },
+    {
+      "source": "docs/20261107-kanata-sqlite-m1-r-audit-v1.md",
+      "target": "qa/kanata-sqlite-m1-r/evidence/verification-summary.json",
+      "exists": true
+    },
+    {
+      "source": "docs/20261107-kanata-sqlite-m1-r-audit-v1.md",
+      "target": "qa/kanata-sqlite-m1-r/evidence/reproduction-before.json",
+      "exists": true
+    },
+    {
+      "source": "docs/20261107-kanata-sqlite-m1-r-audit-v1.md",
+      "target": "qa/kanata-sqlite-m1-r/evidence/reproduction-after.json",
+      "exists": true
+    },
+    {
+      "source": "docs/20261107-kanata-sqlite-m1-r-audit-v1.md",
+      "target": "qa/kanata-sqlite-m1-r/evidence/remediation-before.txt",
+      "exists": true
+    },
+    {
+      "source": "docs/20261107-kanata-sqlite-m1-r-audit-v1.md",
+      "target": "20261107-kanata-sqlite-m1-r-field-mapping-v1.md",
+      "exists": true
+    },
+    {
+      "source": "docs/20261107-kanata-sqlite-m1-r-audit-v1.md",
+      "target": "20261107-kanata-sqlite-m1-r-foreign-keys-v1.md",
+      "exists": true
+    },
+    {
+      "source": "docs/plan.md",
+      "target": "20261103-kanata-sqlite-migration-plan-v1.md",
+      "exists": true
+    },
+    {
+      "source": "docs/plan.md",
+      "target": "20261107-kanata-sqlite-m1-r-audit-v1.md",
+      "exists": true
+    },
+    {
+      "source": "docs/qa/kanata-sqlite-m1-r/README.md",
+      "target": "../../20261106-kanata-sqlite-m1-r-remediation-task-v1.md",
+      "exists": true
+    },
+    {
+      "source": "docs/qa/kanata-sqlite-m1-r/README.md",
+      "target": "../../20261107-kanata-sqlite-m1-r-audit-v1.md",
+      "exists": true
+    },
+    {
+      "source": "docs/qa/kanata-sqlite-m1-r/README.md",
+      "target": "../../20261107-kanata-sqlite-m1-r-field-mapping-v1.md",
+      "exists": true
+    },
+    {
+      "source": "docs/qa/kanata-sqlite-m1-r/README.md",
+      "target": "../../20261107-kanata-sqlite-m1-r-foreign-keys-v1.md",
+      "exists": true
+    },
+    {
+      "source": "docs/qa/kanata-sqlite-m1-r/README.md",
+      "target": "../kanata-sqlite-m0/README.md",
+      "exists": true
+    },
+    {
+      "source": "docs/qa/kanata-sqlite-m1-r/README.md",
+      "target": "../kanata-sqlite-m1/temporary-volume.md",
+      "exists": true
+    },
+    {
+      "source": "output/20261107-kanata-sqlite-m1-r-acceptance-v1.md",
+      "target": "../docs/20261106-kanata-sqlite-m1-r-remediation-task-v1.md",
+      "exists": true
+    },
+    {
+      "source": "output/20261107-kanata-sqlite-m1-r-acceptance-v1.md",
+      "target": "../docs/20261107-kanata-sqlite-m1-r-audit-v1.md",
+      "exists": true
+    },
+    {
+      "source": "output/20261107-kanata-sqlite-m1-r-acceptance-v1.md",
+      "target": "../docs/20261107-kanata-sqlite-m1-r-field-mapping-v1.md",
+      "exists": true
+    },
+    {
+      "source": "output/20261107-kanata-sqlite-m1-r-acceptance-v1.md",
+      "target": "../docs/20261107-kanata-sqlite-m1-r-foreign-keys-v1.md",
+      "exists": true
+    },
+    {
+      "source": "output/20261107-kanata-sqlite-m1-r-acceptance-v1.md",
+      "target": "../docs/qa/kanata-sqlite-m1-r/evidence/verification-summary.json",
+      "exists": true
+    },
+    {
+      "source": "output/20261107-kanata-sqlite-m1-r-acceptance-v1.md",
+      "target": "../docs/qa/kanata-sqlite-m1-r/README.md",
+      "exists": true
+    }
+  ]
+}

@@ -1,0 +1,4526 @@
+[
+  {
+    "field": "SourceRef.messageId",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "memory_sources.message_id",
+      "event_sources.message_id",
+      "task_sources.message_id"
+    ],
+    "kind": "关系表",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。 无ordinal的关系须由原字段同名JSON提示保留顺序/可选空数组；必须与关系行交叉校验，不能用JSON绕过权限/FK。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:5"
+  },
+  {
+    "field": "SourceRef.revision",
+    "type": "number",
+    "optional": false,
+    "targets": [
+      "memory_sources.message_revision",
+      "event_sources.message_revision",
+      "task_sources.message_revision"
+    ],
+    "kind": "关系表",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。 无ordinal的关系须由原字段同名JSON提示保留顺序/可选空数组；必须与关系行交叉校验，不能用JSON绕过权限/FK。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:5"
+  },
+  {
+    "field": "World.id",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "worlds.id"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:7"
+  },
+  {
+    "field": "World.name",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "worlds.name"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:7"
+  },
+  {
+    "field": "World.rules",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "worlds.rules"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:7"
+  },
+  {
+    "field": "World.revision",
+    "type": "number",
+    "optional": false,
+    "targets": [
+      "worlds.revision"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:7"
+  },
+  {
+    "field": "World.timeZone",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "worlds.time_zone"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。 IANA有效性由领域校验，SQL仅非空文本。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:7"
+  },
+  {
+    "field": "World.createdAt",
+    "type": "number",
+    "optional": false,
+    "targets": [
+      "worlds.created_at"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:8"
+  },
+  {
+    "field": "World.lastSimulatedAt",
+    "type": "number",
+    "optional": false,
+    "targets": [
+      "worlds.last_simulated_at"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:8"
+  },
+  {
+    "field": "World.autonomyEnabled",
+    "type": "boolean",
+    "optional": false,
+    "targets": [
+      "worlds.autonomy_enabled"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:8"
+  },
+  {
+    "field": "World.proactiveEnabled",
+    "type": "boolean",
+    "optional": false,
+    "targets": [
+      "worlds.proactive_enabled"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:9"
+  },
+  {
+    "field": "World.notificationsEnabled",
+    "type": "boolean",
+    "optional": false,
+    "targets": [
+      "worlds.notifications_enabled"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:9"
+  },
+  {
+    "field": "World.defaultChatMode",
+    "type": "ChatMode",
+    "optional": false,
+    "targets": [
+      "worlds.default_chat_mode"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:9"
+  },
+  {
+    "field": "World.presetSourceId",
+    "type": "string",
+    "optional": true,
+    "targets": [
+      "worlds.extensions_json.$.presetSourceId"
+    ],
+    "kind": "JSON/列组合",
+    "nulls": "缺失→SQL NULL（或无关联行）；显式null仅在旧类型允许时合法",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:10"
+  },
+  {
+    "field": "World.presetVersion",
+    "type": "number",
+    "optional": true,
+    "targets": [
+      "worlds.extensions_json.$.presetVersion"
+    ],
+    "kind": "JSON/列组合",
+    "nulls": "缺失→SQL NULL（或无关联行）；显式null仅在旧类型允许时合法",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:10"
+  },
+  {
+    "field": "World.archived",
+    "type": "boolean",
+    "optional": true,
+    "targets": [
+      "worlds.archived"
+    ],
+    "kind": "列",
+    "nulls": "缺失→SQL NULL（或无关联行）；显式null仅在旧类型允许时合法",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:11"
+  },
+  {
+    "field": "CharacterDefinition.name",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "card_versions.definition_json.$.name"
+    ],
+    "kind": "JSON/列组合",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "实例overrides_json同字段可选覆盖；按原文保存，不执行脚本/远程资源。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:14"
+  },
+  {
+    "field": "CharacterDefinition.aliases",
+    "type": "string[]",
+    "optional": false,
+    "targets": [
+      "card_versions.definition_json.$.aliases"
+    ],
+    "kind": "JSON/列组合",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "实例overrides_json同字段可选覆盖；按原文保存，不执行脚本/远程资源。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:14"
+  },
+  {
+    "field": "CharacterDefinition.summary",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "card_versions.definition_json.$.summary"
+    ],
+    "kind": "JSON/列组合",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "实例overrides_json同字段可选覆盖；按原文保存，不执行脚本/远程资源。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:14"
+  },
+  {
+    "field": "CharacterDefinition.anchors",
+    "type": "string[]",
+    "optional": false,
+    "targets": [
+      "card_versions.definition_json.$.anchors"
+    ],
+    "kind": "JSON/列组合",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "实例overrides_json同字段可选覆盖；按原文保存，不执行脚本/远程资源。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:14"
+  },
+  {
+    "field": "CharacterDefinition.speechStyle",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "card_versions.definition_json.$.speechStyle"
+    ],
+    "kind": "JSON/列组合",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "实例overrides_json同字段可选覆盖；按原文保存，不执行脚本/远程资源。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:14"
+  },
+  {
+    "field": "CharacterDefinition.motivations",
+    "type": "string[]",
+    "optional": false,
+    "targets": [
+      "card_versions.definition_json.$.motivations"
+    ],
+    "kind": "JSON/列组合",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "实例overrides_json同字段可选覆盖；按原文保存，不执行脚本/远程资源。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:15"
+  },
+  {
+    "field": "CharacterDefinition.interests",
+    "type": "string[]",
+    "optional": false,
+    "targets": [
+      "card_versions.definition_json.$.interests"
+    ],
+    "kind": "JSON/列组合",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "实例overrides_json同字段可选覆盖；按原文保存，不执行脚本/远程资源。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:15"
+  },
+  {
+    "field": "CharacterDefinition.disagreementStyle",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "card_versions.definition_json.$.disagreementStyle"
+    ],
+    "kind": "JSON/列组合",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "实例overrides_json同字段可选覆盖；按原文保存，不执行脚本/远程资源。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:15"
+  },
+  {
+    "field": "CharacterDefinition.knowledgeBoundary",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "card_versions.definition_json.$.knowledgeBoundary"
+    ],
+    "kind": "JSON/列组合",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "实例overrides_json同字段可选覆盖；按原文保存，不执行脚本/远程资源。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:16"
+  },
+  {
+    "field": "CharacterDefinition.addressRule",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "card_versions.definition_json.$.addressRule"
+    ],
+    "kind": "JSON/列组合",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "实例overrides_json同字段可选覆盖；按原文保存，不执行脚本/远程资源。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:16"
+  },
+  {
+    "field": "CharacterDefinition.driftGuards",
+    "type": "string[]",
+    "optional": false,
+    "targets": [
+      "card_versions.definition_json.$.driftGuards"
+    ],
+    "kind": "JSON/列组合",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "实例overrides_json同字段可选覆盖；按原文保存，不执行脚本/远程资源。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:16"
+  },
+  {
+    "field": "CharacterDefinition.promptPriority",
+    "type": "('worldRules' | 'core' | 'worldIdentity' | 'knowledge' | 'style')[]",
+    "optional": false,
+    "targets": [
+      "card_versions.definition_json.$.promptPriority"
+    ],
+    "kind": "JSON/列组合",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "实例overrides_json同字段可选覆盖；按原文保存，不执行脚本/远程资源。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:17"
+  },
+  {
+    "field": "CharacterDefinition.avatarPlaceholder",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "card_versions.definition_json.$.avatarPlaceholder"
+    ],
+    "kind": "JSON/列组合",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "实例overrides_json同字段可选覆盖；按原文保存，不执行脚本/远程资源。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:18"
+  },
+  {
+    "field": "CharacterDefinition.avatarDataUrl",
+    "type": "string",
+    "optional": true,
+    "targets": [
+      "card_versions.definition_json.$.avatarDataUrl"
+    ],
+    "kind": "JSON/列组合",
+    "nulls": "缺失→SQL NULL（或无关联行）；显式null仅在旧类型允许时合法",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "实例overrides_json同字段可选覆盖；按原文保存，不执行脚本/远程资源。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:19"
+  },
+  {
+    "field": "CharacterDefinition.scenario",
+    "type": "string",
+    "optional": true,
+    "targets": [
+      "card_versions.definition_json.$.scenario"
+    ],
+    "kind": "JSON/列组合",
+    "nulls": "缺失→SQL NULL（或无关联行）；显式null仅在旧类型允许时合法",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "实例overrides_json同字段可选覆盖；按原文保存，不执行脚本/远程资源。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:20"
+  },
+  {
+    "field": "CharacterDefinition.exampleDialogue",
+    "type": "string",
+    "optional": true,
+    "targets": [
+      "card_versions.definition_json.$.exampleDialogue"
+    ],
+    "kind": "JSON/列组合",
+    "nulls": "缺失→SQL NULL（或无关联行）；显式null仅在旧类型允许时合法",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "实例overrides_json同字段可选覆盖；按原文保存，不执行脚本/远程资源。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:20"
+  },
+  {
+    "field": "CharacterDefinition.greetings",
+    "type": "string[]",
+    "optional": true,
+    "targets": [
+      "card_versions.definition_json.$.greetings"
+    ],
+    "kind": "JSON/列组合",
+    "nulls": "缺失→SQL NULL（或无关联行）；显式null仅在旧类型允许时合法",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "实例overrides_json同字段可选覆盖；按原文保存，不执行脚本/远程资源。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:20"
+  },
+  {
+    "field": "CharacterDefinition.groupGreetings",
+    "type": "string[]",
+    "optional": true,
+    "targets": [
+      "card_versions.definition_json.$.groupGreetings"
+    ],
+    "kind": "JSON/列组合",
+    "nulls": "缺失→SQL NULL（或无关联行）；显式null仅在旧类型允许时合法",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "实例overrides_json同字段可选覆盖；按原文保存，不执行脚本/远程资源。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:20"
+  },
+  {
+    "field": "CharacterCard.id",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "character_cards.id"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:22"
+  },
+  {
+    "field": "CharacterCard.currentVersionId",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "character_cards.current_version_id"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:22"
+  },
+  {
+    "field": "CharacterCard.archived",
+    "type": "boolean",
+    "optional": false,
+    "targets": [
+      "character_cards.archived"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:22"
+  },
+  {
+    "field": "CharacterCard.presetKey",
+    "type": "string",
+    "optional": true,
+    "targets": [
+      "character_cards.preset_key"
+    ],
+    "kind": "列",
+    "nulls": "缺失→SQL NULL（或无关联行）；显式null仅在旧类型允许时合法",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:22"
+  },
+  {
+    "field": "CharacterCardVersion.id",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "card_versions.id"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:24"
+  },
+  {
+    "field": "CharacterCardVersion.cardId",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "card_versions.card_id"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:24"
+  },
+  {
+    "field": "CharacterCardVersion.revision",
+    "type": "number",
+    "optional": false,
+    "targets": [
+      "card_versions.revision"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:24"
+  },
+  {
+    "field": "CharacterCardVersion.definition",
+    "type": "CharacterDefinition",
+    "optional": false,
+    "targets": [
+      "card_versions.definition_json"
+    ],
+    "kind": "JSON/列组合",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:24"
+  },
+  {
+    "field": "CharacterCardVersion.rawData",
+    "type": "JsonValue",
+    "optional": false,
+    "targets": [
+      "card_versions.raw_data_json"
+    ],
+    "kind": "JSON/列组合",
+    "nulls": "合法JSON null保存为文本null，区别于SQL NULL/字段缺失",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:25"
+  },
+  {
+    "field": "CharacterCardVersion.source",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "card_versions.source"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:25"
+  },
+  {
+    "field": "CharacterCardVersion.imported",
+    "type": "import('../cards/characterCardTypes').ImportedCardAsset",
+    "optional": true,
+    "targets": [
+      "card_versions.imported_json"
+    ],
+    "kind": "JSON/列组合",
+    "nulls": "缺失→SQL NULL（或无关联行）；显式null仅在旧类型允许时合法",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:26"
+  },
+  {
+    "field": "CharacterInstance.id",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "character_instances.id"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:29"
+  },
+  {
+    "field": "CharacterInstance.worldId",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "character_instances.world_id"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:29"
+  },
+  {
+    "field": "CharacterInstance.cardId",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "character_instances.card_id"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:29"
+  },
+  {
+    "field": "CharacterInstance.cardVersionId",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "character_instances.card_version_id"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:29"
+  },
+  {
+    "field": "CharacterInstance.revision",
+    "type": "number",
+    "optional": false,
+    "targets": [
+      "character_instances.revision"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:29"
+  },
+  {
+    "field": "CharacterInstance.overrides",
+    "type": "Partial<CharacterDefinition>",
+    "optional": false,
+    "targets": [
+      "character_instances.overrides_json"
+    ],
+    "kind": "JSON/列组合",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:30"
+  },
+  {
+    "field": "CharacterInstance.state",
+    "type": "{ mood: string; energy: number; location: string }",
+    "optional": false,
+    "targets": [
+      "character_instances.mood",
+      "character_instances.energy",
+      "character_instances.location"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:30"
+  },
+  {
+    "field": "CharacterInstance.state.mood",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "character_instances.mood"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:30"
+  },
+  {
+    "field": "CharacterInstance.state.energy",
+    "type": "number",
+    "optional": false,
+    "targets": [
+      "character_instances.energy"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:30"
+  },
+  {
+    "field": "CharacterInstance.state.location",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "character_instances.location"
+    ],
+    "kind": "列",
+    "nulls": "''/空白/普通字符串保留；NULL/缺失拒绝，不发明地点",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:30"
+  },
+  {
+    "field": "CharacterInstance.autonomyEnabled",
+    "type": "boolean",
+    "optional": false,
+    "targets": [
+      "character_instances.autonomy_enabled"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:31"
+  },
+  {
+    "field": "CharacterInstance.proactiveEnabled",
+    "type": "boolean",
+    "optional": false,
+    "targets": [
+      "character_instances.proactive_enabled"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:31"
+  },
+  {
+    "field": "WorldUserIdentity.id",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "world_identities.id"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:34"
+  },
+  {
+    "field": "WorldUserIdentity.worldId",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "world_identities.world_id"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:34"
+  },
+  {
+    "field": "WorldUserIdentity.userId",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "world_identities.user_id"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:34"
+  },
+  {
+    "field": "WorldUserIdentity.displayName",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "world_identities.display_name"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:34"
+  },
+  {
+    "field": "WorldUserIdentity.background",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "world_identities.background"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:34"
+  },
+  {
+    "field": "WorldUserIdentity.revision",
+    "type": "number",
+    "optional": false,
+    "targets": [
+      "world_identities.revision"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:34"
+  },
+  {
+    "field": "GroupReplyLimits.maxSpeakers",
+    "type": "number",
+    "optional": false,
+    "targets": [
+      "conversations.max_speakers"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:36"
+  },
+  {
+    "field": "GroupReplyLimits.maxMessages",
+    "type": "number",
+    "optional": false,
+    "targets": [
+      "conversations.max_messages"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:36"
+  },
+  {
+    "field": "ReplyTimingPolicy.enabled",
+    "type": "boolean",
+    "optional": false,
+    "targets": [
+      "conversations.reply_timing_enabled"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:37"
+  },
+  {
+    "field": "ReplyTimingPolicy.waitMs",
+    "type": "number",
+    "optional": false,
+    "targets": [
+      "conversations.reply_wait_ms"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:37"
+  },
+  {
+    "field": "Conversation.id",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "conversations.id"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:39"
+  },
+  {
+    "field": "Conversation.worldId",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "conversations.world_id"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:39"
+  },
+  {
+    "field": "Conversation.type",
+    "type": "'private' | 'group' | 'character'",
+    "optional": false,
+    "targets": [
+      "conversations.type"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:39"
+  },
+  {
+    "field": "Conversation.title",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "conversations.title"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:40"
+  },
+  {
+    "field": "Conversation.participantIds",
+    "type": "string[]",
+    "optional": false,
+    "targets": [
+      "conversation_participants.participant_id",
+      "conversation_participants.ordinal"
+    ],
+    "kind": "关系表",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。 无ordinal的关系须由原字段同名JSON提示保留顺序/可选空数组；必须与关系行交叉校验，不能用JSON绕过权限/FK。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:40"
+  },
+  {
+    "field": "Conversation.mode",
+    "type": "ChatMode | 'inherit'",
+    "optional": false,
+    "targets": [
+      "conversations.mode"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:40"
+  },
+  {
+    "field": "Conversation.revision",
+    "type": "number",
+    "optional": false,
+    "targets": [
+      "conversations.revision"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:40"
+  },
+  {
+    "field": "Conversation.lastReadAt",
+    "type": "number",
+    "optional": false,
+    "targets": [
+      "conversations.last_read_at"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:40"
+  },
+  {
+    "field": "Conversation.replyLimits",
+    "type": "GroupReplyLimits",
+    "optional": true,
+    "targets": [
+      "conversations.max_speakers",
+      "conversations.max_messages"
+    ],
+    "kind": "列",
+    "nulls": "缺失→SQL NULL（或无关联行）；显式null仅在旧类型允许时合法",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:41"
+  },
+  {
+    "field": "Conversation.replyTiming",
+    "type": "ReplyTimingPolicy",
+    "optional": true,
+    "targets": [
+      "conversations.reply_timing_enabled",
+      "conversations.reply_wait_ms"
+    ],
+    "kind": "列",
+    "nulls": "缺失→SQL NULL（或无关联行）；显式null仅在旧类型允许时合法",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:42"
+  },
+  {
+    "field": "Message.id",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "messages.id"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:45"
+  },
+  {
+    "field": "Message.worldId",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "messages.world_id"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:45"
+  },
+  {
+    "field": "Message.conversationId",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "messages.conversation_id"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:45"
+  },
+  {
+    "field": "Message.role",
+    "type": "'user' | 'assistant'",
+    "optional": false,
+    "targets": [
+      "messages.role"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:45"
+  },
+  {
+    "field": "Message.senderType",
+    "type": "'user' | 'character'",
+    "optional": false,
+    "targets": [
+      "messages.sender_type"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:46"
+  },
+  {
+    "field": "Message.senderId",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "messages.sender_id"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:46"
+  },
+  {
+    "field": "Message.senderNameSnapshot",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "messages.sender_name_snapshot"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:46"
+  },
+  {
+    "field": "Message.content",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "messages.content"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:47"
+  },
+  {
+    "field": "Message.createdAt",
+    "type": "number",
+    "optional": false,
+    "targets": [
+      "messages.created_at"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:47"
+  },
+  {
+    "field": "Message.revision",
+    "type": "number",
+    "optional": false,
+    "targets": [
+      "messages.revision"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:47"
+  },
+  {
+    "field": "Message.status",
+    "type": "'complete' | 'stopped'",
+    "optional": false,
+    "targets": [
+      "messages.status"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:47"
+  },
+  {
+    "field": "Message.turnId",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "messages.turn_id"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:48"
+  },
+  {
+    "field": "Message.batchId",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "messages.batch_id"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:48"
+  },
+  {
+    "field": "Message.replyToMessageId",
+    "type": "string",
+    "optional": true,
+    "targets": [
+      "messages.reply_to_message_id"
+    ],
+    "kind": "列",
+    "nulls": "缺失→SQL NULL（或无关联行）；显式null仅在旧类型允许时合法",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:48"
+  },
+  {
+    "field": "Message.deleted",
+    "type": "boolean",
+    "optional": true,
+    "targets": [
+      "messages.deleted"
+    ],
+    "kind": "列",
+    "nulls": "缺失→SQL NULL（或无关联行）；显式null仅在旧类型允许时合法",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:49"
+  },
+  {
+    "field": "Message.lifeSources",
+    "type": "LifeSource[]",
+    "optional": true,
+    "targets": [
+      "message_life_sources.grant_id",
+      "messages.extensions_json.$.lifeSources"
+    ],
+    "kind": "关系表",
+    "nulls": "缺失→SQL NULL（或无关联行）；显式null仅在旧类型允许时合法",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。 无ordinal的关系须由原字段同名JSON提示保留顺序/可选空数组；必须与关系行交叉校验，不能用JSON绕过权限/FK。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:49"
+  },
+  {
+    "field": "Message.replyToRevision",
+    "type": "number",
+    "optional": true,
+    "targets": [
+      "messages.reply_to_revision"
+    ],
+    "kind": "列",
+    "nulls": "缺失→SQL NULL（或无关联行）；显式null仅在旧类型允许时合法",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:50"
+  },
+  {
+    "field": "LorebookEntry.id",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "lorebook_entries.id"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:53"
+  },
+  {
+    "field": "LorebookEntry.worldId",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "lorebook_entries.world_id"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:53"
+  },
+  {
+    "field": "LorebookEntry.scope",
+    "type": "'world' | 'character' | 'system'",
+    "optional": false,
+    "targets": [
+      "lorebook_entries.scope"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:53"
+  },
+  {
+    "field": "LorebookEntry.ownerId",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "lorebook_entries.owner_id"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:53"
+  },
+  {
+    "field": "LorebookEntry.keys",
+    "type": "string[]",
+    "optional": false,
+    "targets": [
+      "lorebook_entries.keys_json"
+    ],
+    "kind": "JSON/列组合",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:54"
+  },
+  {
+    "field": "LorebookEntry.content",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "lorebook_entries.content"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:54"
+  },
+  {
+    "field": "LorebookEntry.priority",
+    "type": "number",
+    "optional": false,
+    "targets": [
+      "lorebook_entries.priority"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:54"
+  },
+  {
+    "field": "LorebookEntry.activationRule",
+    "type": "'keyword' | 'always'",
+    "optional": false,
+    "targets": [
+      "lorebook_entries.activation_rule"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:54"
+  },
+  {
+    "field": "LorebookEntry.visibility",
+    "type": "Visibility",
+    "optional": false,
+    "targets": [
+      "lorebook_entries.visibility"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:55"
+  },
+  {
+    "field": "LorebookEntry.knownBy",
+    "type": "string[]",
+    "optional": false,
+    "targets": [
+      "lorebook_known_by.participant_id",
+      "lorebook_entries.extensions_json.$.knownBy"
+    ],
+    "kind": "关系表",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。 无ordinal的关系须由原字段同名JSON提示保留顺序/可选空数组；必须与关系行交叉校验，不能用JSON绕过权限/FK。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:55"
+  },
+  {
+    "field": "LorebookEntry.sourceTag",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "lorebook_entries.source_tag"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:55"
+  },
+  {
+    "field": "LorebookEntry.revision",
+    "type": "number",
+    "optional": false,
+    "targets": [
+      "lorebook_entries.revision"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:55"
+  },
+  {
+    "field": "LorebookEntry.enabled",
+    "type": "boolean",
+    "optional": true,
+    "targets": [
+      "lorebook_entries.enabled"
+    ],
+    "kind": "列",
+    "nulls": "缺失→SQL NULL（或无关联行）；显式null仅在旧类型允许时合法",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:56"
+  },
+  {
+    "field": "LorebookEntry.caseSensitive",
+    "type": "boolean",
+    "optional": true,
+    "targets": [
+      "lorebook_entries.case_sensitive"
+    ],
+    "kind": "列",
+    "nulls": "缺失→SQL NULL（或无关联行）；显式null仅在旧类型允许时合法",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:56"
+  },
+  {
+    "field": "LorebookEntry.secondaryKeys",
+    "type": "string[]",
+    "optional": true,
+    "targets": [
+      "lorebook_entries.secondary_keys_json"
+    ],
+    "kind": "JSON/列组合",
+    "nulls": "缺失→SQL NULL（或无关联行）；显式null仅在旧类型允许时合法",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:56"
+  },
+  {
+    "field": "Memory.id",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "memories.id"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:59"
+  },
+  {
+    "field": "Memory.worldId",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "memories.world_id"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:59"
+  },
+  {
+    "field": "Memory.ownerType",
+    "type": "'world' | 'character'",
+    "optional": false,
+    "targets": [
+      "memories.owner_type"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:59"
+  },
+  {
+    "field": "Memory.ownerId",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "memories.owner_id"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:59"
+  },
+  {
+    "field": "Memory.layer",
+    "type": "'L2' | 'L3'",
+    "optional": false,
+    "targets": [
+      "memories.layer"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:60"
+  },
+  {
+    "field": "Memory.key",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "memories.memory_key"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:60"
+  },
+  {
+    "field": "Memory.content",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "memories.content"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:60"
+  },
+  {
+    "field": "Memory.sourceRefs",
+    "type": "SourceRef[]",
+    "optional": false,
+    "targets": [
+      "memory_sources.message_id",
+      "memories.extensions_json.$.sourceRefs"
+    ],
+    "kind": "关系表",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。 无ordinal的关系须由原字段同名JSON提示保留顺序/可选空数组；必须与关系行交叉校验，不能用JSON绕过权限/FK。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:60"
+  },
+  {
+    "field": "Memory.status",
+    "type": "'candidate' | 'active' | 'stale' | 'deleted'",
+    "optional": false,
+    "targets": [
+      "memories.status"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:61"
+  },
+  {
+    "field": "Memory.revision",
+    "type": "number",
+    "optional": false,
+    "targets": [
+      "memories.revision"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:61"
+  },
+  {
+    "field": "Memory.visibility",
+    "type": "Visibility",
+    "optional": false,
+    "targets": [
+      "memories.visibility"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:61"
+  },
+  {
+    "field": "Memory.knownBy",
+    "type": "string[]",
+    "optional": true,
+    "targets": [
+      "memory_known_by.instance_id",
+      "memories.extensions_json.$.knownBy"
+    ],
+    "kind": "关系表",
+    "nulls": "缺失→SQL NULL（或无关联行）；显式null仅在旧类型允许时合法",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。 无ordinal的关系须由原字段同名JSON提示保留顺序/可选空数组；必须与关系行交叉校验，不能用JSON绕过权限/FK。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:62"
+  },
+  {
+    "field": "Memory.conversationId",
+    "type": "string",
+    "optional": true,
+    "targets": [
+      "memories.conversation_id"
+    ],
+    "kind": "列",
+    "nulls": "缺失→SQL NULL（或无关联行）；显式null仅在旧类型允许时合法",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:62"
+  },
+  {
+    "field": "Memory.sourceEventIds",
+    "type": "string[]",
+    "optional": true,
+    "targets": [
+      "memory_events.event_id",
+      "memories.extensions_json.$.sourceEventIds"
+    ],
+    "kind": "关系表",
+    "nulls": "缺失→SQL NULL（或无关联行）；显式null仅在旧类型允许时合法",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。 无ordinal的关系须由原字段同名JSON提示保留顺序/可选空数组；必须与关系行交叉校验，不能用JSON绕过权限/FK。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:62"
+  },
+  {
+    "field": "Memory.lifeSources",
+    "type": "LifeSource[]",
+    "optional": true,
+    "targets": [
+      "memory_life_sources.grant_id",
+      "memories.extensions_json.$.lifeSources"
+    ],
+    "kind": "关系表",
+    "nulls": "缺失→SQL NULL（或无关联行）；显式null仅在旧类型允许时合法",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。 无ordinal的关系须由原字段同名JSON提示保留顺序/可选空数组；必须与关系行交叉校验，不能用JSON绕过权限/FK。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:62"
+  },
+  {
+    "field": "Memory.confidence",
+    "type": "'statement' | 'inference' | 'confirmed' | 'joke'",
+    "optional": true,
+    "targets": [
+      "memories.confidence"
+    ],
+    "kind": "列",
+    "nulls": "缺失→SQL NULL（或无关联行）；显式null仅在旧类型允许时合法",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:63"
+  },
+  {
+    "field": "Memory.conflictWith",
+    "type": "string[]",
+    "optional": true,
+    "targets": [
+      "memory_links.target_memory_id",
+      "memories.extensions_json.$.conflictWith"
+    ],
+    "kind": "关系表",
+    "nulls": "缺失→SQL NULL（或无关联行）；显式null仅在旧类型允许时合法",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:63"
+  },
+  {
+    "field": "Memory.generationKey",
+    "type": "string",
+    "optional": true,
+    "targets": [
+      "memories.generation_key"
+    ],
+    "kind": "列",
+    "nulls": "缺失→SQL NULL（或无关联行）；显式null仅在旧类型允许时合法",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:64"
+  },
+  {
+    "field": "Memory.sharedFromId",
+    "type": "string",
+    "optional": true,
+    "targets": [
+      "memory_links.target_memory_id"
+    ],
+    "kind": "关系表",
+    "nulls": "缺失→SQL NULL（或无关联行）；显式null仅在旧类型允许时合法",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:64"
+  },
+  {
+    "field": "Memory.supersededById",
+    "type": "string",
+    "optional": true,
+    "targets": [
+      "memory_links.target_memory_id"
+    ],
+    "kind": "关系表",
+    "nulls": "缺失→SQL NULL（或无关联行）；显式null仅在旧类型允许时合法",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:64"
+  },
+  {
+    "field": "Relationship.id",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "relationships.id"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:67"
+  },
+  {
+    "field": "Relationship.worldId",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "relationships.world_id"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:67"
+  },
+  {
+    "field": "Relationship.fromId",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "relationships.from_id"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:67"
+  },
+  {
+    "field": "Relationship.toId",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "relationships.to_id"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:67"
+  },
+  {
+    "field": "Relationship.kind",
+    "type": "'teammate' | 'teacher' | 'acquaintance' | 'friend' | 'conflict' | 'romantic'",
+    "optional": false,
+    "targets": [
+      "relationships.kind"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:68"
+  },
+  {
+    "field": "Relationship.trustBaseline",
+    "type": "'new' | 'established'",
+    "optional": false,
+    "targets": [
+      "relationships.trust_baseline"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:69"
+  },
+  {
+    "field": "Relationship.publicSummary",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "relationships.public_summary"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:69"
+  },
+  {
+    "field": "Relationship.dimensions",
+    "type": "{ trust: number; intimacy: number; understanding: number }",
+    "optional": false,
+    "targets": [
+      "relationships.trust",
+      "relationships.intimacy",
+      "relationships.understanding"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:71"
+  },
+  {
+    "field": "Relationship.dimensions.trust",
+    "type": "number",
+    "optional": false,
+    "targets": [
+      "relationships.trust"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:71"
+  },
+  {
+    "field": "Relationship.dimensions.intimacy",
+    "type": "number",
+    "optional": false,
+    "targets": [
+      "relationships.intimacy"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:71"
+  },
+  {
+    "field": "Relationship.dimensions.understanding",
+    "type": "number",
+    "optional": false,
+    "targets": [
+      "relationships.understanding"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:71"
+  },
+  {
+    "field": "Relationship.dimensionRuleVersion",
+    "type": "number",
+    "optional": false,
+    "targets": [
+      "relationships.dimension_rule_version"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:71"
+  },
+  {
+    "field": "Relationship.sourceEventIds",
+    "type": "string[]",
+    "optional": false,
+    "targets": [
+      "relationship_events.event_id",
+      "relationships.extensions_json.$.sourceEventIds"
+    ],
+    "kind": "关系表",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。 无ordinal的关系须由原字段同名JSON提示保留顺序/可选空数组；必须与关系行交叉校验，不能用JSON绕过权限/FK。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:72"
+  },
+  {
+    "field": "Relationship.revision",
+    "type": "number",
+    "optional": false,
+    "targets": [
+      "relationships.revision"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:72"
+  },
+  {
+    "field": "WorldEvent.id",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "world_events.id"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:75"
+  },
+  {
+    "field": "WorldEvent.worldId",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "world_events.world_id"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:75"
+  },
+  {
+    "field": "WorldEvent.participantIds",
+    "type": "string[]",
+    "optional": false,
+    "targets": [
+      "event_participants.participant_id",
+      "world_events.extensions_json.$.participantIds"
+    ],
+    "kind": "关系表",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。 无ordinal的关系须由原字段同名JSON提示保留顺序/可选空数组；必须与关系行交叉校验，不能用JSON绕过权限/FK。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:75"
+  },
+  {
+    "field": "WorldEvent.sourceRefs",
+    "type": "SourceRef[]",
+    "optional": false,
+    "targets": [
+      "event_sources.message_id",
+      "world_events.extensions_json.$.sourceRefs"
+    ],
+    "kind": "关系表",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。 无ordinal的关系须由原字段同名JSON提示保留顺序/可选空数组；必须与关系行交叉校验，不能用JSON绕过权限/FK。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:75"
+  },
+  {
+    "field": "WorldEvent.causedByEventIds",
+    "type": "string[]",
+    "optional": false,
+    "targets": [
+      "event_causes.cause_event_id",
+      "world_events.extensions_json.$.causedByEventIds"
+    ],
+    "kind": "关系表",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。 无ordinal的关系须由原字段同名JSON提示保留顺序/可选空数组；必须与关系行交叉校验，不能用JSON绕过权限/FK。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:76"
+  },
+  {
+    "field": "WorldEvent.status",
+    "type": "'candidate' | 'committed' | 'revoked' | 'needsReview'",
+    "optional": false,
+    "targets": [
+      "world_events.status"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:76"
+  },
+  {
+    "field": "WorldEvent.visibility",
+    "type": "Visibility",
+    "optional": false,
+    "targets": [
+      "world_events.visibility"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:77"
+  },
+  {
+    "field": "WorldEvent.summary",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "world_events.summary"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:77"
+  },
+  {
+    "field": "WorldEvent.effectiveAt",
+    "type": "number",
+    "optional": false,
+    "targets": [
+      "world_events.effective_at"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:77"
+  },
+  {
+    "field": "WorldEvent.recordedAt",
+    "type": "number",
+    "optional": false,
+    "targets": [
+      "world_events.recorded_at"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:77"
+  },
+  {
+    "field": "WorldEvent.revision",
+    "type": "number",
+    "optional": false,
+    "targets": [
+      "world_events.revision"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:77"
+  },
+  {
+    "field": "WorldEvent.causality",
+    "type": "'explicit' | 'unknown'",
+    "optional": true,
+    "targets": [
+      "world_events.causality"
+    ],
+    "kind": "列",
+    "nulls": "缺失→SQL NULL（或无关联行）；显式null仅在旧类型允许时合法",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:78"
+  },
+  {
+    "field": "WorldEvent.kind",
+    "type": "EventKind",
+    "optional": true,
+    "targets": [
+      "world_events.kind"
+    ],
+    "kind": "列",
+    "nulls": "缺失→SQL NULL（或无关联行）；显式null仅在旧类型允许时合法",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:78"
+  },
+  {
+    "field": "WorldEvent.lifeSources",
+    "type": "LifeSource[]",
+    "optional": true,
+    "targets": [
+      "event_life_sources.grant_id",
+      "world_events.extensions_json.$.lifeSources"
+    ],
+    "kind": "关系表",
+    "nulls": "缺失→SQL NULL（或无关联行）；显式null仅在旧类型允许时合法",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。 无ordinal的关系须由原字段同名JSON提示保留顺序/可选空数组；必须与关系行交叉校验，不能用JSON绕过权限/FK。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:78"
+  },
+  {
+    "field": "WorldEvent.action",
+    "type": "{ instanceId?: string; relationshipId?: string; location?: string }",
+    "optional": true,
+    "targets": [
+      "world_events.action_instance_id",
+      "world_events.action_relationship_id",
+      "world_events.action_location",
+      "world_events.extensions_json.$.action"
+    ],
+    "kind": "JSON/列组合",
+    "nulls": "缺失→SQL NULL（或无关联行）；显式null仅在旧类型允许时合法",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:79"
+  },
+  {
+    "field": "WorldEvent.action.instanceId",
+    "type": "string",
+    "optional": true,
+    "targets": [
+      "world_events.action_instance_id"
+    ],
+    "kind": "列",
+    "nulls": "缺失→SQL NULL（或无关联行）；显式null仅在旧类型允许时合法",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:79"
+  },
+  {
+    "field": "WorldEvent.action.relationshipId",
+    "type": "string",
+    "optional": true,
+    "targets": [
+      "world_events.action_relationship_id"
+    ],
+    "kind": "列",
+    "nulls": "缺失→SQL NULL（或无关联行）；显式null仅在旧类型允许时合法",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:79"
+  },
+  {
+    "field": "WorldEvent.action.location",
+    "type": "string",
+    "optional": true,
+    "targets": [
+      "world_events.action_location"
+    ],
+    "kind": "列",
+    "nulls": "可选：缺失SQL NULL，显式NULL旧领域不允许，空串可表达但move命令另要求非空",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:79"
+  },
+  {
+    "field": "WorldEvent.replacesEventId",
+    "type": "string",
+    "optional": true,
+    "targets": [
+      "world_events.replaces_event_id"
+    ],
+    "kind": "列",
+    "nulls": "缺失→SQL NULL（或无关联行）；显式null仅在旧类型允许时合法",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:80"
+  },
+  {
+    "field": "WorldEffect.id",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "world_effects.id"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:83"
+  },
+  {
+    "field": "WorldEffect.worldId",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "world_effects.world_id"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:83"
+  },
+  {
+    "field": "WorldEffect.eventId",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "world_effects.event_id"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:83"
+  },
+  {
+    "field": "WorldEffect.targetType",
+    "type": "'world' | 'instance' | 'relationship'",
+    "optional": false,
+    "targets": [
+      "world_effects.target_type"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:83"
+  },
+  {
+    "field": "WorldEffect.targetId",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "world_effects.target_id"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:84"
+  },
+  {
+    "field": "WorldEffect.operation",
+    "type": "'set' | 'increment'",
+    "optional": false,
+    "targets": [
+      "world_effects.operation"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:84"
+  },
+  {
+    "field": "WorldEffect.path",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "world_effects.path"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:84"
+  },
+  {
+    "field": "WorldEffect.value",
+    "type": "JsonValue",
+    "optional": false,
+    "targets": [
+      "world_effects.value_json"
+    ],
+    "kind": "JSON/列组合",
+    "nulls": "合法JSON null保存为文本null，区别于SQL NULL/字段缺失",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:84"
+  },
+  {
+    "field": "WorldEffect.ruleVersion",
+    "type": "number",
+    "optional": false,
+    "targets": [
+      "world_effects.rule_version"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:84"
+  },
+  {
+    "field": "BackgroundTask.id",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "background_tasks.id"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:87"
+  },
+  {
+    "field": "BackgroundTask.worldId",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "background_tasks.world_id"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:87"
+  },
+  {
+    "field": "BackgroundTask.kind",
+    "type": "'reply' | 'memory' | 'summary' | 'world' | 'proactive' | 'followup'",
+    "optional": false,
+    "targets": [
+      "background_tasks.kind"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:87"
+  },
+  {
+    "field": "BackgroundTask.state",
+    "type": "'pending' | 'running' | 'succeeded' | 'failed' | 'cancelled'",
+    "optional": false,
+    "targets": [
+      "background_tasks.state"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:88"
+  },
+  {
+    "field": "BackgroundTask.idempotencyKey",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "background_tasks.idempotency_key"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:89"
+  },
+  {
+    "field": "BackgroundTask.sourceRefs",
+    "type": "SourceRef[]",
+    "optional": false,
+    "targets": [
+      "task_sources.message_id",
+      "background_tasks.extensions_json.$.sourceRefs"
+    ],
+    "kind": "关系表",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。 无ordinal的关系须由原字段同名JSON提示保留顺序/可选空数组；必须与关系行交叉校验，不能用JSON绕过权限/FK。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:89"
+  },
+  {
+    "field": "BackgroundTask.sourceRevision",
+    "type": "number",
+    "optional": false,
+    "targets": [
+      "background_tasks.source_revision"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:89"
+  },
+  {
+    "field": "BackgroundTask.attempt",
+    "type": "number",
+    "optional": false,
+    "targets": [
+      "background_tasks.attempt"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:89"
+  },
+  {
+    "field": "BackgroundTask.notBefore",
+    "type": "number",
+    "optional": false,
+    "targets": [
+      "background_tasks.not_before"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:90"
+  },
+  {
+    "field": "BackgroundTask.leaseUntil",
+    "type": "number",
+    "optional": false,
+    "targets": [
+      "background_tasks.lease_until"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:90"
+  },
+  {
+    "field": "BackgroundTask.conversationId",
+    "type": "string",
+    "optional": true,
+    "targets": [
+      "background_tasks.conversation_id"
+    ],
+    "kind": "列",
+    "nulls": "缺失→SQL NULL（或无关联行）；显式null仅在旧类型允许时合法",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:90"
+  },
+  {
+    "field": "BackgroundTask.instanceId",
+    "type": "string",
+    "optional": true,
+    "targets": [
+      "background_tasks.instance_id"
+    ],
+    "kind": "列",
+    "nulls": "缺失→SQL NULL（或无关联行）；显式null仅在旧类型允许时合法",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:90"
+  },
+  {
+    "field": "BackgroundTask.resultEventIds",
+    "type": "string[]",
+    "optional": false,
+    "targets": [
+      "task_result_events.event_id",
+      "background_tasks.extensions_json.$.resultEventIds"
+    ],
+    "kind": "关系表",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。 无ordinal的关系须由原字段同名JSON提示保留顺序/可选空数组；必须与关系行交叉校验，不能用JSON绕过权限/FK。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:90"
+  },
+  {
+    "field": "BackgroundTask.resultMemoryIds",
+    "type": "string[]",
+    "optional": true,
+    "targets": [
+      "task_result_memories.memory_id",
+      "background_tasks.extensions_json.$.resultMemoryIds"
+    ],
+    "kind": "关系表",
+    "nulls": "缺失→SQL NULL（或无关联行）；显式null仅在旧类型允许时合法",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。 无ordinal的关系须由原字段同名JSON提示保留顺序/可选空数组；必须与关系行交叉校验，不能用JSON绕过权限/FK。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:91"
+  },
+  {
+    "field": "BackgroundTask.errorCode",
+    "type": "string",
+    "optional": true,
+    "targets": [
+      "background_tasks.error_code"
+    ],
+    "kind": "列",
+    "nulls": "缺失→SQL NULL（或无关联行）；显式null仅在旧类型允许时合法",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:91"
+  },
+  {
+    "field": "BackgroundTask.simulationWindow",
+    "type": "{start:number;end:number;skippedMs:number;timeZone:string}",
+    "optional": true,
+    "targets": [
+      "background_tasks.metadata_json.$.simulationWindow"
+    ],
+    "kind": "JSON/列组合",
+    "nulls": "缺失→SQL NULL（或无关联行）；显式null仅在旧类型允许时合法",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:92"
+  },
+  {
+    "field": "BackgroundTask.simulationWindow.start",
+    "type": "number",
+    "optional": true,
+    "targets": [
+      "background_tasks.metadata_json.$.simulationWindow.start"
+    ],
+    "kind": "JSON/列组合",
+    "nulls": "缺失→SQL NULL（或无关联行）；显式null仅在旧类型允许时合法",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:92"
+  },
+  {
+    "field": "BackgroundTask.simulationWindow.end",
+    "type": "number",
+    "optional": true,
+    "targets": [
+      "background_tasks.metadata_json.$.simulationWindow.end"
+    ],
+    "kind": "JSON/列组合",
+    "nulls": "缺失→SQL NULL（或无关联行）；显式null仅在旧类型允许时合法",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:92"
+  },
+  {
+    "field": "BackgroundTask.simulationWindow.skippedMs",
+    "type": "number",
+    "optional": true,
+    "targets": [
+      "background_tasks.metadata_json.$.simulationWindow.skippedMs"
+    ],
+    "kind": "JSON/列组合",
+    "nulls": "缺失→SQL NULL（或无关联行）；显式null仅在旧类型允许时合法",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:92"
+  },
+  {
+    "field": "BackgroundTask.simulationWindow.timeZone",
+    "type": "string",
+    "optional": true,
+    "targets": [
+      "background_tasks.metadata_json.$.simulationWindow.timeZone"
+    ],
+    "kind": "JSON/列组合",
+    "nulls": "缺失→SQL NULL（或无关联行）；显式null仅在旧类型允许时合法",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:92"
+  },
+  {
+    "field": "BackgroundTask.social",
+    "type": "{windowTaskId:string;date:string;participantIds:string[];location:string;effectiveAt:number}",
+    "optional": true,
+    "targets": [
+      "background_tasks.window_task_id",
+      "background_tasks.metadata_json.$.social"
+    ],
+    "kind": "JSON/列组合",
+    "nulls": "缺失→SQL NULL（或无关联行）；显式null仅在旧类型允许时合法",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:93"
+  },
+  {
+    "field": "BackgroundTask.social.windowTaskId",
+    "type": "string",
+    "optional": true,
+    "targets": [
+      "background_tasks.window_task_id"
+    ],
+    "kind": "列",
+    "nulls": "缺失→SQL NULL（或无关联行）；显式null仅在旧类型允许时合法",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:93"
+  },
+  {
+    "field": "BackgroundTask.social.date",
+    "type": "string",
+    "optional": true,
+    "targets": [
+      "background_tasks.metadata_json.$.social.date"
+    ],
+    "kind": "JSON/列组合",
+    "nulls": "缺失→SQL NULL（或无关联行）；显式null仅在旧类型允许时合法",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:93"
+  },
+  {
+    "field": "BackgroundTask.social.participantIds",
+    "type": "string[]",
+    "optional": true,
+    "targets": [
+      "task_social_participants.instance_id",
+      "background_tasks.metadata_json.$.social.participantIds"
+    ],
+    "kind": "关系表",
+    "nulls": "缺失→SQL NULL（或无关联行）；显式null仅在旧类型允许时合法",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。 无ordinal的关系须由原字段同名JSON提示保留顺序/可选空数组；必须与关系行交叉校验，不能用JSON绕过权限/FK。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:93"
+  },
+  {
+    "field": "BackgroundTask.social.location",
+    "type": "string",
+    "optional": true,
+    "targets": [
+      "background_tasks.metadata_json.$.social.location"
+    ],
+    "kind": "JSON/列组合",
+    "nulls": "缺失→SQL NULL（或无关联行）；显式null仅在旧类型允许时合法",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:93"
+  },
+  {
+    "field": "BackgroundTask.social.effectiveAt",
+    "type": "number",
+    "optional": true,
+    "targets": [
+      "background_tasks.metadata_json.$.social.effectiveAt"
+    ],
+    "kind": "JSON/列组合",
+    "nulls": "缺失→SQL NULL（或无关联行）；显式null仅在旧类型允许时合法",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:93"
+  },
+  {
+    "field": "BackgroundTask.contact",
+    "type": "{date:string;expiresAt:number;notificationId:number;notificationState:'none'|'dispatching'|'sent'|'denied'|'failed'}",
+    "optional": true,
+    "targets": [
+      "background_tasks.notification_id",
+      "background_tasks.metadata_json.$.contact"
+    ],
+    "kind": "JSON/列组合",
+    "nulls": "缺失→SQL NULL（或无关联行）；显式null仅在旧类型允许时合法",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:94"
+  },
+  {
+    "field": "BackgroundTask.contact.date",
+    "type": "string",
+    "optional": true,
+    "targets": [
+      "background_tasks.metadata_json.$.contact.date"
+    ],
+    "kind": "JSON/列组合",
+    "nulls": "缺失→SQL NULL（或无关联行）；显式null仅在旧类型允许时合法",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:94"
+  },
+  {
+    "field": "BackgroundTask.contact.expiresAt",
+    "type": "number",
+    "optional": true,
+    "targets": [
+      "background_tasks.metadata_json.$.contact.expiresAt"
+    ],
+    "kind": "JSON/列组合",
+    "nulls": "缺失→SQL NULL（或无关联行）；显式null仅在旧类型允许时合法",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:94"
+  },
+  {
+    "field": "BackgroundTask.contact.notificationId",
+    "type": "number",
+    "optional": true,
+    "targets": [
+      "background_tasks.notification_id"
+    ],
+    "kind": "列",
+    "nulls": "缺失→SQL NULL（或无关联行）；显式null仅在旧类型允许时合法",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:94"
+  },
+  {
+    "field": "BackgroundTask.contact.notificationState",
+    "type": "'none'|'dispatching'|'sent'|'denied'|'failed'",
+    "optional": true,
+    "targets": [
+      "background_tasks.metadata_json.$.contact.notificationState"
+    ],
+    "kind": "JSON/列组合",
+    "nulls": "缺失→SQL NULL（或无关联行）；显式null仅在旧类型允许时合法",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:94"
+  },
+  {
+    "field": "BackgroundTask.deferredReply",
+    "type": "{sourceMessageId:string;sourceRevision:number;expiresAt:number;activityDelay?:boolean}",
+    "optional": true,
+    "targets": [
+      "background_tasks.deferred_message_id",
+      "background_tasks.deferred_revision",
+      "background_tasks.deferred_expires_at",
+      "background_tasks.metadata_json.$.deferredReply"
+    ],
+    "kind": "JSON/列组合",
+    "nulls": "缺失→SQL NULL（或无关联行）；显式null仅在旧类型允许时合法",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:95"
+  },
+  {
+    "field": "BackgroundTask.deferredReply.sourceMessageId",
+    "type": "string",
+    "optional": true,
+    "targets": [
+      "background_tasks.deferred_message_id"
+    ],
+    "kind": "列",
+    "nulls": "缺失→SQL NULL（或无关联行）；显式null仅在旧类型允许时合法",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:95"
+  },
+  {
+    "field": "BackgroundTask.deferredReply.sourceRevision",
+    "type": "number",
+    "optional": true,
+    "targets": [
+      "background_tasks.deferred_revision"
+    ],
+    "kind": "列",
+    "nulls": "缺失→SQL NULL（或无关联行）；显式null仅在旧类型允许时合法",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:95"
+  },
+  {
+    "field": "BackgroundTask.deferredReply.expiresAt",
+    "type": "number",
+    "optional": true,
+    "targets": [
+      "background_tasks.deferred_expires_at"
+    ],
+    "kind": "列",
+    "nulls": "缺失→SQL NULL（或无关联行）；显式null仅在旧类型允许时合法",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:95"
+  },
+  {
+    "field": "BackgroundTask.deferredReply.activityDelay",
+    "type": "boolean",
+    "optional": true,
+    "targets": [
+      "background_tasks.metadata_json.$.deferredReply.activityDelay"
+    ],
+    "kind": "JSON/列组合",
+    "nulls": "缺失→SQL NULL（或无关联行）；显式null仅在旧类型允许时合法",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:95"
+  },
+  {
+    "field": "LifeGrant.id",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "life_grants.id"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:99"
+  },
+  {
+    "field": "LifeGrant.worldId",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "life_grants.world_id"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:99"
+  },
+  {
+    "field": "LifeGrant.instanceId",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "life_grants.instance_id"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:99"
+  },
+  {
+    "field": "LifeGrant.moduleId",
+    "type": "LifeModule",
+    "optional": false,
+    "targets": [
+      "life_grants.module_id"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:99"
+  },
+  {
+    "field": "LifeGrant.read",
+    "type": "boolean",
+    "optional": false,
+    "targets": [
+      "life_grants.can_read"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:100"
+  },
+  {
+    "field": "LifeGrant.remember",
+    "type": "boolean",
+    "optional": false,
+    "targets": [
+      "life_grants.can_remember"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:100"
+  },
+  {
+    "field": "LifeGrant.share",
+    "type": "boolean",
+    "optional": false,
+    "targets": [
+      "life_grants.can_share"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:100"
+  },
+  {
+    "field": "LifeGrant.revision",
+    "type": "number",
+    "optional": false,
+    "targets": [
+      "life_grants.revision"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:100"
+  },
+  {
+    "field": "LifeSource.grantId",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "message_life_sources.grant_id",
+      "memory_life_sources.grant_id",
+      "event_life_sources.grant_id"
+    ],
+    "kind": "关系表",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。 无ordinal的关系须由原字段同名JSON提示保留顺序/可选空数组；必须与关系行交叉校验，不能用JSON绕过权限/FK。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:102"
+  },
+  {
+    "field": "LifeSource.revision",
+    "type": "number",
+    "optional": false,
+    "targets": [
+      "message_life_sources.grant_revision",
+      "memory_life_sources.grant_revision",
+      "event_life_sources.grant_revision"
+    ],
+    "kind": "关系表",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。 无ordinal的关系须由原字段同名JSON提示保留顺序/可选空数组；必须与关系行交叉校验，不能用JSON绕过权限/FK。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:102"
+  },
+  {
+    "field": "LifeSource.moduleId",
+    "type": "LifeModule",
+    "optional": false,
+    "targets": [
+      "message_life_sources.module_id",
+      "memory_life_sources.module_id",
+      "event_life_sources.module_id"
+    ],
+    "kind": "关系表",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。 无ordinal的关系须由原字段同名JSON提示保留顺序/可选空数组；必须与关系行交叉校验，不能用JSON绕过权限/FK。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:102"
+  },
+  {
+    "field": "LifeSource.instanceId",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "message_life_sources.instance_id",
+      "memory_life_sources.instance_id",
+      "event_life_sources.instance_id"
+    ],
+    "kind": "关系表",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。 无ordinal的关系须由原字段同名JSON提示保留顺序/可选空数组；必须与关系行交叉校验，不能用JSON绕过权限/FK。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:102"
+  },
+  {
+    "field": "LifeSource.fingerprint",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "message_life_sources.fingerprint",
+      "memory_life_sources.fingerprint",
+      "event_life_sources.fingerprint"
+    ],
+    "kind": "关系表",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。 无ordinal的关系须由原字段同名JSON提示保留顺序/可选空数组；必须与关系行交叉校验，不能用JSON绕过权限/FK。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:102"
+  },
+  {
+    "field": "EffectBaseline.id",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "effect_baselines.id"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:105"
+  },
+  {
+    "field": "EffectBaseline.worldId",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "effect_baselines.world_id"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:105"
+  },
+  {
+    "field": "EffectBaseline.targetType",
+    "type": "WorldEffect['targetType']",
+    "optional": false,
+    "targets": [
+      "effect_baselines.target_type"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。 类型复用含world，但当前领域校验与SQL只允许instance/relationship；不扩大现有契约。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:105"
+  },
+  {
+    "field": "EffectBaseline.targetId",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "effect_baselines.target_id"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:105"
+  },
+  {
+    "field": "EffectBaseline.path",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "effect_baselines.path"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:105"
+  },
+  {
+    "field": "EffectBaseline.value",
+    "type": "JsonValue",
+    "optional": false,
+    "targets": [
+      "effect_baselines.value_json"
+    ],
+    "kind": "JSON/列组合",
+    "nulls": "合法JSON null保存为文本null，区别于SQL NULL/字段缺失",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:105"
+  },
+  {
+    "field": "EventAudit.id",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "event_audits.id"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:108"
+  },
+  {
+    "field": "EventAudit.worldId",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "event_audits.world_id"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:108"
+  },
+  {
+    "field": "EventAudit.eventId",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "event_audits.event_id"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:108"
+  },
+  {
+    "field": "EventAudit.at",
+    "type": "number",
+    "optional": false,
+    "targets": [
+      "event_audits.at"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:108"
+  },
+  {
+    "field": "EventAudit.previous",
+    "type": "WorldEvent",
+    "optional": false,
+    "targets": [
+      "event_audits.previous_json",
+      "event_audits.previous_revision"
+    ],
+    "kind": "JSON/列组合",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:108"
+  },
+  {
+    "field": "EventAudit.next",
+    "type": "WorldEvent",
+    "optional": false,
+    "targets": [
+      "event_audits.next_json",
+      "event_audits.next_revision"
+    ],
+    "kind": "JSON/列组合",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:108"
+  },
+  {
+    "field": "MessageAudit.id",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "message_audits.id"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:110"
+  },
+  {
+    "field": "MessageAudit.worldId",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "message_audits.world_id"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:110"
+  },
+  {
+    "field": "MessageAudit.messageId",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "message_audits.message_id"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:110"
+  },
+  {
+    "field": "MessageAudit.at",
+    "type": "number",
+    "optional": false,
+    "targets": [
+      "message_audits.at"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:110"
+  },
+  {
+    "field": "MessageAudit.previous",
+    "type": "Message",
+    "optional": false,
+    "targets": [
+      "message_audits.previous_json",
+      "message_audits.previous_revision"
+    ],
+    "kind": "JSON/列组合",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:110"
+  },
+  {
+    "field": "MessageAudit.next",
+    "type": "Message",
+    "optional": false,
+    "targets": [
+      "message_audits.next_json",
+      "message_audits.next_revision"
+    ],
+    "kind": "JSON/列组合",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:110"
+  },
+  {
+    "field": "RoleBinding.worldId",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "role_bindings.world_id"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。 允许失效ID保留选择；不能按名字绑定到另一个角色，M3负责有效性。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:111"
+  },
+  {
+    "field": "RoleBinding.instanceId",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "role_bindings.instance_id"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。 允许失效ID保留选择；不能按名字绑定到另一个角色，M3负责有效性。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:111"
+  },
+  {
+    "field": "KanataRoleBindings.revision",
+    "type": "number",
+    "optional": false,
+    "targets": [
+      "role_binding_state.revision"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。 允许失效ID保留选择；不能按名字绑定到另一个角色，M3负责有效性。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:112"
+  },
+  {
+    "field": "KanataRoleBindings.global",
+    "type": "RoleBinding | null",
+    "optional": false,
+    "targets": [
+      "role_bindings.scope",
+      "role_bindings.world_id",
+      "role_bindings.instance_id"
+    ],
+    "kind": "关系表",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。 允许失效ID保留选择；不能按名字绑定到另一个角色，M3负责有效性。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:112"
+  },
+  {
+    "field": "KanataRoleBindings.modules",
+    "type": "Partial<Record<LifeModule,RoleBinding | null>>",
+    "optional": false,
+    "targets": [
+      "role_bindings.scope",
+      "role_bindings.world_id",
+      "role_bindings.instance_id"
+    ],
+    "kind": "关系表",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。 允许失效ID保留选择；不能按名字绑定到另一个角色，M3负责有效性。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:112"
+  },
+  {
+    "field": "MemoryPolicy.worldId",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "memory_policies.world_id"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:114"
+  },
+  {
+    "field": "MemoryPolicy.strategy",
+    "type": "'economical' | 'standard' | 'deep' | 'custom'",
+    "optional": false,
+    "targets": [
+      "memory_policies.strategy"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:114"
+  },
+  {
+    "field": "MemoryPolicy.enabled",
+    "type": "boolean",
+    "optional": false,
+    "targets": [
+      "memory_policies.enabled"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:114"
+  },
+  {
+    "field": "MemoryPolicy.recentMessages",
+    "type": "number",
+    "optional": false,
+    "targets": [
+      "memory_policies.recent_messages"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:115"
+  },
+  {
+    "field": "MemoryPolicy.summarizeAfter",
+    "type": "number",
+    "optional": false,
+    "targets": [
+      "memory_policies.summarize_after"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:115"
+  },
+  {
+    "field": "MemoryPolicy.extractAfter",
+    "type": "number",
+    "optional": false,
+    "targets": [
+      "memory_policies.extract_after"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:115"
+  },
+  {
+    "field": "MemoryPolicy.contextBudget",
+    "type": "number",
+    "optional": false,
+    "targets": [
+      "memory_policies.context_budget"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:115"
+  },
+  {
+    "field": "MemoryPolicy.revision",
+    "type": "number",
+    "optional": false,
+    "targets": [
+      "memory_policies.revision"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:115"
+  },
+  {
+    "field": "AutonomyPolicy.worldId",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "autonomy_policies.world_id"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:118"
+  },
+  {
+    "field": "AutonomyPolicy.revision",
+    "type": "number",
+    "optional": false,
+    "targets": [
+      "autonomy_policies.revision"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:118"
+  },
+  {
+    "field": "AutonomyPolicy.dailyDialogueLimit",
+    "type": "number",
+    "optional": false,
+    "targets": [
+      "autonomy_policies.daily_dialogue_limit"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:118"
+  },
+  {
+    "field": "AutonomyPolicy.maxCatchUpHours",
+    "type": "number",
+    "optional": false,
+    "targets": [
+      "autonomy_policies.max_catch_up_hours"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:118"
+  },
+  {
+    "field": "AutonomyPolicy.freedom",
+    "type": "'strict'|'standard'|'free'|'unrestricted'",
+    "optional": false,
+    "targets": [
+      "autonomy_policies.freedom"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:119"
+  },
+  {
+    "field": "AutonomyPolicy.quietStartMinute",
+    "type": "number",
+    "optional": false,
+    "targets": [
+      "autonomy_policies.quiet_start_minute"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:119"
+  },
+  {
+    "field": "AutonomyPolicy.quietEndMinute",
+    "type": "number",
+    "optional": false,
+    "targets": [
+      "autonomy_policies.quiet_end_minute"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:119"
+  },
+  {
+    "field": "AutonomyPolicy.socialChannel",
+    "type": "'private'|'group'",
+    "optional": true,
+    "targets": [
+      "autonomy_policies.social_channel"
+    ],
+    "kind": "列",
+    "nulls": "缺失→SQL NULL（或无关联行）；显式null仅在旧类型允许时合法",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:120"
+  },
+  {
+    "field": "VirtualSchedule.id",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "virtual_schedules.id"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:123"
+  },
+  {
+    "field": "VirtualSchedule.worldId",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "virtual_schedules.world_id"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:123"
+  },
+  {
+    "field": "VirtualSchedule.instanceId",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "virtual_schedules.instance_id"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:123"
+  },
+  {
+    "field": "VirtualSchedule.days",
+    "type": "number[]",
+    "optional": false,
+    "targets": [
+      "virtual_schedule_days.day",
+      "virtual_schedules.extensions_json.$.days"
+    ],
+    "kind": "关系表",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。 无ordinal的关系须由原字段同名JSON提示保留顺序/可选空数组；必须与关系行交叉校验，不能用JSON绕过权限/FK。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:123"
+  },
+  {
+    "field": "VirtualSchedule.startMinute",
+    "type": "number",
+    "optional": false,
+    "targets": [
+      "virtual_schedules.start_minute"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:123"
+  },
+  {
+    "field": "VirtualSchedule.endMinute",
+    "type": "number",
+    "optional": false,
+    "targets": [
+      "virtual_schedules.end_minute"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:123"
+  },
+  {
+    "field": "VirtualSchedule.location",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "virtual_schedules.location"
+    ],
+    "kind": "列",
+    "nulls": "非空trim文本，NULL/缺失/空串拒绝；不是实例暂无地点语义",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:124"
+  },
+  {
+    "field": "VirtualSchedule.activity",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "virtual_schedules.activity"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:124"
+  },
+  {
+    "field": "VirtualSchedule.resting",
+    "type": "boolean",
+    "optional": false,
+    "targets": [
+      "virtual_schedules.resting"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:124"
+  },
+  {
+    "field": "VirtualSchedule.revision",
+    "type": "number",
+    "optional": false,
+    "targets": [
+      "virtual_schedules.revision"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:124"
+  },
+  {
+    "field": "PresetApplication.id",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "preset_applications.id"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:127"
+  },
+  {
+    "field": "PresetApplication.initializationKey",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "preset_applications.initialization_key"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:127"
+  },
+  {
+    "field": "PresetApplication.presetSourceId",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "preset_applications.preset_source_id"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:127"
+  },
+  {
+    "field": "PresetApplication.presetVersion",
+    "type": "number",
+    "optional": false,
+    "targets": [
+      "preset_applications.preset_version"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:127"
+  },
+  {
+    "field": "PresetApplication.worldId",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "preset_applications.world_id"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:127"
+  },
+  {
+    "field": "KanataData.type",
+    "type": "'kanata-data'",
+    "optional": false,
+    "targets": [
+      "dataset_metadata.data_version"
+    ],
+    "kind": "固定领域类型",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "固定kanata-data，由领域校验/导出重建；不是SQL Schema版本。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:130"
+  },
+  {
+    "field": "KanataData.version",
+    "type": "1 | 2",
+    "optional": false,
+    "targets": [
+      "dataset_metadata.data_version"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:130"
+  },
+  {
+    "field": "KanataData.userId",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "dataset_metadata.user_id"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:130"
+  },
+  {
+    "field": "KanataData.worlds",
+    "type": "World[]",
+    "optional": false,
+    "targets": [
+      "worlds.id"
+    ],
+    "kind": "集合/关系",
+    "nulls": "必需集合；空数组为合法空集合，缺失/null拒绝",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "表无自然顺序；M5须冻结集合顺序/出现信息，不能宣称原JSON字节已无损还原。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:131"
+  },
+  {
+    "field": "KanataData.cards",
+    "type": "CharacterCard[]",
+    "optional": false,
+    "targets": [
+      "character_cards.id"
+    ],
+    "kind": "集合/关系",
+    "nulls": "必需集合；空数组为合法空集合，缺失/null拒绝",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "表无自然顺序；M5须冻结集合顺序/出现信息，不能宣称原JSON字节已无损还原。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:131"
+  },
+  {
+    "field": "KanataData.cardVersions",
+    "type": "CharacterCardVersion[]",
+    "optional": false,
+    "targets": [
+      "card_versions.id"
+    ],
+    "kind": "集合/关系",
+    "nulls": "必需集合；空数组为合法空集合，缺失/null拒绝",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "表无自然顺序；M5须冻结集合顺序/出现信息，不能宣称原JSON字节已无损还原。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:131"
+  },
+  {
+    "field": "KanataData.identities",
+    "type": "WorldUserIdentity[]",
+    "optional": false,
+    "targets": [
+      "world_identities.id"
+    ],
+    "kind": "集合/关系",
+    "nulls": "必需集合；空数组为合法空集合，缺失/null拒绝",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "表无自然顺序；M5须冻结集合顺序/出现信息，不能宣称原JSON字节已无损还原。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:132"
+  },
+  {
+    "field": "KanataData.instances",
+    "type": "CharacterInstance[]",
+    "optional": false,
+    "targets": [
+      "character_instances.id"
+    ],
+    "kind": "集合/关系",
+    "nulls": "必需集合；空数组为合法空集合，缺失/null拒绝",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "表无自然顺序；M5须冻结集合顺序/出现信息，不能宣称原JSON字节已无损还原。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:132"
+  },
+  {
+    "field": "KanataData.conversations",
+    "type": "Conversation[]",
+    "optional": false,
+    "targets": [
+      "conversations.id"
+    ],
+    "kind": "集合/关系",
+    "nulls": "必需集合；空数组为合法空集合，缺失/null拒绝",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "表无自然顺序；M5须冻结集合顺序/出现信息，不能宣称原JSON字节已无损还原。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:132"
+  },
+  {
+    "field": "KanataData.messages",
+    "type": "Message[]",
+    "optional": false,
+    "targets": [
+      "messages.id"
+    ],
+    "kind": "集合/关系",
+    "nulls": "必需集合；空数组为合法空集合，缺失/null拒绝",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "表无自然顺序；M5须冻结集合顺序/出现信息，不能宣称原JSON字节已无损还原。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:133"
+  },
+  {
+    "field": "KanataData.lorebookEntries",
+    "type": "LorebookEntry[]",
+    "optional": false,
+    "targets": [
+      "lorebook_entries.id"
+    ],
+    "kind": "集合/关系",
+    "nulls": "必需集合；空数组为合法空集合，缺失/null拒绝",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "表无自然顺序；M5须冻结集合顺序/出现信息，不能宣称原JSON字节已无损还原。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:133"
+  },
+  {
+    "field": "KanataData.memories",
+    "type": "Memory[]",
+    "optional": false,
+    "targets": [
+      "memories.id"
+    ],
+    "kind": "集合/关系",
+    "nulls": "必需集合；空数组为合法空集合，缺失/null拒绝",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "表无自然顺序；M5须冻结集合顺序/出现信息，不能宣称原JSON字节已无损还原。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:133"
+  },
+  {
+    "field": "KanataData.relationships",
+    "type": "Relationship[]",
+    "optional": false,
+    "targets": [
+      "relationships.id"
+    ],
+    "kind": "集合/关系",
+    "nulls": "必需集合；空数组为合法空集合，缺失/null拒绝",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "表无自然顺序；M5须冻结集合顺序/出现信息，不能宣称原JSON字节已无损还原。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:134"
+  },
+  {
+    "field": "KanataData.events",
+    "type": "WorldEvent[]",
+    "optional": false,
+    "targets": [
+      "world_events.id"
+    ],
+    "kind": "集合/关系",
+    "nulls": "必需集合；空数组为合法空集合，缺失/null拒绝",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "表无自然顺序；M5须冻结集合顺序/出现信息，不能宣称原JSON字节已无损还原。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:134"
+  },
+  {
+    "field": "KanataData.effects",
+    "type": "WorldEffect[]",
+    "optional": false,
+    "targets": [
+      "world_effects.id"
+    ],
+    "kind": "集合/关系",
+    "nulls": "必需集合；空数组为合法空集合，缺失/null拒绝",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "表无自然顺序；M5须冻结集合顺序/出现信息，不能宣称原JSON字节已无损还原。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:134"
+  },
+  {
+    "field": "KanataData.tasks",
+    "type": "BackgroundTask[]",
+    "optional": false,
+    "targets": [
+      "background_tasks.id"
+    ],
+    "kind": "集合/关系",
+    "nulls": "必需集合；空数组为合法空集合，缺失/null拒绝",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "表无自然顺序；M5须冻结集合顺序/出现信息，不能宣称原JSON字节已无损还原。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:135"
+  },
+  {
+    "field": "KanataData.lifeGrants",
+    "type": "LifeGrant[]",
+    "optional": false,
+    "targets": [
+      "life_grants.id"
+    ],
+    "kind": "集合/关系",
+    "nulls": "必需集合；空数组为合法空集合，缺失/null拒绝",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "表无自然顺序；M5须冻结集合顺序/出现信息，不能宣称原JSON字节已无损还原。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:135"
+  },
+  {
+    "field": "KanataData.presetApplications",
+    "type": "PresetApplication[]",
+    "optional": false,
+    "targets": [
+      "preset_applications.id"
+    ],
+    "kind": "集合/关系",
+    "nulls": "必需集合；空数组为合法空集合，缺失/null拒绝",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "表无自然顺序；M5须冻结集合顺序/出现信息，不能宣称原JSON字节已无损还原。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:135"
+  },
+  {
+    "field": "KanataData.usageEvents",
+    "type": "KanataUsageEvent[]",
+    "optional": true,
+    "targets": [
+      "usage_events.id"
+    ],
+    "kind": "集合/关系",
+    "nulls": "dataset_metadata.extensions_json同名键可记录出现标记；0行不自动等于字段不存在",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "表无自然顺序；M5须冻结集合顺序/出现信息，不能宣称原JSON字节已无损还原。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:136"
+  },
+  {
+    "field": "KanataData.effectBaselines",
+    "type": "EffectBaseline[]",
+    "optional": true,
+    "targets": [
+      "effect_baselines.id"
+    ],
+    "kind": "集合/关系",
+    "nulls": "dataset_metadata.extensions_json同名键可记录出现标记；0行不自动等于字段不存在",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "表无自然顺序；M5须冻结集合顺序/出现信息，不能宣称原JSON字节已无损还原。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:137"
+  },
+  {
+    "field": "KanataData.eventAudits",
+    "type": "EventAudit[]",
+    "optional": true,
+    "targets": [
+      "event_audits.id"
+    ],
+    "kind": "集合/关系",
+    "nulls": "dataset_metadata.extensions_json同名键可记录出现标记；0行不自动等于字段不存在",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "表无自然顺序；M5须冻结集合顺序/出现信息，不能宣称原JSON字节已无损还原。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:137"
+  },
+  {
+    "field": "KanataData.messageAudits",
+    "type": "MessageAudit[]",
+    "optional": true,
+    "targets": [
+      "message_audits.id"
+    ],
+    "kind": "集合/关系",
+    "nulls": "dataset_metadata.extensions_json同名键可记录出现标记；0行不自动等于字段不存在",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "表无自然顺序；M5须冻结集合顺序/出现信息，不能宣称原JSON字节已无损还原。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:138"
+  },
+  {
+    "field": "KanataData.roleBindings",
+    "type": "KanataRoleBindings",
+    "optional": true,
+    "targets": [
+      "role_binding_state.singleton",
+      "role_bindings.scope"
+    ],
+    "kind": "关系",
+    "nulls": "无state行=字段缺失；global/modules的null与缺省分别表达",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:139"
+  },
+  {
+    "field": "KanataData.memoryPolicies",
+    "type": "MemoryPolicy[]",
+    "optional": true,
+    "targets": [
+      "memory_policies.world_id"
+    ],
+    "kind": "集合/关系",
+    "nulls": "dataset_metadata.extensions_json同名键可记录出现标记；0行不自动等于字段不存在",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "表无自然顺序；M5须冻结集合顺序/出现信息，不能宣称原JSON字节已无损还原。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:139"
+  },
+  {
+    "field": "KanataData.autonomyPolicies",
+    "type": "AutonomyPolicy[]",
+    "optional": true,
+    "targets": [
+      "autonomy_policies.world_id"
+    ],
+    "kind": "集合/关系",
+    "nulls": "dataset_metadata.extensions_json同名键可记录出现标记；0行不自动等于字段不存在",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "表无自然顺序；M5须冻结集合顺序/出现信息，不能宣称原JSON字节已无损还原。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:140"
+  },
+  {
+    "field": "KanataData.virtualSchedules",
+    "type": "VirtualSchedule[]",
+    "optional": true,
+    "targets": [
+      "virtual_schedules.id"
+    ],
+    "kind": "集合/关系",
+    "nulls": "dataset_metadata.extensions_json同名键可记录出现标记；0行不自动等于字段不存在",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "表无自然顺序；M5须冻结集合顺序/出现信息，不能宣称原JSON字节已无损还原。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:140"
+  },
+  {
+    "field": "KanataData.messageArchives",
+    "type": "MessageArchiveDescriptor[]",
+    "optional": true,
+    "targets": [
+      "messages.id"
+    ],
+    "kind": "不直接迁移",
+    "nulls": "缺失→SQL NULL（或无关联行）；显式null仅在旧类型允许时合法",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "仅M5逐页hash/解密/身份校验后展开正文；旧文件保留，本轮未导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:142"
+  },
+  {
+    "field": "MessageArchiveDescriptor.version",
+    "type": "1",
+    "optional": false,
+    "targets": [],
+    "kind": "不直接迁移",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本字段仅是旧页校验输入，不是SQL列投影；key/bytes/index/页内元信息不冒充正文，M5负责逐页展开。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:145"
+  },
+  {
+    "field": "MessageArchiveDescriptor.key",
+    "type": "string",
+    "optional": false,
+    "targets": [],
+    "kind": "不直接迁移",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本字段仅是旧页校验输入，不是SQL列投影；key/bytes/index/页内元信息不冒充正文，M5负责逐页展开。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:145"
+  },
+  {
+    "field": "MessageArchiveDescriptor.worldId",
+    "type": "string",
+    "optional": false,
+    "targets": [],
+    "kind": "不直接迁移",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本字段仅是旧页校验输入，不是SQL列投影；key/bytes/index/页内元信息不冒充正文，M5负责逐页展开。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:145"
+  },
+  {
+    "field": "MessageArchiveDescriptor.conversationId",
+    "type": "string",
+    "optional": false,
+    "targets": [],
+    "kind": "不直接迁移",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本字段仅是旧页校验输入，不是SQL列投影；key/bytes/index/页内元信息不冒充正文，M5负责逐页展开。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:145"
+  },
+  {
+    "field": "MessageArchiveDescriptor.bytes",
+    "type": "number",
+    "optional": false,
+    "targets": [],
+    "kind": "不直接迁移",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本字段仅是旧页校验输入，不是SQL列投影；key/bytes/index/页内元信息不冒充正文，M5负责逐页展开。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:145"
+  },
+  {
+    "field": "MessageArchiveDescriptor.index",
+    "type": "string",
+    "optional": false,
+    "targets": [],
+    "kind": "不直接迁移",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本字段仅是旧页校验输入，不是SQL列投影；key/bytes/index/页内元信息不冒充正文，M5负责逐页展开。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:145"
+  },
+  {
+    "field": "MessageArchiveDescriptor.messages",
+    "type": "{id: string; revision: number; createdAt: number}[]",
+    "optional": false,
+    "targets": [],
+    "kind": "不直接迁移",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本字段仅是旧页校验输入，不是SQL列投影；key/bytes/index/页内元信息不冒充正文，M5负责逐页展开。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:146"
+  },
+  {
+    "field": "MessageArchiveDescriptor.messages[].id",
+    "type": "string",
+    "optional": false,
+    "targets": [],
+    "kind": "不直接迁移",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本字段仅是旧页校验输入，不是SQL列投影；key/bytes/index/页内元信息不冒充正文，M5负责逐页展开。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:146"
+  },
+  {
+    "field": "MessageArchiveDescriptor.messages[].revision",
+    "type": "number",
+    "optional": false,
+    "targets": [],
+    "kind": "不直接迁移",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本字段仅是旧页校验输入，不是SQL列投影；key/bytes/index/页内元信息不冒充正文，M5负责逐页展开。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:146"
+  },
+  {
+    "field": "MessageArchiveDescriptor.messages[].createdAt",
+    "type": "number",
+    "optional": false,
+    "targets": [],
+    "kind": "不直接迁移",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本字段仅是旧页校验输入，不是SQL列投影；key/bytes/index/页内元信息不冒充正文，M5负责逐页展开。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:146"
+  },
+  {
+    "field": "MessageHistoryRequest.worldId",
+    "type": "string",
+    "optional": false,
+    "targets": [],
+    "kind": "请求参数不持久化",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本字段不是持久化投影；M2重建绑定world/conversation的keyset cursor，generation/text不是消息列。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:149"
+  },
+  {
+    "field": "MessageHistoryRequest.conversationId",
+    "type": "string",
+    "optional": false,
+    "targets": [],
+    "kind": "请求参数不持久化",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本字段不是持久化投影；M2重建绑定world/conversation的keyset cursor，generation/text不是消息列。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:149"
+  },
+  {
+    "field": "MessageHistoryRequest.text",
+    "type": "string",
+    "optional": true,
+    "targets": [],
+    "kind": "请求参数不持久化",
+    "nulls": "缺失→SQL NULL（或无关联行）；显式null仅在旧类型允许时合法",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本字段不是持久化投影；M2重建绑定world/conversation的keyset cursor，generation/text不是消息列。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:149"
+  },
+  {
+    "field": "MessageHistoryRequest.limit",
+    "type": "number",
+    "optional": true,
+    "targets": [],
+    "kind": "请求参数不持久化",
+    "nulls": "缺失→SQL NULL（或无关联行）；显式null仅在旧类型允许时合法",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本字段不是持久化投影；M2重建绑定world/conversation的keyset cursor，generation/text不是消息列。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:149"
+  },
+  {
+    "field": "MessageHistoryRequest.cursor",
+    "type": "{worldId:string;conversationId:string;text:string;generation:number;before:{id:string;createdAt:number}}",
+    "optional": true,
+    "targets": [],
+    "kind": "请求参数不持久化",
+    "nulls": "缺失→SQL NULL（或无关联行）；显式null仅在旧类型允许时合法",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本字段不是持久化投影；M2重建绑定world/conversation的keyset cursor，generation/text不是消息列。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:150"
+  },
+  {
+    "field": "MessageHistoryRequest.cursor.worldId",
+    "type": "string",
+    "optional": true,
+    "targets": [],
+    "kind": "请求参数不持久化",
+    "nulls": "缺失→SQL NULL（或无关联行）；显式null仅在旧类型允许时合法",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本字段不是持久化投影；M2重建绑定world/conversation的keyset cursor，generation/text不是消息列。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:150"
+  },
+  {
+    "field": "MessageHistoryRequest.cursor.conversationId",
+    "type": "string",
+    "optional": true,
+    "targets": [],
+    "kind": "请求参数不持久化",
+    "nulls": "缺失→SQL NULL（或无关联行）；显式null仅在旧类型允许时合法",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本字段不是持久化投影；M2重建绑定world/conversation的keyset cursor，generation/text不是消息列。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:150"
+  },
+  {
+    "field": "MessageHistoryRequest.cursor.text",
+    "type": "string",
+    "optional": true,
+    "targets": [],
+    "kind": "请求参数不持久化",
+    "nulls": "缺失→SQL NULL（或无关联行）；显式null仅在旧类型允许时合法",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本字段不是持久化投影；M2重建绑定world/conversation的keyset cursor，generation/text不是消息列。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:150"
+  },
+  {
+    "field": "MessageHistoryRequest.cursor.generation",
+    "type": "number",
+    "optional": true,
+    "targets": [],
+    "kind": "请求参数不持久化",
+    "nulls": "缺失→SQL NULL（或无关联行）；显式null仅在旧类型允许时合法",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本字段不是持久化投影；M2重建绑定world/conversation的keyset cursor，generation/text不是消息列。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:150"
+  },
+  {
+    "field": "MessageHistoryRequest.cursor.before",
+    "type": "{id:string;createdAt:number}",
+    "optional": true,
+    "targets": [],
+    "kind": "请求参数不持久化",
+    "nulls": "缺失→SQL NULL（或无关联行）；显式null仅在旧类型允许时合法",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本字段不是持久化投影；M2重建绑定world/conversation的keyset cursor，generation/text不是消息列。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:150"
+  },
+  {
+    "field": "MessageHistoryRequest.cursor.before.id",
+    "type": "string",
+    "optional": true,
+    "targets": [],
+    "kind": "请求参数不持久化",
+    "nulls": "缺失→SQL NULL（或无关联行）；显式null仅在旧类型允许时合法",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本字段不是持久化投影；M2重建绑定world/conversation的keyset cursor，generation/text不是消息列。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:150"
+  },
+  {
+    "field": "MessageHistoryRequest.cursor.before.createdAt",
+    "type": "number",
+    "optional": true,
+    "targets": [],
+    "kind": "请求参数不持久化",
+    "nulls": "缺失→SQL NULL（或无关联行）；显式null仅在旧类型允许时合法",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本字段不是持久化投影；M2重建绑定world/conversation的keyset cursor，generation/text不是消息列。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:150"
+  },
+  {
+    "field": "KanataUsageEvent.worldId",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "usage_events.world_id"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:153"
+  },
+  {
+    "field": "KanataUsageEvent.conversationId",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "usage_events.conversation_id"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:153"
+  },
+  {
+    "field": "KanataUsageEvent.instanceId",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "usage_events.instance_id"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:153"
+  },
+  {
+    "field": "KanataUsageEvent.turnId",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "usage_events.turn_id"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:153"
+  },
+  {
+    "field": "KanataUsageEvent.purpose",
+    "type": "'chat' | 'memory' | 'summary' | 'world' | 'proactive' | 'life'",
+    "optional": true,
+    "targets": [
+      "usage_events.purpose"
+    ],
+    "kind": "列",
+    "nulls": "缺失→SQL NULL（或无关联行）；显式null仅在旧类型允许时合法",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/features/chat/domain/kanataTypes.d.ts:154"
+  },
+  {
+    "field": "CompletionUsage.promptTokens",
+    "type": "number",
+    "optional": false,
+    "targets": [
+      "usage_events.prompt_tokens"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/platform/ai/completionTypes.d.ts:1"
+  },
+  {
+    "field": "CompletionUsage.completionTokens",
+    "type": "number",
+    "optional": false,
+    "targets": [
+      "usage_events.completion_tokens"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/platform/ai/completionTypes.d.ts:1"
+  },
+  {
+    "field": "CompletionUsage.cacheHitTokens",
+    "type": "number | null",
+    "optional": false,
+    "targets": [
+      "usage_events.cache_hit_tokens"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/platform/ai/completionTypes.d.ts:1"
+  },
+  {
+    "field": "CompletionAttempt.id",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "usage_events.id"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/platform/ai/completionTypes.d.ts:3"
+  },
+  {
+    "field": "CompletionAttempt.model",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "usage_events.model"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/platform/ai/completionTypes.d.ts:3"
+  },
+  {
+    "field": "CompletionAttempt.officialProvider",
+    "type": "boolean",
+    "optional": false,
+    "targets": [
+      "usage_events.official_provider"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/platform/ai/completionTypes.d.ts:3"
+  },
+  {
+    "field": "CompletionAttempt.startedAt",
+    "type": "number",
+    "optional": false,
+    "targets": [
+      "usage_events.started_at"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/platform/ai/completionTypes.d.ts:3"
+  },
+  {
+    "field": "CompletionAttempt.finishedAt",
+    "type": "number | null",
+    "optional": false,
+    "targets": [
+      "usage_events.finished_at"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/platform/ai/completionTypes.d.ts:3"
+  },
+  {
+    "field": "CompletionAttempt.transport",
+    "type": "'stream' | 'json'",
+    "optional": false,
+    "targets": [
+      "usage_events.transport"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/platform/ai/completionTypes.d.ts:4"
+  },
+  {
+    "field": "CompletionAttempt.status",
+    "type": "'pending' | 'succeeded' | 'failed'",
+    "optional": false,
+    "targets": [
+      "usage_events.status"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/platform/ai/completionTypes.d.ts:4"
+  },
+  {
+    "field": "CompletionAttempt.errorCode",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "usage_events.error_code"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/platform/ai/completionTypes.d.ts:5"
+  },
+  {
+    "field": "CompletionAttempt.finishReason",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "usage_events.finish_reason"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/platform/ai/completionTypes.d.ts:5"
+  },
+  {
+    "field": "CompletionAttempt.usage",
+    "type": "CompletionUsage | null",
+    "optional": false,
+    "targets": [
+      "usage_events.prompt_tokens",
+      "usage_events.completion_tokens",
+      "usage_events.cache_hit_tokens"
+    ],
+    "kind": "列",
+    "nulls": "usage=null用三个token列全NULL；usage对象cacheHitTokens=null独立表达；不得用估计填造真实usage",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/platform/ai/completionTypes.d.ts:5"
+  },
+  {
+    "field": "CompletionAttempt.estimatedInputTokens",
+    "type": "number",
+    "optional": false,
+    "targets": [
+      "usage_events.estimated_input_tokens"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/platform/ai/completionTypes.d.ts:6"
+  },
+  {
+    "field": "CompletionAttempt.estimatedOutputTokens",
+    "type": "number",
+    "optional": false,
+    "targets": [
+      "usage_events.estimated_output_tokens"
+    ],
+    "kind": "列",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "本轮只审计映射；M5尚未实现生产投影/导入。",
+    "evidence": "src/platform/ai/completionTypes.d.ts:6"
+  },
+  {
+    "field": "ImportedCardAsset.fileName",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "card_versions.imported_json.$.fileName"
+    ],
+    "kind": "JSON/列组合",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "原PNG/JSON字节保存在sourceBase64；不把头像地址当脚本。",
+    "evidence": "src/features/chat/cards/characterCardTypes.d.ts:4"
+  },
+  {
+    "field": "ImportedCardAsset.format",
+    "type": "'json' | 'png'",
+    "optional": false,
+    "targets": [
+      "card_versions.imported_json.$.format"
+    ],
+    "kind": "JSON/列组合",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "原PNG/JSON字节保存在sourceBase64；不把头像地址当脚本。",
+    "evidence": "src/features/chat/cards/characterCardTypes.d.ts:5"
+  },
+  {
+    "field": "ImportedCardAsset.sourceBase64",
+    "type": "string",
+    "optional": false,
+    "targets": [
+      "card_versions.imported_json.$.sourceBase64"
+    ],
+    "kind": "JSON/列组合",
+    "nulls": "必填；不得把读取失败/缺失当默认值",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "原PNG/JSON字节保存在sourceBase64；不把头像地址当脚本。",
+    "evidence": "src/features/chat/cards/characterCardTypes.d.ts:6"
+  },
+  {
+    "field": "ImportedCardAsset.avatarDataUrl",
+    "type": "string",
+    "optional": true,
+    "targets": [
+      "card_versions.imported_json.$.avatarDataUrl"
+    ],
+    "kind": "JSON/列组合",
+    "nulls": "缺失→SQL NULL（或无关联行）；显式null仅在旧类型允许时合法",
+    "validation": "当前领域/经历/自治校验→结构FK/CHECK；M2/M3命令及M5投影仍须复验。",
+    "limits": "原PNG/JSON字节保存在sourceBase64；不把头像地址当脚本。",
+    "evidence": "src/features/chat/cards/characterCardTypes.d.ts:7"
+  }
+]

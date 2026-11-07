@@ -1,6 +1,7 @@
 // @ts-check
 import {sha256Text} from '../../../../shared/crypto/sha256Text.js'
-import {KANATA_SCHEMA_APPLICATION_ID, KANATA_SCHEMA_MIGRATIONS, KANATA_SCHEMA_VERSION} from './kanataSchema.js'
+import {KANATA_SCHEMA_APPLICATION_ID, KANATA_SCHEMA_MIGRATIONS, KANATA_SCHEMA_VERSION, KANATA_REGISTRY_VALIDATION_QUERIES} from './kanataSchema.js'
+import {KANATA_AUDIT_VALIDATION_QUERIES} from './kanataSchemaHardening.js'
 
 export class KanataSchemaError extends Error {
   /** @param {string} code */
@@ -22,9 +23,10 @@ const objectsAt = version => KANATA_SCHEMA_MIGRATIONS.filter(m => m.version <= v
 /** Fail closed before any DDL on a future, unrelated, partial or modified database.
  * No plugin, file path, key or production Store is accessible from this module.
  * @param {import('./kanataSchemaTypes').KanataSchemaConnection} connection
+ * @param {import('./kanataSchemaTypes').KanataSchemaMigrationOptions} [options]
  * @returns {Promise<import('./kanataSchemaTypes').KanataSchemaResult>}
  */
-export async function migrateKanataSchema(connection) {
+export async function migrateKanataSchema(connection, {now = Date.now} = {}) {
   try {
     return await connection.transaction(async tx => {
       /** @param {string} sql @param {string} key */
@@ -62,15 +64,47 @@ export async function migrateKanataSchema(connection) {
           need(record.version === migration.version && record.name === migration.name && record.checksum === checksum(migration), 'KANATA_SCHEMA_JOURNAL_MISMATCH')
         }
       }
+      if(version >= 3){
+        const times=await tx.query('SELECT version,applied_at,time_source FROM schema_migration_applications ORDER BY version LIMIT 1025')
+        need(times.length===version, 'KANATA_SCHEMA_TIME_JOURNAL_MISMATCH')
+        for(let i=0;i<times.length;i++){
+          const row=times[i]
+          need(row.version===i+1 && (row.time_source==='legacy-unrecorded'
+            ? row.applied_at===null && i<2
+            : row.time_source==='js-wall-clock-utc-ms' && Number.isSafeInteger(row.applied_at) && Number(row.applied_at)>=0), 'KANATA_SCHEMA_TIME_JOURNAL_MISMATCH')
+        }
+      }
+      // Fail atomically on malformed legacy history. Never delete/deduplicate or
+      // synthesize missing revisions merely to make an old DB fit new constraints.
+      if(version>0 && version<3)for(const sql of KANATA_AUDIT_VALIDATION_QUERIES){
+        need((await tx.query(sql)).length===0,'KANATA_SCHEMA_AUDIT_CONFLICT')
+      }
+      if(version>0 && version<3)for(const sql of KANATA_REGISTRY_VALIDATION_QUERIES){
+        need((await tx.query(sql)).length===0,'KANATA_SCHEMA_ENTITY_REGISTRY_CONFLICT')
+      }
       const appliedVersions = []
+      /** @type {Map<number,number>} */
+      const observedTimes = new Map()
       for (const migration of KANATA_SCHEMA_MIGRATIONS) {
         if (migration.version <= version) continue
         for (const statement of migration.statements) await tx.execute(statement)
+        const at=now()
+        need(Number.isSafeInteger(at) && at>=0,'KANATA_SCHEMA_CLOCK_INVALID')
+        observedTimes.set(migration.version,at)
         await tx.execute('INSERT INTO schema_migrations(version,name,checksum) VALUES(?,?,?)', [migration.version, migration.name, checksum(migration)])
         await tx.execute(`PRAGMA user_version = ${migration.version}`)
         appliedVersions.push(migration.version)
       }
       if (version === 0) await tx.execute(`PRAGMA application_id = ${KANATA_SCHEMA_APPLICATION_ID}`)
+      if(version<3){
+        for(const migration of KANATA_SCHEMA_MIGRATIONS){
+          await tx.execute('INSERT INTO schema_migration_applications(version,applied_at,time_source) VALUES(?,?,?)',[
+            migration.version,observedTimes.get(migration.version)??null,observedTimes.has(migration.version)?'js-wall-clock-utc-ms':'legacy-unrecorded'
+          ])
+        }
+      }else for(const applied of appliedVersions){
+        await tx.execute('INSERT INTO schema_migration_applications(version,applied_at,time_source) VALUES(?,?,?)',[applied,observedTimes.get(applied)??null,'js-wall-clock-utc-ms'])
+      }
       await verifyObjects(KANATA_SCHEMA_VERSION)
       need((await tx.query('SELECT * FROM pragma_foreign_key_check LIMIT 1')).length === 0, 'KANATA_SCHEMA_FOREIGN_KEY_VIOLATION')
       return Object.freeze({version: KANATA_SCHEMA_VERSION, appliedVersions: Object.freeze(appliedVersions)})
