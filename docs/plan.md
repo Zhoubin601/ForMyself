@@ -1,6 +1,6 @@
 # 执行计划
 
-> **当前执行入口（2026-11-03）：** 先在 [M 分支](https://github.com/Zhoubin601/ForMyself/tree/M) 完成 [彼方 SQLite 迁移计划 M v1](20261103-kanata-sqlite-migration-plan-v1.md) 的 M0–M7。M 从 Kanata 的 73158a058d35124e1572b2161fe0f364f2140c48 创建，M0、M1已有独立验收；2026-11-07本轮执行M1-R补充审计，当前入口见[审计记录](20261107-kanata-sqlite-m1-r-audit-v1.md)，M2未实施。
+> **当前执行入口（2026-11-03）：** 先在 [M 分支](https://github.com/Zhoubin601/ForMyself/tree/M) 完成 [彼方 SQLite 迁移计划 M v1](20261103-kanata-sqlite-migration-plan-v1.md) 的 M0–M7。M 从 Kanata 的 73158a058d35124e1572b2161fe0f364f2140c48 创建，M0、M1已有独立验收；2026-11-07本轮执行M1-R补充审计，当前入口见[审计记录](20261107-kanata-sqlite-m1-r-audit-v1.md)和[M2完整任务书](20261107-kanata-sqlite-m2-task-v1.md)；M2代码尚未开始。
 >
 > **分支顺序：** Kanata（P7 No-Go 基线）→ M（SQLite 迁移与性能重构）→ M7 验收后审查并合并回 Kanata → 继续 P7。M 未完成前，P7 暂停在 Kanata，不并行修改同一套存储代码；不合并 main。
 >
