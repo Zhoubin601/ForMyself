@@ -1115,3 +1115,13 @@ P6最终PASS/Go：501 Node/317组件、Web12/6布局、Android17、原生8通过
 4. 空库/v1/v2升级、非法旧库拒绝、全写入点故障、SIGKILL、完整check、主机SQLCipher及隔离Android实际复测；两轮自查后生成报告，保留原M1历史证据。
 
 本轮完成：R1真实应用时间、R3快照归属、R4不可变审计/重复区间及全局ID登记保护；R2/R6复测无须改动。347字段映射、108外键定义逐条输出。最终证据、两轮自检和阶段交接统一见M1-R审计/验收报告；不改动历史M1报告，不推送。
+
+
+## 2026-11-07：M2 任务书已建立，等待 Agent 执行
+
+- [x] 核对 M 分支最新 HEAD、AGENTS、架构说明、M0 direct gate、M1 v2 与 M1-R 交接。
+- [x] 制定 M2 消息与会话 Repository 完整工程任务书，明确 Driver、SQLCipher、受保护 lease、CAS、审计脱敏、keyset 分页、UI/AI 接线、真实 Android JS-to-native 验收和两轮自检。
+- [x] 将任务书提交到 M 分支并更新 README、SQLite 总迁移计划与本执行计划入口。
+- [ ] M2 代码实施尚未开始；Agent 必须按任务书执行，M2 未 PASS 前不得进入 M3。
+
+正式入口：[M2 完整任务书](20261107-kanata-sqlite-m2-task-v1.md)。本次提交只保存任务规划，不代表任何 M2 代码、Driver、Repository 或设备测试已完成。

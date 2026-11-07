@@ -4,6 +4,9 @@ SQLite 迁移按 [彼方 SQLite 迁移计划 M v1](docs/20261103-kanata-sqlite-m
 
 2026-11-07：M1-R 补充审计与加固见 [审计记录](docs/20261107-kanata-sqlite-m1-r-audit-v1.md)、[逐字段映射](docs/20261107-kanata-sqlite-m1-r-field-mapping-v1.md)、[外键删除语义](docs/20261107-kanata-sqlite-m1-r-foreign-keys-v1.md)及 [QA 命令与新证据](docs/qa/kanata-sqlite-m1-r/README.md)。Schema 追加003，001/002保持不变；原M1 v1/v2记录保留，M2未实施。
 
+2026-11-07：M2 完整工程任务书已建立并提交至 M 分支：[Kanata SQLite M2｜消息与会话 Repository 任务书](docs/20261107-kanata-sqlite-m2-task-v1.md)。当前仅完成任务书编写，M2 代码实施尚未开始；旧 JSON/归档数据与生产 canonical 路径继续受保护。
+
+
 当前分支路线：Kanata（P7 No-Go 稳定基线）→ M（M0–M7 SQLite 迁移）→ M7 通过并审查后合并回 Kanata → 继续 P7。M 未完成前不在 Kanata 并行修改同一套存储模块；不自动合并 main 或发布。
 
 P7 原始门槛仍然有效，见[连续开发计划 v3](docs/20261028-kanata-continuous-execution-plan-v3.md)与[P7 最终收口记录](docs/20261102-kanata-p7-final-closure-v1.md)。SQLite 迁移完成不等于 P7 自动通过，合并后必须重新执行相关容量、安全、备份和完整需求验收。
