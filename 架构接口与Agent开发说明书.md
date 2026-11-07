@@ -562,3 +562,14 @@ Windows 使用 `npm.cmd`、`npx.cmd` 和 `android/gradlew.bat` 的对应命令�
 - 消息来源保留原revision；旧来源仍可管理，禁止未来revision/当前revision倒退。消息内容/删除变化必须增加revision，但审计写入、派生stale/needsReview、知识权限和CAS仍由后续领域命令负责。SQL约束不替代全部领域校验。角色绑定允许保留失效选择（现有契约），运行时仍拒绝解析到其他实例。可选布尔列的NULL表示原字段未提供，不能未经兼容处理一律改成false。
 - Android打开约定显式`NO_LOCALIZED_COLLATORS`保证二进制排序，每次打开用`setForeignKeyConstraintsEnabled(true)`配置整个连接池。SQLCipher4.17默认首次打开在codec存在时不创建android_metadata；本轮错误的相反对照预期已用真实测试纠正，不通过删除表或忽略未知结构取巧。
 - 验证：`node --test tests/kanataSqliteSchema.test.js`与`npm run check`；额外主机SQLCipher及隔离Android的命令见 [M1 QA](docs/qa/kanata-sqlite-m1/README.md)。精确DDL/PK/外键/索引/CHECK目录由write-catalog.mjs生成。原磁盘阻塞已通过独立临时卷解除，实际Android SQLCipher4.17新增结构/回滚/重开测试通过，见 [M1验收v2](docs/20261106-kanata-sqlite-m1-report-v2.md)。旧失败保留，M2尚未开始，生产路径未接入。
+
+
+## 24. Kanata SQLite M1-R（2026-11-07）
+
+- 追加003 `kanata-audit-and-application-time`；001/002 DDL及checksum不变。当前精确目录、新证据与命令见[M1-R QA](docs/qa/kanata-sqlite-m1-r/README.md)，[审计记录](docs/20261107-kanata-sqlite-m1-r-audit-v1.md)说明两轮检查及后续责任，旧M1报告保持历史语义。
+- `migrateKanataSchema(connection, {now?:()=>number})`仍整链独占事务；默认Date.now，在每版本DDL完成后采样UTC Unix毫秒，仅事务提交后成为成功应用记录。不是物理COMMIT时刻，不依赖SQL时区/文件时间，也不承诺可信或单调时钟。已有001/002无历史时间，记录NULL/legacy-unrecorded；不能回填本次时间冒充旧时间。应用时间与旧迁移日志均禁止普通改删/重复替换。
+- 旧v1/v2先在SQL端验证快照归属、审计区间及entity_ids双向一致性，仅返回最多一个错误标记；有冲突零修改拒绝，不合并或制造历史。区间验证采用窗口函数，避免未建索引v1的二次相关扫描。
+- 审计归属绑定实际消息不可变身份，拒绝同世界错误会话、角色/正文类型、重复或重叠revision区间。允许真实资料缺号与不相交乱序，不能用时间戳排序冒充revision顺序。event_audits普通改删禁止；message_audits除既有P5删除隐私要求的确定性正文脱敏外不可变。实体ID登记仅由实体插入/删除触发器维护，普通修改/移除现存实体登记及伪造登记均拒绝。
+- 脱敏必须先把当前消息deleted置true且正文清为`（已删除的原始记录）`，再对**已存快照**用SQL `json_set(...,'$.content','（已删除的原始记录）','$.deleted',json('true'))`生成新值；ID/时间/revision/扩展和其他JSON字段不变，禁止恢复原文。M2必须把当前消息、历史正文脱敏、新审计及派生失效放入同一受保护CAS事务；本轮没有实现该生产命令。不要用JS重排JSON后写回来规避严格比较。
+- 实例location的空字符串合法，日程location需非空；外键继续NO ACTION，引用不能级联擦除。347字段映射与108组外键分别见新文档。extensions_json仅为M5保真准备，不是权限来源；低频数组次序/出现提示必须与关系行交叉校验，全局集合顺序由M3/M5进一步冻结。
+- 本轮Android只重测独立合成QA的原生DDL/约束/回滚/重开；主机执行真实JS升级器及SQLCipher SIGKILL。未接通生产Driver/Store，未实施M2/M3/M5/M6/M7或更改P7原门禁。
