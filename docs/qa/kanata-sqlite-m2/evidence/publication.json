@@ -1,7 +1,16 @@
 {
-  "status": "PENDING_CHECKPOINT_COMMIT_AND_PUSH",
+  "status": "PUSHED_CHECKPOINT_VERIFIED",
   "branch": "M",
   "baselineHead": "de3164b8de569f57a250d0592eae5a21345e5264",
-  "scope": "M2 Preflight and design only; production implementation not started",
-  "note": "A subsequent ordinary documentation commit records the verified checkpoint SHA and remote M SHA; no self-referential commit SHA is invented."
+  "checkpointCommit": "8fd749717526657d48b17805f17fa8f86cc830fc",
+  "remoteMHeadAfterCheckpointPush": "8fd749717526657d48b17805f17fa8f86cc830fc",
+  "checkpointCommitUrl": "https://github.com/Zhoubin601/ForMyself/commit/8fd749717526657d48b17805f17fa8f86cc830fc",
+  "checkedAt": "2026-11-09T13:09:45.371758+08:00",
+  "worktreeAfterCheckpointPush": "clean",
+  "report": "docs/20261107-kanata-sqlite-m2-acceptance-v1.md",
+  "reportSha256": "0638df0c7264fe3ab3fa7aff9c6869ebd1a0db170d55ec813952d2c9ce8c3e3a",
+  "implementationStatus": "M2_BLOCKED_PREFLIGHT; production implementation not started",
+  "windowsDecision": "User selected previously validated Windows/WHPX synthetic AVD; Windows executor not attached to current thread",
+  "pushMode": "ordinary fast-forward; no force, merge or release",
+  "receiptCommit": "This receipt is recorded by a subsequent ordinary M documentation commit; its exact SHA is in Git history and the final delivery reply."
 }
