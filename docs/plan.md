@@ -1,4 +1,4 @@
-> **2026-11-09 当前检查点：M2 BLOCKED（Preflight/技术设计完成，生产实现未开始）。** Linux合成API34的WebView/最小Capacitor桥接实测崩溃；用户已选Windows/WHPX接续，当前会话未连接该环境。[正式报告](20261107-kanata-sqlite-m2-acceptance-v1.md) · [设计](20261107-kanata-sqlite-m2-design-v1.md) · [接续](20261109-kanata-sqlite-m2-windows-handoff-v1.md)。下列早期“M2未开始”描述保留为历史，当前阶段以本检查点为准；验收标准未减，M3不得开始。
+> **2026-11-09 当前有效检查点：M3 隔离 SQLite 候选 PASS，M4 完整工程任务书已建立、代码尚未开始。** 实施入口：[M4 任务书](20261109-kanata-sqlite-m4-task-v1.md)；先前的 M2 Linux BLOCKED 为历史（随后已在 Windows/WHPX 解除，M2/M3 候选均 PASS）。生产仍 legacy，普通 Android SQLite 激活 false。M4 未 PASS 不进入 M5。
 
 # 执行计划
 
@@ -1147,3 +1147,11 @@ P6最终PASS/Go：501 Node/317组件、Web12/6布局、Android17、原生8通过
 ## 2026-11-09 M3
 
 以 [M3 任务书](20261109-kanata-sqlite-m3-task-v1.md)、[设计](20261109-kanata-sqlite-m3-design-v1.md)及 [QA](qa/kanata-sqlite-m3/README.md)为当前执行入口。实施、回归和提交限 M 分支。
+
+
+## 2026-11-09 M4 任务书建立（尚未实施）
+
+- [x] 核对 M3 PASS 提交 `751da40`、总迁移计划、M2/M3 领域 Repository 和 legacy `kanataStore` 全图读写热点。
+- [x] 编写 [M4 完整任务书](20261109-kanata-sqlite-m4-task-v1.md)：Preflight、技术设计、领域命令与查询、Pinia有界化、生命周期、Android真实集成、两轮自检、G1–G11验收。
+- [ ] Windows 本地 Codex 依据任务书实施并提交 M4 代码与证据；当前未运行 M4 测试，不能把 M3 历史数字当作 M4 结果。
+- [ ] 生产 SQLite 仍关闭；M5/M6/M7/P7 保持独立门禁。

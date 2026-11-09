@@ -7,6 +7,8 @@ SQLite 迁移按 [彼方 SQLite 迁移计划 M v1](docs/20261103-kanata-sqlite-m
 2026-11-09，M2 在 Windows/WHPX 合成 AVD 完成候选 Driver、消息/会话 Repository 和真实 UI 集成验收。生产 canonical 继续使用 legacy。M3 可开始工程实施。见 [M2 任务书](docs/20261107-kanata-sqlite-m2-task-v1.md)、[Windows 验收 v2](docs/20261109-kanata-sqlite-m2-acceptance-v2.md)、[复现与证据](docs/qa/kanata-sqlite-m2/README.md) 和 [Linux 历史阻塞](docs/20261107-kanata-sqlite-m2-acceptance-v1.md)。
 
 
+2026-11-09：M3 隔离合成候选已 [PASS](docs/20261109-kanata-sqlite-m3-acceptance-v1.md)，Schema 追加 004；本轮建立 [M4 Pinia 与业务访问模型完整任务书](docs/20261109-kanata-sqlite-m4-task-v1.md)，推荐在 Windows/WHPX 本地 Codex 实施。**目前仅完成 M4 任务规划，代码未开始。** 生产 canonical 仍 legacy，默认 Android SQLite 激活位 false，M5–M7/P7 尚未验收。
+
 当前分支路线：Kanata（P7 No-Go 稳定基线）→ M（M0–M7 SQLite 迁移）→ M7 通过并审查后合并回 Kanata → 继续 P7。M 未完成前不在 Kanata 并行修改同一套存储模块；不自动合并 main 或发布。
 
 P7 原始门槛仍然有效，见[连续开发计划 v3](docs/20261028-kanata-continuous-execution-plan-v3.md)与[P7 最终收口记录](docs/20261102-kanata-p7-final-closure-v1.md)。SQLite 迁移完成不等于 P7 自动通过，合并后必须重新执行相关容量、安全、备份和完整需求验收。
