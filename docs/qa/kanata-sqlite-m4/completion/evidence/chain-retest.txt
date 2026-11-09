@@ -1,0 +1,16 @@
+(node:35492) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ C2 source chain is checked in bounded SQL pages and rejects a historical reply cycle (369.9496ms)
+ℹ {"size":1000,"queries":2,"rows":1}
+ℹ {"size":10000,"queries":2,"rows":1}
+✔ C2 shared memory authorization handles 1k and 10k links without fetching parent bodies (5787.5176ms)
+ℹ {"sharedLinks":1000,"queries":13,"bodies":1}
+ℹ {"sharedLinks":10000,"queries":13,"bodies":1}
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 6339.1378

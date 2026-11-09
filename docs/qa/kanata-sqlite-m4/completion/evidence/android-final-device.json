@@ -1,0 +1,16 @@
+{
+  "syntheticOnly": true,
+  "avd": "kanata_m2_api34",
+  "api": "34",
+  "abi": "x86_64",
+  "accelerator": "WHPX",
+  "selinux": "Enforcing",
+  "crypto": "encrypted",
+  "webView": "Loading com.google.android.webview version 113.0.5672.136",
+  "packages": [
+    "package:com.yubin.formyself.m2qa.test",
+    "package:com.yubin.formyself.m2qa"
+  ],
+  "forwards": [],
+  "stopExit": 0
+}

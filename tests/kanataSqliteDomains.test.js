@@ -302,3 +302,110 @@ test('M3 usage attempt preserves null measurement and final usage is idempotent'
   assert.deepEqual((await domains.usage.list(scope.worldId, scope.instanceId)).attempts.find(value => value.id === done.id), done)
   await assert.rejects(domains.usage.record({ ...done, finishedAt: 1400 }), /USAGE_ALREADY_FINAL/)
 })
+
+test('C2 source chain is checked in bounded SQL pages and rejects a historical reply cycle', async t => {
+  const { db, state, scope } = await setup(t)
+  const { sourceMetadata } = await import('../src/features/chat/storage/sqlite/kanataProvenance.js')
+  const trace = []
+  const tx = { query: async (sql, args) => {
+    const rows = db.prepare(sql).all(...args)
+    trace.push({ sql, rows: rows.length })
+    return rows
+  } }
+  const add = db.prepare(`INSERT INTO messages(id,world_id,conversation_id,role,sender_type,sender_id,sender_name_snapshot,
+    content,created_at,revision,status,turn_id,batch_id,reply_to_message_id,reply_to_revision)
+    SELECT ?,world_id,conversation_id,role,sender_type,sender_id,sender_name_snapshot,
+    'synthetic',?,1,'complete',turn_id,batch_id,?,? FROM messages WHERE id='message-one'`)
+  let parent = 'message-one', revision = 2
+  for (const size of [1000, 10000]) {
+    db.exec('BEGIN')
+    for (let n = size === 1000 ? 0 : 1000; n < size; n++) {
+      const id = 'c2-msg-' + n
+      add.run(id, 3000 + n, parent, revision)
+      parent = id
+      revision = 1
+    }
+    db.exec('COMMIT')
+    trace.length = 0
+    const result = await sourceMetadata(tx, scope.worldId, { messageId: parent, revision })
+    assert.equal(result.conversationId, scope.conversationId)
+    assert.ok(trace.length <= 3)
+    assert.ok(trace.every(query => query.rows <= 51 && !/SELECT\s+\*|\bm\.content\b/.test(query.sql)))
+    t.diagnostic(JSON.stringify({ size, queries: trace.length, rows: Math.max(...trace.map(query => query.rows)) }))
+  }
+  db.prepare("UPDATE messages SET reply_to_message_id=?,reply_to_revision=1 WHERE id='c2-msg-0'").run(parent)
+  await assert.rejects(sourceMetadata(tx, scope.worldId, { messageId: parent, revision }), /KANATA_SOURCE_STALE/)
+  assert.equal(state.failOn, '')
+})
+
+test('C2 shared memory authorization handles 1k and 10k links without fetching parent bodies', async t => {
+  const { db, state, scope, domains } = await setup(t)
+  const addMemory = db.prepare(`INSERT INTO memories(id,world_id,owner_type,owner_id,owner_instance_id,layer,memory_key,content,status,revision,visibility)
+    VALUES(?,?,'character',?,?,'L3','synthetic','synthetic','active',1,'private')`)
+  const link = db.prepare("INSERT INTO memory_links(world_id,memory_id,kind,target_memory_id) VALUES(?,?,'shared',?)")
+  for (const size of [1000, 10000]) {
+    const prefix = 'c2-memory-' + size + '-'
+    db.exec('BEGIN')
+    for (let n = 0; n <= size; n++) addMemory.run(prefix + n, scope.worldId, scope.instanceId, scope.instanceId)
+    for (let n = 0; n < size; n++) link.run(scope.worldId, prefix + n, prefix + (n + 1))
+    db.exec('COMMIT')
+    state.queries.length = 0
+    const item = await domains.memories.readFor(scope, prefix + '0')
+    assert.equal(item.id, prefix + '0')
+    assert.equal(state.queries.filter(sql => /^SELECT .*\bcontent\b.*FROM memories/i.test(sql)).length, 1)
+    assert.ok(state.queries.length < 20)
+    t.diagnostic(JSON.stringify({ sharedLinks: size, queries: state.queries.length, bodies: 1 }))
+    db.prepare("UPDATE memories SET status='stale',revision=revision+1 WHERE id=?").run(prefix + size)
+    state.queries.length = 0
+    await assert.rejects(domains.memories.readFor(scope, prefix + '0'), /MEMORY_CONTEXT_DENIED/)
+    assert.ok(!state.queries.some(sql => /^SELECT .*\bcontent\b.*FROM memories/i.test(sql)))
+  }
+})
+
+test('C3 new group receipts preserve ordered members and reject a cross-world actor', async t => {
+  const { domains, scope, fixture, other } = await setup(t)
+  const actors = fixture.instances.filter(row => row.worldId === scope.worldId).slice(0,2).map(row=>row.id).reverse()
+  const fields = { title: '合成群聊', instanceIds: actors }
+  const command = { id:'c3-group', commandId:'c3-create' }
+  const { id } = await domains.conversations.createGroup(scope.worldId, fields, command)
+  assert.deepEqual(await domains.conversations.createGroup(scope.worldId, fields, command), { id })
+  const row = await domains.conversations.get({ ...scope, conversationId:id })
+  assert.deepEqual(row.participantIds.slice(1), actors)
+  await assert.rejects(domains.conversations.createGroup(scope.worldId, { ...fields, instanceIds:[actors[0],other.id] },
+    { id:'c3-invalid', commandId:'c3-invalid' }), /KANATA_CONVERSATION_INVALID/)
+  assert.equal(await domains.conversations.get({ ...scope, conversationId:'c3-invalid' }), null)
+})
+
+test('C2 event ancestry pages merge overlapping paths and bind cursors to direction and root', async t => {
+  const { db, domains, scope, other } = await setup(t)
+  const fixture = await import('../docs/qa/kanata-sqlite-m4/completion/fixture.mjs')
+  db.prepare(fixture.eventRows).run(70, 'c2-event-', scope.worldId)
+  db.prepare(fixture.eventEdges).run(69, scope.worldId, 'c2-event-', 'c2-event-')
+  db.prepare('INSERT INTO event_causes(world_id,event_id,cause_event_id) VALUES(?,?,?)').run(scope.worldId,'c2-event-0','c2-event-20')
+  const first = await domains.events.graphPage(scope.worldId, 'c2-event-0', 'cause')
+  assert.equal(first.entries.length, 50)
+  const second = await domains.events.graphPage(scope.worldId, 'c2-event-0', 'cause', first.cursor)
+  assert.equal(second.entries.length, 20)
+  assert.equal(new Set([...first.entries,...second.entries].map(row=>row.id)).size,70)
+  await assert.rejects(domains.events.graphPage(scope.worldId, 'c2-event-0', 'consequence', first.cursor), /CURSOR_STALE/)
+  await assert.rejects(domains.events.graphPage(other.worldId, 'c2-event-0', 'cause', first.cursor), /EVENT_UNAVAILABLE/)
+  assert.throws(() => db.prepare('INSERT INTO event_causes(world_id,event_id,cause_event_id) VALUES(?,?,?)').run(scope.worldId,'c2-event-70','c2-event-0'), /CAUSAL_CYCLE/)
+})
+
+test('C3 binding CAS preserves inherit, explicit none and archived selections', async t => {
+  const { domains, scope, other } = await setup(t)
+  const original = await domains.roleBindings.read()
+  const binding = { worldId:scope.worldId, instanceId:scope.instanceId }
+  const global = await domains.roleBindings.set('global',binding,original.revision)
+  assert.deepEqual((await domains.roleBindings.resolve('home')).binding,binding)
+  const none = await domains.roleBindings.set('home',null,global.revision)
+  assert.equal((await domains.roleBindings.resolve('home')).status,'unselected')
+  await assert.rejects(domains.roleBindings.set('home','inherit',global.revision), /REVISION_CONFLICT/)
+  await domains.roleBindings.set('home','inherit',none.revision)
+  assert.deepEqual((await domains.roleBindings.resolve('home')).binding,binding)
+  await assert.rejects(domains.roleBindings.set('home',{...binding,instanceId:other.id},none.revision+1), /BINDING_UNAVAILABLE/)
+  const current = await domains.worlds.get(scope.worldId)
+  await domains.worlds.archive(scope.worldId,current.world.revision,true)
+  assert.equal((await domains.roleBindings.resolve('home')).status,'unavailable')
+  assert.deepEqual((await domains.roleBindings.read()).global,binding)
+})

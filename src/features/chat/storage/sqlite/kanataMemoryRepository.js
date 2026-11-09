@@ -1,9 +1,9 @@
 // @ts-check
 import { cloneKanataJson, validateId } from '../../domain/kanataValidation.js'
 import { domainTable, executeOnce, found, writeOne } from './kanataDomainRows.js'
-import { authorizeEvent, eventProvenance } from './kanataEventRepository.js'
+import { eventProvenance, visitAuthorizedEventSources } from './kanataEventRepository.js'
 import { visitRows } from './kanataMessageDependents.js'
-import { assertActor, conversationAccess, grantTable, requireLifeSources, sourceMetadata, uniqueLifeSources } from './kanataProvenance.js'
+import { assertActor, conversationAccess, grantTable, requireLifeSources, sourceConversation, sourceMetadata, uniqueLifeSources, visitSourceGrants } from './kanataProvenance.js'
 import { messageQueries } from './kanataRepositorySql.js'
 import { pageLimit, requireSqliteValue as need, safeInteger } from './kanataRepositoryValues.js'
 import { assertWritableWorld } from './kanataWorldRepository.js'
@@ -45,6 +45,33 @@ const links = `SELECT kind,target_memory_id FROM memory_links WHERE world_id=? A
   ORDER BY target_memory_id LIMIT 128`
 // Link kind is part of the key. Paginate by both fields even when a memory has two links to the same ID.
 const linksByKind = links.replace('AND target_memory_id>?', 'AND (target_memory_id,kind)>(?,?)').replace('ORDER BY target_memory_id', 'ORDER BY target_memory_id,kind')
+const sharedChain = `WITH RECURSIVE scope(world,root) AS (VALUES(?,?)), chain(id) AS (
+  SELECT root FROM scope UNION SELECT l.target_memory_id FROM chain c CROSS JOIN scope
+  CROSS JOIN memory_links l WHERE l.world_id=scope.world AND l.memory_id=c.id AND l.kind='shared'
+)`
+const chainValid = sharedChain + ` SELECT 1 AS valid FROM scope WHERE NOT EXISTS(
+  SELECT 1 FROM chain c LEFT JOIN memories m ON m.world_id=scope.world AND m.id=c.id WHERE m.status IS NOT 'active'
+) AND EXISTS(
+  SELECT 1 FROM chain c WHERE NOT EXISTS(
+    SELECT 1 FROM memory_links l WHERE l.world_id=scope.world AND l.memory_id=c.id AND l.kind='shared'
+  )
+)`
+const chainSources = sharedChain + ` SELECT l.memory_id,l.message_id,l.message_revision FROM chain c CROSS JOIN scope CROSS JOIN memory_sources l
+  WHERE l.world_id=scope.world AND l.memory_id=c.id AND (l.memory_id,l.message_id)>(?,?) ORDER BY l.memory_id,l.message_id LIMIT 50`
+const chainEvents = sharedChain + ` SELECT DISTINCT l.event_id FROM chain c CROSS JOIN scope CROSS JOIN memory_events l
+  WHERE l.world_id=scope.world AND l.memory_id=c.id AND l.event_id>? ORDER BY l.event_id LIMIT 50`
+const chainLife = sharedChain + ` SELECT DISTINCT l.grant_id,l.grant_revision,l.fingerprint,l.instance_id,l.module_id
+  FROM chain c CROSS JOIN scope CROSS JOIN memory_life_sources l
+  WHERE l.world_id=scope.world AND l.memory_id=c.id AND (l.grant_id,l.grant_revision,l.fingerprint)>(?,?,?) ORDER BY l.grant_id,l.grant_revision,l.fingerprint LIMIT 50`
+const rootAccess = `SELECT m.owner_type,m.owner_id,m.status,m.visibility,m.conversation_id,m.revision,
+  EXISTS(SELECT 1 FROM memory_known_by k WHERE k.world_id=m.world_id AND k.memory_id=m.id AND k.instance_id=?) AS known,
+  EXISTS(SELECT 1 FROM memory_known_by k WHERE k.world_id=m.world_id AND k.memory_id=m.id) AS has_readers,
+  EXISTS(SELECT 1 FROM memory_links l WHERE l.world_id=m.world_id AND l.memory_id=m.id AND l.kind='shared') AS shared
+  FROM memories m WHERE m.world_id=? AND m.id=?`
+const sourcePageSql = `SELECT message_id,message_revision FROM memory_sources
+  WHERE world_id=? AND memory_id=? AND message_id>? ORDER BY message_id LIMIT 51`
+const detailBody = 'SELECT id,memory_key,content,layer,status,revision FROM memories WHERE world_id=? AND id=?'
+const sourceMembership = `SELECT 1 FROM memory_sources WHERE world_id=? AND memory_id=? AND message_id=? AND message_revision=?`
 const addSource = 'INSERT INTO memory_sources(world_id,memory_id,message_id,message_revision) VALUES(?,?,?,?)'
 const addKnown = 'INSERT INTO memory_known_by(world_id,memory_id,instance_id) VALUES(?,?,?)'
 const addEvent = 'INSERT INTO memory_events(world_id,memory_id,event_id) VALUES(?,?,?)'
@@ -57,7 +84,7 @@ const addArchive = 'INSERT INTO archived_message_marks(world_id,conversation_id,
 const isArchived = 'SELECT 1 FROM archived_message_marks WHERE world_id=? AND conversation_id=? AND message_id=?'
 const denial = new Set(['KANATA_MEMORY_CONTEXT_DENIED', 'KANATA_CONTEXT_SCOPE_DENIED', 'KANATA_LIFE_PERMISSION_DENIED', 'KANATA_SOURCE_STALE',
   'EVENT_CONTEXT_DENIED', 'EVENT_CAUSE_UNAVAILABLE', 'EVENT_UNAVAILABLE'])
-export const memoryQueries = [rankFields, memoryPolicy, memory.get, metadata, list, promptList, listOwner, sources, known, events, life, linksByKind, isArchived]
+export const memoryQueries = [detailBody, sourcePageSql, chainValid, chainSources, chainEvents, chainLife, rootAccess, sourceMembership, rankFields, memoryPolicy, memory.get, metadata, list, promptList, listOwner, sources, known, events, life, linksByKind, isArchived]
 export const memoryWrites = [...memory.writeStatements, addSource, addKnown, addEvent, addLife, addLink, ...clearLinks, deleteMemory, addArchive]
 
 /** @param {string} value */
@@ -95,49 +122,52 @@ async function readMemory(tx, worldId, id) {
   return { ...fields, ...linked, ...(sharedFromId && { sharedFromId }), ...(supersededById && { supersededById }) }
 }
 
-/** @param {Tx} tx @param {string} id @param {Context} scope @param {boolean} share */
-async function authorizeMemory(tx, id, scope, share = false) {
+/** @param {Tx} tx @param {string} id @param {Context} scope @param {boolean} share @param {boolean} collect */
+async function authorizeMemory(tx, id, scope, share = false, collect = true) {
   const { worldId, instanceId, conversationId } = scope
   await assertActor(tx, worldId, instanceId)
   const context = conversationId && found(await conversationAccess(tx, worldId, conversationId, instanceId), 'KANATA_MEMORY_CONTEXT_DENIED')
   const group = Boolean(context && context.group)
-  const [row] = await tx.query(metadata, [worldId, id])
+  const keys = [worldId, id]
+  const [row] = await tx.query(rootAccess, [instanceId, ...keys])
   need(row?.status === 'active', 'KANATA_MEMORY_CONTEXT_DENIED')
-  const root = await memoryLinks(tx, worldId, id)
-  const belongs = (row.owner_type === 'character' && row.owner_id === instanceId) || root.knownBy.includes(instanceId)
-    || (row.owner_type === 'world' && row.visibility === 'public' && !root.knownBy.length)
+  const belongs = (row.owner_type === 'character' && row.owner_id === instanceId) || row.known === 1
+    || (row.owner_type === 'world' && row.visibility === 'public' && row.has_readers === 0)
   need(belongs, 'KANATA_MEMORY_CONTEXT_DENIED')
-  const seen = new Set([id])
-  const grants = []
-  let current = root
-  for (;;) {
-    grants.push(...current.lifeSources)
-    for (const ref of current.sourceRefs) {
-      const source = await sourceMetadata(tx, worldId, ref)
-      grants.push(...source.sources)
-      if (current === root && !root.sharedFromId) {
-        need(await conversationAccess(tx, worldId, source.conversationId, instanceId), 'KANATA_MEMORY_CONTEXT_DENIED')
-      }
-      if (current === root && group && row.visibility !== 'public') {
-        need(row.conversation_id === conversationId && source.conversationId === conversationId, 'KANATA_MEMORY_CONTEXT_DENIED')
-      }
-    }
-    for (const event of current.sourceEventIds) {
-      grants.push(...await authorizeEvent(tx, worldId, event, { instanceId, group, sharedMemory: Boolean(root.sharedFromId) }))
-    }
-    if (!current.sharedFromId) break
-    need(!seen.has(current.sharedFromId), 'KANATA_SQLITE_INTEGRITY_FAILED')
-    seen.add(current.sharedFromId)
-    const [parent] = await tx.query(metadata, [worldId, current.sharedFromId])
-    need(parent?.status === 'active', 'KANATA_MEMORY_CONTEXT_DENIED')
-    current = await memoryLinks(tx, worldId, current.sharedFromId)
+  const [valid] = await tx.query(chainValid, keys)
+  need(valid, 'KANATA_MEMORY_CONTEXT_DENIED')
+  const provenance = []
+  /** @param {LifeSource} source */
+  const authorize = async source => {
+    await requireLifeSources(tx, [source], { worldId, instanceId, group, remember: true, share })
+    if (collect) provenance.push(source)
   }
-  need(!group || row.visibility === 'public' || root.sourceRefs.length, 'KANATA_MEMORY_CONTEXT_DENIED')
-  const provenance = uniqueLifeSources(grants)
-  await requireLifeSources(tx, provenance, { worldId, instanceId, group, remember: true, share })
-  return { row, root, provenance, group }
+  let rootHasSource = false
+  for await (const link of visitRows(tx, chainSources, keys, ['memory_id', 'message_id'], 50)) {
+    const ref = { messageId: String(link.message_id), revision: Number(link.message_revision) }
+    const source = await sourceConversation(tx, worldId, ref)
+    if (link.memory_id === id) {
+      rootHasSource = true
+      if (row.shared === 0) need(await conversationAccess(tx, worldId, source, instanceId), 'KANATA_MEMORY_CONTEXT_DENIED')
+      if (group && row.visibility !== 'public') {
+        need(row.conversation_id === conversationId && source === conversationId, 'KANATA_MEMORY_CONTEXT_DENIED')
+      }
+    }
+    for await (const tag of visitSourceGrants(tx, worldId, ref)) await authorize(tag)
+  }
+  need(!group || row.visibility === 'public' || rootHasSource, 'KANATA_MEMORY_CONTEXT_DENIED')
+  for await (const link of visitRows(tx, chainEvents, keys, ['event_id'], 50)) {
+    for await (const tag of visitAuthorizedEventSources(tx, worldId, String(link.event_id), { instanceId, group, sharedMemory: row.shared === 1 })) {
+      if (share) await authorize(tag)
+      else if (collect) provenance.push(tag)
+    }
+  }
+  for await (const link of visitRows(tx, chainLife, keys, ['grant_id', 'grant_revision', 'fingerprint'], 50)) {
+    await authorize({ grantId: String(link.grant_id), instanceId: String(link.instance_id), revision: Number(link.grant_revision),
+      moduleId: /** @type {LifeSource['moduleId']} */ (link.module_id), fingerprint: String(link.fingerprint) })
+  }
+  return { row, provenance: uniqueLifeSources(provenance), group }
 }
-
 /** @param {Tx} tx @param {Memory} dto @param {number|null} expectedRevision */
 async function persistMemory(tx, dto, expectedRevision) {
   const keys = [dto.worldId, dto.id]
@@ -225,6 +255,32 @@ export function createKanataMemoryRepository(operation, idFactory) {
         extractAfter: Number(row.extract_after), contextBudget: Number(row.context_budget), revision: Number(row.revision) } : null
     }),
     /** @param {Context} scope @param {string} id */
+    readDetailFor: (scope, id) => operation.transaction(async tx => {
+      await authorizeMemory(tx, id, scope, false, false)
+      const [row] = await tx.query(detailBody, [scope.worldId, id])
+      need(row, 'MEMORY_UNAVAILABLE')
+      return { id, key: String(row.memory_key), content: String(row.content),
+        layer: String(row.layer), status: String(row.status), revision: Number(row.revision) }
+    }),
+    /** @param {Context} scope @param {string} id
+     * @param {import('./kanataDomainTypes').KanataMemorySourceCursor} [cursor] */
+    sourcePage: (scope, id, cursor) => operation.transaction(async tx => {
+      const { row } = await authorizeMemory(tx, id, scope, false, false)
+      const revision = Number(row.revision)
+      if (cursor) {
+        validateId(cursor.after, 'cursor')
+        need(cursor.worldId === scope.worldId && cursor.instanceId === scope.instanceId && cursor.conversationId === scope.conversationId
+          && cursor.memoryId === id && cursor.revision === revision, 'MEMORY_SOURCE_CURSOR_STALE')
+      }
+      const rows = await tx.query(sourcePageSql, [scope.worldId, id, cursor?.after ?? ''])
+      const entries = rows.slice(0, 50).map(link => ({ messageId: String(link.message_id), revision: Number(link.message_revision) }))
+      const next = rows.length > 50 ? {
+        worldId: scope.worldId, instanceId: scope.instanceId, conversationId: scope.conversationId, memoryId: id,
+        revision, after: entries[49].messageId,
+      } : null
+      return { entries, cursor: next }
+    }),
+    /** @param {Context} scope @param {string} id */
     readFor: (scope, id) => operation.transaction(async tx => {
       const proof = await authorizeMemory(tx, id, scope)
       const record = found(await readMemory(tx, scope.worldId, id), 'MEMORY_UNAVAILABLE')
@@ -254,7 +310,7 @@ export function createKanataMemoryRepository(operation, idFactory) {
       const candidates = await tx.query(promptList, [scope.worldId, scope.instanceId, afterId, pageLimit(limit) + 1])
       const entries = []
       for (const { id } of candidates.slice(0, limit)) {
-        try { await authorizeMemory(tx, String(id), scope) }
+        try { await authorizeMemory(tx, String(id), scope, false, false) }
         catch (error) {
           if (denial.has(/** @type {{code?:string}} */ (error).code ?? '')) continue
           throw error
@@ -319,23 +375,26 @@ export function createKanataMemoryRepository(operation, idFactory) {
     }),
     /** @param {Context} scope @param {string} id @param {SourceRef} ref */
     resolveSource: (scope, id, ref) => operation.transaction(async tx => {
-      const proof = await authorizeMemory(tx, id, scope)
-      need(!proof.root.sharedFromId, 'KANATA_MEMORY_CONTEXT_DENIED')
-      need(proof.root.sourceRefs.some(source => source.messageId === ref.messageId && source.revision === ref.revision), 'KANATA_SOURCE_STALE')
-      const source = await sourceMetadata(tx, scope.worldId, ref)
-      const access = found(await conversationAccess(tx, scope.worldId, source.conversationId, scope.instanceId), 'KANATA_MEMORY_CONTEXT_DENIED')
-      await requireLifeSources(tx, source.sources, { ...scope, group: access.group || proof.group })
-      const [row] = await tx.query(messageQueries.quote, [scope.worldId, source.conversationId, ref.messageId])
+      const proof = await authorizeMemory(tx, id, scope, false, false)
+      need(proof.row.shared === 0, 'KANATA_MEMORY_CONTEXT_DENIED')
+      const [linked] = await tx.query(sourceMembership, [scope.worldId, id, ref.messageId, ref.revision])
+      need(linked, 'KANATA_SOURCE_STALE')
+      const conversationId = await sourceConversation(tx, scope.worldId, ref)
+      const access = found(await conversationAccess(tx, scope.worldId, conversationId, scope.instanceId), 'KANATA_MEMORY_CONTEXT_DENIED')
+      for await (const tag of visitSourceGrants(tx, scope.worldId, ref)) {
+        await requireLifeSources(tx, [tag], { ...scope, group: access.group || proof.group })
+      }
+      const [row] = await tx.query(messageQueries.quote, [scope.worldId, conversationId, ref.messageId])
       need(row?.revision === ref.revision, 'KANATA_SOURCE_STALE')
-      const archived = (await tx.query(isArchived, [scope.worldId, source.conversationId, ref.messageId])).length > 0
-      return { messageId: ref.messageId, revision: ref.revision, conversationId: source.conversationId, content: String(row.content), archived }
+      const archived = (await tx.query(isArchived, [scope.worldId, conversationId, ref.messageId])).length > 0
+      return { messageId: ref.messageId, revision: ref.revision, conversationId, content: String(row.content), archived }
     }),
     /** Historical source marker. The row remains addressable by primary key.
      * @param {string} worldId @param {SourceRef} ref */
     archiveSource: (worldId, ref) => operation.transaction(async tx => {
       await assertWritableWorld(tx, worldId)
-      const source = await sourceMetadata(tx, worldId, ref)
-      const keys = [worldId, source.conversationId, ref.messageId]
+      const conversationId = await sourceConversation(tx, worldId, ref)
+      const keys = [worldId, conversationId, ref.messageId]
       if (!(await tx.query(isArchived, keys)).length) await writeOne(tx, addArchive, keys)
     }),
   }

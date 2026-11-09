@@ -80,6 +80,7 @@ export interface KanataConversationRepository {
   }>
   get(scope: KanataMessageScope): Promise<Conversation | null>
   participants(scope: KanataMessageScope): Promise<readonly { id: string; kind: 'user' | 'character' }[]>
+  createGroup(worldId: string, fields: { title: string; instanceIds: string[] }, options: { id: string; commandId: string }): Promise<{ id: string }>
   create(conversation: Conversation): Promise<Conversation>
   updateChatSettings(scope: KanataMessageScope, expectedRevision: number | undefined, changes: Partial<Pick<Conversation, 'mode' | 'replyLimits' | 'replyTiming'>>, now: number): Promise<void>
   update(scope: KanataMessageScope, expectedRevision: number, fields: {

@@ -1160,3 +1160,7 @@ P6最终PASS/Go：501 Node/317组件、Web12/6布局、Android17、原生8通过
 
 - [x] Windows 预检、调用审计、技术设计、候选聊天与摘要工作区、授权、自治窗口、已接线范围的定向和设备回归。
 - [ ] 补齐候选完整管理流程、深层关联的有界处理、未跑的增长及生命周期矩阵，再完成完整 M4-6 两轮复核。验收进度见 [M4 阶段验收](20261109-kanata-sqlite-m4-acceptance-v1.md)。
+
+## M4 Completion 执行记录
+
+[补齐验收 v2](20261109-kanata-sqlite-m4-acceptance-v2.md)与 [QA](qa/kanata-sqlite-m4/completion/README.md)记录已接线范围和剩余门禁。M4 BLOCKED，M5 NO。

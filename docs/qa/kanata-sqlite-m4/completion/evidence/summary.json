@@ -1,0 +1,45 @@
+{
+  "status": "BLOCKED",
+  "canEnterM5": false,
+  "baseline": "4191d7fd72723afab35f77bb9b85970f29f0f43f",
+  "node": 660,
+  "components": 392,
+  "directed": 106,
+  "npmCheckExit": 0,
+  "androidExit": 0,
+  "defaultGateExit": 0,
+  "realModels": 0,
+  "graphSamples": [
+    {
+      "size": 1000,
+      "memory": {
+        "queries": 8,
+        "writes": 0,
+        "maxRows": 1
+      },
+      "event": {
+        "queries": 40,
+        "writes": 0,
+        "maxRows": 51,
+        "total": 1000
+      }
+    },
+    {
+      "size": 10000,
+      "memory": {
+        "queries": 8,
+        "writes": 0,
+        "maxRows": 1
+      },
+      "event": {
+        "queries": 400,
+        "writes": 0,
+        "maxRows": 51,
+        "total": 10000
+      }
+    }
+  ],
+  "schema": 4,
+  "rawLogSha256": "671F9F832F6D2D853CAE2902EEAF596ADDFBE1C8826F4F6AEC3F4DBE68671317",
+  "graphSeedSha256": "9F02729AADBE202FD01816EE9EE9B0C15C32C866650F0415E234B1391DCCF9CE"
+}

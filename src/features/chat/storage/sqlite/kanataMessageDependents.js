@@ -13,14 +13,14 @@ import { extensionObject, requireSqliteValue as need, safeInteger } from './kana
 /** @typedef {import('../../../../platform/storage/kanataSqliteTypes').KanataSqliteTransaction} Transaction */
 /** @typedef {{id:()=>string, clock:()=>number}} Tools */
 
-/** @param {Transaction} tx @param {string} sql @param {Value[]} bindings @param {string[]} columns */
-export async function* visitRows(tx, sql, bindings, columns) {
+/** @param {Transaction} tx @param {string} sql @param {Value[]} bindings @param {string[]} columns @param {number} [batchSize] */
+export async function* visitRows(tx, sql, bindings, columns, batchSize = 128) {
   /** @type {Value[]} */
   let cursor = columns.map(column => column === 'grant_revision' ? 0 : '')
   for (;;) {
     const rows = await tx.query(sql, [...bindings, ...cursor])
     yield* rows
-    if (rows.length < 128) return
+    if (rows.length < batchSize) return
     cursor = columns.map(column => rows[rows.length - 1][column])
   }
 }

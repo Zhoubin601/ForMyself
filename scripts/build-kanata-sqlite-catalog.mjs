@@ -25,6 +25,8 @@ import { chatViewQueries } from '../src/features/chat/storage/sqlite/kanataChatV
 
 import { managementViewQueries } from '../src/features/chat/storage/sqlite/kanataManagementViewRepository.js'
 
+import { bindingQueries, bindingWrites } from '../src/features/chat/storage/sqlite/kanataRoleBindingRepository.js'
+
 const output = process.argv[2]
 if (!output) throw new Error('Catalog output directory required')
 const statements = {}
@@ -54,14 +56,15 @@ add('query', 'business', [...Object.values(messageQueries), ...Object.values(con
 add('write', 'business', [...Object.values(messageWrites), ...Object.values(conversationWrites),
   ...Object.values(dependentWrites), ...Object.values(updateEffectValue), ...Object.values(deferredReplyWrites)])
 add('query', 'business', [receiptQuery, ...worldQueries, ...characterQueries, ...lorebookQueries, ...provenanceQueries,
-  ...memoryQueries, ...eventQueries, ...autonomyQueries, ...usageQueries, ...chatViewQueries, ...managementViewQueries])
+  ...memoryQueries, ...eventQueries, ...autonomyQueries, ...usageQueries, ...chatViewQueries, ...managementViewQueries, ...bindingQueries])
 add('write', 'business', [receiptWrite, ...worldWrites, ...characterWrites, ...lorebookWrites, ...memoryWrites,
-  ...eventWrites, ...autonomyWrites, ...usageWrites])
+  ...eventWrites, ...autonomyWrites, ...usageWrites, ...bindingWrites])
 if (process.argv.includes('--synthetic')) {
   const { m2FixtureCommands, auditInspection, fixtureWrites, futureSchema } = await import('../tests/helpers/kanataSqliteM2Fixture.js')
   const { growthSeedSql } = await import('../docs/qa/kanata-sqlite-m4/fixture.mjs')
   add('query', 'business', Object.values(auditInspection))
-  add('write', 'business', [growthSeedSql])
+  const { memoryRows, memoryEdges, eventRows, eventEdges } = await import('../docs/qa/kanata-sqlite-m4/completion/fixture.mjs')
+  add('write', 'business', [growthSeedSql, memoryRows, memoryEdges, eventRows, eventEdges])
   add('write', 'business', [...m2FixtureCommands().map(command => command.sql), ...Object.values(fixtureWrites)])
   add('ddl', 'business', [futureSchema])
 }

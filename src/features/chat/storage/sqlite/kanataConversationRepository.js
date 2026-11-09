@@ -2,6 +2,8 @@
 import { cloneKanataJson, validateId } from '../../domain/kanataValidation.js'
 import { validateGroupReplyLimits } from '../../domain/groupReplyLimits.js'
 import { validateReplyTimingPolicy } from '../../domain/replyTimingPolicy.js'
+import { readWorld } from './kanataWorldRepository.js'
+import { executeOnce, found } from './kanataDomainRows.js'
 import { deferredReplyWrites } from './kanataDeferredReplySql.js'
 import { conversationQueries as query, conversationWrites as write, messageQueries } from './kanataRepositorySql.js'
 import { extensionObject, nonemptyText, pageLimit, requireSqliteValue as need, safeInteger, scopeBindings, validId } from './kanataRepositoryValues.js'
@@ -85,6 +87,25 @@ export function createKanataConversationRepository(operation) {
       return row ? fromRow(tx, row) : null
     }),
     participants: scope => run(tx => participants(tx, scope)),
+    createGroup(worldId, fields, options) {
+      const input = cloneKanataJson(fields)
+      need(nonemptyText(input.title) && input.title.length <= 200, 'INVALID_GROUP_TITLE')
+      need(Array.isArray(input.instanceIds) && input.instanceIds.length >= 2 && new Set(input.instanceIds).size === input.instanceIds.length,
+        'INVALID_GROUP_PARTICIPANTS')
+      validateId(options.id, 'groupId')
+      validateId(options.commandId, 'commandId')
+      return run(async tx => {
+        const current = found(await readWorld(tx, worldId), 'KANATA_CONVERSATION_WORLD_UNAVAILABLE')
+        need(!current.world.archived, 'KANATA_CONVERSATION_WORLD_UNAVAILABLE')
+        const id = await executeOnce(tx, ['group:create', worldId, options.commandId], input, async () => {
+          const unit = createKanataConversationRepository({ transaction: work => work(tx), health: operation.health })
+          const saved = await unit.create({ worldId, id: options.id, title: input.title.trim(), type:'group',
+            participantIds: [current.identity.id, ...input.instanceIds], mode:'inherit', revision:1, lastReadAt:0 })
+          return saved.id
+        })
+        return { id }
+      })
+    },
     async create(conversation) {
       const dto = cloneKanataJson(conversation)
       const { id, worldId, type, revision, participantIds } = dto

@@ -2,7 +2,8 @@ param(
     [Parameter(Mandatory)] [string] $ManifestPath,
     [Parameter(Mandatory)] [string] $EvidenceDirectory,
     [ValidateSet('repository','full')] [string] $Mode = 'full',
-    [switch] $M4Growth
+    [switch] $M4Growth,
+    [switch] $M4Completion
 )
 $ErrorActionPreference = 'Stop'
 $manifestPath = (Resolve-Path -LiteralPath $ManifestPath).Path
@@ -59,6 +60,7 @@ if ($LASTEXITCODE -ne 0 -or (Get-Content -Raw "$evidence/instrumentation.txt") -
 if ($LASTEXITCODE -ne 0 -or (Get-Content -Raw "$evidence/launch.txt") -notmatch 'Status: ok') { throw 'QA launch failed' }
 $scenarioArgs = @($manifestPath, "--$Mode")
 if ($M4Growth) { $scenarioArgs += '--m4-growth' }
+if ($M4Completion) { $scenarioArgs += '--m4-completion' }
 node docs/qa/kanata-sqlite-m2/windows-candidate-smoke.mjs @scenarioArgs *> "$evidence/result.txt"
 $code = $LASTEXITCODE
 & $adb -s $serial logcat -d -v threadtime > "$evidence/logcat.txt"

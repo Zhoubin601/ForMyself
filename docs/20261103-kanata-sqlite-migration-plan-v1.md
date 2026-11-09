@@ -331,3 +331,5 @@ M7 PASS 后，生成新的交接记录，至少包含：
 - P7 需要重新执行的全部容量、安全、备份、需求和 Android/Web 场景。
 
 **最终路线：** Kanata（P7 No-Go 基线）→ M（M0–M7 SQLite 迁移）→ 验收并合并回 Kanata → 继续 P7 → 最终验收。
+
+2026-11-09 补齐状态见 [M4 验收 v2](20261109-kanata-sqlite-m4-acceptance-v2.md)。M4 仍 BLOCKED。完整管理、事件撤销、跨模块消费者和有界性矩阵收口前不进入 M5。

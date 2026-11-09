@@ -6,7 +6,7 @@ import { instanceTable, unpackInstance } from './kanataCharacterRepository.js'
 import { domainTable, executeOnce, found, writeOne } from './kanataDomainRows.js'
 import { effectFromRow, eventFromRow, rebuildEventEffects, visitRows } from './kanataMessageDependents.js'
 import { dependentQueries, dependentWrites } from './kanataMessageDependentsSql.js'
-import { assertActor, requireLifeSources, sourceMetadata, uniqueLifeSources } from './kanataProvenance.js'
+import { assertActor, requireLifeSources, sourceConversation, sourceMetadata, uniqueLifeSources, visitSourceGrants } from './kanataProvenance.js'
 import { equalDto, nonemptyText, pageLimit, requireSqliteValue as need, safeInteger } from './kanataRepositoryValues.js'
 import { assertWritableWorld } from './kanataWorldRepository.js'
 
@@ -47,6 +47,18 @@ const originRows = `WITH RECURSIVE args(world,root) AS (VALUES(?,?)), origins(id
   JOIN args ON c.world_id=args.world
 ) SELECT e.id,e.status,e.visibility FROM origins o JOIN world_events e ON e.id=o.id JOIN args ON e.world_id=args.world
   WHERE e.id>? ORDER BY e.id LIMIT 128`
+const graphPageSql = (/** @type {'cause'|'consequence'} */ direction) => {
+  const [from, to] = direction === 'cause' ? ['event_id', 'cause_event_id'] : ['cause_event_id', 'event_id']
+  return `WITH RECURSIVE scope(world,root) AS (VALUES(?,?)), nodes(id) AS (
+    SELECT root FROM scope UNION
+    SELECT l.${to} FROM nodes n CROSS JOIN scope CROSS JOIN event_causes l WHERE l.world_id=scope.world AND l.${from}=n.id
+  )
+  SELECT e.id,e.revision,e.status,e.effective_at FROM scope JOIN nodes n
+  JOIN world_events e ON e.world_id=scope.world AND e.id=n.id
+  WHERE e.id<>scope.root AND e.id>? ORDER BY e.id LIMIT ?`
+}
+const graphQueries = { cause: graphPageSql('cause'), consequence: graphPageSql('consequence') }
+const graphRoot = 'SELECT revision FROM world_events WHERE world_id=? AND id=?'
 const relation = /** @type {ReturnType<typeof domainTable<StoredRelation>>} */ (domainTable('relationships', {
   world_id: 'worldId', id: 'id', from_id: 'fromId', to_id: 'toId', kind: 'kind', trust_baseline: 'trustBaseline',
   public_summary: 'publicSummary', trust: 'trust', intimacy: 'intimacy', understanding: 'understanding',
@@ -72,7 +84,7 @@ const relationEvents = 'SELECT event_id FROM relationship_events WHERE world_id=
 const staleEventMemories = `UPDATE memories SET status='stale',revision=revision+1 WHERE world_id=? AND status<>'deleted'
   AND id IN (SELECT memory_id FROM memory_events WHERE world_id=? AND event_id IN (SELECT value FROM json_each(?)))`
 const baselineValue = `SELECT mood,energy,location FROM character_instances WHERE world_id=? AND id=?`
-export const eventQueries = [outgoing, relationDimensions, eventRow, list, pathHasEffects, listEffects, eventAudits, contextCandidates, contextBody, eventMembership, targetEvents, participants, previewRows, descendants, originRows, relation.get, relationEvents, baselineValue]
+export const eventQueries = [graphRoot, ...Object.values(graphQueries), outgoing, relationDimensions, eventRow, list, pathHasEffects, listEffects, eventAudits, contextCandidates, contextBody, eventMembership, targetEvents, participants, previewRows, descendants, originRows, relation.get, relationEvents, baselineValue]
 export const eventWrites = [eventInsert, eventUpdate, eventParticipant, eventSource, eventCause, eventLife, eventLifeClear,
   effectInsert, baselineInsert, relationLink, staleEventMemories, ...relation.writeStatements]
 
@@ -92,28 +104,33 @@ async function loadEvent(tx, worldId, eventId) {
 
 /** Collect proof of all source revisions and grants without accessing event summaries or transcripts.
  * @param {Tx} tx @param {string} worldId @param {string} eventId @param {'committed'|'commit'|'propose'} mode */
-export async function eventProvenance(tx, worldId, eventId, mode = 'committed') {
-  const sources = []
+async function* visitEventProvenance(tx, worldId, eventId, mode = 'committed') {
   let present = false
   for await (const origin of visitRows(tx, originRows, [worldId, eventId], ['id'])) {
     present ||= origin.id === eventId
     need(origin.status === 'committed' || (origin.status === 'candidate' && (mode === 'propose' || (mode === 'commit' && origin.id === eventId))), 'EVENT_CAUSE_UNAVAILABLE')
     const keys = [worldId, origin.id]
     for await (const ref of visitRows(tx, dependentQueries.eventSources, keys, ['message_id'])) {
-      const metadata = await sourceMetadata(tx, worldId, { messageId: String(ref.message_id), revision: Number(ref.message_revision) })
-      sources.push(...metadata.sources)
+      const source = { messageId: String(ref.message_id), revision: Number(ref.message_revision) }
+      await sourceConversation(tx, worldId, source)
+      yield* visitSourceGrants(tx, worldId, source)
     }
     for await (const grant of visitRows(tx, dependentQueries.eventLifeSources, keys, ['grant_id', 'grant_revision', 'fingerprint'])) {
-      sources.push({ grantId: String(grant.grant_id), instanceId: String(grant.instance_id), moduleId: /** @type {LifeSource['moduleId']} */ (grant.module_id),
-        revision: Number(grant.grant_revision), fingerprint: String(grant.fingerprint) })
+      yield { grantId: String(grant.grant_id), instanceId: String(grant.instance_id), moduleId: /** @type {LifeSource['moduleId']} */ (grant.module_id),
+        revision: Number(grant.grant_revision), fingerprint: String(grant.fingerprint) }
     }
   }
   need(present, 'EVENT_UNAVAILABLE')
-  return uniqueLifeSources(sources)
 }
 
+/** @param {Tx} tx @param {string} worldId @param {string} eventId @param {'committed'|'commit'|'propose'} [mode] */
+export async function eventProvenance(tx, worldId, eventId, mode) {
+  const sources = []
+  for await (const source of visitEventProvenance(tx, worldId, eventId, mode)) sources.push(source)
+  return uniqueLifeSources(sources)
+}
 /** @param {Tx} tx @param {string} worldId @param {string} eventId @param {{instanceId:string,group:boolean,sharedMemory?:boolean}} scope */
-export async function authorizeEvent(tx, worldId, eventId, scope) {
+export async function* visitAuthorizedEventSources(tx, worldId, eventId, scope) {
   await assertActor(tx, worldId, scope.instanceId)
   const [metadata] = await tx.query(eventRole, [worldId, eventId])
   need(metadata?.status === 'committed' && (!scope.group || metadata.visibility === 'public'), 'EVENT_CONTEXT_DENIED')
@@ -121,9 +138,17 @@ export async function authorizeEvent(tx, worldId, eventId, scope) {
     const [member] = await tx.query(eventMembership, [worldId, eventId, scope.instanceId])
     need(member, 'EVENT_CONTEXT_DENIED')
   }
-  const sources = await eventProvenance(tx, worldId, eventId)
-  await requireLifeSources(tx, sources, { worldId, ...scope, remember: true })
-  return sources
+  for await (const source of visitEventProvenance(tx, worldId, eventId)) {
+    await requireLifeSources(tx, [source], { worldId, ...scope, remember: true })
+    yield source
+  }
+}
+
+/** @param {Tx} tx @param {string} worldId @param {string} eventId @param {{instanceId:string,group:boolean,sharedMemory?:boolean}} scope */
+export async function authorizeEvent(tx, worldId, eventId, scope) {
+  const sources = []
+  for await (const source of visitAuthorizedEventSources(tx, worldId, eventId, scope)) sources.push(source)
+  return uniqueLifeSources(sources)
 }
 const eventRole = 'SELECT status,visibility FROM world_events WHERE world_id=? AND id=?'
 eventQueries.push(eventRole)
@@ -300,6 +325,27 @@ export function createKanataEventRepository(operation, tools) {
       const events = []
       for (const row of rows.slice(0, limit)) events.push(await eventFromRow(tx, row))
       return { events, cursor: rows.length > limit ? String(rows[limit - 1].id) : null }
+    }),
+    /** @param {string} worldId @param {string} eventId @param {'cause'|'consequence'} direction
+     * @param {import('./kanataDomainTypes').KanataEventGraphCursor} [cursor] */
+    graphPage: (worldId, eventId, direction, cursor) => operation.transaction(async tx => {
+      validateId(worldId, 'worldId')
+      validateId(eventId, 'eventId')
+      need(Object.hasOwn(graphQueries, direction), 'EVENT_GRAPH_DIRECTION_INVALID')
+      const [root] = await tx.query(graphRoot, [worldId, eventId])
+      need(root, 'EVENT_UNAVAILABLE')
+      const rootRevision = Number(root.revision)
+      if (cursor) {
+        validateId(cursor.after, 'cursor')
+        need(cursor.worldId === worldId && cursor.eventId === eventId && cursor.direction === direction
+          && cursor.rootRevision === rootRevision, 'EVENT_GRAPH_CURSOR_STALE')
+      }
+      const rows = await tx.query(graphQueries[direction], [worldId, eventId, cursor?.after ?? '', 51])
+      const entries = rows.slice(0, 50).map(row => ({
+        id: String(row.id), revision: Number(row.revision), effectiveAt: Number(row.effective_at),
+        status: /** @type {Event['status']} */ (row.status),
+      }))
+      return { entries, cursor: rows.length > 50 ? { worldId, eventId, direction, rootRevision, after: entries[49].id } : null }
     }),
     /** @param {string} worldId @param {string} id @param {{instanceId:string,group:boolean}} scope */
     readFor: (worldId, id, scope) => operation.transaction(async tx => {

@@ -227,6 +227,13 @@ try {
       const m3Reopened = await evaluate(`window.m3QaReopenWindow(${password}, ${JSON.stringify(m3.next)})`)
       assert.deepEqual(m3Reopened, { before: m3.next.from, absent: true, eventCount: 1, after: m3.next.end })
       console.log(JSON.stringify({ m3Sigkill: { oldPid: m3OldPid, newPid: pid, ...m3Reopened } }, null, 2))
+      if (process.argv.includes('--m4-completion')) {
+        const actor = fixture.instances.find(item => item.worldId === scope.worldId)
+        const completion = await evaluate(`window.m4QaCompletion(${password}, ${JSON.stringify({ ...scope, instanceId: actor.id })})`)
+        console.log(JSON.stringify({ m4Completion: completion }, null, 2))
+        assert.equal(completion.error, undefined)
+        assert.deepEqual(completion.samples.map(sample => sample.size), [1000, 10000])
+      }
       const root = 'no_backup/kanata-sqlite-v1'
       adb('shell', 'run-as', packageName, 'mv', root + '/envelope.json', root + '/envelope.saved-for-qa')
       try {

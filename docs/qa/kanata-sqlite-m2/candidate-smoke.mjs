@@ -1,3 +1,4 @@
+import { memoryRows, memoryEdges, eventRows, eventEdges } from '../kanata-sqlite-m4/completion/fixture.mjs'
 import { growthSeedSql } from '../kanata-sqlite-m4/fixture.mjs'
 import { restoreState } from '../../../src/platform/storage/restoreState.js'
 import { runM3DeviceScenario } from '../kanata-sqlite-m3/device-scenario.mjs'
@@ -589,6 +590,7 @@ window.m4QaGrowth = async (password, { base, senderId }) => {
 window.m4QaWorkspace = async (password, { worldId, worldName, conversationId, actorId }) => {
   session(password)
   const passed = []
+  let stage = 'open'
   const worlds = candidate.createWorldRuntime()
   const lifecycle = { generation: candidate.generation, isAvailable: candidate.isAvailable, release: candidate.release }
   const createChat = () => createKanataSqliteChatRuntime({
@@ -617,6 +619,30 @@ window.m4QaWorkspace = async (password, { worldId, worldName, conversationId, ac
     button('返回世界').click()
     await settle(() => Boolean(button('角色与授权')))
     passed.push('workspace-directory-scoped-conversation-and-return')
+    if (globalThis.m4QaCompletion) {
+      stage = 'identity-read'
+      button('查看世界身份').click()
+      await settle(() => Boolean(button('保存世界身份')))
+      stage = 'identity-save'
+      button('保存世界身份').click()
+      await settle(() => !button('保存世界身份'))
+      button('世界书').click()
+      await settle(() => Boolean(button('新建世界书设定')))
+      stage = 'lore-open'
+      button('新建世界书设定').click()
+      await settle(() => Boolean(button('保存世界书条目')))
+      const form = container.querySelector('[aria-label="候选世界书编辑"] form')
+      const fill = (node, value) => { node.value = value; node.dispatchEvent(new Event('input', { bubbles:true })) }
+      fill(form.querySelector('textarea'), '合成 Completion 世界书条目')
+      fill(form.querySelector('input:not([type])'), '合成关键词')
+      await nextTick()
+      stage = 'lore-submit'
+      form.requestSubmit()
+      await settle(() => !container.querySelector('[aria-label="候选世界书编辑"]') && Boolean(container.querySelector('ul[aria-label="世界书"]')))
+      const record = await candidate.withDomains({}, domains => domains.lorebook.list(worldId))
+      check(record.entries.some(row=>row.content==='合成 Completion 世界书条目'), 'C3_LORE_SAVE')
+    }
+    stage = 'sections'
     for (const label of ['世界书', '记忆', '事件', '自治任务']) {
       button(label).click()
       await settle(() => Boolean(container.querySelector('ul[aria-label="' + label + '"]')))
@@ -639,14 +665,86 @@ window.m4QaWorkspace = async (password, { worldId, worldName, conversationId, ac
     await settle(() => !container.querySelector('fieldset') && Boolean(button(worldName)))
     const revoked = await candidate.withDomains({}, domains => domains.autonomy.getGrant(worldId, actorId, 'mood'))
     check(revoked?.read === false && revoked.revision > grant.revision, 'M4_WORKSPACE_REVOKE_CAS')
+    stage = 'global-binding'
+    button('生活角色绑定').click()
+    await settle(() => Boolean(container.querySelector('[aria-label="候选生活角色绑定"]') && button(worldName)))
+    button(worldName).click()
+    await settle(() => [...container.querySelectorAll('button')].some(node=>node.textContent.trim().startsWith('绑定 ')))
+    const bindButton = [...container.querySelectorAll('button')].find(node=>node.textContent.trim().startsWith('绑定 '))
+    bindButton.click()
+    await settle(() => !container.querySelector('[aria-label="候选生活角色绑定"]') && Boolean(button('全局角色卡库')))
+    const binding = await candidate.withDomains({}, domains => domains.roleBindings.resolve('home'))
+    check(binding.status==='ready' && binding.binding.worldId===worldId, 'C3_GLOBAL_BINDING')
+    stage = 'card-detail'
+    button('全局角色卡库').click()
+    await settle(() => Boolean(container.querySelector('[aria-label="候选角色卡库"]')))
+    const cardPane = container.querySelector('[aria-label="候选角色卡库"]')
+    await settle(() => Boolean(cardPane.querySelector('ul button')))
+    cardPane.querySelector('ul button').click()
+    await settle(() => Boolean(button('查看卡版本历史')))
+    button('查看卡版本历史').click()
+    await settle(() => Boolean(cardPane.querySelector('article ul button')))
+    button('关闭角色卡库').click()
+    await settle(() => Boolean(button(worldName)))
+    stage = 'new-group'
+    button(worldName).click()
+    await settle(() => Boolean(button('新建独立群聊')))
+    button('新建独立群聊').click()
+    const groupPane = () => container.querySelector('[aria-label="候选创建群聊"]')
+    await settle(() => (groupPane()?.querySelectorAll('input[type=checkbox]').length??0)>=2)
+    const groupTitle = groupPane().querySelector('input:not([type])')
+    groupTitle.value = '合成 Completion 群聊'
+    groupTitle.dispatchEvent(new Event('input',{bubbles:true}))
+    const [firstMember, secondMember] = groupPane().querySelectorAll('input[type=checkbox]')
+    firstMember.click()
+    secondMember.click()
+    await nextTick()
+    groupPane().querySelector('form').requestSubmit()
+    await settle(() => !groupPane() && Boolean(button('合成 Completion 群聊')))
     passed.push('workspace-domain-summaries-grant-and-revoke-invalidation')
     return { passed }
   } catch (error) {
-    return { error: error.code ?? error.message, passed, uiError: container.querySelector('[role=alert]')?.textContent }
+    return { error: error.code ?? error.message, passed, stage, uiError: container.querySelector('[role=alert]')?.textContent }
   } finally {
     app.unmount()
     container.remove()
     auth.expireSession()
     await candidate.release()
   }
+}
+window.m4QaCompletion = async (password, scope) => {
+  session(password)
+  const samples = []
+  try {
+    for (const size of [1000, 10000]) {
+      const memory = 'm4c-memory-' + size + '-', event = 'm4c-event-' + size + '-'
+      await candidate.run({}, operation => operation.transaction(async tx => {
+        check((await tx.execute(memoryRows, [size, memory, scope.worldId, scope.instanceId, scope.instanceId])).affectedRows === size+1, 'C2_MEMORY_SEED')
+        check((await tx.execute(memoryEdges, [size-1, scope.worldId, memory, memory])).affectedRows === size, 'C2_MEMORY_EDGE_SEED')
+        check((await tx.execute(eventRows, [size, event, scope.worldId])).affectedRows === size+1, 'C2_EVENT_SEED')
+        check((await tx.execute(eventEdges, [size-1, scope.worldId, event, event])).affectedRows === size, 'C2_EVENT_EDGE_SEED')
+      }))
+      trace = { queries:0, writes:0, maxRows:0 }
+      const item = await candidate.withDomains({}, domains => domains.memories.readDetailFor(scope, memory+'0'))
+      check(item?.id === memory+'0', 'C2_MEMORY_AUTHORIZATION')
+      const memoryTrace = {...trace}
+      trace = { queries:0, writes:0, maxRows:0 }
+      let cursor, count=0, last=''
+      do {
+        const page = await candidate.withDomains({}, domains => domains.events.graphPage(scope.worldId, event+'0', 'cause', cursor))
+        for (const row of page.entries) {
+          check(row.id>last&&row.revision===1, 'C2_EVENT_ORDER')
+          last=row.id
+          count++
+        }
+        cursor=page.cursor??undefined
+      } while(cursor)
+      check(count===size && trace.maxRows<=51, 'C2_EVENT_CONTINUATION')
+      samples.push({ size, memory:memoryTrace, event:{...trace, total:count} })
+      trace=undefined
+    }
+    return { samples }
+  } catch(error) {
+    return { error:error.code??error.message, samples }
+  } finally { trace=undefined; auth.expireSession(); await candidate.release() }
 }

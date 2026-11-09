@@ -1220,3 +1220,8 @@ raw/完整需求清单.txt 4.1/4.4/8.3及最新连续执行v3驱动当前实现�
 
 - [完整任务书](20261109-kanata-sqlite-m4-task-v1.md)、[M0–M7 计划](20261103-kanata-sqlite-migration-plan-v1.md)、[M2 Windows 验收](20261109-kanata-sqlite-m2-acceptance-v2.md)、[M3 验收](20261109-kanata-sqlite-m3-acceptance-v1.md)与根架构规范。核对于 2026-11-09，Git 远端 M 文档基线为 `1e1d04fd9f7072d84e2c0289816502a104ffb2d2`。
 - 原始资料 `raw/彼方 · Kanata 技术设计.txt` 第 266–290 行涉及角色卡保真、按角色世界书边界、任务幂等、来源失效与事件撤销。核对于 2026-11-09。设备样本来自仓库合成夹具，实际运行结果见 [M4 QA](qa/kanata-sqlite-m4/README.md)。
+
+## 2026-11-09 Kanata SQLite M4 Completion 来源
+
+- 补齐任务以远端 M 的 `4191d7fd72723afab35f77bb9b85970f29f0f43f` 为接管入口，`301ad81e851f65cd5b73f883833052e7e5d1a2fb` 为已有实现。阅读原任务、Preflight、设计、验收和 QA。见 [补齐 Preflight](20261109-kanata-sqlite-m4-completion-preflight-v1.md)。
+- 产品语义核对于 2026-11-09。来源为 `raw/彼方 · Kanata 技术设计.txt` 及当前 legacy 实现，包括保留导入格式、来源精确修订和效果独立重放。历史群成员变更权限资料未提供。

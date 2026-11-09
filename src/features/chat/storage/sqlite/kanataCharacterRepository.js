@@ -33,6 +33,11 @@ const promptProfile = `SELECT world_id,id,card_id,card_version_id,revision,
   FROM character_instances WHERE world_id=? AND id=?`
 const promptState = promptProfile.replace('FROM character_instances', ',mood,energy,location FROM character_instances')
 const promptDefinition = "SELECT id,card_id,json_remove(definition_json,'$.avatarDataUrl') AS definition FROM card_versions WHERE card_id=? AND id=?"
+const cardSummaries = `SELECT c.id,c.archived,c.current_version_id,json_extract(v.definition_json,'$.name') AS name
+  FROM character_cards c JOIN card_versions v ON v.card_id=c.id AND v.id=c.current_version_id
+  WHERE c.id>? ORDER BY c.id LIMIT ?`
+const versionHeaders = 'SELECT id,revision,source FROM card_versions WHERE card_id=? AND revision>? ORDER BY revision LIMIT ?'
+const versionDefinition = 'SELECT id,revision,definition_json FROM card_versions WHERE card_id=? AND id=?'
 const listCards = `SELECT ${cards.stored} FROM character_cards WHERE id>? ORDER BY id LIMIT ?`
 const listVersions = `SELECT ${versions.stored} FROM card_versions WHERE card_id=? AND revision>? ORDER BY revision LIMIT ?`
 const latestVersion = `SELECT ${versions.stored} FROM card_versions WHERE card_id=? ORDER BY revision DESC LIMIT 1`
@@ -40,7 +45,7 @@ const listInstances = `SELECT ${instanceTable.stored} FROM character_instances W
 const findImported = `SELECT card_id FROM card_versions WHERE json_extract(imported_json,'$.sourceBase64')=? LIMIT 1`
 const setCurrent = 'UPDATE character_cards SET current_version_id=? WHERE id=? AND current_version_id=? AND archived=0'
 const setArchived = 'UPDATE character_cards SET archived=? WHERE id=? AND current_version_id=? AND archived=?'
-export const characterQueries = [cards.get, versions.get, instanceTable.get, listCards, listVersions, latestVersion, listInstances, findImported, instanceProfile, promptProfile, promptState, promptDefinition]
+export const characterQueries = [cardSummaries, versionHeaders, versionDefinition, cards.get, versions.get, instanceTable.get, listCards, listVersions, latestVersion, listInstances, findImported, instanceProfile, promptProfile, promptState, promptDefinition]
 export const characterWrites = [...cards.writeStatements, versions.writeStatements[0], ...instanceTable.writeStatements, setCurrent, setArchived]
 
 /** @param {StoredInstance} row @returns {Instance} */
@@ -68,6 +73,34 @@ async function worldProjection(tx, worldId) {
 /** @param {Operation} operation */
 export function createKanataCharacterRepository(operation) {
   return {
+    /** @param {string} after */
+    summaries: (after = '') => operation.transaction(async tx => {
+      if (after) validateId(after, 'cardCursor')
+      const rows = await tx.query(cardSummaries, [after, 51])
+      const entries = rows.slice(0, 50).map(row => ({
+        id: String(row.id), name: String(row.name), archived: row.archived === 1, currentVersionId: String(row.current_version_id),
+      }))
+      return { entries, cursor: rows.length > 50 ? entries[49].id : null }
+    }),
+    /** @param {string} cardId @param {string} [versionId] */
+    definition: (cardId, versionId) => operation.transaction(async tx => {
+      validateId(cardId, 'cardId')
+      const card = found(await cards.read(tx, [cardId]), 'CARD_NOT_FOUND')
+      const id = versionId ?? card.currentVersionId
+      validateId(id, 'versionId')
+      const [row] = await tx.query(versionDefinition, [cardId, id])
+      need(row, 'CARD_VERSION_NOT_FOUND')
+      return { cardId, id, currentVersionId: card.currentVersionId, archived: card.archived, revision: Number(row.revision),
+        definition: /** @type {Version['definition']} */ (JSON.parse(String(row.definition_json))) }
+    }),
+    /** @param {string} cardId @param {number} after */
+    versionHeaders: (cardId, after = 0) => operation.transaction(async tx => {
+      validateId(cardId, 'cardId')
+      need(safeInteger(after), 'KANATA_CARD_CURSOR_INVALID')
+      const rows = await tx.query(versionHeaders, [cardId, after, 51])
+      const entries = rows.slice(0, 50).map(row => ({ id: String(row.id), revision: Number(row.revision), source: String(row.source) }))
+      return { entries, cursor: rows.length > 50 ? entries[49].revision : null }
+    }),
     /** @param {string} afterId @param {number} limit */
     listCards: (afterId = '', limit = 50) => operation.transaction(async tx => {
       if (afterId) validateId(afterId, 'cardCursor')

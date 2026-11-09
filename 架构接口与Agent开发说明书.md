@@ -605,3 +605,7 @@ Windows 使用 `npm.cmd`、`npx.cmd` 和 `android/gradlew.bat` 的对应命令�
 - SQLite 合成组合新增 `KanataChatViewModel`、`KanataCandidateWorkspace`。工作区页面通过当前 scope 的 World Runtime 读摘要与角色授权，通过候选聊天 Runtime 读历史 keyset、会话摘要、用量和消息窗口。View 不访问 Driver 或 SQL。聊天读写无外部全图 metadata。未接齐的管理交互见 [M4 验收](docs/20261109-kanata-sqlite-m4-acceptance-v1.md)。
 - `KanataConversationRepository.updateChatSettings` 将 CAS 与活动回复任务加速放入同一事务。`turns.save` 原子保存源消息与延期任务，按实际会话 revision 和当前源 CAS。事件/记忆候选先查角色、来源、授权再取正文。自治窗口签名按批计算，保持原角色轮换、审计、回执及水位。
 - 候选授权、恢复门禁、锁屏、后台及显式释放使会话世代失效。VM 清除当前页面明文，候选 Driver 仍使用 M2 固定语句目录与 SQLCipher。Schema 001–004 保持原校验和。生产 canonical 为 legacy，普通 Android 候选激活位 false。验收命令、强停/故障和证据见 [M4 QA](docs/qa/kanata-sqlite-m4/README.md)。M4 尚未放行，M5 尚未开始。
+
+## Kanata SQLite M4 Completion 增量
+
+候选 `graphPage` 与 `sourcePage` 使用世界、根实体/角色与 revision 绑定的游标，每页最多 50。授权通过后才读取单记忆和消息正文。该事件图页用于浏览，原事件撤销仍按原确认流程执行。新增独立群聊和全局角色绑定分别使用事务回执与全局 CAS。绑定的明确不选与继承分开保存，归档世界不删除绑定。详见 [设计](docs/20261109-kanata-sqlite-m4-completion-design-v1.md)及 [验收 v2](docs/20261109-kanata-sqlite-m4-acceptance-v2.md)。

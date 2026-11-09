@@ -1,7 +1,6 @@
 // @ts-check
 import { canUseKanataLifeSources } from '../../experience/kanataKnowledge.js'
 import { domainTable } from './kanataDomainRows.js'
-import { messageQueries } from './kanataRepositorySql.js'
 import { requireSqliteValue as need } from './kanataRepositoryValues.js'
 
 /** @typedef {import('../../domain/kanataTypes').LifeSource} LifeSource */
@@ -19,8 +18,29 @@ const member = `SELECT c.type FROM conversations c JOIN conversation_participant
   WHERE c.world_id=? AND c.id=? AND p.participant_id=? AND p.kind='character'`
 const activeActor = `SELECT i.id FROM character_instances i JOIN worlds w ON w.id=i.world_id
   WHERE i.world_id=? AND i.id=? AND coalesce(w.archived,0)=0`
-export const provenanceQueries = [grantTable.get, grantById, member, activeActor]
-
+const replyChain = `WITH RECURSIVE scope(world,id,revision) AS (VALUES(?,?,?)),
+  chain(id,revision) AS (
+    SELECT id,revision FROM scope UNION
+    SELECT m.reply_to_message_id,coalesce(m.reply_to_revision,1)
+    FROM chain c JOIN scope JOIN messages m ON m.world_id=scope.world AND m.id=c.id
+    WHERE m.reply_to_message_id IS NOT NULL
+  )`
+const chainIntegrity = replyChain + `
+  SELECT root.conversation_id FROM scope JOIN messages root ON root.world_id=scope.world AND root.id=scope.id
+  WHERE NOT EXISTS (
+    SELECT 1 FROM chain c LEFT JOIN messages m ON m.world_id=scope.world AND m.id=c.id
+    WHERE m.id IS NULL OR m.revision IS NOT c.revision OR m.status<>'complete' OR m.deleted=1
+      OR m.conversation_id<>root.conversation_id
+  ) AND EXISTS (
+    SELECT 1 FROM chain c JOIN messages m ON m.world_id=scope.world AND m.id=c.id
+    WHERE m.reply_to_message_id IS NULL
+  )`
+const chainGrants = replyChain + `
+  SELECT DISTINCT l.grant_id,l.grant_revision,l.fingerprint,l.instance_id,l.module_id
+  FROM scope JOIN chain c JOIN message_life_sources l ON l.world_id=scope.world AND l.message_id=c.id
+  WHERE (l.grant_id,l.grant_revision,l.fingerprint)>(?,?,?)
+  ORDER BY l.grant_id,l.grant_revision,l.fingerprint LIMIT 50`
+export const provenanceQueries = [grantTable.get, grantById, member, activeActor, chainIntegrity, chainGrants]
 /** @param {Tx} tx @param {string} worldId @param {string} actor */
 export async function assertActor(tx, worldId, actor) {
   need((await tx.query(activeActor, [worldId, actor])).length === 1, 'KANATA_CONTEXT_SCOPE_DENIED')
@@ -32,28 +52,37 @@ export async function conversationAccess(tx, worldId, conversationId, actor) {
   return row ? { group: row.type === 'group' } : null
 }
 
-/** Only metadata and normalized grants are read before the caller is allowed to read a body.
+/** Exact normalized metadata proof. No message body is projected.
  * @param {Tx} tx @param {string} worldId @param {SourceRef} ref */
-export async function sourceMetadata(tx, worldId, ref) {
-  const seen = new Set()
-  const sources = []
-  let next = ref.messageId
-  let revision = ref.revision
-  let conversationId = ''
+export async function sourceConversation(tx, worldId, ref) {
+  const [row] = await tx.query(chainIntegrity, [worldId, ref.messageId, ref.revision])
+  need(row, 'KANATA_SOURCE_STALE')
+  return String(row.conversation_id)
+}
+
+/** @param {Tx} tx @param {string} worldId @param {SourceRef} ref */
+export async function* visitSourceGrants(tx, worldId, ref) {
+  /** @type {import('./kanataSchemaTypes').KanataSqlValue[]} */
+  let cursor = ['', 0, '']
   for (;;) {
-    need(!seen.has(next), 'KANATA_SOURCE_STALE')
-    seen.add(next)
-    const [row] = await tx.query(messageQueries.provenance, [worldId, next])
-    need(row && row.revision === revision && row.status === 'complete' && row.deleted !== 1, 'KANATA_SOURCE_STALE')
-    conversationId ||= String(row.conversation_id)
-    need(row.conversation_id === conversationId, 'KANATA_SOURCE_STALE')
-    sources.push(.../** @type {LifeSource[]} */ (JSON.parse(String(row.life_sources))))
-    if (row.reply_to_message_id === null) return { conversationId, sources: uniqueLifeSources(sources) }
-    next = String(row.reply_to_message_id)
-    revision = Number(row.reply_to_revision ?? 1)
+    const rows = await tx.query(chainGrants, [worldId, ref.messageId, ref.revision, ...cursor])
+    for (const row of rows) {
+      yield { grantId: String(row.grant_id), revision: Number(row.grant_revision), fingerprint: String(row.fingerprint),
+        instanceId: String(row.instance_id), moduleId: /** @type {LifeSource['moduleId']} */ (row.module_id) }
+    }
+    if (rows.length < 50) return
+    const last = rows[rows.length - 1]
+    cursor = [last.grant_id, last.grant_revision, last.fingerprint]
   }
 }
 
+/** @param {Tx} tx @param {string} worldId @param {SourceRef} ref */
+export async function sourceMetadata(tx, worldId, ref) {
+  const conversationId = await sourceConversation(tx, worldId, ref)
+  const sources = []
+  for await (const source of visitSourceGrants(tx, worldId, ref)) sources.push(source)
+  return { conversationId, sources }
+}
 /** @param {LifeSource[]} sources */
 export function uniqueLifeSources(sources) {
   return [...new Map(sources.map(source => [JSON.stringify([source.grantId, source.revision, source.fingerprint]), source])).values()]

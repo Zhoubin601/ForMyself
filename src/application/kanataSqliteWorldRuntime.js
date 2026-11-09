@@ -23,6 +23,69 @@ export function createKanataSqliteWorldRuntime({ candidate, clock = Date.now, se
       assertOwner()
       return result
     },
+    openCards() {
+      const session = sessionGeneration()
+      let active = true
+      /** @template T @param {()=>void} guard @param {(domains:Domains)=>Promise<T>} action */
+      const run = async (guard, action) => {
+        const assertOwner = () => {
+          if (!active || disposed || !isAvailable() || sessionGeneration() !== session) throw new Error('KANATA_CARD_OWNER_EXPIRED')
+          guard()
+        }
+        const result = await candidate.withDomains({ assertOwner }, action)
+        assertOwner()
+        return result
+      }
+      /** @param {string} key */
+      const options = key => ({ key, now: clock(), timeZone: 'UTC', idFactory: (/** @type {string} */ kind) => kind + '-' + crypto.randomUUID() })
+      return {
+        /** @param {string|undefined} cursor @param {()=>void} guard */
+        list: (cursor, guard) => run(guard, domains => domains.characters.summaries(cursor)),
+        /** @param {string} id @param {string|undefined} versionId @param {()=>void} guard */
+        read: (id, versionId, guard) => run(guard, domains => domains.characters.definition(id, versionId)),
+        /** @param {string} id @param {number|undefined} cursor @param {()=>void} guard */
+        versions: (id, cursor, guard) => run(guard, domains => domains.characters.versionHeaders(id, cursor)),
+        /** @param {Parameters<Domains['characters']['importCard']>[0]} value @param {string} key @param {()=>void} guard */
+        importCard: (value, key, guard) => run(guard, async domains => (await domains.characters.importCard(value, options(key))).card.id),
+        /** @param {string} id @param {Parameters<Domains['characters']['publish']>[1]} definition @param {string} expected
+         * @param {string} key @param {()=>void} guard */
+        publish: (id, definition, expected, key, guard) => run(guard, async domains =>
+          (await domains.characters.publish(id, definition, expected, options(key))).id),
+        /** @param {string} id @param {string} expected @param {boolean} archived @param {()=>void} guard */
+        archive: (id, expected, archived, guard) => run(guard, domains => domains.characters.archiveCard(id, expected, archived, !archived)),
+        dispose() { active = false },
+      }
+    },
+    openBindings() {
+      const session = sessionGeneration()
+      let active = true
+      /** @template T @param {()=>void} guard @param {(domains:Domains)=>Promise<T>} action */
+      const run = async (guard, action) => {
+        const assertOwner = () => {
+          if (!active || disposed || !isAvailable() || sessionGeneration() !== session) throw new Error('KANATA_BINDING_OWNER_EXPIRED')
+          guard()
+        }
+        const result = await candidate.withDomains({ assertOwner }, action)
+        assertOwner()
+        return result
+      }
+      return {
+        /** @param {()=>void} guard */
+        read: guard => run(guard, domains => domains.roleBindings.read()),
+        /** @param {number|undefined} cursor @param {()=>void} guard */
+        worlds: (cursor, guard) => run(guard, domains => domains.managementView.worlds(cursor)),
+        /** @param {string} worldId @param {string|undefined} cursor @param {()=>void} guard */
+        actors: (worldId, cursor, guard) => run(guard, domains => domains.managementView.list(worldId, 'actors', cursor)),
+        /** @param {Parameters<Domains['roleBindings']['set']>[0]} scope
+         * @param {Parameters<Domains['roleBindings']['set']>[1]} selection @param {number} revision @param {()=>void} guard */
+        async set(scope, selection, revision, guard) {
+          const result = await run(guard, domains => domains.roleBindings.set(scope, selection, revision))
+          await onGrantChanged()
+          return result
+        },
+        dispose() { active = false },
+      }
+    },
     /** @param {string} worldId */
     select(worldId) {
       validateId(worldId, 'worldId')
@@ -33,7 +96,7 @@ export function createKanataSqliteWorldRuntime({ candidate, clock = Date.now, se
       const assertCurrent = () => {
         if (disposed || !isAvailable() || sessionGeneration() !== session || generation !== ownGeneration || selected !== worldId) throw new Error('KANATA_WORLD_OWNER_EXPIRED')
       }
-      /** @template T @param {(domains:Domains)=>Promise<T>} action */
+      /** @template T @param {(domains:Domains)=>Promise<T>} action @param {()=>void} [assertRequest] */
       const run = async (action, assertRequest = () => {}) => {
         const assertOwner = () => { assertCurrent(); assertRequest() }
         assertOwner()
@@ -43,7 +106,8 @@ export function createKanataSqliteWorldRuntime({ candidate, clock = Date.now, se
       }
       return {
         worldId, assertCurrent,
-        read: () => run(domains => domains.worlds.get(worldId)),
+        /** @param {()=>void} [assertRequest] */
+        read: (assertRequest) => run(domains => domains.worlds.get(worldId), assertRequest),
         overview: () => run(domains => domains.managementView.world(worldId)),
         /** @param {Parameters<Domains['managementView']['list']>[1]} section @param {string} [cursor] @param {()=>void} [assertRequest] */
         list: (section, cursor, assertRequest) => run(domains => domains.managementView.list(worldId, section, cursor), assertRequest),
@@ -56,8 +120,31 @@ export function createKanataSqliteWorldRuntime({ candidate, clock = Date.now, se
           if (saved.revision !== revision) await onGrantChanged()
           return saved
         },
-        /** @param {number} revision @param {Parameters<Domains['worlds']['updateIdentity']>[2]} fields */
-        updateIdentity: (revision, fields) => run(domains => domains.worlds.updateIdentity(worldId, revision, fields)),
+        /** @param {Parameters<Domains['conversations']['createGroup']>[1]} fields
+         * @param {Parameters<Domains['conversations']['createGroup']>[2]} options @param {()=>void} assertRequest */
+        createGroup: (fields, options, assertRequest) => run(domains => domains.conversations.createGroup(worldId, fields, options), assertRequest),
+        /** @param {string} id @param {()=>void} [assertRequest] */
+        lore: (id, assertRequest) => run(domains => domains.lorebook.getManaged(worldId, id), assertRequest),
+        /** @param {Parameters<Domains['lorebook']['save']>[0]} entry @param {number|null} revision @param {()=>void} assertRequest */
+        saveLore: (entry, revision, assertRequest) => run(domains => {
+          if (entry.worldId !== worldId) throw new Error('KANATA_WORLD_OWNER_EXPIRED')
+          return domains.lorebook.save(entry, revision)
+        }, assertRequest),
+        /** @param {string} id @param {number} revision @param {()=>void} assertRequest */
+        deleteLore: (id, revision, assertRequest) => run(domains => domains.lorebook.delete(worldId, id, revision), assertRequest),
+        /** @param {string} id @param {string} instanceId @param {()=>void} assertRequest */
+        memoryDetail: (id, instanceId, assertRequest) => run(domains => domains.memories.readDetailFor({ worldId, instanceId }, id), assertRequest),
+        /** @param {string} id @param {string} instanceId @param {import('../features/chat/storage/sqlite/kanataDomainTypes').KanataMemorySourceCursor|undefined} cursor
+         * @param {()=>void} assertRequest */
+        memorySources: (id, instanceId, cursor, assertRequest) => run(domains => domains.memories.sourcePage({ worldId, instanceId }, id, cursor), assertRequest),
+        /** @param {string} id @param {string} instanceId @param {Parameters<Domains['memories']['resolveSource']>[2]} source
+         * @param {()=>void} assertRequest */
+        memorySource: (id, instanceId, source, assertRequest) => run(domains => domains.memories.resolveSource({ worldId, instanceId }, id, source), assertRequest),
+        /** @param {string} id @param {'cause'|'consequence'} direction
+         * @param {import('../features/chat/storage/sqlite/kanataDomainTypes').KanataEventGraphCursor|undefined} cursor @param {()=>void} assertRequest */
+        eventGraph: (id, direction, cursor, assertRequest) => run(domains => domains.events.graphPage(worldId, id, direction, cursor), assertRequest),
+        /** @param {number} revision @param {Parameters<Domains['worlds']['updateIdentity']>[2]} fields @param {()=>void} [assertRequest] */
+        updateIdentity: (revision, fields, assertRequest) => run(domains => domains.worlds.updateIdentity(worldId, revision, fields), assertRequest),
         /** @param {string} name @param {number} revision */
         rename: (name, revision) => run(domains => domains.worlds.rename(worldId, revision, name)),
         /** @param {boolean} archived @param {number} revision */

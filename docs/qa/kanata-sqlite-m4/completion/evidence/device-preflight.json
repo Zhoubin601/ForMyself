@@ -1,0 +1,21 @@
+{
+  "syntheticOnly": true,
+  "api": 34,
+  "avd": "kanata_m2_api34",
+  "serial": "emulator-5582",
+  "abi": "x86_64",
+  "packages": [
+    "package:com.yubin.formyself.m2qa.test",
+    "package:com.yubin.formyself.m2qa"
+  ],
+  "data": [
+    "Filesystem       Size Used Avail Use% Mounted on",
+    "/dev/block/dm-40 5.8G 933M  4.7G  17% /data/user/0"
+  ],
+  "accel": [
+    "accel:",
+    "0",
+    "WHPX(10.0.26300) is installed and usable.",
+    "accel"
+  ]
+}

@@ -7,7 +7,7 @@ export type { KanataSqliteWriteResult, KanataSqliteTransaction, KanataSqliteHeal
 export type { KanataMessageScope, KanataMessageCursor, KanataMessagePage, KanataMessageRepository, KanataHistoryCursor, KanataHistoryPage,
   KanataConversationRepository, KanataMessageProvenance, KanataReplyExpectation,
   KanataChatContextState, KanataDeferredReply } from '../features/chat/storage/sqlite/kanataRepositoryTypes'
-export type { KanataSqliteDomains, KanataSqliteDomainOwner } from '../features/chat/storage/sqlite/kanataDomainTypes'
+export type { KanataSqliteDomains, KanataSqliteDomainOwner, KanataEventGraphCursor, KanataMemorySourceCursor } from '../features/chat/storage/sqlite/kanataDomainTypes'
 export type KanataSqliteWorldRuntime = ReturnType<typeof import('./kanataSqliteWorldRuntime.js').createKanataSqliteWorldRuntime>
 export type KanataChatViewModel = ReturnType<typeof import('../features/chat/kanataChatViewModel.js').createKanataChatViewModel>
 export type KanataSqliteChatRuntime = ReturnType<typeof import('./kanataSqliteChatRuntime.js').createKanataSqliteChatRuntime>

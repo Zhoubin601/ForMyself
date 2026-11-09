@@ -86,6 +86,13 @@ export function createKanataLorebookRepository(operation) {
       }))
       return { entries: result, cursor: rows.length > limit ? String(rows[limit - 1].id) : null }
     }),
+    /** @param {string} worldId @param {string} id */
+    getManaged: (worldId, id) => operation.transaction(async tx => {
+      validateId(worldId, 'worldId')
+      validateId(id, 'loreId')
+      const item = await entries.read(tx, [worldId, id])
+      return item ? withReaders(tx, item) : null
+    }),
     /** @param {Entry} entry @param {number|null} expectedRevision */
     save: (entry, expectedRevision) => operation.transaction(async tx => {
       const dto = validate(entry)

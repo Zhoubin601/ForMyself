@@ -49,3 +49,5 @@ M2 Windows 接续已通过（2026-11-09）。[最新验收 v2](../docs/20261109-
 2026-11-09 M3 接续入口为 [M3 验收](../docs/20261109-kanata-sqlite-m3-acceptance-v1.md)和 [QA](../docs/qa/kanata-sqlite-m3/README.md)。M 的 004 追加命令回执、归档标记与领域约束。已确认世界可逆归档、按预览批量处理因果后续并保留独立 Effects、原消息 ID + revision 精确追溯。候选范围仅限合成启用。生产为 legacy，M4–M7 及 P7 门禁按总计划执行。
 
 2026-11-09 M4 工程检查点为 [阶段验收](../docs/20261109-kanata-sqlite-m4-acceptance-v1.md)与 [QA](../docs/qa/kanata-sqlite-m4/README.md)。M 分支隔离候选已有有界聊天、工作区摘要、授权与自治窗口，并通过已接线场景的真实 Android SQLCipher 验证。继续按验收中的缺口完成候选管理、深层关联及其完整门禁。M4 BLOCKED，M5 NO。生产 legacy 与默认 SQLite false。
+
+2026-11-09 M4 补齐接续见 [验收 v2](../docs/20261109-kanata-sqlite-m4-acceptance-v2.md)与 [Completion QA](../docs/qa/kanata-sqlite-m4/completion/README.md)。消息与共享记忆深链、事件分页及部分管理界面已有实测。M4 BLOCKED，M5 NO。保留原始验收和生产 legacy/default false。
