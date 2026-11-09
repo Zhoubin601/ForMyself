@@ -1,0 +1,83 @@
+{
+  "scope": "CAPACITOR_PREFLIGHT_PING_ONLY_NOT_M2_DRIVER",
+  "status": "BLOCKED_CAPACITOR_RENDERER_CRASH",
+  "packageName": "com.formyself.qa.m2probe",
+  "serial": "emulator-5582",
+  "avdName": "kanata_m2_api34",
+  "api": 34,
+  "syntheticOnly": true,
+  "capacitor": "8.4.1",
+  "apkSha256": "6978be559e6baf990deaf2a7c3175b77ee48fc40f26af4c62ba1cc9dc4d53654",
+  "modelRequests": 0,
+  "observations": [
+    {
+      "elapsedMs": 67311,
+      "pid": "3663"
+    },
+    {
+      "elapsedMs": 74547,
+      "pid": "3663"
+    },
+    {
+      "elapsedMs": 81847,
+      "pid": "3663",
+      "debugCode": "PROBE_DEBUG_UNAVAILABLE"
+    },
+    {
+      "elapsedMs": 100430,
+      "pid": "3663",
+      "debugCode": "PROBE_DEBUG_UNAVAILABLE"
+    },
+    {
+      "elapsedMs": 106470,
+      "pid": "3663",
+      "debugCode": "PROBE_DEBUG_UNAVAILABLE"
+    },
+    {
+      "elapsedMs": 111260,
+      "pid": "3663",
+      "debugCode": "PROBE_DEBUG_UNAVAILABLE"
+    },
+    {
+      "elapsedMs": 115783,
+      "pid": "3663",
+      "debugCode": "PROBE_DEBUG_UNAVAILABLE"
+    },
+    {
+      "elapsedMs": 120271,
+      "pid": "3663",
+      "debugCode": "PROBE_DEBUG_UNAVAILABLE"
+    },
+    {
+      "elapsedMs": 124812,
+      "pid": "3663",
+      "debugCode": "PROBE_DEBUG_UNAVAILABLE"
+    },
+    {
+      "elapsedMs": 129503,
+      "pid": "3663",
+      "debugCode": "PROBE_DEBUG_UNAVAILABLE"
+    },
+    {
+      "elapsedMs": 133907,
+      "pid": "3663",
+      "debugCode": "PROBE_DEBUG_UNAVAILABLE"
+    },
+    {
+      "elapsedMs": 138322,
+      "pid": "3663",
+      "debugCode": "PROBE_DEBUG_UNAVAILABLE"
+    },
+    {
+      "elapsedMs": 142654,
+      "pid": "3663",
+      "debugCode": "PROBE_DEBUG_UNAVAILABLE"
+    },
+    {
+      "elapsedMs": 151277,
+      "pid": null
+    }
+  ],
+  "installedPath": "package:/data/app/~~kJWlKczMfZ3wyMF-9zE0Aw==/com.formyself.qa.m2probe-TuBVmApIg-KrgIX-dyAA9Q==/base.apk",
+  "elapsedMs": 153398
+}

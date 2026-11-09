@@ -1,0 +1,26 @@
+// Minimal synthetic Capacitor baseline, not the M2 production Driver.
+import fs from 'node:fs/promises'
+import path from 'node:path'
+import {spawnSync} from 'node:child_process'
+const base=path.resolve('work/m2'),root=path.resolve(process.argv[2]??'work/m2/bridge-probe-'+Date.now())
+if(!root.startsWith(base+path.sep))throw Error('PROBE_PATH_DENIED')
+const lock=JSON.parse(await fs.readFile('package-lock.json','utf8'))
+for(const p of ['core','android','cli'])if(lock.packages['node_modules/@capacitor/'+p]?.version!=='8.4.1')throw Error('PROBE_CAPACITOR_VERSION_DENIED')
+await fs.mkdir(root,{recursive:false})
+const source=new URL('./bridge-probe/',import.meta.url)
+await fs.writeFile(path.join(root,'package.json'),JSON.stringify({name:'kanata-m2-synthetic-preflight',version:'0.0.0',type:'module',private:true,dependencies:{'@capacitor/core':'8.4.1','@capacitor/android':'8.4.1','@capacitor/cli':'8.4.1'}})+'\n')
+await fs.copyFile(new URL('capacitor.config.json',source),path.join(root,'capacitor.config.json'))
+await fs.mkdir(path.join(root,'www'))
+await fs.copyFile(new URL('index.html',source),path.join(root,'www/index.html'))
+await fs.symlink(await fs.realpath('node_modules'),path.join(root,'node_modules'),'dir')
+const cap=path.resolve('node_modules/@capacitor/cli/bin/capacitor')
+const result=spawnSync(process.execPath,[cap,'add','android'],{cwd:root,stdio:'inherit'})
+if(result.status!==0)throw Error('PROBE_ANDROID_PREPARATION_FAILED')
+const java=path.join(root,'android/app/src/main/java/com/formyself/qa/m2probe')
+await fs.mkdir(java,{recursive:true})
+for(const f of ['MainActivity.java','M2PreflightPlugin.java'])await fs.copyFile(new URL(f,source),path.join(java,f))
+const gradle=path.join(root,'android/app/build.gradle')
+const text=await fs.readFile(gradle,'utf8')
+await fs.writeFile(gradle,text.replace('    buildTypes {',"    signingConfigs { debug { storeFile file('../../synthetic-debug.keystore'); storePassword 'android'; keyAlias 'androiddebugkey'; keyPassword 'android' } }\n    buildTypes {"))
+await fs.writeFile(path.join(root,'android/local.properties'),'sdk.dir='+path.resolve('work/m2/android-sdk')+'\n')
+console.log(JSON.stringify({root,syntheticOnly:true,appId:'com.formyself.qa.m2probe',status:'PREPARED_BUILD_AND_DEVICE_NOT_RUN'}))

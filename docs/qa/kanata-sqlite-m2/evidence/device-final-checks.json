@@ -1,0 +1,106 @@
+[
+  {
+    "args": [
+      "emu",
+      "avd",
+      "name"
+    ],
+    "exitCode": 0,
+    "stdout": "kanata_m2_api34\nOK\n",
+    "stderr": ""
+  },
+  {
+    "args": [
+      "shell",
+      "getprop",
+      "sys.boot_completed"
+    ],
+    "exitCode": 0,
+    "stdout": "1\n",
+    "stderr": ""
+  },
+  {
+    "args": [
+      "shell",
+      "getprop",
+      "ro.build.version.sdk"
+    ],
+    "exitCode": 0,
+    "stdout": "34\n",
+    "stderr": ""
+  },
+  {
+    "args": [
+      "shell",
+      "getprop",
+      "ro.crypto.state"
+    ],
+    "exitCode": 0,
+    "stdout": "encrypted\n",
+    "stderr": ""
+  },
+  {
+    "args": [
+      "shell",
+      "getenforce"
+    ],
+    "exitCode": 0,
+    "stdout": "Enforcing\n",
+    "stderr": ""
+  },
+  {
+    "args": [
+      "shell",
+      "getprop",
+      "debug.hwui.drawing_enabled"
+    ],
+    "exitCode": 0,
+    "stdout": "1\n",
+    "stderr": ""
+  },
+  {
+    "args": [
+      "shell",
+      "settings",
+      "get",
+      "global",
+      "bluetooth_on"
+    ],
+    "exitCode": 0,
+    "stdout": "0\n",
+    "stderr": ""
+  },
+  {
+    "args": [
+      "shell",
+      "pm",
+      "list",
+      "packages",
+      "-3"
+    ],
+    "exitCode": 0,
+    "stdout": "package:com.formyself.qa.m2probe\n",
+    "stderr": ""
+  },
+  {
+    "args": [
+      "shell",
+      "pm",
+      "path",
+      "com.formyself.qa.m2probe"
+    ],
+    "exitCode": 0,
+    "stdout": "package:/data/app/~~kJWlKczMfZ3wyMF-9zE0Aw==/com.formyself.qa.m2probe-TuBVmApIg-KrgIX-dyAA9Q==/base.apk\n",
+    "stderr": ""
+  },
+  {
+    "args": [
+      "shell",
+      "sha256sum",
+      "/data/app/~~kJWlKczMfZ3wyMF-9zE0Aw==/com.formyself.qa.m2probe-TuBVmApIg-KrgIX-dyAA9Q==/base.apk"
+    ],
+    "exitCode": 0,
+    "stdout": "6978be559e6baf990deaf2a7c3175b77ee48fc40f26af4c62ba1cc9dc4d53654  /data/app/~~kJWlKczMfZ3wyMF-9zE0Aw==/com.formyself.qa.m2probe-TuBVmApIg-KrgIX-dyAA9Q==/base.apk\n",
+    "stderr": ""
+  }
+]

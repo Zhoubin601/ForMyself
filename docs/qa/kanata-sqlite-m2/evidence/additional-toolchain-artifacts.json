@@ -1,0 +1,17 @@
+{
+  "artifacts": [
+    {
+      "name": "jdk21.tar.gz",
+      "bytes": 207157802,
+      "sha256": "810d3773df7e0d6c4394e4e244b264c8b30e0b05a0acf542d065fd78a6b65c2f"
+    },
+    {
+      "name": "build-tools_r35_linux.zip",
+      "bytes": 61958799,
+      "sha256": "bd3a4966912eb8b30ed0d00b0cda6b6543b949d5ffe00bea54c04c81e1561d88"
+    }
+  ],
+  "jdk": "Temurin21.0.9+10, official SHA256 verified",
+  "buildTools35Sha1": "2cfaa0bbb2336e9ec18ed3ecea84fa2e2af607bc",
+  "scope": "local QA dependencies only; root Gradle/package/lock unchanged"
+}

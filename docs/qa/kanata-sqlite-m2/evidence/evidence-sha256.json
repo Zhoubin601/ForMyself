@@ -1,0 +1,404 @@
+{
+  "excluded": [
+    "evidence-sha256.json",
+    "publication.json"
+  ],
+  "reason": "self hash and subsequent publication receipt are intentionally separate",
+  "files": [
+    {
+      "path": "additional-toolchain-artifacts.json",
+      "bytes": 538,
+      "sha256": "37521b2720ed5b0cafec261f590abb741b63fb14bfc3dd229df64aa4be738884"
+    },
+    {
+      "path": "avd-format.txt.gz",
+      "bytes": 344,
+      "sha256": "2f3a7e00e40035ae942cf0f175f4f6869698f74ce8f8c1951ac530bf31382c17"
+    },
+    {
+      "path": "baseline-command-results.json",
+      "bytes": 2064,
+      "sha256": "b3282c14623190d2e49c427b4235ddaeeca57b702f08ff4516426497ca0440b9"
+    },
+    {
+      "path": "bluetooth-disable.txt",
+      "bytes": 55,
+      "sha256": "479e8969eff1a3484ea9d6a385dd96819642f58911101624301c165cfab92584"
+    },
+    {
+      "path": "boot-observations.jsonl",
+      "bytes": 4139,
+      "sha256": "76b9f756360c1110f4125129df576655daf7ea8bf7906713d918420497e50ae2"
+    },
+    {
+      "path": "boot-result.txt",
+      "bytes": 70,
+      "sha256": "8db34e1a837079052fd45b09eccabe2c90f1d415fe48223623553092ad6568c2"
+    },
+    {
+      "path": "bridge-probe-prepare.txt",
+      "bytes": 499,
+      "sha256": "ef131c820287b82767f8acb68715ba9e63f126285fee26a5a9567329e2356ece"
+    },
+    {
+      "path": "capacitor-probe/apk-identity.txt",
+      "bytes": 6369,
+      "sha256": "34df1c4ce8e76f3d789b12b82fccb298982b54bfbea6e0280124193d3b9d24ed"
+    },
+    {
+      "path": "capacitor-probe/crash-extract.txt",
+      "bytes": 2752,
+      "sha256": "93101166ea91c69929515ec61d62d6c8723112a3c05499bb8f184839ad8a3ad0"
+    },
+    {
+      "path": "capacitor-probe/device.txt",
+      "bytes": 22018,
+      "sha256": "c045680d2186766ae1423b0b5d1d6e64e8740145e649e98d6cfb5e6d0142829d"
+    },
+    {
+      "path": "capacitor-probe/install.txt",
+      "bytes": 36,
+      "sha256": "781a31c82430c97897af612ece5e0ca2205e301cb5ff121ce2660541ea5182c7"
+    },
+    {
+      "path": "capacitor-probe/launch.txt",
+      "bytes": 180,
+      "sha256": "69490342a1dc58b21101b0e6e241fead30f12b436aee9fb0858bf9d287ed0077"
+    },
+    {
+      "path": "capacitor-probe/logcat.txt.gz",
+      "bytes": 57943,
+      "sha256": "5d43a1409f39f5b814a58232e6246c2e483d6f1d9483c508773059f190b32089"
+    },
+    {
+      "path": "capacitor-probe/result.json",
+      "bytes": 1896,
+      "sha256": "fde6cd4282f17055f991b7235057a84bbddf196cf069640d2db3e5790c94447d"
+    },
+    {
+      "path": "capacitor-probe/selinux.txt",
+      "bytes": 10,
+      "sha256": "4fefafd0dcddf54b31a0fef448083e7b77576d86a9ec97c14bfd92479c404290"
+    },
+    {
+      "path": "capacitor-probe-stdout.txt",
+      "bytes": 1896,
+      "sha256": "fde6cd4282f17055f991b7235057a84bbddf196cf069640d2db3e5790c94447d"
+    },
+    {
+      "path": "check-baseline.txt",
+      "bytes": 81797,
+      "sha256": "588423a30eeac5460bd4051bc70937ef743cd438d3fd18f58181fd7315b6c3e2"
+    },
+    {
+      "path": "check-final.txt",
+      "bytes": 81419,
+      "sha256": "19dff35c3590244951a2b940bd7d247fb82e75be477654d285e225df57b7324b"
+    },
+    {
+      "path": "code-sha256.json",
+      "bytes": 2961,
+      "sha256": "638800e63a78a7a2f9eeddc9dadeda7be1c1df187a7bd510fd3cd9a537872c9f"
+    },
+    {
+      "path": "dependency-adaptation.json",
+      "bytes": 121,
+      "sha256": "9f1030fd85defdb5dc571ca21701b34e815285d7b8e0696f35be0e8ab9d404aa"
+    },
+    {
+      "path": "dependency-identity.json",
+      "bytes": 222,
+      "sha256": "15456a9ebc1d10382b2c24dc1b634c016c7c345f9009d904fd91ebbecd03e9c6"
+    },
+    {
+      "path": "device-final-checks.json",
+      "bytes": 1882,
+      "sha256": "a9f751bdde9b15c2c51dcb091b4cd709d987fbc749a47d15f63ee4bf71ee29d9"
+    },
+    {
+      "path": "device-manifest.json",
+      "bytes": 407,
+      "sha256": "0c8b1f6637ae41a81afd2d60d17c60d8208630f3b6503f426a25dfcb2fc762ec"
+    },
+    {
+      "path": "emulator-stop.txt.gz",
+      "bytes": 52,
+      "sha256": "eb4622919625a05fa847e9c4ed7b9df5a3475e8e1f4c420751c1cbceb8630285"
+    },
+    {
+      "path": "final-forwards.txt",
+      "bytes": 1,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    {
+      "path": "git-preflight.txt",
+      "bytes": 43,
+      "sha256": "46f5ee163faa91a06aefa729ac091d7e39e9e287f222f744b3b871d3505c01d9"
+    },
+    {
+      "path": "host-baseline-stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "host-baseline.json",
+      "bytes": 767,
+      "sha256": "869e7c7c2dc59917d36684c246b481cd6e028da055df7ccce110b68dfa2031e9"
+    },
+    {
+      "path": "jdk21.sha256",
+      "bytes": 116,
+      "sha256": "1838ac1c4a0ad4a7eeff0fcc6605bb3c47f7567d783699497bee128727c8ee68"
+    },
+    {
+      "path": "link-and-scope-check.json",
+      "bytes": 8465,
+      "sha256": "da31e03923d88afc39010b1502818b1b0935bc020a78b6ff6847524aeb55e9e3"
+    },
+    {
+      "path": "message-call-sites.txt",
+      "bytes": 21451,
+      "sha256": "98fd518ac67c95f35a614d9a640e074f3bf0c0559f86894cf148e18fdb846ad8"
+    },
+    {
+      "path": "npm-ci-official.txt",
+      "bytes": 764,
+      "sha256": "5f5ba5cbf1af3a1b73cc542f303a8ede455b79c09c4531f9dd6792fcf0a6f78f"
+    },
+    {
+      "path": "npm-ci-root-final.txt",
+      "bytes": 1220,
+      "sha256": "019eadf4f5cca5d7def3f9cfe7f632e86dfbe5669161b620ddf8e808ec5492a6"
+    },
+    {
+      "path": "npm-ci.txt",
+      "bytes": 270,
+      "sha256": "94118346e693528212d8013e205cf3ba57cde53256ad1c883bb5ee18b328fe2b"
+    },
+    {
+      "path": "postinstall.txt",
+      "bytes": 456,
+      "sha256": "7f3de9ce214cb62578458369118ace11770642fdb689e4c4d254cc0c0c8ab33c"
+    },
+    {
+      "path": "preflight-sources.json",
+      "bytes": 4644,
+      "sha256": "4f132573a4e9cd91846cfa42a224596ddff795e0481e4c5e649b9db891725882"
+    },
+    {
+      "path": "probe-build-final.txt.gz",
+      "bytes": 1366,
+      "sha256": "9fa73c9493f21e8dad9381447f6e13a78f35d1415d95a67efea28f2ea6c2316a"
+    },
+    {
+      "path": "probe-build-jdk21.txt.gz",
+      "bytes": 963,
+      "sha256": "0dc024c7d9e430028d2f2c816e2a1849cbca5845d6cd66a475cb1d3c88a74f84"
+    },
+    {
+      "path": "probe-build.txt.gz",
+      "bytes": 997,
+      "sha256": "909914aecc59c37fcd24e5a82848bbcc5dfb54cd537568ffd06655309a54e138"
+    },
+    {
+      "path": "push-dry-run.txt",
+      "bytes": 22,
+      "sha256": "47e930bfa8547af0e275fdc8f30ee4b5eded740e9615307434258197298b0ea5"
+    },
+    {
+      "path": "raw-log-archives.json",
+      "bytes": 4246,
+      "sha256": "565de09a59a66b94cf50acc14596aa7dd17d30b3118d90a95e882d2d65cb6f60"
+    },
+    {
+      "path": "schema-baseline-final.txt",
+      "bytes": 3882,
+      "sha256": "bb2b29a3b924d66198bca69fc61f77b17c0016647607106ac56e1baad8b58392"
+    },
+    {
+      "path": "schema-baseline.txt",
+      "bytes": 3852,
+      "sha256": "47538804a1376a2e72bcb5c689f17891b6f16dcc4536327b141b9fbaf2330b45"
+    },
+    {
+      "path": "schema-fingerprints.json",
+      "bytes": 657,
+      "sha256": "d6dab855a11500b3ab84c273e8afc3a0f57b9aa0b089e28b1079e2492191fe62"
+    },
+    {
+      "path": "sdk-artifacts.json",
+      "bytes": 1204,
+      "sha256": "4e4902f0e43f184b49ff7855bea18fb3c1bcc4d4d9e57713f4433afaa6b48400"
+    },
+    {
+      "path": "sdk-install.txt",
+      "bytes": 262,
+      "sha256": "b35d2e351f883886c1dace614f0170548b543d5ed9bd976bb951ffb063cbbc5e"
+    },
+    {
+      "path": "verification-summary.json",
+      "bytes": 7176,
+      "sha256": "4ef339881043c002b584eb6219f57766ecbc23e68ea8fda947a24cea0f1d4cae"
+    },
+    {
+      "path": "webview-probe-1/crash-extract.txt",
+      "bytes": 146,
+      "sha256": "76456569d8f297673e1636d892c99f2634e332416821b76bfafc7cbb5fbf17e8"
+    },
+    {
+      "path": "webview-probe-1/device-properties.txt",
+      "bytes": 20999,
+      "sha256": "569372564e6b2374c1266c50e0e17c273c7ff52dacdb3cc1eb9c87442fd85d5a"
+    },
+    {
+      "path": "webview-probe-1/late-crash-extract.txt",
+      "bytes": 1815,
+      "sha256": "a5e576fb8f7d58796ebfbecb749b059bd6e7a186baf502696a984a5f0e577008"
+    },
+    {
+      "path": "webview-probe-1/late-logcat.txt.gz",
+      "bytes": 167361,
+      "sha256": "a154aebcfb6efb82316efff24c2f8524415927795edc646a3a3571401344057e"
+    },
+    {
+      "path": "webview-probe-1/late-observation.json",
+      "bytes": 532,
+      "sha256": "63b75c654edba5ddcd74a4c834c3e112994788ffdfe9b68bed72ce79ecb0c326"
+    },
+    {
+      "path": "webview-probe-1/launch.txt",
+      "bytes": 243,
+      "sha256": "6751a5b5412e14fb52a3dc9b90cdd40e151661b22b4c8cc572696394966694cc"
+    },
+    {
+      "path": "webview-probe-1/logcat.txt.gz",
+      "bytes": 62652,
+      "sha256": "658e66f568d54d8fc78bb61fe5561412a98f3ccd168de5c6a44f55545a5c0b0b"
+    },
+    {
+      "path": "webview-probe-1/manifest.json",
+      "bytes": 407,
+      "sha256": "0c8b1f6637ae41a81afd2d60d17c60d8208630f3b6503f426a25dfcb2fc762ec"
+    },
+    {
+      "path": "webview-probe-1/observations.json",
+      "bytes": 937,
+      "sha256": "4eb0311f973013ba64c6f0c2842a99ff78fd1a14eea5c92252b9d4a73b2305bb"
+    },
+    {
+      "path": "webview-probe-1/result.json",
+      "bytes": 1591,
+      "sha256": "6b81443fbee28efe7f1537087be21e7bf51b1e6d3fa9fded5b63de9d696f7b5e"
+    },
+    {
+      "path": "webview-probe-1/screen.png",
+      "bytes": 2195,
+      "sha256": "6602a056bec95a95850e773275c09a97454de7fdf8d9a0f8f4ffe17913c0a371"
+    },
+    {
+      "path": "webview-probe-1/selinux.txt",
+      "bytes": 10,
+      "sha256": "4fefafd0dcddf54b31a0fef448083e7b77576d86a9ec97c14bfd92479c404290"
+    },
+    {
+      "path": "webview-probe-1/webview.txt",
+      "bytes": 603,
+      "sha256": "9ae38bae0ad0ea913a8b57a5b5eb90d401e7e9160adccfd5db7de57fdc409dd2"
+    },
+    {
+      "path": "webview-probe-2/crash-extract.txt",
+      "bytes": 666,
+      "sha256": "08475c406371b7be6642ce87d5b4c796e59033514228af63ac7f8076a1dac3fe"
+    },
+    {
+      "path": "webview-probe-2/device-properties.txt",
+      "bytes": 21952,
+      "sha256": "47441220147a73fcd86a3ecc1763e5eeb99f3156e579a6670d6756eb102c18b8"
+    },
+    {
+      "path": "webview-probe-2/launch.txt",
+      "bytes": 243,
+      "sha256": "2fd952fd3002c6eb50450ff8f476e9a89b845a0ad0b6604f94c029a672c727a8"
+    },
+    {
+      "path": "webview-probe-2/logcat.txt.gz",
+      "bytes": 112416,
+      "sha256": "8e95438efafb550fe839b367a43f06fd64abefcc91e33512a4a5f82c93275bb9"
+    },
+    {
+      "path": "webview-probe-2/manifest.json",
+      "bytes": 407,
+      "sha256": "0c8b1f6637ae41a81afd2d60d17c60d8208630f3b6503f426a25dfcb2fc762ec"
+    },
+    {
+      "path": "webview-probe-2/observations.json",
+      "bytes": 1684,
+      "sha256": "a9e8d1ab282ef7b8c3ecd45f6742fd645e8fadf73f9e12e1630e3415e3b0dcad"
+    },
+    {
+      "path": "webview-probe-2/result.json",
+      "bytes": 2428,
+      "sha256": "f10f913b7f17d068c531ff2a5edb7c77c42f7e8d409c26a269ac7d688ce4d4a0"
+    },
+    {
+      "path": "webview-probe-2/selinux.txt",
+      "bytes": 10,
+      "sha256": "4fefafd0dcddf54b31a0fef448083e7b77576d86a9ec97c14bfd92479c404290"
+    },
+    {
+      "path": "webview-probe-2/webview.txt",
+      "bytes": 603,
+      "sha256": "9ae38bae0ad0ea913a8b57a5b5eb90d401e7e9160adccfd5db7de57fdc409dd2"
+    },
+    {
+      "path": "webview-probe-3-drawing/crash-extract.txt",
+      "bytes": 666,
+      "sha256": "4adfedafa49ea026e8de854207bd0db75d74e7c73749ad8ca6605411960f2ff1"
+    },
+    {
+      "path": "webview-probe-3-drawing/device-properties.txt",
+      "bytes": 22025,
+      "sha256": "998e2e05177f8143ba1e4aaf77963f00673a91e7501c0a46ca14a986d55f6c11"
+    },
+    {
+      "path": "webview-probe-3-drawing/launch.txt",
+      "bytes": 243,
+      "sha256": "9c9f8197da51360a56bea4d8dbbf59d9ab620b9ee82decb72f70c353e7cbb479"
+    },
+    {
+      "path": "webview-probe-3-drawing/logcat.txt.gz",
+      "bytes": 44287,
+      "sha256": "ef6c1dd366f86feb9fc21084c7a81d9be58cc9b6f5ea2f07b853a2cc1291fb7d"
+    },
+    {
+      "path": "webview-probe-3-drawing/manifest.json",
+      "bytes": 407,
+      "sha256": "0c8b1f6637ae41a81afd2d60d17c60d8208630f3b6503f426a25dfcb2fc762ec"
+    },
+    {
+      "path": "webview-probe-3-drawing/observations.json",
+      "bytes": 1301,
+      "sha256": "1da1c61556691ad6ba5aaf9cea4817b73a269e1d0738d7e49081a25bc4b996e5"
+    },
+    {
+      "path": "webview-probe-3-drawing/result.json",
+      "bytes": 1995,
+      "sha256": "e8b064d043e23400aa0663cf86785fcd55234df7798398df23763712f8d88df1"
+    },
+    {
+      "path": "webview-probe-3-drawing/screen.png",
+      "bytes": 5117,
+      "sha256": "4a3199484cd9a8d895078803dd19cc466de5e142cf4a28069628fd16888b3da7"
+    },
+    {
+      "path": "webview-probe-3-drawing/selinux.txt",
+      "bytes": 10,
+      "sha256": "4fefafd0dcddf54b31a0fef448083e7b77576d86a9ec97c14bfd92479c404290"
+    },
+    {
+      "path": "webview-probe-3-drawing/webview.txt",
+      "bytes": 603,
+      "sha256": "9ae38bae0ad0ea913a8b57a5b5eb90d401e7e9160adccfd5db7de57fdc409dd2"
+    }
+  ]
+}

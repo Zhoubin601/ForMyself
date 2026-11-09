@@ -1,0 +1,127 @@
+{
+  "status": "PROBE_OBSERVED_REQUIRES_JS_VERIFICATION",
+  "scope": "system HTMLViewer only; no SQLCipher/Capacitor/Repository executed",
+  "serial": "emulator-5582",
+  "avd": "kanata_m2_api34",
+  "api": 34,
+  "syntheticOnly": true,
+  "userApps": 0,
+  "launchExitCode": 0,
+  "observations": [
+    {
+      "elapsedSeconds": 1.941,
+      "exitCode": 0,
+      "pid": "2336"
+    },
+    {
+      "elapsedSeconds": 10.622,
+      "exitCode": 0,
+      "pid": "2336"
+    },
+    {
+      "elapsedSeconds": 19.916,
+      "exitCode": 0,
+      "pid": "2336"
+    },
+    {
+      "elapsedSeconds": 27.641,
+      "exitCode": 0,
+      "pid": "2336"
+    },
+    {
+      "elapsedSeconds": 35.843,
+      "exitCode": 0,
+      "pid": "2336"
+    },
+    {
+      "elapsedSeconds": 43.504,
+      "exitCode": 0,
+      "pid": "2336"
+    },
+    {
+      "elapsedSeconds": 52.849,
+      "exitCode": 0,
+      "pid": "2336"
+    },
+    {
+      "elapsedSeconds": 62.012,
+      "exitCode": 0,
+      "pid": "2336"
+    },
+    {
+      "elapsedSeconds": 72.704,
+      "exitCode": 0,
+      "pid": "2336"
+    },
+    {
+      "elapsedSeconds": 80.124,
+      "exitCode": 0,
+      "pid": "2336"
+    },
+    {
+      "elapsedSeconds": 87.469,
+      "exitCode": 0,
+      "pid": "2336"
+    },
+    {
+      "elapsedSeconds": 94.472,
+      "exitCode": 0,
+      "pid": "2336"
+    },
+    {
+      "elapsedSeconds": 101.523,
+      "exitCode": 0,
+      "pid": "2336"
+    },
+    {
+      "elapsedSeconds": 109.162,
+      "exitCode": 0,
+      "pid": "2336"
+    },
+    {
+      "elapsedSeconds": 120.064,
+      "exitCode": 0,
+      "pid": "2336"
+    },
+    {
+      "elapsedSeconds": 130.091,
+      "exitCode": 0,
+      "pid": "2336"
+    },
+    {
+      "elapsedSeconds": 137.332,
+      "exitCode": 0,
+      "pid": "2336"
+    },
+    {
+      "elapsedSeconds": 145.474,
+      "exitCode": 0,
+      "pid": "2336"
+    },
+    {
+      "elapsedSeconds": 153.054,
+      "exitCode": 0,
+      "pid": "2336"
+    },
+    {
+      "elapsedSeconds": 160.349,
+      "exitCode": 0,
+      "pid": "2336"
+    },
+    {
+      "elapsedSeconds": 167.626,
+      "exitCode": 0,
+      "pid": "2336"
+    },
+    {
+      "elapsedSeconds": 181.548,
+      "exitCode": 0,
+      "pid": "2336"
+    }
+  ],
+  "crashLines": 4,
+  "modelRequests": 0,
+  "networkRequestsFromPage": 0,
+  "htmlViewerApk": "package:/system/app/HTMLViewer/HTMLViewer.apk",
+  "manifestSha256": "0c8b1f6637ae41a81afd2d60d17c60d8208630f3b6503f426a25dfcb2fc762ec"
+}

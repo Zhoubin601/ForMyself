@@ -1,0 +1,76 @@
+{
+  "reason": "Preserve original stdout/logcat including trailing spaces/control bytes while allowing unmodified git diff --check rules",
+  "rawSourceCopiesRemainIn": "ignored work/m2",
+  "archives": [
+    {
+      "originalPath": "docs/qa/kanata-sqlite-m2/evidence/avd-format.txt",
+      "archivePath": "docs/qa/kanata-sqlite-m2/evidence/avd-format.txt.gz",
+      "uncompressedBytes": 637,
+      "uncompressedSha256": "28aae2c8d7b46e521b1954f7c6c204d869f59295e3b62c072ebc1701bfb983d9",
+      "compressedSha256": "2f3a7e00e40035ae942cf0f175f4f6869698f74ce8f8c1951ac530bf31382c17"
+    },
+    {
+      "originalPath": "docs/qa/kanata-sqlite-m2/evidence/capacitor-probe/logcat.txt",
+      "archivePath": "docs/qa/kanata-sqlite-m2/evidence/capacitor-probe/logcat.txt.gz",
+      "uncompressedBytes": 212825,
+      "uncompressedSha256": "a37d1822a46442b0c5d42aeeebcc507417f05c5dbf713768c19e8677b2c382c4",
+      "compressedSha256": "5d43a1409f39f5b814a58232e6246c2e483d6f1d9483c508773059f190b32089"
+    },
+    {
+      "originalPath": "docs/qa/kanata-sqlite-m2/evidence/emulator-stop.txt",
+      "archivePath": "docs/qa/kanata-sqlite-m2/evidence/emulator-stop.txt.gz",
+      "uncompressedBytes": 35,
+      "uncompressedSha256": "c8688fc34ee1d36f2e975dad0607555ba84d8951ccb39e69b7ab7a5d159ec81f",
+      "compressedSha256": "eb4622919625a05fa847e9c4ed7b9df5a3475e8e1f4c420751c1cbceb8630285"
+    },
+    {
+      "originalPath": "docs/qa/kanata-sqlite-m2/evidence/probe-build-final.txt",
+      "archivePath": "docs/qa/kanata-sqlite-m2/evidence/probe-build-final.txt.gz",
+      "uncompressedBytes": 6480,
+      "uncompressedSha256": "29570a740dc06ff9aaa22f761f974344a63708527cc707e48a0dc33c544d7781",
+      "compressedSha256": "9fa73c9493f21e8dad9381447f6e13a78f35d1415d95a67efea28f2ea6c2316a"
+    },
+    {
+      "originalPath": "docs/qa/kanata-sqlite-m2/evidence/probe-build-jdk21.txt",
+      "archivePath": "docs/qa/kanata-sqlite-m2/evidence/probe-build-jdk21.txt.gz",
+      "uncompressedBytes": 1967,
+      "uncompressedSha256": "338efc7553cff89e3908dcaa7f8997bb75398073638f775e64cdafbfa4d1a462",
+      "compressedSha256": "0dc024c7d9e430028d2f2c816e2a1849cbca5845d6cd66a475cb1d3c88a74f84"
+    },
+    {
+      "originalPath": "docs/qa/kanata-sqlite-m2/evidence/probe-build.txt",
+      "archivePath": "docs/qa/kanata-sqlite-m2/evidence/probe-build.txt.gz",
+      "uncompressedBytes": 2057,
+      "uncompressedSha256": "1742bd8833f5dcceb529bb6894cbc14dcfa144e68e4d3f826e987b87318a9917",
+      "compressedSha256": "909914aecc59c37fcd24e5a82848bbcc5dfb54cd537568ffd06655309a54e138"
+    },
+    {
+      "originalPath": "docs/qa/kanata-sqlite-m2/evidence/webview-probe-1/late-logcat.txt",
+      "archivePath": "docs/qa/kanata-sqlite-m2/evidence/webview-probe-1/late-logcat.txt.gz",
+      "uncompressedBytes": 925593,
+      "uncompressedSha256": "1c36dbb59e9f3db161696490cd31f8b3d0595fe41dfa8c4a08648cc391956585",
+      "compressedSha256": "a154aebcfb6efb82316efff24c2f8524415927795edc646a3a3571401344057e"
+    },
+    {
+      "originalPath": "docs/qa/kanata-sqlite-m2/evidence/webview-probe-1/logcat.txt",
+      "archivePath": "docs/qa/kanata-sqlite-m2/evidence/webview-probe-1/logcat.txt.gz",
+      "uncompressedBytes": 394409,
+      "uncompressedSha256": "7981bb5c9aba5192e7302fa609b0cc7b6cd87f6ccf87f99ae9c525e31d8bf776",
+      "compressedSha256": "658e66f568d54d8fc78bb61fe5561412a98f3ccd168de5c6a44f55545a5c0b0b"
+    },
+    {
+      "originalPath": "docs/qa/kanata-sqlite-m2/evidence/webview-probe-2/logcat.txt",
+      "archivePath": "docs/qa/kanata-sqlite-m2/evidence/webview-probe-2/logcat.txt.gz",
+      "uncompressedBytes": 557040,
+      "uncompressedSha256": "8c3bc22d74c9e75d65f7a70e22887b74687ad56ba99f51e50d0aee137d43c926",
+      "compressedSha256": "8e95438efafb550fe839b367a43f06fd64abefcc91e33512a4a5f82c93275bb9"
+    },
+    {
+      "originalPath": "docs/qa/kanata-sqlite-m2/evidence/webview-probe-3-drawing/logcat.txt",
+      "archivePath": "docs/qa/kanata-sqlite-m2/evidence/webview-probe-3-drawing/logcat.txt.gz",
+      "uncompressedBytes": 239470,
+      "uncompressedSha256": "b1ab55b9d5b15a472d86f904ade075471c74f6b9c1e02716e442b993977971b1",
+      "compressedSha256": "ef6c1dd366f86feb9fc21084c7a81d9be58cc9b6f5ea2f07b853a2cc1291fb7d"
+    }
+  ]
+}

@@ -1,0 +1,102 @@
+{
+  "status": "PROBE_OBSERVED_REQUIRES_JS_VERIFICATION",
+  "scope": "system HTMLViewer only; no SQLCipher/Capacitor/Repository executed",
+  "serial": "emulator-5582",
+  "avd": "kanata_m2_api34",
+  "api": 34,
+  "syntheticOnly": true,
+  "userApps": 0,
+  "launchExitCode": 0,
+  "observations": [
+    {
+      "elapsedSeconds": 6.867,
+      "exitCode": 0,
+      "pid": "3210"
+    },
+    {
+      "elapsedSeconds": 18.805,
+      "exitCode": 0,
+      "pid": "3210"
+    },
+    {
+      "elapsedSeconds": 27.254,
+      "exitCode": 0,
+      "pid": "3210"
+    },
+    {
+      "elapsedSeconds": 37.089,
+      "exitCode": 0,
+      "pid": "3210"
+    },
+    {
+      "elapsedSeconds": 53.387,
+      "exitCode": 0,
+      "pid": "3210"
+    },
+    {
+      "elapsedSeconds": 66.753,
+      "exitCode": 0,
+      "pid": "3210"
+    },
+    {
+      "elapsedSeconds": 76.383,
+      "exitCode": 0,
+      "pid": "3210"
+    },
+    {
+      "elapsedSeconds": 84.486,
+      "exitCode": 0,
+      "pid": "3210"
+    },
+    {
+      "elapsedSeconds": 92.489,
+      "exitCode": 0,
+      "pid": "3210"
+    },
+    {
+      "elapsedSeconds": 101.069,
+      "exitCode": 0,
+      "pid": "3210"
+    },
+    {
+      "elapsedSeconds": 114.988,
+      "exitCode": 0,
+      "pid": "3210"
+    },
+    {
+      "elapsedSeconds": 137.688,
+      "exitCode": 0,
+      "pid": "3210"
+    },
+    {
+      "elapsedSeconds": 149.605,
+      "exitCode": 0,
+      "pid": "3210"
+    },
+    {
+      "elapsedSeconds": 162.86,
+      "exitCode": 0,
+      "pid": "3210"
+    },
+    {
+      "elapsedSeconds": 171.934,
+      "exitCode": 0,
+      "pid": "3210"
+    },
+    {
+      "elapsedSeconds": 179.257,
+      "exitCode": 0,
+      "pid": "3210"
+    },
+    {
+      "elapsedSeconds": 187.443,
+      "exitCode": 0,
+      "pid": "3210"
+    }
+  ],
+  "crashLines": 4,
+  "modelRequests": 0,
+  "networkRequestsFromPage": 0,
+  "htmlViewerApk": "package:/system/app/HTMLViewer/HTMLViewer.apk",
+  "manifestSha256": "0c8b1f6637ae41a81afd2d60d17c60d8208630f3b6503f426a25dfcb2fc762ec"
+}

@@ -1,0 +1,125 @@
+{
+  "baseline": "de3164b8de569f57a250d0592eae5a21345e5264",
+  "files": [
+    {
+      "path": "AGENTS.md",
+      "sha256": "65c1cb70495e9306deee8f91853092b94a3e74f305e35b9fccc42e38bfc552ac"
+    },
+    {
+      "path": "架构接口与Agent开发说明书.md",
+      "sha256": "65cc55134308c57ed301e1085da6aade70b183198b1bb674a6a76d613e5e62d9"
+    },
+    {
+      "path": "docs/20261103-kanata-sqlite-migration-plan-v1.md",
+      "sha256": "a77d7f566114cc96c89f85194bcab168ca06a3678ed675c34b4c78cab1202492"
+    },
+    {
+      "path": "docs/20261104-kanata-sqlite-m0-direct-gate-v1.md",
+      "sha256": "c84b577bdd3ced29a3de9328505aa72b468e132c6597052b429e67b5c14b6934"
+    },
+    {
+      "path": "docs/20261106-kanata-sqlite-m1-report-v2.md",
+      "sha256": "9fae534f63c8fd8956ccfc4c14f61657e529f301c8a98d8cea7c90e539a91bfd"
+    },
+    {
+      "path": "docs/20261107-kanata-sqlite-m1-r-audit-v1.md",
+      "sha256": "5bed0177c8f9144b1d5e01a98f59b1ba86bb5a1216d009f63bffe3db72c3d0d9"
+    },
+    {
+      "path": "docs/qa/kanata-sqlite-m1-r/README.md",
+      "sha256": "0909043d7d4e63907b0772db4978ed73686c7b5b023eeb804177dab3c28dc3d4"
+    },
+    {
+      "path": "docs/20261107-kanata-sqlite-m2-task-v1.md",
+      "sha256": "00e9bb9b6d4a90fdcc809144ac2f0b2c5cc914a191c7d56f2b86521f59f083a1"
+    },
+    {
+      "path": "src/features/chat/storage/sqlite/kanataSchema.js",
+      "sha256": "f4c88622164f007337a2760a733c1f8c08ce83ab64867c3aa09bfe9b191691a7"
+    },
+    {
+      "path": "src/features/chat/storage/sqlite/kanataSchemaMigrator.js",
+      "sha256": "68539a77e0620994e56fd9b706b18e680b6f4be0d59430b0439f93996306a808"
+    },
+    {
+      "path": "src/features/chat/storage/sqlite/kanataSchemaHardening.js",
+      "sha256": "8fd700db77f53bb369511ffaa11d9c1a88531e72996c60462076ccd7bc3a3901"
+    },
+    {
+      "path": "src/features/chat/storage/sqlite/kanataSchemaTypes.d.ts",
+      "sha256": "500eba654d33d4691bc6d92bc03dfca3766f8a24aa2e9350b007108c7efe4070"
+    },
+    {
+      "path": "src/features/chat/storage/kanataRepository.js",
+      "sha256": "c388b0101a20bb62c984ec5c7939385e06afb59c6b0105a72181d453656ae257"
+    },
+    {
+      "path": "src/features/chat/storage/messageArchiveRepository.js",
+      "sha256": "ed8dc253b1140073be33ec5ac61db46b89659d3a1c17f203105b3f040e7402f8"
+    },
+    {
+      "path": "src/features/chat/kanataStore.js",
+      "sha256": "b9451f89a8f145f450a72c6549a288954d5ce4e545b1a7d3a9248cdc4b874529"
+    },
+    {
+      "path": "src/features/chat/experience/kanataEvents.js",
+      "sha256": "c8652f19edcc5c7a2402d9c4dd455c5b59b356446642adc2e6d942f9d4ab11df"
+    },
+    {
+      "path": "src/features/chat/KanataConversationView.vue",
+      "sha256": "064105244586680abacef54b6e1225e0194a1151a12a1101483c9a2c560fff69"
+    },
+    {
+      "path": "src/features/chat/ChatTimeline.vue",
+      "sha256": "997156327e560c8504e40ab99037f78850d25848a1f15423c21bde7895bcd931"
+    },
+    {
+      "path": "src/features/chat/KanataHistoryPanel.vue",
+      "sha256": "69c3845aca60c330f709013223238bb23aeea1406b6fd735e862e1c9313d0fbf"
+    },
+    {
+      "path": "src/application/kanataChatRuntime.js",
+      "sha256": "e6ede177dcd00d7bc6024c3f1fe72bf23375c2a857ee5b43cd29743fb206da76"
+    },
+    {
+      "path": "src/application/protectedModules.js",
+      "sha256": "2e01895a7d395f2fdb18592a8e6e9c0988c532ac1d236d86d1a899218ed92bd4"
+    },
+    {
+      "path": "src/stores/protectedAccess.js",
+      "sha256": "c8771d5d5cb9041d659391b20d8930d86a33f9653e502226bf30a918703bb1f4"
+    },
+    {
+      "path": "src/application/restoreCoordinator.js",
+      "sha256": "ed798f7f771ba500c141a8ec97fd0a5bce3400bf352467b002ab2a33c17fa16f"
+    },
+    {
+      "path": "src/application/ordinaryModules.js",
+      "sha256": "a54237465636bec02f2ed8d9ce1c62860b247993473e978eb65eabd827fafb9f"
+    },
+    {
+      "path": "android/app/src/main/java/com/yubin/formyself/MainActivity.java",
+      "sha256": "544d7b89075933393951076077bb6edc1d9a320da435128ac43ed31ad374e177"
+    },
+    {
+      "path": "android/app/build.gradle",
+      "sha256": "a4b026ee62c904f91a861ae6e6d4e8053e34f4876d8e5758c039410670b1be30"
+    },
+    {
+      "path": "android/build.gradle",
+      "sha256": "46ade7db7afeb8049ccea59fce83095dca736ceb8c9acd79cc944e988c3357d9"
+    },
+    {
+      "path": "android/variables.gradle",
+      "sha256": "83d502c9ed8fcf1dd4791482067abeedbebae49fafe9cd14a8a1f5891deb0d88"
+    },
+    {
+      "path": "package.json",
+      "sha256": "00c0fc6e45429afd0e6fc709bb7083a4bb5622c0f974f957177b1462a3b75037"
+    },
+    {
+      "path": "package-lock.json",
+      "sha256": "14a9d3853a00a7c969ce946c5794de1d8b405821c7ef16a9345e1a87592acd2b"
+    }
+  ]
+}

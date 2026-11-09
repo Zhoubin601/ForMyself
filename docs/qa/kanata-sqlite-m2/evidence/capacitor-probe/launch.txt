@@ -1,0 +1,6 @@
+Starting: Intent { cmp=com.formyself.qa.m2probe/.MainActivity }
+Status: timeout
+LaunchState: UNKNOWN (-1)
+Activity: com.formyself.qa.m2probe/.MainActivity
+WaitTime: 15548
+Complete

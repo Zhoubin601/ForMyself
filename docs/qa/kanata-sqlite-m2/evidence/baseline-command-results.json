@@ -1,0 +1,14 @@
+{
+  "scope": "Unchanged M1/M1-R baseline only, not M2 implementation acceptance",
+  "commands": [
+    {"command":"npm ci", "result":"Registry requests denied with HTTP 403; terminated this task's install process", "evidence":"npm-ci.txt"},
+    {"command":"npm ci --ignore-scripts --prefix work/m2/dependencies --registry=https://registry.npmjs.org", "exitCode":0, "evidence":"npm-ci-official.txt", "adaptation":"Only download URLs in isolated lock copy replaced; versions and integrity unchanged"},
+    {"command":"npm ci --offline", "exitCode":0, "evidence":"npm-ci-root-final.txt", "rootPackageLock":"unchanged", "postinstall":"all four patch scripts succeeded"},
+    {"command":"node --test tests/kanataSqliteSchema.test.js tests/kanataSqliteRemediation.test.js tests/kanataSqliteMapping.test.js (before dependency preparation completed)", "exitCode":1, "evidence":"schema-baseline.txt", "result":"ERR_MODULE_NOT_FOUND; not a product regression"},
+    {"command":"node --test tests/kanataSqliteSchema.test.js tests/kanataSqliteRemediation.test.js tests/kanataSqliteMapping.test.js", "exitCode":0, "passed":34, "failed":0, "evidence":"schema-baseline-final.txt"},
+    {"command":"node docs/qa/kanata-sqlite-m1-r/verify-host.mjs work/m2/venv/bin/python", "exitCode":0, "checks":9, "cipher":"4.12.0 community", "actualSigkillScenarios":2, "evidence":"host-baseline.json", "androidCoverage":false},
+    {"command":"npm run check (initial prepared dependencies)", "exitCode":0, "nodeTests":624, "componentTests":392, "componentFiles":42, "lintErrors":0, "lintWarnings":42, "typecheck":true, "build":true, "evidence":"check-baseline.txt"},
+    {"command":"npm run check (after original root lock offline npm ci/postinstall)", "exitCode":0, "nodeTests":624, "componentTests":392, "componentFiles":42, "lintErrors":0, "lintWarnings":42, "typecheck":true, "build":true, "evidence":"check-final.txt"},
+    {"command":"git push --dry-run origin M:M", "exitCode":0, "result":"Everything up-to-date; does not claim a commit was pushed", "evidence":"push-dry-run.txt"}
+  ]
+}

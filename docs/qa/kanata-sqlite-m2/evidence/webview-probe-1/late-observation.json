@@ -1,0 +1,8 @@
+{
+  "status": "BLOCKED_WEBVIEW_CONTROL_CRASH",
+  "initialWindow": "no renderer crash observed before initial collection; preserved initial result",
+  "laterObservation": "Renderer 1486 code5; libwebviewchromium.so; HTMLViewer1307 SIGTRAP",
+  "scope": "No SQLCipher, Capacitor or product code; not M2 implementation defect",
+  "modelRequests": 0,
+  "initialElapsedSecondsDefinition": "Initial probe labels = nominal 5 second sleep index, excluding ADB overhead; not a performance metric. Future probes use monotonic wall elapsed."
+}

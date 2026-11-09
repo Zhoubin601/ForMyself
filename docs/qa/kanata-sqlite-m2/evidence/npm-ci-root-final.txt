@@ -1,0 +1,15 @@
+npm warn deprecated git-semver-tags@4.1.1: This package is no longer maintained. For the JavaScript API, please use @conventional-changelog/git-client instead.
+npm warn deprecated whatwg-encoding@3.1.1: Use @exodus/bytes instead for a more spec-conformant and faster implementation
+npm warn deprecated q@1.5.1: You or someone you depend on is using Q, the JavaScript Promise library that gave JavaScript developers strong feelings about promises. They can almost certainly migrate to the native JavaScript promise now. Thank you literally everyone for joining me in this bet against the odds. Be excellent to each other.
+npm warn deprecated
+npm warn deprecated (For a CapTP with native promises, see @endo/eventual-send and @endo/captp)
+
+> formyself-app@0.0.0 postinstall
+> node scripts/patch-capacitor-local-notifications.mjs && node scripts/patch-capacitor-native-biometric.mjs && node scripts/patch-capacitor-preferences.mjs && node scripts/patch-capacitor-filesystem.mjs
+
+Applied Capacitor Local Notifications recurring wake-up patch.
+Applied Native Biometric credential durability patch.
+Preferences durable writes patch verified.
+Filesystem Web bounded directory listing patch verified.
+
+added 693 packages in 16s

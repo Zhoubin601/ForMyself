@@ -1,0 +1,11 @@
+{
+  "syntheticOnly": true,
+  "createdBy": "M2 Preflight",
+  "serial": "emulator-5582",
+  "avdName": "kanata_m2_api34",
+  "root": "/tmp/kanata-m2-synthetic-api34-20261109",
+  "avdHome": "/tmp/kanata-m2-synthetic-api34-20261109/avd",
+  "data": "/tmp/kanata-m2-synthetic-api34-20261109/avd/kanata_m2_api34.avd/m2-synthetic.img",
+  "sdk": "/workspace/ForMyself/work/m2/android-sdk",
+  "installedUserApps": []
+}

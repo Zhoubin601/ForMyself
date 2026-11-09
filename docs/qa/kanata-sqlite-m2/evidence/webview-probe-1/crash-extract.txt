@@ -1,0 +1,1 @@
+11-09 04:43:28.486  1363  1598 F libc    : Fatal signal 6 (SIGABRT), code -1 (SI_QUEUE) in tid 1598 (bt_stack_manage), pid 1363 (droid.bluetooth)

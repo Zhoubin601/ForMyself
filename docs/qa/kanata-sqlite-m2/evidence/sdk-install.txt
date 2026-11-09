@@ -1,0 +1,8 @@
+download emulator-linux_x64-16740729.zip
+installed emulator
+download platform-36_r02.zip
+installed platforms;android-36
+download build-tools_r36_linux.zip
+installed build-tools;36.0.0
+download x86_64-34_r02.zip
+installed system-images;android-34;aosp_atd;x86_64

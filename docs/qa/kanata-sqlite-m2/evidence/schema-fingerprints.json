@@ -1,0 +1,23 @@
+{
+  "schemaSha256": "1cf50ef2944831ea6d3b66a871ba59944e03d48b889171588b550b9b4eedea45",
+  "migrations": [
+    {
+      "version": 1,
+      "name": "kanata-core",
+      "checksum": "76a3464b65c48dd33ebe80a51af1327696e67be2790384e2883ad6b5447ab0a2",
+      "statements": 161
+    },
+    {
+      "version": 2,
+      "name": "kanata-access-indexes",
+      "checksum": "545360d8561fe05514846ad935fd7acc37b6ed073440f3a04a3fda0943cddab2",
+      "statements": 36
+    },
+    {
+      "version": 3,
+      "name": "kanata-audit-and-application-time",
+      "checksum": "1a48f88ae4507086b8ab0c364cc213f228dcc7f50f71e2c03c66f7b2c8cdd8e1",
+      "statements": 19
+    }
+  ]
+}

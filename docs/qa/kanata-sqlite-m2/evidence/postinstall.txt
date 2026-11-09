@@ -1,0 +1,8 @@
+
+> formyself-app@0.0.0 postinstall
+> node scripts/patch-capacitor-local-notifications.mjs && node scripts/patch-capacitor-native-biometric.mjs && node scripts/patch-capacitor-preferences.mjs && node scripts/patch-capacitor-filesystem.mjs
+
+Applied Capacitor Local Notifications recurring wake-up patch.
+Applied Native Biometric credential durability patch.
+Preferences durable writes patch verified.
+Filesystem Web bounded directory listing patch verified.

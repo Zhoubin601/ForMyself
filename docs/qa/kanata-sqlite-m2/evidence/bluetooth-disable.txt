@@ -1,0 +1,3 @@
+BluetoothShellCommand: Exec disable
+disable: Success
+0

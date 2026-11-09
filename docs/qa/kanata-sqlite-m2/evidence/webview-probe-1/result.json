@@ -1,0 +1,82 @@
+{
+  "status": "PROBE_OBSERVED_REQUIRES_JS_VERIFICATION",
+  "scope": "system HTMLViewer only; no SQLCipher/Capacitor/Repository executed",
+  "serial": "emulator-5582",
+  "avd": "kanata_m2_api34",
+  "api": 34,
+  "syntheticOnly": true,
+  "userApps": 0,
+  "launchExitCode": 0,
+  "observations": [
+    {
+      "elapsedSeconds": 0,
+      "exitCode": 0,
+      "pid": "1307"
+    },
+    {
+      "elapsedSeconds": 5,
+      "exitCode": 0,
+      "pid": "1307"
+    },
+    {
+      "elapsedSeconds": 10,
+      "exitCode": 0,
+      "pid": "1307"
+    },
+    {
+      "elapsedSeconds": 15,
+      "exitCode": 0,
+      "pid": "1307"
+    },
+    {
+      "elapsedSeconds": 20,
+      "exitCode": 0,
+      "pid": "1307"
+    },
+    {
+      "elapsedSeconds": 25,
+      "exitCode": 0,
+      "pid": "1307"
+    },
+    {
+      "elapsedSeconds": 30,
+      "exitCode": 0,
+      "pid": "1307"
+    },
+    {
+      "elapsedSeconds": 35,
+      "exitCode": 0,
+      "pid": "1307"
+    },
+    {
+      "elapsedSeconds": 40,
+      "exitCode": 0,
+      "pid": "1307"
+    },
+    {
+      "elapsedSeconds": 45,
+      "exitCode": 0,
+      "pid": "1307"
+    },
+    {
+      "elapsedSeconds": 50,
+      "exitCode": 0,
+      "pid": "1307"
+    },
+    {
+      "elapsedSeconds": 55,
+      "exitCode": 0,
+      "pid": "1307"
+    },
+    {
+      "elapsedSeconds": 60,
+      "exitCode": 0,
+      "pid": "1307"
+    }
+  ],
+  "crashLines": 1,
+  "modelRequests": 0,
+  "networkRequestsFromPage": 0,
+  "htmlViewerApk": "package:/system/app/HTMLViewer/HTMLViewer.apk",
+  "manifestSha256": "0c8b1f6637ae41a81afd2d60d17c60d8208630f3b6503f426a25dfcb2fc762ec"
+}

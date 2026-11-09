@@ -1199,3 +1199,9 @@ raw/完整需求清单.txt 4.1/4.4/8.3及最新连续执行v3驱动当前实现�
 关键实际契约：实例state.location允许''（kanataValidation和手动新世界初始化），日程location非空；删除消息会将旧messageAudits前后正文置为“（已删除的原始记录）”及deleted=true。审计不可变性不能误封这项既有隐私语义。001/002原校验和见未改动的M1 schema-catalog.json。
 
 补充来源（2026-11-07）：actual TypeScript AST `kanataTypes.d.ts`、`characterCardTypes.d.ts`、`completionTypes.d.ts`用于347字段映射；真实PRAGMA用于108组外键。隔离QA使用既有Capacitor8.4.1/SQLCipher4.17缓存，无新外部资料或版本选型。`work/m0/m1-r-20261107`记录修复前后复现，完整回归由M1-R `run-regression.mjs`生成独立目录和退出码；与主机SQLCipher4.12/隔离Android4.17同DDL指纹交叉核对。
+
+## 2026-11-09 Kanata SQLite M2
+
+来源：GitHub M 完整任务书 `docs/20261107-kanata-sqlite-m2-task-v1.md`，远端基线 `de3164b8de569f57a250d0592eae5a21345e5264`；AGENTS、根架构说明、M0 direct gate、M1 v2、M1-R 审计/QA及当前源码。读取清单与SHA见 `docs/qa/kanata-sqlite-m2/evidence/preflight-sources.json`。不读取私人raw、真实聊天/备份或凭据；测试复用仓库合成夹具。
+
+本轮预检/设计：[Preflight](20261107-kanata-sqlite-m2-preflight-v1.md)、[技术设计](20261107-kanata-sqlite-m2-design-v1.md)。环境工具下载来源为官方 dl.google.com 的 SDK/ATD 元数据、镜像与校验和，以及 Debian 官方 e2fsprogs；依赖仅从 npm 官方源获取锁定版本/相同integrity，不修改根lock。

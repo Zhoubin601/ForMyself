@@ -1,0 +1,209 @@
+{
+  "status": "BLOCKED_M2_PREFLIGHT_ENVIRONMENT",
+  "date": "2026-11-09",
+  "timezone": "Asia/Shanghai",
+  "branch": "M",
+  "baselineHead": "de3164b8de569f57a250d0592eae5a21345e5264",
+  "initialLocalHead": "41cbb66053bd5b9995b358c0c4846669e626bcc0",
+  "initialLocalBranch": "work",
+  "initialWorktree": "clean",
+  "productionImplementation": "NOT_STARTED",
+  "productionCanonical": "legacy",
+  "productionSqliteEnabled": false,
+  "recommendEnterM3": false,
+  "userDecision": "Continue in previously validated Windows/WHPX synthetic API34 AVD",
+  "externalCondition": "Windows execution environment not attached; current thread only has Linux executor",
+  "preflightDocuments": "COMPLETE",
+  "technicalDesign": "FROZEN_WITH_PRECODING_SELF_REVIEW",
+  "implementationSelfReview1": "NOT_RUN",
+  "implementationSelfReview2": "NOT_RUN",
+  "protectedSourceFingerprintsUnchanged": [
+    {
+      "path": "AGENTS.md",
+      "sha256": "65c1cb70495e9306deee8f91853092b94a3e74f305e35b9fccc42e38bfc552ac"
+    },
+    {
+      "path": "src/features/chat/storage/sqlite/kanataSchema.js",
+      "sha256": "f4c88622164f007337a2760a733c1f8c08ce83ab64867c3aa09bfe9b191691a7"
+    },
+    {
+      "path": "src/features/chat/storage/sqlite/kanataSchemaMigrator.js",
+      "sha256": "68539a77e0620994e56fd9b706b18e680b6f4be0d59430b0439f93996306a808"
+    },
+    {
+      "path": "src/features/chat/storage/sqlite/kanataSchemaHardening.js",
+      "sha256": "8fd700db77f53bb369511ffaa11d9c1a88531e72996c60462076ccd7bc3a3901"
+    },
+    {
+      "path": "src/features/chat/storage/sqlite/kanataSchemaTypes.d.ts",
+      "sha256": "500eba654d33d4691bc6d92bc03dfca3766f8a24aa2e9350b007108c7efe4070"
+    },
+    {
+      "path": "src/features/chat/storage/kanataRepository.js",
+      "sha256": "c388b0101a20bb62c984ec5c7939385e06afb59c6b0105a72181d453656ae257"
+    },
+    {
+      "path": "src/features/chat/storage/messageArchiveRepository.js",
+      "sha256": "ed8dc253b1140073be33ec5ac61db46b89659d3a1c17f203105b3f040e7402f8"
+    },
+    {
+      "path": "src/features/chat/kanataStore.js",
+      "sha256": "b9451f89a8f145f450a72c6549a288954d5ce4e545b1a7d3a9248cdc4b874529"
+    },
+    {
+      "path": "src/features/chat/experience/kanataEvents.js",
+      "sha256": "c8652f19edcc5c7a2402d9c4dd455c5b59b356446642adc2e6d942f9d4ab11df"
+    },
+    {
+      "path": "src/features/chat/KanataConversationView.vue",
+      "sha256": "064105244586680abacef54b6e1225e0194a1151a12a1101483c9a2c560fff69"
+    },
+    {
+      "path": "src/features/chat/ChatTimeline.vue",
+      "sha256": "997156327e560c8504e40ab99037f78850d25848a1f15423c21bde7895bcd931"
+    },
+    {
+      "path": "src/features/chat/KanataHistoryPanel.vue",
+      "sha256": "69c3845aca60c330f709013223238bb23aeea1406b6fd735e862e1c9313d0fbf"
+    },
+    {
+      "path": "src/application/kanataChatRuntime.js",
+      "sha256": "e6ede177dcd00d7bc6024c3f1fe72bf23375c2a857ee5b43cd29743fb206da76"
+    },
+    {
+      "path": "src/application/protectedModules.js",
+      "sha256": "2e01895a7d395f2fdb18592a8e6e9c0988c532ac1d236d86d1a899218ed92bd4"
+    },
+    {
+      "path": "src/stores/protectedAccess.js",
+      "sha256": "c8771d5d5cb9041d659391b20d8930d86a33f9653e502226bf30a918703bb1f4"
+    },
+    {
+      "path": "src/application/restoreCoordinator.js",
+      "sha256": "ed798f7f771ba500c141a8ec97fd0a5bce3400bf352467b002ab2a33c17fa16f"
+    },
+    {
+      "path": "src/application/ordinaryModules.js",
+      "sha256": "a54237465636bec02f2ed8d9ce1c62860b247993473e978eb65eabd827fafb9f"
+    },
+    {
+      "path": "android/app/src/main/java/com/yubin/formyself/MainActivity.java",
+      "sha256": "544d7b89075933393951076077bb6edc1d9a320da435128ac43ed31ad374e177"
+    },
+    {
+      "path": "android/app/build.gradle",
+      "sha256": "a4b026ee62c904f91a861ae6e6d4e8053e34f4876d8e5758c039410670b1be30"
+    },
+    {
+      "path": "android/build.gradle",
+      "sha256": "46ade7db7afeb8049ccea59fce83095dca736ceb8c9acd79cc944e988c3357d9"
+    },
+    {
+      "path": "android/variables.gradle",
+      "sha256": "83d502c9ed8fcf1dd4791482067abeedbebae49fafe9cd14a8a1f5891deb0d88"
+    },
+    {
+      "path": "package.json",
+      "sha256": "00c0fc6e45429afd0e6fc709bb7083a4bb5622c0f974f957177b1462a3b75037"
+    },
+    {
+      "path": "package-lock.json",
+      "sha256": "14a9d3853a00a7c969ce946c5794de1d8b405821c7ef16a9345e1a87592acd2b"
+    }
+  ],
+  "schema": {
+    "schemaSha256": "1cf50ef2944831ea6d3b66a871ba59944e03d48b889171588b550b9b4eedea45",
+    "migrations": [
+      {
+        "version": 1,
+        "name": "kanata-core",
+        "checksum": "76a3464b65c48dd33ebe80a51af1327696e67be2790384e2883ad6b5447ab0a2",
+        "statements": 161
+      },
+      {
+        "version": 2,
+        "name": "kanata-access-indexes",
+        "checksum": "545360d8561fe05514846ad935fd7acc37b6ed073440f3a04a3fda0943cddab2",
+        "statements": 36
+      },
+      {
+        "version": 3,
+        "name": "kanata-audit-and-application-time",
+        "checksum": "1a48f88ae4507086b8ab0c364cc213f228dcc7f50f71e2c03c66f7b2c8cdd8e1",
+        "statements": 19
+      }
+    ]
+  },
+  "fixtureSha256": "12173bac784fc02bd14b4ded8b6b47cd097897e3717350e99c104ea6f7d984c1",
+  "baselineChecks": {
+    "directed": {
+      "passed": 34,
+      "exitCode": 0
+    },
+    "npmRunCheck": {
+      "executions": 2,
+      "exitCodes": [
+        0,
+        0
+      ],
+      "nodeTests": 624,
+      "componentTests": 392,
+      "componentFiles": 42,
+      "lintErrors": 0,
+      "lintWarnings": 42,
+      "types": true,
+      "build": true
+    },
+    "hostSqlCipher": {
+      "version": "4.12.0 community",
+      "checks": 9,
+      "actualSigkillScenarios": 2,
+      "exitCode": 0,
+      "scope": "M1/M1-R baseline only"
+    }
+  },
+  "androidPreflight": {
+    "os": "Linux",
+    "kvm": false,
+    "avd": "kanata_m2_api34",
+    "serial": "emulator-5582",
+    "api": 34,
+    "syntheticOnly": true,
+    "bootCompleted": true,
+    "selinux": "Enforcing",
+    "fileEncryption": true,
+    "webView": "113.0.5672.136",
+    "capacitor": "8.4.1",
+    "probePackage": "com.formyself.qa.m2probe",
+    "probeApkSha256": "6978be559e6baf990deaf2a7c3175b77ee48fc40f26af4c62ba1cc9dc4d53654",
+    "installedApkReadbackMatches": true,
+    "buildExitCode": 0,
+    "bridgeExitCode": 2,
+    "bridgeStatus": "BLOCKED_CAPACITOR_RENDERER_CRASH",
+    "jsNativeNonceVerified": false,
+    "rendererBuildId": "f91274aba2c3932b2c24b5323fd164aceb07dba8",
+    "rendererPC": "0x191356a",
+    "rootCause": "UNDETERMINED",
+    "normalShutdown": true,
+    "adbForwardingRetained": false
+  },
+  "m2AndroidSqlCipherIntegration": "NOT_RUN_BLOCKED",
+  "m2HostRepositoryTests": "NOT_RUN",
+  "realModelApiRequests": 0,
+  "gates": {
+    "driverEncryption": "NOT_RUN",
+    "protectedLease": "NOT_RUN",
+    "schemaBaselineRecheck": "PASS_BASELINE_ONLY",
+    "repository": "NOT_RUN",
+    "incrementalWritesAudit": "NOT_RUN",
+    "deletionPrivacy": "NOT_RUN",
+    "pagination": "NOT_RUN",
+    "uiWindow": "NOT_RUN",
+    "aiContext": "NOT_RUN",
+    "m2FaultTests": "NOT_RUN",
+    "regression": "BLOCKED_DEVICE_GATE",
+    "m2EvidenceAndImplementationSelfReviews": "BLOCKED"
+  },
+  "m3m4m5m6m7": "NOT_STARTED_BY_THIS_TASK",
+  "publication": "publication.json"
+}

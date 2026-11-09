@@ -1,0 +1,272 @@
+{
+  "status": "PASS",
+  "scope": "new Markdown files and newly introduced links in changed files; unchanged historical links not rerun",
+  "linksChecked": 52,
+  "errors": [],
+  "links": [
+    {
+      "source": "README.md",
+      "target": "docs/20261107-kanata-sqlite-m2-task-v1.md",
+      "exists": true
+    },
+    {
+      "source": "README.md",
+      "target": "docs/20261107-kanata-sqlite-m2-acceptance-v1.md",
+      "exists": true
+    },
+    {
+      "source": "README.md",
+      "target": "docs/qa/kanata-sqlite-m2/README.md",
+      "exists": true
+    },
+    {
+      "source": "README.md",
+      "target": "docs/20261109-kanata-sqlite-m2-windows-handoff-v1.md",
+      "exists": true
+    },
+    {
+      "source": "docs/20261103-kanata-sqlite-migration-plan-v1.md",
+      "target": "20261107-kanata-sqlite-m2-acceptance-v1.md",
+      "exists": true
+    },
+    {
+      "source": "docs/20261103-kanata-sqlite-migration-plan-v1.md",
+      "target": "qa/kanata-sqlite-m2/README.md",
+      "exists": true
+    },
+    {
+      "source": "docs/20261103-kanata-sqlite-migration-plan-v1.md",
+      "target": "20261109-kanata-sqlite-m2-windows-handoff-v1.md",
+      "exists": true
+    },
+    {
+      "source": "docs/20261103-kanata-sqlite-migration-plan-v1.md",
+      "target": "20261107-kanata-sqlite-m2-task-v1.md",
+      "exists": true
+    },
+    {
+      "source": "docs/20261107-kanata-sqlite-m2-acceptance-v1.md",
+      "target": "20261107-kanata-sqlite-m2-task-v1.md",
+      "exists": true
+    },
+    {
+      "source": "docs/20261107-kanata-sqlite-m2-acceptance-v1.md",
+      "target": "20261109-kanata-sqlite-m2-windows-handoff-v1.md",
+      "exists": true
+    },
+    {
+      "source": "docs/20261107-kanata-sqlite-m2-acceptance-v1.md",
+      "target": "qa/kanata-sqlite-m2/README.md",
+      "exists": true
+    },
+    {
+      "source": "docs/20261107-kanata-sqlite-m2-acceptance-v1.md",
+      "target": "qa/kanata-sqlite-m2/evidence/verification-summary.json",
+      "exists": true
+    },
+    {
+      "source": "docs/20261107-kanata-sqlite-m2-acceptance-v1.md",
+      "target": "20261107-kanata-sqlite-m2-preflight-v1.md",
+      "exists": true
+    },
+    {
+      "source": "docs/20261107-kanata-sqlite-m2-acceptance-v1.md",
+      "target": "20261107-kanata-sqlite-m2-design-v1.md",
+      "exists": true
+    },
+    {
+      "source": "docs/20261107-kanata-sqlite-m2-acceptance-v1.md",
+      "target": "qa/kanata-sqlite-m2/evidence/publication.json",
+      "exists": true
+    },
+    {
+      "source": "docs/20261107-kanata-sqlite-m2-acceptance-v1.md",
+      "target": "qa/kanata-sqlite-m2/evidence/baseline-command-results.json",
+      "exists": true
+    },
+    {
+      "source": "docs/20261107-kanata-sqlite-m2-acceptance-v1.md",
+      "target": "qa/kanata-sqlite-m2/evidence/capacitor-probe/result.json",
+      "exists": true
+    },
+    {
+      "source": "docs/20261107-kanata-sqlite-m2-acceptance-v1.md",
+      "target": "qa/kanata-sqlite-m2/evidence/capacitor-probe/crash-extract.txt",
+      "exists": true
+    },
+    {
+      "source": "docs/20261107-kanata-sqlite-m2-acceptance-v1.md",
+      "target": "qa/kanata-sqlite-m2/evidence/webview-probe-1/late-crash-extract.txt",
+      "exists": true
+    },
+    {
+      "source": "docs/20261107-kanata-sqlite-m2-acceptance-v1.md",
+      "target": "qa/kanata-sqlite-m2/evidence/device-final-checks.json",
+      "exists": true
+    },
+    {
+      "source": "docs/20261107-kanata-sqlite-m2-design-v1.md",
+      "target": "20261107-kanata-sqlite-m2-task-v1.md",
+      "exists": true
+    },
+    {
+      "source": "docs/20261107-kanata-sqlite-m2-design-v1.md",
+      "target": "20261107-kanata-sqlite-m2-preflight-v1.md",
+      "exists": true
+    },
+    {
+      "source": "docs/20261107-kanata-sqlite-m2-preflight-v1.md",
+      "target": "20261107-kanata-sqlite-m2-task-v1.md",
+      "exists": true
+    },
+    {
+      "source": "docs/20261107-kanata-sqlite-m2-preflight-v1.md",
+      "target": "qa/kanata-sqlite-m2/evidence/preflight-sources.json",
+      "exists": true
+    },
+    {
+      "source": "docs/20261107-kanata-sqlite-m2-preflight-v1.md",
+      "target": "qa/kanata-sqlite-m2/evidence/message-call-sites.txt",
+      "exists": true
+    },
+    {
+      "source": "docs/20261107-kanata-sqlite-m2-preflight-v1.md",
+      "target": "20261107-kanata-sqlite-m2-design-v1.md",
+      "exists": true
+    },
+    {
+      "source": "docs/20261109-kanata-sqlite-m2-windows-handoff-v1.md",
+      "target": "20261107-kanata-sqlite-m2-acceptance-v1.md",
+      "exists": true
+    },
+    {
+      "source": "docs/20261109-kanata-sqlite-m2-windows-handoff-v1.md",
+      "target": "qa/kanata-sqlite-m2/evidence/publication.json",
+      "exists": true
+    },
+    {
+      "source": "docs/20261109-kanata-sqlite-m2-windows-handoff-v1.md",
+      "target": "20261107-kanata-sqlite-m2-preflight-v1.md",
+      "exists": true
+    },
+    {
+      "source": "docs/20261109-kanata-sqlite-m2-windows-handoff-v1.md",
+      "target": "20261107-kanata-sqlite-m2-design-v1.md",
+      "exists": true
+    },
+    {
+      "source": "docs/20261109-kanata-sqlite-m2-windows-handoff-v1.md",
+      "target": "qa/kanata-sqlite-m2/README.md",
+      "exists": true
+    },
+    {
+      "source": "docs/20261109-kanata-sqlite-m2-windows-handoff-v1.md",
+      "target": "20261104-kanata-sqlite-m0-target-emulator-v1.md",
+      "exists": true
+    },
+    {
+      "source": "docs/plan.md",
+      "target": "20261107-kanata-sqlite-m2-acceptance-v1.md",
+      "exists": true
+    },
+    {
+      "source": "docs/plan.md",
+      "target": "20261107-kanata-sqlite-m2-design-v1.md",
+      "exists": true
+    },
+    {
+      "source": "docs/plan.md",
+      "target": "20261109-kanata-sqlite-m2-windows-handoff-v1.md",
+      "exists": true
+    },
+    {
+      "source": "docs/qa/kanata-sqlite-m2/README.md",
+      "target": "../../20261107-kanata-sqlite-m2-acceptance-v1.md",
+      "exists": true
+    },
+    {
+      "source": "docs/qa/kanata-sqlite-m2/README.md",
+      "target": "../../20261109-kanata-sqlite-m2-windows-handoff-v1.md",
+      "exists": true
+    },
+    {
+      "source": "docs/qa/kanata-sqlite-m2/README.md",
+      "target": "evidence/verification-summary.json",
+      "exists": true
+    },
+    {
+      "source": "docs/qa/kanata-sqlite-m2/README.md",
+      "target": "../../20261107-kanata-sqlite-m2-task-v1.md",
+      "exists": true
+    },
+    {
+      "source": "docs/qa/kanata-sqlite-m2/README.md",
+      "target": "../../20261107-kanata-sqlite-m2-preflight-v1.md",
+      "exists": true
+    },
+    {
+      "source": "docs/qa/kanata-sqlite-m2/README.md",
+      "target": "../../20261107-kanata-sqlite-m2-design-v1.md",
+      "exists": true
+    },
+    {
+      "source": "docs/source-notes.md",
+      "target": "20261107-kanata-sqlite-m2-preflight-v1.md",
+      "exists": true
+    },
+    {
+      "source": "docs/source-notes.md",
+      "target": "20261107-kanata-sqlite-m2-design-v1.md",
+      "exists": true
+    },
+    {
+      "source": "memory-bank/development-context.md",
+      "target": "../docs/20261107-kanata-sqlite-m2-task-v1.md",
+      "exists": true
+    },
+    {
+      "source": "memory-bank/development-context.md",
+      "target": "../docs/20261107-kanata-sqlite-m2-design-v1.md",
+      "exists": true
+    },
+    {
+      "source": "memory-bank/development-context.md",
+      "target": "../docs/20261107-kanata-sqlite-m2-acceptance-v1.md",
+      "exists": true
+    },
+    {
+      "source": "memory-bank/development-context.md",
+      "target": "../docs/20261109-kanata-sqlite-m2-windows-handoff-v1.md",
+      "exists": true
+    },
+    {
+      "source": "架构接口与Agent开发说明书.md",
+      "target": "docs/20261107-kanata-sqlite-m2-task-v1.md",
+      "exists": true
+    },
+    {
+      "source": "架构接口与Agent开发说明书.md",
+      "target": "docs/20261107-kanata-sqlite-m2-preflight-v1.md",
+      "exists": true
+    },
+    {
+      "source": "架构接口与Agent开发说明书.md",
+      "target": "docs/20261107-kanata-sqlite-m2-design-v1.md",
+      "exists": true
+    },
+    {
+      "source": "架构接口与Agent开发说明书.md",
+      "target": "docs/20261107-kanata-sqlite-m2-acceptance-v1.md",
+      "exists": true
+    },
+    {
+      "source": "架构接口与Agent开发说明书.md",
+      "target": "docs/20261109-kanata-sqlite-m2-windows-handoff-v1.md",
+      "exists": true
+    }
+  ],
+  "byteExactRawArchivesVerified": 10,
+  "stagedFileCountAtCheck": 101,
+  "productionPathsChanged": false,
+  "forbiddenArtifacts": false
+}

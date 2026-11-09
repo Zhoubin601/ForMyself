@@ -1,0 +1,4 @@
+11-09 04:52:13.269  3210  3264 E chromium: [ERROR:directory_reader_posix.cc(42)] opendir /data/user/0/com.android.htmlviewer/cache/WebView/Crashpad/attachments/33f91bbd-12ce-49fd-94cd-7cbe9c07490a: No such file or directory (2)
+11-09 04:52:35.662  3244  3334 F libc    : Fatal signal 6 (SIGABRT), code -1 (SI_QUEUE) in tid 3334 (bt_stack_manage), pid 3244 (droid.bluetooth)
+11-09 04:53:31.553  3384  3409 F libc    : Fatal signal 6 (SIGABRT), code -1 (SI_QUEUE) in tid 3409 (bt_stack_manage), pid 3384 (droid.bluetooth)
+11-09 04:54:46.270  3433  3462 F libc    : Fatal signal 6 (SIGABRT), code -1 (SI_QUEUE) in tid 3462 (bt_stack_manage), pid 3433 (droid.bluetooth)

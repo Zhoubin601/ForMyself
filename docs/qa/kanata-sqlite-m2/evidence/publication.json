@@ -1,0 +1,7 @@
+{
+  "status": "PENDING_CHECKPOINT_COMMIT_AND_PUSH",
+  "branch": "M",
+  "baselineHead": "de3164b8de569f57a250d0592eae5a21345e5264",
+  "scope": "M2 Preflight and design only; production implementation not started",
+  "note": "A subsequent ordinary documentation commit records the verified checkpoint SHA and remote M SHA; no self-referential commit SHA is invented."
+}

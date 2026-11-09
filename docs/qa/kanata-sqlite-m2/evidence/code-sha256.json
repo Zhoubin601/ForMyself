@@ -1,0 +1,61 @@
+{
+  "baselineHead": "de3164b8de569f57a250d0592eae5a21345e5264",
+  "scope": "QA code fingerprints, not a production M2 implementation",
+  "files": [
+    {
+      "path": "docs/qa/kanata-sqlite-m2/install-sdk.py",
+      "sha256": "c76a9efe530ab97f8864e942e2022484dd8ceaae78d7d48fe0ec04a8505e98d0",
+      "verification": "SYNTAX_CHECKED_WRAPPER; equivalent preparation/baseline commands executed directly, not this wrapper"
+    },
+    {
+      "path": "docs/qa/kanata-sqlite-m2/probe-webview.py",
+      "sha256": "dbb5263f919488ba32ec32d16f7e3f6fea98d89bc12ed55651ede4888c329bc6",
+      "verification": "EXECUTED_REAL_ANDROID_ENVIRONMENT_PROBE"
+    },
+    {
+      "path": "docs/qa/kanata-sqlite-m2/prepare-bridge-probe.mjs",
+      "sha256": "97bc64802f037aed4c6ea15c20485caac233b797564389470619c60da0d16d5a",
+      "verification": "SYNTAX_CHECKED_WRAPPER; equivalent preparation/baseline commands executed directly, not this wrapper"
+    },
+    {
+      "path": "docs/qa/kanata-sqlite-m2/start-synthetic-avd.py",
+      "sha256": "f5c3631c7459e0716b21d329699eadb49a501cfd7ae7df9acfa3cf40cc10fd0e",
+      "verification": "SYNTAX_CHECKED_WRAPPER; equivalent preparation/baseline commands executed directly, not this wrapper"
+    },
+    {
+      "path": "docs/qa/kanata-sqlite-m2/README.md",
+      "sha256": "95d08ce9d02eb442f55590a778cf004efc1829cacd4346fa8cff87d8c76e8929",
+      "verification": "DOCUMENTATION"
+    },
+    {
+      "path": "docs/qa/kanata-sqlite-m2/verify-bridge-probe.mjs",
+      "sha256": "c65f9270338b018dfa4948777eb0669dbb1c2a6eb167362f3b07d03f893a0a81",
+      "verification": "EXECUTED_REAL_ANDROID_ENVIRONMENT_PROBE"
+    },
+    {
+      "path": "docs/qa/kanata-sqlite-m2/run-baseline.mjs",
+      "sha256": "a2c9e169ba87fd5a1cb7f48f01d2d83acf8f2bcda81fb327af727fd4328db701",
+      "verification": "SYNTAX_CHECKED_WRAPPER; equivalent preparation/baseline commands executed directly, not this wrapper"
+    },
+    {
+      "path": "docs/qa/kanata-sqlite-m2/bridge-probe/index.html",
+      "sha256": "2222c4404a6876bf4e25ce697ffbcc5cb58856c10d3a8a28649aa68b2849d6b0",
+      "verification": "BUILT_AND_INSTALLED_MINIMAL_QA_SOURCE; ping failed renderer gate"
+    },
+    {
+      "path": "docs/qa/kanata-sqlite-m2/bridge-probe/MainActivity.java",
+      "sha256": "2542937cd368eec3118a447aba4ba3de54a3a524b1d0a073e0009b8fbe148fdc",
+      "verification": "BUILT_AND_INSTALLED_MINIMAL_QA_SOURCE; ping failed renderer gate"
+    },
+    {
+      "path": "docs/qa/kanata-sqlite-m2/bridge-probe/M2PreflightPlugin.java",
+      "sha256": "3009885d9a4cb2e6455a1a693e9ad8aca2e4e82e32f25da35ff04983def85959",
+      "verification": "BUILT_AND_INSTALLED_MINIMAL_QA_SOURCE; ping failed renderer gate"
+    },
+    {
+      "path": "docs/qa/kanata-sqlite-m2/bridge-probe/capacitor.config.json",
+      "sha256": "429c959bd2d52d289f59a8fdfd44b5d347392ed1d05d1746bd576877b5b37526",
+      "verification": "BUILT_AND_INSTALLED_MINIMAL_QA_SOURCE; ping failed renderer gate"
+    }
+  ]
+}

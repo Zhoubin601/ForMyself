@@ -1,0 +1,9 @@
+11-09 04:45:34.661  1486  1486 W CrRendererMain: type=1400 audit(0.0:45): avc:  denied  { read } for  name="u:object_r:userdebug_or_eng_prop:s0" dev="tmpfs" ino=320 scontext=u:r:isolated_app:s0:c512,c768 tcontext=u:object_r:userdebug_or_eng_prop:s0 tclass=file permissive=0
+11-09 04:45:34.665  1486  1486 W CrRendererMain: type=1400 audit(0.0:46): avc:  denied  { read } for  name="u:object_r:userdebug_or_eng_prop:s0" dev="tmpfs" ino=320 scontext=u:r:isolated_app:s0:c512,c768 tcontext=u:object_r:userdebug_or_eng_prop:s0 tclass=file permissive=0
+11-09 04:45:34.727  1486  1533 F DEBUG   : pid: 1486, tid: 1533, name: CrRendererMain  >>> com.android.webview:sandboxed_process1:org.chromium.content.app.SandboxedProcessService1:0 <<<
+11-09 04:45:34.746  1486  1533 F DEBUG   :       #00 pc 000000000191356a  /product/app/webview/webview.apk!libwebviewchromium.so (offset 0x6f1b000) (BuildId: f91274aba2c3932b2c24b5323fd164aceb07dba8)
+11-09 04:45:36.271  1307  1307 E chromium: [ERROR:aw_browser_terminator.cc(156)] Renderer process (1486) crash detected (code 5).
+11-09 04:45:36.323  1307  1307 F chromium: [FATAL:crashpad_client_linux.cc(732)] Render process (1486)'s crash wasn't handled by all associated  webviews, triggering application crash.
+11-09 04:45:36.326  1307  1307 F libc    : Fatal signal 5 (SIGTRAP), code 128 (SI_KERNEL), fault addr 0x0 in tid 1307 (roid.htmlviewer), pid 1307 (roid.htmlviewer)
+11-09 04:45:54.838  1974  1974 F DEBUG   : Abort message: '[FATAL:crashpad_client_linux.cc(732)] Render process (1486)'s crash wasn't handled by all associated  webviews, triggering application crash.'
+11-09 04:45:54.866  1974  1974 F DEBUG   :       #00 pc 0000000001ceec8f  /product/app/webview/webview.apk!libwebviewchromium.so (offset 0x6f1b000) (BuildId: f91274aba2c3932b2c24b5323fd164aceb07dba8)

@@ -1,0 +1,8 @@
+<!doctype html><html><head><meta charset="utf-8"><title>M2_PREFLIGHT_PENDING</title></head><body>Kanata M2 synthetic bridge probe<script>
+window.__M2_SYNTHETIC_ONLY=true;
+async function probe(){try {
+const r=await window.Capacitor.nativePromise('M2Preflight','ping',{nonce:'M2_SYNTHETIC_NONCE'});
+window.__M2_PREFLIGHT_RESULT=r;document.title=r.syntheticOnly&&r.nonce==='M2_SYNTHETIC_NONCE'?'M2_PREFLIGHT_PASS':'M2_PREFLIGHT_FAIL';document.body.textContent=document.title;
+}catch(e){window.__M2_PREFLIGHT_RESULT={code:'PROBE_BRIDGE_FAILED'};document.title='M2_PREFLIGHT_FAIL';}}
+window.addEventListener('load',()=>setTimeout(probe,200));
+</script></body></html>

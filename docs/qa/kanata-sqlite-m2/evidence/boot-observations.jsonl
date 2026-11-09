@@ -1,0 +1,56 @@
+{"elapsedSeconds": 0.0, "exitCode": 1, "stdout": "", "stderr": "adb: device offline"}
+{"elapsedSeconds": 10.0, "exitCode": 1, "stdout": "", "stderr": "adb: device offline"}
+{"elapsedSeconds": 20.0, "exitCode": 1, "stdout": "", "stderr": "adb: device offline"}
+{"elapsedSeconds": 30.1, "exitCode": 1, "stdout": "", "stderr": "adb: device offline"}
+{"elapsedSeconds": 40.1, "exitCode": 1, "stdout": "", "stderr": "adb: device offline"}
+{"elapsedSeconds": 50.1, "exitCode": 1, "stdout": "", "stderr": "adb: device offline"}
+{"elapsedSeconds": 60.1, "exitCode": 1, "stdout": "", "stderr": "adb: device offline"}
+{"elapsedSeconds": 70.1, "exitCode": 1, "stdout": "", "stderr": "adb: device offline"}
+{"elapsedSeconds": 80.1, "exitCode": 1, "stdout": "", "stderr": "adb: device offline"}
+{"elapsedSeconds": 90.1, "exitCode": 1, "stdout": "", "stderr": "adb: device offline"}
+{"elapsedSeconds": 100.1, "exitCode": 1, "stdout": "", "stderr": "adb: device offline"}
+{"elapsedSeconds": 110.2, "exitCode": 1, "stdout": "", "stderr": "adb: device offline"}
+{"elapsedSeconds": 120.2, "exitCode": 1, "stdout": "", "stderr": "adb: device offline"}
+{"elapsedSeconds": 130.2, "exitCode": 1, "stdout": "", "stderr": "adb: device offline"}
+{"elapsedSeconds": 140.2, "exitCode": 1, "stdout": "", "stderr": "adb: device offline"}
+{"elapsedSeconds": 159.8, "exitCode": 0, "stdout": "", "stderr": ""}
+{"elapsedSeconds": 173.6, "exitCode": 0, "stdout": "", "stderr": ""}
+{"elapsedSeconds": 187.5, "exitCode": 0, "stdout": "", "stderr": ""}
+{"elapsedSeconds": 199.1, "exitCode": 0, "stdout": "", "stderr": ""}
+{"elapsedSeconds": 211.6, "exitCode": 0, "stdout": "", "stderr": ""}
+{"elapsedSeconds": 222.6, "exitCode": 0, "stdout": "", "stderr": ""}
+{"elapsedSeconds": 233.5, "exitCode": 0, "stdout": "", "stderr": ""}
+{"elapsedSeconds": 246.0, "exitCode": 0, "stdout": "", "stderr": ""}
+{"elapsedSeconds": 257.5, "exitCode": 0, "stdout": "", "stderr": ""}
+{"elapsedSeconds": 268.9, "exitCode": 0, "stdout": "", "stderr": ""}
+{"elapsedSeconds": 279.8, "exitCode": 0, "stdout": "", "stderr": ""}
+{"elapsedSeconds": 291.3, "exitCode": 0, "stdout": "", "stderr": ""}
+{"elapsedSeconds": 302.7, "exitCode": 0, "stdout": "", "stderr": ""}
+{"elapsedSeconds": 314.6, "exitCode": 0, "stdout": "", "stderr": ""}
+{"elapsedSeconds": 326.4, "exitCode": 0, "stdout": "", "stderr": ""}
+{"elapsedSeconds": 338.3, "exitCode": 0, "stdout": "", "stderr": ""}
+{"elapsedSeconds": 351.0, "exitCode": 0, "stdout": "", "stderr": ""}
+{"elapsedSeconds": 363.2, "exitCode": 0, "stdout": "", "stderr": ""}
+{"elapsedSeconds": 374.6, "exitCode": 0, "stdout": "", "stderr": ""}
+{"elapsedSeconds": 388.5, "exitCode": 0, "stdout": "", "stderr": ""}
+{"elapsedSeconds": 402.6, "exitCode": 0, "stdout": "", "stderr": ""}
+{"elapsedSeconds": 415.6, "exitCode": 0, "stdout": "", "stderr": ""}
+{"elapsedSeconds": 428.9, "exitCode": 0, "stdout": "", "stderr": ""}
+{"elapsedSeconds": 440.9, "exitCode": 0, "stdout": "", "stderr": ""}
+{"elapsedSeconds": 452.3, "exitCode": 0, "stdout": "", "stderr": ""}
+{"elapsedSeconds": 463.9, "exitCode": 0, "stdout": "", "stderr": ""}
+{"elapsedSeconds": 476.1, "exitCode": 0, "stdout": "", "stderr": ""}
+{"elapsedSeconds": 487.5, "exitCode": 0, "stdout": "", "stderr": ""}
+{"elapsedSeconds": 499.1, "exitCode": 0, "stdout": "", "stderr": ""}
+{"elapsedSeconds": 511.8, "exitCode": 0, "stdout": "", "stderr": ""}
+{"elapsedSeconds": 524.3, "exitCode": 0, "stdout": "", "stderr": ""}
+{"elapsedSeconds": 536.7, "exitCode": 0, "stdout": "", "stderr": ""}
+{"elapsedSeconds": 548.8, "exitCode": 0, "stdout": "", "stderr": ""}
+{"elapsedSeconds": 559.8, "exitCode": 0, "stdout": "", "stderr": ""}
+{"elapsedSeconds": 570.9, "exitCode": 0, "stdout": "", "stderr": ""}
+{"elapsedSeconds": 582.3, "exitCode": 0, "stdout": "", "stderr": ""}
+{"elapsedSeconds": 593.3, "exitCode": 0, "stdout": "", "stderr": ""}
+{"elapsedSeconds": 604.6, "exitCode": 0, "stdout": "", "stderr": ""}
+{"elapsedSeconds": 615.6, "exitCode": 0, "stdout": "", "stderr": ""}
+{"elapsedSeconds": 627.8, "exitCode": 0, "stdout": "", "stderr": ""}
+{"elapsedSeconds": 639.9, "exitCode": 0, "stdout": "1", "stderr": ""}

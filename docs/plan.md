@@ -1,3 +1,5 @@
+> **2026-11-09 当前检查点：M2 BLOCKED（Preflight/技术设计完成，生产实现未开始）。** Linux合成API34的WebView/最小Capacitor桥接实测崩溃；用户已选Windows/WHPX接续，当前会话未连接该环境。[正式报告](20261107-kanata-sqlite-m2-acceptance-v1.md) · [设计](20261107-kanata-sqlite-m2-design-v1.md) · [接续](20261109-kanata-sqlite-m2-windows-handoff-v1.md)。下列早期“M2未开始”描述保留为历史，当前阶段以本检查点为准；验收标准未减，M3不得开始。
+
 # 执行计划
 
 > **当前执行入口（2026-11-03）：** 先在 [M 分支](https://github.com/Zhoubin601/ForMyself/tree/M) 完成 [彼方 SQLite 迁移计划 M v1](20261103-kanata-sqlite-migration-plan-v1.md) 的 M0–M7。M 从 Kanata 的 73158a058d35124e1572b2161fe0f364f2140c48 创建，M0、M1已有独立验收；2026-11-07本轮执行M1-R补充审计，当前入口见[审计记录](20261107-kanata-sqlite-m1-r-audit-v1.md)和[M2完整任务书](20261107-kanata-sqlite-m2-task-v1.md)；M2代码尚未开始。
@@ -1125,3 +1127,10 @@ P6最终PASS/Go：501 Node/317组件、Web12/6布局、Android17、原生8通过
 - [ ] M2 代码实施尚未开始；Agent 必须按任务书执行，M2 未 PASS 前不得进入 M3。
 
 正式入口：[M2 完整任务书](20261107-kanata-sqlite-m2-task-v1.md)。本次提交只保存任务规划，不代表任何 M2 代码、Driver、Repository 或设备测试已完成。
+
+## 2026-11-09：M2 Preflight / 设计与运行环境阻塞
+
+- 已核对远端M最新基线de3164b8de569f57a250d0592eae5a21345e5264并保护工作区，完成必读资料、源码调用链、依赖差异、状态矩阵和技术设计自审。
+- 实跑34项定向、主机SQLCipher4.12九组/两个SIGKILL、两次完整check624 Node/392组件，均通过；原安装/构建失败保留，环境依赖问题已修复。
+- 系统HTMLViewer与最小Capacitor8.4.1探针都出现renderer code5/SIGTRAP。M2 Android SQLCipher/JS Repository集成、生产实现及实现后两轮自检尚未运行，不冒充PASS。
+- 用户已选此前Windows/WHPX合成AVD，需连接Windows本地执行环境按交接继续。只保存文档/QA普通提交推送M，不强推、不改生产路径、不进入M3。

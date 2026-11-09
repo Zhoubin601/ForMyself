@@ -573,3 +573,10 @@ Windows 使用 `npm.cmd`、`npx.cmd` 和 `android/gradlew.bat` 的对应命令�
 - 脱敏必须先把当前消息deleted置true且正文清为`（已删除的原始记录）`，再对**已存快照**用SQL `json_set(...,'$.content','（已删除的原始记录）','$.deleted',json('true'))`生成新值；ID/时间/revision/扩展和其他JSON字段不变，禁止恢复原文。M2必须把当前消息、历史正文脱敏、新审计及派生失效放入同一受保护CAS事务；本轮没有实现该生产命令。不要用JS重排JSON后写回来规避严格比较。
 - 实例location的空字符串合法，日程location需非空；外键继续NO ACTION，引用不能级联擦除。347字段映射与108组外键分别见新文档。extensions_json仅为M5保真准备，不是权限来源；低频数组次序/出现提示必须与关系行交叉校验，全局集合顺序由M3/M5进一步冻结。
 - 本轮Android只重测独立合成QA的原生DDL/约束/回滚/重开；主机执行真实JS升级器及SQLCipher SIGKILL。未接通生产Driver/Store，未实施M2/M3/M5/M6/M7或更改P7原门禁。
+
+
+## 25. Kanata SQLite M2 Preflight / 设计检查点（2026-11-09）
+
+- [完整任务书](docs/20261107-kanata-sqlite-m2-task-v1.md)、[Preflight](docs/20261107-kanata-sqlite-m2-preflight-v1.md)、[技术设计](docs/20261107-kanata-sqlite-m2-design-v1.md)、[正式BLOCKED报告](docs/20261107-kanata-sqlite-m2-acceptance-v1.md)。设计中的Driver/Repository/lease API尚未成为真实实现，不据此调用不存在的接口。
+- 本轮仅文档/隔离QA；生产Store/Android/契约/锁文件和Schema001/002/003未改，canonical仍legacy。M2未PASS，不进入M3。主机及既有完整check通过不替代M2设备JS-to-native。
+- Linux全新API34的系统WebView及最小Capacitor探针真实崩溃；用户已选择[Windows/WHPX接续](docs/20261109-kanata-sqlite-m2-windows-handoff-v1.md)，当前Linux会话无Windows执行通道。后续必须按最新M核对设计，完整实施、两轮自检与设备回归，不以本检查点豁免任何门禁。

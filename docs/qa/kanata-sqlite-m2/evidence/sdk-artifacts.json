@@ -1,0 +1,33 @@
+{
+  "artifacts": [
+    {
+      "path": "work/m2/build-tools_r36_linux.zip",
+      "bytes": 63737259,
+      "sha256": "5d9ac77fb6ff43d9da518a337b4fcf8f9097113df531d99ccefe80ef7ce8250b"
+    },
+    {
+      "path": "work/m2/emulator-linux_x64-16740729.zip",
+      "bytes": 349658551,
+      "sha256": "cbc7c3cfb83220b8a0f9c513fdab557712e74d339ec19ddffa43f23350ae9bdd"
+    },
+    {
+      "path": "work/m2/platform-36_r02.zip",
+      "bytes": 65878410,
+      "sha256": "37607369a28c5b640b3a7998868d45898ebcb777565a0e85f9acf36f29631d2e"
+    },
+    {
+      "path": "work/m2/platform-tools.zip",
+      "bytes": 9541228,
+      "sha256": "dfc80a84a6710e5674415d4b55ae599c01aa4961822f53097d747472f410f157"
+    },
+    {
+      "path": "work/m2/x86_64-34_r02.zip",
+      "bytes": 614898904,
+      "sha256": "00f8c28481184e9cd06da4ca92df870fc68532c6ca30c372e1720e4cbc632fbd"
+    }
+  ],
+  "officialRepositoryMetadata": "https://dl.google.com/android/repository/repository2-1.xml",
+  "officialImageMetadata": "https://dl.google.com/android/repository/sys-img/aosp_atd/sys-img2-4.xml",
+  "imageSha1": "9ce4068934b26fa99ca104ffe6d10dec22abb317",
+  "verifiedBy": "work/m2/setup-sdk.py; exact metadata size/SHA1 and ZIP CRC"
+}

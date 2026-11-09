@@ -1,0 +1,6 @@
+Starting: Intent { act=android.intent.action.VIEW dat=data: typ=text/html cmp=com.android.htmlviewer/.HTMLViewerActivity }
+Status: timeout
+LaunchState: UNKNOWN (-1)
+Activity: com.android.htmlviewer/.HTMLViewerActivity
+WaitTime: 33279
+Complete

@@ -1306,3 +1306,7 @@ planMessageArchive现有Map<string, Message[]>/逐组件对象数组/归档Set�
 当前47表、114触发器、36显式索引以真实领域类型/校验器为准，版本链001基础与所有防护、002访问索引。DDL/日志/版本单事务升级，结构或日志不完整不初始化覆盖。全部202个空库升级写入点及6种已有v1故障验证回滚/重试；实际SIGKILL在未提交DDL中断，重开无半套结构。全局ID使用显式RAISE，避免外层OR IGNORE/REPLACE覆盖默认UNIQUE行为；来源原revision保留，可选布尔缺省用NULL避免丢失旧语义。角色绑定失效ID是现有契约，不随意补外键改变产品行为。
 
 两轮审查修复及证据完整记录于20261106-kanata-sqlite-m1-report-v1.md。完整check605/392通过，主机SQLCipher通过，Android原生新测试已编译但因云磁盘预检未启动AVD，M1整体BLOCKED。M0原放行不受影响；不把裸原型性能套给含完整FK/触发器的Schema。生产Store、旧文件、主密码/恢复/备份无改动，M2未开始。
+
+## 2026-11-09 M2
+
+完整Preflight与设计见对应M2文档。源码自审补正task取消、memory双路径revision、effects重fold、只读inventory不可调用会清理材料的journal.inspect、旧小家Timeline/character手动权限差异。Linux两个独立运行上下文实测WebView code5/SIGTRAP；最小Capacitor APK读回SHA匹配仍未返回nonce。用户已选Windows/WHPX，生产实现待该环境接续，不删验收。
