@@ -1,4 +1,4 @@
-> **2026-11-09 当前检查点为 M4 BLOCKED，M5 NO。** [已实施和验证的切片](20261109-kanata-sqlite-m4-acceptance-v1.md)覆盖候选聊天、工作区摘要、授权与自治窗口。完整管理等价、深层来源和验收仍待完成。继续按 [M4 任务书](20261109-kanata-sqlite-m4-task-v1.md) 执行。生产为 legacy，默认激活位 false。
+> **2026-11-09 当前检查点为 M4 BLOCKED，M5 NO。** [M4 阶段验收](20261109-kanata-sqlite-m4-acceptance-v1.md)记录已通过切片与剩余缺口；接续按 [M4 补齐任务书](20261109-kanata-sqlite-m4-completion-task-v1.md) 定点关闭，不重做已通过部分。生产为 legacy，普通 Android SQLite 激活位 false。
 
 # 执行计划
 

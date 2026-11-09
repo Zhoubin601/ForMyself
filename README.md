@@ -7,7 +7,7 @@ SQLite 迁移按 [彼方 SQLite 迁移计划 M v1](docs/20261103-kanata-sqlite-m
 2026-11-09，M2 在 Windows/WHPX 合成 AVD 完成候选 Driver、消息/会话 Repository 和真实 UI 集成验收。生产 canonical 继续使用 legacy。M3 可开始工程实施。见 [M2 任务书](docs/20261107-kanata-sqlite-m2-task-v1.md)、[Windows 验收 v2](docs/20261109-kanata-sqlite-m2-acceptance-v2.md)、[复现与证据](docs/qa/kanata-sqlite-m2/README.md) 和 [Linux 历史阻塞](docs/20261107-kanata-sqlite-m2-acceptance-v1.md)。
 
 
-2026-11-09：M3 隔离候选 [PASS](docs/20261109-kanata-sqlite-m3-acceptance-v1.md)。M4 已实现候选聊天、摘要工作区和自治访问切片，实测见 [阶段验收](docs/20261109-kanata-sqlite-m4-acceptance-v1.md) 与 [QA](docs/qa/kanata-sqlite-m4/README.md)。M4 总体 BLOCKED，继续依据 [任务书](docs/20261109-kanata-sqlite-m4-task-v1.md) 补齐完整管理与深层溯源。生产使用 legacy，普通 Android SQLite 激活位 false，M5 尚未放行。
+2026-11-09：M3 隔离候选 [PASS](docs/20261109-kanata-sqlite-m3-acceptance-v1.md)。M4 已实现候选聊天、摘要工作区和自治访问切片，实测见 [阶段验收](docs/20261109-kanata-sqlite-m4-acceptance-v1.md) 与 [QA](docs/qa/kanata-sqlite-m4/README.md)。M4 总体 BLOCKED、M5 NO。接续依据 [M4 补齐任务书](docs/20261109-kanata-sqlite-m4-completion-task-v1.md) 定点关闭缺口，保留已通过切片；原 [M4 任务书](docs/20261109-kanata-sqlite-m4-task-v1.md)、[阶段验收](docs/20261109-kanata-sqlite-m4-acceptance-v1.md) 与 [QA](docs/qa/kanata-sqlite-m4/README.md) 保留为历史依据。生产使用 legacy，普通 Android SQLite 激活位 false，M5 尚未放行。
 
 当前分支路线：Kanata（P7 No-Go 稳定基线）→ M（M0–M7 SQLite 迁移）→ M7 通过并审查后合并回 Kanata → 继续 P7。M 未完成前不在 Kanata 并行修改同一套存储模块；不自动合并 main 或发布。
 
