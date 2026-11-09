@@ -1,0 +1,8 @@
+{
+  "package": "package: name='com.yubin.formyself' versionCode='1' versionName='1.0' platformBuildVersionName='16' platformBuildVersionCode='36' compileSdkVersion='36' compileSdkVersionCodename='16'",
+  "syntheticFlag": false,
+  "defaultCatalogSize": 299,
+  "syntheticCatalogSize": 347,
+  "defaultApkSha256": "75ADE2B462FA24974DFCED050ED8392278B3B823A1A39097A6103E53ED59807D",
+  "deviceInstall": false
+}

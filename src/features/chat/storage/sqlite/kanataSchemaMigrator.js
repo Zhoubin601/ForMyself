@@ -13,8 +13,23 @@ const need = (condition, code) => { if (!condition) throw new KanataSchemaError(
 const checksum = migration => sha256Text(JSON.stringify([migration.version, migration.name, migration.statements]))
 /** @param {string} sql */
 const canonical = sql => sql.trim().replace(/;$/, '')
+
+export const KANATA_SCHEMA_SQL = Object.freeze({
+  version: 'PRAGMA user_version',
+  foreignKeys: 'PRAGMA foreign_keys',
+  applicationId: 'PRAGMA application_id',
+  objects: "SELECT type,name,sql FROM sqlite_schema WHERE name NOT GLOB 'sqlite_*' ORDER BY name LIMIT 1025",
+  journal: 'SELECT version,name,checksum FROM schema_migrations ORDER BY version LIMIT 1025',
+  times: 'SELECT version,applied_at,time_source FROM schema_migration_applications ORDER BY version LIMIT 1025',
+  foreignKeyCheck: 'SELECT * FROM pragma_foreign_key_check LIMIT 1',
+  insertJournal: 'INSERT INTO schema_migrations(version,name,checksum) VALUES(?,?,?)',
+  insertTime: 'INSERT INTO schema_migration_applications(version,applied_at,time_source) VALUES(?,?,?)',
+  setApplicationId: `PRAGMA application_id = ${KANATA_SCHEMA_APPLICATION_ID}`,
+  /** @param {number} version */
+  setVersion: version => `PRAGMA user_version = ${version}`,
+})
 /** @param {number} version */
-const objectsAt = version => KANATA_SCHEMA_MIGRATIONS.filter(m => m.version <= version).flatMap(m => m.statements).map(sql => {
+export const kanataSchemaObjectsAt = version => KANATA_SCHEMA_MIGRATIONS.filter(m => m.version <= version).flatMap(m => m.statements).map(sql => {
   const match = /^CREATE (?:UNIQUE )?(TABLE|TRIGGER|INDEX) ([a-z_]+)\b/.exec(sql)
   if (!match) throw new KanataSchemaError('KANATA_SCHEMA_DEFINITION_INVALID')
   return {type: match[1].toLowerCase(), name: match[2], sql: canonical(sql)}
@@ -35,15 +50,15 @@ export async function migrateKanataSchema(connection, {now = Date.now} = {}) {
         need(rows.length === 1 && Number.isSafeInteger(rows[0][key]), 'KANATA_SCHEMA_METADATA_INVALID')
         return Number(rows[0][key])
       }
-      const version = await scalar('PRAGMA user_version', 'user_version')
+      const version = await scalar(KANATA_SCHEMA_SQL.version, 'user_version')
       need(version >= 0, 'KANATA_SCHEMA_METADATA_INVALID')
       need(version <= KANATA_SCHEMA_VERSION, 'KANATA_SCHEMA_FUTURE_VERSION')
-      need(await scalar('PRAGMA foreign_keys', 'foreign_keys') === 1, 'KANATA_SCHEMA_FOREIGN_KEYS_REQUIRED')
-      const applicationId = await scalar('PRAGMA application_id', 'application_id')
+      need(await scalar(KANATA_SCHEMA_SQL.foreignKeys, 'foreign_keys') === 1, 'KANATA_SCHEMA_FOREIGN_KEYS_REQUIRED')
+      const applicationId = await scalar(KANATA_SCHEMA_SQL.applicationId, 'application_id')
       /** @param {number} current */
       const verifyObjects = async current => {
-        const expected = objectsAt(current)
-        const actual = await tx.query("SELECT type,name,sql FROM sqlite_schema WHERE name NOT GLOB 'sqlite_*' ORDER BY name LIMIT 1025")
+        const expected = kanataSchemaObjectsAt(current)
+        const actual = await tx.query(KANATA_SCHEMA_SQL.objects)
         need(actual.length === expected.length && actual.length <= 1024, 'KANATA_SCHEMA_STRUCTURE_MISMATCH')
         const byName = new Map(actual.map(row => [row.name, row]))
         for (const object of expected) {
@@ -57,7 +72,7 @@ export async function migrateKanataSchema(connection, {now = Date.now} = {}) {
       } else {
         need(applicationId === KANATA_SCHEMA_APPLICATION_ID, 'KANATA_SCHEMA_WRONG_DATABASE')
         await verifyObjects(version)
-        const journal = await tx.query('SELECT version,name,checksum FROM schema_migrations ORDER BY version LIMIT 1025')
+        const journal = await tx.query(KANATA_SCHEMA_SQL.journal)
         need(journal.length === version, 'KANATA_SCHEMA_JOURNAL_MISMATCH')
         for (let i = 0; i < version; i++) {
           const migration = KANATA_SCHEMA_MIGRATIONS[i], record = journal[i]
@@ -65,7 +80,7 @@ export async function migrateKanataSchema(connection, {now = Date.now} = {}) {
         }
       }
       if(version >= 3){
-        const times=await tx.query('SELECT version,applied_at,time_source FROM schema_migration_applications ORDER BY version LIMIT 1025')
+        const times=await tx.query(KANATA_SCHEMA_SQL.times)
         need(times.length===version, 'KANATA_SCHEMA_TIME_JOURNAL_MISMATCH')
         for(let i=0;i<times.length;i++){
           const row=times[i]
@@ -91,22 +106,22 @@ export async function migrateKanataSchema(connection, {now = Date.now} = {}) {
         const at=now()
         need(Number.isSafeInteger(at) && at>=0,'KANATA_SCHEMA_CLOCK_INVALID')
         observedTimes.set(migration.version,at)
-        await tx.execute('INSERT INTO schema_migrations(version,name,checksum) VALUES(?,?,?)', [migration.version, migration.name, checksum(migration)])
-        await tx.execute(`PRAGMA user_version = ${migration.version}`)
+        await tx.execute(KANATA_SCHEMA_SQL.insertJournal, [migration.version, migration.name, checksum(migration)])
+        await tx.execute(KANATA_SCHEMA_SQL.setVersion(migration.version))
         appliedVersions.push(migration.version)
       }
-      if (version === 0) await tx.execute(`PRAGMA application_id = ${KANATA_SCHEMA_APPLICATION_ID}`)
+      if (version === 0) await tx.execute(KANATA_SCHEMA_SQL.setApplicationId)
       if(version<3){
         for(const migration of KANATA_SCHEMA_MIGRATIONS){
-          await tx.execute('INSERT INTO schema_migration_applications(version,applied_at,time_source) VALUES(?,?,?)',[
+          await tx.execute(KANATA_SCHEMA_SQL.insertTime,[
             migration.version,observedTimes.get(migration.version)??null,observedTimes.has(migration.version)?'js-wall-clock-utc-ms':'legacy-unrecorded'
           ])
         }
       }else for(const applied of appliedVersions){
-        await tx.execute('INSERT INTO schema_migration_applications(version,applied_at,time_source) VALUES(?,?,?)',[applied,observedTimes.get(applied)??null,'js-wall-clock-utc-ms'])
+        await tx.execute(KANATA_SCHEMA_SQL.insertTime,[applied,observedTimes.get(applied)??null,'js-wall-clock-utc-ms'])
       }
       await verifyObjects(KANATA_SCHEMA_VERSION)
-      need((await tx.query('SELECT * FROM pragma_foreign_key_check LIMIT 1')).length === 0, 'KANATA_SCHEMA_FOREIGN_KEY_VIOLATION')
+      need((await tx.query(KANATA_SCHEMA_SQL.foreignKeyCheck)).length === 0, 'KANATA_SCHEMA_FOREIGN_KEY_VIOLATION')
       return Object.freeze({version: KANATA_SCHEMA_VERSION, appliedVersions: Object.freeze(appliedVersions)})
     })
   } catch (error) {

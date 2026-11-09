@@ -1,0 +1,61 @@
+✔ releasing with a pending native query drops the result and forbids commit and reuse (4.0866ms)
+✔ a caught statement failure aborts the transaction and cannot be treated as success (0.8764ms)
+✔ rollback failure poisons the driver even when close settles (0.6893ms)
+✔ the candidate rejects recovery before the native open (3.4618ms)
+✔ a late page and quote cannot repopulate the message window after switching scope (1.0385ms)
+(node:2876) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ R5 字段规格由实际类型生成，所有声明目标列存在，生成文档无遗漏/过期 (83.2812ms)
+✔ R5 JSON能区别未知null/false、字段缺省与空数组，保真提示不能代替关系约束 (114.8427ms)
+(node:40868) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ R1-01 成功版本保存真实注入UTC毫秒，回拨不伪造单调时间，幂等不重写 (131.0561ms)
+✔ R1-02 001/002原checksum保持，有数据旧库未知旧时间不回填，新增版本使用本次真实时间 (160.6523ms)
+✔ R1-03 时钟非法/抛错、提交失败不能留下成功时间，重启可重试 (72.2997ms)
+✔ R1-04 已应用日志和时间不可普通改删/替换；缺失时间记录拒绝恢复写入 (93.2056ms)
+✔ R2 NOT-A-DEFECT：实例空地点可往返；NULL/缺失拒绝，日程和事件位置分别按领域处理 (82.1947ms)
+✔ R3-01 连续和有缺口的真实快照可表达；同世界错误会话/发言角色/非文本内容拒绝 (59.0558ms)
+✔ R4-01 审计已提交后普通UPDATE/DELETE及OR REPLACE/IGNORE均不得篡改或重复 (55.15ms)
+✔ R4-02 保留已有删除隐私语义：仅允许当前已删除记录的确定性不可逆正文脱敏 (52.8974ms)
+✔ R4-03 有真实前后快照时可乱序写入缺口，不能形成重叠分叉或跨世界事件审计 (61.6057ms)
+✔ R3/R4 v1无访问索引的长审计历史采用窗口验证，不能二次相关扫描或补造缺号 (209.1303ms)
+✔ R3/R4 旧库有冲突必须零修改拒绝，不自动合并/补造历史 (141.0535ms)
+✔ R4 业务值与审计同事务回滚；显式缺少审计的业务命令责任仍属于M2/M3 (63.3592ms)
+✔ R6 NOT-A-DEFECT：NO ACTION保留引用，未引用叶子可删，延迟FK与回滚不留悬挂 (60.9361ms)
+✔ R1/R4 真正SIGKILL覆盖003时间写入与业务/审计同事务，重启无伪成功历史 (466.3273ms)
+✔ R3/R4 全局ID登记不可直接改删/伪造/替换；实体正常登记注销继续有效 (46.7691ms)
+✔ R3/R4 已损坏的旧全局ID登记零修改拒绝，不能自动修复冒充原始归属 (136.423ms)
+✔ R1/R4 既有v2追加003每个写入点及提交失败保留原文件，新连接可安全重试 (1149.892ms)
+(node:36328) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ M2 bulk boundaries, duplicate identity, quote and fixed-size scoped keyset pages (283.0795ms)
+✔ M2 edit and delete match the domain transaction, including both memory invalidations and exact redaction (95.1033ms)
+✔ M2 no partial derived changes on uncertainty, any write fault or actual COMMIT failure (134.7506ms)
+✔ M2 conversation create/update preserve participant order and observable CAS (59.1985ms)
+✔ M2 sources keep distinct extension records without duplicating normalized grant links (60.1828ms)
+✔ M2 scoped deferred reply recovers due work and refuses a stale or cancelled source (68.7212ms)
+(node:7592) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ M1-01 空库逐版升级、迁移日志与重复打开；全部真实领域集合可插入 (147.3881ms)
+✔ M1-02 有数据v1逐版升级保留原记录；日志指纹固定且重复升级零DDL (61.813ms)
+✔ M1-03 未来版本、不相关库、未完成结构、篡改日志和缺索引均拒绝；数据零改动 (73.2239ms)
+✔ M1-04 未开启外键拒绝；原生执行错误不向外泄漏SQL和参数 (1.5927ms)
+✔ M1-05 任意DDL/日志写入失败整事务回滚，新连接安全重试 (12322.2677ms)
+✔ M1-06 COMMIT失败必须回滚，不能提前报告升级成功 (23.3543ms)
+✔ M1-15 已有v1记录升级失败保留逐字节文件，新运行时重试不会丢数据 (403.1397ms)
+✔ M1-07 跨世界群成员、消息、关系、来源及effects均由复合外键拒绝 (320.938ms)
+✔ M1-08 重复全局ID、重复任务/授权/卡revision、孤儿发言及错role拒绝 (185.6053ms)
+✔ M1-09 旧revision来源保持、未来来源/回复/审计/授权revision及倒退均拒绝 (221.6562ms)
+✔ M1-13 冲突策略不能绕过全局ID；无revision编辑、延迟任务来源和审计发言者拒绝 (140.4773ms)
+✔ M1-14 JSON类型、实例基线范围和策略边界；未知扩展与原卡payload按字节保留 (144.5601ms)
+✔ M1-10 相同时间戳稳定排序，深页使用组合索引及keyset (144.249ms)
+✔ M1-11 事件因果和记忆共享父链禁止环；反向冲突链接允许 (96.1175ms)
+✔ M1-12 第二连接不能穿插升级事务；实际SIGKILL后DDL和版本回滚可重试 (708.0679ms)
+ℹ tests 45
+ℹ suites 0
+ℹ pass 45
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 15527.1847

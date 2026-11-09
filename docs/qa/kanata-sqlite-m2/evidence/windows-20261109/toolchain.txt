@@ -1,0 +1,77 @@
+v24.14.1
+11.11.0
+openjdk version "21.0.11" 2026-04-21 LTS
+OpenJDK Runtime Environment Microsoft-13877171 (build 21.0.11+10-LTS)
+OpenJDK 64-Bit Server VM Microsoft-13877171 (build 21.0.11+10-LTS, mixed mode, sharing)
+javac 21.0.11
+
+------------------------------------------------------------
+Gradle 8.14.3
+------------------------------------------------------------
+
+Build time:    2025-07-04 13:15:44 UTC
+Revision:      e5ee1df3d88b8ca3a8074787a94f373e3090e1db
+
+Kotlin:        2.0.21
+Groovy:        3.0.24
+Ant:           Apache Ant(TM) version 1.10.15 compiled on August 25 2024
+Launcher JVM:  21.0.11 (Microsoft 21.0.11+10-LTS)
+Daemon JVM:    C:\Program Files\Microsoft\jdk-21.0.11.10-hotspot (no JDK specified, using current Java home)
+OS:            Windows 11 10.0 amd64
+
+Android emulator version 36.5.11.0 (build_id 15261927) (CL:N/A)
+Copyright (C) 2006-2024 The Android Open Source Project and many others.
+This program is a derivative of the QEMU CPU emulator (www.qemu.org).
+
+  This software is licensed under the terms of the GNU General Public
+  License version 2, as published by the Free Software Foundation, and
+  may be copied, distributed, and modified under those terms.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+INFO         | Android emulator version 36.5.11.0 (build_id 15261927) (CL:N/A)
+INFO         | Graphics backend: gfxstream
+accel:
+0
+WHPX(10.0.26300) is installed and usable.
+accel
+Android Debug Bridge version 1.0.41
+Version 37.0.0-14910828
+Installed as E:\Android\Sdk\platform-tools\adb.exe
+Running on Windows 10.0.26300
+Pkg.Desc=System Image x86_64 with Google APIs.
+Pkg.Revision=14
+Pkg.Dependencies=emulator#34.2.16
+AndroidVersion.ApiLevel=34
+AndroidVersion.ExtensionLevel=7
+AndroidVersion.IsBaseSdk=true
+SystemImage.Abi=x86_64
+SystemImage.TagId=google_apis
+SystemImage.TagDisplay=Google APIs
+SystemImage.GpuSupport=true
+Addon.VendorId=google
+Addon.VendorDisplay=Google Inc.
+
+
+Algorithm : SHA256
+Hash      : 099F29C0EEC6C8206490EAE6555551B18B2425DE9AAD66DDA48DD2D1D78F40EE
+Path      : D:\2026Autumn Semester File\GitHub\formyself-app\.worktrees\kanata-m0\package-lock.json
+
+Algorithm : SHA256
+Hash      : 099F29C0EEC6C8206490EAE6555551B18B2425DE9AAD66DDA48DD2D1D78F40EE
+Path      : E:\Android\kanata-m2-synthetic-0e1194cc\deps\package-lock.json
+
+Algorithm : SHA256
+Hash      : 740FF3BD7EDF535E6A7F10F75435DE281AAABB814FC4AFDA3CA655DA2E75338C
+Path      : E:\Android\kanata-m2-synthetic-0e1194cc\final-synthetic-catalog.json
+
+Algorithm : SHA256
+Hash      : 43FBB7289618E95ED1410E1C35DC141EE3F61D9279CABF6230946E8C2F716CDD
+Path      : D:\2026Autumn Semester File\GitHub\formyself-app\.worktrees\kanata-m0\android\app\build\generated\kanataSqlite\assets\kanata-sqlite-catalog.json
+
+Algorithm : SHA256
+Hash      : C3B5F2AFC45A64D987DDE007C8EF7D21F47014DCF85633C29CCCDD764CDEDEC3
+Path      : E:\Android\kanata-m2-synthetic-0e1194cc\sqlcipher3-0.6.5-cp313-cp313-win_amd64.whl

@@ -1,5 +1,22 @@
 apply plugin: 'com.android.application'
 
+def kanataM2Synthetic = providers.gradleProperty('kanataM2Synthetic').map { it == 'true' }.orElse(false)
+def kanataCatalog = layout.buildDirectory.dir('generated/kanataSqlite/assets')
+def kanataRepository = rootProject.projectDir.parentFile
+def generateKanataSqliteCatalog = tasks.register('generateKanataSqliteCatalog', Exec) {
+    workingDir kanataRepository
+    inputs.file new File(kanataRepository, 'scripts/build-kanata-sqlite-catalog.mjs')
+    inputs.dir new File(kanataRepository, 'src/features/chat/storage/sqlite')
+    inputs.property 'syntheticOnly', kanataM2Synthetic
+    outputs.dir kanataCatalog
+    commandLine 'node', 'scripts/build-kanata-sqlite-catalog.mjs', kanataCatalog.get().asFile.absolutePath
+    if (kanataM2Synthetic.get()) {
+        inputs.dir new File(kanataRepository, 'tests/helpers')
+        inputs.dir new File(kanataRepository, 'src/features/chat/presets')
+        args '--synthetic'
+    }
+}
+
 android {
     namespace = "com.yubin.formyself"
     compileSdk = rootProject.ext.compileSdkVersion
@@ -10,6 +27,7 @@ android {
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        buildConfigField 'boolean', 'KANATA_M2_SYNTHETIC', 'false'
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
              // Default: https://android.googlesource.com/platform/frameworks/base/+/282e181b58cf72b6ca770dc7ca5f91f135444502/tools/aapt/AaptAssets.cpp#61
@@ -18,15 +36,30 @@ android {
     }
     adbOptions { timeOutInMs = 120000 }
 
-    sourceSets { androidTest.assets.srcDirs += ["../../tests/fixtures"] }
+    buildFeatures { buildConfig true }
+    sourceSets {
+        if (kanataM2Synthetic.get()) {
+            debug.assets.srcDir new File(kanataRepository, 'docs/qa/kanata-sqlite-m2/candidate-assets')
+        }
+        main.assets.srcDir kanataCatalog
+        androidTest.assets.srcDirs += ["../../tests/fixtures"]
+    }
 
     buildTypes {
+        debug {
+            if (kanataM2Synthetic.get()) {
+                applicationIdSuffix '.m2qa'
+                buildConfigField 'boolean', 'KANATA_M2_SYNTHETIC', 'true'
+            }
+        }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
 }
+
+tasks.named('preBuild').configure { dependsOn(generateKanataSqliteCatalog) }
 
 repositories {
     flatDir{
@@ -40,6 +73,8 @@ dependencies {
     implementation "androidx.coordinatorlayout:coordinatorlayout:$androidxCoordinatorLayoutVersion"
     implementation "androidx.core:core-splashscreen:$coreSplashScreenVersion"
     implementation project(':capacitor-android')
+    implementation "net.zetetic:sqlcipher-android:4.17.0@aar"
+    implementation "androidx.sqlite:sqlite:2.4.0"
     testImplementation "junit:junit:$junitVersion"
     androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"
     androidTestImplementation "androidx.test.espresso:espresso-core:$androidxEspressoCoreVersion"

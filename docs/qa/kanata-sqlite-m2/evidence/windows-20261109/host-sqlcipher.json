@@ -1,0 +1,15 @@
+{
+  "status": "PASS_HOST_REPOSITORY",
+  "cipher": "4.20.0 community",
+  "sqlite": "3.54.1",
+  "host": "win32",
+  "termination": "Node child.kill(SIGKILL)",
+  "schemaSha256": "1cf50ef2944831ea6d3b66a871ba59944e03d48b889171588b550b9b4eedea45",
+  "fixtureSha256": "2417814bb2ee508ab059dceae4cf30dfa0def8561d4fc9f0d596f188a644a07f",
+  "checks": [
+    "cipher-schema-wrong-key-and-plaintext-read-rejection",
+    "repository-cas-quote-keyset",
+    "real-deferred-commit-rollback",
+    "forced-process-termination-reopen-audit-derived-rollback-and-retry"
+  ]
+}

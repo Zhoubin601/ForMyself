@@ -16,6 +16,7 @@ public class MainActivity extends BridgeActivity {
         registerPlugin(ForMyselfWidgetPlugin.class);
         registerPlugin(TodoPlugin.class);
         registerPlugin(ArchiveFileBatchPlugin.class);
+        registerPlugin(KanataSqlitePlugin.class);
         super.onCreate(savedInstanceState);
         WebSettings webSettings = getBridge().getWebView().getSettings();
         webSettings.setSupportZoom(false);

@@ -1,0 +1,102 @@
+{
+  "date": "2026-11-09 Asia/Shanghai",
+  "baseline": "b0be26f2f26d66abe7720625ca9afeb84d32f301",
+  "status": "PASS",
+  "scope": "M2 production candidate on isolated synthetic AVD; canonical legacy",
+  "preflight": {
+    "status": "PASS_PREFLIGHT_PING_ONLY",
+    "url": "https://localhost/",
+    "before": {
+      "title": "M2_PREFLIGHT_PASS",
+      "syntheticOnly": true,
+      "result": {
+        "syntheticOnly": true,
+        "nonce": "M2_SYNTHETIC_NONCE"
+      }
+    },
+    "fresh": {
+      "nonce": "M2_SYNTHETIC_73d166df-e12e-4048-9007-b39992e1590b",
+      "response": {
+        "syntheticOnly": true,
+        "nonce": "M2_SYNTHETIC_73d166df-e12e-4048-9007-b39992e1590b"
+      }
+    }
+  },
+  "device": {
+    "serial": "emulator-5582",
+    "avd": "kanata_m2_api34",
+    "api": 34,
+    "accelerator": "WHPX",
+    "syntheticOnly": true,
+    "webview": "113.0.5672.136"
+  },
+  "commands": {
+    "node --test tests/kanataSqlite{Driver,Repository,Schema,Remediation,Mapping}.test.js": {
+      "exitCode": 0,
+      "pass": 45,
+      "result": "directed-delivery.txt"
+    },
+    "npm run check": {
+      "exitCode": 0,
+      "node": 635,
+      "components": 392,
+      "componentFiles": 42,
+      "lintErrors": 0,
+      "lintWarnings": 42,
+      "strictAndNegativeTypes": "PASS",
+      "build": "PASS",
+      "result": "npm-check-delivery.txt.gz"
+    },
+    "node docs/qa/kanata-sqlite-m2/verify-host.mjs <python>": {
+      "exitCode": 0,
+      "engine": "4.20.0 community",
+      "result": "host-sqlcipher.json"
+    },
+    "gradlew -PkanataM2Synthetic=true :app:assembleDebug :app:assembleDebugAndroidTest": {
+      "exitCode": 0
+    },
+    "run-windows-candidate.ps1 -Mode full": {
+      "exitCode": 0,
+      "instrumentation": 1,
+      "result": "android-result.txt"
+    },
+    "gradlew -PkanataM2Synthetic=false :app:assembleDebug": {
+      "exitCode": 0,
+      "result": "android-default-gate.json"
+    }
+  },
+  "catalogSha256": "740ff3bd7edf535e6a7f10f75435de281aaabb814fc4afda3ca655da2e75338c",
+  "qaBundleSha256": "0e2ec0bc72c07024f36a82df9c04b5db3cd4108237cfe6af66bf656a0d0982c4",
+  "schemaSha256": "1cf50ef2944831ea6d3b66a871ba59944e03d48b889171588b550b9b4eedea45",
+  "fixtureSha256": "2417814bb2ee508ab059dceae4cf30dfa0def8561d4fc9f0d596f188a644a07f",
+  "apkSha256": {
+    "com.yubin.formyself.m2qa": "A1915B8B81D09365DF3231F59C08B7B7C0D2DF8067E49EF26C8B7B996F4DEB51",
+    "com.yubin.formyself.m2qa.test": "1F92E96FFBA6DF63B4662E6FEBDBA6B99D4C9A93C6D2C31AA12843F4DB0BC03E"
+  },
+  "historicalFailures": [
+    "Linux renderer code 5/SIGTRAP",
+    "Windows npm Sharp installation/cache failures",
+    "Windows M1 cleanup EPERM",
+    "Windows UI retry used stale speaker metadata"
+  ],
+  "notRun": [
+    "physical Android device",
+    "M3–M7 and P7 capacity",
+    "production database activation or migration",
+    "real model API"
+  ],
+  "selfReviews": {
+    "safety-storage-concurrency": [
+      "real deferred foreign-key COMMIT failure and primary rollback",
+      "late queries and invalid transaction revocation",
+      "Android background and expired challenge",
+      "SIGKILL rollback and future schema read-only refusal"
+    ],
+    "product-compatibility-evidence": [
+      "initial group retry failure reproduced and corrected using durable speaker/context revision",
+      "context/routing window late-result negative tests",
+      "Windows baseline file close order corrected",
+      "final API 34 exact APK/QA bundle and host fingerprints"
+    ]
+  }
+}

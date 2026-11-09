@@ -43,3 +43,5 @@ Kanata 开发入口：[连续执行 v3](../docs/20261028-kanata-continuous-execu
 2026-10-31云端交接最终覆盖：用户明确要求普通推送Kanata并附交接，后续云端开发，本地业务停止。读取docs/20261031-kanata-cloud-handoff-v1.md及最新verification-summary-latest.json。P7仍No-Go：941完整check565/382、原生8PASS/1SKIP、两端各13回归通过；两端1k/10k通过，100k Native内存501.7MiB通过但改回凭据148.1s失败，Web834.9MiB失败。原始漏判PASS已保留并校正。全部测量/恢复已结束，原608与其他模块保全，TodoCAS递增/原规则跨日心情空占位单列严格核验，真实Home清明文PASS。没有待接续的本地测试事务，不要按前文RUNNING重启。云端仍需处理性能、密集来源、旧生活AI角色链、全应用统计/趋势与完整十五场景；Key/SDK/AVD/真实数据不入远端，隔离guard保留。提交是WIP授权交接，不代表P7验收或发布。
 
 M2持续入口（2026-11-09）：[完整任务书](../docs/20261107-kanata-sqlite-m2-task-v1.md)、[设计](../docs/20261107-kanata-sqlite-m2-design-v1.md)、[正式阶段报告](../docs/20261107-kanata-sqlite-m2-acceptance-v1.md)。Preflight/设计已完成，M2生产实现尚未开始，生产仍legacy，M3不得开始。用户已选择此前Windows/WHPX合成AVD作为接续环境，见[交接](../docs/20261109-kanata-sqlite-m2-windows-handoff-v1.md)；仅历史设备名不构成当前合成隔离凭证，需重新核验。
+
+M2 Windows 接续已通过（2026-11-09）。[最新验收 v2](../docs/20261109-kanata-sqlite-m2-acceptance-v2.md)覆盖候选 Driver、消息/会话、派生失效、UI 与真实原生故障。普通构建保持 legacy，原生 SQLite 激活限显式合成 QA 包。M3 可实施剩余领域 Repository。真实资料切换继续受 M4–M7、全局改密/恢复和迁移验收约束。旧 Linux 阻塞和 P7 容量 No-Go 仍可追溯。

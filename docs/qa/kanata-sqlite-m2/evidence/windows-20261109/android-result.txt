@@ -1,0 +1,51 @@
+▲ [WARNING] Ignoring this import because "src/features/chat/kanataManagement.css" was marked as having no side effects [ignored-bare-import]
+
+    src/features/chat/KanataView.vue:8:7:
+      8 │ import './kanataManagement.css'
+        ╵        ~~~~~~~~~~~~~~~~~~~~~~~~
+
+{"qaBundleSha256":"0e2ec0bc72c07024f36a82df9c04b5db3cd4108237cfe6af66bf656a0d0982c4"}
+{
+  "passed": [
+    "schema-js-bridge-and-synthetic-seed",
+    "repository-batches-keyset-quote-locate-fk-and-conversation",
+    "concurrent-cas-real-commit-failure-and-derived-delete",
+    "close-reopen-wrong-password-replay-and-lease"
+  ],
+  "health": {
+    "cipher": "4.17.0 community",
+    "journalMode": "wal",
+    "synchronous": 2,
+    "foreignKeys": 1,
+    "cacheSize": -2048,
+    "checkpoint": 1000,
+    "busyTimeout": 5000
+  }
+}
+{
+  "envelope": "PASS_M0_V1_CROSS_UNWRAP",
+  "challenge": "PASS_EXPIRED_REJECTED",
+  "background": "PASS_OLD_LEASE_REJECTED",
+  "plaintext": "PASS_NO_PLAINTEXT_HEADER_OR_SYNTHETIC_SECRET_IN_PID_LOGS_AND_PREFERENCES",
+  "sigkill": {
+    "oldPid": "9039",
+    "newPid": "9198",
+    "status": "complete",
+    "revision": 1,
+    "auditAbsent": true
+  }
+}
+{
+  "passed": [
+    "bounded-window-scroll-anchor-and-quote",
+    "group-speakers-atomic-bubbles-retry-and-jump",
+    "deferred-reply-persists-and-resumes",
+    "fast-world-switch-late-completion-character-and-lock"
+  ],
+  "controlledModelCalls": 5,
+  "realModelCalls": 0
+}
+{
+  "inventory": "PASS_INCOMPLETE_AND_LEGACY_REJECTED",
+  "futureSchema": "PASS_READ_ONLY_REJECTION"
+}

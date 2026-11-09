@@ -1134,3 +1134,12 @@ P6最终PASS/Go：501 Node/317组件、Web12/6布局、Android17、原生8通过
 - 实跑34项定向、主机SQLCipher4.12九组/两个SIGKILL、两次完整check624 Node/392组件，均通过；原安装/构建失败保留，环境依赖问题已修复。
 - 系统HTMLViewer与最小Capacitor8.4.1探针都出现renderer code5/SIGTRAP。M2 Android SQLCipher/JS Repository集成、生产实现及实现后两轮自检尚未运行，不冒充PASS。
 - 用户已选此前Windows/WHPX合成AVD，需连接Windows本地执行环境按交接继续。只保存文档/QA普通提交推送M，不强推、不改生产路径、不进入M3。
+
+## 2026-11-09，M2 Windows/WHPX 接续完成
+
+- [x] M 工作树快进至 `b0be26f`，新建并核验 API 34 合成 AVD，实测最小 Capacitor nonce 往返。
+- [x] 完成候选原生 Driver、M0 信封与撤销机制、M1 升级器适配、消息和会话 Repository、派生删除、有界窗口、延迟回复及按需 AI 上下文。
+- [x] 实跑 Windows SQLCipher、Android SQLCipher instrumentation 与 JS E2E、故障注入、两轮独立自检和完整回归。旧 Linux 失败及首次 Windows 失败留档。
+- [ ] 下一阶段 M3 为剩余领域 Repository。生产 canonical 仍为 legacy，后续数据切换继续由 M4–M7 及正式验收控制。
+
+入口见 [M2 验收 v2](20261109-kanata-sqlite-m2-acceptance-v2.md) 与 [QA](qa/kanata-sqlite-m2/README.md)。

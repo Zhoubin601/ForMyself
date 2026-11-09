@@ -1,8 +1,31 @@
 # Kanata SQLite M2 QA
 
-执行日期：2026-11-09（Asia/Shanghai）。**M2 BLOCKED，生产实现尚未开始；用户已选Windows/WHPX接续，当前会话只有Linux。** [正式报告](../../20261107-kanata-sqlite-m2-acceptance-v1.md) · [Windows交接](../../20261109-kanata-sqlite-m2-windows-handoff-v1.md) · [机器汇总](evidence/verification-summary.json)。本目录是本轮真实证据与复现入口；[任务书](../../20261107-kanata-sqlite-m2-task-v1.md)、[Preflight](../../20261107-kanata-sqlite-m2-preflight-v1.md)、[技术设计](../../20261107-kanata-sqlite-m2-design-v1.md)。状态以正式验收与机器汇总为准。既有M1/M1-R基线通过不能作为M2实现通过。
+当前状态为 **M2 Windows/WHPX 候选 PASS**。生产 canonical 保持 legacy。[验收 v2](../../20261109-kanata-sqlite-m2-acceptance-v2.md)、[Windows 机器汇总](evidence/windows-20261109/verification-summary.json)、[任务书](../../20261107-kanata-sqlite-m2-task-v1.md)、[技术设计](../../20261107-kanata-sqlite-m2-design-v1.md)。Linux 预检结果按历史保留，见[验收 v1](../../20261107-kanata-sqlite-m2-acceptance-v1.md)和[历史机器汇总](evidence/verification-summary.json)。
 
 所有设备均为本任务新建合成环境，0真实API请求，不使用真实密码/聊天/备份。禁止把脚本指向用户设备或现有未知AVD。仓库只提交源码、日志和指纹，不提交SDK、APK、磁盘镜像、凭据或work。
+
+## Windows/WHPX 实施与复现
+
+从 M 的根目录执行。准备 Node 24、包含 `javac` 的 JDK 21、Android compile SDK 36/Build Tools 35、API 34 Google APIs x86_64 镜像与可用 WHPX。按原锁安装依赖，四项 postinstall 必须实际执行。现场使用新建目录和原始锁副本完成隔离安装。原始 Sharp 安装失败、成功缓存安装、工具链和锁文件指纹见 [Windows 证据](evidence/windows-20261109/verification-summary.json)。
+
+```powershell
+$manifest = & docs/qa/kanata-sqlite-m2/start-windows-synthetic-avd.ps1
+$run = Split-Path -Parent $manifest
+# 等待指定 serial 的 sys.boot_completed=1，并核对 manifest 中的 API 及 AVD 名。
+& 'E:\Android\Sdk\platform-tools\adb.exe' -s emulator-5582 shell getprop sys.boot_completed
+npm.cmd run check
+node node_modules/@capacitor/cli/bin/capacitor sync android
+.\android\gradlew.bat -p android --offline --max-workers=2 -PkanataM2Synthetic=true :app:assembleDebug :app:assembleDebugAndroidTest
+& docs/qa/kanata-sqlite-m2/run-windows-candidate.ps1 -ManifestPath $manifest -EvidenceDirectory (Join-Path $run 'candidate-full') -Mode full
+```
+
+Windows 实际首次以等价的逐项命令创建 AVD 并启动，启动器为后续复现入口。验收脚本复核 manifest、API、包名和安装读回 SHA，然后只重置合成包 `com.yubin.formyself.m2qa`。运行 instrumentation，接着用页面级 CDP 在真实 WebView 执行产出的 JS bundle。完整模式实跑挑战过期、后台、SIGKILL 重开、UI 和未来版本拒绝。预检的独立最小 Capacitor 包为 `com.formyself.qa.m2probe`，[nonce 结果](evidence/windows-20261109/preflight-nonce.json)只用于基础桥接门禁。
+
+主机 SQLCipher 使用隔离 Python 环境的 `sqlcipher3==0.6.5` Windows wheel。执行 `node docs/qa/kanata-sqlite-m2/verify-host.mjs <python-exe>`。实际版本为 4.20.0 Community，不与设备 4.17.0 或 Linux 基线 4.12.0 混用。最终设备原始输出及完整日志见 [结果](evidence/windows-20261109/android-result.txt)和[原始档案索引](evidence/windows-20261109/archive-sha256.json)。
+
+## Linux 历史 Preflight
+
+以下保留 2026-11-09 Linux 阻塞和当时的复现步骤。Windows 本轮结果见上文。
 
 ## 依赖准备与基线
 

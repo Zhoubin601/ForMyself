@@ -1,0 +1,4 @@
+Target emulator-5582 / kanata_m2_api34
+adb -s emulator-5582 emu kill => OK: killing emulator, bye bye
+Target emulator-5582 absent from adb devices after shutdown.
+No target ADB forwards before shutdown.

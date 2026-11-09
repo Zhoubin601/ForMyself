@@ -243,7 +243,12 @@ test('M1-11 事件因果和记忆共享父链禁止环；反向冲突链接允�
 })
 
 test('M1-12 第二连接不能穿插升级事务；实际SIGKILL后DDL和版本回滚可重试',async t=>{
-  const dir=mkdtempSync(join(tmpdir(),'kanata-m1-kill-'));t.after(()=>rmSync(dir,{recursive:true,force:true}))
+  const dir=mkdtempSync(join(tmpdir(),'kanata-m1-kill-'))
+  let next
+  t.after(()=>{
+    next?.close()
+    rmSync(dir,{recursive:true,force:true})
+  })
   const path=join(dir,'synthetic.db'),h=schemaHarness(path);h.db.exec('PRAGMA journal_mode=WAL')
   const second=schemaHarness(path)
   h.db.exec('BEGIN IMMEDIATE')
@@ -256,7 +261,7 @@ test('M1-12 第二连接不能穿插升级事务；实际SIGKILL后DDL和版本�
   await new Promise((resolve,reject)=>{const timer=setTimeout(()=>{child.kill('SIGKILL');reject(Error('child timeout'))},15000);child.stdout.once('data',d=>{clearTimeout(timer);assert.match(String(d),/READY/);resolve()});child.once('exit',()=>{clearTimeout(timer);reject(Error('child exited before ready'))})})
   const exited=once(child,'exit');child.kill('SIGKILL');const [exit,signal]=await exited
   assert.equal(exit,null);assert.equal(signal,'SIGKILL')
-  const next=schemaHarness(path);t.after(next.close)
+  next=schemaHarness(path)
   assert.equal(rows(next,'PRAGMA user_version')[0].user_version,0)
   assert.equal(rows(next,'SELECT count(*) n FROM sqlite_schema')[0].n,0)
   assert.equal((await migrateKanataSchema(next.connection)).version,version)

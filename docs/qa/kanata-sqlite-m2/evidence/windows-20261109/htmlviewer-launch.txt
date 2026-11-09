@@ -1,0 +1,7 @@
+Starting: Intent { act=android.intent.action.VIEW dat=data: typ=text/html cmp=com.android.htmlviewer/.HTMLViewerActivity }
+Status: ok
+LaunchState: COLD
+Activity: com.android.htmlviewer/.HTMLViewerActivity
+TotalTime: 610
+WaitTime: 612
+Complete

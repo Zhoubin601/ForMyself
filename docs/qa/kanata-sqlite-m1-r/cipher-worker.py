@@ -43,7 +43,12 @@ try:
                     p.close()
             else:
                 cursor = connection.execute(r['sql'], r.get('parameters', []))
-                value = [dict(row) for row in cursor.fetchall()] if r['operation'] == 'query' else None
+                if r['operation'] == 'query':
+                    value = [dict(row) for row in cursor.fetchall()]
+                elif r['operation'] == 'write':
+                    value = {'affectedRows': connection.execute('SELECT changes()').fetchone()[0]}
+                else:
+                    value = None
             response = {'ok': True, 'value': value}
         except Exception:
             response = {'ok': False, 'code': 'QA_SQLCIPHER_FAILED'}

@@ -1,0 +1,19 @@
+{
+  "status": "PASS_PREFLIGHT_PING_ONLY",
+  "url": "https://localhost/",
+  "before": {
+    "title": "M2_PREFLIGHT_PASS",
+    "syntheticOnly": true,
+    "result": {
+      "syntheticOnly": true,
+      "nonce": "M2_SYNTHETIC_NONCE"
+    }
+  },
+  "fresh": {
+    "nonce": "M2_SYNTHETIC_73d166df-e12e-4048-9007-b39992e1590b",
+    "response": {
+      "syntheticOnly": true,
+      "nonce": "M2_SYNTHETIC_73d166df-e12e-4048-9007-b39992e1590b"
+    }
+  }
+}

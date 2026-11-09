@@ -580,3 +580,13 @@ Windows 使用 `npm.cmd`、`npx.cmd` 和 `android/gradlew.bat` 的对应命令�
 - [完整任务书](docs/20261107-kanata-sqlite-m2-task-v1.md)、[Preflight](docs/20261107-kanata-sqlite-m2-preflight-v1.md)、[技术设计](docs/20261107-kanata-sqlite-m2-design-v1.md)、[正式BLOCKED报告](docs/20261107-kanata-sqlite-m2-acceptance-v1.md)。设计中的Driver/Repository/lease API尚未成为真实实现，不据此调用不存在的接口。
 - 本轮仅文档/隔离QA；生产Store/Android/契约/锁文件和Schema001/002/003未改，canonical仍legacy。M2未PASS，不进入M3。主机及既有完整check通过不替代M2设备JS-to-native。
 - Linux全新API34的系统WebView及最小Capacitor探针真实崩溃；用户已选择[Windows/WHPX接续](docs/20261109-kanata-sqlite-m2-windows-handoff-v1.md)，当前Linux会话无Windows执行通道。后续必须按最新M核对设计，完整实施、两轮自检与设备回归，不以本检查点豁免任何门禁。
+
+## 26. Kanata SQLite M2 Windows 候选接口（2026-11-09）
+
+- 生产应用继续使用原受保护 legacy 组合。Android 注册 `KanataSqlitePlugin`，只有显式 Debug 构建参数 `-PkanataM2Synthetic=true` 与包名 `com.yubin.formyself.m2qa` 同时满足才打开候选。普通构建使用 `KANATA_M2_SYNTHETIC=false`，生成的固定 SQL 目录排除合成种子与故障语句。禁止将测试参数用于生产发布。
+- `createKanataSqliteCandidate` 只在合成组合根显式注入。每次访问通过既有 `protectedAccess.runOperation` 和恢复门禁。连接可以在同一受保护 session 内复用，业务对象与事务只在当前 operation lease 有效。锁定、会话 revision 变化、恢复、后台或 dispose 撤销连接或拒绝迟到结果。
+- `createAndroidKanataSqliteDriver` 用已冻结的 M0 v1 KEK/DEK 信封、一次性 30 秒挑战和当前租约开库。加密库、信封和创建标记位于 Android `no_backup/kanata-sqlite-v1`。写标记后原子持久化与读回认证信封，再创建库并经升级/健康检查后移除标记。中断保留材料并拒绝重建。现存库先走只读结构/日志/完整性预检。
+- 原生单 executor 持有 SQLCipher 4.17.0 的主写事务；WAL、FULL、cache_size=-2048、checkpoint=1000、busy_timeout=5000，FK 配置覆盖连接池。固定语句以 SHA-256 标识并按阶段与参数数目核验。COMMIT 失败显式在主写连接回滚，回滚或关闭不可确认时连接毒化。复用 `migrateKanataSchema`，001/002/003 版本及校验和保持。
+- `KanataMessageRepository` 与 `KanataConversationRepository` 接收有界业务事务，完整类型见 `src/application/contracts.d.ts`。单批最多 256、keyset 页最多 50。编辑/删除将 CAS、原消息/审计、回复后代、事件/效果、记忆和来源任务封在同一事务。历史审计通过固定 `json_set` 精确脱敏。延迟回复只管理本会话消息的到期任务，不提供其他任务 CRUD。
+- 候选 `KanataConversationView` 由注入 Runtime 查询，窗口最多 100 条。AI 正文只读当前会话内权限允许的 2–40 条，必要旧来源用按 ID 元数据核验。提交前重新校验 session、页面 owner、实际会话/角色/消息 revision、来源及上下文。character 人工发送继续拒绝。非消息实体的通用读写、全局任务与备份/改密/切换闭环继续按后续阶段执行。
+- 验证入口为 [M2 Windows 验收 v2](docs/20261109-kanata-sqlite-m2-acceptance-v2.md) 与 [QA](docs/qa/kanata-sqlite-m2/README.md)。保留上一节 Linux 阻塞的历史证据。

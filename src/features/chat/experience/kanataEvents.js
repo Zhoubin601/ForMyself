@@ -16,11 +16,16 @@ const pathKey=effect=>JSON.stringify([effect.targetType,effect.targetId,effect.p
 /** Version1 generated effects are a closed set; imports with unknown rules never execute.
  * @param {Effect} effect
  */
-function safeEffect(effect) {
+export function assertKanataEffectExecutable(effect) {
   const path=effect.path
   need(effect.ruleVersion===1,'EVENT_RULE_VERSION_UNSUPPORTED','effect')
   need(effect.targetType==='instance'?['state.mood','state.energy','state.location'].includes(path):effect.targetType==='relationship'&&['dimensions.trust','dimensions.understanding','dimensions.intimacy'].includes(path),'EVENT_EFFECT_PATH_UNSUPPORTED','effect')
   need(effect.operation==='increment'?typeof effect.value==='number'&&Math.abs(effect.value)<=0.1:typeof effect.value==='string'&&['state.mood','state.location'].includes(path),'EVENT_EFFECT_VALUE_UNSUPPORTED','effect')
+}
+/** @param {unknown} value @param {Effect} effect */
+export function applyKanataEffect(value,effect) {
+  assertKanataEffectExecutable(effect)
+  return effect.operation==='set'?cloneKanataJson(effect.value):Math.max(effect.path==='state.energy'?0:-1,Math.min(1,Number(value)+Number(effect.value)))
 }
 /** Re-fold affected paths from durable baselines. Independent E2 effects are retained even
  * when E1 is revoked; neither inversion nor stale whole-object snapshots are used.
@@ -37,7 +42,7 @@ export function rebuildKanataEffects(data,paths) {
       const first=/** @type {Event} */(data.events.find(e=>e.id===a.eventId)),second=/** @type {Event} */(data.events.find(e=>e.id===b.eventId))
       return first.effectiveAt-second.effectiveAt||first.recordedAt-second.recordedAt||first.id.localeCompare(second.id,'en')||a.id.localeCompare(b.id,'en')
     })
-    for(const effect of effects){safeEffect(effect);value=effect.operation==='set'?cloneKanataJson(effect.value):Math.max(base.path==='state.energy'?0:-1,Math.min(1,Number(value)+Number(effect.value)))}
+    for(const effect of effects)value=applyKanataEffect(value,effect)
     writePath(entity,base.path,value)
   }
 }
@@ -83,7 +88,7 @@ export function commitKanataEvent(input,eventId,expectedRevision,tools) {
   for(const participant of selected.participantIds.filter(id=>data.instances.some(i=>i.id===id)))need(canUseKanataLifeSources(data,sources,{worldId:selected.worldId,instanceId:participant,group:selected.visibility!=='private',remember:true}),'EVENT_LIFE_PERMISSION_DENIED','source')
   const effects=eventEffects(data,selected,tools.id),baselines=data.effectBaselines||=[]
   for(const effect of effects){
-    safeEffect(effect)
+    assertKanataEffectExecutable(effect)
     if(!baselines.some(b=>pathKey(b)===pathKey(effect))){
       need(!data.effects.some(e=>pathKey(e)===pathKey(effect)),'EVENT_BASELINE_REQUIRED','effect')
       baselines.push({id:tools.id(),worldId:selected.worldId,targetType:effect.targetType,targetId:effect.targetId,path:effect.path,value:readPath(target(data,effect.targetType,effect.targetId),effect.path)})
@@ -107,7 +112,7 @@ export function previewKanataEventRevoke(data,eventId) {
 }
 /** @param {Data} data @param {Set<string>} ids @param {'revoked'|'needsReview'} status @param {Tools} tools */
 function changeEventStatus(data,ids,status,tools) {
-  const affected=data.effects.filter(e=>ids.has(e.eventId));for(const effect of affected){safeEffect(effect);need(data.effectBaselines?.some(b=>pathKey(b)===pathKey(effect)),'EVENT_BASELINE_REQUIRED','effect')}
+  const affected=data.effects.filter(e=>ids.has(e.eventId));for(const effect of affected){assertKanataEffectExecutable(effect);need(data.effectBaselines?.some(b=>pathKey(b)===pathKey(effect)),'EVENT_BASELINE_REQUIRED','effect')}
   for(const event of data.events)if(ids.has(event.id)&&event.status!=='revoked'){
     const previous=cloneKanataJson(event);event.status=status;event.revision++
     ;(data.eventAudits||=[]).push({id:tools.id(),worldId:event.worldId,eventId:event.id,at:tools.clock(),previous,next:cloneKanataJson(event)})

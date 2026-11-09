@@ -1205,3 +1205,7 @@ raw/完整需求清单.txt 4.1/4.4/8.3及最新连续执行v3驱动当前实现�
 来源：GitHub M 完整任务书 `docs/20261107-kanata-sqlite-m2-task-v1.md`，远端基线 `de3164b8de569f57a250d0592eae5a21345e5264`；AGENTS、根架构说明、M0 direct gate、M1 v2、M1-R 审计/QA及当前源码。读取清单与SHA见 `docs/qa/kanata-sqlite-m2/evidence/preflight-sources.json`。不读取私人raw、真实聊天/备份或凭据；测试复用仓库合成夹具。
 
 本轮预检/设计：[Preflight](20261107-kanata-sqlite-m2-preflight-v1.md)、[技术设计](20261107-kanata-sqlite-m2-design-v1.md)。环境工具下载来源为官方 dl.google.com 的 SDK/ATD 元数据、镜像与校验和，以及 Debian 官方 e2fsprogs；依赖仅从 npm 官方源获取锁定版本/相同integrity，不修改根lock。
+
+### Windows/WHPX 实施来源
+
+当前 M 基线为 `b0be26f2f26d66abe7720625ca9afeb84d32f301`。以 Windows 交接、M2 任务书与设计、M0 信封实现、M1/M1-R Schema、当前 ChatRuntime/ConversationView 和消息修订纯函数为依据。核对本机锁定 SQLCipher 4.17.0 AAR 的 SQLiteSession/SQLiteDatabase 字节码和实际 COMMIT 行为。合成数据由 `tests/helpers/kanataSqliteM2Fixture.js` 扩展既有结构夹具，未读取私人原始资料。来源与实测指纹见 [Windows 验收](20261109-kanata-sqlite-m2-acceptance-v2.md)。

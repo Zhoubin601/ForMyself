@@ -1,0 +1,151 @@
+// @ts-check
+import { watch } from 'vue'
+import { App } from '@capacitor/app'
+import { assertOrdinaryWriteAllowed, restoreState } from '../platform/storage/restoreState.js'
+import { deriveKanataSqliteKek } from '../platform/security/kanataSqliteKek.js'
+import { createAndroidKanataSqliteDriver } from '../platform/storage/androidKanataSqliteDriver.js'
+import { kanataSchemaAdapter } from '../features/chat/storage/sqlite/kanataSchemaAdapter.js'
+import { KanataSchemaError, migrateKanataSchema } from '../features/chat/storage/sqlite/kanataSchemaMigrator.js'
+import { createKanataMessageRepository } from '../features/chat/storage/sqlite/kanataMessageRepository.js'
+import { createKanataConversationRepository } from '../features/chat/storage/sqlite/kanataConversationRepository.js'
+import { createKanataDeferredReplyRepository } from '../features/chat/storage/sqlite/kanataDeferredReplyRepository.js'
+
+/** Production stays on the existing protected legacy repository. */
+export const kanataCanonicalStorage = 'legacy'
+
+/** Explicit synthetic composition, outside the production startup and recovery paths.
+ * @param {{
+ *  syntheticOnly: true,
+ *  access: Pick<ReturnType<typeof import('../stores/protectedAccess.js').useProtectedAccessStore>, 'runOperation'>,
+ *  auth: Pick<ReturnType<typeof import('../stores/auth.js').useAuthStore>, 'sessionRevision' | 'isLocked'>,
+ *  bridge?: import('../platform/storage/kanataSqliteTypes').KanataSqliteBridge,
+ * }} options */
+export function createKanataSqliteCandidate({ syntheticOnly, access, auth, bridge }) {
+  if (syntheticOnly !== true) throw new Error('KANATA_SQLITE_NOT_ACTIVATED')
+  const driver = createAndroidKanataSqliteDriver({
+    bridge,
+    initialize: async operation => {
+      await migrateKanataSchema(kanataSchemaAdapter(operation))
+    },
+  })
+  let generation = 0
+  let disposed = false
+  let opening = false
+  /** @type {import('../platform/storage/kanataSqliteTypes').KanataSqliteOperation | undefined} */
+  let connection
+  const release = () => {
+    generation++
+    connection = undefined
+    return driver.release()
+  }
+  const stop = watch(() => [auth.sessionRevision, auth.isLocked, restoreState.blocked, restoreState.busy], () => {
+    if (opening || connection) void release().catch(() => {})
+  }, { flush: 'sync' })
+  const appListener = App.addListener('appStateChange', ({ isActive }) => {
+    if (!isActive && (opening || connection)) void release().catch(() => {})
+  }).catch(() => undefined)
+  /** @template T @param {{create?:boolean, assertOwner?: () => void}} options
+   * @param {(operation: import('../platform/storage/kanataSqliteTypes').KanataSqliteOperation) => Promise<T>} action */
+  async function run({ create = false, assertOwner = () => {} }, action) {
+    const requestedGeneration = generation
+    const requestedRevision = auth.sessionRevision
+    const result = await access.runOperation(['chat'], async (/** @type {string} */ password, /** @type {number} */ sessionRevision) => {
+      if (requestedRevision !== sessionRevision) throw new Error('KANATA_SQLITE_SESSION_CHANGED')
+      const assertCurrent = sessionGuard(requestedGeneration, sessionRevision)
+      assertCurrent()
+      assertOwner()
+      let leased = true
+      const assertLeased = () => {
+        if (!leased) throw new Error('KANATA_SQLITE_LEASE_REVOKED')
+        assertCurrent()
+        assertOwner()
+      }
+      try {
+        if (create && connection) throw new Error('KANATA_SQLITE_INCOMPLETE_CREATION')
+        if (!connection) {
+          opening = true
+          try {
+            const opened = await driver.open({
+              sessionRevision,
+              ownerGeneration: requestedGeneration,
+              assertCurrent,
+              deriveKey: salt => deriveKanataSqliteKek(password, salt),
+            }, { create })
+            assertCurrent()
+            connection = opened
+          } finally { opening = false }
+        }
+        const base = connection
+        /** @type {import('../platform/storage/kanataSqliteTypes').KanataSqliteOperation} */
+        const operation = {
+          transaction: async work => {
+            assertLeased()
+            return base.transaction(async tx => {
+              const value = await work(tx)
+              assertLeased()
+              return value
+            })
+          },
+          health: async () => {
+            assertLeased()
+            const value = await base.health()
+            assertLeased()
+            return value
+          },
+        }
+        assertLeased()
+        const value = await action(operation)
+        assertLeased()
+        return { value }
+      } catch (error) {
+        const code = /** @type {{code?:string}} */ (error)?.code
+        if (code === 'KANATA_SQLITE_LEASE_REVOKED' || code === 'KANATA_SQLITE_ROLLBACK_FAILED') {
+          await release()
+        }
+        if (error instanceof KanataSchemaError && (restoreState.blocked || restoreState.busy)) {
+          throw new Error('KANATA_SQLITE_STATE_UNKNOWN')
+        }
+        throw error
+      } finally {
+        leased = false
+      }
+    })
+    if (!result) throw new Error('KANATA_SQLITE_LEASE_REVOKED')
+    if (auth.sessionRevision !== requestedRevision || generation !== requestedGeneration || disposed) {
+      throw new Error('KANATA_SQLITE_SESSION_CHANGED')
+    }
+    assertOwner()
+    return result.value
+  }
+  /** Construct the connection guard outside the password-bearing operation callback.
+   * @param {number} opened @param {number} revision */
+  function sessionGuard(opened, revision) {
+    return () => {
+      if (disposed || auth.isLocked || auth.sessionRevision !== revision || generation !== opened) {
+        throw new Error('KANATA_SQLITE_SESSION_CHANGED')
+      }
+      assertOrdinaryWriteAllowed()
+      if (restoreState.busy) throw new Error('KANATA_SQLITE_STATE_UNKNOWN')
+    }
+  }
+  /** @template T @param {{assertOwner?: () => void}} options
+   * @param {(messages:import('../features/chat/storage/sqlite/kanataRepositoryTypes').KanataMessageRepository,
+   * conversations:import('../features/chat/storage/sqlite/kanataRepositoryTypes').KanataConversationRepository,
+   * deferred:ReturnType<typeof createKanataDeferredReplyRepository>) => Promise<T>} action */
+  const withRepositories = (options, action) => run(options, operation => action(
+    createKanataMessageRepository(operation, { id: () => 'audit-' + crypto.randomUUID(), clock: Date.now }),
+    createKanataConversationRepository(operation),
+    createKanataDeferredReplyRepository(operation),
+  ))
+  return {
+    run,
+    withRepositories,
+    release,
+    async dispose() {
+      disposed = true
+      stop()
+      try { await release() }
+      finally { await (await appListener)?.remove() }
+    },
+  }
+}

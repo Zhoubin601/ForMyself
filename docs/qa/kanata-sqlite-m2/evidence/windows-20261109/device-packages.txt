@@ -1,0 +1,3 @@
+package:com.formyself.qa.m2probe
+package:com.yubin.formyself.m2qa.test
+package:com.yubin.formyself.m2qa

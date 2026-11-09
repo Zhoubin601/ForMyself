@@ -1,0 +1,122 @@
+{
+  "android-logcat.txt.gz": {
+    "sha256": "5787b227ab51c7b7b02bf6785391279a409d31c76878e27c0f63a446504c958e",
+    "bytes": 50498,
+    "rawSha256": "513889b2e947c510bd6bbd89c2afd9800fa041fa955604f23a5110f8bb7c728f",
+    "rawBytes": 356132
+  },
+  "android-result-raw.txt.gz": {
+    "sha256": "85916c8a195975a54b58978fd0abd61772ca11cefae244e699eda6e4027a221f",
+    "bytes": 924,
+    "rawSha256": "aeceadc61a640e02b8418cf661b40e48ccd34b3f1e3c799d28ff34b63d51c4b7",
+    "rawBytes": 1578
+  },
+  "first-full-run-failure.txt.gz": {
+    "sha256": "56b012ee6f1c00a49487863d02ccc65ff4168459021a2e7cd5685d3b4e602448",
+    "bytes": 1083,
+    "rawSha256": "38d3a8a6cacd8668c209949ee19e5d3bf5fa7eff7398c027aed5a70582f1a0e4",
+    "rawBytes": 1763
+  },
+  "first-full-run-logcat.txt.gz": {
+    "sha256": "6f3c02e5a7790f35583ca098698959e36fbd11cc514e4871b1f54a7dc979385d",
+    "bytes": 48809,
+    "rawSha256": "5b0ecdd935846511108fca702caaec9335b198c7ee827bc89f2d11491d642af1",
+    "rawBytes": 362043
+  },
+  "ui-fix-retest.txt.gz": {
+    "sha256": "53b1ab2b3bb29919ff2074135bb097d47cbd7ceedc1f4a6ea14486761acdee1f",
+    "bytes": 709,
+    "rawSha256": "e064de965291d039a1d7a66231b9babcc0acf6d4cea6fd3e2aa59727c47d6d7e",
+    "rawBytes": 1248
+  },
+  "deferred-and-fault-retest.txt.gz": {
+    "sha256": "6c1b46b0a8a9fa58984ace71f9937e1244a07686cd0cfdf92834a57bddcf16dc",
+    "bytes": 855,
+    "rawSha256": "92694ffe707045e16916282e1649d4656eb64dc313d1eedd199d38612478f0bd",
+    "rawBytes": 1491
+  },
+  "android-candidate-build.txt.gz": {
+    "sha256": "c4e19486176a05074d7593388278392b9bbae0f6a326f0dc09f0d26001bae02d",
+    "bytes": 2360,
+    "rawSha256": "5bda8a50f5a8c0fffe662e9c8c96208bd2811c14208df3f43de602283959e303",
+    "rawBytes": 19804
+  },
+  "android-default-build.txt.gz": {
+    "sha256": "91db28499b5aa00a1ed75d954d77e63621f372948a74662b95556dfea6023da5",
+    "bytes": 2192,
+    "rawSha256": "b6af1743b0d91ea4835275fa2f97e7860519c9ea79d4f6407bbfeacd8db5f007",
+    "rawBytes": 17470
+  },
+  "npm-check.txt.gz": {
+    "sha256": "a3a7d348c154e0f39cc35493a99c7dce1dfe373c60fe3852620ff22c38dff0fa",
+    "bytes": 32040,
+    "rawSha256": "02b344cd47dedd75d283c1e427db9aa7deaad9956ac5829ff28b91df9edea361",
+    "rawBytes": 89722
+  },
+  "baseline-first-failure.txt.gz": {
+    "sha256": "324f54545d66d226f63b4504c9146231cc9943ca74d9e8f891acfcb207bfbc6a",
+    "bytes": 27139,
+    "rawSha256": "7c2ab068e0136b357edab69be0f8be275e2de186c9344d056199b210459c5d8a",
+    "rawBytes": 74451
+  },
+  "baseline-close-fix-check.txt.gz": {
+    "sha256": "6fa9a60dca422e05694d52b6449a1991511a704190ee30f78eaa50e950416c36",
+    "bytes": 29725,
+    "rawSha256": "798f3e0c01ca2432fb24a8899867426c2b411851b7a1aa423a4102f6ce9e489a",
+    "rawBytes": 83237
+  },
+  "npm-ci-offline-first-failure.txt.gz": {
+    "sha256": "d04ee619e701dcf6459a35ee5b26bb432cd69d2d8d2de06d102583a3aef1258d",
+    "bytes": 462,
+    "rawSha256": "56061c10fc9ed9889547b7748703986255e83133cfa2717e5d8a82f01075d4a8",
+    "rawBytes": 935
+  },
+  "npm-ci-sharp-first-failure.txt.gz": {
+    "sha256": "ad36fa5ce672a78a25ecdc3077c0c88e0a15b213612702317404cb77a5b49bdc",
+    "bytes": 2357,
+    "rawSha256": "157e1e4446a1ed0d520e924179b8a0cdcea4586744a14187e09ae1674d6788dd",
+    "rawBytes": 8032
+  },
+  "preflight-apk-build.txt.gz": {
+    "sha256": "749da5ae8c3282ad7872a743fb5dbf0e2b8eeb3a757c02f8891af214cb6d58f0",
+    "bytes": 1228,
+    "rawSha256": "cb474b53c16a06e0e15c200799a8575f6fe6b6bc6ec4c458b2a3a932a7d5cad5",
+    "rawBytes": 5356
+  },
+  "preflight-logcat.txt.gz": {
+    "sha256": "2427818222746a9ea24a26085dea5798d2789e9aa4a39ce0e9461c6c69b63820",
+    "bytes": 1077365,
+    "rawSha256": "70087f03bb797f83b8782170e945fec19064067278d45b0f4baa382ea6788efa",
+    "rawBytes": 9737522
+  },
+  "htmlviewer-file-window.xml.gz": {
+    "sha256": "4c0cdb8b363de36bd7b5c158fa0f2530584c8d71f3219bcfca7f88a7dff25248",
+    "bytes": 517,
+    "rawSha256": "36b1468328f5c4264662fbad5d17ca0db143695fc557a052155ba35f6595306b",
+    "rawBytes": 3570
+  },
+  "htmlviewer-base64-window.xml.gz": {
+    "sha256": "bf670318bd85a1ecabb86978603dc75da00b8178d9acbba00a4bd683292d05c3",
+    "bytes": 596,
+    "rawSha256": "9475612f107c8039648b5f2153fb76a1b58fa7d14e490f4c64a1bba3a7590bda",
+    "rawBytes": 3667
+  },
+  "whpx-boot.txt.gz": {
+    "sha256": "85d171276437511f86547326410c764c83b760f5db9bc601736179beb9f542e5",
+    "bytes": 11522,
+    "rawSha256": "27c746e59b4762119ad7218202b89e21a0d6ad4bb75dcc1c01b5f02e8e6d1e0e",
+    "rawBytes": 60917
+  },
+  "npm-check-delivery.txt.gz": {
+    "sha256": "7395c25f71010149e477bf10a419d931a7ec4ece7ead816b3c769904840c4157",
+    "bytes": 31725,
+    "rawSha256": "26be855e49ab71014ac0b067683dbe40a2fcb6c25cb31cc351eba3f61e6fbf95",
+    "rawBytes": 88508
+  },
+  "directed-delivery-raw.txt.gz": {
+    "sha256": "06502e246534cfe35f29db1f0798db801a233b05c0d84c060554a4dc7b8aafa1",
+    "bytes": 3021,
+    "rawSha256": "8d9dd1649d20143c6edb65d827c44ce4f4807b432ff709596c5fbf6aa38dad2f",
+    "rawBytes": 5579
+  }
+}

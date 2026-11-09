@@ -2,7 +2,9 @@
 import { validateKanataData, requireKanata as need, cloneKanataJson } from '../domain/kanataValidation.js'
 /** @typedef {import('../domain/kanataTypes').KanataData} Data */
 /** @typedef {import('../domain/kanataTypes').LifeSource} LifeSource */
-/** @param {Data} data @param {LifeSource[]} sources @param {{worldId:string,instanceId:string,group:boolean,remember?:boolean}} scope */
+/** @typedef {Pick<import('../domain/kanataTypes').Message,'id'|'worldId'|'conversationId'|'revision'|'status'|'deleted'|'replyToMessageId'|'replyToRevision'|'lifeSources'>} KnowledgeMessage */
+/** @typedef {Omit<Data,'messages'> & {messages:readonly KnowledgeMessage[]}} KnowledgeData */
+/** @param {KnowledgeData} data @param {LifeSource[]} sources @param {{worldId:string,instanceId:string,group:boolean,remember?:boolean}} scope */
 export function canUseKanataLifeSources(data,sources,scope) {
   if(!sources.length)return true
   return sources.every(source=>{
@@ -14,7 +16,7 @@ export function canUseKanataLifeSources(data,sources,scope) {
     return !!receiver?.read&&(!scope.remember||receiver.remember)&&(!scope.group||receiver.share)
   })
 }
-/** @param {Data} data @param {import('../domain/kanataTypes').Message} message @param {string} instanceId @param {boolean} group */
+/** @param {KnowledgeData} data @param {KnowledgeMessage} message @param {string} instanceId @param {boolean} group */
 export function canUseKanataMessage(data,message,instanceId,group) {
   const conversation=data.conversations.find(c=>c.id===message.conversationId&&c.worldId===message.worldId)
   if(message.replyToMessageId){const original=data.messages.find(m=>m.id===message.replyToMessageId);if(!original||original.deleted||original.status!=='complete'||original.revision!==(message.replyToRevision||1))return false}
@@ -22,7 +24,7 @@ export function canUseKanataMessage(data,message,instanceId,group) {
 }
 /** Resolve provenance through source messages and causal ancestors, including older imports
  * that omitted redundant event tags. Never infer permission from a visible descendant.
- * @param {Data} data @param {import('../domain/kanataTypes').WorldEvent} event
+ * @param {KnowledgeData} data @param {import('../domain/kanataTypes').WorldEvent} event
  */
 export function kanataEventLifeSources(data,event) {
   /** @type {LifeSource[]} */
@@ -36,7 +38,7 @@ export function kanataEventLifeSources(data,event) {
   }
   return [...new Map(sources.map(s=>[JSON.stringify(s),cloneKanataJson(s)])).values()]
 }
-/** @param {Data} data @param {import('../domain/kanataTypes').WorldEvent} event @param {string} instanceId @param {boolean} group @param {boolean} [sharedMemory] */
+/** @param {KnowledgeData} data @param {import('../domain/kanataTypes').WorldEvent} event @param {string} instanceId @param {boolean} group @param {boolean} [sharedMemory] */
 export function canUseKanataEvent(data,event,instanceId,group,sharedMemory=false) {
   if(event.status!=='committed'||(!sharedMemory&&!event.participantIds.includes(instanceId))||(group&&event.visibility!=='public')||!data.instances.some(i=>i.id===instanceId&&i.worldId===event.worldId))return false
   const queue=[event],seen=new Set()
@@ -48,7 +50,7 @@ export function canUseKanataEvent(data,event,instanceId,group,sharedMemory=false
 }
 /** Legacy imported records may have provenance only on their sources. Derive it without
  * broadening grants, so missing redundant metadata cannot become a privacy bypass.
- * @param {Data} data @param {import('../domain/kanataTypes').Memory} memory
+ * @param {KnowledgeData} data @param {import('../domain/kanataTypes').Memory} memory
  */
 export function kanataMemoryLifeSources(data,memory) {
   /** @type {LifeSource[]} */
@@ -63,7 +65,7 @@ export function kanataMemoryLifeSources(data,memory) {
   return [...new Map(sources.map(s=>[JSON.stringify(s),cloneKanataJson(s)])).values()]
 }
 /** Records remain visible to the user's manager after revocation; generation cannot use them.
- * @param {Data} data @param {import('../domain/kanataTypes').Memory} memory @param {string} instanceId @param {boolean} group @param {string} [conversationId]
+ * @param {KnowledgeData} data @param {import('../domain/kanataTypes').Memory} memory @param {string} instanceId @param {boolean} group @param {string} [conversationId]
  */
 export function canUseKanataMemory(data,memory,instanceId,group,conversationId) {
   if(memory.status!=='active'||data.instances.find(i=>i.id===instanceId)?.worldId!==memory.worldId)return false
@@ -81,7 +83,7 @@ export function canUseKanataMemory(data,memory,instanceId,group,conversationId) 
     return !!memory.sharedFromId||canUseKanataMessage(data,message,instanceId,group)
   })
 }
-/** @param {Data} data @param {{worldId:string,instanceId:string,text:string,group:boolean,budget:number,conversationId?:string}} scope */
+/** @param {KnowledgeData} data @param {{worldId:string,instanceId:string,text:string,group:boolean,budget:number,conversationId?:string}} scope */
 export function selectKanataMemories(data,scope) {
   need(Number.isSafeInteger(scope.budget)&&scope.budget>=0&&scope.budget<=16000,'INVALID_MEMORY_BUDGET','budget')
   const terms=scope.text.toLowerCase().split(/[\s，。！？,!?、]+/).filter(Boolean)

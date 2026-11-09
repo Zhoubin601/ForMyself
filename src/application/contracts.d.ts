@@ -2,6 +2,12 @@ import type { Component } from 'vue'
 export type {KanataSqlValue, KanataSqlRow, KanataSchemaTransaction, KanataSchemaConnection,
   KanataSchemaMigration, KanataSchemaResult, KanataSchemaMigrationOptions} from '../features/chat/storage/sqlite/kanataSchemaTypes'
 export type KanataSchemaMigrator = typeof import('../features/chat/storage/sqlite/kanataSchemaMigrator.js').migrateKanataSchema
+export type { KanataSqliteWriteResult, KanataSqliteTransaction, KanataSqliteHealth,
+  KanataSqliteOperation, KanataSqliteContext, KanataSqliteDriver } from '../platform/storage/kanataSqliteTypes'
+export type { KanataMessageScope, KanataMessageCursor, KanataMessagePage, KanataMessageRepository,
+  KanataConversationRepository, KanataMessageProvenance, KanataReplyExpectation,
+  KanataChatContextState, KanataDeferredReply } from '../features/chat/storage/sqlite/kanataRepositoryTypes'
+export type KanataSqliteChatRuntime = ReturnType<typeof import('./kanataSqliteChatRuntime.js').createKanataSqliteChatRuntime>
 export type { KanataData, World, CharacterCard, CharacterCardVersion, CharacterInstance,
   WorldPreset, WorldUserIdentity, Conversation, GroupReplyLimits, ReplyTimingPolicy, Message, LorebookEntry, Memory,
   Relationship, WorldEvent, WorldEffect, BackgroundTask, LifeGrant, SeedOptions } from '../features/chat/domain/kanataTypes'

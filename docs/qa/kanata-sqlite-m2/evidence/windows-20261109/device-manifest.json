@@ -1,0 +1,30 @@
+{
+  "syntheticOnly": true,
+  "createdBy": "M2 Windows/WHPX preflight",
+  "serial": "emulator-5582",
+  "avdName": "kanata_m2_api34",
+  "root": "E:\\Android\\kanata-m2-synthetic-0e1194cc",
+  "avdHome": "E:\\Android\\kanata-m2-synthetic-0e1194cc\\avd",
+  "sdk": "E:\\Android\\Sdk",
+  "api": 34,
+  "image": "system-images;android-34;google_apis;x86_64",
+  "imageRevision": 14,
+  "launcherPid": 12756,
+  "args": [
+    "-avd",
+    "kanata_m2_api34",
+    "-port",
+    "5582",
+    "-accel",
+    "on",
+    "-no-window",
+    "-no-audio",
+    "-no-snapshot",
+    "-no-metrics",
+    "-gpu",
+    "swiftshader",
+    "-feature",
+    "-Vulkan",
+    "-verbose"
+  ]
+}
