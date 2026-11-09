@@ -1224,4 +1224,4 @@ raw/完整需求清单.txt 4.1/4.4/8.3及最新连续执行v3驱动当前实现�
 ## 2026-11-09 Kanata SQLite M4 Completion 来源
 
 - 补齐任务以远端 M 的 `4191d7fd72723afab35f77bb9b85970f29f0f43f` 为接管入口，`301ad81e851f65cd5b73f883833052e7e5d1a2fb` 为已有实现。阅读原任务、Preflight、设计、验收和 QA。见 [补齐 Preflight](20261109-kanata-sqlite-m4-completion-preflight-v1.md)。
-- 产品语义核对于 2026-11-09。来源为 `raw/彼方 · Kanata 技术设计.txt` 及当前 legacy 实现，包括保留导入格式、来源精确修订和效果独立重放。历史群成员变更权限资料未提供。
+- 产品语义核对于 2026-11-09。来源为 `raw/彼方 · Kanata 技术设计.txt` 及当前 legacy 实现，包括保留导入格式、来源精确修订和效果独立重放。接管时未提供历史群成员变更权限。2026-11-09 用户在 M4 补齐会话确认方案 1，空群原地编辑，有消息时保留原群并按新名单另建同世界独立会话。详见 [补齐设计](20261109-kanata-sqlite-m4-completion-design-v1.md#群聊成员变更)。

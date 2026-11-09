@@ -14,4 +14,16 @@
 | F 自治、联系、社交、绑定 | ActivityPanel、ContactRuntime、SocialRuntime、LifeCompanion | SQL 自治窗口和水位已有。其余候选调度、设置、全局绑定和消费仍需接线 | 频率、关闭/解绑、回执、0 真实模型调用 |
 | G 历史整理 | HistoryPanel、archiveHistory、引用保护 | SQLite keyset 和按 ID 查询已接线，候选批量整理仍缺 | 预览范围、引用保护、无 legacy 文件访问 |
 
+## 访问矩阵补齐项
+
+以下为产品确认方案后的候选合同。上表保留接管时的核对记录。
+
+| 入口与分支 | 读取与写入 | Owner、权限与失败 | 验证 |
+| --- | --- | --- | --- |
+| 候选群聊成员编辑 → Conversation Repository，空群 | 当前世界与群 ID 定位、revision CAS、事务内检查消息存在性，原地更新成员集合 | 当前世界 owner 与可写门禁。异世界角色、已失效草稿和并发首条消息均拒绝原地提交 | GROUP-01、GROUP-04、GROUP-05 |
+| 候选群聊成员编辑 → Conversation Repository，已有消息 | 原会话仅用于校验和确认，按新名单新建同世界 conversation ID。保留原会话、成员、消息及引用 | 既有建群校验、事务与命令回执。失败或取消保留原群 | GROUP-02、GROUP-04、GROUP-05 |
+| 候选聊天窗口、历史检索、引用和角色上下文 | 继续按当前世界和 conversation ID 查询。新群从空历史开始 | 新成员通过新群不能定位、引用或读到原群历史。原成员在原群保持现有访问语义 | GROUP-03 |
+
+用例、实测与待验证范围见 [Completion QA](qa/kanata-sqlite-m4/completion/README.md#群聊成员变更验收用例)。
+
 固定目录由构建脚本登记，Schema 001–004 冻结。测试使用新建合成 AVD，基线运行结果与设备信息见 completion evidence。

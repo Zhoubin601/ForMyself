@@ -20,6 +20,20 @@ node node_modules/@capacitor/cli/bin/capacitor sync android
 node docs/qa/kanata-sqlite-m4/completion/verify-catalog.mjs android/app/build/generated/kanataSqlite/assets/kanata-sqlite-catalog.json
 ```
 
+## 群聊成员变更验收用例
+
+均使用同世界合成角色 A、B、C，另准备异世界角色 X。已有历史的原群包含 A、B，并至少有一条消息和一条引用该消息的回复。最终验收从候选成员编辑入口操作，在 SQLite 读回会话、成员与消息，并在 Android 合成 AVD 复跑。
+
+| 编号 | 操作 | 预期 | 当前验证范围 |
+| --- | --- | --- | --- |
+| GROUP-01 | 将空群成员由 A、B 改为 A、C | 保留原 conversation ID，仅更新成员，仍无消息，未增加会话 | 待候选编辑入口验证 |
+| GROUP-02 | 将有历史的原群成员由 A、B 改为 A、C，确认另建 | 获得独立 conversation ID，新成员名单为 A、C。原群 ID、revision、成员、消息及引用保持原样。历史仅剩归档或软删除记录时也应走此分支 | SQLite 主机覆盖独立建群和原数据保留。编辑确认、归档与软删除分支待测 |
+| GROUP-03 | 在新群搜索、定位、引用原群消息并读取 C 的角色上下文。随后回到原群用 B 读取历史 | 新群初始历史为空，原群消息及引用在新群不可访问。原群的引用和 B 的历史上下文继续按现行规则可读 | SQLite 主机覆盖 Repository 作用域。候选 UI 和 Android 待测 |
+| GROUP-04 | 在空群和历史群编辑分别选入 X 并提交 | 拒绝提交，原群无变化，也无新会话 | SQLite 主机覆盖独立建群拒绝。编辑分支待测 |
+| GROUP-05 | 打开空群草稿后并发写入首条消息，再提交草稿。另测取消另建、提交失败和重试 | 不得原地覆盖已有历史的成员。取消或失败不建群，重试最多创建一个新群 | 待候选编辑事务与 Android 验证 |
+
+主机回归命令为 `node --test --test-name-pattern='C3 new group' tests/kanataSqliteDomains.test.js`。本轮主机定向回归 2 项通过。`npm.cmd run check` 退出 0，661 项 Node 测试、392 项 Vue 测试、strict 类型检查与构建通过。独立建群用例覆盖现有 Repository 边界，成员编辑端到端以此表逐项验收。
+
 ## 证据
 
 - [基线 check](evidence/baseline-check.txt)、[定向最终](evidence/directed-final.txt)、[完整 check 最终](evidence/check-final-retest.txt)。

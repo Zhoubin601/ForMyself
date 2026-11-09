@@ -28,6 +28,8 @@
 
 生产入口使用 legacy，合成候选由 M2 QA WebView 显式装配。M3 世界 Runtime 只有命令/读边界，无完整管理 UI。M4 需要补齐功能等价的候选入口。不能以候选消息分页代表整个候选应用已经有界。
 
+后续确认的群聊成员编辑分支已补入 [Completion 访问矩阵](20261109-kanata-sqlite-m4-completion-preflight-v1.md#访问矩阵补齐项)。
+
 ## 实施后的入口核对
 
 候选 `KanataCandidateWorkspace → KanataConversationView → createKanataChatViewModel → createKanataSqliteChatRuntime → withRepositories/withDomains` 在隔离 WebView 装配。工作区查询走 `managementView.worlds/world/list`，当前角色授权走 `grantsForActor/setGrant`，按选定世界 owner 和候选世代撤销。会话新增、重试、延期及配置变更分别走 `turns.save` 与 `conversations.updateChatSettings`，修订和删除保留 M2 原命令。角色提示从 `promptActor`、`promptCandidates`、`relationshipContext`、`contextGrants` 和 `historyForSpeaker` 读取。历史正文按 keyset 检索，定位走 `locate`。自治配置和窗口走 scope 写入及分批签名，SQLCipher catalog 保持固定入口。

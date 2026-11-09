@@ -376,6 +376,43 @@ test('C3 new group receipts preserve ordered members and reject a cross-world ac
   assert.equal(await domains.conversations.get({ ...scope, conversationId:'c3-invalid' }), null)
 })
 
+test('C3 new group has no access to messages or quotes in a prior group', async t => {
+  const { domains, fixture, messages, scope } = await setup(t)
+  const [first, removed, added] = fixture.instances.filter(row => row.worldId === scope.worldId).map(row => row.id)
+  const prior = await domains.conversations.createGroup(scope.worldId, {
+    title: '合成原群', instanceIds: [first, removed],
+  }, { id: 'prior-group', commandId: 'create-prior-group' })
+  const priorScope = { worldId: scope.worldId, conversationId: prior.id }
+  const root = { ...fixture.messages[0], id: 'prior-group-root', conversationId: prior.id, content: '原群独有历史', lifeSources: [] }
+  const reply = { ...fixture.messages[1], id: 'prior-group-reply', conversationId: prior.id,
+    senderId: removed, replyToMessageId: root.id, replyToRevision: root.revision }
+  await messages.insertBatch([root, reply])
+  const before = await domains.conversations.get(priorScope)
+  const history = await messages.recent(priorScope)
+  const formerContext = await messages.historyForSpeaker(priorScope, removed, 10)
+  assert.equal(history.messages.length, 2)
+  assert.deepEqual(formerContext.map(row => row.id).sort(), [reply.id, root.id].sort())
+
+  const created = await domains.conversations.createGroup(scope.worldId, {
+    title: '合成新群', instanceIds: [first, added],
+  }, { id: 'new-group', commandId: 'create-new-group' })
+  assert.notEqual(created.id, prior.id)
+  const newScope = { worldId: scope.worldId, conversationId: created.id }
+  assert.deepEqual((await domains.conversations.get(newScope)).participantIds, [before.participantIds[0], first, added])
+  assert.equal(await messages.count(newScope), 0)
+  assert.deepEqual((await messages.recent(newScope)).messages, [])
+  assert.deepEqual((await messages.searchHistory(newScope, root.content)).messages, [])
+  assert.equal(await messages.locate(newScope, root.id), null)
+  assert.equal(await messages.quote(newScope, root.id), null)
+  assert.deepEqual(await messages.historyForSpeaker(newScope, added, 10), [])
+
+  assert.deepEqual(await domains.conversations.get(priorScope), before)
+  assert.deepEqual(await messages.recent(priorScope), history)
+  assert.equal((await messages.get(priorScope, reply.id)).replyToMessageId, root.id)
+  assert.equal((await messages.quote(priorScope, root.id)).content, root.content)
+  assert.deepEqual(await messages.historyForSpeaker(priorScope, removed, 10), formerContext)
+})
+
 test('C2 event ancestry pages merge overlapping paths and bind cursors to direction and root', async t => {
   const { db, domains, scope, other } = await setup(t)
   const fixture = await import('../docs/qa/kanata-sqlite-m4/completion/fixture.mjs')
