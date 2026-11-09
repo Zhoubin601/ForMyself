@@ -10,6 +10,9 @@ import { createKanataMessageRepository } from '../features/chat/storage/sqlite/k
 import { createKanataConversationRepository } from '../features/chat/storage/sqlite/kanataConversationRepository.js'
 import { createKanataDeferredReplyRepository } from '../features/chat/storage/sqlite/kanataDeferredReplyRepository.js'
 
+import { createKanataSqliteWorldRuntime } from './kanataSqliteWorldRuntime.js'
+import { createKanataSqliteDomains } from '../features/chat/storage/sqlite/kanataSqliteDomains.js'
+
 /** Production stays on the existing protected legacy repository. */
 export const kanataCanonicalStorage = 'legacy'
 
@@ -131,15 +134,24 @@ export function createKanataSqliteCandidate({ syntheticOnly, access, auth, bridg
   /** @template T @param {{assertOwner?: () => void}} options
    * @param {(messages:import('../features/chat/storage/sqlite/kanataRepositoryTypes').KanataMessageRepository,
    * conversations:import('../features/chat/storage/sqlite/kanataRepositoryTypes').KanataConversationRepository,
-   * deferred:ReturnType<typeof createKanataDeferredReplyRepository>) => Promise<T>} action */
+   * deferred:ReturnType<typeof createKanataDeferredReplyRepository>,
+   * domains:ReturnType<typeof createKanataSqliteDomains>) => Promise<T>} action */
   const withRepositories = (options, action) => run(options, operation => action(
     createKanataMessageRepository(operation, { id: () => 'audit-' + crypto.randomUUID(), clock: Date.now }),
     createKanataConversationRepository(operation),
     createKanataDeferredReplyRepository(operation),
+    createKanataSqliteDomains(operation, { id: () => crypto.randomUUID(), clock: Date.now }),
   ))
+  /** @template T @param {{assertOwner?:()=>void}} options
+   * @param {(domains:ReturnType<typeof createKanataSqliteDomains>)=>Promise<T>} action */
+  const withDomains = (options, action) => run(options, operation =>
+    action(createKanataSqliteDomains(operation, { id: () => crypto.randomUUID(), clock: Date.now })))
   return {
     run,
     withRepositories,
+    withDomains,
+    /** @param {()=>number} [clock] */
+    createWorldRuntime: clock => createKanataSqliteWorldRuntime({ candidate: { withDomains }, clock }),
     release,
     async dispose() {
       disposed = true

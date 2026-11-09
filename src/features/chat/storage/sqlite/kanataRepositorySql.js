@@ -32,6 +32,8 @@ export const messageQueries = Object.freeze({
     JOIN conversation_participants p ON p.world_id=args.world AND p.conversation_id=args.conversation
       AND p.participant_id=args.speaker AND p.kind='character'
     WHERE m.status='complete' AND coalesce(m.deleted,0)=0
+      AND NOT EXISTS (SELECT 1 FROM archived_message_marks a
+        WHERE a.world_id=m.world_id AND a.conversation_id=m.conversation_id AND a.message_id=m.id)
       AND (m.reply_to_message_id IS NULL OR EXISTS (
         SELECT 1 FROM messages r WHERE r.world_id=m.world_id AND r.conversation_id=m.conversation_id
           AND r.id=m.reply_to_message_id AND r.revision=coalesce(m.reply_to_revision,1)

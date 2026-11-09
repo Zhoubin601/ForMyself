@@ -14,7 +14,7 @@ import { extensionObject, requireSqliteValue as need, safeInteger } from './kana
 /** @typedef {{id:()=>string, clock:()=>number}} Tools */
 
 /** @param {Transaction} tx @param {string} sql @param {Value[]} bindings @param {string[]} columns */
-async function* visitRows(tx, sql, bindings, columns) {
+export async function* visitRows(tx, sql, bindings, columns) {
   /** @type {Value[]} */
   let cursor = columns.map(column => column === 'grant_revision' ? 0 : '')
   for (;;) {
@@ -46,7 +46,7 @@ function originalOrder(actual, hint, identity) {
 }
 
 /** @param {Transaction} tx @param {Row} row @returns {Promise<Event>} */
-async function eventFromRow(tx, row) {
+export async function eventFromRow(tx, row) {
   const keys = [row.world_id, row.id]
   const extensions = extensionObject(row.extensions_json)
   const participants = await gather(visitRows(tx, query.eventParticipants, keys, ['participant_id']), link => String(link.participant_id))
@@ -86,7 +86,7 @@ async function eventFromRow(tx, row) {
 }
 
 /** @param {Row} row @returns {Effect} */
-function effectFromRow(row) {
+export function effectFromRow(row) {
   return {
     id: String(row.id), worldId: String(row.world_id), eventId: String(row.event_id),
     targetType: /** @type {Effect['targetType']} */ (row.target_type), targetId: String(row.target_id),
@@ -100,11 +100,11 @@ async function changeOne(tx, sql, values) {
   need((await tx.execute(sql, values)).affectedRows === 1, 'KANATA_MESSAGE_DEPENDENT_CONFLICT')
 }
 
-/** @param {Transaction} tx @param {Value[]} scope */
-async function rebuildEffects(tx, scope) {
+/** @param {Transaction} tx @param {AsyncIterable<Row>|Iterable<Row>} affected */
+export async function rebuildEventEffects(tx, affected) {
   /** @type {Map<string,Effect>} */
   const paths = new Map()
-  for await (const row of visitRows(tx, query.affectedEffects, scope, ['id'])) {
+  for await (const row of affected) {
     const effect = effectFromRow(row)
     assertKanataEffectExecutable(effect)
     paths.set(JSON.stringify([effect.targetType, effect.targetId, effect.path]), effect)
@@ -148,7 +148,7 @@ export async function reviseMessageDependents(tx, message, tools, revise, messag
       next.revision, JSON.stringify(previous), JSON.stringify(next)])
   }
   await tx.execute(write.eventMemories, scope)
-  await rebuildEffects(tx, scope)
+  await rebuildEventEffects(tx, visitRows(tx, query.affectedEffects, scope, ['id']))
   await revise()
   for await (const row of visitRows(tx, query.replies, scope, ['id'])) {
     const previous = messages.decode(row)

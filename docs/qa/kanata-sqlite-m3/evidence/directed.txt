@@ -1,0 +1,23 @@
+(node:18908) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ M3 only appends to the frozen 001–003 catalog (7.6002ms)
+✔ M3 upgrades a populated v3 and preserves historical application times (71.0511ms)
+✔ M3 world and identity creation are atomic, idempotent and reversibly archived (46.7479ms)
+✔ M3 character version publication is immutable and instance scope stays isolated (43.0093ms)
+✔ M3 lore visibility is checked before projection and associations roll back (40.8269ms)
+✔ M3 remember, read and share reject before sensitive queries and archived source requires exact revision (45.5927ms)
+✔ M3 revoke retains independent same-path effects and atomically changes causal descendants (50.8114ms)
+✔ M3 window writes event, effects, task and watermark atomically, including failed COMMIT (52.8947ms)
+✔ M3 old world owner rejects late data and never sends a new command (37.3166ms)
+✔ M3 a derived reply cannot launder an unrememberable source and deletion redacts the body (41.3485ms)
+✔ M3 private event context reads neither its summary nor another actor’s effects (40.7554ms)
+✔ M3 expired lease cannot complete and duplicate task completion writes one event (41.9948ms)
+✔ M3 usage attempt preserves null measurement and final usage is idempotent (36.369ms)
+ℹ tests 13
+ℹ suites 0
+ℹ pass 13
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 725.8908

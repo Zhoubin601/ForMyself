@@ -4,7 +4,7 @@ import { validateKanataData, requireKanata as need, cloneKanataJson } from '../d
 /** @typedef {import('../domain/kanataTypes').LifeSource} LifeSource */
 /** @typedef {Pick<import('../domain/kanataTypes').Message,'id'|'worldId'|'conversationId'|'revision'|'status'|'deleted'|'replyToMessageId'|'replyToRevision'|'lifeSources'>} KnowledgeMessage */
 /** @typedef {Omit<Data,'messages'> & {messages:readonly KnowledgeMessage[]}} KnowledgeData */
-/** @param {KnowledgeData} data @param {LifeSource[]} sources @param {{worldId:string,instanceId:string,group:boolean,remember?:boolean}} scope */
+/** @param {Pick<KnowledgeData,'lifeGrants'>} data @param {LifeSource[]} sources @param {{worldId:string,instanceId:string,group:boolean,remember?:boolean}} scope */
 export function canUseKanataLifeSources(data,sources,scope) {
   if(!sources.length)return true
   return sources.every(source=>{
@@ -85,11 +85,17 @@ export function canUseKanataMemory(data,memory,instanceId,group,conversationId) 
 }
 /** @param {KnowledgeData} data @param {{worldId:string,instanceId:string,text:string,group:boolean,budget:number,conversationId?:string}} scope */
 export function selectKanataMemories(data,scope) {
-  need(Number.isSafeInteger(scope.budget)&&scope.budget>=0&&scope.budget<=16000,'INVALID_MEMORY_BUDGET','budget')
-  const terms=scope.text.toLowerCase().split(/[\s，。！？,!?、]+/).filter(Boolean)
-  const ranked=data.memories.filter(m=>m.worldId===scope.worldId&&canUseKanataMemory(data,m,scope.instanceId,scope.group,scope.conversationId)).map((memory,index)=>({memory,index,score:(memory.layer==='L3'?3:1)+terms.filter(term=>(memory.key+' '+memory.content).toLowerCase().includes(term)).length*2})).sort((a,b)=>b.score-a.score||b.index-a.index)
+  const permitted = data.memories.filter(m => m.worldId === scope.worldId && canUseKanataMemory(data,m,scope.instanceId,scope.group,scope.conversationId))
+    .map(memory => ({ ...memory, lifeSources: kanataMemoryLifeSources(data,memory) }))
+  return rankKanataMemories(permitted, scope.text, scope.budget)
+}
+/** @param {readonly import('../domain/kanataTypes').Memory[]} permitted @param {string} text @param {number} budget */
+export function rankKanataMemories(permitted,text,budget) {
+  need(Number.isSafeInteger(budget)&&budget>=0&&budget<=16000,'INVALID_MEMORY_BUDGET','budget')
+  const terms=text.toLowerCase().split(/[\s，。！？,!?、]+/).filter(Boolean)
+  const ranked=permitted.map((memory,index)=>({memory,index,score:(memory.layer==='L3'?3:1)+terms.filter(term=>(memory.key+' '+memory.content).toLowerCase().includes(term)).length*2})).sort((a,b)=>b.score-a.score||b.index-a.index)
   let usedBytes=0;const entries=[]
-  for(const {memory} of ranked){const cost=new TextEncoder().encode(memory.content).length+16;if(usedBytes+cost>scope.budget)continue;usedBytes+=cost;entries.push({...cloneKanataJson(memory),lifeSources:kanataMemoryLifeSources(data,memory)})}
+  for(const {memory} of ranked){const cost=new TextEncoder().encode(memory.content).length+16;if(usedBytes+cost>budget)continue;usedBytes+=cost;entries.push(cloneKanataJson(memory))}
   return{entries,usedBytes}
 }
 /** @param {Data} input @param {string} worldId @param {string} instanceId @param {import('../domain/kanataTypes').LifeModule} moduleId @param {{read:boolean,remember:boolean,share:boolean}} flags @param {()=>string} id */

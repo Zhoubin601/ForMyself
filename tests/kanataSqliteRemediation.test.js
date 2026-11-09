@@ -7,7 +7,7 @@ import {schemaHarness} from './helpers/kanataSqliteHarness.js'
 import {installLegacySchema} from './helpers/kanataSqliteLegacy.js'
 import {kanataFixtureCommands,kanataSqliteFixture,insertSql} from './helpers/kanataSqliteFixture.js'
 import {validateKanataData} from '../src/features/chat/domain/kanataValidation.js'
-import {KANATA_SCHEMA_MIGRATIONS as migrations} from '../src/features/chat/storage/sqlite/kanataSchema.js'
+import {KANATA_SCHEMA_MIGRATIONS as migrations,KANATA_SCHEMA_VERSION as currentVersion} from '../src/features/chat/storage/sqlite/kanataSchema.js'
 import {migrateKanataSchema} from '../src/features/chat/storage/sqlite/kanataSchemaMigrator.js'
 import {sha256Text} from '../src/shared/crypto/sha256Text.js'
 import {spawn} from 'node:child_process'
@@ -19,10 +19,10 @@ async function fixture(t){const h=schemaHarness();t.after(h.close);await migrate
 const code=c=>e=>e.code===c
 
 test('R1-01 成功版本保存真实注入UTC毫秒，回拨不伪造单调时间，幂等不重写',async t=>{
- const h=schemaHarness();t.after(h.close);const epoch=Date.UTC(2026,10,7,1,2,3,456),times=[epoch,epoch-1000,epoch+500]
+ const h=schemaHarness();t.after(h.close);const epoch=Date.UTC(2026,10,7,1,2,3,456),times=[epoch,epoch-1000,epoch+500,epoch+2000]
  let i=0;await migrateKanataSchema(h.connection,{now:()=>times[i++]})
  assert.deepEqual(q(h,'SELECT applied_at FROM schema_migration_applications ORDER BY version').map(r=>r.applied_at),times)
- assert.equal(i,3);h.writes.length=0
+ assert.equal(i,currentVersion);h.writes.length=0
  await migrateKanataSchema(h.connection,{now:()=>{throw Error('no resampling on no-op')}})
  assert.deepEqual(h.writes,[])
  for(const tz of ['Pacific/Kiritimati','America/Los_Angeles']){
@@ -39,7 +39,7 @@ test('R1-02 001/002原checksum保持，有数据旧库未知旧时间不回填�
   const before=q(h,'SELECT * FROM message_audits'),now=1700000000000
   await migrateKanataSchema(h.connection,{now:()=>now})
   const records=q(h,'SELECT * FROM schema_migration_applications ORDER BY version')
-  assert.equal(records.length,3)
+  assert.equal(records.length,currentVersion)
   for(const row of records)assert.deepEqual([row.applied_at,row.time_source],row.version<=version?[null,'legacy-unrecorded']:[now,'js-wall-clock-utc-ms'])
   assert.deepEqual(q(h,'SELECT * FROM message_audits'),before)
  }
@@ -60,7 +60,7 @@ test('R1-04 已应用日志和时间不可普通改删/替换；缺失时间记�
  }
  const partial=schemaHarness();t.after(partial.close)
  await partial.connection.transaction(async tx=>{
-  for(const m of migrations){for(const sql of m.statements)await tx.execute(sql);await tx.execute('INSERT INTO schema_migrations VALUES(?,?,?)',[m.version,m.name,sha256Text(JSON.stringify([m.version,m.name,m.statements]))])}
+  for(const m of migrations.slice(0,3)){for(const sql of m.statements)await tx.execute(sql);await tx.execute('INSERT INTO schema_migrations VALUES(?,?,?)',[m.version,m.name,sha256Text(JSON.stringify([m.version,m.name,m.statements]))])}
   await tx.execute('PRAGMA user_version=3');await tx.execute('PRAGMA application_id=1263424577')
  })
  partial.writes.length=0;await assert.rejects(migrateKanataSchema(partial.connection),code('KANATA_SCHEMA_TIME_JOURNAL_MISMATCH'));assert.deepEqual(partial.writes,[])
@@ -183,7 +183,11 @@ test('R6 NOT-A-DEFECT：NO ACTION保留引用，未引用叶子可删，延迟FK
  const saved=JSON.parse(readFileSync(new URL('../docs/qa/kanata-sqlite-m1-r/generated/foreign-keys.json',import.meta.url)))
  const actual=tables.flatMap(table=>{const groups=new Map();for(const fk of q(h,`PRAGMA foreign_key_list(${table.name})`)){if(!groups.has(fk.id))groups.set(fk.id,[]);groups.get(fk.id).push(fk)}
   return [...groups].map(([id,rows])=>{rows.sort((a,b)=>a.seq-b.seq);return{parent:rows[0].table,child:table.name,id,columns:rows.map(r=>r.from),targetColumns:rows.map(r=>r.to),onDelete:rows[0].on_delete,onUpdate:rows[0].on_update}})})
- assert.deepEqual(saved.map(({parent,child,id,columns,targetColumns,onDelete,onUpdate})=>({parent,child,id,columns,targetColumns,onDelete,onUpdate})),actual)
+ assert.deepEqual(actual, [
+   ...saved.map(({parent,child,id,columns,targetColumns,onDelete,onUpdate})=>({parent,child,id,columns,targetColumns,onDelete,onUpdate})),
+   {parent:'messages',child:'archived_message_marks',id:0,columns:['world_id','conversation_id','message_id'],
+     targetColumns:['world_id','conversation_id','id'],onDelete:'NO ACTION',onUpdate:'NO ACTION'}
+ ])
 
  for(const sql of ["DELETE FROM worlds WHERE id=(SELECT world_id FROM messages LIMIT 1)","DELETE FROM messages WHERE id='message-one'","DELETE FROM world_events WHERE id='event-one'","DELETE FROM conversations WHERE id=(SELECT conversation_id FROM messages LIMIT 1)"]){assert.throws(()=>run(h,sql),/FOREIGN KEY/)}
  run(h,"DELETE FROM messages WHERE id='message-two'")
@@ -213,7 +217,7 @@ test('R1/R4 真正SIGKILL覆盖003时间写入与业务/审计同事务，重启
   await new Promise((resolve,reject)=>{const timer=setTimeout(()=>{child.kill('SIGKILL');reject(Error('timeout'))},15000);child.stdout.once('data',d=>{clearTimeout(timer);assert.match(String(d),/READY/);resolve()});child.once('exit',()=>{clearTimeout(timer);reject(Error('early child exit'))})})
   const done=once(child,'exit');child.kill('SIGKILL');assert.equal((await done)[1],'SIGKILL')
   const reopened=schemaHarness(file)
-  assert.equal(q(reopened,'PRAGMA user_version')[0].user_version,mode==='time'?2:3)
+  assert.equal(q(reopened,'PRAGMA user_version')[0].user_version,mode==='time'?2:currentVersion)
   assert.equal(q(reopened,"SELECT revision FROM messages WHERE id='message-one'")[0].revision,2)
   if(mode==='time')assert.equal(q(reopened,"SELECT count(*) n FROM sqlite_schema WHERE name='schema_migration_applications'")[0].n,0)
   else assert.equal(q(reopened,"SELECT count(*) n FROM message_audits WHERE id='kill-audit'")[0].n,0)
@@ -254,8 +258,8 @@ test('R1/R4 既有v2追加003每个写入点及提交失败保留原文件，新
   let n=0;const broken=schemaHarness(file,{beforeExecute:()=>{if(++n===fault)throw Error('injected')},beforeCommit:()=>{if(fault==='commit')throw Error('injected')}})
   await assert.rejects(migrateKanataSchema(broken.connection),code('KANATA_SCHEMA_MIGRATION_FAILED'));broken.close()
   assert.deepEqual(readFileSync(file),bytes)
-  const next=schemaHarness(file);assert.equal((await migrateKanataSchema(next.connection)).version,3)
-  assert.equal(q(next,'SELECT count(*) n FROM message_audits')[0].n,1);assert.equal(q(next,'SELECT count(*) n FROM schema_migration_applications')[0].n,3)
+  const next=schemaHarness(file);assert.equal((await migrateKanataSchema(next.connection)).version,currentVersion)
+  assert.equal(q(next,'SELECT count(*) n FROM message_audits')[0].n,1);assert.equal(q(next,'SELECT count(*) n FROM schema_migration_applications')[0].n,currentVersion)
   assert.deepEqual(q(next,'PRAGMA foreign_key_check'),[]);assert.equal(q(next,'PRAGMA integrity_check')[0].integrity_check,'ok');next.close()
  }
 })

@@ -16,6 +16,7 @@ import { collectKanataLifeContext } from './kanataLifeContext.js'
 /** @typedef {import('../features/chat/storage/sqlite/kanataRepositoryTypes').KanataMessageProvenance} Provenance */
 /** @typedef {ReturnType<typeof import('./kanataSqliteCandidate.js').createKanataSqliteCandidate>} Candidate */
 /** @typedef {Omit<Data,'messages'>} Metadata */
+/** @typedef {import('../features/chat/storage/sqlite/kanataDomainTypes').KanataSqliteDomains} Domains */
 /** @typedef {{prompt: ReturnType<typeof buildKanataConversationContext>, done: Message[], lifeSignature: string, name: string}} ReplyContext */
 /** @typedef {{text?:string,retryMessageId?:string,replyToMessageId?:string,replyToRevision?:number,stream?:boolean,delayMs?:number,
  * persistDelay?:boolean,timing?:'configured'|'immediate',
@@ -60,6 +61,18 @@ async function fetchProvenance(repository, data, worldId) {
   return provenance
 }
 
+/** @template T @param {(afterId:string)=>Promise<{entries:T[],cursor:string|null}>} read */
+async function readKnowledgePages(read) {
+  const entries = []
+  let cursor = ''
+  for (;;) {
+    const page = await read(cursor)
+    entries.push(...page.entries)
+    if (page.cursor === null) return entries
+    cursor = page.cursor
+  }
+}
+
 /** @param {Repository} repository @param {Scope} scope @param {string} id */
 async function completedReplies(repository, scope, id) {
   /** @type {Message[]} */
@@ -81,7 +94,7 @@ async function completedReplies(repository, scope, id) {
  * onAttempt?: (attempt: import('../platform/ai/completionTypes').CompletionAttempt & Scope & {instanceId:string,turnId:string}) => Promise<unknown>,
  * clock?: () => number, id?: () => string
  * }} options */
-export function createKanataSqliteChatRuntime({ candidate, metadata, completion, auth, lifeReaders = {}, onAttempt = async () => {}, clock = Date.now, id = () => crypto.randomUUID() }) {
+export function createKanataSqliteChatRuntime({ candidate, metadata, completion, auth, lifeReaders = {}, onAttempt, clock = Date.now, id = () => crypto.randomUUID() }) {
   const revision = shallowRef(0)
   const foreground = shallowRef(true)
   const messageRevision = shallowRef(0)
@@ -188,12 +201,13 @@ export function createKanataSqliteChatRuntime({ candidate, metadata, completion,
     try {
       const manualWait = options.delayMs ?? 0
       requireCurrent(Number.isSafeInteger(manualWait) && manualWait >= 0 && manualWait <= 30000, 'INVALID_REPLY_DELAY')
-      const turn = await candidate.withRepositories({ assertOwner }, async (messages, conversations, deferred) => {
+      const turn = await candidate.withRepositories({ assertOwner }, async (messages, conversations, deferred, domains) => {
         const conversation = await conversations.get(scope)
-        const data = { ...metadata(), messages: [] }
-        requireCurrent(conversation && conversation.type !== 'character', 'CONVERSATION_UNAVAILABLE')
-        if (!conversation) throw new Error('CONVERSATION_UNAVAILABLE')
-        data.conversations = data.conversations.map(row => row.id === conversationId ? conversation : row)
+        if (!conversation || conversation.type === 'character') throw new Error('CONVERSATION_UNAVAILABLE')
+        const world = await domains.worlds.get(scope.worldId)
+        if (!world || world.world.archived) throw new Error('CONVERSATION_UNAVAILABLE')
+        const actors = await domains.characters.conversationActors(scope.worldId, conversation.participantIds)
+        const data = { ...metadata(), ...actors, worlds: [world.world], identities: [world.identity], conversations: [conversation], messages: [] }
         kanataConversation(data, conversationId)
         const identity = data.identities.find(row => row.worldId === scope.worldId)
         if (!identity) throw new Error('WORLD_IDENTITY_REQUIRED')
@@ -266,13 +280,15 @@ export function createKanataSqliteChatRuntime({ candidate, metadata, completion,
           },
           async onAttempt(attempt) {
             assertOwner()
-            await onAttempt({ ...attempt, ...scope, instanceId, turnId: turn.source.turnId })
+            const usage = { ...attempt, ...scope, instanceId, turnId: turn.source.turnId, purpose: /** @type {const} */ ('chat') }
+            if (onAttempt) await onAttempt(usage)
+            else await candidate.withDomains({ assertOwner }, domains => domains.usage.record(usage))
             assertOwner()
           },
         })
         assertOwner()
-        await candidate.withRepositories({ assertOwner }, async (messages, conversations) => {
-          const current = await readContext(messages, await conversations.get(scope), instanceId)
+        await candidate.withRepositories({ assertOwner }, async (messages, conversations, _deferred, domains) => {
+          const current = await readContext(messages, await conversations.get(scope), instanceId, domains)
           requireCurrent(current.prompt.knowledgeSignature === context.prompt.knowledgeSignature
             && current.lifeSignature === context.lifeSignature
             && JSON.stringify(current.prompt.messages) === JSON.stringify(context.prompt.messages)
@@ -299,52 +315,46 @@ export function createKanataSqliteChatRuntime({ candidate, metadata, completion,
 
       /** @param {string} instanceId @returns {Promise<ReplyContext>} */
       async function replyContext(instanceId) {
-        return candidate.withRepositories({ assertOwner }, async (messages, conversations) =>
-          readContext(messages, await conversations.get(scope), instanceId))
+        return candidate.withRepositories({ assertOwner }, async (messages, conversations, _deferred, domains) =>
+          readContext(messages, await conversations.get(scope), instanceId, domains))
       }
 
-      /** @param {Repository} messages @param {Conversation|null} conversation @param {string} instanceId @returns {Promise<ReplyContext>} */
-      async function readContext(messages, conversation, instanceId) {
+      /** @param {Repository} messages @param {Conversation|null} conversation @param {string} instanceId @param {Domains} domains @returns {Promise<ReplyContext>} */
+      async function readContext(messages, conversation, instanceId, domains) {
         if (!conversation || conversation.revision !== turn.conversation.revision) throw new Error('STALE_CONTEXT')
         const latest = await messages.latest(scope, 'user')
         requireCurrent(latest && latest.id === turn.source.id && latest.revision === turn.source.revision && !latest.deleted, 'STALE_TURN')
         const done = await completedReplies(messages, scope, turn.source.id)
         const meta = metadata()
         const history = await messages.historyForSpeaker(scope, instanceId, kanataMemoryPolicy({ ...meta, messages: [] }, scope.worldId).recentMessages)
-        const relevant = {
-          events: meta.events.filter(row => row.worldId === scope.worldId && row.status === 'committed').map(row => row.id),
-          memories: meta.memories.filter(row => row.worldId === scope.worldId && row.status === 'active').map(row => row.id),
-          relationships: meta.relationships.filter(row => row.worldId === scope.worldId && row.fromId === instanceId).map(row => row.id),
+        const relevant = meta.relationships.filter(row => row.worldId === scope.worldId && row.fromId === instanceId)
+        const world = await domains.worlds.get(scope.worldId)
+        if (!world || world.world.archived) throw new Error('CONVERSATION_UNAVAILABLE')
+        const group = conversation.type === 'group'
+        const verified = await domains.events.context(scope.worldId, { instanceId, group }, [instanceId, ...relevant.map(row => row.id)])
+        const actors = await domains.characters.conversationActors(scope.worldId, [instanceId], verified.hiddenTargetIds)
+        const grants = await domains.autonomy.grants(scope.worldId)
+        const memories = await readKnowledgePages(afterId => domains.memories.listFor({ ...scope, instanceId }, afterId))
+        const lorebook = await readKnowledgePages(afterId => domains.lorebook.list(scope.worldId, afterId, 50, instanceId))
+        const relationships = []
+        for (const row of relevant) {
+          if (verified.hiddenTargetIds.has(row.id)) relationships.push(row)
+          else {
+            const current = await domains.events.relationship(scope.worldId, row.id)
+            if (current) relationships.push(current)
+          }
         }
-        const actual = await messages.contextState(scope, instanceId, relevant)
-        const events = new Map(actual.events.map(row => [row.id, row]))
-        const memories = new Map(actual.memories.map(row => [row.id, row]))
-        const relationships = new Map(actual.relationships.map(row => [row.id, row]))
         const data = {
-          ...meta, messages: [...history].reverse(),
-          conversations: meta.conversations.map(row => row.id === conversationId ? conversation : row),
-          instances: meta.instances.map(row => row.id === instanceId ? { ...row, ...actual.speaker } : row),
-          events: meta.events.flatMap(row => {
-            if (row.worldId !== scope.worldId || row.status !== 'committed') return [row]
-            const state = events.get(row.id)
-            return state ? [{ ...row, ...state }] : []
-          }),
-          memories: meta.memories.flatMap(row => {
-            if (row.worldId !== scope.worldId || row.status !== 'active') return [row]
-            const state = memories.get(row.id)
-            return state ? [{ ...row, ...state }] : []
-          }),
-          relationships: meta.relationships.flatMap(row => {
-            if (row.worldId !== scope.worldId || row.fromId !== instanceId) return [row]
-            const state = relationships.get(row.id)
-            return state ? [{ ...row, ...state }] : []
-          }),
+          ...meta, ...actors, worlds: [world.world], identities: [world.identity], messages: [...history].reverse(),
+          conversations: [conversation],
+          events: verified.events, memories, lorebookEntries: lorebook, lifeGrants: grants, relationships,
         }
         const provenance = await fetchProvenance(messages, data, scope.worldId)
         const life = await collectKanataLifeContext(data, { worldId: scope.worldId, instanceId, group: conversation.type === 'group' }, lifeReaders)
         assertOwner()
         const prompt = buildKanataConversationContext(data, conversationId, instanceId, {
           provenance, lifeEntries: life.entries, lifeSources: life.lifeSources,
+          repositoryKnowledge: { ...verified, memories },
         })
         return { prompt, done, lifeSignature: life.signature, name: resolveKanataCharacter(data, instanceId).name }
       }

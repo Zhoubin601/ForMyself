@@ -1209,3 +1209,9 @@ raw/完整需求清单.txt 4.1/4.4/8.3及最新连续执行v3驱动当前实现�
 ### Windows/WHPX 实施来源
 
 当前 M 基线为 `b0be26f2f26d66abe7720625ca9afeb84d32f301`。以 Windows 交接、M2 任务书与设计、M0 信封实现、M1/M1-R Schema、当前 ChatRuntime/ConversationView 和消息修订纯函数为依据。核对本机锁定 SQLCipher 4.17.0 AAR 的 SQLiteSession/SQLiteDatabase 字节码和实际 COMMIT 行为。合成数据由 `tests/helpers/kanataSqliteM2Fixture.js` 扩展既有结构夹具，未读取私人原始资料。来源与实测指纹见 [Windows 验收](20261109-kanata-sqlite-m2-acceptance-v2.md)。
+
+## 2026-11-09 Kanata SQLite M3
+
+- 本轮任务原件为用户附件《已粘贴的文本.txt》。M 的已验证起点为 `b36bbe65ec05dea0b408867dd7acdc627ca983f2`。
+- `raw/完整需求清单.txt` 第 185、308–312、443 行记录归档、事件撤销和撤权语义。
+- `raw/彼方 · Kanata 技术设计.txt` 第 177–179、288–290 行记录 Effects 归属、来源修订与自治去重。详见 [接管报告](20261109-kanata-sqlite-m3-preflight-v1.md)。

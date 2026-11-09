@@ -65,10 +65,32 @@ export function planKanataWorldWindow(data,worldId,now) {
   const signature=JSON.stringify([data.instances.filter(i=>i.worldId===worldId),data.virtualSchedules?.filter(s=>s.worldId===worldId)||[]])
   return{worldId,worldRevision:selected.revision,policyRevision:policy.revision,signature,from:selected.lastSimulatedAt,start,end,skippedMs:start-selected.lastSimulatedAt,timeZone:selected.timeZone,idempotencyKey:`world-window-v1:${Math.floor(start/WINDOW)}:${end}`}
 }
-/** @param {Data} data @param {string} instanceId @param {number} at @param {string} timeZone */
+/** @param {Pick<Data,'virtualSchedules'>} data @param {string} instanceId @param {number} at @param {string} timeZone */
 export function kanataScheduledActivity(data,instanceId,at,timeZone) {
   const local=kanataLocalTime(at,timeZone)
   return data.virtualSchedules?.find(s=>s.instanceId===instanceId&&s.days.includes(local.day)&&s.startMinute<=local.minute&&local.minute<s.endMinute)||null
+}
+/** @param {Pick<Data,'instances'|'virtualSchedules'>} data
+ * @param {NonNullable<ReturnType<typeof planKanataWorldWindow>>} plan
+ * @returns {Parameters<typeof proposeKanataEvent>[1][]}
+ */
+export function kanataWindowEvents(data, plan) {
+  const enabled = data.instances.filter(i => i.worldId === plan.worldId && i.autonomyEnabled).sort((a,b) => a.id.localeCompare(b.id,'en'))
+  const offset = enabled.length ? Math.floor(plan.start / WINDOW) % enabled.length : 0
+  const actors = [...enabled.slice(offset), ...enabled.slice(0, offset)].slice(0, 8)
+  return actors.flatMap(instance => {
+    const schedule = kanataScheduledActivity(data, instance.id, plan.end - 1, plan.timeZone)
+    if (!schedule) return []
+    const kinds = /** @type {('move'|'rest')[]} */ ([])
+    if (instance.state.location !== schedule.location) kinds.push('move')
+    if (schedule.resting) kinds.push('rest')
+    return kinds.map(kind => ({
+      worldId: plan.worldId, participantIds: [instance.id], sourceRefs: [], causedByEventIds: [],
+      visibility: 'private', effectiveAt: plan.end, kind,
+      summary: `有限补算：按虚拟日程「${schedule.activity}」${kind === 'move' ? '前往' + schedule.location : '休息'}。这是重新打开后的规则补算，并非离线实时执行。`,
+      action: { instanceId: instance.id, location: schedule.location },
+    }))
+  })
 }
 /** Atomic graph transition only; the application must persist before requesting another plan.
  * No AI transcript is invented. Scheduled rest/move have known rules and actual source window.
@@ -83,20 +105,12 @@ export function completeKanataWorldWindow(input,plan,tools) {
   const existing=data.tasks.find(t=>t.kind==='world'&&t.worldId===plan.worldId&&t.idempotencyKey===plan.idempotencyKey)
   const resultEventIds=[]
   if(!existing){
-    const allActors=data.instances.filter(i=>i.worldId===plan.worldId&&i.autonomyEnabled).sort((a,b)=>a.id.localeCompare(b.id,'en'))
-    const offset=allActors.length?Math.floor(plan.start/WINDOW)%allActors.length:0
-    const actors=[...allActors.slice(offset),...allActors.slice(0,offset)].slice(0,8)
-    for(const instance of actors){
-      const schedule=kanataScheduledActivity(data,instance.id,plan.end-1,plan.timeZone)
-      if(!schedule)continue
-      const kinds=/** @type {('move'|'rest')[]} */([])
-      if(instance.state.location!==schedule.location)kinds.push('move')
-      if(schedule.resting)kinds.push('rest')
-      for(const kind of kinds){
-        data=proposeKanataEvent(data,{worldId:plan.worldId,participantIds:[instance.id],sourceRefs:[],causedByEventIds:[],visibility:'private',summary:`有限补算：按虚拟日程「${schedule.activity}」${kind==='move'?'前往'+schedule.location:'休息'}。这是重新打开后的规则补算，并非离线实时执行。`,effectiveAt:plan.end,kind,action:{instanceId:instance.id,location:schedule.location}},tools)
-        const event=data.events.at(-1);if(!event)throw Error('SIMULATION_EVENT_MISSING')
-        data=commitKanataEvent(data,event.id,1,tools);resultEventIds.push(event.id)
-      }
+    for (const fields of kanataWindowEvents(data, plan)) {
+      data = proposeKanataEvent(data, fields, tools)
+      const event = data.events.at(-1)
+      if (!event) throw Error('SIMULATION_EVENT_MISSING')
+      data = commitKanataEvent(data, event.id, 1, tools)
+      resultEventIds.push(event.id)
     }
     data.tasks.push({id:tools.id(),worldId:plan.worldId,kind:'world',state:'succeeded',idempotencyKey:plan.idempotencyKey,sourceRefs:[],sourceRevision:plan.worldRevision,attempt:1,notBefore:plan.start,leaseUntil:0,resultEventIds,simulationWindow:{start:plan.start,end:plan.end,skippedMs:plan.skippedMs,timeZone:plan.timeZone}})
   }

@@ -271,9 +271,28 @@ const accessIndexes = guards.filter(sql => !sql.startsWith('CREATE TRIGGER '))
 export const KANATA_SCHEMA_MIGRATIONS = Object.freeze([
   Object.freeze({version: 1, name: 'kanata-core', statements: Object.freeze(core)}),
   Object.freeze({version: 2, name: 'kanata-access-indexes', statements: Object.freeze(accessIndexes)}),
-  createKanataSchemaHardening(entityTables)
+  createKanataSchemaHardening(entityTables),
+  Object.freeze({version: 4, name: 'kanata-domain-commands', statements: Object.freeze([
+    `CREATE TABLE domain_command_receipts (
+      command_key TEXT PRIMARY KEY,
+      fingerprint TEXT NOT NULL CHECK(length(fingerprint)=64),
+      result_id TEXT NOT NULL
+    ) STRICT`,
+    `CREATE TABLE archived_message_marks (
+      world_id TEXT NOT NULL,
+      conversation_id TEXT NOT NULL,
+      message_id TEXT NOT NULL,
+      PRIMARY KEY(world_id,conversation_id,message_id),
+      FOREIGN KEY(world_id,conversation_id,message_id) REFERENCES messages(world_id,conversation_id,id)
+    ) STRICT`,
+    "CREATE INDEX instances_world_id ON character_instances(world_id,id)",
+    "CREATE INDEX lorebook_world_id ON lorebook_entries(world_id,id)",
+    "CREATE INDEX memories_world_id ON memories(world_id,id)",
+    "CREATE INDEX events_world_id ON world_events(world_id,id)",
+    "CREATE TRIGGER card_versions_immutable BEFORE UPDATE ON card_versions BEGIN SELECT RAISE(ABORT,'KANATA_CARD_VERSION_IMMUTABLE'); END",
+  ])})
 ])
-export const KANATA_SCHEMA_VERSION = 3
+export const KANATA_SCHEMA_VERSION = 4
 export const KANATA_SCHEMA_APPLICATION_ID = 0x4b4e5441
 
 export const KANATA_REGISTRY_VALIDATION_QUERIES = createKanataRegistryValidationQueries(entityTables)

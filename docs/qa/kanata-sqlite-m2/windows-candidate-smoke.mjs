@@ -182,6 +182,32 @@ try {
       assert.equal(ui.error, undefined)
       assert.equal(ui.passed.length, 4)
       assert.equal(ui.realModelCalls, 0)
+      const m3 = await evaluate(`window.m3QaScenario(${password}, ${JSON.stringify(fixture)}, ${JSON.stringify(fixtureWrites.deferredCommit)})`)
+      console.log(JSON.stringify({ m3: m3.passed, ownerSwitch: m3.ownerSwitch, error: m3.error }, null, 2))
+      assert.equal(m3.error, undefined)
+      assert.equal(m3.ownerSwitch, 'PASS')
+      assert.equal(m3.passed.length, 4)
+      const m3OldPid = pid
+      assert.equal(await evaluate(`window.m3QaArmWindow(${password}, ${JSON.stringify(m3.next)})`), 'armed')
+      let m3State
+      for (let attempt = 0; attempt < 80; attempt++) {
+        m3State = await evaluate('window.m2QaCrashState()')
+        if (m3State !== 'idle') break
+        await delay(100)
+      }
+      assert.equal(m3State, 'uncommitted-write-and-audit')
+      adb('shell', 'run-as', packageName, 'kill', '-9', m3OldPid)
+      await delay(300)
+      assert.equal(adb('shell', 'pidof ' + packageName + ' || true'), '')
+      detach()
+      adb('shell', 'am', 'start', '-W', '-n', packageName + '/com.yubin.formyself.MainActivity')
+      await delay(600)
+      evaluate = await attach()
+      assert.notEqual(pid, m3OldPid)
+      assert.equal(await initialize(evaluate), true)
+      const m3Reopened = await evaluate(`window.m3QaReopenWindow(${password}, ${JSON.stringify(m3.next)})`)
+      assert.deepEqual(m3Reopened, { before: m3.next.from, absent: true, eventCount: 1, after: m3.next.end })
+      console.log(JSON.stringify({ m3Sigkill: { oldPid: m3OldPid, newPid: pid, ...m3Reopened } }, null, 2))
       const root = 'no_backup/kanata-sqlite-v1'
       adb('shell', 'run-as', packageName, 'mv', root + '/envelope.json', root + '/envelope.saved-for-qa')
       try {

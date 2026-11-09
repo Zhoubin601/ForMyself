@@ -12,7 +12,8 @@
 - [x] M0 隔离技术验证通过。冻结候选、目标模拟器实测和证据见 [M0 会话与门禁](20261104-kanata-sqlite-m0-direct-gate-v1.md)。
 - [x] M1 Schema、约束与版本升级通过，Android新增结构测试已在本轮隔离临时AVD实跑。见[M1验收v2](20261106-kanata-sqlite-m1-report-v2.md)；[v1磁盘BLOCKED历史](20261106-kanata-sqlite-m1-report-v1.md)保留。
 - [x] 2026-11-07 M1-R 补充加固完成，追加003并保留001/002校验和。新审计、映射、外键与回归见[M1-R记录](20261107-kanata-sqlite-m1-r-audit-v1.md)；此项不改写原M1验收。
-- [x] M2 Windows/WHPX 候选 PASS（2026-11-09）。真实 API 34 WebView 通过 SQLCipher 原生桥、M1 升级器、消息/会话 Repository、派生删除和 UI 故障场景。生产继续 legacy，M3–M7 待实施。见[验收 v2](20261109-kanata-sqlite-m2-acceptance-v2.md)、[QA](qa/kanata-sqlite-m2/README.md)和[Linux 历史检查点](20261107-kanata-sqlite-m2-acceptance-v1.md)。
+- [x] M2 Windows/WHPX 候选 PASS（2026-11-09）。真实 API 34 WebView 通过 SQLCipher 原生桥、M1 升级器、消息/会话 Repository、派生删除和 UI 故障场景。生产继续 legacy。见[验收 v2](20261109-kanata-sqlite-m2-acceptance-v2.md)、[QA](qa/kanata-sqlite-m2/README.md)和[Linux 历史检查点](20261107-kanata-sqlite-m2-acceptance-v1.md)。
+- [x] M3 的隔离 SQLite 候选完成六域 Repository、004 与受保护的应用接线。世界采用可逆归档，事件撤销保留批量确认和独立 Effects。见 [M3 验收](20261109-kanata-sqlite-m3-acceptance-v1.md)及 [QA](qa/kanata-sqlite-m3/README.md)。生产继续 legacy，M4–M7 按原阶段边界单独验收。
 - [ ] Kanata 原 P7 当前仍为 No-Go；在 M 合并前，Kanata 分支保持为 M 的稳定基线，不在 Kanata 上并行实施 SQLite 改造。
 - [ ] M 完成并通过独立验收后，才允许合并回 Kanata；合并之后继续 P7，不重置或跳过原 P7 门禁。
 

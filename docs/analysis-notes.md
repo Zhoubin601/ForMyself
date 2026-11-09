@@ -1310,3 +1310,7 @@ planMessageArchive现有Map<string, Message[]>/逐组件对象数组/归档Set�
 ## 2026-11-09 M2
 
 完整Preflight与设计见对应M2文档。源码自审补正task取消、memory双路径revision、effects重fold、只读inventory不可调用会清理材料的journal.inspect、旧小家Timeline/character手动权限差异。Linux两个独立运行上下文实测WebView code5/SIGTRAP；最小Capacitor APK读回SHA匹配仍未返回nonce。用户已选Windows/WHPX，生产实现待该环境接续，不删验收。
+
+## 2026-11-09 M3
+
+用户确认世界删除采用可逆归档，事件撤销保留预览确认的批量语义。SQLite 候选将已归档原文移出活跃角色上下文，并保持历史分页与精确来源读取。SQL 查询先校验来源、所属世界、当前授权及授权修订。事件撤销重放同路径仍生效的 Effects。合成设备和测试命令见 [M3 QA](qa/kanata-sqlite-m3/README.md)。

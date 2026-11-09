@@ -1,0 +1,195 @@
+{
+  "date": "2026-11-09 Asia/Shanghai",
+  "branch": "M",
+  "baseline": "b36bbe65ec05dea0b408867dd7acdc627ca983f2",
+  "status": "PASS",
+  "scope": "isolated candidate; production canonical legacy",
+  "schema": [
+    {
+      "version": 1,
+      "name": "kanata-core",
+      "statements": 161,
+      "checksum": "76a3464b65c48dd33ebe80a51af1327696e67be2790384e2883ad6b5447ab0a2"
+    },
+    {
+      "version": 2,
+      "name": "kanata-access-indexes",
+      "statements": 36,
+      "checksum": "545360d8561fe05514846ad935fd7acc37b6ed073440f3a04a3fda0943cddab2"
+    },
+    {
+      "version": 3,
+      "name": "kanata-audit-and-application-time",
+      "statements": 19,
+      "checksum": "1a48f88ae4507086b8ab0c364cc213f228dcc7f50f71e2c03c66f7b2c8cdd8e1"
+    },
+    {
+      "version": 4,
+      "name": "kanata-domain-commands",
+      "statements": 7,
+      "checksum": "e1546c3456c50b286249b1e8e7a3af5bb85cabbfd5e305726499bb52a6619d68"
+    }
+  ],
+  "device": {
+    "serial": "emulator-5582",
+    "avd": "kanata_m2_api34",
+    "syntheticOnly": true,
+    "api": "34",
+    "abi": "x86_64",
+    "selinux": "Enforcing",
+    "crypto": "encrypted",
+    "webView": "Current WebView package (name, version): (com.google.android.webview, 113.0.5672.136)",
+    "forwards": [],
+    "accelerator": "WHPX",
+    "stopExitCode": 0
+  },
+  "driver": "Android SQLCipher 4.17.0 Community",
+  "node": "v24.14.1",
+  "checks": {
+    "directed": 13,
+    "node": 648,
+    "components": 392,
+    "componentFiles": 42,
+    "lintErrors": 0,
+    "lintWarnings": 42,
+    "typecheck": "PASS",
+    "build": "PASS",
+    "instrumentation": "1/1 PASS",
+    "androidCandidate": [
+      "world-card-lore-scope-and-archive",
+      "memory-archive-source-revision-and-revoke-before-content",
+      "same-path-event-revoke-isolation",
+      "task-event-usage-commit-failure-and-idempotency"
+    ],
+    "qaBundleSha256": "aae0fc6ede43134221d85ac5973d601a6c7c0cd4170422c090974954e719736e",
+    "ownerSwitch": "PASS",
+    "windowSigkill": {
+      "oldPid": "6640",
+      "newPid": "6766",
+      "before": 1800000,
+      "absent": true,
+      "eventCount": 1,
+      "after": 3600000
+    },
+    "realModelCalls": 0,
+    "defaultGate": {
+      "package": "com.yubin.formyself",
+      "KANATA_M2_SYNTHETIC": false,
+      "schema": 4,
+      "statementCount": 433,
+      "futureFixturePresent": false,
+      "sha256": "C3395059AE2F37A4B46825C232B4440E90ECF651F08513EA15819F7E39491A4C"
+    }
+  },
+  "commands": [
+    "node --test tests/kanataSqliteDomains.test.js",
+    "npm run check",
+    "android/gradlew.bat -p android --offline --max-workers=2 -PkanataM2Synthetic=true :app:assembleDebug :app:assembleDebugAndroidTest",
+    "run-windows-candidate.ps1 -Mode full",
+    "android/gradlew.bat -p android --offline --max-workers=2 -PkanataM2Synthetic=false :app:assembleDebug"
+  ],
+  "historicalFailures": [
+    "Three schema assertions needed v4-specific expectations",
+    "Fresh synthetic AVD CDP evaluation timed out; same build and manifest passed after retry"
+  ],
+  "notRun": [
+    "physical handset",
+    "real model API",
+    "legacy dataset migration",
+    "production SQLite activation",
+    "M4–M7 and P7 capacity"
+  ],
+  "codeSha256": {
+    "docs/qa/kanata-sqlite-m2/candidate-smoke.mjs": "ccf8285358425dc1230f3e0555f2008e9d833d8a4f23c7c25e9a5601cd962d16",
+    "docs/qa/kanata-sqlite-m2/windows-candidate-smoke.mjs": "fce685b1df8f1ba4adab3ee08867dca2b07a78a1f85412d488c9b3034b4dc050",
+    "docs/qa/kanata-sqlite-m3/device-scenario.mjs": "055517155de470664bc2479ff9178da8dccb4e07f017eec28c56a7dc8e2325e7",
+    "scripts/build-kanata-sqlite-catalog.mjs": "6d013c26fc8de09c766633b3e5c7ce2b1d4a64b92a6cf633adf2128c5b0da738",
+    "src/application/contracts.d.ts": "133d541e6214e5c64f0246b0dcc4e00461836bbced1594839e49ccea7e5d8dbe",
+    "src/application/kanataSqliteCandidate.js": "9d2a10dd74994028436d7a19a4d1c8110f1a4eefa7a6bc52c8cae6cd83899da4",
+    "src/application/kanataSqliteChatRuntime.js": "5b730f0d317bd40d646790976e9bf2fb89df2791885d3c04ee1ceb4918325702",
+    "src/application/kanataSqliteWorldRuntime.js": "625128750c1e6d1ce7a97be3717f53aecbf42c12ceb1b322f916728d5e72b482",
+    "src/features/chat/autonomy/kanataAutonomy.js": "e44874c8c5aa1ac786e423d9c1aefd00c8951e0f4428264c6e827fd7aeafc7cf",
+    "src/features/chat/domain/kanataConversation.js": "c53b399d568e3badc56f2d58beb889926b1fe5197bfff1b5a44f4be8b8fc588c",
+    "src/features/chat/experience/KanataEventsPanel.vue": "f26f5b21f627eec26d8c519268f5f3a6faed4caff925f3dad69a2f6347dec3c8",
+    "src/features/chat/experience/kanataEvents.js": "33943268dca77469c23b6d69941af038e2d579afc98d9a592aba748355c5e5b4",
+    "src/features/chat/experience/kanataKnowledge.js": "6a3f7bd85e233862bba58de55fe52f6d712d10fd59a99d2098d1c38cd5bc4e12",
+    "src/features/chat/storage/sqlite/kanataAutonomyRepository.js": "e9c0ad149f0a44c6c663e9b812b1f65f0a45dea67963580360c895ec272ca79f",
+    "src/features/chat/storage/sqlite/kanataCharacterRepository.js": "04c43dd46297005da5fa0108faca46a3f2e5da8b88a0ac1b83245caa481e0df3",
+    "src/features/chat/storage/sqlite/kanataDomainRows.js": "11794e56ceb9b6dc3ee386f2f6ebea7d58c50f485aec9a1234f52f72d4d53a5c",
+    "src/features/chat/storage/sqlite/kanataDomainTypes.d.ts": "56e5d16bba46d673622aca6192db31fd1c8adfea70b193c064bbca7a06b4e7ee",
+    "src/features/chat/storage/sqlite/kanataEventRepository.js": "d30664125247f05fe4352de2d0688b251b7c15be2dffaf26a089ff7bb719adfd",
+    "src/features/chat/storage/sqlite/kanataLorebookRepository.js": "283bd1f7c83cd66d5f46a977b29c34d6baae6ac8aef7a93d05e7e378e67efbd5",
+    "src/features/chat/storage/sqlite/kanataMemoryRepository.js": "c74c08c3fe8c1680f97766f3c7042b7f96098788f3ae3608bea280fd916f6a27",
+    "src/features/chat/storage/sqlite/kanataMessageDependents.js": "463ba48cd6af3d37b7e55c7e2ad3ddb49ab6d11df4dd3e553fdf7d8c54291443",
+    "src/features/chat/storage/sqlite/kanataProvenance.js": "3cdb86df6bb10b30ab8e2fd06a0d170d661d94bb5d2836f15cd1e9ca41572363",
+    "src/features/chat/storage/sqlite/kanataRepositorySql.js": "d280d2f5cb57b50b7e404b0b9ff59e97aade641834a141cc24ceee853ccd8638",
+    "src/features/chat/storage/sqlite/kanataSchema.js": "4a32234d0914231893c1eed9f0dff18a397644f3f4af79be8fa7c409587cc41d",
+    "src/features/chat/storage/sqlite/kanataSqliteDomains.js": "73c2fb65f3f8ce6db165e582e2b84161a6779994015cd9a75bdee53f11d06a99",
+    "src/features/chat/storage/sqlite/kanataUsageRepository.js": "28d81321467444d83bc4a9922b1a00055e152ae3ba1af2b28ca48450d64fbebd",
+    "src/features/chat/storage/sqlite/kanataWorldRepository.js": "cfaceca83ce252e24ec50b49bc489fe56223b5baabe376031bc577a81fa88719",
+    "tests/helpers/kanataSqliteLegacy.js": "184ec6e0caedca2b32c80257dd2682b553dad3abb498c3a85d78d992881d4e75",
+    "tests/helpers/kanataSqliteM2Fixture.js": "e417382638f07b4432466cf161df6e147d2bf2190ff71901c9b793eda881ff25",
+    "tests/kanataSqliteDomains.test.js": "5f9293733e3017af647f60bd4d52c88ba72428828002386c65908a3c02572b34",
+    "tests/kanataSqliteRemediation.test.js": "65cd32512785378331312a2038fa34d75c3716b4693170d4cd94215e976ffc79",
+    "tests/kanataSqliteSchema.test.js": "4bf86343a5e77df211ebf8732475ea404a58fb487dd9127f67c8d4e088037e95",
+    "tests/types/kanataSqliteM3.ts": "c13c813e0a5d5a6805ed3606fb6370efc566b488e34967e5daf51a68ab341fcf"
+  },
+  "evidence": {
+    "android-cold-logcat.txt.gz": {
+      "bytes": 215019,
+      "sha256": "13a57dfea639a1df70f82bab6ec16ab210146054a0f4a110abee07f41be8c0fd"
+    },
+    "android-cold-timeout.txt": {
+      "bytes": 891,
+      "sha256": "11b45a29a79b283e543b3c2457589dc80c09038967be95288856d63a45e9dd0d"
+    },
+    "android-logcat.txt.gz": {
+      "bytes": 107278,
+      "sha256": "d7b1c79c0e8321bffceb56c683f3ca0c1942f1f535480f976298651b3489d006"
+    },
+    "android-result.txt": {
+      "bytes": 1923,
+      "sha256": "703733970355f000e1bf8d0f7cc6a161312f8b69ffc04446506d90ea4437e684"
+    },
+    "apk-sha256.txt": {
+      "bytes": 185,
+      "sha256": "086115b57e28e42ad5a1d67f6584ca666f057f15754b635fff5a055124c32898"
+    },
+    "candidate-build.txt.gz": {
+      "bytes": 2374,
+      "sha256": "f77856f5002cb586720e9b52d7abbf4ffae14263518af0138559448ce26811a1"
+    },
+    "default-build.txt.gz": {
+      "bytes": 2173,
+      "sha256": "3e16d04a0bf6b1cdc4817890ac20ba5a10a3cd662467f6009d6a88733f55d909"
+    },
+    "default-gate.json": {
+      "bytes": 224,
+      "sha256": "94b13e3f0f60b65e8e1ee5d45562504c2ca03fd6278c59438560a84acc1129c9"
+    },
+    "device.json": {
+      "bytes": 336,
+      "sha256": "588d07f9da2196c24d8e156ae3c4f59e15258bd44b699397ad0b3a3d03b67df6"
+    },
+    "directed.txt": {
+      "bytes": 1514,
+      "sha256": "908a29dd1f954e1f0ae5c6721f0cd86dc3518bc6d98fa698f5148d289b8c9bd3"
+    },
+    "instrumentation.txt": {
+      "bytes": 783,
+      "sha256": "7435af1900f81ba30ea7d3fa972728b19dbf42e9e55f5ff1677d175424e97c80"
+    },
+    "npm-check-first.txt.gz": {
+      "bytes": 29873,
+      "sha256": "7cb9850de71299229b2e34865bd2d3986eb8d474917dbbfeca939cea7db90a20"
+    },
+    "npm-check.txt.gz": {
+      "bytes": 32446,
+      "sha256": "531f1d2d9650cdc0f553b9e7b40ce664c73d99d0896f39ba515b4138ae598342"
+    },
+    "schema-fingerprints.json": {
+      "bytes": 682,
+      "sha256": "786a2c226a8c5b4db4ae1b868b4a033adb1e6da04f1d431655e22141af45b0f1"
+    }
+  }
+}

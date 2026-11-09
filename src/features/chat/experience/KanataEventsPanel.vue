@@ -6,12 +6,13 @@ import {previewKanataEventRevoke} from './kanataEvents.js'
 import {resolveKanataCharacter} from '../domain/kanataManagementCore.js'
 const props=defineProps({data:{type:Object,required:true},worldId:{type:String,required:true},instanceId:{type:String,required:true},runtime:{type:Object,required:true},blocked:Boolean})
 const draft=ref(null),busy=ref(false),notice=ref(''),error=ref(''),owner=Symbol('kanata-events');let mounted=true
+let commandId=''
 const events=computed(()=>props.data.events.filter(e=>e.worldId===props.worldId))
 const identity=computed(()=>props.data.identities.find(i=>i.worldId===props.worldId))
 const name=id=>props.data.instances.some(i=>i.id===id)?resolveKanataCharacter(props.data,id).name:identity.value?.displayName||'用户'
 const errors={EVENT_BASELINE_REQUIRED:'这个旧事件缺少可信的效果基线，不能安全自动撤销；请先人工核对，原数据未改。',EVENT_DEPENDENCY_UNCERTAIN:'依赖范围不明确，请在预览中选择如何处理不确定事件。',EVENT_REVOKE_PREVIEW_STALE:'预览后历史已变化，请重新预览。',EVENT_SOURCE_STALE:'来源记录已修订，请先核对来源，不能直接确认旧事实。'}
 const perform=async(action,message)=>{if(props.blocked||busy.value)return;busy.value=true;error.value='';try{await action();if(mounted)notice.value=message;return true}catch(e){if(mounted)error.value=errors[e.code]||'事件操作未完成，请核对当前来源、参与者或保存状态。';return false}finally{if(mounted)busy.value=false}}
-const create=()=>{draft.value={worldId:props.worldId,participantIds:[props.instanceId,identity.value.id],sourceRefs:[],causedByEventIds:[],visibility:'private',summary:'',effectiveAt:Date.now(),causality:'explicit',kind:'note',action:{instanceId:props.instanceId}}}
+const create=()=>{commandId=crypto.randomUUID();draft.value={worldId:props.worldId,participantIds:[props.instanceId,identity.value.id],sourceRefs:[],causedByEventIds:[],visibility:'private',summary:'',effectiveAt:Date.now(),causality:'explicit',kind:'note',action:{instanceId:props.instanceId}}}
 const chooseKind=async()=>{const value=await appChoose({sensitive:true,owner,title:'事件规则',message:'正文仅是候选说明；确认后只能应用下面已实现的规则，不接受模型直接指定数值。',options:[{value:'note',label:'记录：不修改状态'},{value:'promise',label:'约定：记录但不假定已履行'},{value:'support',label:'支持：小幅增加信任与理解'},{value:'conflict',label:'分歧：小幅降低信任与理解'},{value:'rest',label:'休息：恢复一点精力'},{value:'move',label:'移动：更新选中角色地点'}]});if(mounted&&draft.value&&value)draft.value.kind=value}
 const chooseRelationship=async()=>{
   const choices=props.data.relationships.filter(r=>r.worldId===props.worldId&&r.fromId===props.instanceId)
@@ -19,12 +20,19 @@ const chooseRelationship=async()=>{
   if(mounted&&draft.value&&value){const r=choices.find(r=>r.id===value);draft.value.action.relationshipId=value;draft.value.participantIds=[r.fromId,r.toId]}
 }
 const chooseCause=async()=>{const value=await appChoose({sensitive:true,owner,title:'明确的前因事件',options:[{value:'none',label:'没有已知前因'},...events.value.filter(e=>e.status==='committed').map(e=>({value:e.id,label:e.summary}))]});if(mounted&&draft.value&&value)draft.value.causedByEventIds=value==='none'?[]:[value]}
-const save=async()=>{if(!draft.value?.summary.trim())return;const ok=await perform(()=>props.runtime.proposeEvent(draft.value),'已保存候选事件，尚未改变世界真值。');if(ok&&mounted)draft.value=null}
+const save=async()=>{if(!draft.value?.summary.trim())return;const ok=await perform(()=>props.runtime.proposeEvent(draft.value,commandId),'已保存候选事件，尚未改变世界真值。');if(ok&&mounted)draft.value=null}
 const commit=async event=>{const accepted=await appConfirm('将候选事件确认为发生过的事实，并按所选版本化规则计算状态变化。模型描述本身不会直接修改关系。',{sensitive:true,owner,title:'确认世界事件',confirmText:'确认并应用规则'});if(mounted&&accepted===true)await perform(()=>props.runtime.commitEvent(event.id,event.revision),'事件已确认，状态按规则更新。')}
 const revoke=async(event,correct=false)=>{
   let summary
   if(correct){summary=await appPrompt('修正后的事件说明；旧事件会按因果预览撤销，新说明保存为待确认候选。',event.summary,{sensitive:true,owner,title:'修正历史事件'});if(!mounted||!summary?.trim())return}
-  const plan=previewKanataEventRevoke(props.data,event.id)
+  let plan
+  try {
+    plan=props.runtime.previewRevoke?await props.runtime.previewRevoke(event.id):previewKanataEventRevoke(props.data,event.id)
+  } catch(e) {
+    if(mounted)error.value=errors[e.code]||'事件预览未完成，请重新打开后再试。'
+    return
+  }
+  if(!mounted)return
   let decision
   if(plan.uncertainIds.length){decision=await appChoose({sensitive:true,owner,title:'存在不明确的后续依赖',message:plan.uncertainIds.map(id=>events.value.find(e=>e.id===id)?.summary||id).join('\n'),options:[{value:'mark-needs-review',label:'将这些后续事件标为待复核并暂停效果'},{value:'keep-independent',label:'我确认这些事件独立，保留其效果'}]});if(!mounted||!decision)return}
   const accepted=await appConfirm(`将撤销 ${plan.revokeIds.length} 条事件及明确的因果后续，从基线重算其余有效效果。独立事件不会被旧快照覆盖；相关记忆标为过期。`,{sensitive:true,owner,title:'预览事件撤销影响',confirmText:'按预览撤销并保留历史'})

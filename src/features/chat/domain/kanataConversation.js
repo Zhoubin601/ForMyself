@@ -1,7 +1,7 @@
 // @ts-check
 import { requireKanata as need, validateKanataData } from './kanataValidation.js'
 import { renderKanataCharacter, selectKanataLorebook } from '../lorebook/kanataLorebook.js'
-import {canUseKanataMessage,canUseKanataLifeSources,canUseKanataEvent,kanataEventLifeSources,selectKanataMemories,kanataMemoryPolicy} from '../experience/kanataKnowledge.js'
+import {canUseKanataMessage,canUseKanataLifeSources,canUseKanataEvent,kanataEventLifeSources,selectKanataMemories,rankKanataMemories,kanataMemoryPolicy} from '../experience/kanataKnowledge.js'
 import {kanataReplyLimits} from './groupReplyLimits.js'
 /** @typedef {import('./kanataTypes').KanataData} Data */
 /** @param {Data} data @param {string} conversationId */
@@ -43,7 +43,8 @@ export function decideKanataSpeakers(data, conversationId, text) {
  * No raw card extensions, other private chats, other persona definitions or life stores.
  * @param {Data} data @param {string} conversationId @param {string} instanceId
  * @param {{lifeEntries?:{moduleId:string,value:unknown}[],lifeSources?:import('./kanataTypes').LifeSource[],historyMessageIds?:string[],
- * provenance?:readonly import('../experience/kanataKnowledge.js').KnowledgeMessage[]}} [options]
+ * provenance?:readonly import('../experience/kanataKnowledge.js').KnowledgeMessage[],
+ * repositoryKnowledge?: {memories:Data['memories'],events:Data['events'],hiddenTargetIds:ReadonlySet<string>}}} [options]
  */
 export function buildKanataConversationContext(data, conversationId, instanceId, options={}) {
   const c = kanataConversation(data, conversationId)
@@ -57,11 +58,13 @@ export function buildKanataConversationContext(data, conversationId, instanceId,
   const history = data.messages.filter(m=>m.worldId===c.worldId && m.conversationId===c.id && (!options.historyMessageIds||options.historyMessageIds.includes(m.id)) && canUseKanataMessage(knowledgeData,m,instanceId,group)).slice(-policy.recentMessages)
   const text = history.slice(-3).map(m=>m.content).join('\n')
   const book = selectKanataLorebook(data,{worldId:c.worldId,instanceId,text,tokenBudget:4000})
-  const memories=selectKanataMemories(knowledgeData,{worldId:c.worldId,instanceId,text,group,budget:4000,conversationId:c.id})
-  const events=data.events.filter(e=>e.worldId===c.worldId&&canUseKanataEvent(knowledgeData,e,instanceId,group)).slice(-12)
+  const verified = options.repositoryKnowledge
+  const memories=verified ? rankKanataMemories(verified.memories,text,4000)
+    : selectKanataMemories(knowledgeData,{worldId:c.worldId,instanceId,text,group,budget:4000,conversationId:c.id})
+  const events=verified?.events ?? data.events.filter(e=>e.worldId===c.worldId&&canUseKanataEvent(knowledgeData,e,instanceId,group)).slice(-12)
   const instance=data.instances.find(i=>i.id===instanceId)
   /** @param {string} targetId */
-  const allowedState=targetId=>data.effects.filter(effect=>effect.targetId===targetId&&data.events.some(e=>e.id===effect.eventId&&e.status==='committed')).every(effect=>{
+  const allowedState=targetId=>verified ? !verified.hiddenTargetIds.has(targetId) : data.effects.filter(effect=>effect.targetId===targetId&&data.events.some(e=>e.id===effect.eventId&&e.status==='committed')).every(effect=>{
     const event=data.events.find(e=>e.id===effect.eventId)
     return !!event&&canUseKanataEvent(knowledgeData,event,instanceId,group)
   })
@@ -91,7 +94,7 @@ export function buildKanataConversationContext(data, conversationId, instanceId,
     bytes+=cost;selected.unshift({role:/** @type {'assistant'|'user'} */(m.senderId===instanceId?'assistant':'user'),content})
   }
   need(selected.some(m=>m.role==='user'), 'CONTEXT_BUDGET_EXCEEDED', 'messages')
-  const allSources=[...history.flatMap(m=>m.lifeSources||[]),...memories.entries.flatMap(m=>m.lifeSources||[]),...events.flatMap(e=>kanataEventLifeSources(knowledgeData,e)),...options.lifeSources||[]]
+  const allSources=[...history.flatMap(m=>m.lifeSources||[]),...memories.entries.flatMap(m=>m.lifeSources||[]),...events.flatMap(e=>verified ? e.lifeSources ?? [] : kanataEventLifeSources(knowledgeData,e)),...options.lifeSources||[]]
   for(const source of [...allSources]){const own=data.lifeGrants.find(g=>g.worldId===c.worldId&&g.instanceId===instanceId&&g.moduleId===source.moduleId);if(own)allSources.push({...source,grantId:own.id,revision:own.revision,instanceId})}
   const lifeSources=[...new Map(allSources.map(s=>[JSON.stringify(s),s])).values()]
   const knowledgeSignature=JSON.stringify([world.revision,identity.revision,instance?.revision,c.revision,history.map(m=>[m.id,m.revision]),memories.entries.map(m=>[m.id,m.revision]),book.entries.map(e=>[e.id,e.revision]),events.map(e=>[e.id,e.revision])])

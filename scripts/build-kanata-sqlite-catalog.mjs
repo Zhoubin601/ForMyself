@@ -11,6 +11,16 @@ import { conversationQueries, conversationWrites, messageQueries, messageWrites 
 import { dependentQueries, dependentWrites, updateEffectValue } from '../src/features/chat/storage/sqlite/kanataMessageDependentsSql.js'
 import { deferredReplyQueries, deferredReplyWrites } from '../src/features/chat/storage/sqlite/kanataDeferredReplySql.js'
 
+import { receiptQuery, receiptWrite } from '../src/features/chat/storage/sqlite/kanataDomainRows.js'
+import { worldQueries, worldWrites } from '../src/features/chat/storage/sqlite/kanataWorldRepository.js'
+import { characterQueries, characterWrites } from '../src/features/chat/storage/sqlite/kanataCharacterRepository.js'
+import { lorebookQueries, lorebookWrites } from '../src/features/chat/storage/sqlite/kanataLorebookRepository.js'
+import { provenanceQueries } from '../src/features/chat/storage/sqlite/kanataProvenance.js'
+import { memoryQueries, memoryWrites } from '../src/features/chat/storage/sqlite/kanataMemoryRepository.js'
+import { eventQueries, eventWrites } from '../src/features/chat/storage/sqlite/kanataEventRepository.js'
+import { autonomyQueries, autonomyWrites } from '../src/features/chat/storage/sqlite/kanataAutonomyRepository.js'
+import { usageQueries, usageWrites } from '../src/features/chat/storage/sqlite/kanataUsageRepository.js'
+
 const output = process.argv[2]
 if (!output) throw new Error('Catalog output directory required')
 const statements = {}
@@ -39,6 +49,10 @@ add('query', 'business', [...Object.values(messageQueries), ...Object.values(con
   ...Object.values(deferredReplyQueries)])
 add('write', 'business', [...Object.values(messageWrites), ...Object.values(conversationWrites),
   ...Object.values(dependentWrites), ...Object.values(updateEffectValue), ...Object.values(deferredReplyWrites)])
+add('query', 'business', [receiptQuery, ...worldQueries, ...characterQueries, ...lorebookQueries, ...provenanceQueries,
+  ...memoryQueries, ...eventQueries, ...autonomyQueries, ...usageQueries])
+add('write', 'business', [receiptWrite, ...worldWrites, ...characterWrites, ...lorebookWrites, ...memoryWrites,
+  ...eventWrites, ...autonomyWrites, ...usageWrites])
 if (process.argv.includes('--synthetic')) {
   const { m2FixtureCommands, auditInspection, fixtureWrites, futureSchema } = await import('../tests/helpers/kanataSqliteM2Fixture.js')
   add('query', 'business', Object.values(auditInspection))

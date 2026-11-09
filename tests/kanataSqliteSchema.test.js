@@ -52,7 +52,7 @@ test('M1-02 有数据v1逐版升级保留原记录；日志指纹固定且重复
     for(const s of kanataFixtureCommands())await tx.execute(s.sql,s.parameters)
   })
   const before=rows(h,'SELECT * FROM messages')
-  assert.deepEqual(await migrateKanataSchema(h.connection),{version,appliedVersions:[2,3]})
+  assert.deepEqual(await migrateKanataSchema(h.connection),{version,appliedVersions:[2,3,4]})
   assert.deepEqual(rows(h,'SELECT * FROM messages'),before)
   h.writes.length=0
   await migrateKanataSchema(h.connection)
@@ -123,7 +123,7 @@ test('M1-15 已有v1记录升级失败保留逐字节文件，新运行时重试
     assert.deepEqual(readFileSync(path),readFileSync(base))
     const reopened=schemaHarness(path)
     assert.equal(rows(reopened,'PRAGMA user_version')[0].user_version,1)
-    assert.deepEqual((await migrateKanataSchema(reopened.connection)).appliedVersions,[2,3])
+    assert.deepEqual((await migrateKanataSchema(reopened.connection)).appliedVersions,[2,3,4])
     assert.equal(rows(reopened,'SELECT count(*) n FROM messages')[0].n,2);reopened.close()
   }
 })
@@ -205,15 +205,18 @@ test('M1-13 冲突策略不能绕过全局ID；无revision编辑、延迟任务�
 
 test('M1-14 JSON类型、实例基线范围和策略边界；未知扩展与原卡payload按字节保留',async t=>{
   const h=await openFixture(t)
-  for(const sql of ["UPDATE card_versions SET definition_json='[]'","UPDATE character_instances SET overrides_json='not json'",
+  for(const sql of ["UPDATE character_instances SET overrides_json='not json'",
     "UPDATE messages SET extensions_json='[]'",'UPDATE memory_policies SET summarize_after=recent_messages',
     'UPDATE autonomy_policies SET daily_dialogue_limit=5',"UPDATE effect_baselines SET value_json='2',path='state.energy'",
     "UPDATE world_effects SET operation='increment',value_json='\"string\"'"
   ])assert.throws(()=>run(h,sql))
   const raw='{"vendor":{"unknown":{"ordered":[1,"二",null]}}}',extensions='{"future":{"payload":[false,0,"扩展"]}}'
-  run(h,'UPDATE card_versions SET raw_data_json=? WHERE id=?',raw,h.data.cardVersions[0].id)
+  const version = rows(h,'SELECT * FROM card_versions WHERE id=?',h.data.cardVersions[0].id)[0]
+  assert.throws(() => insert(h, 'card_versions', { ...version, id: 'bad-definition', revision: 2, definition_json: '[]' }), /CHECK/)
+  insert(h, 'card_versions', { ...version, id: 'retained-card-payload', revision: 2, raw_data_json: raw })
+  assert.throws(() => run(h, 'UPDATE card_versions SET raw_data_json=? WHERE id=?', raw, version.id), /KANATA_CARD_VERSION_IMMUTABLE/)
   run(h,"UPDATE messages SET extensions_json=? WHERE id='message-one'",extensions)
-  assert.equal(rows(h,'SELECT raw_data_json FROM card_versions WHERE id=?',h.data.cardVersions[0].id)[0].raw_data_json,raw)
+  assert.equal(rows(h,'SELECT raw_data_json FROM card_versions WHERE id=?','retained-card-payload')[0].raw_data_json,raw)
   assert.equal(rows(h,"SELECT extensions_json FROM messages WHERE id='message-one'")[0].extensions_json,extensions)
 })
 

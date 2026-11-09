@@ -590,3 +590,12 @@ Windows 使用 `npm.cmd`、`npx.cmd` 和 `android/gradlew.bat` 的对应命令�
 - `KanataMessageRepository` 与 `KanataConversationRepository` 接收有界业务事务，完整类型见 `src/application/contracts.d.ts`。单批最多 256、keyset 页最多 50。编辑/删除将 CAS、原消息/审计、回复后代、事件/效果、记忆和来源任务封在同一事务。历史审计通过固定 `json_set` 精确脱敏。延迟回复只管理本会话消息的到期任务，不提供其他任务 CRUD。
 - 候选 `KanataConversationView` 由注入 Runtime 查询，窗口最多 100 条。AI 正文只读当前会话内权限允许的 2–40 条，必要旧来源用按 ID 元数据核验。提交前重新校验 session、页面 owner、实际会话/角色/消息 revision、来源及上下文。character 人工发送继续拒绝。非消息实体的通用读写、全局任务与备份/改密/切换闭环继续按后续阶段执行。
 - 验证入口为 [M2 Windows 验收 v2](docs/20261109-kanata-sqlite-m2-acceptance-v2.md) 与 [QA](docs/qa/kanata-sqlite-m2/README.md)。保留上一节 Linux 阻塞的历史证据。
+
+## Kanata SQLite M3 候选接口
+
+`createKanataSqliteCandidate({ syntheticOnly: true, access, auth })` 通过 `withDomains({ assertOwner }, action)` 在保护操作内提供 World、Character、Lorebook、Memory、Event、Autonomy 和 Usage Repository。实例方法由 [类型入口](./src/features/chat/storage/sqlite/kanataDomainTypes.d.ts)导出。页面通过 `createWorldRuntime().select(worldId)` 取得拥有者；切换和销毁会使旧命令及迟到结果失效。
+
+- 历史 001/002/003 保持原 DDL 和校验和。004 追加命令回执、归档标记、领域索引和角色版本不可更新触发器。SQL 仍通过固定目录和原生事务执行。
+- 角色上下文使用当前授权和来源元数据通过门禁后读取正文。记忆来源绑定消息 ID + revision。归档从活跃上下文排除该消息，历史与精确来源读取保留同一行。
+- 事件撤销按最新预览核验，使用各事件真实 Effects 归属和持久基线重放。自治窗口提交同一事务中的事件、Effects、任务回执与水位。
+- 生产使用 legacy，普通 Android 构建的 SQLite 激活位为 false。设备核验和阶段边界见 [M3 QA](./docs/qa/kanata-sqlite-m3/README.md)。

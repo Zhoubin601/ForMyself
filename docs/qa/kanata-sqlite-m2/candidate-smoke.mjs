@@ -1,3 +1,4 @@
+import { runM3DeviceScenario } from '../kanata-sqlite-m3/device-scenario.mjs'
 import { createPinia, setActivePinia } from 'pinia'
 import { createApp, h, nextTick, ref } from 'vue'
 import { registerPlugin } from '@capacitor/core'
@@ -54,6 +55,51 @@ window.m2QaSmoke = async (password, create) => {
 function check(condition, code) {
   if (!condition) throw new Error(code)
 }
+window.m3QaScenario = async (password, fixture, failCommitSql) => {
+  auth.savedMasterPwd = password
+  auth.isLocked = false
+  const runtime = candidate.createWorldRuntime(() => 1800000)
+  try {
+    const result = await runM3DeviceScenario(candidate, fixture, failCommitSql)
+    const first = runtime.select(fixture.worlds[0].id)
+    const pending = first.read()
+    const second = runtime.select(fixture.worlds[1].id)
+    await rejects(() => pending, 'KANATA_WORLD_OWNER_EXPIRED')
+    check((await second.read()).world.id === fixture.worlds[1].id, 'WORLD_OWNER_READ')
+    return { ...result, ownerSwitch: 'PASS' }
+  }
+  catch (error) { return { error: error.code ?? error.message } }
+  finally { runtime.dispose(); auth.expireSession(); await candidate.release() }
+}
+
+window.m3QaArmWindow = (password, plan) => {
+  auth.savedMasterPwd = password
+  auth.isLocked = false
+  crashState = 'idle'
+  void candidate.withDomains({}, domains => {
+    suspendCommit = true
+    return domains.autonomy.completeWindow(plan, 3600000)
+  }).catch(error => {
+    crashState = error.code ?? error.message
+  })
+  return 'armed'
+}
+
+window.m3QaReopenWindow = async (password, plan) => {
+  auth.savedMasterPwd = password
+  auth.isLocked = false
+  try {
+    return await candidate.withDomains({}, async domains => {
+      const before = await domains.worlds.get(plan.worldId)
+      const tasks = await domains.autonomy.listTasks(plan.worldId)
+      const absent = !tasks.tasks.some(task => task.idempotencyKey === plan.idempotencyKey)
+      const committed = await domains.autonomy.completeWindow(plan, 3600000)
+      return { before: before.world.lastSimulatedAt, absent, eventCount: committed.resultEventIds.length,
+        after: (await domains.worlds.get(plan.worldId)).world.lastSimulatedAt }
+    })
+  } finally { auth.expireSession(); await candidate.release() }
+}
+
 const tools = { id: () => 'm2-qa-audit-' + crypto.randomUUID(), clock: () => 1300 }
 
 async function rejects(action, code) {

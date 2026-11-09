@@ -1143,3 +1143,7 @@ P6最终PASS/Go：501 Node/317组件、Web12/6布局、Android17、原生8通过
 - [ ] 下一阶段 M3 为剩余领域 Repository。生产 canonical 仍为 legacy，后续数据切换继续由 M4–M7 及正式验收控制。
 
 入口见 [M2 验收 v2](20261109-kanata-sqlite-m2-acceptance-v2.md) 与 [QA](qa/kanata-sqlite-m2/README.md)。
+
+## 2026-11-09 M3
+
+以 [M3 任务书](20261109-kanata-sqlite-m3-task-v1.md)、[设计](20261109-kanata-sqlite-m3-design-v1.md)及 [QA](qa/kanata-sqlite-m3/README.md)为当前执行入口。实施、回归和提交限 M 分支。

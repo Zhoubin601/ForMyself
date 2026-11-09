@@ -7,6 +7,8 @@ export type { KanataSqliteWriteResult, KanataSqliteTransaction, KanataSqliteHeal
 export type { KanataMessageScope, KanataMessageCursor, KanataMessagePage, KanataMessageRepository,
   KanataConversationRepository, KanataMessageProvenance, KanataReplyExpectation,
   KanataChatContextState, KanataDeferredReply } from '../features/chat/storage/sqlite/kanataRepositoryTypes'
+export type { KanataSqliteDomains, KanataSqliteDomainOwner } from '../features/chat/storage/sqlite/kanataDomainTypes'
+export type KanataSqliteWorldRuntime = ReturnType<typeof import('./kanataSqliteWorldRuntime.js').createKanataSqliteWorldRuntime>
 export type KanataSqliteChatRuntime = ReturnType<typeof import('./kanataSqliteChatRuntime.js').createKanataSqliteChatRuntime>
 export type { KanataData, World, CharacterCard, CharacterCardVersion, CharacterInstance,
   WorldPreset, WorldUserIdentity, Conversation, GroupReplyLimits, ReplyTimingPolicy, Message, LorebookEntry, Memory,

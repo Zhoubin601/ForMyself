@@ -47,7 +47,7 @@ export const fixtureWrites = Object.freeze({
   event: 'UPDATE world_events SET causality=?,kind=?,extensions_json=? WHERE id=?',
   deferredCommit: 'INSERT INTO card_versions(id,card_id,revision,definition_json,raw_data_json,source) VALUES(?,?,?,?,?,?)',
 })
-export const futureSchema = 'PRAGMA user_version = 4'
+export const futureSchema = 'PRAGMA user_version = 999'
 
 export function m2FixtureCommands(data = m2Fixture()) {
   // Keep the historic structural fixture writer intact. This projection writes the

@@ -1,0 +1,13 @@
+{
+  "serial": "emulator-5582",
+  "avd": "kanata_m2_api34",
+  "syntheticOnly": true,
+  "api": "34",
+  "abi": "x86_64",
+  "selinux": "Enforcing",
+  "crypto": "encrypted",
+  "webView": "Current WebView package (name, version): (com.google.android.webview, 113.0.5672.136)",
+  "forwards": [],
+  "accelerator": "WHPX",
+  "stopExitCode": 0
+}
