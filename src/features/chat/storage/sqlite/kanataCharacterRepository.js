@@ -28,6 +28,11 @@ export const instanceTable = /** @type {ReturnType<typeof domainTable<StoredInst
 }, ['world_id', 'id']))
 const instanceProfile = `SELECT world_id,id,card_id,card_version_id,revision,overrides_json,autonomy_enabled,proactive_enabled,extensions_json
   FROM character_instances WHERE world_id=? AND id=?`
+const promptProfile = `SELECT world_id,id,card_id,card_version_id,revision,
+  json_remove(overrides_json,'$.avatarDataUrl') AS overrides_json,autonomy_enabled,proactive_enabled,'{}' AS extensions_json
+  FROM character_instances WHERE world_id=? AND id=?`
+const promptState = promptProfile.replace('FROM character_instances', ',mood,energy,location FROM character_instances')
+const promptDefinition = "SELECT id,card_id,json_remove(definition_json,'$.avatarDataUrl') AS definition FROM card_versions WHERE card_id=? AND id=?"
 const listCards = `SELECT ${cards.stored} FROM character_cards WHERE id>? ORDER BY id LIMIT ?`
 const listVersions = `SELECT ${versions.stored} FROM card_versions WHERE card_id=? AND revision>? ORDER BY revision LIMIT ?`
 const latestVersion = `SELECT ${versions.stored} FROM card_versions WHERE card_id=? ORDER BY revision DESC LIMIT 1`
@@ -35,7 +40,7 @@ const listInstances = `SELECT ${instanceTable.stored} FROM character_instances W
 const findImported = `SELECT card_id FROM card_versions WHERE json_extract(imported_json,'$.sourceBase64')=? LIMIT 1`
 const setCurrent = 'UPDATE character_cards SET current_version_id=? WHERE id=? AND current_version_id=? AND archived=0'
 const setArchived = 'UPDATE character_cards SET archived=? WHERE id=? AND current_version_id=? AND archived=?'
-export const characterQueries = [cards.get, versions.get, instanceTable.get, listCards, listVersions, latestVersion, listInstances, findImported, instanceProfile]
+export const characterQueries = [cards.get, versions.get, instanceTable.get, listCards, listVersions, latestVersion, listInstances, findImported, instanceProfile, promptProfile, promptState, promptDefinition]
 export const characterWrites = [...cards.writeStatements, versions.writeStatements[0], ...instanceTable.writeStatements, setCurrent, setArchived]
 
 /** @param {StoredInstance} row @returns {Instance} */
@@ -89,6 +94,19 @@ export function createKanataCharacterRepository(operation) {
       validateId(id, 'instanceId')
       const row = await instanceTable.read(tx, [worldId, id])
       return row ? unpackInstance(row) : null
+    }),
+    /** @param {string} worldId @param {string} id @param {boolean} hidden */
+    promptActor: (worldId, id, hidden) => operation.transaction(async tx => {
+      validateId(worldId, 'worldId')
+      validateId(id, 'instanceId')
+      const [row] = await tx.query(hidden ? promptProfile : promptState, [worldId, id])
+      const stored = found(row, 'SPEAKER_ACCESS_DENIED')
+      const instance = unpackInstance(instanceTable.decode(hidden ? { ...stored, mood: '', energy: 0, location: '' } : stored))
+      const [version] = await tx.query(promptDefinition, [instance.cardId, instance.cardVersionId])
+      const { definition } = found(version, 'ORPHAN_CARD_VERSION')
+      return { instances: [instance], cardVersions: [{
+        id: instance.cardVersionId, cardId: instance.cardId, definition: /** @type {Version['definition']} */ (JSON.parse(String(definition))),
+      }] }
     }),
     /** @param {string} worldId @param {readonly string[]} participantIds @param {ReadonlySet<string>} hiddenState */
     conversationActors: (worldId, participantIds, hiddenState = new Set()) => operation.transaction(async tx => {

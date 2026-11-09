@@ -1,0 +1,53 @@
+{
+  "branch": "M",
+  "m3CodeBase": "751da40149404deb8bc1562851a91e699c60c1e5",
+  "startRemote": "1e1d04fd9f7072d84e2c0289816502a104ffb2d2",
+  "result": "BLOCKED",
+  "canEnterM5": false,
+  "node": {
+    "baselineTests": 648,
+    "baselineExit": 0,
+    "finalTests": 655,
+    "componentTests": 392,
+    "componentFiles": 42,
+    "checkExit": 0,
+    "directedTests": 101,
+    "directedExit": 0,
+    "lintErrors": 0,
+    "existingWarnings": 42,
+    "strictExit": 0
+  },
+  "android": {
+    "suiteExit": 0,
+    "instrumentationPassed": 1,
+    "sqlCipher": "4.17.0 community",
+    "queryCounts": [
+      179,
+      179
+    ],
+    "writeCounts": [
+      26,
+      26
+    ],
+    "seedRows": [
+      1000,
+      10000
+    ],
+    "maxReturnedRows": 51,
+    "retainedWindow": 100,
+    "fullGraphCalls": 0,
+    "controlledModelCalls": 10,
+    "realModelCalls": 0,
+    "restoreGate": "PASS",
+    "revocationWhilePending": "PASS"
+  },
+  "defaultApk": {
+    "buildExit": 0,
+    "gateExit": 0,
+    "syntheticActivation": false,
+    "schema": 4
+  },
+  "dataSeed": "M4 recursive SQL seed v1 with M2 fixture and M3 schema 004",
+  "dataSeedSha256": "F19A820CFDDBD8CAE6A8AE06B82377CA82D92C3A9AEDA9EF8665AF622E00E9D9",
+  "rawDeviceLogSha256": "9DC76059D54120742F27DD7BD711867AFA8246D4E6F7A11DD8132ED29BAA692F"
+}

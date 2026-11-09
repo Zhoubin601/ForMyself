@@ -1,0 +1,21 @@
+{
+  "fresh": true,
+  "syntheticOnly": true,
+  "serial": "emulator-5582",
+  "avd": "kanata_m2_api34",
+  "api": "34",
+  "abi": "x86_64",
+  "boot": "1",
+  "data": [
+    "Filesystem       Size Used Avail Use% Mounted on",
+    "/dev/block/dm-40 5.8G 553M  5.1G  10% /data/user/0"
+  ],
+  "selinux": "Enforcing",
+  "packages": [],
+  "accelerator": [
+    "accel:",
+    "0",
+    "WHPX(10.0.26300) is installed and usable.",
+    "accel"
+  ]
+}

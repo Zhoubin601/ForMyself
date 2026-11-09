@@ -12,7 +12,7 @@ export function validateGroupReplyLimits(input){
   return limits
 }
 /** Defaults do not mutate old conversations or create billing tasks.
- * @param {import('./kanataTypes').Conversation} conversation @returns {Limits} */
+ * @param {Pick<import('./kanataTypes').Conversation,'type'|'replyLimits'>} conversation @returns {Limits} */
 export function kanataReplyLimits(conversation){
   if(conversation.type!=='group')return{maxSpeakers:1,maxMessages:4}
   return conversation.replyLimits===undefined?{maxSpeakers:2,maxMessages:8}:validateGroupReplyLimits(conversation.replyLimits)

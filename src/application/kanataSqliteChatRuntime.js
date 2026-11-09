@@ -1,26 +1,25 @@
 // @ts-check
-import { App } from '@capacitor/app'
 import { shallowRef, watch } from 'vue'
-import { buildKanataConversationContext, decideKanataSpeakers, kanataConversation, splitKanataBubbles } from '../features/chat/domain/kanataConversation.js'
+import { createKanataChatViewModel } from '../features/chat/kanataChatViewModel.js'
+import { buildKanataConversationContext, createKanataSpeakerSelection, splitKanataBubbles } from '../features/chat/domain/kanataConversation.js'
 import { resolveKanataCharacter } from '../features/chat/domain/kanataManagementCore.js'
 import { kanataReplyLimits } from '../features/chat/domain/groupReplyLimits.js'
-import { kanataMemoryPolicy } from '../features/chat/experience/kanataKnowledge.js'
-import { planKanataReplyDelay } from '../features/chat/autonomy/kanataReplyTiming.js'
+import { kanataMemoryPolicy, kanataMemoryRanker } from '../features/chat/experience/kanataKnowledge.js'
+import { activatesKanataLore, estimateKanataContextTokens, expandKanataCharacterText } from '../features/chat/lorebook/kanataLorebook.js'
+import { createKanataBudgetSelection } from '../features/chat/domain/kanataBudgetSelection.js'
 import { collectKanataLifeContext } from './kanataLifeContext.js'
 
-/** @typedef {import('../features/chat/domain/kanataTypes').KanataData} Data */
 /** @typedef {import('../features/chat/domain/kanataTypes').Message} Message */
 /** @typedef {import('../features/chat/domain/kanataTypes').Conversation} Conversation */
 /** @typedef {import('../features/chat/storage/sqlite/kanataRepositoryTypes').KanataMessageScope} Scope */
 /** @typedef {import('../features/chat/storage/sqlite/kanataRepositoryTypes').KanataMessageRepository} Repository */
 /** @typedef {import('../features/chat/storage/sqlite/kanataRepositoryTypes').KanataMessageProvenance} Provenance */
 /** @typedef {ReturnType<typeof import('./kanataSqliteCandidate.js').createKanataSqliteCandidate>} Candidate */
-/** @typedef {Omit<Data,'messages'>} Metadata */
 /** @typedef {import('../features/chat/storage/sqlite/kanataDomainTypes').KanataSqliteDomains} Domains */
-/** @typedef {{prompt: ReturnType<typeof buildKanataConversationContext>, done: Message[], lifeSignature: string, name: string}} ReplyContext */
+/** @typedef {{prompt: ReturnType<typeof buildKanataConversationContext>, done: Awaited<ReturnType<Repository['completedReplies']>>, lifeSignature: string, name: string}} ReplyContext */
 /** @typedef {{text?:string,retryMessageId?:string,replyToMessageId?:string,replyToRevision?:number,stream?:boolean,delayMs?:number,
  * persistDelay?:boolean,timing?:'configured'|'immediate',
- * onDelta?:(value:{instanceId:string,content:string})=>void}} SendOptions */
+ * onDelta?:(value:{instanceId:string,name:string,content:string})=>void}} SendOptions */
 
 /** @param {unknown} condition @param {string} code */
 function requireCurrent(condition, code) {
@@ -37,66 +36,84 @@ function waitForReply(ms, signal) {
   })
 }
 
-/** Fetch only metadata for old or cross-conversation sources needed by the existing permission rules.
- * @param {Repository} repository @param {Data} data @param {string} worldId */
-async function fetchProvenance(repository, data, worldId) {
-  const visible = new Set(data.messages.map(message => message.id))
-  const ids = new Set(data.messages.map(message => message.replyToMessageId).filter(id => id !== undefined))
-  for (const event of data.events) if (event.worldId === worldId && event.status === 'committed') {
-    for (const source of event.sourceRefs) ids.add(source.messageId)
-  }
-  for (const memory of data.memories) if (memory.worldId === worldId && memory.status === 'active') {
-    for (const source of memory.sourceRefs) ids.add(source.messageId)
-  }
+/** @param {Repository} repository @param {readonly Message[]} history @param {string} worldId */
+async function fetchReplyProvenance(repository, history, worldId) {
+  const visible = new Set(history.map(message => message.id))
+  const ids = new Set(history.map(message => message.replyToMessageId).filter(id => id !== undefined).filter(id => !visible.has(id)))
   /** @type {Provenance[]} */
   const provenance = []
   for (const id of ids) {
-    if (visible.has(id)) continue
     const source = await repository.provenance(worldId, id)
-    if (source) {
-      provenance.push(source)
-      if (source.replyToMessageId) ids.add(source.replyToMessageId)
-    }
+    if (source) provenance.push(source)
   }
   return provenance
 }
 
 /** @template T @param {(afterId:string)=>Promise<{entries:T[],cursor:string|null}>} read */
-async function readKnowledgePages(read) {
-  const entries = []
+async function* knowledgeEntries(read) {
   let cursor = ''
   for (;;) {
     const page = await read(cursor)
-    entries.push(...page.entries)
-    if (page.cursor === null) return entries
+    yield* page.entries
+    if (page.cursor === null) return
     cursor = page.cursor
   }
 }
 
-/** @param {Repository} repository @param {Scope} scope @param {string} id */
-async function completedReplies(repository, scope, id) {
-  /** @type {Message[]} */
-  const result = []
-  let page = await repository.replies(scope, id)
+/** @param {Domains} domains @param {Scope & {instanceId:string}} scope @param {string} text */
+async function readPromptKnowledge(domains, scope, text) {
+  const score = kanataMemoryRanker(text)
+  const rank = createKanataBudgetSelection(4000,
+    (/** @type {{id:string,score:number}} */ a, /** @type {{id:string,score:number}} */ b) =>
+      b.score - a.score || (a.id < b.id ? 1 : a.id > b.id ? -1 : 0))
+  for await (const entry of knowledgeEntries(afterId => domains.memories.promptCandidates(scope, afterId))) {
+    rank.offer({ id: entry.id, score: score(entry) }, estimateKanataContextTokens(entry.content) + 16)
+  }
+  const memories = []
+  for (const { id } of rank.finish()) memories.push(await domains.memories.readFor(scope, id))
+  /** @typedef {{id:string,revision:number,priority:number,content:string}} Lore */
+  const book = createKanataBudgetSelection(4000,
+    (/** @type {Lore} */ a, /** @type {Lore} */ b) => b.priority - a.priority || a.id.localeCompare(b.id, 'en'))
+  for await (const entry of knowledgeEntries(afterId => domains.lorebook.promptCandidates(scope.worldId, scope.instanceId, afterId))) {
+    const { id, revision, priority, content } = entry
+    if (activatesKanataLore(entry, text)) book.offer({ id, revision, priority, content }, estimateKanataContextTokens(content) + 8)
+  }
+  return { memories, lorebook: book.finish() }
+}
+/** @param {Domains['chatView']} view @param {Scope} scope @param {Conversation['type']} type
+ * @param {string} displayName @param {string} text @param {number} maxSpeakers @param {string} [previous] */
+async function selectSpeakers(view, scope, type, displayName, text, maxSpeakers, previous) {
+  const selection = createKanataSpeakerSelection(text, maxSpeakers, previous)
+  let cursor = -1
   for (;;) {
-    result.push(...page.messages.filter(message => message.role === 'assistant' && message.status === 'complete' && !message.deleted))
-    if (!page.cursor || result.length >= 32) return result.slice(0, 32)
-    page = await repository.replies(scope, id, page.cursor)
+    const page = await view.profiles(scope, cursor)
+    if (type === 'private') {
+      const [only] = page.entries
+      requireCurrent(only && page.entries.length === 1 && page.cursor === null, 'CONVERSATION_UNAVAILABLE')
+      return [only.id]
+    }
+    for (const profile of page.entries) {
+      /** @param {string} value */
+      const expand = value => expandKanataCharacterText(value, displayName, profile.name)
+      selection.offer(profile.id, { name: expand(profile.name), aliases: profile.aliases.map(expand), interests: profile.interests.map(expand) })
+    }
+    if (page.cursor === null) return selection.finish()
+    cursor = page.cursor
   }
 }
 
 /** Synthetic application composition for the message slice. The production composition
  * continues using its existing runtime and task/usage/backup participants.
  * @param {{
- * candidate: Candidate, metadata: () => Metadata, completion: typeof import('./aiClient.js').completeChat,
+ * candidate: Candidate, completion: typeof import('./aiClient.js').completeChat,
  * auth: Pick<ReturnType<typeof import('../stores/auth.js').useAuthStore>,'isLocked'|'sessionRevision'>,
  * lifeReaders?: Parameters<typeof collectKanataLifeContext>[2],
  * onAttempt?: (attempt: import('../platform/ai/completionTypes').CompletionAttempt & Scope & {instanceId:string,turnId:string}) => Promise<unknown>,
- * clock?: () => number, id?: () => string
+ * releaseOnDispose?: boolean, clock?: () => number, id?: () => string
  * }} options */
-export function createKanataSqliteChatRuntime({ candidate, metadata, completion, auth, lifeReaders = {}, onAttempt, clock = Date.now, id = () => crypto.randomUUID() }) {
+export function createKanataSqliteChatRuntime({ candidate, completion, auth, lifeReaders = {}, onAttempt, releaseOnDispose = true, clock = Date.now, id = () => crypto.randomUUID() }) {
   const revision = shallowRef(0)
-  const foreground = shallowRef(true)
+  const isAvailable = () => !disposed && candidate.isAvailable()
   const messageRevision = shallowRef(0)
   const pendingReply = shallowRef(/** @type {import('../features/chat/storage/sqlite/kanataRepositoryTypes').KanataDeferredReply|null} */ (null))
   /** @type {Scope | null} */
@@ -124,18 +141,12 @@ export function createKanataSqliteChatRuntime({ candidate, metadata, completion,
     if (scope?.worldId === selected?.worldId && scope?.conversationId === selected?.conversationId) return
     selected = scope && Object.freeze({ ...scope })
     clear()
-    if (scope && foreground.value && !auth.isLocked) schedulePoll(0)
+    if (scope && isAvailable()) schedulePoll(0)
   }
-  const unwatch = watch(() => [auth.sessionRevision, auth.isLocked], () => {
-    clear()
-    if (!auth.isLocked && selected && foreground.value) schedulePoll(0)
-  }, { flush: 'sync' })
-  const appListener = App.addListener('appStateChange', ({ isActive }) => {
-    foreground.value = isActive
-    if (!isActive) clear()
-    else if (selected && !auth.isLocked) schedulePoll(0)
-  }).catch(() => undefined)
-
+  const stopInvalidation = watch(candidate.generation, clear, { flush: 'sync' })
+  const stopAvailability = watch(candidate.isAvailable, available => {
+    if (available && selected) schedulePoll(0)
+  })
   /** @param {string} conversationId */
   function owner(conversationId) {
     const scope = selected, generation = revision.value, session = auth.sessionRevision
@@ -143,7 +154,7 @@ export function createKanataSqliteChatRuntime({ candidate, metadata, completion,
     return {
       scope,
       assertOwner() {
-        requireCurrent(!disposed && foreground.value && !auth.isLocked && revision.value === generation && auth.sessionRevision === session
+        requireCurrent(isAvailable() && revision.value === generation && auth.sessionRevision === session
           && scope === selected, 'KANATA_SQLITE_SESSION_CHANGED')
       },
     }
@@ -155,7 +166,7 @@ export function createKanataSqliteChatRuntime({ candidate, metadata, completion,
   }
 
   async function runDue() {
-    if (disposed || auth.isLocked || !foreground.value || !selected || processingDue) return
+    if (!isAvailable() || !selected || processingDue) return
     const request = owner(selected.conversationId)
     const { scope } = request
     if (controller) { schedulePoll(30000); return }
@@ -201,16 +212,13 @@ export function createKanataSqliteChatRuntime({ candidate, metadata, completion,
     try {
       const manualWait = options.delayMs ?? 0
       requireCurrent(Number.isSafeInteger(manualWait) && manualWait >= 0 && manualWait <= 30000, 'INVALID_REPLY_DELAY')
-      const turn = await candidate.withRepositories({ assertOwner }, async (messages, conversations, deferred, domains) => {
-        const conversation = await conversations.get(scope)
-        if (!conversation || conversation.type === 'character') throw new Error('CONVERSATION_UNAVAILABLE')
+      const turn = await candidate.withRepositories({ assertOwner }, async (messages, _conversations, _deferred, domains) => {
+        const overview = await domains.chatView.summary(scope)
+        if (!overview || overview.conversation.type === 'character' || overview.world.archived) throw new Error('CONVERSATION_UNAVAILABLE')
+        const { conversation } = overview
         const world = await domains.worlds.get(scope.worldId)
         if (!world || world.world.archived) throw new Error('CONVERSATION_UNAVAILABLE')
-        const actors = await domains.characters.conversationActors(scope.worldId, conversation.participantIds)
-        const data = { ...metadata(), ...actors, worlds: [world.world], identities: [world.identity], conversations: [conversation], messages: [] }
-        kanataConversation(data, conversationId)
-        const identity = data.identities.find(row => row.worldId === scope.worldId)
-        if (!identity) throw new Error('WORLD_IDENTITY_REQUIRED')
+        const { identity } = world
         const latest = await messages.latest(scope, 'user')
         const retry = options.retryMessageId ? await messages.get(scope, options.retryMessageId) : null
         if (options.retryMessageId) requireCurrent(retry && latest?.id === retry.id
@@ -218,7 +226,8 @@ export function createKanataSqliteChatRuntime({ candidate, metadata, completion,
         const text = retry?.content ?? String(options.text ?? '').trim()
         requireCurrent(text && text.length <= 8000, 'INVALID_MESSAGE')
         const previousSpeaker = await messages.latest(scope, 'assistant')
-        const speakers = decideKanataSpeakers({ ...data, messages: previousSpeaker ? [previousSpeaker] : [] }, conversationId, text)
+        const speakers = await selectSpeakers(domains.chatView, scope, conversation.type, identity.displayName, text,
+          kanataReplyLimits(conversation).maxSpeakers, previousSpeaker?.senderId)
         const replyTo = options.replyToMessageId ? await messages.get(scope, options.replyToMessageId) : null
         if (options.replyToMessageId) requireCurrent(replyTo && !replyTo.deleted && replyTo.status === 'complete'
           && replyTo.revision === options.replyToRevision, 'RETRY_SOURCE_UNAVAILABLE')
@@ -231,33 +240,31 @@ export function createKanataSqliteChatRuntime({ candidate, metadata, completion,
           revision: 1, status: 'complete', turnId, batchId: turnId,
           ...(replyTo && { replyToMessageId: replyTo.id, replyToRevision: replyTo.revision }),
         }
-        if (!retry) {
-          await messages.insert(source)
-          assertOwner()
-          messageRevision.value++
-        }
-        sourceSaved = true
-        const prior = retry ? await completedReplies(messages, scope, source.id) : []
+        const prior = retry ? await messages.completedReplies(scope, source.id) : []
         const needsReply = prior.length < kanataReplyLimits(conversation).maxMessages &&
           speakers.some(speaker => !prior.some(message => message.senderId === speaker))
-        const activityWait = options.timing === 'immediate' || !needsReply ? 0 : planKanataReplyDelay(data, conversation, speakers, clock())
+        const timing = conversation.replyTiming
+        const activityWait = options.timing !== 'immediate' && needsReply && timing?.enabled && world.world.autonomyEnabled
+          && await domains.autonomy.anySpeakerBusy(scope.worldId, speakers, clock(), world.world.timeZone) ? timing.waitMs : 0
         const wait = options.timing === 'immediate' || !needsReply ? 0 : manualWait || activityWait
         const activityDelayed = Boolean(activityWait && !manualWait)
-        if (wait && (options.persistDelay || activityWait)) {
-          const now = clock()
-          await deferred.schedule(scope, {
+        const shouldDefer = Boolean(wait && (options.persistDelay || activityWait))
+        const now = clock()
+        const pending = await domains.turns.save(scope, {
+          source, retry: Boolean(retry), conversationRevision: conversation.revision,
+          ...(shouldDefer && { deferred: {
             id: 'deferred-' + id(), sourceId: source.id, sourceRevision: source.revision,
             notBefore: now + wait, expiresAt: now + 2 * 3600000, activityDelay: activityDelayed,
-          }, Boolean(retry))
-          const pending = await deferred.pending(scope)
-          assertOwner()
-          pendingReply.value = pending
+          } }),
+        })
+        sourceSaved = true
+        assertOwner()
+        if (!retry) messageRevision.value++
+        pendingReply.value = pending
+        if (shouldDefer) {
           schedulePoll(wait)
           return { source, speakers, conversation, wait: 0, deferred: true, activityDelayed }
         }
-        await deferred.cancel(scope)
-        assertOwner()
-        pendingReply.value = null
         return { source, speakers, conversation, wait, deferred: false, activityDelayed: false }
       })
       if (turn.deferred) {
@@ -276,7 +283,7 @@ export function createKanataSqliteChatRuntime({ candidate, metadata, completion,
           onDelta(content) {
             if (abort.signal.aborted) return
             try { assertOwner() } catch { return }
-            options.onDelta?.({ instanceId, content })
+            options.onDelta?.({ instanceId, name: context.name, content })
           },
           async onAttempt(attempt) {
             assertOwner()
@@ -287,8 +294,8 @@ export function createKanataSqliteChatRuntime({ candidate, metadata, completion,
           },
         })
         assertOwner()
-        await candidate.withRepositories({ assertOwner }, async (messages, conversations, _deferred, domains) => {
-          const current = await readContext(messages, await conversations.get(scope), instanceId, domains)
+        await candidate.withRepositories({ assertOwner }, async (messages, _conversations, _deferred, domains) => {
+          const current = await readContext(messages, instanceId, domains)
           requireCurrent(current.prompt.knowledgeSignature === context.prompt.knowledgeSignature
             && current.lifeSignature === context.lifeSignature
             && JSON.stringify(current.prompt.messages) === JSON.stringify(context.prompt.messages)
@@ -315,46 +322,50 @@ export function createKanataSqliteChatRuntime({ candidate, metadata, completion,
 
       /** @param {string} instanceId @returns {Promise<ReplyContext>} */
       async function replyContext(instanceId) {
-        return candidate.withRepositories({ assertOwner }, async (messages, conversations, _deferred, domains) =>
-          readContext(messages, await conversations.get(scope), instanceId, domains))
+        return candidate.withRepositories({ assertOwner }, async (messages, _conversations, _deferred, domains) =>
+          readContext(messages, instanceId, domains))
       }
 
-      /** @param {Repository} messages @param {Conversation|null} conversation @param {string} instanceId @param {Domains} domains @returns {Promise<ReplyContext>} */
-      async function readContext(messages, conversation, instanceId, domains) {
+      /** @param {Repository} messages @param {string} instanceId @param {Domains} domains @returns {Promise<ReplyContext>} */
+      async function readContext(messages, instanceId, domains) {
+        const overview = await domains.chatView.summary(scope)
+        const conversation = overview && { ...overview.conversation, worldId: scope.worldId, lastReadAt: overview.lastReadAt,
+          participantIds: [instanceId] }
+        if (!await domains.chatView.hasSpeaker(scope, instanceId)) throw new Error('SPEAKER_ACCESS_DENIED')
         if (!conversation || conversation.revision !== turn.conversation.revision) throw new Error('STALE_CONTEXT')
         const latest = await messages.latest(scope, 'user')
         requireCurrent(latest && latest.id === turn.source.id && latest.revision === turn.source.revision && !latest.deleted, 'STALE_TURN')
-        const done = await completedReplies(messages, scope, turn.source.id)
-        const meta = metadata()
-        const history = await messages.historyForSpeaker(scope, instanceId, kanataMemoryPolicy({ ...meta, messages: [] }, scope.worldId).recentMessages)
-        const relevant = meta.relationships.filter(row => row.worldId === scope.worldId && row.fromId === instanceId)
+        const done = await messages.completedReplies(scope, turn.source.id)
+        const savedPolicy = await domains.memories.policy(scope.worldId)
+        const memoryPolicies = savedPolicy ? [savedPolicy] : []
+        const policy = kanataMemoryPolicy({ memoryPolicies }, scope.worldId)
+        const history = [...await messages.historyForSpeaker(scope, instanceId, policy.recentMessages)].reverse()
         const world = await domains.worlds.get(scope.worldId)
         if (!world || world.world.archived) throw new Error('CONVERSATION_UNAVAILABLE')
         const group = conversation.type === 'group'
-        const verified = await domains.events.context(scope.worldId, { instanceId, group }, [instanceId, ...relevant.map(row => row.id)])
-        const actors = await domains.characters.conversationActors(scope.worldId, [instanceId], verified.hiddenTargetIds)
-        const grants = await domains.autonomy.grants(scope.worldId)
-        const memories = await readKnowledgePages(afterId => domains.memories.listFor({ ...scope, instanceId }, afterId))
-        const lorebook = await readKnowledgePages(afterId => domains.lorebook.list(scope.worldId, afterId, 50, instanceId))
-        const relationships = []
-        for (const row of relevant) {
-          if (verified.hiddenTargetIds.has(row.id)) relationships.push(row)
-          else {
-            const current = await domains.events.relationship(scope.worldId, row.id)
-            if (current) relationships.push(current)
-          }
+        const actorScope = { instanceId, group }
+        const verified = await domains.events.context(scope.worldId, actorScope, [instanceId])
+        const relations = await domains.events.relationshipContext(scope.worldId, actorScope, policy.contextBudget)
+        const actors = await domains.characters.promptActor(scope.worldId, instanceId, verified.hiddenTargetIds.has(instanceId))
+        const text = history.slice(-3).map(message => message.content).join('\n')
+        const knowledge = await readPromptKnowledge(domains, { ...scope, instanceId }, text)
+        const origins = new Set()
+        for (const entry of [...history, ...knowledge.memories, ...verified.events]) {
+          for (const source of entry.lifeSources ?? []) origins.add(source.grantId)
         }
+        const lifeGrants = await domains.autonomy.contextGrants(scope.worldId, instanceId, [...origins])
         const data = {
-          ...meta, ...actors, worlds: [world.world], identities: [world.identity], messages: [...history].reverse(),
-          conversations: [conversation],
-          events: verified.events, memories, lorebookEntries: lorebook, lifeGrants: grants, relationships,
+          ...actors, worlds: [world.world], identities: [world.identity], messages: history,
+          conversations: [conversation], memoryPolicies, lifeGrants, relationships: relations.relationships,
+          events: [], effects: [], memories: [], lorebookEntries: [],
         }
-        const provenance = await fetchProvenance(messages, data, scope.worldId)
-        const life = await collectKanataLifeContext(data, { worldId: scope.worldId, instanceId, group: conversation.type === 'group' }, lifeReaders)
+        const provenance = await fetchReplyProvenance(messages, history, scope.worldId)
+        const life = await collectKanataLifeContext(data, { worldId: scope.worldId, instanceId, group }, lifeReaders, assertOwner)
         assertOwner()
         const prompt = buildKanataConversationContext(data, conversationId, instanceId, {
           provenance, lifeEntries: life.entries, lifeSources: life.lifeSources,
-          repositoryKnowledge: { ...verified, memories },
+          repositoryKnowledge: { ...knowledge, events: verified.events,
+            hiddenTargetIds: new Set([...verified.hiddenTargetIds, ...relations.hiddenTargetIds]) },
         })
         return { prompt, done, lifeSignature: life.signature, name: resolveKanataCharacter(data, instanceId).name }
       }
@@ -377,20 +388,29 @@ export function createKanataSqliteChatRuntime({ candidate, metadata, completion,
   function changeConversation(conversationId, expectedRevision, changes) {
     cancel()
     const request = owner(conversationId)
-    return candidate.withRepositories(request, async (_messages, conversations, deferred) => {
-      const current = await conversations.get(request.scope)
-      if (!current || current.type === 'character') throw new Error('CONVERSATION_UNAVAILABLE')
-      const saved = await conversations.update(request.scope, expectedRevision ?? current.revision, { ...current, ...changes })
-      if (changes.replyTiming?.enabled === false) {
-        await deferred.accelerate(request.scope, clock())
-        schedulePoll(0)
-      }
-      return saved
+    return candidate.withRepositories(request, async (_messages, conversations, _deferred, domains) => {
+      await conversations.updateChatSettings(request.scope, expectedRevision, changes, clock())
+      const overview = await domains.chatView.summary(request.scope)
+      if (!overview) throw new Error('CONVERSATION_UNAVAILABLE')
+      if (changes.replyTiming?.enabled === false) schedulePoll(0)
+      return overview.conversation
     })
   }
   return {
     revision, messageRevision, pendingReply, activate, owner, send, cancel, reviseMessage, runDue,
-    isAvailable: () => foreground.value && !auth.isLocked && !disposed,
+    isAvailable,
+    createViewModel: () => createKanataChatViewModel({ revision, owner, read: candidate.withRepositories,
+      load: candidate.loadConversationView, readMembers: candidate.readConversationMembers,
+      readUsage: (request, cursor) => candidate.withDomains(request, domains => domains.usage.forConversation(request.scope, cursor)),
+    }),
+    /** @param {string} conversationId @param {string} text
+     * @param {import('../features/chat/storage/sqlite/kanataRepositoryTypes').KanataHistoryCursor|undefined} cursor
+     * @param {()=>void} assertSearch */
+    searchHistory(conversationId, text, cursor, assertSearch) {
+      const request = owner(conversationId)
+      return candidate.withRepositories({ assertOwner() { request.assertOwner(); assertSearch() } },
+        messages => messages.searchHistory(request.scope, text, cursor))
+    },
     /** @param {string} conversationId @param {'daily'|'roleplay'} mode */
     setMode: (conversationId, mode) => changeConversation(conversationId, undefined, { mode }),
     /** @param {string} conversationId @param {number} expected @param {NonNullable<Conversation['replyLimits']>} replyLimits */
@@ -407,9 +427,9 @@ export function createKanataSqliteChatRuntime({ candidate, metadata, completion,
     async dispose() {
       disposed = true
       activate(null)
-      unwatch()
-      try { await candidate.release() }
-      finally { await (await appListener)?.remove() }
+      stopInvalidation()
+      stopAvailability()
+      if (releaseOnDispose) await candidate.release()
     },
   }
 }

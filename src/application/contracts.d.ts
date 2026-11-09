@@ -4,11 +4,12 @@ export type {KanataSqlValue, KanataSqlRow, KanataSchemaTransaction, KanataSchema
 export type KanataSchemaMigrator = typeof import('../features/chat/storage/sqlite/kanataSchemaMigrator.js').migrateKanataSchema
 export type { KanataSqliteWriteResult, KanataSqliteTransaction, KanataSqliteHealth,
   KanataSqliteOperation, KanataSqliteContext, KanataSqliteDriver } from '../platform/storage/kanataSqliteTypes'
-export type { KanataMessageScope, KanataMessageCursor, KanataMessagePage, KanataMessageRepository,
+export type { KanataMessageScope, KanataMessageCursor, KanataMessagePage, KanataMessageRepository, KanataHistoryCursor, KanataHistoryPage,
   KanataConversationRepository, KanataMessageProvenance, KanataReplyExpectation,
   KanataChatContextState, KanataDeferredReply } from '../features/chat/storage/sqlite/kanataRepositoryTypes'
 export type { KanataSqliteDomains, KanataSqliteDomainOwner } from '../features/chat/storage/sqlite/kanataDomainTypes'
 export type KanataSqliteWorldRuntime = ReturnType<typeof import('./kanataSqliteWorldRuntime.js').createKanataSqliteWorldRuntime>
+export type KanataChatViewModel = ReturnType<typeof import('../features/chat/kanataChatViewModel.js').createKanataChatViewModel>
 export type KanataSqliteChatRuntime = ReturnType<typeof import('./kanataSqliteChatRuntime.js').createKanataSqliteChatRuntime>
 export type { KanataData, World, CharacterCard, CharacterCardVersion, CharacterInstance,
   WorldPreset, WorldUserIdentity, Conversation, GroupReplyLimits, ReplyTimingPolicy, Message, LorebookEntry, Memory,

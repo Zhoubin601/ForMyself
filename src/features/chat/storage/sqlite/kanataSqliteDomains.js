@@ -5,12 +5,18 @@ import { createKanataLorebookRepository } from './kanataLorebookRepository.js'
 import { createKanataMemoryRepository } from './kanataMemoryRepository.js'
 import { createKanataEventRepository } from './kanataEventRepository.js'
 import { createKanataAutonomyRepository } from './kanataAutonomyRepository.js'
+import { createKanataChatViewRepository } from './kanataChatViewRepository.js'
+import { createKanataTurnRepository } from './kanataTurnRepository.js'
+import { createKanataManagementViewRepository } from './kanataManagementViewRepository.js'
 import { createKanataUsageRepository } from './kanataUsageRepository.js'
 
 /** @param {import('../../../../platform/storage/kanataSqliteTypes').KanataSqliteOperation} operation
  * @param {{id:()=>string,clock:()=>number}} tools */
 export function createKanataSqliteDomains(operation, tools) {
   return {
+    turns: createKanataTurnRepository(operation, tools),
+    managementView: createKanataManagementViewRepository(operation),
+    chatView: createKanataChatViewRepository(operation),
     worlds: createKanataWorldRepository(operation),
     characters: createKanataCharacterRepository(operation),
     lorebook: createKanataLorebookRepository(operation),

@@ -13,7 +13,7 @@ export const grantTable = /** @type {ReturnType<typeof domainTable<LifeGrant>>} 
   world_id: 'worldId', instance_id: 'instanceId', module_id: 'moduleId', id: 'id',
   can_read: 'read:flag', can_remember: 'remember:flag', can_share: 'share:flag', revision: 'revision',
 }, ['world_id', 'instance_id', 'module_id']))
-const grantById = `SELECT ${grantTable.stored} FROM life_grants WHERE world_id=? AND id=?`
+export const grantById = `SELECT ${grantTable.stored} FROM life_grants WHERE world_id=? AND id=?`
 const member = `SELECT c.type FROM conversations c JOIN conversation_participants p
   ON p.world_id=c.world_id AND p.conversation_id=c.id
   WHERE c.world_id=? AND c.id=? AND p.participant_id=? AND p.kind='character'`

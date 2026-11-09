@@ -1,0 +1,8 @@
+
+> formyself-app@0.0.0 typecheck
+> vue-tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.contracts.json
+
+src/application/kanataSqliteChatRuntime.js(243,29): error TS2345: Argument of type 'ConversationSummary' is not assignable to parameter of type 'Conversation'.
+  Type 'ConversationSummary' is missing the following properties from type 'Conversation': worldId, participantIds, lastReadAt
+src/application/kanataSqliteChatRuntime.js(263,61): error TS2345: Argument of type 'ConversationSummary' is not assignable to parameter of type 'Conversation'.
+  Type 'ConversationSummary' is missing the following properties from type 'Conversation': worldId, participantIds, lastReadAt

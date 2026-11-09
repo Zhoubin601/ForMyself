@@ -1,0 +1,6 @@
+
+> formyself-app@0.0.0 typecheck
+> vue-tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.contracts.json
+
+src/features/chat/domain/kanataConversation.js(36,9): error TS7034: Variable 'positions' implicitly has type 'any[]' in some locations where its type cannot be determined.
+src/features/chat/domain/kanataConversation.js(43,30): error TS7005: Variable 'positions' implicitly has an 'any[]' type.

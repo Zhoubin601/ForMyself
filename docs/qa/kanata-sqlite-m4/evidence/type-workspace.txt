@@ -1,0 +1,7 @@
+
+> formyself-app@0.0.0 typecheck
+> vue-tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.contracts.json
+
+src/features/chat/storage/sqlite/kanataWindowActors.js(35,20): error TS7034: Variable 'tail' implicitly has type 'any[]' in some locations where its type cannot be determined.
+src/features/chat/storage/sqlite/kanataWindowActors.js(37,51): error TS7005: Variable 'tail' implicitly has an 'any[]' type.
+src/features/chat/storage/sqlite/kanataWindowActors.js(42,14): error TS7005: Variable 'tail' implicitly has an 'any[]' type.

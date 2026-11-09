@@ -117,7 +117,7 @@ export const archiveKanataCard = (input, cardId, archived) => change(input, data
   const target = /** @type {import('./kanataTypes').CharacterCard} */(card)
   target.archived = archived
 })
-/** @param {KanataData} input @param {string} instanceId @returns {Definition} */
+/** @param {Pick<KanataData,'instances'> & {cardVersions:Pick<import('./kanataTypes').CharacterCardVersion,'id'|'cardId'|'definition'>[]}} input @param {string} instanceId @returns {Definition} */
 export function resolveKanataCharacter(input, instanceId) {
   const instance = input.instances.find(i => i.id === instanceId)
   need(instance, 'INSTANCE_NOT_FOUND', 'instanceId')

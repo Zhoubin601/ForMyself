@@ -7,8 +7,16 @@ import { normalizeCharacterCard } from '../cards/characterCardImport.js'
 /** @typedef {import('../domain/kanataTypes').LorebookEntry} LorebookEntry */
 /** A conservative UTF8-byte upper bound, not measured model token usage. @param {string} text */
 export const estimateKanataContextTokens = text => new TextEncoder().encode(text).length
+/** @param {Pick<LorebookEntry,'caseSensitive'|'activationRule'|'keys'|'secondaryKeys'>} entry @param {string} text */
+export function activatesKanataLore(entry, text) {
+  if (entry.activationRule === 'always') return true
+  const query = entry.caseSensitive ? text : text.toLowerCase()
+  /** @param {string[]} keys */
+  const matches = keys => keys.some(key => query.includes(entry.caseSensitive ? key : key.toLowerCase()))
+  return matches(entry.keys) && (!entry.secondaryKeys?.length || matches(entry.secondaryKeys))
+}
 /** Filter knowledge first, then activation, then budget. No recursive or regex evaluation.
- * @param {KanataData} data
+ * @param {Pick<KanataData,'worlds'|'instances'|'lorebookEntries'>} data
  * @param {{worldId:string,instanceId:string,text:string,tokenBudget:number}} request
  */
 export function selectKanataLorebook(data, { worldId, instanceId, text, tokenBudget }) {
@@ -23,18 +31,19 @@ export function selectKanataLorebook(data, { worldId, instanceId, text, tokenBud
     (entry.visibility === 'public' && entry.knownBy.length === 0 && entry.scope !== 'character')
   )).sort((a, b) => b.priority - a.priority || a.id.localeCompare(b.id, 'en'))
   for (const entry of entries) {
-    const query = entry.caseSensitive ? text : text.toLowerCase()
-    /** @param {string[]} keys */
-    const match = keys => keys.some(key => query.includes(entry.caseSensitive ? key : key.toLowerCase()))
-    const activated = entry.activationRule === 'always' || (match(entry.keys) && (!entry.secondaryKeys?.length || match(entry.secondaryKeys)))
-    if (!activated) continue
+    if (!activatesKanataLore(entry, text)) continue
     const cost = estimateKanataContextTokens(entry.content) + 8
     if (usedTokens + cost > tokenBudget) { skippedForBudget.push(entry.id); continue }
     selected.push(cloneKanataJson(entry)); usedTokens += cost
   }
   return { entries: selected, usedTokens, skippedForBudget, estimate: 'utf8-byte-upper-bound-v1' }
 }
-/** @param {KanataData} input @param {string} instanceId */
+/** @param {string} text @param {string} userName @param {string} characterName */
+export function expandKanataCharacterText(text, userName, characterName) {
+  return text.replace(/\{\{(user|char)\}\}|<(user|char|bot)>/g, (_token, braces, angle) =>
+    (braces || angle) === 'user' ? userName : characterName)
+}
+/** @param {Parameters<typeof resolveKanataCharacter>[0] & Pick<KanataData,'identities'>} input @param {string} instanceId */
 export function renderKanataCharacter(input, instanceId) {
   const instance = input.instances.find(i => i.id === instanceId)
   need(instance, 'INSTANCE_NOT_FOUND', 'instanceId')
@@ -42,8 +51,7 @@ export function renderKanataCharacter(input, instanceId) {
   need(identity, 'WORLD_IDENTITY_REQUIRED', 'instanceId')
   const definition = resolveKanataCharacter(input, instanceId)
   /** @param {string} text */
-  const replace = text => text.replace(/\{\{(user|char)\}\}|<(user|char|bot)>/g, (_token, braces, angle) => (braces || angle) === 'user'
-    ? /** @type {import('../domain/kanataTypes').WorldUserIdentity} */(identity).displayName : definition.name)
+  const replace = text => expandKanataCharacterText(text, /** @type {import('../domain/kanataTypes').WorldUserIdentity} */(identity).displayName, definition.name)
   // Assets never participate in placeholder expansion or prompt content.
   const result = /** @type {import('../domain/kanataTypes').CharacterDefinition} */(Object.fromEntries(Object.entries(definition).map(([key, value]) => [key,
     ['avatarDataUrl', 'promptPriority'].includes(key) ? value : typeof value === 'string' ? replace(value) : Array.isArray(value) ? value.map(replace) : value])))

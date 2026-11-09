@@ -8,6 +8,7 @@ export const messageProjection = 'm.*, ' + lifeSources
 const anchor = ' AND (created_at,id)<(?,?)'
 const descending = ' ORDER BY created_at DESC,id DESC LIMIT ?'
 const message = 'SELECT ' + messageProjection + ' FROM messages m WHERE ' + scope
+const history = 'SELECT id,content,sender_name_snapshot,created_at,revision FROM messages WHERE ' + scope + ' AND coalesce(deleted,0)=0'
 const conversationColumns = 'id,world_id,type,title,mode,revision,last_read_at,max_speakers,max_messages,reply_timing_enabled,reply_wait_ms,extensions_json'
 
 export const messageQueries = Object.freeze({
@@ -16,6 +17,10 @@ export const messageQueries = Object.freeze({
   older: message + anchor + descending,
   startingAt: message + ' AND (created_at,id)<=(?,?)' + descending,
   replies: message + ' AND reply_to_message_id=?' + descending,
+  history: history + descending,
+  olderHistory: history + anchor + descending,
+  completedReplies: 'SELECT id,revision,sender_id FROM messages WHERE ' + scope
+    + " AND reply_to_message_id=? AND role='assistant' AND status='complete' AND coalesce(deleted,0)=0" + descending,
   olderReplies: message + ' AND reply_to_message_id=?' + anchor + descending,
   latest: message + ' AND role=? ORDER BY created_at DESC,id DESC LIMIT 1',
   provenance: `SELECT m.id,m.world_id,m.conversation_id,m.revision,m.status,m.deleted,m.reply_to_message_id,m.reply_to_revision,

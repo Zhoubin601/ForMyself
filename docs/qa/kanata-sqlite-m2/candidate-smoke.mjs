@@ -1,3 +1,5 @@
+import { growthSeedSql } from '../kanata-sqlite-m4/fixture.mjs'
+import { restoreState } from '../../../src/platform/storage/restoreState.js'
 import { runM3DeviceScenario } from '../kanata-sqlite-m3/device-scenario.mjs'
 import { createPinia, setActivePinia } from 'pinia'
 import { createApp, h, nextTick, ref } from 'vue'
@@ -10,6 +12,7 @@ import { createKanataMessageRepository } from '../../../src/features/chat/storag
 import { deriveKanataSqliteKek } from '../../../src/platform/security/kanataSqliteKek.js'
 import { createKanataSqliteChatRuntime } from '../../../src/application/kanataSqliteChatRuntime.js'
 import { resolveKanataCharacter } from '../../../src/features/chat/domain/kanataManagementCore.js'
+import KanataCandidateWorkspace from '../../../src/features/chat/KanataCandidateWorkspace.vue'
 import KanataConversationView from '../../../src/features/chat/KanataConversationView.vue'
 import conversationStyle from '../../../src/features/chat/kanataManagement.css'
 
@@ -31,11 +34,24 @@ const registry = createProtectedModuleRegistry([{
 }])
 const access = createProtectedAccessStore(registry, 'm2QaAccess')()
 const bridge = registerPlugin('KanataSqlite')
+let trace
 let suspendCommit = false
 let crashState = 'idle'
 const candidate = createKanataSqliteCandidate({
   syntheticOnly: true, auth, access, bridge: {
-    prepare: bridge.prepare, unlock: bridge.unlock, begin: bridge.begin, execute: bridge.execute, query: bridge.query,
+    prepare: bridge.prepare, unlock: bridge.unlock, begin: bridge.begin,
+    async execute(command) {
+      if (trace) trace.writes++
+      return bridge.execute(command)
+    },
+    async query(command) {
+      const result = await bridge.query(command)
+      if (trace) {
+        trace.queries++
+        trace.maxRows = Math.max(trace.maxRows, result.rows.length)
+      }
+      return result
+    },
     close: bridge.close, health: bridge.health, rollback: bridge.rollback, completeOpen: bridge.completeOpen,
     commit: options => {
       if (!suspendCommit) return bridge.commit(options)
@@ -301,7 +317,7 @@ window.m2QaUi = async (password, { metadata, originalId, groupId, alternateId })
     participantIds: instanceIds.slice(0, 2), mode: 'daily', revision: 1, lastReadAt: 0,
   }
   const runtime = createKanataSqliteChatRuntime({
-    candidate, auth, metadata: () => metadata, clock: () => Date.now() + clockAdvance,
+    candidate, auth, clock: () => Date.now() + clockAdvance,
     completion: async options => {
       calls++
       check(options.messages.every(message => !message.content.includes('其他会话隔离文本')), 'CROSS_CONVERSATION_CONTEXT')
@@ -328,7 +344,7 @@ window.m2QaUi = async (password, { metadata, originalId, groupId, alternateId })
   const app = createApp({
     render: () => h(KanataConversationView, {
       conversationId: selected.value,
-      sqlite: { runtime: viewRuntime, storage: candidate, metadata: () => metadata },
+      candidate: { runtime: viewRuntime, scope: { worldId: metadata.conversations.find(row => row.id === selected.value).worldId } },
     }),
   }).use(pinia)
   const button = text => [...container.querySelectorAll('button')].find(node => node.textContent.trim() === text)
@@ -377,7 +393,17 @@ window.m2QaUi = async (password, { metadata, originalId, groupId, alternateId })
     rendered().at(-1).querySelector('button').click()
     await settle(() => Boolean(button('取消引用')))
     check(container.querySelector('.kanata-notice').textContent.includes('回复'), 'QUOTE_PREVIEW')
-    passed.push('bounded-window-scroll-anchor-and-quote')
+    button('取消引用').click()
+    button('查找会话历史').click()
+    await nextTick()
+    const history = container.querySelector('section[aria-label="会话历史"]')
+    history.querySelector('form').requestSubmit()
+    await settle(() => history.querySelectorAll('article').length === 50)
+    history.querySelector('article button').click()
+    await settle(() => !history.isConnected && Boolean(button('回到最近')))
+    button('回到最近').click()
+    await settle(() => rendered().length === 50 && !button('回到最近'))
+    passed.push('bounded-window-scroll-anchor-quote-and-history')
 
     selected.value = groupId
     await settle(() => container.querySelector('textarea[placeholder]')?.disabled === false && rendered().length === 0)
@@ -417,6 +443,8 @@ window.m2QaUi = async (password, { metadata, originalId, groupId, alternateId })
     }))
     check(afterDeferred.replies.messages.length === 2 && afterDeferred.pending === null, 'DEFERRED_COMPLETION')
     passed.push('deferred-reply-persists-and-resumes')
+    button('重试载入会话').click()
+    await settle(() => container.querySelector('textarea[placeholder]')?.disabled === false)
 
     await submit('@' + names[0] + ' 迟到测试')
     await settle(() => late)
@@ -447,5 +475,178 @@ window.m2QaUi = async (password, { metadata, originalId, groupId, alternateId })
     container.remove()
     style.remove()
     auth.expireSession()
+  }
+}
+
+window.m4QaGrowth = async (password, { base, senderId }) => {
+  session(password)
+  const samples = []
+  let controlledModelCalls = 0
+  let revocationWhilePending = 'NOT RUN'
+  const stringify = JSON.stringify
+  const clone = globalThis.structuredClone
+  let fullGraphCalls = 0
+  const observe = value => {
+    if (value && typeof value === 'object' && ['worlds', 'cards', 'conversations', 'messages'].every(key =>
+      Object.prototype.hasOwnProperty.call(value, key))) fullGraphCalls++
+  }
+  const { worldId } = base
+  try {
+    for (const size of [1000, 10000]) {
+      const conversationId = 'm4-growth-' + size
+      const scope = { worldId, conversationId }
+      await candidate.withRepositories({}, (_messages, conversations) => conversations.create({
+        ...base, id: conversationId, lastReadAt: 0, revision: 1,
+      }))
+      const seeded = await candidate.run({}, operation => operation.transaction(tx => tx.execute(growthSeedSql,
+        [size, conversationId, worldId, conversationId, senderId])))
+      check(seeded.affectedRows === size, 'M4_SEED_COUNT')
+      let failure = true, deltas = 0, resumeProvider
+      const runtime = createKanataSqliteChatRuntime({
+        candidate, auth, clock: () => 90000,
+        lifeReaders: { home: async () => [{ value: '合成生活资料授权标记' }] },
+        completion: async options => {
+          controlledModelCalls++
+          check(options.messages.length <= 41, 'M4_PROMPT_UNBOUNDED')
+          if (failure) { failure = false; throw new Error('M4_CONTROLLED_PROVIDER_FAILURE') }
+          if (options.messages.some(item => item.role === 'user' && item.content.includes('合成授权迟到'))) {
+            check(options.messages.some(item => item.content.includes('合成生活资料授权标记')), 'M4_AUTHORIZED_CONTEXT_ABSENT')
+            return new Promise(resolve => { resumeProvider = resolve })
+          }
+          options.onDelta?.('合成增量')
+          return { content: '合成回复甲\n\n合成回复乙' }
+        },
+      })
+      const view = runtime.createViewModel()
+      trace = { queries: 0, writes: 0, maxRows: 0 }
+      JSON.stringify = (value, ...args) => { observe(value); return stringify(value, ...args) }
+      if (clone) globalThis.structuredClone = (...args) => { observe(args[0]); return clone(...args) }
+      try {
+        runtime.activate(scope)
+        await view.open(conversationId)
+        check(view.window.messages.value.length === 50, 'M4_RECENT_LIMIT')
+        check(await view.window.older() && view.window.messages.value.length === 100, 'M4_WINDOW_LIMIT')
+        let source
+        try { await runtime.send(conversationId, { text: '合成原文', timing: 'immediate' }) }
+        catch (error) { check(error.code === 'M4_CONTROLLED_PROVIDER_FAILURE' && error.sourceSaved, 'M4_SOURCE_NOT_DURABLE') }
+        source = await candidate.withRepositories({}, messages => messages.latest(scope, 'user'))
+        check(source?.content === '合成原文', 'M4_SOURCE_MISSING')
+        await runtime.send(conversationId, { retryMessageId: source.id, timing: 'immediate', onDelta: () => { deltas++ } })
+        check(deltas === 1, 'M4_STREAM_DELTA')
+        const replies = await candidate.withRepositories({}, messages => messages.replies(scope, source.id))
+        check(replies.messages.length === 2, 'M4_RETRY_BATCH')
+        await runtime.reviseMessage(source.id, 1, { content: '合成修订', deleted: false })
+        await runtime.reviseMessage(source.id, 2, { content: '', deleted: true })
+        const removed = await candidate.withRepositories({}, messages => messages.get(scope, source.id))
+        check(removed.deleted && removed.revision === 3, 'M4_DELETE_CAS')
+        check(fullGraphCalls === 0 && trace.maxRows <= 51, 'M4_FULL_GRAPH_PATH')
+        samples.push({ seedRows: size, ...trace, retainedWindow: view.window.messages.value.length })
+        const queries = trace.queries, writes = trace.writes
+        restoreState.busy = true
+        try {
+          check(view.overview.value === null && view.window.messages.value.length === 0, 'M4_RESTORE_CACHE')
+          await rejects(() => runtime.send(conversationId, { text: '禁止写入' }), 'KANATA_SQLITE_SESSION_CHANGED')
+          check(trace.queries === queries && trace.writes === writes, 'M4_RESTORE_ACCESS')
+        } finally { restoreState.busy = false }
+        if (size === 10000) {
+          const actor = base.participantIds.find(id => id !== senderId)
+          const worlds = candidate.createWorldRuntime()
+          try {
+            const granted = await worlds.select(worldId).setGrant(actor, 'home', null, { read: true, remember: false, share: false })
+            const pending = runtime.send(conversationId, { text: '合成授权迟到', timing: 'immediate' })
+            void pending.catch(() => {})
+            const until = performance.now() + 12000
+            while (!resumeProvider && performance.now() < until) await new Promise(resolve => setTimeout(resolve, 20))
+            check(resumeProvider, 'M4_PROVIDER_NOT_PENDING')
+            const owner = worlds.select(worldId)
+            const revoked = await owner.setGrant(actor, 'home', granted.revision, { read: false, remember: false, share: false })
+            check(revoked.revision === granted.revision + 1 && view.overview.value === null, 'M4_GRANT_CACHE_NOT_REVOKED')
+            resumeProvider({ content: '不应保存的合成授权迟到结果' })
+            await rejects(() => pending, 'KANATA_SQLITE_SESSION_CHANGED')
+            const replies = await candidate.withRepositories({}, async messages => {
+              const latest = await messages.latest(scope, 'user')
+              return messages.completedReplies(scope, latest.id)
+            })
+            check(!replies.length, 'M4_REVOKED_PROVIDER_WROTE')
+            revocationWhilePending = 'PASS'
+          } finally { worlds.dispose() }
+        }
+      } finally {
+        JSON.stringify = stringify
+        if (clone) globalThis.structuredClone = clone
+        trace = undefined
+        view.dispose()
+        await runtime.dispose()
+      }
+    }
+    check(samples[0].queries === samples[1].queries && samples[0].writes === samples[1].writes, 'M4_SQL_GROWTH')
+    check(fullGraphCalls === 0, 'M4_FULL_GRAPH_PATH')
+    return { samples, fullGraphCalls, controlledModelCalls, realModelCalls: 0, restoreGate: 'PASS', revocationWhilePending }
+  } catch (error) {
+    return { error: error.code ?? error.message, samples, fullGraphCalls, controlledModelCalls }
+  } finally { auth.expireSession(); await candidate.release() }
+}
+window.m4QaWorkspace = async (password, { worldId, worldName, conversationId, actorId }) => {
+  session(password)
+  const passed = []
+  const worlds = candidate.createWorldRuntime()
+  const lifecycle = { generation: candidate.generation, isAvailable: candidate.isAvailable, release: candidate.release }
+  const createChat = () => createKanataSqliteChatRuntime({
+    candidate, auth, releaseOnDispose: false,
+    completion: async () => { throw new Error('M4_WORKSPACE_UNEXPECTED_PROVIDER') },
+  })
+  const container = document.createElement('div')
+  document.body.append(container)
+  const app = createApp({ render: () => h(KanataCandidateWorkspace, { worlds, lifecycle, createChat }) }).use(pinia)
+  const button = text => [...container.querySelectorAll('button')].find(node => node.textContent.trim() === text)
+  const entry = id => container.querySelector('[data-entry-id="' + id + '"] button')
+  const settle = async predicate => {
+    const end = performance.now() + 10000
+    while (!predicate()) {
+      if (performance.now() > end) throw new Error('M4_WORKSPACE_TIMEOUT')
+      await new Promise(resolve => setTimeout(resolve, 40))
+    }
+  }
+  try {
+    app.mount(container)
+    await settle(() => Boolean(button(worldName)))
+    button(worldName).click()
+    await settle(() => Boolean(entry(conversationId)))
+    entry(conversationId).click()
+    await settle(() => container.querySelectorAll('article[data-message-id]').length === 50)
+    button('返回世界').click()
+    await settle(() => Boolean(button('角色与授权')))
+    passed.push('workspace-directory-scoped-conversation-and-return')
+    for (const label of ['世界书', '记忆', '事件', '自治任务']) {
+      button(label).click()
+      await settle(() => Boolean(container.querySelector('ul[aria-label="' + label + '"]')))
+    }
+    button('角色与授权').click()
+    await settle(() => Boolean(entry(actorId)))
+    entry(actorId).click()
+    await settle(() => Boolean(container.querySelector('[data-module="mood"] input')))
+    container.querySelector('[data-module="mood"] input').click()
+    await settle(() => !container.querySelector('fieldset') && Boolean(button(worldName)))
+    const grant = await candidate.withDomains({}, domains => domains.autonomy.getGrant(worldId, actorId, 'mood'))
+    check(grant?.read === true, 'M4_WORKSPACE_GRANT_CAS')
+    button(worldName).click()
+    await settle(() => Boolean(button('角色与授权')))
+    button('角色与授权').click()
+    await settle(() => Boolean(entry(actorId)))
+    entry(actorId).click()
+    await settle(() => container.querySelector('[data-module="mood"] input')?.checked === true)
+    container.querySelector('[data-module="mood"] input').click()
+    await settle(() => !container.querySelector('fieldset') && Boolean(button(worldName)))
+    const revoked = await candidate.withDomains({}, domains => domains.autonomy.getGrant(worldId, actorId, 'mood'))
+    check(revoked?.read === false && revoked.revision > grant.revision, 'M4_WORKSPACE_REVOKE_CAS')
+    passed.push('workspace-domain-summaries-grant-and-revoke-invalidation')
+    return { passed }
+  } catch (error) {
+    return { error: error.code ?? error.message, passed, uiError: container.querySelector('[role=alert]')?.textContent }
+  } finally {
+    app.unmount()
+    container.remove()
+    auth.expireSession()
+    await candidate.release()
   }
 }

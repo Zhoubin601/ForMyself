@@ -22,7 +22,17 @@ const memory = /** @type {ReturnType<typeof domainTable<StoredMemory>>} */ (doma
   conversation_id: 'conversationId', confidence: 'confidence', generation_key: 'generationKey',
 }, ['world_id', 'id'], ['knownBy', 'sourceRefs', 'sourceEventIds', 'lifeSources', 'sharedFromId', 'supersededById', 'conflictWith']))
 const metadata = `SELECT id,owner_type,owner_id,status,visibility,conversation_id,revision FROM memories WHERE world_id=? AND id=?`
+const rankFields = 'SELECT id,layer,memory_key,content FROM memories WHERE world_id=? AND id=? AND length(CAST(content AS BLOB))<=?'
+const memoryPolicy = 'SELECT world_id,strategy,enabled,recent_messages,summarize_after,extract_after,context_budget,revision FROM memory_policies WHERE world_id=?'
 const list = 'SELECT id FROM memories WHERE world_id=? AND id>? ORDER BY id LIMIT ?'
+const promptList = `WITH scope(world,actor,after_id) AS (VALUES(?,?,?))
+  SELECT m.id FROM scope JOIN memories m ON m.world_id=scope.world AND m.id>scope.after_id
+  WHERE m.status='active' AND (
+    (m.owner_type='character' AND m.owner_id=scope.actor)
+    OR EXISTS (SELECT 1 FROM memory_known_by k WHERE k.world_id=m.world_id AND k.memory_id=m.id AND k.instance_id=scope.actor)
+    OR (m.owner_type='world' AND m.visibility='public'
+      AND NOT EXISTS (SELECT 1 FROM memory_known_by k WHERE k.world_id=m.world_id AND k.memory_id=m.id))
+  ) ORDER BY m.id LIMIT ?`
 const listOwner = `SELECT id FROM memories WHERE world_id=? AND owner_type=? AND owner_id=? AND layer=?
   AND id>? ORDER BY id LIMIT 128`
 const sources = 'SELECT message_id,message_revision FROM memory_sources WHERE world_id=? AND memory_id=? AND message_id>? ORDER BY message_id LIMIT 128'
@@ -47,7 +57,7 @@ const addArchive = 'INSERT INTO archived_message_marks(world_id,conversation_id,
 const isArchived = 'SELECT 1 FROM archived_message_marks WHERE world_id=? AND conversation_id=? AND message_id=?'
 const denial = new Set(['KANATA_MEMORY_CONTEXT_DENIED', 'KANATA_CONTEXT_SCOPE_DENIED', 'KANATA_LIFE_PERMISSION_DENIED', 'KANATA_SOURCE_STALE',
   'EVENT_CONTEXT_DENIED', 'EVENT_CAUSE_UNAVAILABLE', 'EVENT_UNAVAILABLE'])
-export const memoryQueries = [memory.get, metadata, list, listOwner, sources, known, events, life, linksByKind, isArchived]
+export const memoryQueries = [rankFields, memoryPolicy, memory.get, metadata, list, promptList, listOwner, sources, known, events, life, linksByKind, isArchived]
 export const memoryWrites = [...memory.writeStatements, addSource, addKnown, addEvent, addLife, addLink, ...clearLinks, deleteMemory, addArchive]
 
 /** @param {string} value */
@@ -206,6 +216,14 @@ export async function saveMemory(tx, dto, expectedRevision) {
 /** @param {Operation} operation @param {()=>string} idFactory */
 export function createKanataMemoryRepository(operation, idFactory) {
   return {
+    /** @param {string} worldId @returns {Promise<import('../../domain/kanataTypes').MemoryPolicy|null>} */
+    policy: worldId => operation.transaction(async tx => {
+      validateId(worldId, 'worldId')
+      const [row] = await tx.query(memoryPolicy, [worldId])
+      return row ? { worldId, strategy: /** @type {import('../../domain/kanataTypes').MemoryPolicy['strategy']} */ (row.strategy),
+        enabled: row.enabled === 1, recentMessages: Number(row.recent_messages), summarizeAfter: Number(row.summarize_after),
+        extractAfter: Number(row.extract_after), contextBudget: Number(row.context_budget), revision: Number(row.revision) } : null
+    }),
     /** @param {Context} scope @param {string} id */
     readFor: (scope, id) => operation.transaction(async tx => {
       const proof = await authorizeMemory(tx, id, scope)
@@ -226,6 +244,24 @@ export function createKanataMemoryRepository(operation, idFactory) {
         }
         const record = found(await readMemory(tx, scope.worldId, String(id)), 'MEMORY_UNAVAILABLE')
         entries.push({ ...record, lifeSources: proof.provenance })
+      }
+      return { entries, cursor: candidates.length > limit ? String(candidates[limit - 1].id) : null }
+    }),
+    /** @param {Context} scope @param {string} afterId @param {number} limit */
+    promptCandidates: (scope, afterId = '', limit = 50) => operation.transaction(async tx => {
+      await assertActor(tx, scope.worldId, scope.instanceId)
+      if (afterId) validateId(afterId, 'memoryCursor')
+      const candidates = await tx.query(promptList, [scope.worldId, scope.instanceId, afterId, pageLimit(limit) + 1])
+      const entries = []
+      for (const { id } of candidates.slice(0, limit)) {
+        try { await authorizeMemory(tx, String(id), scope) }
+        catch (error) {
+          if (denial.has(/** @type {{code?:string}} */ (error).code ?? '')) continue
+          throw error
+        }
+        const [row] = await tx.query(rankFields, [scope.worldId, id, 3984])
+        if (row) entries.push({ id: String(row.id), layer: /** @type {Memory['layer']} */ (row.layer),
+          key: String(row.memory_key), content: String(row.content) })
       }
       return { entries, cursor: candidates.length > limit ? String(candidates[limit - 1].id) : null }
     }),

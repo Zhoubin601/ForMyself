@@ -2,6 +2,7 @@
 import { cloneKanataJson, validateId } from '../../domain/kanataValidation.js'
 import { validateGroupReplyLimits } from '../../domain/groupReplyLimits.js'
 import { validateReplyTimingPolicy } from '../../domain/replyTimingPolicy.js'
+import { deferredReplyWrites } from './kanataDeferredReplySql.js'
 import { conversationQueries as query, conversationWrites as write, messageQueries } from './kanataRepositorySql.js'
 import { extensionObject, nonemptyText, pageLimit, requireSqliteValue as need, safeInteger, scopeBindings, validId } from './kanataRepositoryValues.js'
 
@@ -58,6 +59,13 @@ async function writableWorld(tx, worldId) {
   need(world && world.archived !== 1, 'KANATA_CONVERSATION_WORLD_UNAVAILABLE')
 }
 
+/** @param {Transaction} tx @param {Scope} scope @param {number} expectedRevision
+ * @param {Fields} fields @param {Conversation['type']} type */
+async function writeFields(tx, scope, expectedRevision, fields, type) {
+  await writableWorld(tx, scope.worldId)
+  const values = fieldValues(fields, type)
+  need((await tx.execute(write.update, [...values, ...scopeBindings(scope), expectedRevision])).affectedRows === 1, conflict)
+}
 /** @param {import('../../../../platform/storage/kanataSqliteTypes').KanataSqliteOperation} operation
  * @returns {import('./kanataRepositoryTypes').KanataConversationRepository} */
 export function createKanataConversationRepository(operation) {
@@ -104,6 +112,26 @@ export function createKanataConversationRepository(operation) {
         return dto
       })
     },
+    updateChatSettings(scope, expectedRevision, changes, now) {
+      need(safeInteger(now), invalid)
+      const dto = cloneKanataJson(changes)
+      const bindings = scopeBindings(scope)
+      return run(async tx => {
+        const [previous] = await tx.query(query.get, bindings)
+        need(previous && previous.type !== 'character', 'CONVERSATION_UNAVAILABLE')
+        const revision = Number(previous.revision)
+        need(expectedRevision === undefined || expectedRevision === revision, conflict)
+        const current = {
+          title: String(previous.title), lastReadAt: Number(previous.last_read_at),
+          mode: /** @type {Conversation['mode']} */ (previous.mode),
+          ...(previous.max_speakers !== null && { replyLimits: { maxSpeakers: Number(previous.max_speakers), maxMessages: Number(previous.max_messages) } }),
+          ...(previous.reply_timing_enabled !== null && { replyTiming: { enabled: previous.reply_timing_enabled === 1, waitMs: Number(previous.reply_wait_ms) } }),
+        }
+        const { mode = current.mode, replyLimits = current.replyLimits, replyTiming = current.replyTiming } = dto
+        await writeFields(tx, scope, revision, { ...current, mode, replyLimits, replyTiming }, /** @type {Conversation['type']} */ (previous.type))
+        if (dto.replyTiming?.enabled === false) await tx.execute(deferredReplyWrites.accelerate, [now, ...bindings])
+      })
+    },
     async update(scope, expectedRevision, fields) {
       need(safeInteger(expectedRevision, 1), conflict)
       const dto = cloneKanataJson(fields)
@@ -111,9 +139,7 @@ export function createKanataConversationRepository(operation) {
       return run(async tx => {
         const [previous] = await tx.query(query.get, bindings)
         need(previous?.revision === expectedRevision, conflict)
-        await writableWorld(tx, scope.worldId)
-        const values = fieldValues(dto, /** @type {Conversation['type']} */ (previous.type))
-        need((await tx.execute(write.update, [...values, ...bindings, expectedRevision])).affectedRows === 1, conflict)
+        await writeFields(tx, scope, expectedRevision, dto, /** @type {Conversation['type']} */ (previous.type))
         const [updated] = await tx.query(query.get, bindings)
         return fromRow(tx, updated)
       })

@@ -12,6 +12,7 @@ def generateKanataSqliteCatalog = tasks.register('generateKanataSqliteCatalog', 
     commandLine 'node', 'scripts/build-kanata-sqlite-catalog.mjs', kanataCatalog.get().asFile.absolutePath
     if (kanataM2Synthetic.get()) {
         inputs.dir new File(kanataRepository, 'tests/helpers')
+        inputs.file new File(kanataRepository, 'docs/qa/kanata-sqlite-m4/fixture.mjs')
         inputs.dir new File(kanataRepository, 'src/features/chat/presets')
         args '--synthetic'
     }

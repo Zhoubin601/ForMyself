@@ -1,0 +1,96 @@
+/data/app/~~9WKmBuSzkxn5nLRB38H7zA==/com.yubin.formyself.m2qa-WU0aRaFrp6eqlA-OnwJp-A==/base.apk: 1 file pulled, 0 skipped. 34.2 MB/s (19048771 bytes in 0.531s)
+/data/app/~~9Q9bBcV4h9myFTdKpJyp0A==/com.yubin.formyself.m2qa.test-judgjMdEL6mfqk8UBQlWvA==/base.apk: 1 file pulled, 0 skipped. 36.5 MB/s (596799 bytes in 0.016s)
+▲ [WARNING] Ignoring this import because "src/features/chat/kanataManagement.css" was marked as having no side effects [ignored-bare-import]
+
+    src/features/chat/KanataView.vue:8:7:
+      8 │ import './kanataManagement.css'
+        ╵        ~~~~~~~~~~~~~~~~~~~~~~~~
+
+{"qaBundleSha256":"80ed3567f27f1d95f4045b9853fdb2760b61d1290f269c2d5419814966359003"}
+{
+  "passed": [
+    "schema-js-bridge-and-synthetic-seed",
+    "repository-batches-keyset-quote-locate-fk-and-conversation",
+    "concurrent-cas-real-commit-failure-and-derived-delete",
+    "close-reopen-wrong-password-replay-and-lease"
+  ],
+  "health": {
+    "cipher": "4.17.0 community",
+    "journalMode": "wal",
+    "synchronous": 2,
+    "foreignKeys": 1,
+    "cacheSize": -2048,
+    "checkpoint": 1000,
+    "busyTimeout": 5000
+  }
+}
+{
+  "envelope": "PASS_M0_V1_CROSS_UNWRAP",
+  "challenge": "PASS_EXPIRED_REJECTED",
+  "background": "PASS_OLD_LEASE_REJECTED",
+  "plaintext": "PASS_NO_PLAINTEXT_HEADER_OR_SYNTHETIC_SECRET_IN_PID_LOGS_AND_PREFERENCES",
+  "sigkill": {
+    "oldPid": "6452",
+    "newPid": "7084",
+    "status": "complete",
+    "revision": 1,
+    "auditAbsent": true
+  }
+}
+{
+  "passed": [
+    "bounded-window-scroll-anchor-and-quote",
+    "group-speakers-atomic-bubbles-retry-and-jump",
+    "deferred-reply-persists-and-resumes",
+    "fast-world-switch-late-completion-character-and-lock"
+  ],
+  "controlledModelCalls": 5,
+  "realModelCalls": 0
+}
+{
+  "m4": {
+    "samples": [
+      {
+        "seedRows": 1000,
+        "queries": 196,
+        "writes": 26,
+        "maxRows": 51,
+        "retainedWindow": 100
+      },
+      {
+        "seedRows": 10000,
+        "queries": 196,
+        "writes": 26,
+        "maxRows": 51,
+        "retainedWindow": 100
+      }
+    ],
+    "fullGraphCalls": 0,
+    "controlledModelCalls": 4,
+    "realModelCalls": 0,
+    "restoreGate": "PASS"
+  }
+}
+{
+  "m3": [
+    "world-card-lore-scope-and-archive",
+    "memory-archive-source-revision-and-revoke-before-content",
+    "same-path-event-revoke-isolation",
+    "task-event-usage-commit-failure-and-idempotency"
+  ],
+  "ownerSwitch": "PASS"
+}
+{
+  "m3Sigkill": {
+    "oldPid": "7084",
+    "newPid": "7279",
+    "before": 1800000,
+    "absent": true,
+    "eventCount": 1,
+    "after": 3600000
+  }
+}
+{
+  "inventory": "PASS_INCOMPLETE_AND_LEGACY_REJECTED",
+  "futureSchema": "PASS_READ_ONLY_REJECTION"
+}

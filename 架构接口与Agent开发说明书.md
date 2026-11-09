@@ -599,3 +599,9 @@ Windows 使用 `npm.cmd`、`npx.cmd` 和 `android/gradlew.bat` 的对应命令�
 - 角色上下文使用当前授权和来源元数据通过门禁后读取正文。记忆来源绑定消息 ID + revision。归档从活跃上下文排除该消息，历史与精确来源读取保留同一行。
 - 事件撤销按最新预览核验，使用各事件真实 Effects 归属和持久基线重放。自治窗口提交同一事务中的事件、Effects、任务回执与水位。
 - 生产使用 legacy，普通 Android 构建的 SQLite 激活位为 false。设备核验和阶段边界见 [M3 QA](./docs/qa/kanata-sqlite-m3/README.md)。
+
+## Kanata SQLite M4 候选检查点
+
+- SQLite 合成组合新增 `KanataChatViewModel`、`KanataCandidateWorkspace`。工作区页面通过当前 scope 的 World Runtime 读摘要与角色授权，通过候选聊天 Runtime 读历史 keyset、会话摘要、用量和消息窗口。View 不访问 Driver 或 SQL。聊天读写无外部全图 metadata。未接齐的管理交互见 [M4 验收](docs/20261109-kanata-sqlite-m4-acceptance-v1.md)。
+- `KanataConversationRepository.updateChatSettings` 将 CAS 与活动回复任务加速放入同一事务。`turns.save` 原子保存源消息与延期任务，按实际会话 revision 和当前源 CAS。事件/记忆候选先查角色、来源、授权再取正文。自治窗口签名按批计算，保持原角色轮换、审计、回执及水位。
+- 候选授权、恢复门禁、锁屏、后台及显式释放使会话世代失效。VM 清除当前页面明文，候选 Driver 仍使用 M2 固定语句目录与 SQLCipher。Schema 001–004 保持原校验和。生产 canonical 为 legacy，普通 Android 候选激活位 false。验收命令、强停/故障和证据见 [M4 QA](docs/qa/kanata-sqlite-m4/README.md)。M4 尚未放行，M5 尚未开始。

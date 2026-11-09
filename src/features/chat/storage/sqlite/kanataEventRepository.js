@@ -23,8 +23,13 @@ import { assertWritableWorld } from './kanataWorldRepository.js'
 const eventRow = 'SELECT * FROM world_events WHERE world_id=? AND id=?'
 const list = 'SELECT * FROM world_events WHERE world_id=? AND id>? ORDER BY id LIMIT ?'
 const pathHasEffects = 'SELECT 1 FROM world_effects WHERE world_id=? AND target_type=? AND target_id=? AND path=? LIMIT 1'
-const contextCandidates = `SELECT id,rowid AS ordinal FROM world_events
-  WHERE world_id=? AND status='committed' AND rowid<? ORDER BY rowid DESC LIMIT 50`
+const contextCandidates = `WITH scope(world,actor,group_mode,before_id) AS (VALUES(?,?,?,?))
+  SELECT e.id,e.rowid AS ordinal FROM scope JOIN world_events e ON e.world_id=scope.world
+  WHERE e.status='committed' AND e.rowid<scope.before_id AND (scope.group_mode=0 OR e.visibility='public')
+    AND EXISTS (SELECT 1 FROM event_participants p WHERE p.world_id=e.world_id AND p.event_id=e.id AND p.participant_id=scope.actor)
+  ORDER BY e.rowid DESC LIMIT 50`
+const contextBody = 'SELECT id,summary,effective_at,revision FROM world_events WHERE world_id=? AND id=?'
+const eventMembership = 'SELECT 1 FROM event_participants WHERE world_id=? AND event_id=? AND participant_id=?'
 const targetEvents = `SELECT DISTINCT f.event_id FROM world_effects f JOIN world_events e ON e.world_id=f.world_id AND e.id=f.event_id
   WHERE f.world_id=? AND f.target_id=? AND f.event_id>? AND e.status='committed' ORDER BY f.event_id LIMIT 128`
 const deniedContext = new Set(['EVENT_CONTEXT_DENIED', 'EVENT_CAUSE_UNAVAILABLE', 'EVENT_UNAVAILABLE',
@@ -60,11 +65,14 @@ const effectInsert = `INSERT INTO world_effects(world_id,id,event_id,target_type
 const baselineInsert = `INSERT INTO effect_baselines(world_id,id,target_type,target_id,target_instance_id,target_relationship_id,path,value_json)
   VALUES(?,?,?,?,?,?,?,?)`
 const relationLink = 'INSERT INTO relationship_events(world_id,relationship_id,event_id) VALUES(?,?,?)'
+const outgoing = `SELECT id,from_id,to_id,kind,public_summary FROM relationships
+  WHERE world_id=? AND from_id=? AND id>? ORDER BY id LIMIT 50`
+const relationDimensions = 'SELECT trust,intimacy,understanding FROM relationships WHERE world_id=? AND id=?'
 const relationEvents = 'SELECT event_id FROM relationship_events WHERE world_id=? AND relationship_id=? ORDER BY event_id'
 const staleEventMemories = `UPDATE memories SET status='stale',revision=revision+1 WHERE world_id=? AND status<>'deleted'
   AND id IN (SELECT memory_id FROM memory_events WHERE world_id=? AND event_id IN (SELECT value FROM json_each(?)))`
 const baselineValue = `SELECT mood,energy,location FROM character_instances WHERE world_id=? AND id=?`
-export const eventQueries = [eventRow, list, pathHasEffects, listEffects, eventAudits, contextCandidates, targetEvents, participants, previewRows, descendants, originRows, relation.get, relationEvents, baselineValue]
+export const eventQueries = [outgoing, relationDimensions, eventRow, list, pathHasEffects, listEffects, eventAudits, contextCandidates, contextBody, eventMembership, targetEvents, participants, previewRows, descendants, originRows, relation.get, relationEvents, baselineValue]
 export const eventWrites = [eventInsert, eventUpdate, eventParticipant, eventSource, eventCause, eventLife, eventLifeClear,
   effectInsert, baselineInsert, relationLink, staleEventMemories, ...relation.writeStatements]
 
@@ -110,8 +118,8 @@ export async function authorizeEvent(tx, worldId, eventId, scope) {
   const [metadata] = await tx.query(eventRole, [worldId, eventId])
   need(metadata?.status === 'committed' && (!scope.group || metadata.visibility === 'public'), 'EVENT_CONTEXT_DENIED')
   if (!scope.sharedMemory) {
-    const people = await tx.query(participants, [worldId, eventId])
-    need(people.some(person => person.participant_id === scope.instanceId), 'EVENT_CONTEXT_DENIED')
+    const [member] = await tx.query(eventMembership, [worldId, eventId, scope.instanceId])
+    need(member, 'EVENT_CONTEXT_DENIED')
   }
   const sources = await eventProvenance(tx, worldId, eventId)
   await requireLifeSources(tx, sources, { worldId, ...scope, remember: true })
@@ -266,6 +274,22 @@ async function revoke(tx, plan, decision, tools) {
   await rebuildEventEffects(tx, affected())
 }
 
+/** @param {Tx} tx @param {string} worldId @param {string} id @param {{instanceId:string,group:boolean}} scope */
+async function authorizedEventProof(tx, worldId, id, scope) {
+  try { return await authorizeEvent(tx, worldId, id, scope) }
+  catch (error) {
+    if (!deniedContext.has(/** @type {{code?:string}} */ (error).code ?? '')) throw error
+    return null
+  }
+}
+
+/** @param {Tx} tx @param {string} worldId @param {string} targetId @param {{instanceId:string,group:boolean}} scope */
+async function targetVisible(tx, worldId, targetId, scope) {
+  for await (const row of visitRows(tx, targetEvents, [worldId, targetId], ['event_id'])) {
+    if (!await authorizedEventProof(tx, worldId, String(row.event_id), scope)) return false
+  }
+  return true
+}
 /** @param {Operation} operation @param {Tools} tools */
 export function createKanataEventRepository(operation, tools) {
   return {
@@ -286,28 +310,17 @@ export function createKanataEventRepository(operation, tools) {
     /** @param {string} worldId @param {{instanceId:string,group:boolean}} scope @param {readonly string[]} targets */
     context: (worldId, scope, targets) => operation.transaction(async tx => {
       await assertActor(tx, worldId, scope.instanceId)
-      const proofs = new Map()
-      /** @param {string} id */
-      const proof = async id => {
-        if (!proofs.has(id)) {
-          try { proofs.set(id, await authorizeEvent(tx, worldId, id, scope)) }
-          catch (error) {
-            if (!deniedContext.has(/** @type {{code?:string}} */ (error).code ?? '')) throw error
-            proofs.set(id, null)
-          }
-        }
-        return /** @type {LifeSource[]|null} */ (proofs.get(id))
-      }
       const events = []
       let before = Number.MAX_SAFE_INTEGER
       while (events.length < 12) {
-        const page = await tx.query(contextCandidates, [worldId, before])
+        const page = await tx.query(contextCandidates, [worldId, scope.instanceId, Number(scope.group), before])
         for (const row of page) {
           const id = String(row.id)
-          const lifeSources = await proof(id)
+          const lifeSources = await authorizedEventProof(tx, worldId, id, scope)
           if (!lifeSources) continue
-          const event = found(await loadEvent(tx, worldId, id), 'EVENT_UNAVAILABLE')
-          events.unshift({ ...event, lifeSources })
+          const [event] = await tx.query(contextBody, [worldId, id])
+          const body = found(event, 'EVENT_UNAVAILABLE')
+          events.unshift({ id, summary: String(body.summary), effectiveAt: Number(body.effective_at), revision: Number(body.revision), lifeSources })
           if (events.length === 12) break
         }
         if (page.length < 50) break
@@ -315,11 +328,37 @@ export function createKanataEventRepository(operation, tools) {
       }
       const hiddenTargetIds = new Set()
       for (const targetId of targets) {
-        for await (const row of visitRows(tx, targetEvents, [worldId, targetId], ['event_id'])) {
-          if (!await proof(String(row.event_id))) { hiddenTargetIds.add(targetId); break }
-        }
+        if (!await targetVisible(tx, worldId, targetId, scope)) hiddenTargetIds.add(targetId)
       }
       return { events, hiddenTargetIds }
+    }),
+    /** @param {string} worldId @param {{instanceId:string,group:boolean}} scope @param {number} byteBudget */
+    relationshipContext: (worldId, scope, byteBudget) => operation.transaction(async tx => {
+      await assertActor(tx, worldId, scope.instanceId)
+      need(safeInteger(byteBudget, 1) && byteBudget <= 64000, 'INVALID_CONTEXT_BUDGET')
+      const relationships = []
+      const hiddenTargetIds = new Set()
+      const encoder = new TextEncoder()
+      let bytes = 2
+      let cursor = ''
+      for (;;) {
+        const page = await tx.query(outgoing, [worldId, scope.instanceId, cursor])
+        for (const row of page) {
+          const id = String(row.id), toId = String(row.to_id), publicSummary = String(row.public_summary)
+          const kind = /** @type {Relationship['kind']} */ (row.kind)
+          const visible = await targetVisible(tx, worldId, id, scope)
+          const [state] = visible ? await tx.query(relationDimensions, [worldId, id]) : []
+          const dimensions = state ? { trust: Number(state.trust), intimacy: Number(state.intimacy), understanding: Number(state.understanding) } : undefined
+          bytes += Number(relationships.length > 0) + encoder.encode(JSON.stringify({
+            target: toId, kind, summary: publicSummary, ...(dimensions ? { dimensions } : { dynamicStateUnavailable: true }),
+          })).length
+          need(bytes <= byteBudget, 'CONTEXT_BUDGET_EXCEEDED')
+          if (!visible) hiddenTargetIds.add(id)
+          relationships.push({ id, worldId, fromId: scope.instanceId, toId, kind, publicSummary, dimensions })
+        }
+        if (page.length < 50) return { relationships, hiddenTargetIds }
+        cursor = String(page[page.length - 1].id)
+      }
     }),
     /** @param {string} worldId @param {string} eventId */
     effects: (worldId, eventId) => operation.transaction(async tx => {

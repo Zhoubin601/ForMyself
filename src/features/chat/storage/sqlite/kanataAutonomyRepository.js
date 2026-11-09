@@ -1,14 +1,16 @@
 // @ts-check
-import { kanataAutonomyPolicy, kanataLocalTime, kanataWindowEvents, planKanataWorldWindow } from '../../autonomy/kanataAutonomy.js'
+import { kanataActorWindowEvents, kanataAutonomyPolicy, kanataLocalTime, kanataWindowBounds, KANATA_WINDOW_MS } from '../../autonomy/kanataAutonomy.js'
+import { sha256Text } from '../../../../shared/crypto/sha256Text.js'
+import { selectKanataWindowActors } from './kanataWindowActors.js'
 import { validateKanataAutonomy } from '../../autonomy/autonomyValidation.js'
 import { createEmptyKanataData } from '../../domain/kanataCore.js'
 import { cloneKanataJson, validateId } from '../../domain/kanataValidation.js'
-import { instanceTable, packInstance, unpackInstance } from './kanataCharacterRepository.js'
+import { instanceTable, unpackInstance } from './kanataCharacterRepository.js'
 import { domainTable, executeOnce, found, writeOne } from './kanataDomainRows.js'
 import { commitEvent, insertEvent } from './kanataEventRepository.js'
 import { saveMemory } from './kanataMemoryRepository.js'
 import { visitRows } from './kanataMessageDependents.js'
-import { conversationAccess, grantTable, requireLifeSources, sourceMetadata } from './kanataProvenance.js'
+import { conversationAccess, grantById, grantTable, requireLifeSources, sourceMetadata } from './kanataProvenance.js'
 import { equalDto, nonemptyText, pageLimit, requireSqliteValue as need, safeInteger } from './kanataRepositoryValues.js'
 import { assertWritableWorld, readWorld, worldTable } from './kanataWorldRepository.js'
 
@@ -20,7 +22,7 @@ import { assertWritableWorld, readWorld, worldTable } from './kanataWorldReposit
 /** @typedef {import('../../../../platform/storage/kanataSqliteTypes').KanataSqliteOperation} Operation */
 /** @typedef {import('../../../../platform/storage/kanataSqliteTypes').KanataSqliteTransaction} Tx */
 /** @typedef {{id:()=>string, clock:()=>number}} Tools */
-/** @typedef {NonNullable<ReturnType<typeof planKanataWorldWindow>>} Plan */
+/** @typedef {NonNullable<ReturnType<typeof kanataWindowBounds>> & {signature:string}} Plan */
 /** @typedef {Pick<Task,'attempt'|'leaseUntil'>} Lease */
 /** @typedef {Pick<Task,'simulationWindow'|'contact'|'social'|'deferredReply'>} TaskMeta */
 /** @typedef {Omit<Task,'sourceRefs'|'resultEventIds'|'resultMemoryIds'> & {metadata:TaskMeta,windowTaskId?:string,notificationId?:number}} StoredTask */
@@ -49,8 +51,18 @@ const taskMemory = 'INSERT INTO task_result_memories(world_id,task_id,memory_id)
 const taskPerson = 'INSERT INTO task_social_participants(world_id,task_id,conversation_id,instance_id) VALUES(?,?,?,?)'
 const claim = "UPDATE background_tasks SET state='running',attempt=attempt+1,lease_until=?,error_code=NULL WHERE world_id=? AND id=? AND state=? AND attempt=? AND lease_until=?"
 const finish = 'UPDATE background_tasks SET state=?,lease_until=0,error_code=? WHERE world_id=? AND id=? AND state=\'running\' AND attempt=? AND lease_until=?'
-const worldActors = `SELECT ${instanceTable.stored} FROM character_instances WHERE world_id=? AND id>? ORDER BY id LIMIT 128`
-const worldSchedules = `SELECT ${schedule.stored} FROM virtual_schedules WHERE world_id=? AND id>? ORDER BY id LIMIT 128`
+const changeActorActivity = `UPDATE character_instances SET autonomy_enabled=?,proactive_enabled=?,revision=revision+1
+  WHERE world_id=? AND id=?`
+const worldActors = `SELECT id,revision,location,autonomy_enabled FROM character_instances
+  WHERE world_id=? AND id>? ORDER BY id LIMIT 128`
+const worldSchedules = `SELECT id,instance_id,start_minute,end_minute,location,activity,resting,revision FROM virtual_schedules
+  WHERE world_id=? AND id>? ORDER BY id LIMIT 128`
+const enabledCount = 'SELECT count(*) AS count FROM character_instances WHERE world_id=? AND autonomy_enabled=1'
+const enabledActors = 'SELECT id FROM character_instances WHERE world_id=? AND autonomy_enabled=1 AND id>? ORDER BY id LIMIT 128'
+const actorLocation = 'SELECT location FROM character_instances WHERE world_id=? AND id=? AND autonomy_enabled=1'
+const activeSchedule = `SELECT s.location,s.activity,s.resting FROM virtual_schedules s JOIN virtual_schedule_days d
+  ON d.world_id=s.world_id AND d.schedule_id=s.id WHERE s.world_id=? AND s.instance_id=?
+  AND d.day=? AND s.start_minute<=? AND ?<s.end_minute ORDER BY s.id LIMIT 1`
 const scheduleDays = 'SELECT day FROM virtual_schedule_days WHERE world_id=? AND schedule_id=? ORDER BY day'
 const addDay = 'INSERT INTO virtual_schedule_days(world_id,schedule_id,day) VALUES(?,?,?)'
 const clearDays = 'DELETE FROM virtual_schedule_days WHERE world_id=?'
@@ -58,12 +70,17 @@ const clearSchedules = 'DELETE FROM virtual_schedules WHERE world_id=?'
 const cancelContact = "UPDATE background_tasks SET state='cancelled',lease_until=0 WHERE world_id=? AND kind='proactive' AND state IN ('pending','running')"
 const advanceWatermark = `UPDATE worlds SET last_simulated_at=? WHERE id=? AND revision=? AND last_simulated_at=?
   AND autonomy_enabled=1 AND coalesce(archived,0)=0`
+const busyActor = `SELECT 1 AS busy FROM character_instances i WHERE i.world_id=? AND i.id=? AND i.autonomy_enabled=1
+  AND (i.energy<=0.25 OR EXISTS (SELECT 1 FROM virtual_schedules s JOIN virtual_schedule_days d
+    ON d.world_id=s.world_id AND d.schedule_id=s.id WHERE s.world_id=i.world_id AND s.instance_id=i.id
+    AND d.day=? AND s.start_minute<=? AND ?<s.end_minute))`
+const grantsForActor = `SELECT ${grantTable.stored} FROM life_grants WHERE world_id=? AND instance_id=? ORDER BY module_id`
 const grantsByWorld = `SELECT ${grantTable.stored} FROM life_grants WHERE world_id=? AND id>? ORDER BY id LIMIT 128`
 const staleGrantMemories = `UPDATE memories SET status='stale',revision=revision+1 WHERE world_id=? AND status<>'deleted'
   AND id IN (SELECT memory_id FROM memory_life_sources WHERE world_id=? AND grant_id=?)`
-export const autonomyQueries = [task.get, findTask, listTask, taskSources, taskEvents, taskMemories, worldActors, worldSchedules, scheduleDays, policy.get, grantsByWorld]
+export const autonomyQueries = [task.get, findTask, listTask, taskSources, taskEvents, taskMemories, worldActors, worldSchedules, scheduleDays, policy.get, grantsByWorld, busyActor, grantsForActor, enabledCount, enabledActors, actorLocation, activeSchedule]
 export const autonomyWrites = [...task.writeStatements, ...policy.writeStatements, schedule.writeStatements[0], ...grantTable.writeStatements,
-  taskSource, taskEvent, taskMemory, taskPerson, claim, finish, addDay, clearDays, clearSchedules, cancelContact, advanceWatermark, staleGrantMemories]
+  taskSource, taskEvent, taskMemory, taskPerson, claim, finish, changeActorActivity, addDay, clearDays, clearSchedules, cancelContact, advanceWatermark, staleGrantMemories]
 
 /** @param {Tx} tx @param {string} worldId @param {string} id @returns {Promise<Task>} */
 async function loadTask(tx, worldId, id) {
@@ -91,24 +108,42 @@ async function createTask(tx, dto) {
   for (const actor of social?.participantIds ?? []) await writeOne(tx, taskPerson, [dto.worldId, dto.id, dto.conversationId ?? null, actor])
 }
 
-/** @param {Tx} tx @param {string} worldId */
-async function projection(tx, worldId) {
-  const { world, identity } = found(await readWorld(tx, worldId), 'WORLD_NOT_FOUND')
-  const data = createEmptyKanataData(identity.userId)
-  data.worlds.push(world)
-  data.identities.push(identity)
+/** @param {Tx} tx @param {string} worldId @param {number} now */
+async function readWindowPlan(tx, worldId, now) {
+  const { world } = found(await readWorld(tx, worldId), 'WORLD_NOT_FOUND')
+  need(!world.archived, 'SIMULATION_WORLD_UNAVAILABLE')
   const currentPolicy = await policy.read(tx, [worldId])
-  data.autonomyPolicies = currentPolicy ? [currentPolicy] : []
-  data.virtualSchedules = []
-  for await (const row of visitRows(tx, worldActors, [worldId], ['id'])) data.instances.push(unpackInstance(instanceTable.decode(row)))
-  for await (const row of visitRows(tx, worldSchedules, [worldId], ['id'])) {
-    const value = schedule.decode(row)
-    const days = await tx.query(scheduleDays, [worldId, value.id])
-    data.virtualSchedules.push({ ...value, days: days.map(day => Number(day.day)) })
+  const bounds = kanataWindowBounds(world, kanataAutonomyPolicy({ autonomyPolicies: currentPolicy ? [currentPolicy] : [] }, worldId), now)
+  if (!bounds) return null
+  let signature = 'sqlite-window-v2'
+  for await (const row of visitRows(tx, worldActors, [worldId], ['id'])) {
+    signature = sha256Text(signature + JSON.stringify(['actor', row]))
   }
-  return { data, world, identity, currentPolicy }
+  for await (const row of visitRows(tx, worldSchedules, [worldId], ['id'])) {
+    const days = await tx.query(scheduleDays, [worldId, row.id])
+    signature = sha256Text(signature + JSON.stringify(['schedule', row, days]))
+  }
+  return { ...bounds, signature }
 }
 
+/** @param {Tx} tx @param {Plan} plan */
+async function* visitWindowEvents(tx, plan) {
+  const [total] = await tx.query(enabledCount, [plan.worldId])
+  const count = Number(total.count)
+  if (!count) return
+  const offset = Math.floor(plan.start / KANATA_WINDOW_MS) % count
+  const visit = async function* () {
+    for await (const row of visitRows(tx, enabledActors, [plan.worldId], ['id'])) yield String(row.id)
+  }
+  const actors = await selectKanataWindowActors(visit, offset, count)
+  const { day, minute } = kanataLocalTime(plan.end - 1, plan.timeZone)
+  for (const id of actors) {
+    const [actor] = await tx.query(actorLocation, [plan.worldId, id])
+    const [slot] = await tx.query(activeSchedule, [plan.worldId, id, day, minute, minute])
+    if (slot && actor) yield* kanataActorWindowEvents({ id, state: { location: String(actor.location) } },
+      { location: String(slot.location), activity: String(slot.activity), resting: slot.resting === 1 }, plan)
+  }
+}
 /** @param {Tx} tx @param {Task} task */
 async function checkTaskSources(tx, task) {
   for (const ref of task.sourceRefs) {
@@ -126,18 +161,17 @@ async function checkTaskSources(tx, task) {
 export function createKanataAutonomyRepository(operation, tools) {
   return {
     /** @param {string} worldId @param {number} now */
-    plan: (worldId, now) => operation.transaction(async tx => planKanataWorldWindow((await projection(tx, worldId)).data, worldId, now)),
+    plan: (worldId, now) => operation.transaction(tx => readWindowPlan(tx, worldId, now)),
     /** @param {Plan} plan @param {number} now */
     completeWindow: (plan, now) => operation.transaction(async tx => {
       await assertWritableWorld(tx, plan.worldId)
       const id = await executeOnce(tx, ['window:complete', plan.worldId, plan.idempotencyKey], plan, async () => {
-        const { data } = await projection(tx, plan.worldId)
-        const expected = planKanataWorldWindow(data, plan.worldId, now)
+        const expected = await readWindowPlan(tx, plan.worldId, now)
         need(expected && equalDto(expected, plan), 'SIMULATION_PLAN_STALE')
         const [existing] = await tx.query(findTask, [plan.worldId, 'world', plan.idempotencyKey])
         need(!existing, 'KANATA_TASK_IDEMPOTENCY_CONFLICT')
         const resultEventIds = []
-        for (const fields of kanataWindowEvents(data, plan)) {
+        for await (const fields of visitWindowEvents(tx, plan)) {
           const event = await insertEvent(tx, { ...fields, id: tools.id(), revision: 1, status: 'candidate', causality: 'explicit', recordedAt: now })
           await commitEvent(tx, event, { ...tools, clock: () => now })
           resultEventIds.push(event.id)
@@ -154,25 +188,36 @@ export function createKanataAutonomyRepository(operation, tools) {
     /** @param {string} worldId @param {number} revision
      * @param {Parameters<typeof import('../../autonomy/kanataAutonomy.js').configureKanataAutonomy>[3]} fields @param {number} now */
     configure: (worldId, revision, fields, now) => operation.transaction(async tx => {
-      const { data, world, identity, currentPolicy } = await projection(tx, worldId)
+      const { world, identity } = found(await readWorld(tx, worldId), 'WORLD_NOT_FOUND')
       need(!world.archived && world.revision === revision, 'WORLD_ACTIVITY_CONFLICT')
       kanataLocalTime(now, world.timeZone)
       need(fields.policy.worldId === worldId && fields.schedules.every(value => value.worldId === worldId), 'AUTONOMY_CONFIGURATION_SCOPE')
+      need(fields.schedules.length <= 1000, 'VIRTUAL_SCHEDULE_LIMIT')
       need(new Set(fields.instanceFlags.map(flag => flag.id)).size === fields.instanceFlags.length, 'DUPLICATE_INSTANCE_FLAGS')
-      for (const flag of fields.instanceFlags) {
-        const actor = found(data.instances.find(actor => actor.id === flag.id), 'AUTONOMY_INSTANCE_SCOPE')
-        const next = { ...actor, autonomyEnabled: flag.autonomyEnabled, proactiveEnabled: flag.proactiveEnabled, revision: actor.revision + 1 }
-        await instanceTable.replace(tx, packInstance(next), [worldId, actor.id], actor.revision)
+      const currentPolicy = await policy.read(tx, [worldId])
+      const validation = createEmptyKanataData(identity.userId)
+      validation.worlds.push(world)
+      validation.identities.push(identity)
+      const next = { ...cloneKanataJson(fields.policy), revision: (currentPolicy?.revision ?? 1) + 1 }
+      validation.autonomyPolicies = [next]
+      const schedules = cloneKanataJson(fields.schedules)
+      validation.virtualSchedules = schedules
+      for (const id of new Set(schedules.map(value => value.instanceId))) {
+        const actor = found(await instanceTable.read(tx, [worldId, id]), 'VIRTUAL_SCHEDULE_SCOPE')
+        validation.instances.push(unpackInstance(actor))
       }
-      const next = { ...cloneKanataJson(fields.policy), revision: kanataAutonomyPolicy(data, worldId).revision + 1 }
-      data.autonomyPolicies = [next]
-      data.virtualSchedules = cloneKanataJson(fields.schedules)
-      validateKanataAutonomy(data)
+      validateKanataAutonomy(validation)
+      for (const flag of fields.instanceFlags) {
+        validateId(flag.id, 'instanceId')
+        need(typeof flag.autonomyEnabled === 'boolean' && typeof flag.proactiveEnabled === 'boolean', 'AUTONOMY_INSTANCE_SCOPE')
+        const updated = await tx.execute(changeActorActivity, [Number(flag.autonomyEnabled), Number(flag.proactiveEnabled), worldId, flag.id])
+        need(updated.affectedRows === 1, 'AUTONOMY_INSTANCE_SCOPE')
+      }
       if (currentPolicy) await policy.replace(tx, next, [worldId], currentPolicy.revision)
       else await policy.create(tx, next)
       await tx.execute(clearDays, [worldId])
       await tx.execute(clearSchedules, [worldId])
-      for (const value of data.virtualSchedules) {
+      for (const value of schedules) {
         await schedule.create(tx, value)
         for (const day of value.days) await writeOne(tx, addDay, [worldId, value.id, day])
       }
@@ -251,6 +296,36 @@ export function createKanataAutonomyRepository(operation, tools) {
         return id
       })
       return loadTask(tx, worldId, id)
+    }),
+    /** @param {string} worldId @param {readonly string[]} speakers @param {number} now @param {string} timeZone */
+    anySpeakerBusy: (worldId, speakers, now, timeZone) => operation.transaction(async tx => {
+      need(speakers.length <= 8, 'KANATA_SPEAKER_LIMIT_INVALID')
+      const { day, minute } = kanataLocalTime(now, timeZone)
+      for (const actor of speakers) {
+        const [row] = await tx.query(busyActor, [worldId, actor, day, minute, minute])
+        if (row) return true
+      }
+      return false
+    }),
+    /** @param {string} worldId @param {string} actor */
+    grantsForActor: (worldId, actor) => operation.transaction(async tx => {
+      validateId(worldId, 'worldId')
+      validateId(actor, 'instanceId')
+      return (await tx.query(grantsForActor, [worldId, actor])).map(grantTable.decode)
+    }),
+    /** @param {string} worldId @param {string} actor @param {readonly string[]} origins */
+    contextGrants: (worldId, actor, origins) => operation.transaction(async tx => {
+      const grants = new Map()
+      for (const row of await tx.query(grantsForActor, [worldId, actor])) {
+        const grant = grantTable.decode(row)
+        grants.set(grant.id, grant)
+      }
+      for (const id of origins) {
+        if (grants.has(id)) continue
+        const [row] = await tx.query(grantById, [worldId, id])
+        if (row) grants.set(id, grantTable.decode(row))
+      }
+      return [...grants.values()]
     }),
     /** @param {string} worldId @param {string} actor @param {Grant['moduleId']} moduleId
      * @param {number|null} revision @param {Pick<Grant,'read'|'remember'|'share'>} flags */

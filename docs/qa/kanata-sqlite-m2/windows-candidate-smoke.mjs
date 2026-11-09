@@ -182,6 +182,25 @@ try {
       assert.equal(ui.error, undefined)
       assert.equal(ui.passed.length, 4)
       assert.equal(ui.realModelCalls, 0)
+      if (process.argv.includes('--m4-growth')) {
+        const growth = await evaluate(`window.m4QaGrowth(${password}, ${JSON.stringify({
+          base: fixture.conversations.find(row => row.id === scope.conversationId),
+          senderId: fixture.identities.find(row => row.worldId === scope.worldId).id,
+        })})`)
+        console.log(JSON.stringify({ m4: growth }, null, 2))
+        assert.equal(growth.error, undefined)
+        assert.equal(growth.samples.length, 2)
+        assert.equal(growth.controlledModelCalls, 5)
+        assert.equal(growth.revocationWhilePending, 'PASS')
+        assert.equal(growth.realModelCalls, 0)
+        const workspace = await evaluate(`window.m4QaWorkspace(${password}, ${JSON.stringify({
+          worldId: scope.worldId, worldName: fixture.worlds.find(row => row.id === scope.worldId).name,
+          conversationId: scope.conversationId, actorId: fixture.instances.find(row => row.worldId === scope.worldId).id,
+        })})`)
+        console.log(JSON.stringify({ m4Workspace: workspace }, null, 2))
+        assert.equal(workspace.error, undefined)
+        assert.equal(workspace.passed.length, 2)
+      }
       const m3 = await evaluate(`window.m3QaScenario(${password}, ${JSON.stringify(fixture)}, ${JSON.stringify(fixtureWrites.deferredCommit)})`)
       console.log(JSON.stringify({ m3: m3.passed, ownerSwitch: m3.ownerSwitch, error: m3.error }, null, 2))
       assert.equal(m3.error, undefined)

@@ -1,10 +1,14 @@
 // @ts-check
 import { requireKanata as need, validateKanataData } from './kanataValidation.js'
 import { renderKanataCharacter, selectKanataLorebook } from '../lorebook/kanataLorebook.js'
-import {canUseKanataMessage,canUseKanataLifeSources,canUseKanataEvent,kanataEventLifeSources,selectKanataMemories,rankKanataMemories,kanataMemoryPolicy} from '../experience/kanataKnowledge.js'
+import {canUseKanataMessage,canUseKanataLifeSources,canUseKanataEvent,kanataEventLifeSources,selectKanataMemories,kanataMemoryPolicy} from '../experience/kanataKnowledge.js'
 import {kanataReplyLimits} from './groupReplyLimits.js'
 /** @typedef {import('./kanataTypes').KanataData} Data */
-/** @param {Data} data @param {string} conversationId */
+/** @typedef {Pick<Data,'worlds'|'conversations'>} ConversationScope */
+/** @typedef {Parameters<typeof renderKanataCharacter>[0]} ActorScope */
+/** @typedef {ActorScope & Pick<Data,'worlds'|'conversations'|'messages'|'lorebookEntries'|'memories'|'events'|'effects'|'lifeGrants'|'memoryPolicies'>
+ *  & {relationships: (Pick<Data['relationships'][number],'id'|'worldId'|'fromId'|'toId'|'kind'|'publicSummary'> & Partial<Pick<Data['relationships'][number],'dimensions'>>)[]}} PromptScope */
+/** @param {ConversationScope} data @param {string} conversationId */
 export function kanataConversation(data, conversationId) {
   const conversation = data.conversations.find(c => c.id === conversationId)
   need(conversation && conversation.type !== 'character' && data.worlds.some(w => w.id === conversation.worldId && !w.archived), 'CONVERSATION_UNAVAILABLE', 'conversationId')
@@ -12,39 +16,65 @@ export function kanataConversation(data, conversationId) {
 }
 /** Explicit mentions win; otherwise topic interest and recent participation stay within the saved limit.
  * Unknown/ambiguous @ never silently targets another character. No recursive AI rounds.
- * @param {Data} data @param {string} conversationId @param {string} text
+ * @param {ConversationScope & ActorScope & Pick<Data,'messages'>} data @param {string} conversationId @param {string} text
  */
 export function decideKanataSpeakers(data, conversationId, text) {
   const c = kanataConversation(data, conversationId)
   const members = data.instances.filter(i => c.participantIds.includes(i.id) && i.worldId === c.worldId)
   if (c.type === 'private') return members.map(i => i.id)
   const {maxSpeakers}=kanataReplyLimits(c)
-  const definitions=members.map(instance=>({id:instance.id,definition:renderKanataCharacter(data,instance.id)}))
-  const mentions=[]
-  // Imported names/aliases may contain spaces or punctuation. Match known literal names,
-  // prefer the longest complete name, and never build executable regex from a card field.
-  for(let position=text.indexOf('@');position!==-1;position=text.indexOf('@',position)){
-    const tail=text.slice(position+1)
-    const matches=definitions.flatMap(({id,definition})=>[definition.name,...definition.aliases].filter(name=>tail.startsWith(name)&&(!tail[name.length]||/[\s@，。！？,!?：:;；、]/u.test(tail[name.length]))).map(name=>({id,length:name.length})))
-    const longest=Math.max(0,...matches.map(match=>match.length)),ids=[...new Set(matches.filter(match=>match.length===longest).map(match=>match.id))]
-    need(ids.length===1,'MENTION_UNKNOWN_OR_AMBIGUOUS','mention')
-    mentions.push(ids[0]);position+=longest+1
-  }
-  if(mentions.length)return [...new Set(mentions)].slice(0,maxSpeakers)
   const previous = data.messages.filter(m => m.conversationId === c.id && m.role === 'assistant').at(-1)?.senderId
-  const ranked = definitions.map(({id,definition}) => {
-    const score = definition.interests.filter(interest => text.includes(interest)).length * 3 + (previous === id ? 0 : 1)
-    return {id,score}
-  }).sort((a,b) => b.score-a.score || a.id.localeCompare(b.id,'en'))
-  // A limit is a ceiling; additional viewpoints still require a topic match.
-  return ranked.filter((entry,index) => index === 0 || entry.score >= 3).slice(0,maxSpeakers).map(entry => entry.id)
+  const selection = createKanataSpeakerSelection(text, maxSpeakers, previous)
+  for (const instance of members) selection.offer(instance.id, renderKanataCharacter(data, instance.id))
+  return selection.finish()
+}
+
+/** @param {string} text @param {number} maxSpeakers @param {string} [previous] */
+export function createKanataSpeakerSelection(text, maxSpeakers, previous) {
+  /** @type {Map<number,{length:number,id:string,ambiguous:boolean}>} */
+  const matches = new Map()
+  /** @type {number[]} */
+  const positions = []
+  for (let position = text.indexOf('@'); position !== -1; position = text.indexOf('@', position + 1)) positions.push(position)
+  /** @type {{id:string,score:number}[]} */
+  const ranked = []
+  return {
+    /** @param {string} id @param {Pick<import('./kanataTypes').CharacterDefinition,'name'|'aliases'|'interests'>} definition */
+    offer(id, definition) {
+      for (const position of positions) {
+        for (const name of [definition.name, ...definition.aliases]) {
+          const next = text[position + 1 + name.length]
+          if (!text.startsWith(name, position + 1) || (next && !/[\s@，。！？,!?：:;；、]/u.test(next))) continue
+          const match = matches.get(position)
+          if (!match || name.length > match.length) matches.set(position, { length: name.length, id, ambiguous: false })
+          else if (name.length === match.length && id !== match.id) match.ambiguous = true
+        }
+      }
+      if (positions.length) return
+      ranked.push({ id, score: definition.interests.filter(interest => text.includes(interest)).length * 3 + Number(previous !== id) })
+      ranked.sort((a, b) => b.score - a.score || a.id.localeCompare(b.id, 'en'))
+      if (ranked.length > maxSpeakers) ranked.pop()
+    },
+    finish() {
+      if (!positions.length) return ranked.filter((entry, index) => index === 0 || entry.score >= 3).map(entry => entry.id)
+      const mentions = new Set()
+      for (let position = text.indexOf('@'); position !== -1; ) {
+        const match = matches.get(position)
+        need(match && !match.ambiguous, 'MENTION_UNKNOWN_OR_AMBIGUOUS', 'mention')
+        if (!match) break
+        if (mentions.size < maxSpeakers) mentions.add(match.id)
+        position = text.indexOf('@', position + match.length + 1)
+      }
+      return [...mentions]
+    },
+  }
 }
 /** Only current conversation and this speaker's permitted static knowledge enter a request.
  * No raw card extensions, other private chats, other persona definitions or life stores.
- * @param {Data} data @param {string} conversationId @param {string} instanceId
+ * @param {PromptScope} data @param {string} conversationId @param {string} instanceId
  * @param {{lifeEntries?:{moduleId:string,value:unknown}[],lifeSources?:import('./kanataTypes').LifeSource[],historyMessageIds?:string[],
  * provenance?:readonly import('../experience/kanataKnowledge.js').KnowledgeMessage[],
- * repositoryKnowledge?: {memories:Data['memories'],events:Data['events'],hiddenTargetIds:ReadonlySet<string>}}} [options]
+ * repositoryKnowledge?: {memories:Data['memories'],lorebook:Pick<Data['lorebookEntries'][number],'id'|'revision'|'content'>[],events:Pick<Data['events'][number],'id'|'summary'|'effectiveAt'|'revision'|'lifeSources'>[],hiddenTargetIds:ReadonlySet<string>}}} [options]
  */
 export function buildKanataConversationContext(data, conversationId, instanceId, options={}) {
   const c = kanataConversation(data, conversationId)
@@ -57,11 +87,11 @@ export function buildKanataConversationContext(data, conversationId, instanceId,
   if(options.lifeEntries?.length)need(!!options.lifeSources?.length&&canUseKanataLifeSources(data,options.lifeSources,{worldId:c.worldId,instanceId,group}),'LIFE_CONTEXT_PERMISSION_DENIED','life')
   const history = data.messages.filter(m=>m.worldId===c.worldId && m.conversationId===c.id && (!options.historyMessageIds||options.historyMessageIds.includes(m.id)) && canUseKanataMessage(knowledgeData,m,instanceId,group)).slice(-policy.recentMessages)
   const text = history.slice(-3).map(m=>m.content).join('\n')
-  const book = selectKanataLorebook(data,{worldId:c.worldId,instanceId,text,tokenBudget:4000})
   const verified = options.repositoryKnowledge
-  const memories=verified ? rankKanataMemories(verified.memories,text,4000)
-    : selectKanataMemories(knowledgeData,{worldId:c.worldId,instanceId,text,group,budget:4000,conversationId:c.id})
-  const events=verified?.events ?? data.events.filter(e=>e.worldId===c.worldId&&canUseKanataEvent(knowledgeData,e,instanceId,group)).slice(-12)
+  const lorebook = verified?.lorebook ?? selectKanataLorebook(data,{worldId:c.worldId,instanceId,text,tokenBudget:4000}).entries
+  const memories = verified?.memories ?? selectKanataMemories(knowledgeData,{worldId:c.worldId,instanceId,text,group,budget:4000,conversationId:c.id}).entries
+  const legacyEvents=verified?[]:data.events.filter(e=>e.worldId===c.worldId&&canUseKanataEvent(knowledgeData,e,instanceId,group)).slice(-12)
+  const events=verified?.events ?? legacyEvents
   const instance=data.instances.find(i=>i.id===instanceId)
   /** @param {string} targetId */
   const allowedState=targetId=>verified ? !verified.hiddenTargetIds.has(targetId) : data.effects.filter(effect=>effect.targetId===targetId&&data.events.some(e=>e.id===effect.eventId&&e.status==='committed')).every(effect=>{
@@ -75,9 +105,9 @@ export function buildKanataConversationContext(data, conversationId, instanceId,
     '本世界规则：'+world.rules,
     '你自己的角色设定：'+JSON.stringify(persona),
     '当前用户身份：'+JSON.stringify({name:identity.displayName,background:identity.background}),
-    '你有权知道的静态设定：'+JSON.stringify(book.entries.map(l=>l.content)),
+    '你有权知道的静态设定：'+JSON.stringify(lorebook.map(l=>l.content)),
     '你的有向关系（数值仅为描述性基线的增量，不是绝对好感）：'+JSON.stringify(data.relationships.filter(r=>r.worldId===c.worldId&&r.fromId===instanceId).map(r=>({target:r.toId,kind:r.kind,summary:r.publicSummary,...(allowedState(r.id)?{dimensions:r.dimensions}:{dynamicStateUnavailable:true})}))),
-    '可追溯的动态记忆（摘要和角色陈述不等于已确认世界事实）：'+JSON.stringify(memories.entries.map(m=>({id:m.id,layer:m.layer,content:m.content,confidence:m.confidence||'statement',sourceRefs:m.sourceRefs}))),
+    '可追溯的动态记忆（摘要和角色陈述不等于已确认世界事实）：'+JSON.stringify(memories.map(m=>({id:m.id,layer:m.layer,content:m.content,confidence:m.confidence||'statement',sourceRefs:m.sourceRefs}))),
     '当前角色状态：'+JSON.stringify(allowedState(instanceId)?instance?.state:{dynamicStateUnavailable:true}),
     '经代码确认且你知晓的世界事件：'+JSON.stringify(events.map(e=>({id:e.id,summary:e.summary,effectiveAt:e.effectiveAt}))),
     c.type==='group'?'群聊只输出你自己的发言。先根据自己的兴趣、动机和底线独立判断，再回应同伴；不自动同意上一位，也不为分歧而反对。如果同意，提供自己的新理由、不同方案或保留条件，不复述上一位的段落。':'私聊只和当前用户交流。',
@@ -94,10 +124,11 @@ export function buildKanataConversationContext(data, conversationId, instanceId,
     bytes+=cost;selected.unshift({role:/** @type {'assistant'|'user'} */(m.senderId===instanceId?'assistant':'user'),content})
   }
   need(selected.some(m=>m.role==='user'), 'CONTEXT_BUDGET_EXCEEDED', 'messages')
-  const allSources=[...history.flatMap(m=>m.lifeSources||[]),...memories.entries.flatMap(m=>m.lifeSources||[]),...events.flatMap(e=>verified ? e.lifeSources ?? [] : kanataEventLifeSources(knowledgeData,e)),...options.lifeSources||[]]
+  const eventSources=verified ? verified.events.flatMap(e=>e.lifeSources??[]) : legacyEvents.flatMap(e=>kanataEventLifeSources(knowledgeData,e))
+  const allSources=[...history.flatMap(m=>m.lifeSources||[]),...memories.flatMap(m=>m.lifeSources||[]),...eventSources,...options.lifeSources||[]]
   for(const source of [...allSources]){const own=data.lifeGrants.find(g=>g.worldId===c.worldId&&g.instanceId===instanceId&&g.moduleId===source.moduleId);if(own)allSources.push({...source,grantId:own.id,revision:own.revision,instanceId})}
   const lifeSources=[...new Map(allSources.map(s=>[JSON.stringify(s),s])).values()]
-  const knowledgeSignature=JSON.stringify([world.revision,identity.revision,instance?.revision,c.revision,history.map(m=>[m.id,m.revision]),memories.entries.map(m=>[m.id,m.revision]),book.entries.map(e=>[e.id,e.revision]),events.map(e=>[e.id,e.revision])])
+  const knowledgeSignature=JSON.stringify([world.revision,identity.revision,instance?.revision,c.revision,history.map(m=>[m.id,m.revision]),memories.map(m=>[m.id,m.revision]),lorebook.map(e=>[e.id,e.revision]),events.map(e=>[e.id,e.revision])])
   return {messages:[...messages,...selected],mode,lifeSources,knowledgeSignature,instanceRevision:instance?.revision,conversationRevision:c.revision}
 }
 /** Preserve prose and punctuation; split only natural paragraph boundaries, cap at four bubbles.

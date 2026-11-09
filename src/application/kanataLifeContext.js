@@ -22,10 +22,10 @@ const fingerprint=async value=>{
 }
 /** Check before invoking even a lazy reader. Caller rechecks session and grant snapshot after
  * awaits and before using these results. No denied source is loaded "to check" its content.
- * @param {Data} data @param {{worldId:string,instanceId:string,group:boolean,moduleId?:LifeModule}} scope
- * @param {Partial<Record<LifeModule,()=>Promise<unknown>>>} readers
+ * @param {Pick<Data,'worlds'|'instances'|'lifeGrants'>} data @param {{worldId:string,instanceId:string,group:boolean,moduleId?:LifeModule}} scope
+ * @param {Partial<Record<LifeModule,()=>Promise<unknown>>>} readers @param {()=>void} [assertOwner]
  */
-export async function collectKanataLifeContext(data,scope,readers) {
+export async function collectKanataLifeContext(data,scope,readers,assertOwner=()=>{}) {
   /** @type {{moduleId:LifeModule,value:unknown}[]} */
   const entries=[]
   /** @type {import('../features/chat/domain/kanataTypes').LifeSource[]} */
@@ -33,9 +33,12 @@ export async function collectKanataLifeContext(data,scope,readers) {
   for(const moduleId of /** @type {LifeModule[]} */(Object.keys(readers))){
     if(scope.moduleId&&!['home','reports'].includes(scope.moduleId)&&moduleId!==scope.moduleId)continue
     const reader=readers[moduleId];if(!reader)continue
+    assertOwner()
     const allowed=readKanataAuthorizedLifeData(data,{...scope,moduleId},reader)
     if(!allowed.allowed)continue
-    const value=await allowed.value,serialized=JSON.stringify(value)
+    const value=await allowed.value
+    assertOwner()
+    const serialized=JSON.stringify(value)
     if(serialized.length>12000)throw Error('LIFE_PROJECTION_TOO_LARGE')
     const grant=data.lifeGrants.find(g=>g.worldId===scope.worldId&&g.instanceId===scope.instanceId&&g.moduleId===moduleId)
     if(!grant)throw Error('LIFE_PERMISSION_REVISED')

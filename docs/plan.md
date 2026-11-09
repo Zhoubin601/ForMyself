@@ -1,4 +1,4 @@
-> **2026-11-09 当前有效检查点：M3 隔离 SQLite 候选 PASS，M4 完整工程任务书已建立、代码尚未开始。** 实施入口：[M4 任务书](20261109-kanata-sqlite-m4-task-v1.md)；先前的 M2 Linux BLOCKED 为历史（随后已在 Windows/WHPX 解除，M2/M3 候选均 PASS）。生产仍 legacy，普通 Android SQLite 激活 false。M4 未 PASS 不进入 M5。
+> **2026-11-09 当前检查点为 M4 BLOCKED，M5 NO。** [已实施和验证的切片](20261109-kanata-sqlite-m4-acceptance-v1.md)覆盖候选聊天、工作区摘要、授权与自治窗口。完整管理等价、深层来源和验收仍待完成。继续按 [M4 任务书](20261109-kanata-sqlite-m4-task-v1.md) 执行。生产为 legacy，默认激活位 false。
 
 # 执行计划
 
@@ -1155,3 +1155,8 @@ P6最终PASS/Go：501 Node/317组件、Web12/6布局、Android17、原生8通过
 - [x] 编写 [M4 完整任务书](20261109-kanata-sqlite-m4-task-v1.md)：Preflight、技术设计、领域命令与查询、Pinia有界化、生命周期、Android真实集成、两轮自检、G1–G11验收。
 - [ ] Windows 本地 Codex 依据任务书实施并提交 M4 代码与证据；当前未运行 M4 测试，不能把 M3 历史数字当作 M4 结果。
 - [ ] 生产 SQLite 仍关闭；M5/M6/M7/P7 保持独立门禁。
+
+## 2026-11-09 M4 工程检查点
+
+- [x] Windows 预检、调用审计、技术设计、候选聊天与摘要工作区、授权、自治窗口、已接线范围的定向和设备回归。
+- [ ] 补齐候选完整管理流程、深层关联的有界处理、未跑的增长及生命周期矩阵，再完成完整 M4-6 两轮复核。验收进度见 [M4 阶段验收](20261109-kanata-sqlite-m4-acceptance-v1.md)。

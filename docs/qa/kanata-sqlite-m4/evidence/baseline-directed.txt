@@ -1,0 +1,53 @@
+(node:2332) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ M3 only appends to the frozen 001–003 catalog (10.3884ms)
+✔ M3 upgrades a populated v3 and preserves historical application times (72.2656ms)
+✔ M3 world and identity creation are atomic, idempotent and reversibly archived (57.2231ms)
+✔ M3 character version publication is immutable and instance scope stays isolated (46.2869ms)
+✔ M3 lore visibility is checked before projection and associations roll back (46.3704ms)
+✔ M3 remember, read and share reject before sensitive queries and archived source requires exact revision (49.9966ms)
+✔ M3 revoke retains independent same-path effects and atomically changes causal descendants (59.1099ms)
+✔ M3 window writes event, effects, task and watermark atomically, including failed COMMIT (52.5967ms)
+✔ M3 old world owner rejects late data and never sends a new command (42.6518ms)
+✔ M3 a derived reply cannot launder an unrememberable source and deletion redacts the body (44.6164ms)
+✔ M3 private event context reads neither its summary nor another actor’s effects (45.846ms)
+✔ M3 expired lease cannot complete and duplicate task completion writes one event (44.2679ms)
+✔ M3 usage attempt preserves null measurement and final usage is idempotent (49.6825ms)
+✔ releasing with a pending native query drops the result and forbids commit and reuse (2.4222ms)
+✔ a caught statement failure aborts the transaction and cannot be treated as success (0.4588ms)
+✔ rollback failure poisons the driver even when close settles (0.3098ms)
+✔ the candidate rejects recovery before the native open (1.6554ms)
+✔ a late page and quote cannot repopulate the message window after switching scope (1.689ms)
+(node:42856) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ M2 bulk boundaries, duplicate identity, quote and fixed-size scoped keyset pages (169.3181ms)
+✔ M2 edit and delete match the domain transaction, including both memory invalidations and exact redaction (55.008ms)
+✔ M2 no partial derived changes on uncertainty, any write fault or actual COMMIT failure (93.2356ms)
+✔ M2 conversation create/update preserve participant order and observable CAS (46.1859ms)
+✔ M2 sources keep distinct extension records without duplicating normalized grant links (41.7191ms)
+✔ M2 scoped deferred reply recovers due work and refuses a stale or cancelled source (41.8545ms)
+(node:36360) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ M1-01 空库逐版升级、迁移日志与重复打开；全部真实领域集合可插入 (79.3586ms)
+✔ M1-02 有数据v1逐版升级保留原记录；日志指纹固定且重复升级零DDL (37.7143ms)
+✔ M1-03 未来版本、不相关库、未完成结构、篡改日志和缺索引均拒绝；数据零改动 (56.2285ms)
+✔ M1-04 未开启外键拒绝；原生执行错误不向外泄漏SQL和参数 (0.8487ms)
+✔ M1-05 任意DDL/日志写入失败整事务回滚，新连接安全重试 (5546.2253ms)
+✔ M1-06 COMMIT失败必须回滚，不能提前报告升级成功 (11.682ms)
+✔ M1-15 已有v1记录升级失败保留逐字节文件，新运行时重试不会丢数据 (176.2395ms)
+✔ M1-07 跨世界群成员、消息、关系、来源及effects均由复合外键拒绝 (86.3707ms)
+✔ M1-08 重复全局ID、重复任务/授权/卡revision、孤儿发言及错role拒绝 (69.7273ms)
+✔ M1-09 旧revision来源保持、未来来源/回复/审计/授权revision及倒退均拒绝 (86.9993ms)
+✔ M1-13 冲突策略不能绕过全局ID；无revision编辑、延迟任务来源和审计发言者拒绝 (43.8466ms)
+✔ M1-14 JSON类型、实例基线范围和策略边界；未知扩展与原卡payload按字节保留 (40.4872ms)
+✔ M1-10 相同时间戳稳定排序，深页使用组合索引及keyset (55.1156ms)
+✔ M1-11 事件因果和记忆共享父链禁止环；反向冲突链接允许 (34.4337ms)
+✔ M1-12 第二连接不能穿插升级事务；实际SIGKILL后DDL和版本回滚可重试 (273.7369ms)
+ℹ tests 39
+ℹ suites 0
+ℹ pass 39
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 6816.3192

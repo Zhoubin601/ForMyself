@@ -1,0 +1,22 @@
+{
+  "syntheticOnly": true,
+  "avd": "kanata_m2_api34",
+  "api": 34,
+  "serial": "emulator-5582",
+  "abi": "x86_64",
+  "selinux": "Enforcing",
+  "crypto": "encrypted",
+  "webView": "Loading com.google.android.webview version 113.0.5672.136",
+  "packages": [
+    "package:com.yubin.formyself.m2qa.test",
+    "package:com.yubin.formyself.m2qa"
+  ],
+  "forwards": [],
+  "accelerator": [
+    "accel:",
+    "0",
+    "WHPX(10.0.26300) is installed and usable.",
+    "accel"
+  ],
+  "stopExitCode": 0
+}

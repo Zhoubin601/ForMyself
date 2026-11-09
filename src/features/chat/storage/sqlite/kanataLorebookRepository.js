@@ -28,11 +28,13 @@ const visible = `WITH scope(world,actor,after_id) AS (VALUES(?,?,?))
     OR (l.visibility='public' AND l.scope<>'character' AND NOT EXISTS (
       SELECT 1 FROM lorebook_known_by k WHERE k.world_id=l.world_id AND k.entry_id=l.id
     ))) ORDER BY l.id LIMIT ?`
+const promptVisible = visible.replace('SELECT l.*', 'SELECT l.id,l.content,l.priority,l.revision,l.activation_rule,l.keys_json,l.secondary_keys_json,l.case_sensitive')
+  .replace('WHERE coalesce(l.enabled,1)=1 AND (', 'WHERE coalesce(l.enabled,1)=1 AND length(CAST(l.content AS BLOB))<=3992 AND (')
 const duplicate = 'SELECT id FROM lorebook_entries WHERE world_id=? AND owner_id=? AND content=? LIMIT 1'
 const link = 'INSERT INTO lorebook_known_by(world_id,entry_id,participant_id) VALUES(?,?,?)'
 const unlink = 'DELETE FROM lorebook_known_by WHERE world_id=? AND entry_id=?'
 const remove = 'DELETE FROM lorebook_entries WHERE world_id=? AND id=? AND revision=?'
-export const lorebookQueries = [entries.get, knownBy, list, visible, duplicate]
+export const lorebookQueries = [entries.get, knownBy, list, visible, promptVisible, duplicate]
 export const lorebookWrites = [...entries.writeStatements, link, unlink, remove]
 
 /** @param {Tx} tx @param {StoredEntry} dto */
@@ -68,6 +70,20 @@ export function createKanataLorebookRepository(operation) {
         actorId === undefined ? [worldId, afterId, pageLimit(limit) + 1] : [worldId, actorId, afterId, pageLimit(limit) + 1])
       const result = []
       for (const row of rows.slice(0, limit)) result.push(await withReaders(tx, entries.decode(row)))
+      return { entries: result, cursor: rows.length > limit ? String(rows[limit - 1].id) : null }
+    }),
+    /** @param {string} worldId @param {string} actorId @param {string} afterId @param {number} limit */
+    promptCandidates: (worldId, actorId, afterId = '', limit = 50) => operation.transaction(async tx => {
+      validateId(worldId, 'worldId')
+      validateId(actorId, 'instanceId')
+      if (afterId) validateId(afterId, 'loreCursor')
+      const rows = await tx.query(promptVisible, [worldId, actorId, afterId, pageLimit(limit) + 1])
+      const result = rows.slice(0, limit).map(row => ({
+        id: String(row.id), content: String(row.content), priority: Number(row.priority), revision: Number(row.revision),
+        activationRule: /** @type {Entry['activationRule']} */ (row.activation_rule), caseSensitive: row.case_sensitive === 1,
+        keys: /** @type {string[]} */ (JSON.parse(String(row.keys_json))),
+        secondaryKeys: row.secondary_keys_json === null ? undefined : /** @type {string[]} */ (JSON.parse(String(row.secondary_keys_json))),
+      }))
       return { entries: result, cursor: rows.length > limit ? String(rows[limit - 1].id) : null }
     }),
     /** @param {Entry} entry @param {number|null} expectedRevision */

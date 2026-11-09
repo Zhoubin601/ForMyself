@@ -21,6 +21,10 @@ import { eventQueries, eventWrites } from '../src/features/chat/storage/sqlite/k
 import { autonomyQueries, autonomyWrites } from '../src/features/chat/storage/sqlite/kanataAutonomyRepository.js'
 import { usageQueries, usageWrites } from '../src/features/chat/storage/sqlite/kanataUsageRepository.js'
 
+import { chatViewQueries } from '../src/features/chat/storage/sqlite/kanataChatViewRepository.js'
+
+import { managementViewQueries } from '../src/features/chat/storage/sqlite/kanataManagementViewRepository.js'
+
 const output = process.argv[2]
 if (!output) throw new Error('Catalog output directory required')
 const statements = {}
@@ -50,12 +54,14 @@ add('query', 'business', [...Object.values(messageQueries), ...Object.values(con
 add('write', 'business', [...Object.values(messageWrites), ...Object.values(conversationWrites),
   ...Object.values(dependentWrites), ...Object.values(updateEffectValue), ...Object.values(deferredReplyWrites)])
 add('query', 'business', [receiptQuery, ...worldQueries, ...characterQueries, ...lorebookQueries, ...provenanceQueries,
-  ...memoryQueries, ...eventQueries, ...autonomyQueries, ...usageQueries])
+  ...memoryQueries, ...eventQueries, ...autonomyQueries, ...usageQueries, ...chatViewQueries, ...managementViewQueries])
 add('write', 'business', [receiptWrite, ...worldWrites, ...characterWrites, ...lorebookWrites, ...memoryWrites,
   ...eventWrites, ...autonomyWrites, ...usageWrites])
 if (process.argv.includes('--synthetic')) {
   const { m2FixtureCommands, auditInspection, fixtureWrites, futureSchema } = await import('../tests/helpers/kanataSqliteM2Fixture.js')
+  const { growthSeedSql } = await import('../docs/qa/kanata-sqlite-m4/fixture.mjs')
   add('query', 'business', Object.values(auditInspection))
+  add('write', 'business', [growthSeedSql])
   add('write', 'business', [...m2FixtureCommands().map(command => command.sql), ...Object.values(fixtureWrites)])
   add('ddl', 'business', [futureSchema])
 }

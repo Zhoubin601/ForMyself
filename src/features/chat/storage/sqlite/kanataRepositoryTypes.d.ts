@@ -11,6 +11,13 @@ export interface KanataMessageCursor extends KanataMessageScope {
   readonly id: string
 }
 
+export interface KanataHistoryCursor extends KanataMessageCursor {
+  readonly query: string
+}
+export interface KanataHistoryPage {
+  readonly messages: readonly Pick<Message, 'id' | 'content' | 'senderNameSnapshot' | 'createdAt' | 'revision'>[]
+  readonly cursor: KanataHistoryCursor | null
+}
 export interface KanataMessagePage {
   readonly messages: readonly Message[]
   readonly cursor: KanataMessageCursor | null
@@ -47,6 +54,7 @@ export interface KanataMessageRepository {
   insertBatch(messages: readonly Message[]): Promise<readonly ('inserted' | 'existing')[]>
   recent(scope: KanataMessageScope, limit?: number): Promise<KanataMessagePage>
   older(scope: KanataMessageScope, cursor: KanataMessageCursor, limit?: number): Promise<KanataMessagePage>
+  searchHistory(scope: KanataMessageScope, text: string, cursor?: KanataHistoryCursor): Promise<KanataHistoryPage>
   locate(scope: KanataMessageScope, id: string, limit?: number): Promise<KanataMessagePage | null>
   get(scope: KanataMessageScope, id: string): Promise<Message | null>
   quote(scope: KanataMessageScope, id: string): Promise<Pick<Message, 'id' | 'content' | 'senderNameSnapshot' | 'revision'> | null>
@@ -58,6 +66,7 @@ export interface KanataMessageRepository {
   }): Promise<KanataChatContextState>
   provenance(worldId: string, id: string): Promise<KanataMessageProvenance | null>
   replies(scope: KanataMessageScope, id: string, cursor?: KanataMessageCursor, limit?: number): Promise<KanataMessagePage>
+  completedReplies(scope: KanataMessageScope, id: string): Promise<readonly Pick<Message, 'id' | 'revision' | 'senderId'>[]>
   insertReplyBatch(scope: KanataMessageScope, expected: KanataReplyExpectation, messages: readonly Message[]): Promise<void>
   setStatus(scope: KanataMessageScope, id: string, expectedRevision: number, status: Message['status']): Promise<Message>
   revise(scope: KanataMessageScope, id: string, expectedRevision: number, change: { content: string; deleted: boolean }): Promise<Message>
@@ -72,6 +81,7 @@ export interface KanataConversationRepository {
   get(scope: KanataMessageScope): Promise<Conversation | null>
   participants(scope: KanataMessageScope): Promise<readonly { id: string; kind: 'user' | 'character' }[]>
   create(conversation: Conversation): Promise<Conversation>
+  updateChatSettings(scope: KanataMessageScope, expectedRevision: number | undefined, changes: Partial<Pick<Conversation, 'mode' | 'replyLimits' | 'replyTiming'>>, now: number): Promise<void>
   update(scope: KanataMessageScope, expectedRevision: number, fields: {
     title: Conversation['title']; mode: Conversation['mode']; lastReadAt: number
     replyLimits?: Conversation['replyLimits']; replyTiming?: Conversation['replyTiming']

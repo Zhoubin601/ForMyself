@@ -3,7 +3,8 @@ import {validateKanataData,requireKanata as need,cloneKanataJson} from '../domai
 import {proposeKanataEvent,commitKanataEvent} from '../experience/kanataEvents.js'
 /** @typedef {import('../domain/kanataTypes').KanataData} Data */
 /** @typedef {import('../domain/kanataTypes').AutonomyPolicy} Policy */
-const WINDOW=30*60*1000
+export const KANATA_WINDOW_MS=30*60*1000
+const WINDOW=KANATA_WINDOW_MS
 /** @param {number} time @param {string} timeZone */
 export function kanataLocalTime(time,timeZone) {
   need(Number.isSafeInteger(time)&&time>=0,'INVALID_SIMULATION_TIME','time')
@@ -13,7 +14,7 @@ export function kanataLocalTime(time,timeZone) {
     return{date:`${read('year')}-${read('month')}-${read('day')}`,day:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].indexOf(read('weekday'))+1,minute:Number(read('hour'))*60+Number(read('minute'))}
   }catch{throw Object.assign(new Error('INVALID_SIMULATION_TIMEZONE'),{code:'INVALID_SIMULATION_TIMEZONE'})}
 }
-/** @param {Data} data @param {string} worldId @returns {Policy} */
+/** @param {Pick<Data,'autonomyPolicies'>} data @param {string} worldId @returns {Policy} */
 export const kanataAutonomyPolicy=(data,worldId)=>data.autonomyPolicies?.find(p=>p.worldId===worldId)||{worldId,revision:1,dailyDialogueLimit:0,maxCatchUpHours:3,freedom:'strict',quietStartMinute:22*60,quietEndMinute:8*60}
 /** Configuration changes begin a new current-time horizon, never simulate a newly edited
  * timetable backwards. Other worlds and instance identities remain unchanged.
@@ -54,16 +55,24 @@ export function setKanataWorldActivity(input,worldId,revision,flags,now) {
 export function planKanataWorldWindow(data,worldId,now) {
   const world=data.worlds.find(w=>w.id===worldId&&!w.archived)
   need(world,'SIMULATION_WORLD_UNAVAILABLE','world')
-  const selected=/** @type {Data['worlds'][number]} */(world),policy=kanataAutonomyPolicy(data,worldId)
-  kanataLocalTime(now,selected.timeZone)
-  if(!selected.autonomyEnabled||now<=selected.lastSimulatedAt)return null
+  const selected=/** @type {Data['worlds'][number]} */(world)
+  const window=kanataWindowBounds(selected,kanataAutonomyPolicy(data,worldId),now)
+  if(!window)return null
+  const {worldId: _worldId,worldRevision,policyRevision,...tail}=window
+  const signature=JSON.stringify([data.instances.filter(i=>i.worldId===worldId),data.virtualSchedules?.filter(s=>s.worldId===worldId)||[]])
+  return{worldId,worldRevision,policyRevision,signature,...tail}
+}
+/** @param {Data['worlds'][number]} world @param {Policy} policy @param {number} now */
+export function kanataWindowBounds(world,policy,now) {
+  kanataLocalTime(now,world.timeZone)
+  if(!world.autonomyEnabled||now<=world.lastSimulatedAt)return null
   const latest=Math.floor(now/WINDOW)*WINDOW
-  if(latest<=selected.lastSimulatedAt)return null
-  const start=Math.max(selected.lastSimulatedAt,latest-Math.min(policy.maxCatchUpHours*3600000,6*WINDOW))
+  if(latest<=world.lastSimulatedAt)return null
+  const start=Math.max(world.lastSimulatedAt,latest-Math.min(policy.maxCatchUpHours*3600000,6*WINDOW))
   const end=Math.min((Math.floor(start/WINDOW)+1)*WINDOW,latest)
   if(end<=start)return null
-  const signature=JSON.stringify([data.instances.filter(i=>i.worldId===worldId),data.virtualSchedules?.filter(s=>s.worldId===worldId)||[]])
-  return{worldId,worldRevision:selected.revision,policyRevision:policy.revision,signature,from:selected.lastSimulatedAt,start,end,skippedMs:start-selected.lastSimulatedAt,timeZone:selected.timeZone,idempotencyKey:`world-window-v1:${Math.floor(start/WINDOW)}:${end}`}
+  return{worldId:world.id,worldRevision:world.revision,policyRevision:policy.revision,from:world.lastSimulatedAt,start,end,
+    skippedMs:start-world.lastSimulatedAt,timeZone:world.timeZone,idempotencyKey:`world-window-v1:${Math.floor(start/WINDOW)}:${end}`}
 }
 /** @param {Pick<Data,'virtualSchedules'>} data @param {string} instanceId @param {number} at @param {string} timeZone */
 export function kanataScheduledActivity(data,instanceId,at,timeZone) {
@@ -78,19 +87,23 @@ export function kanataWindowEvents(data, plan) {
   const enabled = data.instances.filter(i => i.worldId === plan.worldId && i.autonomyEnabled).sort((a,b) => a.id.localeCompare(b.id,'en'))
   const offset = enabled.length ? Math.floor(plan.start / WINDOW) % enabled.length : 0
   const actors = [...enabled.slice(offset), ...enabled.slice(0, offset)].slice(0, 8)
-  return actors.flatMap(instance => {
-    const schedule = kanataScheduledActivity(data, instance.id, plan.end - 1, plan.timeZone)
-    if (!schedule) return []
-    const kinds = /** @type {('move'|'rest')[]} */ ([])
-    if (instance.state.location !== schedule.location) kinds.push('move')
-    if (schedule.resting) kinds.push('rest')
-    return kinds.map(kind => ({
-      worldId: plan.worldId, participantIds: [instance.id], sourceRefs: [], causedByEventIds: [],
-      visibility: 'private', effectiveAt: plan.end, kind,
-      summary: `有限补算：按虚拟日程「${schedule.activity}」${kind === 'move' ? '前往' + schedule.location : '休息'}。这是重新打开后的规则补算，并非离线实时执行。`,
-      action: { instanceId: instance.id, location: schedule.location },
-    }))
-  })
+  return actors.flatMap(instance => kanataActorWindowEvents(
+    instance, kanataScheduledActivity(data,instance.id,plan.end - 1,plan.timeZone), plan))
+}
+/** @param {{id:string,state:{location:string}}} instance
+ * @param {Pick<NonNullable<Data['virtualSchedules']>[number],'location'|'activity'|'resting'>|null} schedule
+ * @param {Pick<NonNullable<ReturnType<typeof planKanataWorldWindow>>,'worldId'|'end'>} plan */
+export function kanataActorWindowEvents(instance,schedule,plan) {
+  if (!schedule) return []
+  const kinds = /** @type {('move'|'rest')[]} */ ([])
+  if (instance.state.location !== schedule.location) kinds.push('move')
+  if (schedule.resting) kinds.push('rest')
+  return kinds.map(kind => ({
+    worldId: plan.worldId, participantIds: [instance.id], sourceRefs: [], causedByEventIds: [],
+    visibility: /** @type {const} */ ('private'), effectiveAt: plan.end, kind,
+    summary: `有限补算：按虚拟日程「${schedule.activity}」${kind === 'move' ? '前往' + schedule.location : '休息'}。这是重新打开后的规则补算，并非离线实时执行。`,
+    action: { instanceId: instance.id, location: schedule.location },
+  }))
 }
 /** Atomic graph transition only; the application must persist before requesting another plan.
  * No AI transcript is invented. Scheduled rest/move have known rules and actual source window.

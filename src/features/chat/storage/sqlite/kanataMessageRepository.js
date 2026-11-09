@@ -1,4 +1,5 @@
 // @ts-check
+import { normalizeArchiveQuery } from '../messageArchiveCore.js'
 import { cloneKanataJson, validateId } from '../../domain/kanataValidation.js'
 import { conversationQueries, messageQueries as query, messageWrites as write } from './kanataRepositorySql.js'
 import { equalDto, extensionObject, nonemptyText, pageLimit, requireSqliteValue as need, safeInteger, scopeBindings, validId } from './kanataRepositoryValues.js'
@@ -206,6 +207,30 @@ export function createKanataMessageRepository(operation, tools) {
     older: (scope, cursor, limit = 50) => run(async tx => page(await tx.query(query.older, [
       ...scopeBindings(scope), ...cursorBindings(scope, cursor), pageLimit(limit) + 1,
     ]), limit)),
+    searchHistory: (scope, text, cursor) => run(async tx => {
+      need(typeof text === 'string' && text.length <= 200, 'KANATA_HISTORY_QUERY_INVALID')
+      const normalized = normalizeArchiveQuery(text)
+      const keys = scopeBindings(scope)
+      if (cursor) need(cursor.query === normalized, 'KANATA_MESSAGE_CURSOR_INVALID')
+      let before = cursor
+      const messages = []
+      // The legacy search also uses a 32-page budget. A continuation points to
+      // the last actually inspected row, including when there were no matches.
+      for (let batch = 0; batch < 32; batch++) {
+        const rows = before
+          ? await tx.query(query.olderHistory, [...keys, ...cursorBindings(scope, before), 51])
+          : await tx.query(query.history, [...keys, 51])
+        for (const [index, row] of rows.slice(0, 50).entries()) {
+          const id = String(row.id), createdAt = Number(row.created_at), content = String(row.content)
+          before = { version: 1, worldId: scope.worldId, conversationId: scope.conversationId, id, createdAt, query: normalized }
+          if (!normalizeArchiveQuery(content).includes(normalized)) continue
+          messages.push({ id, createdAt, content, revision: Number(row.revision), senderNameSnapshot: String(row.sender_name_snapshot) })
+          if (messages.length === 50) return { messages, cursor: index + 1 < rows.length ? before : null }
+        }
+        if (rows.length <= 50) return { messages, cursor: null }
+      }
+      return { messages, cursor: before ?? null }
+    }),
     locate: (scope, id, limit = 50) => run(async tx => {
       pageLimit(limit)
       const found = await readMessage(tx, scope, id)
@@ -223,6 +248,11 @@ export function createKanataMessageRepository(operation, tools) {
       need(role === 'user' || role === 'assistant', 'KANATA_MESSAGE_INVALID')
       const [row] = await tx.query(query.latest, [...scopeBindings(scope), role])
       return row ? messageFromRow(row) : null
+    }),
+    completedReplies: (scope, id) => run(async tx => {
+      validateId(id, 'messageId')
+      const rows = await tx.query(query.completedReplies, [...scopeBindings(scope), id, 32])
+      return rows.map(row => ({ id: String(row.id), revision: Number(row.revision), senderId: String(row.sender_id) }))
     }),
     historyForSpeaker: (scope, speaker, limit) => run(async tx => {
       validateId(speaker, 'speakerId')

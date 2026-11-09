@@ -1,7 +1,7 @@
 // @ts-check
 import { cloneKanataJson, validateId } from '../../domain/kanataValidation.js'
 import { domainTable, writeOne } from './kanataDomainRows.js'
-import { equalDto, pageLimit, requireSqliteValue as need } from './kanataRepositoryValues.js'
+import { equalDto, pageLimit, requireSqliteValue as need, safeInteger, scopeBindings, validId } from './kanataRepositoryValues.js'
 import { assertWritableWorld } from './kanataWorldRepository.js'
 
 /** @typedef {import('../../domain/kanataTypes').KanataUsageEvent} Usage */
@@ -16,9 +16,12 @@ const usage = /** @type {ReturnType<typeof domainTable<Stored>>} */ (domainTable
 }, ['world_id', 'id']))
 const list = `SELECT ${usage.stored} FROM usage_events WHERE world_id=? AND instance_id=? AND (started_at,id)>(?,?)
   ORDER BY started_at,id LIMIT ?`
+const conversationCount = 'SELECT count(*) AS count FROM usage_events WHERE world_id=? AND conversation_id=?'
+const conversationList = `SELECT ${usage.stored} FROM usage_events WHERE world_id=? AND conversation_id=? AND (started_at,id)>(?,?)
+  ORDER BY started_at,id LIMIT ?`
 const finalize = `UPDATE usage_events SET finished_at=?,status=?,error_code=?,finish_reason=?,estimated_input_tokens=?,
   estimated_output_tokens=?,prompt_tokens=?,completion_tokens=?,cache_hit_tokens=? WHERE world_id=? AND id=? AND status='pending'`
-export const usageQueries = [usage.get, list]
+export const usageQueries = [usage.get, list, conversationCount, conversationList]
 export const usageWrites = [...usage.writeStatements, finalize]
 
 /** @param {Stored} dto @returns {Usage} */
@@ -30,6 +33,17 @@ function unpack({ promptTokens, completionTokens, cacheHitTokens, ...fields }) {
 /** @param {Operation} operation */
 export function createKanataUsageRepository(operation) {
   return {
+    /** @param {import('./kanataRepositoryTypes').KanataMessageScope} scope
+     * @param {{startedAt:number,id:string}} cursor @param {number} limit */
+    forConversation: (scope, cursor = { startedAt: -1, id: '' }, limit = 50) => operation.transaction(async tx => {
+      need((cursor.startedAt === -1 && cursor.id === '') || (safeInteger(cursor.startedAt) && validId(cursor.id)), 'KANATA_USAGE_CURSOR_INVALID')
+      const keys = scopeBindings(scope)
+      const [count] = await tx.query(conversationCount, keys)
+      const rows = await tx.query(conversationList, [...keys, cursor.startedAt, cursor.id, pageLimit(limit) + 1])
+      const last = rows[limit - 1]
+      return { count: Number(count.count), attempts: rows.slice(0, limit).map(row => unpack(usage.decode(row))),
+        cursor: rows.length > limit ? { startedAt: Number(last.started_at), id: String(last.id) } : null }
+    }),
     /** @param {Usage} event */
     record: event => operation.transaction(async tx => {
       const dto = cloneKanataJson(event)

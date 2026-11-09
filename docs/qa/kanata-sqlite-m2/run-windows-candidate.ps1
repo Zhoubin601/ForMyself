@@ -1,7 +1,8 @@
 param(
     [Parameter(Mandatory)] [string] $ManifestPath,
     [Parameter(Mandatory)] [string] $EvidenceDirectory,
-    [ValidateSet('repository','full')] [string] $Mode = 'full'
+    [ValidateSet('repository','full')] [string] $Mode = 'full',
+    [switch] $M4Growth
 )
 $ErrorActionPreference = 'Stop'
 $manifestPath = (Resolve-Path -LiteralPath $ManifestPath).Path
@@ -56,7 +57,9 @@ if ((& $adb -s $serial shell pm clear $app) -ne 'Success') { throw 'Synthetic re
 if ($LASTEXITCODE -ne 0 -or (Get-Content -Raw "$evidence/instrumentation.txt") -notmatch 'OK \(1 test\)') { throw 'Instrumentation failed' }
 & $adb -s $serial shell am start -W -n "$app/com.yubin.formyself.MainActivity" > "$evidence/launch.txt"
 if ($LASTEXITCODE -ne 0 -or (Get-Content -Raw "$evidence/launch.txt") -notmatch 'Status: ok') { throw 'QA launch failed' }
-node docs/qa/kanata-sqlite-m2/windows-candidate-smoke.mjs $manifestPath "--$Mode" *> "$evidence/result.txt"
+$scenarioArgs = @($manifestPath, "--$Mode")
+if ($M4Growth) { $scenarioArgs += '--m4-growth' }
+node docs/qa/kanata-sqlite-m2/windows-candidate-smoke.mjs @scenarioArgs *> "$evidence/result.txt"
 $code = $LASTEXITCODE
 & $adb -s $serial logcat -d -v threadtime > "$evidence/logcat.txt"
 Get-Content -LiteralPath "$evidence/result.txt"

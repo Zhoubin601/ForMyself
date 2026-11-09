@@ -1,5 +1,5 @@
 // @ts-check
-import { watch } from 'vue'
+import { computed, shallowRef, watch } from 'vue'
 import { App } from '@capacitor/app'
 import { assertOrdinaryWriteAllowed, restoreState } from '../platform/storage/restoreState.js'
 import { deriveKanataSqliteKek } from '../platform/security/kanataSqliteKek.js'
@@ -10,6 +10,7 @@ import { createKanataMessageRepository } from '../features/chat/storage/sqlite/k
 import { createKanataConversationRepository } from '../features/chat/storage/sqlite/kanataConversationRepository.js'
 import { createKanataDeferredReplyRepository } from '../features/chat/storage/sqlite/kanataDeferredReplyRepository.js'
 
+import { createKanataChatViewRepository } from '../features/chat/storage/sqlite/kanataChatViewRepository.js'
 import { createKanataSqliteWorldRuntime } from './kanataSqliteWorldRuntime.js'
 import { createKanataSqliteDomains } from '../features/chat/storage/sqlite/kanataSqliteDomains.js'
 
@@ -31,26 +32,31 @@ export function createKanataSqliteCandidate({ syntheticOnly, access, auth, bridg
       await migrateKanataSchema(kanataSchemaAdapter(operation))
     },
   })
-  let generation = 0
+  const generation = shallowRef(0)
+  const foreground = shallowRef(true)
   let disposed = false
-  let opening = false
+
   /** @type {import('../platform/storage/kanataSqliteTypes').KanataSqliteOperation | undefined} */
   let connection
   const release = () => {
-    generation++
     connection = undefined
+    generation.value++
     return driver.release()
   }
   const stop = watch(() => [auth.sessionRevision, auth.isLocked, restoreState.blocked, restoreState.busy], () => {
-    if (opening || connection) void release().catch(() => {})
+    void release().catch(() => {})
   }, { flush: 'sync' })
   const appListener = App.addListener('appStateChange', ({ isActive }) => {
-    if (!isActive && (opening || connection)) void release().catch(() => {})
+    if (foreground.value === isActive) return
+    foreground.value = isActive
+    if (!isActive) void release().catch(() => {})
   }).catch(() => undefined)
+  const isAvailable = () => !disposed && foreground.value && !auth.isLocked && !restoreState.blocked && !restoreState.busy
   /** @template T @param {{create?:boolean, assertOwner?: () => void}} options
    * @param {(operation: import('../platform/storage/kanataSqliteTypes').KanataSqliteOperation) => Promise<T>} action */
   async function run({ create = false, assertOwner = () => {} }, action) {
-    const requestedGeneration = generation
+    assertOwner()
+    const requestedGeneration = generation.value
     const requestedRevision = auth.sessionRevision
     const result = await access.runOperation(['chat'], async (/** @type {string} */ password, /** @type {number} */ sessionRevision) => {
       if (requestedRevision !== sessionRevision) throw new Error('KANATA_SQLITE_SESSION_CHANGED')
@@ -66,17 +72,14 @@ export function createKanataSqliteCandidate({ syntheticOnly, access, auth, bridg
       try {
         if (create && connection) throw new Error('KANATA_SQLITE_INCOMPLETE_CREATION')
         if (!connection) {
-          opening = true
-          try {
-            const opened = await driver.open({
-              sessionRevision,
-              ownerGeneration: requestedGeneration,
-              assertCurrent,
-              deriveKey: salt => deriveKanataSqliteKek(password, salt),
-            }, { create })
-            assertCurrent()
-            connection = opened
-          } finally { opening = false }
+          const opened = await driver.open({
+            sessionRevision,
+            ownerGeneration: requestedGeneration,
+            assertCurrent,
+            deriveKey: salt => deriveKanataSqliteKek(password, salt),
+          }, { create })
+          assertCurrent()
+          connection = opened
         }
         const base = connection
         /** @type {import('../platform/storage/kanataSqliteTypes').KanataSqliteOperation} */
@@ -84,7 +87,20 @@ export function createKanataSqliteCandidate({ syntheticOnly, access, auth, bridg
           transaction: async work => {
             assertLeased()
             return base.transaction(async tx => {
-              const value = await work(tx)
+              const value = await work({
+                async query(sql, parameters) {
+                  assertLeased()
+                  const rows = await tx.query(sql, parameters)
+                  assertLeased()
+                  return rows
+                },
+                async execute(sql, parameters) {
+                  assertLeased()
+                  const result = await tx.execute(sql, parameters)
+                  assertLeased()
+                  return result
+                },
+              })
               assertLeased()
               return value
             })
@@ -114,7 +130,7 @@ export function createKanataSqliteCandidate({ syntheticOnly, access, auth, bridg
       }
     })
     if (!result) throw new Error('KANATA_SQLITE_LEASE_REVOKED')
-    if (auth.sessionRevision !== requestedRevision || generation !== requestedGeneration || disposed) {
+    if (auth.sessionRevision !== requestedRevision || generation.value !== requestedGeneration || disposed) {
       throw new Error('KANATA_SQLITE_SESSION_CHANGED')
     }
     assertOwner()
@@ -124,7 +140,7 @@ export function createKanataSqliteCandidate({ syntheticOnly, access, auth, bridg
    * @param {number} opened @param {number} revision */
   function sessionGuard(opened, revision) {
     return () => {
-      if (disposed || auth.isLocked || auth.sessionRevision !== revision || generation !== opened) {
+      if (disposed || auth.isLocked || auth.sessionRevision !== revision || generation.value !== opened || !foreground.value) {
         throw new Error('KANATA_SQLITE_SESSION_CHANGED')
       }
       assertOrdinaryWriteAllowed()
@@ -150,8 +166,14 @@ export function createKanataSqliteCandidate({ syntheticOnly, access, auth, bridg
     run,
     withRepositories,
     withDomains,
+    isAvailable,
+    generation: computed(() => generation.value),
+    /** @param {import('../features/chat/storage/sqlite/kanataRepositoryTypes').KanataMessageScope & {assertOwner():void}} request */
+    loadConversationView: request => run(request, operation => createKanataChatViewRepository(operation).load(request)),
+    /** @param {import('../features/chat/storage/sqlite/kanataRepositoryTypes').KanataMessageScope & {assertOwner():void}} request @param {number} cursor */
+    readConversationMembers: (request, cursor) => run(request, operation => createKanataChatViewRepository(operation).members(request, cursor)),
     /** @param {()=>number} [clock] */
-    createWorldRuntime: clock => createKanataSqliteWorldRuntime({ candidate: { withDomains }, clock }),
+    createWorldRuntime: clock => createKanataSqliteWorldRuntime({ candidate: { withDomains }, clock, sessionGeneration: () => generation.value, isAvailable, onGrantChanged: release }),
     release,
     async dispose() {
       disposed = true

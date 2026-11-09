@@ -3,7 +3,7 @@
  * P4 supplies no real-life readers; P5 will add per-module projections and grant UI.
  * read never implies remember/share, and a group additionally requires share.
  * @template T
- * @param {import('./kanataTypes').KanataData} data
+ * @param {Pick<import('./kanataTypes').KanataData,'worlds'|'instances'|'lifeGrants'>} data
  * @param {{worldId:string,instanceId:string,moduleId:import('./kanataTypes').LifeModule,group:boolean}} scope
  * @param {()=>T} reader
  * @returns {{allowed:false}|{allowed:true,value:T}}

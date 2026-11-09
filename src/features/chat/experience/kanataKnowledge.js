@@ -3,7 +3,7 @@ import { validateKanataData, requireKanata as need, cloneKanataJson } from '../d
 /** @typedef {import('../domain/kanataTypes').KanataData} Data */
 /** @typedef {import('../domain/kanataTypes').LifeSource} LifeSource */
 /** @typedef {Pick<import('../domain/kanataTypes').Message,'id'|'worldId'|'conversationId'|'revision'|'status'|'deleted'|'replyToMessageId'|'replyToRevision'|'lifeSources'>} KnowledgeMessage */
-/** @typedef {Omit<Data,'messages'> & {messages:readonly KnowledgeMessage[]}} KnowledgeData */
+/** @typedef {Pick<Data,'conversations'|'instances'|'lifeGrants'|'events'|'memories'> & {messages:readonly KnowledgeMessage[]}} KnowledgeData */
 /** @param {Pick<KnowledgeData,'lifeGrants'>} data @param {LifeSource[]} sources @param {{worldId:string,instanceId:string,group:boolean,remember?:boolean}} scope */
 export function canUseKanataLifeSources(data,sources,scope) {
   if(!sources.length)return true
@@ -92,11 +92,20 @@ export function selectKanataMemories(data,scope) {
 /** @param {readonly import('../domain/kanataTypes').Memory[]} permitted @param {string} text @param {number} budget */
 export function rankKanataMemories(permitted,text,budget) {
   need(Number.isSafeInteger(budget)&&budget>=0&&budget<=16000,'INVALID_MEMORY_BUDGET','budget')
-  const terms=text.toLowerCase().split(/[\s，。！？,!?、]+/).filter(Boolean)
-  const ranked=permitted.map((memory,index)=>({memory,index,score:(memory.layer==='L3'?3:1)+terms.filter(term=>(memory.key+' '+memory.content).toLowerCase().includes(term)).length*2})).sort((a,b)=>b.score-a.score||b.index-a.index)
+  const score=kanataMemoryRanker(text)
+  const ranked=permitted.map((memory,index)=>({memory,index,score:score(memory)})).sort((a,b)=>b.score-a.score||b.index-a.index)
   let usedBytes=0;const entries=[]
   for(const {memory} of ranked){const cost=new TextEncoder().encode(memory.content).length+16;if(usedBytes+cost>budget)continue;usedBytes+=cost;entries.push(cloneKanataJson(memory))}
   return{entries,usedBytes}
+}
+/** @param {string} text */
+export function kanataMemoryRanker(text) {
+  const terms=text.toLowerCase().split(/[\s，。！？,!?、]+/).filter(Boolean)
+  /** @param {Pick<import('../domain/kanataTypes').Memory,'layer'|'key'|'content'>} memory */
+  return memory => {
+    const candidate=(memory.key+' '+memory.content).toLowerCase()
+    return (memory.layer==='L3'?3:1)+terms.filter(term=>candidate.includes(term)).length*2
+  }
 }
 /** @param {Data} input @param {string} worldId @param {string} instanceId @param {import('../domain/kanataTypes').LifeModule} moduleId @param {{read:boolean,remember:boolean,share:boolean}} flags @param {()=>string} id */
 export function setKanataLifeGrant(input,worldId,instanceId,moduleId,flags,id) {
@@ -128,7 +137,7 @@ export function setKanataRoleBinding(input,moduleId,selected) {
   else bindings.modules[moduleId]=selected
   bindings.revision++;data.roleBindings=bindings;return validateKanataData(data)
 }
-/** @param {Data} data @param {string} worldId */
+/** @param {Pick<Data,'memoryPolicies'>} data @param {string} worldId */
 export function kanataMemoryPolicy(data,worldId) {
   return data.memoryPolicies?.find(p=>p.worldId===worldId)||{worldId,strategy:/** @type {const} */('standard'),enabled:true,recentMessages:12,summarizeAfter:24,extractAfter:8,contextBudget:24000,revision:1}
 }

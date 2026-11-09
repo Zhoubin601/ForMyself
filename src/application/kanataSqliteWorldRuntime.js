@@ -6,31 +6,58 @@ import { validateId } from '../features/chat/domain/kanataValidation.js'
 
 /** Candidate composition for the world, knowledge and activity surfaces. A page owner
  * binds asynchronous commands to its selected world before a lease is requested.
- * @param {{candidate:Candidate,clock?:()=>number}} options */
-export function createKanataSqliteWorldRuntime({ candidate, clock = Date.now }) {
+ * @param {{candidate:Candidate,clock?:()=>number,sessionGeneration?:()=>number,isAvailable?:()=>boolean, onGrantChanged?:()=>Promise<void>}} options */
+export function createKanataSqliteWorldRuntime({ candidate, clock = Date.now, sessionGeneration = () => 0, isAvailable = () => true, onGrantChanged = async () => {} }) {
   let generation = 0
   let disposed = false
   let selected = ''
   return {
+    /** @param {number} [cursor] @param {()=>void} [assertRequest] */
+    async listWorlds(cursor, assertRequest = () => {}) {
+      const session = sessionGeneration()
+      const assertOwner = () => {
+        assertRequest()
+        if (disposed || !isAvailable() || sessionGeneration() !== session) throw new Error('KANATA_WORLD_OWNER_EXPIRED')
+      }
+      const result = await candidate.withDomains({ assertOwner }, domains => domains.managementView.worlds(cursor))
+      assertOwner()
+      return result
+    },
     /** @param {string} worldId */
     select(worldId) {
       validateId(worldId, 'worldId')
-      if (disposed) throw new Error('KANATA_WORLD_OWNER_EXPIRED')
+      if (disposed || !isAvailable()) throw new Error('KANATA_WORLD_OWNER_EXPIRED')
       selected = worldId
       const ownGeneration = ++generation
+      const session = sessionGeneration()
       const assertCurrent = () => {
-        if (disposed || generation !== ownGeneration || selected !== worldId) throw new Error('KANATA_WORLD_OWNER_EXPIRED')
+        if (disposed || !isAvailable() || sessionGeneration() !== session || generation !== ownGeneration || selected !== worldId) throw new Error('KANATA_WORLD_OWNER_EXPIRED')
       }
       /** @template T @param {(domains:Domains)=>Promise<T>} action */
-      const run = async action => {
-        assertCurrent()
-        const result = await candidate.withDomains({ assertOwner: assertCurrent }, action)
-        assertCurrent()
+      const run = async (action, assertRequest = () => {}) => {
+        const assertOwner = () => { assertCurrent(); assertRequest() }
+        assertOwner()
+        const result = await candidate.withDomains({ assertOwner }, action)
+        assertOwner()
         return result
       }
       return {
         worldId, assertCurrent,
         read: () => run(domains => domains.worlds.get(worldId)),
+        overview: () => run(domains => domains.managementView.world(worldId)),
+        /** @param {Parameters<Domains['managementView']['list']>[1]} section @param {string} [cursor] @param {()=>void} [assertRequest] */
+        list: (section, cursor, assertRequest) => run(domains => domains.managementView.list(worldId, section, cursor), assertRequest),
+        /** @param {string} actor @param {()=>void} [assertRequest] */
+        grants: (actor, assertRequest) => run(domains => domains.autonomy.grantsForActor(worldId, actor), assertRequest),
+        /** @param {string} actor @param {Parameters<Domains['autonomy']['setGrant']>[2]} moduleId
+         * @param {number|null} revision @param {Parameters<Domains['autonomy']['setGrant']>[4]} flags */
+        async setGrant(actor, moduleId, revision, flags) {
+          const saved = await run(domains => domains.autonomy.setGrant(worldId, actor, moduleId, revision, flags))
+          if (saved.revision !== revision) await onGrantChanged()
+          return saved
+        },
+        /** @param {number} revision @param {Parameters<Domains['worlds']['updateIdentity']>[2]} fields */
+        updateIdentity: (revision, fields) => run(domains => domains.worlds.updateIdentity(worldId, revision, fields)),
         /** @param {string} name @param {number} revision */
         rename: (name, revision) => run(domains => domains.worlds.rename(worldId, revision, name)),
         /** @param {boolean} archived @param {number} revision */
@@ -84,6 +111,7 @@ export function createKanataSqliteWorldRuntime({ candidate, clock = Date.now }) 
         }, memoryId, source)),
       }
     },
+    clearSelection() { selected = ''; generation++ },
     dispose() { disposed = true; selected = ''; generation++ },
   }
 }
