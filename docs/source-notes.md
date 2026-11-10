@@ -1256,3 +1256,9 @@ raw/完整需求清单.txt 4.1/4.4/8.3及最新连续执行v3驱动当前实现�
 - 原始需求来自 raw/完整需求清单.txt 第五节与第九节。提示词按角色、世界和权限检索，读取、记忆、分享权限分别生效，撤权停止后续读取或传播。
 - raw/彼方 · Kanata 技术设计.txt 的原始事件和来源定义用于核对 revision、候选校验、关系和撤销。旧归档行为按当前 planMessageArchive 源码验证嵌套精确 ID。
 - 2026-11-10 引用当前任务、[M4-R 任务书](20261110-kanata-sqlite-m4-r-closeout-task-v1.md)及 [验收 v5](20261110-kanata-sqlite-m4-r-acceptance-v5.md)。本轮接管 8d3b8f768617143312fd800ab05decaa53d6114d，实测及仍缺项见 [MR2-G4 验收](20261110-kanata-sqlite-mr2-g4-acceptance-v1.md)。
+
+## 2026-11-10 Kanata MR2-G4 事件来源
+
+- raw/完整需求清单.txt 中的事件确认、撤销和不确定因果确认要求，落实为用户确认、冻结选择和独立的 uncertain 决策。
+- raw/彼方 · Kanata 技术设计.txt 中的 WorldEvent、Effect 和来源失效约束，用于核对参与者、因果、消息 revision 及独立 Effect 的保留。
+- 本轮实施和验证范围以 [MR2-G4 事件任务书](20261110-kanata-sqlite-mr2-event-provenance-task-v1.md) 及 [M4-R 合同](20261110-kanata-sqlite-m4-r-closeout-task-v1.md) 为准。

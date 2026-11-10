@@ -1,0 +1,34 @@
+▲ [WARNING] Ignoring this import because "src/features/chat/kanataManagement.css" was marked as having no side effects [ignored-bare-import]
+
+    src/features/chat/KanataView.vue:8:7:
+      8 │ import './kanataManagement.css'
+        ╵        ~~~~~~~~~~~~~~~~~~~~~~~~
+
+{"qaBundleSha256":"81e93ef452492e21d9f8e61378f9eb669f040838bc244500ff6f480c22e64041"}
+{
+  "dataSha256": "0ea4455d962ccbc92913001c3d561fb927aca5a137b3b2e5ee30f9cdbfbe9fe3",
+  "mr2EventProof": {
+    "error": "EVENT_PROVENANCE_BOUNDS",
+    "results": []
+  }
+}
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
++ actual - expected
+
++ 'EVENT_PROVENANCE_BOUNDS'
+- undefined
+
+    at file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata-m0/docs/qa/kanata-sqlite-m2/windows-candidate-smoke.mjs:134:12 {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: 'EVENT_PROVENANCE_BOUNDS',
+  expected: undefined,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.14.1

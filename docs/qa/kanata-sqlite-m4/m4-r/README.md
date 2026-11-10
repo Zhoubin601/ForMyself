@@ -97,3 +97,28 @@ pwsh -NoProfile -File docs/qa/kanata-sqlite-m2/run-windows-candidate.ps1 -Manife
 | 最终设备宽授权及故障 | [provider JSON 和回执](g4-run/05-wide.txt.gz) · [原生 SQL](g4-run/05-wide-native.txt.gz) · [APK 指纹](g4-run/05-wide-apk-sha256.txt) · [汇总](g4-run/summary.json) |
 | 主机 | [全量 check](g4-run/check.txt.gz) · [宽标签定向](g4-run/wide-host.txt) · [权限对照](g4-run/grant-predicate.txt) · [旧归档对照](g4-run/archive-oracle.txt) |
 | 指纹与边界 | [源文件与夹具](g4-run/fingerprints.json) · [候选 catalog](g4-run/catalog-sha256.txt) · [普通 APK](g4-run/default-gate.json) · [PSS/RSS 采样](g4-run/memory-samples.txt) |
+
+## MR2-G4 事件来源 · 当前检查点
+
+实施提交 `fbc8ee344d6e61aef85bf6296ac5cbd4148d2eeb`。候选写入定向通过，G4、MR2、M4 仍 BLOCKED，M5 NO。
+
+```powershell
+npm.cmd run check
+node --experimental-sqlite --test --test-name-pattern 'correcting|M3 revoke|write acknowledgements|duplicate or damaged' tests/kanataSqliteDomains.test.js
+npx.cmd cap sync android
+.\android\gradlew.bat -p android --offline --max-workers=2 -PkanataM2Synthetic=true :app:assembleDebug :app:assembleDebugAndroidTest
+pwsh -NoProfile -File docs/qa/kanata-sqlite-m2/run-windows-candidate.ps1 -ManifestPath $manifest -EvidenceDirectory $event -Mode mr2-event-provenance
+pwsh -NoProfile -File docs/qa/kanata-sqlite-m2/run-windows-candidate.ps1 -ManifestPath $manifest -EvidenceDirectory $regression -Mode full -M4Growth -M4Completion
+.\android\gradlew.bat -p android --offline --max-workers=2 -PkanataM2Synthetic=false :app:assembleDebug
+pwsh -NoProfile -File docs/qa/kanata-sqlite-m4/verify-default.ps1
+node docs/qa/kanata-sqlite-m4/completion/verify-catalog.mjs android/app/build/generated/kanataSqlite/assets/kanata-sqlite-catalog.json
+```
+
+| 证据 | 文件 |
+| --- | --- |
+| 旧观察分类失败 | [第一轮](event-provenance-run/01-bounds-result.txt) · [第二轮](event-provenance-run/02-bounds-result.txt) · [第三轮明细](event-provenance-run/03-counter-result.txt) · 各轮原始 logcat 和 APK 指纹保留于同目录 |
+| 定向通过 | [原始设备回执](event-provenance-run/04-event-device.txt.gz) · [原始 logcat](event-provenance-run/04-event-native.txt.gz) · [Java instrumentation](event-provenance-run/04-instrumentation.txt) · [APK 指纹](event-provenance-run/04-apk-sha256.txt) |
+| Android 综合通过 | [原始设备回执](event-provenance-run/05-full-device.txt.gz) · [原始 logcat](event-provenance-run/05-full-native.txt.gz) · [APK 指纹](event-provenance-run/05-apk-sha256.txt) |
+| 取证与边界 | [数据指纹、WebView 堆与进程快照](event-provenance-run/device-summary.json) · [源码指纹](event-provenance-run/fingerprints.json) · [候选 catalog](event-provenance-run/candidate-catalog-sha256.txt) · [普通 APK](event-provenance-run/default-gate.json) |
+| 主机 | [定向](event-provenance-run/host-directed.txt) · [严格类型](event-provenance-run/strict.txt) · [全量 check](event-provenance-run/check.txt.gz) |
+| 验收 | [验收 v2](../../../20261110-kanata-sqlite-mr2-g4-acceptance-v2.md) · [当前调用图](g4-call-map.md) · [增长与缺口矩阵](matrix.md) · [两轮复核](reviews.md) |

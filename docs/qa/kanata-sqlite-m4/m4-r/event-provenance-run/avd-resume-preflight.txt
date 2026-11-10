@@ -1,0 +1,5 @@
+First resume attempt (existing isolated AVD was stopped):
+error: could not connect to TCP port 5582: cannot connect to 127.0.0.1:5582 (10061)
+run-windows-candidate.ps1: Cannot index into a null array.
+The host default AVD home did not list the QA AVD (AVD missing).
+Reopened the same manifest-owned AVD with its avdHome, prefs and home. Verified boot_completed=1, API 34 and the two synthetic packages before running the device driver.

@@ -132,4 +132,4 @@ M4-R 接管与 MR1 验收见 [M4-R QA](qa/kanata-sqlite-m4/m4-r/README.md)。And
 
 [M4-R 验收 v5 检查点](docs/20261110-kanata-sqlite-m4-r-acceptance-v5.md)记录 10k 宽事件修复、G4 授权切片和剩余阻塞。
 
-[MR2-G4 验收检查点](docs/20261110-kanata-sqlite-mr2-g4-acceptance-v1.md)记录候选聊天、回复 provenance、归档引用及自治来源校验的进展。G4 仍 BLOCKED，后续阶段未启动。
+[MR2-G4 验收 v2](docs/20261110-kanata-sqlite-mr2-g4-acceptance-v2.md)记录事件来源写入、修正及兼容缺口，聊天等前序证据保留在验收 v1。G4、MR2、M4 仍 BLOCKED，M5 NO。

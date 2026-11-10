@@ -1,0 +1,3 @@
+Attempt before the default build: completion/verify-catalog.mjs was run against the synthetic catalog.
+AssertionError [ERR_ASSERTION]: Synthetic completion statement is in default catalog
+The command is a default-catalog exclusion test. Its correct invocation is in default-catalog-verification.txt.

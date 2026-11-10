@@ -1,0 +1,16 @@
+(node:29580) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ M4 correcting a confirmed event reuses the frozen scope and rolls back candidate and effects together (84.0642ms)
+✔ M3 revoke retains independent same-path effects and atomically changes causal descendants (62.4238ms)
+✔ MR2 event write acknowledgements preserve 1k/10k mixed provenance, legacy snapshots and rollback (14609.8385ms)
+ℹ {"size":1000,"maxRows":50,"fullReads":0,"queries":234}
+ℹ {"size":10000,"maxRows":50,"fullReads":0,"queries":1670}
+✔ MR2 rejects duplicate or damaged event relation hints before publishing state (110.0727ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 15173.6188

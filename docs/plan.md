@@ -1,4 +1,4 @@
-> **2026-11-10 最新检查点：M4 BLOCKED，M5 NO。** 本轮任务规划以代码基线 271936dd4aa5a5421b0a71a8dda2b4848c15ea71 为依据；计划文档随后另有普通提交，启动时须重新 fetch M；MR0、MR1 PASS，MR2/G4 BLOCKED。最新代码与证据见 [MR2-G4 验收 v1](20261110-kanata-sqlite-mr2-g4-acceptance-v1.md)。下一执行切片为 [MR2-G4 事件来源有界化任务书 v1](20261110-kanata-sqlite-mr2-event-provenance-task-v1.md)，它从属于 [M4-R 最终收尾任务书 v1](20261110-kanata-sqlite-m4-r-closeout-task-v1.md)，不替代总验收合同。G10 PASS；G1–G9、G11 BLOCKED。生产 canonical 仍为 legacy，普通 Android SQLite 激活位 false，Schema 001–004 checksum 冻结。
+> **2026-11-10 最新检查点：M4 BLOCKED，M5 NO。** MR0、MR1 PASS；MR2/G4 BLOCKED。[验收 v2](20261110-kanata-sqlite-mr2-g4-acceptance-v2.md)记录事件来源切片及未关闭条件，前序聊天验证见[验收 v1](20261110-kanata-sqlite-mr2-g4-acceptance-v1.md)。后续阶段未启动。生产 canonical 为 legacy，普通 Android SQLite 激活位为 false，Schema 001–004 checksum 冻结。
 
 # 执行计划
 
@@ -1202,3 +1202,5 @@ MR2-G4 以 8d3b8f768617143312fd800ab05decaa53d6114d 接管。新进展与兼容�
 - M4 保持 BLOCKED，SQLite 阶段 M5 保持 NO；生产 canonical 继续 legacy，普通 APK SQLite 激活位继续 false，Schema 001–004 checksum 不变。
 
 本次仅更新执行计划与 QA 入口，不代表事件代码、测试或设备验收已经完成。
+
+本次事件来源切片见 [MR2-G4 验收 v2](20261110-kanata-sqlite-mr2-g4-acceptance-v2.md)。候选提议、提交与普通修正使用有界写入，兼容读取和完整故障矩阵继续待验。

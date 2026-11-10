@@ -633,3 +633,7 @@ MR2 已将记忆详情、精确来源及后台任务的回复链授权证明放�
 ## Kanata SQLite MR2-G4 继续验证
 
 候选 SQLite Chat Runtime 的 transcript 只读展示和提示词所需字段。CAS、上一位发言者与引用元数据走 state/latestState。回复提交接收有预算的 ID/revision 根描述，在同一受保护事务复核授权并重建标签。标签顺序与去重在 SQLite 内存临时表中完成。Android 固定并核验 temp_store=MEMORY。正常和错误结束由事务清理。候选历史整理在 SQL 中检查已规范化引用与 JSON 扩展中的精确嵌套 ID。兼容导出仍有待闭环入口，参见 [MR2-G4 QA](docs/qa/kanata-sqlite-m4/m4-r/README.md)。
+
+### MR2-G4 事件来源
+
+候选事件台通过受保护 World Runtime 调用 proposeEventAcknowledged / commitEventAcknowledged。返回类型 KanataEventAcknowledgement 仅有事件 ID。旧 proposeEvent / commitEvent 保留兼容契约。写入按页验证消息 revision 和因果状态，事件标签在事务内 SQLite 临时表保序去重并逐角色鉴权。提交和消息修订的普通事件审计在 SQLite 内校验顺序提示、构造旧 JSON 快照。候选修正沿用冻结确认计划与幂等回执，在同一事务复制关系和来源。兼容完整读取及历史特殊 action 的限制见 [MR2 事件来源验收](docs/20261110-kanata-sqlite-mr2-g4-acceptance-v2.md)。

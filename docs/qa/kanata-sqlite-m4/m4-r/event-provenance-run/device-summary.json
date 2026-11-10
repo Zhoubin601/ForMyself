@@ -1,0 +1,94 @@
+{
+  "dataSha256": "0ea4455d962ccbc92913001c3d561fb927aca5a137b3b2e5ee30f9cdbfbe9fe3",
+  "mr2EventProof": {
+    "health": {
+      "cipher": "4.17.0 community",
+      "journalMode": "wal",
+      "synchronous": 2,
+      "foreignKeys": 1,
+      "cacheSize": -2048,
+      "checkpoint": 1000,
+      "busyTimeout": 5000
+    },
+    "results": [
+      {
+        "size": 1000,
+        "queries": 233,
+        "writes": 193,
+        "maxRows": 50,
+        "maxTagRows": 50,
+        "maxStagedTags": 50,
+        "fullDtos": 0,
+        "heapStart": 24500000,
+        "heapSample": 24500000,
+        "elapsedMs": 3389,
+        "correctionIo": {
+          "queries": 87,
+          "writes": 74,
+          "maxRows": 50,
+          "fullDtos": 0
+        },
+        "snapshot": {
+          "count": 1000,
+          "sha256": "2875f09a2c80333688738f4b834bd56c60c924841e3bbb2b0c45ebcd47995122"
+        },
+        "deniedBodyReads": 0,
+        "cancellation": {
+          "queries": 0,
+          "writes": 0
+        },
+        "commitFailure": true,
+        "idempotentReplay": true
+      },
+      {
+        "size": 10000,
+        "queries": 1669,
+        "writes": 1631,
+        "maxRows": 50,
+        "maxTagRows": 50,
+        "maxStagedTags": 50,
+        "fullDtos": 0,
+        "heapStart": 24500000,
+        "heapSample": 24500000,
+        "elapsedMs": 63130,
+        "correctionIo": {
+          "queries": 627,
+          "writes": 614,
+          "maxRows": 50,
+          "fullDtos": 0
+        },
+        "snapshot": {
+          "count": 10000,
+          "sha256": "1ccce9a2931ea213a5032e10ea3d5f75b0862c116b6809f63e4d702e55b13e00"
+        },
+        "deniedBodyReads": 0,
+        "commitFailure": true,
+        "idempotentReplay": true
+      }
+    ],
+    "realModelCalls": 0
+  },
+  "eventRecovery": {
+    "oldPid": "4773",
+    "newPid": "5006",
+    "before": {
+      "revision": 1,
+      "audits": 0,
+      "effects": 0
+    },
+    "after": {
+      "revision": 2,
+      "audits": 1,
+      "effects": 1
+    }
+  },
+  "qaBundleSha256": "3578ae45f93a68e2f43dc051a746666a8ae73594be85d9278f0e1563613151ae",
+  "eventMeminfoBeforeCrash": {
+    "pssKiB": 109749,
+    "rssKiB": 250296
+  },
+  "eventMeminfoAfterCrash": {
+    "pssKiB": 117084,
+    "rssKiB": 258832
+  }
+}
