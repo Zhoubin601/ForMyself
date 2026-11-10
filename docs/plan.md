@@ -1,4 +1,4 @@
-> **2026-11-10 最新检查点：候选事件写入定向切片 PASS；事件读取与旧兼容边界仍 BLOCKED；G4、MR2、M4 BLOCKED，M5 NO。** M 分支已核实 HEAD `fd9f23dd39d4f8a0ab42a94f3e3a4e46de98f6e6`，事件实现提交 `fbc8ee344d6e61aef85bf6296ac5cbd4148d2eeb`。详细证据见 [MR2-G4 验收 v2](20261110-kanata-sqlite-mr2-g4-acceptance-v2.md)。下一执行切片为 [事件读取与旧兼容边界有界化任务书 v1](20261110-kanata-sqlite-mr2-g4-event-read-compat-task-v1.md)，从属于 [M4-R 总任务书](20261110-kanata-sqlite-m4-r-closeout-task-v1.md)。生产 canonical 仍为 legacy，普通 Android SQLite 激活位 false，Schema 001–004 checksum 冻结。
+> **2026-11-10 最新检查点：候选事件写入定向切片 PASS；事件读取与旧兼容边界仍 BLOCKED；G4、MR2、M4 BLOCKED，M5 NO。** 当前远端 M HEAD `122afaadf534504f931f9a92cb6f3729608c0431`（本次为任务规划文档提交）；验收 v2 对应代码与证据快照 HEAD `fd9f23dd39d4f8a0ab42a94f3e3a4e46de98f6e6`，事件实现提交 `fbc8ee344d6e61aef85bf6296ac5cbd4148d2eeb`。详细证据见 [MR2-G4 验收 v2](20261110-kanata-sqlite-mr2-g4-acceptance-v2.md)。下一执行切片为 [事件读取与旧兼容边界有界化任务书 v1](20261110-kanata-sqlite-mr2-g4-event-read-compat-task-v1.md)，从属于 [M4-R 总任务书](20261110-kanata-sqlite-m4-r-closeout-task-v1.md)。生产 canonical 仍为 legacy，普通 Android SQLite 激活位 false，Schema 001–004 checksum 冻结。
 
 # 执行计划
 
