@@ -1,8 +1,8 @@
 # Kanata SQLite M4-R QA
 
-[M4-R 执行任务书](../../../20261110-kanata-sqlite-m4-r-closeout-task-v1.md) · [MR2-G4 事件来源任务书](../../../20261110-kanata-sqlite-mr2-event-provenance-task-v1.md) · [接管矩阵](matrix.md) · [历史验收与证据](../closeout/README.md)
+[M4-R 执行任务书](../../../20261110-kanata-sqlite-m4-r-closeout-task-v1.md) · [事件来源写入任务书](../../../20261110-kanata-sqlite-mr2-event-provenance-task-v1.md) · [事件读取与兼容任务书](../../../20261110-kanata-sqlite-mr2-g4-event-read-compat-task-v1.md) · [接管矩阵](matrix.md) · [历史验收与证据](../closeout/README.md)
 
-本目录区分历史通过切片、本轮实测、复现与待验。本轮任务书以代码基线 271936dd4aa5a5421b0a71a8dda2b4848c15ea71 建立；启动时须重新 fetch M。MR0、MR1 PASS；MR2/G4 BLOCKED；M4 BLOCKED，SQLite 阶段 M5 NO。下一执行切片见 [MR2-G4 事件来源有界化任务书](../../../20261110-kanata-sqlite-mr2-event-provenance-task-v1.md)。本任务书从属于 M4-R 总任务书，不代表代码或设备验收已经完成。测试仅连接已核对的隔离合成 AVD，所有 provider 为合成实现。
+本目录区分历史通过切片、本轮实测、复现与待验。本轮事件写入实现提交 fbc8ee344d6e61aef85bf6296ac5cbd4148d2eeb，M 分支验收 HEAD fd9f23dd39d4f8a0ab42a94f3e3a4e46de98f6e6。候选事件提议、提交和普通修正写入定向 PASS；readFor/list/eventFromRow、effects/audits、旧命令回读与旧 preview 仍有完整对象物化。MR0、MR1 PASS；MR2/G4 BLOCKED；M4 BLOCKED，SQLite 阶段 M5 NO。下一执行切片见 [事件读取与旧兼容边界有界化任务书](../../../20261110-kanata-sqlite-mr2-g4-event-read-compat-task-v1.md)。启动时仍须重新 fetch M。本任务书从属于 M4-R 总任务书，不代表 G4/MR2/M4 已通过。测试仅连接已核对的隔离合成 AVD，所有 provider 为合成实现。
 
 ## MR1 原始超时复现
 
@@ -122,3 +122,13 @@ node docs/qa/kanata-sqlite-m4/completion/verify-catalog.mjs android/app/build/ge
 | 取证与边界 | [数据指纹、WebView 堆与进程快照](event-provenance-run/device-summary.json) · [源码指纹](event-provenance-run/fingerprints.json) · [候选 catalog](event-provenance-run/candidate-catalog-sha256.txt) · [普通 APK](event-provenance-run/default-gate.json) |
 | 主机 | [定向](event-provenance-run/host-directed.txt) · [严格类型](event-provenance-run/strict.txt) · [全量 check](event-provenance-run/check.txt.gz) |
 | 验收 | [验收 v2](../../../20261110-kanata-sqlite-mr2-g4-acceptance-v2.md) · [当前调用图](g4-call-map.md) · [增长与缺口矩阵](matrix.md) · [两轮复核](reviews.md) |
+
+
+## MR2-G4 事件读取与旧兼容边界 · 下一执行切片
+
+- [验收 v2](../../../20261110-kanata-sqlite-mr2-g4-acceptance-v2.md) 已记录候选写入切片通过及全部未关闭项。
+- [事件读取与旧兼容边界有界化任务书](../../../20261110-kanata-sqlite-mr2-g4-event-read-compat-task-v1.md) 聚焦完整 Event / Effect / Audit 物化、旧 preview 确认集合、兼容命令回读和 relationship.sourceEventIds。
+- 当前候选事件台的 managedEvent、graphPage、openRevocation、revocationAudits、revocationEffectAudit 为已建立的有界路径，后续不得回退。
+- 每档独立峰值内存、深链/宽扇出/混合角色交叉样本、事件专用生命周期矩阵仍须补齐。
+- 历史字符串 action UTF-16 兼容回退必须保留并单独验收；普通消息兼容 DTO、自治 loadTask 和旧 JSON 导出仍是 G4 剩余缺口。
+- G4、MR2、M4 继续 BLOCKED，SQLite 阶段 M5 继续 NO。
