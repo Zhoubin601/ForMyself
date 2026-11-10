@@ -1,5 +1,7 @@
 # M4 Completion QA
 
+当前检查点：[续作验收 v3](../../../20261110-kanata-sqlite-m4-acceptance-v3.md) · [新证据](../continuation/README.md) · [本轮反例复核](../continuation/reviews.md)。下表保留 v2 当时的状态，GROUP-01～05 本轮复测见新证据。
+
 当前续作入口：[M4 剩余缺口续作任务书 v1](../../../20261110-kanata-sqlite-m4-continuation-task-v1.md)。本 QA 目录继续保留既有 M4 Completion 的原始命令与证据；后续新增证据应按新任务书增量追加，不覆盖历史失败和复测。
 
 [任务书](../../../20261109-kanata-sqlite-m4-completion-task-v1.md) · [Preflight](../../../20261109-kanata-sqlite-m4-completion-preflight-v1.md) · [设计](../../../20261109-kanata-sqlite-m4-completion-design-v1.md) · [验收 v2](../../../20261109-kanata-sqlite-m4-acceptance-v2.md) · [两轮自检](reviews.md)

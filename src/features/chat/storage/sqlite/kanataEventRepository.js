@@ -2,6 +2,7 @@
 import { sha256Text } from '../../../../shared/crypto/sha256Text.js'
 import { assertKanataEffectExecutable, eventEffects } from '../../experience/kanataEvents.js'
 import { cloneKanataJson, validateId } from '../../domain/kanataValidation.js'
+import { createEventRevocation } from './kanataEventRevocation.js'
 import { instanceTable, unpackInstance } from './kanataCharacterRepository.js'
 import { domainTable, executeOnce, found, writeOne } from './kanataDomainRows.js'
 import { effectFromRow, eventFromRow, rebuildEventEffects, visitRows } from './kanataMessageDependents.js'
@@ -151,7 +152,8 @@ export async function authorizeEvent(tx, worldId, eventId, scope) {
   return uniqueLifeSources(sources)
 }
 const eventRole = 'SELECT status,visibility FROM world_events WHERE world_id=? AND id=?'
-eventQueries.push(eventRole)
+const managedEvent = 'SELECT id,summary,status,revision,kind,effective_at FROM world_events WHERE world_id=? AND id=?'
+eventQueries.push(eventRole,managedEvent)
 
 /** @param {Tx} tx @param {Event} event */
 async function writeEventLife(tx, event) {
@@ -255,7 +257,7 @@ export async function commitEvent(tx, previous, tools) {
   await tx.execute(eventLifeClear, [worldId, id])
   await writeEventLife(tx, next)
   for (const effect of effects) await insertEffect(tx, effect, tools)
-  await rebuildEventEffects(tx, visitRows(tx, listEffects, [worldId, id], ['id']))
+  await rebuildEventEffects(tx, dependentQueries.eventEffectPaths, [worldId, id])
   for (const targetId of new Set(effects.filter(effect => effect.targetType === 'relationship').map(effect => effect.targetId))) {
     await writeOne(tx, relationLink, [worldId, targetId, id])
   }
@@ -292,11 +294,7 @@ async function revoke(tx, plan, decision, tools) {
     await transition(tx, previous, { ...previous, status: changes.has(id) ? 'revoked' : 'needsReview', revision: previous.revision + 1 }, tools)
   }
   await tx.execute(staleEventMemories, [plan.worldId, plan.worldId, JSON.stringify(ids)])
-  /** @returns {AsyncGenerator<import('./kanataSchemaTypes').KanataSqlRow>} */
-  async function* affected() {
-    for (const id of ids) yield* visitRows(tx, listEffects, [plan.worldId, id], ['id'])
-  }
-  await rebuildEventEffects(tx, affected())
+  await rebuildEventEffects(tx, dependentQueries.plannedEffectPaths, [JSON.stringify(ids), plan.worldId])
 }
 
 /** @param {Tx} tx @param {string} worldId @param {string} id @param {{instanceId:string,group:boolean}} scope */
@@ -318,6 +316,15 @@ async function targetVisible(tx, worldId, targetId, scope) {
 /** @param {Operation} operation @param {Tools} tools */
 export function createKanataEventRepository(operation, tools) {
   return {
+    ...createEventRevocation(operation, tools),
+    /** @param {string} worldId @param {string} eventId */
+    managedEvent: (worldId,eventId) => operation.transaction(async tx=>{
+      validateId(worldId,'worldId')
+      validateId(eventId,'eventId')
+      const [row]=await tx.query(managedEvent,[worldId,eventId])
+      return row?{id:String(row.id),summary:String(row.summary),revision:Number(row.revision),
+        status:String(row.status),kind:row.kind??'note',effectiveAt:Number(row.effective_at)}:null
+    }),
     /** @param {string} worldId @param {string} afterId @param {number} limit */
     list: (worldId, afterId = '', limit = 50) => operation.transaction(async tx => {
       validateId(worldId, 'worldId')

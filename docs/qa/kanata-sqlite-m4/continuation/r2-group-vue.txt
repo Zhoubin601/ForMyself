@@ -1,0 +1,15 @@
+
+> formyself-app@0.0.0 test:component
+> vitest run tests/KanataCandidateGroupEditor.spec.js
+
+
+ RUN  v3.2.4 D:/2026Autumn Semester File/GitHub/formyself-app/.worktrees/kanata-m0
+
+ ✓ tests/KanataCandidateGroupEditor.spec.js (3 tests) 80ms
+
+ Test Files  1 passed (1)
+      Tests  3 passed (3)
+   Start at  10:46:09
+   Duration  3.33s (transform 157ms, setup 0ms, collect 333ms, tests 80ms, environment 2.12s, prepare 495ms)
+
+exit=0

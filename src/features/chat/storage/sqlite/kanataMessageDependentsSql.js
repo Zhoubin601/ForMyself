@@ -14,6 +14,12 @@ const events = messages + `,
     SELECT c.event_id FROM affected_events a JOIN event_causes c ON c.cause_event_id=a.id JOIN args ON c.world_id=args.world
   )`
 const effectTarget = 'world_id=? AND target_type=? AND target_id=? AND path=?'
+// IDs are restricted to ASCII alphanumerics and _-:.; the English primary
+// order is _ < - < : < . < digits < letters. Binary DESC breaks case-only
+// ties in lowercase-first order, as in the legacy English comparator.
+const effectOrderKey = id => `lower(replace(replace(replace(replace(${id},'_','!'),'-','"'),':','#'),'.','$'))`
+const effectCursor = '(f.target_type,f.target_id,f.path,f.id)>(?,?,?,?)'
+const effectOrder = 'ORDER BY f.target_type,f.target_id,f.path,f.id LIMIT 128'
 const paths = {
   'state.mood': ['character_instances', 'mood'],
   'state.energy': ['character_instances', 'energy'],
@@ -37,11 +43,22 @@ export const dependentQueries = Object.freeze({
     JOIN args ON m.world_id=args.world AND m.conversation_id=args.conversation
     WHERE m.id<>args.message AND m.id>? ORDER BY m.id LIMIT 128`,
   affectedEffects: events + ` SELECT f.* FROM affected_events a JOIN world_effects f ON f.event_id=a.id
-    JOIN args ON f.world_id=args.world WHERE f.id>? ORDER BY f.id LIMIT 128`,
+    JOIN args ON f.world_id=args.world WHERE ${effectCursor} ${effectOrder}`,
+  eventEffectPaths: `SELECT f.* FROM world_effects f
+    WHERE f.world_id=? AND f.event_id=? AND ${effectCursor} ${effectOrder}`,
+  plannedEffectPaths: `SELECT f.* FROM json_each(?) p JOIN world_effects f ON f.world_id=? AND f.event_id=p.value
+    WHERE ${effectCursor} ${effectOrder}`,
   baseline: 'SELECT value_json FROM effect_baselines WHERE ' + effectTarget,
-  remainingEffects: `SELECT f.*,e.effective_at,e.recorded_at FROM world_effects f JOIN world_events e ON e.world_id=f.world_id AND e.id=f.event_id
-    WHERE f.world_id=? AND f.target_type=? AND f.target_id=? AND f.path=? AND e.status='committed'
-      AND f.id>? ORDER BY f.id LIMIT 128`,
+  remainingEffects: `WITH position(at,recorded,event_key,event_id,effect_key,id) AS (VALUES(?,?,?,?,?,?)),
+    ordered AS (SELECT f.*,e.effective_at,e.recorded_at,${effectOrderKey('e.id')} AS event_key,${effectOrderKey('f.id')} AS effect_key
+      FROM world_effects f JOIN world_events e ON e.world_id=f.world_id AND e.id=f.event_id
+      WHERE f.world_id=? AND f.target_type=? AND f.target_id=? AND f.path=? AND e.status='committed')
+    SELECT o.* FROM ordered o CROSS JOIN position p
+    WHERE (o.effective_at,o.recorded_at,o.event_key)>(p.at,p.recorded,p.event_key)
+      OR ((o.effective_at,o.recorded_at,o.event_key)=(p.at,p.recorded,p.event_key) AND (
+        o.event_id<p.event_id OR (o.event_id=p.event_id AND (
+          o.effect_key>p.effect_key OR (o.effect_key=p.effect_key AND o.id<p.id)))))
+    ORDER BY effective_at,recorded_at,event_key,event_id DESC,effect_key,id DESC LIMIT 128`,
   eventParticipants: 'SELECT participant_id FROM event_participants WHERE world_id=? AND event_id=? AND participant_id>? ORDER BY participant_id LIMIT 128',
   eventCauses: 'SELECT cause_event_id FROM event_causes WHERE world_id=? AND event_id=? AND cause_event_id>? ORDER BY cause_event_id LIMIT 128',
   eventSources: 'SELECT message_id,message_revision FROM event_sources WHERE world_id=? AND event_id=? AND message_id>? ORDER BY message_id LIMIT 128',

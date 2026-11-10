@@ -50,6 +50,20 @@ function projection({ world, identity }) {
   return { ...createEmptyKanataData(identity.userId), worlds: [world], identities: [identity] }
 }
 
+/** @param {Tx} tx @param {string} userId @param {Parameters<typeof createKanataWorld>[1]} fields
+ * @param {Parameters<typeof createKanataWorld>[2]} options @param {boolean} initialize */
+async function createWorld(tx,userId,fields,options,initialize) {
+  const id=await executeOnce(tx,['world:create',userId,options.key],{fields,now:options.now,timeZone:options.timeZone},async()=>{
+    const data=createKanataWorld(createEmptyKanataData(userId),fields,options)
+    const [world]=data.worlds,[identity]=data.identities
+    if(initialize)await writeOne(tx,init,[userId])
+    await worldTable.create(tx,{...world,identityId:identity.id})
+    await identityTable.create(tx,identity)
+    return world.id
+  })
+  return found(await readWorld(tx,id),'WORLD_NOT_FOUND')
+}
+
 /** @param {Operation} operation */
 export function createKanataWorldRepository(operation) {
   return {
@@ -68,17 +82,16 @@ export function createKanataWorldRepository(operation) {
     /** @param {string} userId @param {Parameters<typeof createKanataWorld>[1]} fields @param {Parameters<typeof createKanataWorld>[2]} options */
     create: (userId, fields, options) => operation.transaction(async tx => {
       validateId(userId, 'userId')
-      const id = await executeOnce(tx, ['world:create', userId, options.key], { fields, now: options.now, timeZone: options.timeZone }, async () => {
-        const [owner] = await tx.query(dataset)
-        need(!owner || owner.user_id === userId, 'KANATA_DATASET_OWNER_CONFLICT')
-        const data = createKanataWorld(createEmptyKanataData(userId), fields, options)
-        const [world] = data.worlds, [identity] = data.identities
-        if (!owner) await writeOne(tx, init, [userId])
-        await worldTable.create(tx, { ...world, identityId: identity.id })
-        await identityTable.create(tx, identity)
-        return world.id
-      })
-      return found(await readWorld(tx, id), 'WORLD_NOT_FOUND')
+      const [owner]=await tx.query(dataset)
+      need(!owner||owner.user_id===userId,'KANATA_DATASET_OWNER_CONFLICT')
+      return createWorld(tx,userId,fields,options,!owner)
+    }),
+    /** @param {Parameters<typeof createKanataWorld>[1]} fields @param {Parameters<typeof createKanataWorld>[2]} options */
+    createForDataset: (fields,options) => operation.transaction(async tx=>{
+      const [owner]=await tx.query(dataset)
+      const userId=owner?.user_id
+      if(typeof userId!=='string') throw new Error('KANATA_DATASET_OWNER_REQUIRED')
+      return createWorld(tx,userId,fields,options,false)
     }),
     /** @param {string} worldId @param {number} expectedRevision @param {string} name */
     rename: (worldId, expectedRevision, name) => operation.transaction(async tx => {

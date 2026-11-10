@@ -11,3 +11,13 @@ export const eventRows = sequence + `
 export const eventEdges = sequence + `
   INSERT INTO event_causes(world_id,event_id,cause_event_id)
   SELECT ?,?||n,?||(n+1) FROM seq ORDER BY n`
+
+export const memoryWideSources = `INSERT INTO memory_sources(world_id,memory_id,message_id,message_revision)
+  SELECT world_id,?,id,revision FROM messages WHERE world_id=? AND conversation_id=? AND id GLOB ?`
+
+export const replayEventRows = sequence + `
+  INSERT INTO world_events(id,world_id,status,visibility,summary,effective_at,recorded_at,revision,causality,kind)
+  SELECT ?||n,?,'committed','private','synthetic',1000000000+?,1000000000+n,1,'explicit','note' FROM seq`
+export const replayEffectRows = sequence + `
+  INSERT INTO world_effects(id,world_id,event_id,target_type,target_id,target_instance_id,operation,path,value_json,rule_version)
+  SELECT ?||n,?,?||n,'instance',?,?,'set','state.location',json_quote('synthetic-location-'||n),1 FROM seq`

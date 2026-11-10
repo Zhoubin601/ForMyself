@@ -81,11 +81,27 @@ export const conversationQueries = Object.freeze({
   list: `SELECT ${conversationColumns} FROM conversations WHERE world_id=? AND id>? ORDER BY id LIMIT ?`,
   participants: 'SELECT participant_id,kind FROM conversation_participants WHERE world_id=? AND conversation_id=? ORDER BY ordinal',
   participant: 'SELECT kind FROM participants WHERE world_id=? AND id=?',
+  groupEdit: `SELECT c.title,c.revision,EXISTS(SELECT 1 FROM messages m
+      WHERE m.world_id=c.world_id AND m.conversation_id=c.id) AS has_history
+    FROM conversations c WHERE c.world_id=? AND c.id=? AND c.type='group'`,
+  groupMembers: `SELECT p.participant_id,p.ordinal,COALESCE(json_extract(i.overrides_json,'$.name'),json_extract(v.definition_json,'$.name')) AS title
+    FROM conversation_participants p JOIN character_instances i ON i.world_id=p.world_id AND i.id=p.participant_id
+    JOIN card_versions v ON v.card_id=i.card_id AND v.id=i.card_version_id
+    WHERE p.world_id=? AND p.conversation_id=? AND p.kind='character' AND p.ordinal>? ORDER BY p.ordinal LIMIT ?`,
+  groupMemberCount: `SELECT count(*) AS total FROM json_each(?) picked
+    JOIN character_instances i ON i.world_id=? AND i.id=picked.value`,
+  highestOrdinal: `SELECT COALESCE(MAX(ordinal),0) AS highest FROM conversation_participants WHERE ${scope}`,
 })
 
 export const conversationWrites = Object.freeze({
   create: `INSERT INTO conversations(${conversationColumns}) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)`,
   participant: 'INSERT INTO conversation_participants(world_id,conversation_id,participant_id,kind,ordinal) VALUES(?,?,?,?,?)',
+  editGroupRevision: `UPDATE conversations SET revision=revision+1 WHERE world_id=? AND id=? AND revision=? AND type='group'`,
+  removeGroupMembers: `DELETE FROM conversation_participants WHERE ${scope} AND kind='character'
+    AND participant_id NOT IN (SELECT value FROM json_each(?))`,
+  parkGroupMembers: `UPDATE conversation_participants SET ordinal=ordinal+? WHERE ${scope}`,
+  orderGroupMember: `INSERT INTO conversation_participants(world_id,conversation_id,participant_id,kind,ordinal) VALUES(?,?,?,?,?)
+    ON CONFLICT(world_id,conversation_id,participant_id) DO UPDATE SET ordinal=excluded.ordinal`,
   update: `UPDATE conversations SET title=?,mode=?,last_read_at=?,max_speakers=?,max_messages=?,
     reply_timing_enabled=?,reply_wait_ms=?,revision=revision+1 WHERE world_id=? AND id=? AND revision=?`,
 })

@@ -72,6 +72,14 @@ export interface KanataMessageRepository {
   revise(scope: KanataMessageScope, id: string, expectedRevision: number, change: { content: string; deleted: boolean }): Promise<Message>
 }
 
+export interface KanataGroupMemberEdit {
+  expectedRevision: number
+  expectedHistory: boolean
+  instanceIds: string[]
+  commandId: string
+  newGroupId: string
+}
+
 export interface KanataConversationRepository {
   list(worldId: string, afterId?: string, limit?: number): Promise<{
     readonly conversations: readonly Conversation[]
@@ -80,6 +88,11 @@ export interface KanataConversationRepository {
   }>
   get(scope: KanataMessageScope): Promise<Conversation | null>
   participants(scope: KanataMessageScope): Promise<readonly { id: string; kind: 'user' | 'character' }[]>
+  groupEdit(scope: KanataMessageScope): Promise<{ title: string; revision: number; hasHistory: boolean }>
+  groupMemberPage(scope: KanataMessageScope, revision: number, after?: number, limit?: number): Promise<{
+    entries: { id: string; title: string }[]; cursor: number | null
+  }>
+  editGroupMembers(scope: KanataMessageScope, input: KanataGroupMemberEdit): Promise<{ id: string; created: boolean }>
   createGroup(worldId: string, fields: { title: string; instanceIds: string[] }, options: { id: string; commandId: string }): Promise<{ id: string }>
   create(conversation: Conversation): Promise<Conversation>
   updateChatSettings(scope: KanataMessageScope, expectedRevision: number | undefined, changes: Partial<Pick<Conversation, 'mode' | 'replyLimits' | 'replyTiming'>>, now: number): Promise<void>

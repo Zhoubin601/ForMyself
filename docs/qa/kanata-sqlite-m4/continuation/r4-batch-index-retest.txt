@@ -1,0 +1,16 @@
+(node:4292) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ R4 candidate share copies exact source metadata without reading body into JS or bypassing the recipient grant (169.6728ms)
+✔ R4 conflicts page without body, bind the revisions, and retain discarded memories for review (110.4888ms)
+✔ C2 shared memory authorization handles 1k and 10k links without fetching parent bodies (9287.2393ms)
+ℹ {"sharedLinks":1000,"queries":13,"bodies":1}
+ℹ {"sharedLinks":10000,"queries":13,"bodies":1}
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 9903.5606
+exit=0

@@ -606,6 +606,13 @@ Windows 使用 `npm.cmd`、`npx.cmd` 和 `android/gradlew.bat` 的对应命令�
 - `KanataConversationRepository.updateChatSettings` 将 CAS 与活动回复任务加速放入同一事务。`turns.save` 原子保存源消息与延期任务，按实际会话 revision 和当前源 CAS。事件/记忆候选先查角色、来源、授权再取正文。自治窗口签名按批计算，保持原角色轮换、审计、回执及水位。
 - 候选授权、恢复门禁、锁屏、后台及显式释放使会话世代失效。VM 清除当前页面明文，候选 Driver 仍使用 M2 固定语句目录与 SQLCipher。Schema 001–004 保持原校验和。生产 canonical 为 legacy，普通 Android 候选激活位 false。验收命令、强停/故障和证据见 [M4 QA](docs/qa/kanata-sqlite-m4/README.md)。M4 尚未放行，M5 尚未开始。
 
+## Kanata SQLite M4 续作增量
+
+- 候选 `KanataSqliteWorldRuntime.createWorld` 通过 `worlds.createForDataset` 在事务中获取数据集 owner，同时创建空白世界及身份。候选角色世界书预览与聊天共用 `readKanataRoleLore`，每页交付至多 50 项，先验角色 scope。
+- `editGroupMembers` 同时绑定会话 revision、历史观测和命令回执；任何历史消息元数据都阻止原地改成员，确认后另建同世界群。候选 `openRevocation/confirmRevocation` 用分页计划及 Effects/基线摘要做 CAS，审计、记忆失效与状态重放同事务。
+- 候选 `managedDetailFor/sourcePage/resolveSource/previewConflicts/confirmConflicts/shareManaged` 按角色和来源 revision 前置授权；分享在 SQLCipher 内复制。旧 DTO 兼容入口与聊天来源数组尚未关闭。操作及负向类型样例见 `contracts.d.ts`、`tests/types/kanataSqliteM4.ts`。
+- 使用现有 001–004 和固定 SQL catalog，未增加存储键。复现命令和保留门禁见 [续作验收 v3](docs/20261110-kanata-sqlite-m4-acceptance-v3.md)。
+
 ## Kanata SQLite M4 Completion 增量
 
 候选 `graphPage` 与 `sourcePage` 使用世界、根实体/角色与 revision 绑定的游标，每页最多 50。授权通过后才读取单记忆和消息正文。该事件图页用于浏览，原事件撤销仍按原确认流程执行。新增独立群聊和全局角色绑定分别使用事务回执与全局 CAS。绑定的明确不选与继承分开保存，归档世界不删除绑定。详见 [设计](docs/20261109-kanata-sqlite-m4-completion-design-v1.md)及 [验收 v2](docs/20261109-kanata-sqlite-m4-acceptance-v2.md)。

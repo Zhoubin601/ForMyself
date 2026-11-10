@@ -5,7 +5,8 @@ import { appConfirm, cancelOwnedFeedbackDialog } from '../../services/uiFeedback
 const props = defineProps({ world: {type:Object,required:true}, model: {type:Object,required:true}, entryId: {type:String,default:''} })
 const emit = defineEmits(['close','saved'])
 const draft = ref(null), keywords = ref(''), busy = ref(false), error = ref('')
-const actors = ref(null)
+const actors = ref(null), previewActor = ref(null), previewText = ref(''), preview = ref(null), previewOffset = ref(0)
+const secondaryKeys = ref('')
 const dialog = Symbol('candidate-lore')
 let active = true
 function assertRequest() {
@@ -32,10 +33,22 @@ function load() {
     const entry = await props.model.lore(props.entryId, assertRequest)
     if (!entry) throw new Error('LORE_UNAVAILABLE')
     return entry
-  }, value => { draft.value = value; keywords.value = value.keys.join('、') })
+  }, value => { draft.value = value; keywords.value = value.keys.join('、'); secondaryKeys.value = (value.secondaryKeys??[]).join('、') })
 }
 function loadActors(cursor) {
   void perform(() => props.model.list('actors', cursor, assertRequest), value => { actors.value = value })
+}
+function selectPreviewActor(actor) {
+  previewActor.value = {id:actor.id,title:actor.title}
+  preview.value = null
+  previewOffset.value = 0
+}
+function runPreview(offset=0) {
+  if (!previewActor.value || busy.value) return
+  preview.value = null
+  previewOffset.value = offset
+  const query = previewText.value
+  void perform(() => props.model.previewLore(previewActor.value.id,query,offset,assertRequest), value => { if (previewText.value===query) preview.value=value })
 }
 function selectOwner(id) {
   const current = draft.value
@@ -52,7 +65,8 @@ function save() {
     error.value = '关键词激活需要至少一个关键词。'
     return
   }
-  const dto = { ...current, keys, revision:current.revision??1, priority:Number(current.priority) }
+  const secondary = [...new Set(secondaryKeys.value.split(/[,，、\n]/).map(item=>item.trim()).filter(Boolean))]
+  const dto = { ...current, keys, secondaryKeys:secondary, revision:current.revision??1, priority:Number(current.priority) }
   void perform(() => props.model.saveLore(dto, current.revision??null, assertRequest), () => emit('saved'))
 }
 async function remove() {
@@ -61,7 +75,7 @@ async function remove() {
   if (!active || confirmed !== true) return
   void perform(() => props.model.deleteLore(current.id,current.revision,assertRequest), () => emit('saved'))
 }
-onBeforeUnmount(() => { active=false; draft.value=actors.value=null; keywords.value=''; cancelOwnedFeedbackDialog(dialog) })
+onBeforeUnmount(() => { active=false; draft.value=actors.value=preview.value=previewActor.value=null; keywords.value=secondaryKeys.value=previewText.value=''; cancelOwnedFeedbackDialog(dialog) })
 load()
 </script>
 
@@ -74,6 +88,8 @@ load()
     <form v-if="draft" class="kanata-form" @submit.prevent="save">
       <label>设定正文<textarea v-model="draft.content" maxlength="20000" required /></label>
       <label>激活关键词<input v-model="keywords" maxlength="2000" /></label>
+      <label>第二组关键词<input v-model="secondaryKeys" maxlength="2000" /></label>
+      <label><input v-model="draft.caseSensitive" type="checkbox" />区分关键词大小写</label>
       <label>优先级<input v-model.number="draft.priority" type="number" min="0" max="100000" required /></label>
       <label><input v-model="draft.activationRule" type="checkbox" true-value="always" false-value="keyword" />常驻候选</label>
       <label><input v-model="draft.enabled" type="checkbox" />启用条目</label>
@@ -83,6 +99,7 @@ load()
       <fieldset v-if="actors" :disabled="busy||world.archived">
         <legend>本页角色</legend>
         <div v-for="actor in actors.entries" :key="actor.id">
+          <button type="button" @click="selectPreviewActor(actor)">{{ actor.title }} 预览</button>
           <button type="button" @click="selectOwner(actor.id)">{{ actor.title }} 设为所属角色</button>
           <label><input :checked="draft.knownBy.includes(actor.id)" :disabled="draft.ownerId===actor.id" type="checkbox" @change="setReader(actor.id,$event.target.checked)" />{{ actor.title }} 知情</label>
         </div>
@@ -91,5 +108,17 @@ load()
       <button type="submit" :disabled="busy||world.archived">保存世界书条目</button>
       <button v-if="draft.revision" type="button" :disabled="busy||world.archived" @click="remove">删除世界书条目</button>
     </form>
+    <section v-if="previewActor" aria-label="角色世界书预览">
+      <p>{{ previewActor.title }} · 按聊天规则预览已保存的设定</p>
+      <label>预览文本<input v-model="previewText" maxlength="4000" @input="preview=null" /></label>
+      <button type="button" :disabled="busy" @click="runPreview()">运行角色预览</button>
+      <button type="button" :disabled="busy" @click="preview=previewActor=null;previewText=''">关闭预览</button>
+      <p v-if="preview?.entries.length===0">没有符合当前角色和文本的设定。</p>
+      <ol v-if="preview" :start="previewOffset+1">
+        <li v-for="entry in preview.entries" :key="entry.id">{{ entry.content }}</li>
+      </ol>
+      <button v-if="preview&&previewOffset>0" type="button" @click="runPreview(previewOffset-50)">上页预览</button>
+      <button v-if="preview?.hasMore" type="button" @click="runPreview(previewOffset+50)">下页预览</button>
+    </section>
   </section>
 </template>

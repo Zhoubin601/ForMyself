@@ -5,9 +5,10 @@ export type KanataSchemaMigrator = typeof import('../features/chat/storage/sqlit
 export type { KanataSqliteWriteResult, KanataSqliteTransaction, KanataSqliteHealth,
   KanataSqliteOperation, KanataSqliteContext, KanataSqliteDriver } from '../platform/storage/kanataSqliteTypes'
 export type { KanataMessageScope, KanataMessageCursor, KanataMessagePage, KanataMessageRepository, KanataHistoryCursor, KanataHistoryPage,
-  KanataConversationRepository, KanataMessageProvenance, KanataReplyExpectation,
+  KanataConversationRepository, KanataGroupMemberEdit, KanataMessageProvenance, KanataReplyExpectation,
   KanataChatContextState, KanataDeferredReply } from '../features/chat/storage/sqlite/kanataRepositoryTypes'
-export type { KanataSqliteDomains, KanataSqliteDomainOwner, KanataEventGraphCursor, KanataMemorySourceCursor } from '../features/chat/storage/sqlite/kanataDomainTypes'
+export type { KanataSqliteDomains, KanataSqliteDomainOwner, KanataEventGraphCursor, KanataMemorySourceCursor,
+  KanataEventRevocationPlan, KanataEventRevocationCursor, KanataEventRevocationDecision, KanataMemoryConflictPlan, KanataMemoryConflictCursor } from '../features/chat/storage/sqlite/kanataDomainTypes'
 export type KanataSqliteWorldRuntime = ReturnType<typeof import('./kanataSqliteWorldRuntime.js').createKanataSqliteWorldRuntime>
 export type KanataChatViewModel = ReturnType<typeof import('../features/chat/kanataChatViewModel.js').createKanataChatViewModel>
 export type KanataSqliteChatRuntime = ReturnType<typeof import('./kanataSqliteChatRuntime.js').createKanataSqliteChatRuntime>
@@ -134,6 +135,7 @@ export type {MessageAudit} from '../features/chat/domain/kanataTypes'
 export type KanataLifeCompanion = ReturnType<typeof import('./kanataLifeCompanion.js').createKanataLifeCompanion>
 export type KanataLifeReaders = Parameters<typeof import('./kanataLifeContext.js').collectKanataLifeContext>[2]
 export type {AutonomyPolicy,VirtualSchedule} from '../features/chat/domain/kanataTypes'
+export type KanataSqliteWorldRuntime = ReturnType<typeof import('./kanataSqliteWorldRuntime.js').createKanataSqliteWorldRuntime>
 export type KanataWorldRuntime = ReturnType<typeof import('./kanataWorldRuntime.js').createKanataWorldRuntime>
 export type KanataSocialRuntime = ReturnType<typeof import('./kanataSocialRuntime.js').createKanataSocialRuntime>
 export type KanataContactRuntime = ReturnType<typeof import('./kanataContactRuntime.js').createKanataContactRuntime>

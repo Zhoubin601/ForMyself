@@ -1,0 +1,134 @@
+▲ [WARNING] Ignoring this import because "src/features/chat/kanataManagement.css" was marked as having no side effects [ignored-bare-import]
+
+    src/features/chat/KanataView.vue:8:7:
+      8 │ import './kanataManagement.css'
+        ╵        ~~~~~~~~~~~~~~~~~~~~~~~~
+
+{"qaBundleSha256":"0c07a2d37e0693121f7b77941dbcfdd80d83c80e8f04613925e8339c7a679dc7"}
+{
+  "passed": [
+    "schema-js-bridge-and-synthetic-seed",
+    "repository-batches-keyset-quote-locate-fk-and-conversation",
+    "concurrent-cas-real-commit-failure-and-derived-delete",
+    "close-reopen-wrong-password-replay-and-lease"
+  ],
+  "health": {
+    "cipher": "4.17.0 community",
+    "journalMode": "wal",
+    "synchronous": 2,
+    "foreignKeys": 1,
+    "cacheSize": -2048,
+    "checkpoint": 1000,
+    "busyTimeout": 5000
+  }
+}
+{
+  "envelope": "PASS_M0_V1_CROSS_UNWRAP",
+  "challenge": "PASS_EXPIRED_REJECTED",
+  "background": "PASS_OLD_LEASE_REJECTED",
+  "plaintext": "PASS_NO_PLAINTEXT_HEADER_OR_SYNTHETIC_SECRET_IN_PID_LOGS_AND_PREFERENCES",
+  "sigkill": {
+    "oldPid": "7886",
+    "newPid": "8047",
+    "status": "complete",
+    "revision": 1,
+    "auditAbsent": true
+  }
+}
+{
+  "passed": [
+    "bounded-window-scroll-anchor-quote-and-history",
+    "group-speakers-atomic-bubbles-retry-and-jump",
+    "deferred-reply-persists-and-resumes",
+    "fast-world-switch-late-completion-character-and-lock"
+  ],
+  "controlledModelCalls": 5,
+  "realModelCalls": 0
+}
+{
+  "m4": {
+    "samples": [
+      {
+        "seedRows": 1000,
+        "queries": 179,
+        "writes": 26,
+        "maxRows": 51,
+        "retainedWindow": 100
+      },
+      {
+        "seedRows": 10000,
+        "queries": 179,
+        "writes": 26,
+        "maxRows": 51,
+        "retainedWindow": 100
+      }
+    ],
+    "fullGraphCalls": 0,
+    "controlledModelCalls": 5,
+    "realModelCalls": 0,
+    "restoreGate": "PASS",
+    "revocationWhilePending": "PASS"
+  }
+}
+{
+  "m4Workspace": {
+    "passed": [
+      "workspace-directory-scoped-conversation-and-return",
+      "workspace-domain-summaries-grant-and-revoke-invalidation"
+    ],
+    "groupCases": [
+      "GROUP-01",
+      "GROUP-02",
+      "GROUP-03",
+      "GROUP-04",
+      "GROUP-05"
+    ],
+    "groupCommitFailure": "PASS",
+    "softDeletedHistory": "PASS"
+  }
+}
+{
+  "m3": [
+    "world-card-lore-scope-and-archive",
+    "memory-archive-source-revision-and-revoke-before-content",
+    "same-path-event-revoke-isolation",
+    "task-event-usage-commit-failure-and-idempotency"
+  ],
+  "ownerSwitch": "PASS"
+}
+{
+  "m3Sigkill": {
+    "oldPid": "8047",
+    "newPid": "8207",
+    "before": 1800000,
+    "absent": true,
+    "eventCount": 1,
+    "after": 3600000
+  }
+}
+{
+  "m4Completion": {
+    "error": "M4_EFFECT_FOLD",
+    "samples": []
+  }
+}
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
++ actual - expected
+
++ 'M4_EFFECT_FOLD'
+- undefined
+
+    at file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata-m0/docs/qa/kanata-sqlite-m2/windows-candidate-smoke.mjs:245:16 {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: 'M4_EFFECT_FOLD',
+  expected: undefined,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.14.1

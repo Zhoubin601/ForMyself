@@ -3,7 +3,7 @@ import { cloneKanataJson, validateId } from '../../domain/kanataValidation.js'
 import { validateGroupReplyLimits } from '../../domain/groupReplyLimits.js'
 import { validateReplyTimingPolicy } from '../../domain/replyTimingPolicy.js'
 import { readWorld } from './kanataWorldRepository.js'
-import { executeOnce, found } from './kanataDomainRows.js'
+import { executeOnce, found, writeOne } from './kanataDomainRows.js'
 import { deferredReplyWrites } from './kanataDeferredReplySql.js'
 import { conversationQueries as query, conversationWrites as write, messageQueries } from './kanataRepositorySql.js'
 import { extensionObject, nonemptyText, pageLimit, requireSqliteValue as need, safeInteger, scopeBindings, validId } from './kanataRepositoryValues.js'
@@ -17,6 +17,13 @@ import { extensionObject, nonemptyText, pageLimit, requireSqliteValue as need, s
 const known = ['id', 'worldId', 'type', 'title', 'participantIds', 'mode', 'revision', 'lastReadAt', 'replyLimits', 'replyTiming']
 const invalid = 'KANATA_CONVERSATION_INVALID'
 const conflict = 'KANATA_CONVERSATION_REVISION_CONFLICT'
+
+/** @param {Transaction} tx @param {Scope} scope */
+async function readGroupEdit(tx, scope) {
+  const [row] = await tx.query(query.groupEdit, scopeBindings(scope))
+  need(row, 'KANATA_GROUP_UNAVAILABLE')
+  return { title: String(row.title), revision: Number(row.revision), hasHistory: row.has_history === 1 }
+}
 
 /** @param {Transaction} tx @param {Scope} scope */
 async function participants(tx, scope) {
@@ -104,6 +111,53 @@ export function createKanataConversationRepository(operation) {
           return saved.id
         })
         return { id }
+      })
+    },
+    groupEdit: scope => run(tx => readGroupEdit(tx, scope)),
+    groupMemberPage: (scope, revision, after = -1, limit = 50) => run(async tx => {
+      need(Number.isSafeInteger(after) && after >= -1, 'KANATA_GROUP_CURSOR_INVALID')
+      need((await readGroupEdit(tx, scope)).revision === revision, conflict)
+      const rows = await tx.query(query.groupMembers, [...scopeBindings(scope), after, pageLimit(limit) + 1])
+      return { entries: rows.slice(0, limit).map(row => ({ id: String(row.participant_id), title: String(row.title) })),
+        cursor: rows.length > limit ? Number(rows[limit - 1].ordinal) : null }
+    }),
+    editGroupMembers(scope, input) {
+      const bindings = scopeBindings(scope)
+      const draft = cloneKanataJson(input)
+      const { instanceIds, expectedRevision, expectedHistory, commandId, newGroupId } = draft
+      need(safeInteger(expectedRevision, 1) && typeof expectedHistory === 'boolean', invalid)
+      need(Array.isArray(instanceIds) && instanceIds.length >= 2 && instanceIds.every(validId) &&
+        new Set(instanceIds).size === instanceIds.length, 'INVALID_GROUP_PARTICIPANTS')
+      validateId(commandId, 'commandId')
+      validateId(newGroupId, 'groupId')
+      return run(async tx => {
+        const world = found(await readWorld(tx, scope.worldId), 'KANATA_CONVERSATION_WORLD_UNAVAILABLE')
+        need(!world.world.archived, 'KANATA_CONVERSATION_WORLD_UNAVAILABLE')
+        const id = await executeOnce(tx, ['group:edit-members', ...bindings, commandId], draft, async () => {
+          const previous = await readGroupEdit(tx, scope)
+          need(previous.revision === expectedRevision, conflict)
+          const ids = JSON.stringify(instanceIds)
+          const [matched] = await tx.query(query.groupMemberCount, [ids, scope.worldId])
+          need(matched.total === instanceIds.length, 'INVALID_GROUP_PARTICIPANTS')
+          need(previous.hasHistory === expectedHistory, 'KANATA_GROUP_HISTORY_CHANGED')
+          const members = [world.identity.id, ...instanceIds]
+          if (expectedHistory) {
+            const unit = createKanataConversationRepository({ transaction: work => work(tx), health: operation.health })
+            return (await unit.create({ worldId: scope.worldId, id: newGroupId, title: previous.title, type: 'group',
+              participantIds: members, mode: 'inherit', revision: 1, lastReadAt: 0 })).id
+          }
+          await writeOne(tx, write.editGroupRevision, [...bindings, expectedRevision])
+          await tx.execute(write.removeGroupMembers, [...bindings, ids])
+          // Move existing ordinals out of the target range while retaining referenced member rows.
+          const [row] = await tx.query(query.highestOrdinal, bindings)
+          const offset = Math.max(Number(row.highest), members.length) + 1
+          await tx.execute(write.parkGroupMembers, [offset, ...bindings])
+          for (const [ordinal, member] of members.entries()) {
+            await writeOne(tx, write.orderGroupMember, [...bindings, member, ordinal === 0 ? 'user' : 'character', ordinal])
+          }
+          return scope.conversationId
+        })
+        return { id, created: expectedHistory }
       })
     },
     async create(conversation) {

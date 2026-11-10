@@ -1,5 +1,7 @@
-import { memoryRows, memoryEdges, eventRows, eventEdges } from '../kanata-sqlite-m4/completion/fixture.mjs'
+import { memoryRows, memoryEdges, memoryWideSources, eventRows, eventEdges, replayEventRows, replayEffectRows } from '../kanata-sqlite-m4/completion/fixture.mjs'
 import { growthSeedSql } from '../kanata-sqlite-m4/fixture.mjs'
+import { receiptWrite } from '../../../src/features/chat/storage/sqlite/kanataDomainRows.js'
+import { sha256Text } from '../../../src/shared/crypto/sha256Text.js'
 import { restoreState } from '../../../src/platform/storage/restoreState.js'
 import { runM3DeviceScenario } from '../kanata-sqlite-m3/device-scenario.mjs'
 import { createPinia, setActivePinia } from 'pinia'
@@ -13,6 +15,7 @@ import { createKanataMessageRepository } from '../../../src/features/chat/storag
 import { deriveKanataSqliteKek } from '../../../src/platform/security/kanataSqliteKek.js'
 import { createKanataSqliteChatRuntime } from '../../../src/application/kanataSqliteChatRuntime.js'
 import { resolveKanataCharacter } from '../../../src/features/chat/domain/kanataManagementCore.js'
+import AppFeedbackHost from '../../../src/components/AppFeedbackHost.vue'
 import KanataCandidateWorkspace from '../../../src/features/chat/KanataCandidateWorkspace.vue'
 import KanataConversationView from '../../../src/features/chat/KanataConversationView.vue'
 import conversationStyle from '../../../src/features/chat/kanataManagement.css'
@@ -36,6 +39,7 @@ const registry = createProtectedModuleRegistry([{
 const access = createProtectedAccessStore(registry, 'm2QaAccess')()
 const bridge = registerPlugin('KanataSqlite')
 let trace
+let groupCommitFault
 let suspendCommit = false
 let crashState = 'idle'
 const candidate = createKanataSqliteCandidate({
@@ -43,7 +47,13 @@ const candidate = createKanataSqliteCandidate({
     prepare: bridge.prepare, unlock: bridge.unlock, begin: bridge.begin,
     async execute(command) {
       if (trace) trace.writes++
-      return bridge.execute(command)
+      const result = await bridge.execute(command)
+      if (groupCommitFault && command.statement===sha256Text(receiptWrite) && command.parameters[0].includes('group:edit-members')) {
+        const statement = groupCommitFault
+        groupCommitFault = undefined
+        await bridge.execute({...command,statement,parameters:['group-edit-orphan','absent-card',1,'{}','{}','synthetic']})
+      }
+      return result
     },
     async query(command) {
       const result = await bridge.query(command)
@@ -587,7 +597,7 @@ window.m4QaGrowth = async (password, { base, senderId }) => {
     return { error: error.code ?? error.message, samples, fullGraphCalls, controlledModelCalls }
   } finally { auth.expireSession(); await candidate.release() }
 }
-window.m4QaWorkspace = async (password, { worldId, worldName, conversationId, actorId }) => {
+window.m4QaWorkspace = async (password, { worldId, worldName, conversationId, actorId, membership }) => {
   session(password)
   const passed = []
   let stage = 'open'
@@ -599,7 +609,7 @@ window.m4QaWorkspace = async (password, { worldId, worldName, conversationId, ac
   })
   const container = document.createElement('div')
   document.body.append(container)
-  const app = createApp({ render: () => h(KanataCandidateWorkspace, { worlds, lifecycle, createChat }) }).use(pinia)
+  const app = createApp({ render: () => [h(KanataCandidateWorkspace, { worlds, lifecycle, createChat }), h(AppFeedbackHost)] }).use(pinia)
   const button = text => [...container.querySelectorAll('button')].find(node => node.textContent.trim() === text)
   const entry = id => container.querySelector('[data-entry-id="' + id + '"] button')
   const settle = async predicate => {
@@ -702,7 +712,227 @@ window.m4QaWorkspace = async (password, { worldId, worldName, conversationId, ac
     groupPane().querySelector('form').requestSubmit()
     await settle(() => !groupPane() && Boolean(button('合成 Completion 群聊')))
     passed.push('workspace-domain-summaries-grant-and-revoke-invalidation')
-    return { passed }
+    const groupCases = []
+    if (membership) {
+      const { actors:[a,b,c], foreign, sample, failCommitSql } = membership
+      const editing=()=>container.querySelector('[aria-label="候选编辑群聊成员"]')
+      const dialogButton=text=>[...document.querySelectorAll('[role=dialog] button')].find(node=>node.textContent.trim()===text)
+      const create=async id=>{
+        await candidate.withDomains({},domains=>domains.conversations.createGroup(worldId,
+          {title:id,instanceIds:[a,b]},{id,commandId:id}))
+        return {worldId,conversationId:id}
+      }
+      const get=scope=>candidate.withDomains({},domains=>domains.conversations.get(scope))
+      const start=async id=>{
+        button('会话').click()
+        const edit=()=>container.querySelector('[data-entry-id="'+id+'"] button[aria-label]')
+        await settle(()=>Boolean(edit()&&!edit().disabled))
+        edit().click()
+        await settle(()=>editing()?.querySelector('[data-actor-id="'+b+'"]')?.checked===true)
+        editing().querySelector('[data-actor-id="'+b+'"]').click()
+        editing().querySelector('[data-actor-id="'+c+'"]').click()
+        await nextTick()
+      }
+      const submit=()=>editing().querySelector('form').requestSubmit()
+      const send=async (scope,id,change={})=>{
+        const row={...sample,...change,id,conversationId:scope.conversationId,lifeSources:[]}
+        await candidate.withRepositories({},messages=>messages.insertBatch([row]))
+        return row
+      }
+      const invalid=scope=>candidate.withDomains({},domains=>domains.conversations.editGroupMembers(scope,{
+        expectedHistory:scope.conversationId==='qa-group-history',expectedRevision:1,instanceIds:[a,foreign],
+        commandId:'invalid-'+scope.conversationId,newGroupId:'invalid-result-'+scope.conversationId,
+      }))
+      const fresh=async prior=>{
+        const result=await candidate.withDomains({},domains=>domains.managementView.list(worldId,'conversations'))
+        return {worldId,conversationId:result.entries.find(row=>row.id!==prior.conversationId&&row.title===prior.conversationId)?.id}
+      }
+      stage='GROUP-01'
+      const empty=await create('qa-group-empty')
+      const before=await get(empty), identity=before.participantIds[0]
+      await start(empty.conversationId)
+      check(!editing().querySelector('[data-actor-id="'+foreign+'"]'),'GROUP_FOREIGN_PICKER')
+      await rejects(()=>invalid(empty),'INVALID_GROUP_PARTICIPANTS')
+      check((await get(empty)).revision===before.revision,'GROUP_FOREIGN_EMPTY_MUTATION')
+      submit()
+      await settle(()=>!editing())
+      check(JSON.stringify((await get(empty)).participantIds)===JSON.stringify([identity,a,c]),'GROUP_EMPTY_MEMBERS')
+      check(await candidate.withRepositories({},messages=>messages.count(empty))===0,'GROUP_EMPTY_HISTORY')
+      groupCases.push('GROUP-01')
+
+      stage='GROUP-02/03/04'
+      const prior=await create('qa-group-history')
+      const root=await send(prior,'qa-group-root')
+      const reply=await send(prior,'qa-group-quote',{replyToMessageId:root.id,replyToRevision:root.revision})
+      await rejects(()=>invalid(prior),'INVALID_GROUP_PARTICIPANTS')
+      const original=await get(prior)
+      const originalMessages=await candidate.withRepositories({},messages=>messages.recent(prior))
+      await start(prior.conversationId)
+      submit()
+      await settle(()=>Boolean(dialogButton('另建空群')))
+      dialogButton('另建空群').click()
+      await settle(()=>!editing()&&Boolean(button('返回世界')))
+      const created=await fresh(prior)
+      check(created.conversationId&&created.conversationId!==prior.conversationId,'GROUP_HISTORY_NOT_SPLIT')
+      check(JSON.stringify(await get(prior))===JSON.stringify(original),'GROUP_HISTORY_CHANGED')
+      check(JSON.stringify((await get(created)).participantIds)===JSON.stringify([identity,a,c]),'GROUP_HISTORY_MEMBER_ORDER')
+      await candidate.withRepositories({},async messages=>{
+        check(JSON.stringify(await messages.recent(prior))===JSON.stringify(originalMessages),'GROUP_ORIGINAL_MESSAGES')
+        check((await messages.get(prior,reply.id)).replyToMessageId===root.id,'GROUP_ORIGINAL_QUOTE')
+        check((await messages.historyForSpeaker(prior,b,10)).some(row=>row.id===root.id),'GROUP_ORIGINAL_ROLE_HISTORY')
+        check(await messages.count(created)===0,'GROUP_NEW_NOT_EMPTY')
+        check((await messages.searchHistory(created,root.content)).messages.length===0,'GROUP_NEW_SEARCH_LEAK')
+        check(await messages.locate(created,root.id)===null&&await messages.quote(created,root.id)===null,'GROUP_NEW_REFERENCE_LEAK')
+        check((await messages.historyForSpeaker(created,c,10)).length===0,'GROUP_NEW_ROLE_HISTORY_LEAK')
+      })
+      groupCases.push('GROUP-02','GROUP-03','GROUP-04')
+      button('返回世界').click()
+      await settle(()=>Boolean(button('会话')))
+
+      stage='GROUP-05'
+      const race=await create('qa-group-race')
+      await start(race.conversationId)
+      const arrival=await send(race,'qa-group-arrival')
+      submit()
+      await settle(()=>Boolean(dialogButton('另建空群')))
+      dialogButton('取消').click()
+      await settle(()=>!dialogButton('另建空群')&&!editing()?.querySelector('button[type=submit]').disabled)
+      check(!(await fresh(race)).conversationId,'GROUP_CANCEL_CREATED')
+      check(JSON.stringify((await get(race)).participantIds)===JSON.stringify([identity,a,b]),'GROUP_RACE_REWROTE')
+      await candidate.withDomains({},domains=>domains.memories.archiveSource(worldId,{messageId:arrival.id,revision:arrival.revision}))
+      submit()
+      await settle(()=>Boolean(dialogButton('另建空群')))
+      groupCommitFault=sha256Text(failCommitSql)
+      dialogButton('另建空群').click()
+      await settle(()=>Boolean(editing()?.querySelector('[role=alert]')))
+      check(!groupCommitFault&&!(await fresh(race)).conversationId,'GROUP_COMMIT_FAILURE_LEFT_COPY')
+      check(JSON.stringify((await get(race)).participantIds)===JSON.stringify([identity,a,b]),'GROUP_COMMIT_FAILURE_REWROTE')
+      submit()
+      await settle(()=>Boolean(dialogButton('另建空群')))
+      dialogButton('另建空群').click()
+      await settle(()=>!editing()&&Boolean(button('返回世界')))
+      check((await fresh(race)).conversationId,'GROUP_RACE_COPY_MISSING')
+      const copies=await candidate.withDomains({},domains=>domains.managementView.list(worldId,'conversations'))
+      check(copies.entries.filter(row=>row.title===race.conversationId).length===2,'GROUP_DUPLICATE_COPY')
+      button('返回世界').click()
+      await settle(()=>Boolean(button('会话')))
+      const deleted=await create('qa-group-deleted')
+      const deletedMessage=await send(deleted,'qa-group-deleted-message')
+      await candidate.withRepositories({},messages=>messages.revise(deleted,deletedMessage.id,deletedMessage.revision,{content:'',deleted:true}))
+      await start(deleted.conversationId)
+      submit()
+      await settle(()=>Boolean(dialogButton('另建空群')))
+      dialogButton('取消').click()
+      await settle(()=>!dialogButton('另建空群')&&!editing()?.querySelector('button[type=submit]').disabled)
+      check(!(await fresh(deleted)).conversationId,'GROUP_TOMBSTONE_CANCEL_CREATED')
+      groupCases.push('GROUP-05')
+      stage='R3-event-ledger'
+      button('事件').click()
+      await settle(()=>Boolean(button('提议事件')&&!button('提议事件').disabled))
+      button('提议事件').click()
+      const eventPanel=()=>container.querySelector('[aria-label="候选事件账本"]')
+      await settle(()=>Boolean(eventPanel()?.querySelector('textarea')))
+      const draft=eventPanel().querySelector('textarea')
+      draft.value='合成候选账本事件'
+      draft.dispatchEvent(new Event('input',{bubbles:true}))
+      await nextTick()
+      eventPanel().querySelector('form').requestSubmit()
+      await settle(()=>Boolean(button('确认记入账本')))
+      button('确认记入账本').click()
+      await settle(()=>Boolean(dialogButton('记入账本')))
+      dialogButton('记入账本').click()
+      await settle(()=>eventPanel()?.textContent.includes('已记入'))
+      button('预览撤销').click()
+      await settle(()=>Boolean(button('确认撤销范围')&&!button('确认撤销范围').disabled))
+      button('确认撤销范围').click()
+      await settle(()=>Boolean(dialogButton('撤销所列事件')))
+      dialogButton('撤销所列事件').click()
+      await settle(()=>eventPanel()?.textContent.includes('已撤销'))
+      button('查看撤销审计').click()
+      await settle(()=>Boolean(eventPanel()?.querySelector('[aria-label="撤销审计"] li')))
+
+      stage='R4-memory-management'
+      const memoryBase={worldId,ownerType:'character',ownerId:a,layer:'L3',key:'合成冲突管理',
+        sourceRefs:[],status:'active',revision:1,visibility:'private'}
+      const oldId='qa-memory-old',newId='qa-memory-new'
+      await candidate.withDomains({},async domains=>{
+        await domains.memories.save({...memoryBase,id:oldId,content:'合成旧内容'},null)
+        await domains.memories.save({...memoryBase,id:newId,content:'合成新内容'},null)
+      })
+      button('记忆').click()
+      await settle(()=>Boolean(entry(newId)&&!entry(newId).disabled))
+      entry(newId).click()
+      const memoryPanel=()=>container.querySelector('[aria-label="候选记忆来源"]')
+      const asActor=()=>memoryPanel()?.querySelector('[data-memory-actor="'+a+'"]')
+      await settle(()=>Boolean(asActor()))
+      asActor().click()
+      await settle(()=>Boolean(button('核对候选和冲突')))
+      button('核对候选和冲突').click()
+      await settle(()=>Boolean(button('确认采用并处理冲突')))
+      button('确认采用并处理冲突').click()
+      await settle(()=>Boolean(dialogButton('采用当前内容')))
+      dialogButton('采用当前内容').click()
+      await settle(()=>Boolean(button('分享这条记忆')))
+      const managed=await candidate.withDomains({},domains=>domains.memories.managedDetailFor({worldId,instanceId:a},oldId))
+      check(managed.status==='stale'&&managed.content==='合成旧内容','R4_CONFLICT_RETAINED')
+      button('分享这条记忆').click()
+      const shareTo=()=>memoryPanel()?.querySelector('[data-share-recipient="'+c+'"]')
+      await settle(()=>Boolean(shareTo()))
+      shareTo().click()
+      await nextTick()
+      button('分享给选定角色').click()
+      await settle(()=>Boolean(dialogButton('确认分享')))
+      dialogButton('确认分享').click()
+      await settle(()=>!memoryPanel()?.querySelector('[aria-label="选择分享对象"]'))
+      const shared=await candidate.withDomains({},domains=>domains.memories.listFor({worldId,instanceId:c}))
+      check(shared.entries.some(item=>item.sharedFromId===newId&&item.content==='合成新内容'),'R4_SHARED_COPY')
+
+      stage='R5-role-lore-preview'
+      await candidate.withDomains({},domains=>domains.lorebook.save({id:'qa-role-lore',worldId,scope:'world',ownerId:worldId,
+        content:'合成世界书角色预览',keys:['红叶'],secondaryKeys:['北桥'],priority:99999,activationRule:'keyword',
+        visibility:'public',knownBy:[],sourceTag:'synthetic',enabled:true,revision:1},null))
+      button('世界书').click()
+      await settle(()=>Boolean(button('新建世界书设定')&&!button('新建世界书设定').disabled))
+      button('新建世界书设定').click()
+      await settle(()=>Boolean(button('选择所属角色或知情角色')))
+      button('选择所属角色或知情角色').click()
+      const actorPreview=()=>[...container.querySelectorAll('[aria-label="候选世界书编辑"] button')].find(el=>el.textContent.endsWith(' 预览'))
+      await settle(()=>Boolean(actorPreview()))
+      actorPreview().click()
+      await settle(()=>Boolean(button('运行角色预览')))
+      const preview=()=>container.querySelector('[aria-label="角色世界书预览"]')
+      const text=preview().querySelector('input')
+      text.value='红叶 北桥'
+      text.dispatchEvent(new Event('input',{bubbles:true}))
+      await nextTick()
+      button('运行角色预览').click()
+      await settle(()=>preview()?.querySelector('li')?.textContent.includes('合成世界书角色预览'))
+
+      stage='R5-create-world'
+      button('返回世界列表').click()
+      await settle(()=>Boolean(button('新建空白世界')&&!button('新建空白世界').disabled))
+      button('新建空白世界').click()
+      const worldForm=()=>container.querySelector('form[aria-label="新建空白世界"]')
+      await settle(()=>Boolean(worldForm()))
+      for(const [input,value] of [...worldForm().querySelectorAll('input')].map((node,index)=>[node,['合成新世界','合成身份'][index]])){
+        input.value=value
+        input.dispatchEvent(new Event('input',{bubbles:true}))
+      }
+      await nextTick()
+      worldForm().requestSubmit()
+      await settle(()=>container.querySelector('h3')?.textContent==='合成新世界')
+      await candidate.withDomains({},async domains=>{
+        const page=await domains.managementView.worlds()
+        const created=page.entries.find(item=>item.title==='合成新世界')
+        check(created,'R5_WORLD_CREATED')
+        const value=await domains.worlds.get(created.id)
+        const original=await domains.worlds.get(worldId)
+        check(value.identity.userId===original.identity.userId&&value.identity.displayName==='合成身份','R5_WORLD_IDENTITY')
+        check((await domains.managementView.list(created.id,'conversations')).entries.length===0,'R5_WORLD_EMPTY')
+      })
+    }
+    return { passed, groupCases, ...(membership && { groupCommitFailure:'PASS', softDeletedHistory:'PASS',
+      eventLedger:'PASS', memoryManagement:'PASS', roleLorePreview:'PASS', createWorld:'PASS' }) }
   } catch (error) {
     return { error: error.code ?? error.message, passed, stage, uiError: container.querySelector('[role=alert]')?.textContent }
   } finally {
@@ -712,11 +942,13 @@ window.m4QaWorkspace = async (password, { worldId, worldName, conversationId, ac
     await candidate.release()
   }
 }
-window.m4QaCompletion = async (password, scope) => {
+window.m4QaCompletion = async (password, scope, requestedSize) => {
   session(password)
   const samples = []
   try {
-    for (const size of [1000, 10000]) {
+    check([1000,10000].includes(requestedSize),'M4_GROWTH_SIZE')
+    for (const size of [requestedSize]) {
+      const started=performance.now()
       const memory = 'm4c-memory-' + size + '-', event = 'm4c-event-' + size + '-'
       await candidate.run({}, operation => operation.transaction(async tx => {
         check((await tx.execute(memoryRows, [size, memory, scope.worldId, scope.instanceId, scope.instanceId])).affectedRows === size+1, 'C2_MEMORY_SEED')
@@ -728,6 +960,23 @@ window.m4QaCompletion = async (password, scope) => {
       const item = await candidate.withDomains({}, domains => domains.memories.readDetailFor(scope, memory+'0'))
       check(item?.id === memory+'0', 'C2_MEMORY_AUTHORIZATION')
       const memoryTrace = {...trace}
+      trace=undefined
+      const wide='m4c-wide-'+size+'-'
+      await candidate.run({},operation=>operation.transaction(async tx=>{
+        check((await tx.execute(growthSeedSql,[size,wide,scope.worldId,scope.conversationId,scope.senderId])).affectedRows===size,'R4_SOURCE_SEED')
+        check((await tx.execute(memoryRows,[0,wide,scope.worldId,scope.instanceId,scope.instanceId])).affectedRows===1,'R4_WIDE_MEMORY')
+        for(const id of [wide+'0',memory+size]){
+          check((await tx.execute(memoryWideSources,[id,scope.worldId,scope.conversationId,wide+'-history-*'])).affectedRows===size,'R4_SOURCE_FANOUT')
+        }
+      }))
+      trace={queries:0,writes:0,maxRows:0}
+      const wideResult=await candidate.withDomains({},domains=>domains.memories.readDetailFor(scope,wide+'0'))
+      check(wideResult.id===wide+'0'&&trace.maxRows<=50,'R4_WIDE_AUTH')
+      const wideTrace={...trace,total:size}
+      trace={queries:0,writes:0,maxRows:0}
+      const mixedResult=await candidate.withDomains({},domains=>domains.memories.readDetailFor(scope,memory+'0'))
+      check(mixedResult.id===memory+'0'&&trace.maxRows<=50,'R4_MIXED_AUTH')
+      const mixedTrace={...trace,edges:size,sources:size}
       trace = { queries:0, writes:0, maxRows:0 }
       let cursor, count=0, last=''
       do {
@@ -740,8 +989,33 @@ window.m4QaCompletion = async (password, scope) => {
         cursor=page.cursor??undefined
       } while(cursor)
       check(count===size && trace.maxRows<=51, 'C2_EVENT_CONTINUATION')
-      samples.push({ size, memory:memoryTrace, event:{...trace, total:count} })
+      const eventTrace={...trace,total:count}
       trace=undefined
+      const revocable=await candidate.withDomains({},async domains=>{
+        const proposal=await domains.events.propose({worldId:scope.worldId,participantIds:[scope.instanceId],
+          sourceRefs:[],causedByEventIds:[],visibility:'private',summary:'合成可撤销位置',effectiveAt:20000+size,
+          kind:'move',action:{instanceId:scope.instanceId,location:'合成可撤销位置'}},'m4-replay-'+size)
+        return domains.events.commit(scope.worldId,proposal.id,proposal.revision)
+      })
+      const earlier=await candidate.withDomains({},async domains=>(await domains.events.openRevocation(scope.worldId,revocable.id)).plan)
+      await candidate.run({},operation=>operation.transaction(async tx=>{
+        const prefix=event+'replay-'
+        check((await tx.execute(replayEventRows,[size-1,prefix,scope.worldId,size])).affectedRows===size,'M4_EFFECT_EVENT_SEED')
+        check((await tx.execute(replayEffectRows,[size-1,event+'effect-',scope.worldId,prefix,scope.instanceId,scope.instanceId])).affectedRows===size,'M4_EFFECT_SEED')
+      }))
+      await rejects(()=>candidate.withDomains({},domains=>domains.events.confirmRevocation(earlier,'keep-independent','replay-stale-'+size)),'EVENT_REVOKE_PREVIEW_STALE')
+      const plan=await candidate.withDomains({},async domains=>(await domains.events.openRevocation(scope.worldId,revocable.id)).plan)
+      trace={queries:0,writes:0,maxRows:0}
+      const confirmed=await candidate.withDomains({},domains=>domains.events.confirmRevocation(plan,'keep-independent','replay-confirm-'+size))
+      check(confirmed.revoked===1&&confirmed.needsReview===0,'M4_EFFECT_PLAN_SCOPE')
+      const replay={...trace,total:size}
+      trace=undefined
+      check(replay.maxRows<=128,'M4_EFFECT_BATCH')
+      const replayed=await candidate.withDomains({},domains=>domains.characters.getInstance(scope.worldId,scope.instanceId))
+      check(replayed.state.location==='synthetic-location-'+(size-1),'M4_EFFECT_FOLD')
+      const audit=await candidate.withDomains({},domains=>domains.events.revocationAudits(scope.worldId,revocable.id))
+      check(audit.entries.length===1&&audit.entries[0].effectCount===1,'M4_EFFECT_AUDIT')
+      samples.push({ size, memory:memoryTrace, wideMemory:wideTrace, mixedMemory:mixedTrace, event:eventTrace, replay, elapsedMs:Math.round(performance.now()-started) })
     }
     return { samples }
   } catch(error) {

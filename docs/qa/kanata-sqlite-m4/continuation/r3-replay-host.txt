@@ -1,0 +1,56 @@
+(node:15892) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ M4 chat metadata reads a scoped light projection without projecting cards or history (66.7438ms)
+✔ M4 cost buckets match exact ranked greedy selection across mixed costs and ties (15.4619ms)
+✔ M4 reply-timing CAS and pending activity acceleration roll back together (39.6458ms)
+✔ M4 real SQLite runtime keeps identical access shape from 1k to 10k messages (281.4815ms)
+ℹ {"seeds":[1000,10000],"queryCounts":[157,157],"recent":50,"window":100,"fullGraphCalls":0}
+✔ M4 turn source and deferred task roll back on a failed link write and retry exactly once (39.4866ms)
+✔ M4 history handles Unicode normalization and scope-bound continuations after a sparse scan (60.5864ms)
+✔ M4 autonomy rotates the exact legacy locale order across actor batches and wraps (49.0803ms)
+(node:12692) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ M3 only appends to the frozen 001–003 catalog (7.7678ms)
+✔ M3 upgrades a populated v3 and preserves historical application times (65.4831ms)
+✔ M3 world and identity creation are atomic, idempotent and reversibly archived (47.0609ms)
+✔ M3 character version publication is immutable and instance scope stays isolated (41.7058ms)
+✔ M3 lore visibility is checked before projection and associations roll back (37.67ms)
+✔ M3 remember, read and share reject before sensitive queries and archived source requires exact revision (45.622ms)
+✔ M3 revoke retains independent same-path effects and atomically changes causal descendants (48.1079ms)
+✔ R3 folds 1k/10k interleaved same-path Effects in bounded legacy order (8263.1062ms)
+ℹ {"size":1000,"activeEffects":1004,"maxRows":128,"replayQueries":8}
+ℹ {"size":10000,"activeEffects":10004,"maxRows":128,"replayQueries":79}
+✔ M3 window writes event, effects, task and watermark atomically, including failed COMMIT (102.6122ms)
+✔ M3 old world owner rejects late data and never sends a new command (83.054ms)
+✔ M3 a derived reply cannot launder an unrememberable source and deletion redacts the body (86.1213ms)
+✔ M3 private event context reads neither its summary nor another actor’s effects (77.0579ms)
+✔ M3 expired lease cannot complete and duplicate task completion writes one event (77.0462ms)
+✔ M3 usage attempt preserves null measurement and final usage is idempotent (57.437ms)
+✔ C2 source chain is checked in bounded SQL pages and rejects a historical reply cycle (630.7497ms)
+ℹ {"size":1000,"queries":2,"rows":1}
+ℹ {"size":10000,"queries":2,"rows":1}
+✔ C2 shared memory authorization handles 1k and 10k links without fetching parent bodies (8341.0228ms)
+ℹ {"sharedLinks":1000,"queries":13,"bodies":1}
+ℹ {"sharedLinks":10000,"queries":13,"bodies":1}
+✔ C3 new group receipts preserve ordered members and reject a cross-world actor (72.8322ms)
+✔ C3 new group has no access to messages or quotes in a prior group (74.7019ms)
+✔ C2 event ancestry pages merge overlapping paths and bind cursors to direction and root (76.3255ms)
+✔ C3 binding CAS preserves inherit, explicit none and archived selections (83.8598ms)
+✔ GROUP-01–05 membership editing uses history, scope, CAS and an atomic receipt (98.4133ms)
+(node:7628) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ M2 bulk boundaries, duplicate identity, quote and fixed-size scoped keyset pages (145.7362ms)
+✔ M2 edit and delete match the domain transaction, including both memory invalidations and exact redaction (49.1417ms)
+✔ M2 no partial derived changes on uncertainty, any write fault or actual COMMIT failure (84.6141ms)
+✔ M2 conversation create/update preserve participant order and observable CAS (36.246ms)
+✔ M2 sources keep distinct extension records without duplicating normalized grant links (37.4388ms)
+✔ M2 scoped deferred reply recovers due work and refuses a stale or cancelled source (42.8535ms)
+ℹ tests 34
+ℹ suites 0
+ℹ pass 34
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 18655.9681
+exit=0

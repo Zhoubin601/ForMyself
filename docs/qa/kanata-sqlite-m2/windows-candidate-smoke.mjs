@@ -52,12 +52,12 @@ async function attach() {
     })
   } finally { clearTimeout(timer) }
   let id = 0
-  return expression => new Promise((resolve, reject) => {
+  return (expression, timeoutMs = 90000) => new Promise((resolve, reject) => {
     const request = ++id
     const timeout = setTimeout(() => {
       socket.removeEventListener('message', onMessage)
       reject(new Error('CDP_EVALUATION_TIMEOUT'))
-    }, 90000)
+    }, timeoutMs)
     function onMessage(event) {
       const reply = JSON.parse(event.data)
       if (reply.id !== request) return
@@ -193,13 +193,26 @@ try {
         assert.equal(growth.controlledModelCalls, 5)
         assert.equal(growth.revocationWhilePending, 'PASS')
         assert.equal(growth.realModelCalls, 0)
+        const actors = fixture.instances.filter(actor=>actor.worldId===scope.worldId).map(actor=>actor.id)
+        const membership = process.argv.includes('--m4-completion') ? {
+          actors, foreign:fixture.instances.find(actor=>actor.worldId!==scope.worldId).id, sample:input.sample,
+          failCommitSql:fixtureWrites.deferredCommit,
+        } : undefined
         const workspace = await evaluate(`window.m4QaWorkspace(${password}, ${JSON.stringify({
+          membership,
           worldId: scope.worldId, worldName: fixture.worlds.find(row => row.id === scope.worldId).name,
           conversationId: scope.conversationId, actorId: fixture.instances.find(row => row.worldId === scope.worldId).id,
         })})`)
         console.log(JSON.stringify({ m4Workspace: workspace }, null, 2))
         assert.equal(workspace.error, undefined)
         assert.equal(workspace.passed.length, 2)
+        if (membership) {
+          assert.deepEqual(workspace.groupCases,['GROUP-01','GROUP-02','GROUP-03','GROUP-04','GROUP-05'])
+          assert.equal(workspace.groupCommitFailure,'PASS')
+          assert.equal(workspace.softDeletedHistory,'PASS')
+          assert.equal(workspace.eventLedger,'PASS')
+          assert.equal(workspace.memoryManagement,'PASS')
+        }
       }
       const m3 = await evaluate(`window.m3QaScenario(${password}, ${JSON.stringify(fixture)}, ${JSON.stringify(fixtureWrites.deferredCommit)})`)
       console.log(JSON.stringify({ m3: m3.passed, ownerSwitch: m3.ownerSwitch, error: m3.error }, null, 2))
@@ -229,10 +242,12 @@ try {
       console.log(JSON.stringify({ m3Sigkill: { oldPid: m3OldPid, newPid: pid, ...m3Reopened } }, null, 2))
       if (process.argv.includes('--m4-completion')) {
         const actor = fixture.instances.find(item => item.worldId === scope.worldId)
-        const completion = await evaluate(`window.m4QaCompletion(${password}, ${JSON.stringify({ ...scope, instanceId: actor.id })})`)
-        console.log(JSON.stringify({ m4Completion: completion }, null, 2))
-        assert.equal(completion.error, undefined)
-        assert.deepEqual(completion.samples.map(sample => sample.size), [1000, 10000])
+        for (const size of [1000, 10000]) {
+          const completion = await evaluate(`window.m4QaCompletion(${password}, ${JSON.stringify({ ...scope, instanceId: actor.id, senderId: fixture.identities.find(item=>item.worldId===scope.worldId).id })}, ${size})`, 300000)
+          console.log(JSON.stringify({ m4Completion: completion }, null, 2))
+          assert.equal(completion.error, undefined)
+          assert.deepEqual(completion.samples.map(sample => sample.size), [size])
+        }
       }
       const root = 'no_backup/kanata-sqlite-v1'
       adb('shell', 'run-as', packageName, 'mv', root + '/envelope.json', root + '/envelope.saved-for-qa')

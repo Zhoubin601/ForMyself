@@ -100,35 +100,43 @@ async function changeOne(tx, sql, values) {
   need((await tx.execute(sql, values)).affectedRows === 1, 'KANATA_MESSAGE_DEPENDENT_CONFLICT')
 }
 
-/** @param {Transaction} tx @param {AsyncIterable<Row>|Iterable<Row>} affected */
-export async function rebuildEventEffects(tx, affected) {
-  /** @type {Map<string,Effect>} */
-  const paths = new Map()
-  for await (const row of affected) {
+/** @param {Transaction} tx @param {Effect} effect */
+async function replayEffectPath(tx, { worldId, targetType, targetId, path }) {
+  const bindings = [worldId, targetType, targetId, path]
+  const [baseline] = await tx.query(query.baseline, bindings)
+  need(baseline, 'EVENT_BASELINE_REQUIRED')
+  let value = JSON.parse(String(baseline.value_json))
+  /** @type {Value[]} */
+  let cursor = [-1,-1,'','','','']
+  for (;;) {
+    const rows = await tx.query(query.remainingEffects, [...cursor, ...bindings])
+    for (const row of rows) value = applyKanataEffect(value, effectFromRow(row))
+    if (rows.length < 128) break
+    const last = rows[rows.length - 1]
+    cursor = [last.effective_at,last.recorded_at,last.event_key,last.event_id,last.effect_key,last.id]
+  }
+  await changeOne(tx, updateEffectValue[path], [value, worldId, targetId])
+}
+
+/** Group by the catalog's target/path keyset. Retain at most one affected page
+ * and one replay page; update a target revision only once for all its paths.
+ * @param {Transaction} tx @param {string} sql @param {Value[]} bindings */
+export async function rebuildEventEffects(tx, sql, bindings) {
+  /** @type {Effect|undefined} */
+  let previous
+  /** @param {Effect} effect */
+  const finish = effect => changeOne(tx, effect.targetType === 'instance' ? write.instanceRevision : write.relationshipRevision,
+    [effect.worldId, effect.targetId])
+  for await (const row of visitRows(tx, sql, bindings, ['target_type','target_id','path','id'])) {
     const effect = effectFromRow(row)
     assertKanataEffectExecutable(effect)
-    paths.set(JSON.stringify([effect.targetType, effect.targetId, effect.path]), effect)
+    const sameTarget = previous && previous.worldId === effect.worldId &&
+      previous.targetType === effect.targetType && previous.targetId === effect.targetId
+    if (!sameTarget && previous) await finish(previous)
+    if (!sameTarget || previous?.path !== effect.path) await replayEffectPath(tx, effect)
+    previous = effect
   }
-  /** @type {Map<string,Effect>} */
-  const entities = new Map()
-  for (const effect of paths.values()) {
-    const { worldId, targetType, targetId, path } = effect
-    const bindings = [worldId, targetType, targetId, path]
-    const [baseline] = await tx.query(query.baseline, bindings)
-    need(baseline, 'EVENT_BASELINE_REQUIRED')
-    const effects = await gather(visitRows(tx, query.remainingEffects, bindings, ['id']), row => ({
-      effect: effectFromRow(row), effectiveAt: Number(row.effective_at), recordedAt: Number(row.recorded_at),
-    }))
-    effects.sort((a, b) => a.effectiveAt - b.effectiveAt || a.recordedAt - b.recordedAt
-      || a.effect.eventId.localeCompare(b.effect.eventId, 'en') || a.effect.id.localeCompare(b.effect.id, 'en'))
-    let value = JSON.parse(String(baseline.value_json))
-    for (const active of effects) value = applyKanataEffect(value, active.effect)
-    await changeOne(tx, updateEffectValue[path], [value, worldId, targetId])
-    entities.set(targetId, effect)
-  }
-  for (const entity of entities.values()) {
-    await changeOne(tx, entity.targetType === 'instance' ? write.instanceRevision : write.relationshipRevision, [entity.worldId, entity.targetId])
-  }
+  if (previous) await finish(previous)
 }
 
 /** @param {Transaction} tx @param {Message} message @param {Tools} tools
@@ -148,7 +156,7 @@ export async function reviseMessageDependents(tx, message, tools, revise, messag
       next.revision, JSON.stringify(previous), JSON.stringify(next)])
   }
   await tx.execute(write.eventMemories, scope)
-  await rebuildEventEffects(tx, visitRows(tx, query.affectedEffects, scope, ['id']))
+  await rebuildEventEffects(tx, query.affectedEffects, scope)
   await revise()
   for await (const row of visitRows(tx, query.replies, scope, ['id'])) {
     const previous = messages.decode(row)

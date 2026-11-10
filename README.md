@@ -115,6 +115,6 @@ P6首批时间规则与受保护持久化已实现，完整check为500 Node/278�
 
 ## 2026-11-10：M4 剩余缺口续作入口
 
-M 分支最新接管基线为 e296b2c5dd082f35b95c943bd838e3fe6a506357。M4 仍 BLOCKED、M5 NO。当前执行入口改为 [M4 剩余缺口续作任务书](docs/20261110-kanata-sqlite-m4-continuation-task-v1.md)；原 M4 completion task v1、acceptance v1/v2 和 QA 作为历史证据保留。
+M 分支本轮接管的远端基线为 428b7bcfeffe2722e72b4809a6d1a82b5734aeb1。M4 仍 BLOCKED、M5 NO。[续作验收 v3](docs/20261110-kanata-sqlite-m4-acceptance-v3.md) 记录 GROUP-01～05、事件 Effects、记忆关系增长与其他增量的实测和剩余门禁。当前执行入口改为 [M4 剩余缺口续作任务书](docs/20261110-kanata-sqlite-m4-continuation-task-v1.md)；原 M4 completion task v1、acceptance v1/v2 和 QA 作为历史证据保留。
 
 本轮重点：实际完成 GROUP-01–05 成员编辑端到端；有界化事件撤销与 Effects 重放；补齐记忆整理/冲突/分享和宽关系增长；完成 A–G 剩余管理流程、跨模块消费者、生命周期与两轮全范围自检。生产 canonical 保持 legacy，普通 Android SQLite 激活位 false；不迁移真实数据、不实施 M5/M6/M7。

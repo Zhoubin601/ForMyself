@@ -5,7 +5,8 @@ import { buildKanataConversationContext, createKanataSpeakerSelection, splitKana
 import { resolveKanataCharacter } from '../features/chat/domain/kanataManagementCore.js'
 import { kanataReplyLimits } from '../features/chat/domain/groupReplyLimits.js'
 import { kanataMemoryPolicy, kanataMemoryRanker } from '../features/chat/experience/kanataKnowledge.js'
-import { activatesKanataLore, estimateKanataContextTokens, expandKanataCharacterText } from '../features/chat/lorebook/kanataLorebook.js'
+import { estimateKanataContextTokens, expandKanataCharacterText } from '../features/chat/lorebook/kanataLorebook.js'
+import { readKanataRoleLore } from '../features/chat/lorebook/kanataRoleLore.js'
 import { createKanataBudgetSelection } from '../features/chat/domain/kanataBudgetSelection.js'
 import { collectKanataLifeContext } from './kanataLifeContext.js'
 
@@ -71,14 +72,7 @@ async function readPromptKnowledge(domains, scope, text) {
   }
   const memories = []
   for (const { id } of rank.finish()) memories.push(await domains.memories.readFor(scope, id))
-  /** @typedef {{id:string,revision:number,priority:number,content:string}} Lore */
-  const book = createKanataBudgetSelection(4000,
-    (/** @type {Lore} */ a, /** @type {Lore} */ b) => b.priority - a.priority || a.id.localeCompare(b.id, 'en'))
-  for await (const entry of knowledgeEntries(afterId => domains.lorebook.promptCandidates(scope.worldId, scope.instanceId, afterId))) {
-    const { id, revision, priority, content } = entry
-    if (activatesKanataLore(entry, text)) book.offer({ id, revision, priority, content }, estimateKanataContextTokens(content) + 8)
-  }
-  return { memories, lorebook: book.finish() }
+  return { memories, lorebook: await readKanataRoleLore(domains.lorebook, scope.worldId, scope.instanceId, text) }
 }
 /** @param {Domains['chatView']} view @param {Scope} scope @param {Conversation['type']} type
  * @param {string} displayName @param {string} text @param {number} maxSpeakers @param {string} [previous] */

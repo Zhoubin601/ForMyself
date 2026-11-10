@@ -1,10 +1,11 @@
 <script setup>
 import { onBeforeUnmount, ref, shallowRef, watch } from 'vue'
-import { appConfirm, cancelOwnedFeedbackDialog } from '../../services/uiFeedback.js'
+import { appConfirm, appToast, cancelOwnedFeedbackDialog } from '../../services/uiFeedback.js'
 import { registerBackHandler } from '../../services/backNavigation.js'
 import KanataCandidateCardLibrary from './cards/KanataCandidateCardLibrary.vue'
 import KanataCandidateBindings from './KanataCandidateBindings.vue'
 import KanataCandidateGroupEditor from './KanataCandidateGroupEditor.vue'
+import KanataCandidateEventLedger from './KanataCandidateEventLedger.vue'
 import KanataCandidateMemoryDetail from './KanataCandidateMemoryDetail.vue'
 import KanataCandidateLoreEditor from './KanataCandidateLoreEditor.vue'
 import KanataConversationView from './KanataConversationView.vue'
@@ -21,6 +22,8 @@ const modules=[['home','首页'],['mood','心情'],['weight','体重'],['savings
 const world=shallowRef(null),directory=shallowRef(null),page=shallowRef(null),section=ref('conversations')
 const chat=shallowRef(null),actor=shallowRef(null),grants=shallowRef(null)
 const cardEditor=shallowRef(null),bindingEditor=shallowRef(null),groupEditor=shallowRef(null),identityDraft=ref(null),loreEntry=shallowRef(null),eventGraph=shallowRef(null),memoryEntry=shallowRef(null)
+const eventLedger=shallowRef(null), worldDraft=ref(null)
+let creationOptions
 const busy=ref(false),error=ref(''),name=ref('')
 const dialogOwner=Symbol('kanata-workspace')
 let generation=0, owner=null
@@ -29,8 +32,9 @@ function clear(){
   props.worlds.clearSelection()
   owner=null
   world.value=directory.value=page.value=chat.value=actor.value=grants.value=null
-  identityDraft.value=loreEntry.value=eventGraph.value=memoryEntry.value=groupEditor.value=bindingEditor.value=cardEditor.value=null
+  identityDraft.value=loreEntry.value=eventGraph.value=eventLedger.value=memoryEntry.value=groupEditor.value=bindingEditor.value=cardEditor.value=null
   section.value='conversations'
+  worldDraft.value=creationOptions=null
   name.value=error.value=''
   busy.value=false
   cancelOwnedFeedbackDialog(dialogOwner)
@@ -60,6 +64,25 @@ function backToWorlds(){
   clear()
   loadWorlds()
 }
+function beginWorld(){
+  worldDraft.value={name:'',rules:'',displayName:'',background:''}
+  creationOptions=null
+}
+function closeWorld(){
+  worldDraft.value=creationOptions=null
+  if(busy.value){
+    generation++
+    busy.value=false
+  }
+}
+function createWorld(){
+  if(busy.value||!worldDraft.value)return
+  const {name,rules,displayName,background}=worldDraft.value
+  if(!name.trim()||!displayName.trim())return
+  creationOptions??={key:crypto.randomUUID(),now:Date.now(),
+    timeZone:Intl.DateTimeFormat().resolvedOptions().timeZone||'UTC',idFactory:kind=>kind+'-'+crypto.randomUUID()}
+  void read(guard=>props.worlds.createWorld({name,rules,displayName,background},creationOptions,guard),selectWorld)
+}
 function selectWorld(id){
   clear()
   if(!props.lifecycle.isAvailable())return
@@ -82,11 +105,20 @@ function loadSection(next,cursor){
   section.value=next
   page.value=null
   actor.value=grants.value=null
-  identityDraft.value=loreEntry.value=eventGraph.value=memoryEntry.value=groupEditor.value=bindingEditor.value=cardEditor.value=null
+  identityDraft.value=loreEntry.value=eventGraph.value=eventLedger.value=memoryEntry.value=groupEditor.value=bindingEditor.value=cardEditor.value=null
   void read(assertRequest=>selected.list(next,cursor,assertRequest),value=>{page.value=value})
+}
+function openGroupEditor(id=''){
+  groupEditor.value={model:owner,id}
+}
+function groupSaved(id, edited, created){
+  loadSection('conversations')
+  if(edited)appToast(created?'已另建群聊，原群和历史均保留。':'已保存群聊成员。',{tone:'success'})
+  if(edited&&created)openEntry({id})
 }
 function openEntry(entry){
   if(section.value==='conversations'){
+    groupEditor.value=null
     chat.value={runtime:props.createChat(),scope:{worldId:world.value.id},conversationId:entry.id}
   }else if(section.value==='lorebook'){
     loreEntry.value={id:entry.id,model:owner}
@@ -111,7 +143,16 @@ function saveIdentity(){
   const selected=owner,{revision,displayName,background}=identityDraft.value
   void read(assertRequest=>selected.updateIdentity(revision,{displayName,background},assertRequest),()=>{identityDraft.value=null})
 }
+function openEventLedger(id=''){
+  eventGraph.value=null
+  eventLedger.value={id,model:owner}
+}
+function eventSaved(id){
+  loadSection('events')
+  openEventLedger(id)
+}
 function loadEventGraph(id,direction,cursor){
+  eventLedger.value=null
   const selected=owner
   eventGraph.value=null
   void read(assertRequest=>selected.eventGraph(id,direction,cursor,assertRequest),value=>{eventGraph.value={id,direction,...value}})
@@ -146,7 +187,7 @@ const stopGeneration=watch(()=>props.lifecycle.generation.value,()=>{
   if(props.lifecycle.isAvailable())loadWorlds()
 },{flush:'sync'})
 const stopAvailability=watch(()=>props.lifecycle.isAvailable(),available=>{if(available&&!busy.value&&!world.value)loadWorlds()},{immediate:true})
-const unregister=registerBackHandler(()=>{backToWorlds();return true},{priority:605,isActive:()=>Boolean(world.value&&!chat.value)})
+const unregister=registerBackHandler(()=>{if(worldDraft.value)closeWorld();else backToWorlds();return true},{priority:605,isActive:()=>Boolean(worldDraft.value||world.value&&!chat.value)})
 onBeforeUnmount(()=>{
   unregister()
   stopGeneration()
@@ -169,15 +210,24 @@ onBeforeUnmount(()=>{
     <KanataCandidateCardLibrary v-if="cardEditor" :model="cardEditor" @close="cardEditor=null" />
     <KanataCandidateBindings v-else-if="bindingEditor" :model="bindingEditor" @close="bindingEditor=null" />
     <template v-else-if="!world">
-      <button type="button" :disabled="busy||!lifecycle.isAvailable()" @click="cardEditor=worlds.openCards()">全局角色卡库</button>
-      <button type="button" :disabled="busy||!lifecycle.isAvailable()" @click="bindingEditor=worlds.openBindings()">生活角色绑定</button>
-      <ul v-if="directory">
+      <button v-if="!worldDraft" type="button" :disabled="busy||!lifecycle.isAvailable()" @click="beginWorld">新建空白世界</button>
+      <form v-if="worldDraft" class="kanata-form" aria-label="新建空白世界" @input="creationOptions=null" @submit.prevent="createWorld">
+        <label>新世界名称<input v-model="worldDraft.name" maxlength="200" required :disabled="busy" /></label>
+        <label>世界规则<textarea v-model="worldDraft.rules" maxlength="4000" :disabled="busy" /></label>
+        <label>世界内身份<input v-model="worldDraft.displayName" maxlength="200" required :disabled="busy" /></label>
+        <label>身份背景<textarea v-model="worldDraft.background" maxlength="4000" :disabled="busy" /></label>
+        <button type="submit" :disabled="busy">创建世界</button>
+        <button type="button" @click="closeWorld">取消创建</button>
+      </form>
+      <button type="button" :disabled="busy||Boolean(worldDraft)||!lifecycle.isAvailable()" @click="cardEditor=worlds.openCards()">全局角色卡库</button>
+      <button type="button" :disabled="busy||Boolean(worldDraft)||!lifecycle.isAvailable()" @click="bindingEditor=worlds.openBindings()">生活角色绑定</button>
+      <ul v-if="directory&&!worldDraft">
         <li v-for="row in directory.entries" :key="row.id">
           <button type="button" :disabled="busy" @click="selectWorld(row.id)">{{ row.title }}{{ row.archived ? ' · 已归档' : '' }}</button>
         </li>
       </ul>
-      <button v-if="directory?.cursor" type="button" :disabled="busy" @click="loadWorlds(directory.cursor)">更多世界</button>
-      <button type="button" :disabled="busy || !lifecycle.isAvailable()" @click="loadWorlds()">载入世界</button>
+      <button v-if="directory?.cursor&&!worldDraft" type="button" :disabled="busy" @click="loadWorlds(directory.cursor)">更多世界</button>
+      <button v-if="!worldDraft" type="button" :disabled="busy || !lifecycle.isAvailable()" @click="loadWorlds()">载入世界</button>
     </template>
     <template v-else>
       <form v-if="!world.archived" class="kanata-form" @submit.prevent="rename">
@@ -201,17 +251,26 @@ onBeforeUnmount(()=>{
         <li v-for="row in page.entries" :key="row.id" :data-entry-id="row.id">
           <button v-if="['conversations','actors','lorebook','memories','events'].includes(section)" type="button" :disabled="busy" @click="openEntry(row)">{{ row.title }}</button>
           <span v-else>{{ row.title }} · {{ row.status }}</span>
+          <button v-if="section==='conversations'&&row.status==='group'&&!world.archived" type="button"
+            :aria-label="'编辑群聊成员：'+row.title" :disabled="busy" @click="openGroupEditor(row.id)">编辑成员</button>
+          <button v-if="section==='events'" type="button" :aria-label="'查看事件账本：'+row.title"
+            :disabled="busy" @click="openEventLedger(row.id)">查看事件账本</button>
         </li>
       </ul>
       <p v-if="page && !page.entries.length">本页暂无记录。</p>
       <button v-if="page?.cursor" type="button" :disabled="busy" @click="loadSection(section,page.cursor)">载入下一页</button>
-      <button v-if="section==='conversations'" type="button" :disabled="busy||world.archived" @click="groupEditor=owner">新建独立群聊</button>
-      <KanataCandidateGroupEditor v-if="groupEditor" :model="groupEditor" @close="groupEditor=null" @saved="loadSection('conversations')" />
+      <button v-if="section==='conversations'" type="button" :disabled="busy||world.archived" @click="openGroupEditor()">新建独立群聊</button>
+      <KanataCandidateGroupEditor v-if="groupEditor&&!world.archived" :key="groupEditor.id" :model="groupEditor.model"
+        :edit-id="groupEditor.id" @close="groupEditor=null" @saved="groupSaved" />
       <button v-if="section==='lorebook'" type="button" :disabled="busy||world.archived" @click="loreEntry={id:'',model:owner}">新建世界书设定</button>
       <KanataCandidateLoreEditor v-if="loreEntry" :key="loreEntry.id" :world="world" :model="loreEntry.model" :entry-id="loreEntry.id"
         @close="loreEntry=null" @saved="loadSection('lorebook')" />
       <KanataCandidateMemoryDetail v-if="memoryEntry" :key="memoryEntry.id" :memory-id="memoryEntry.id" :model="memoryEntry.model"
-        @close="memoryEntry=null" />
+        :archived="world.archived" @close="memoryEntry=null" @removed="loadSection('memories')"
+        @open-related="id=>openEntry({id})" />
+      <button v-if="section==='events'" type="button" :disabled="busy||world.archived" @click="openEventLedger()">提议事件</button>
+      <KanataCandidateEventLedger v-if="eventLedger" :key="eventLedger.id" :model="eventLedger.model" :event-id="eventLedger.id"
+        :archived="world.archived" @close="eventLedger=null" @saved="eventSaved" />
       <section v-if="eventGraph" aria-label="候选事件因果">
         <button type="button" @click="eventGraph=null">关闭因果详情</button>
         <button type="button" @click="loadEventGraph(eventGraph.id,'cause')">查看前因</button>

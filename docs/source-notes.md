@@ -1225,3 +1225,8 @@ raw/完整需求清单.txt 4.1/4.4/8.3及最新连续执行v3驱动当前实现�
 
 - 补齐任务以远端 M 的 `4191d7fd72723afab35f77bb9b85970f29f0f43f` 为接管入口，`301ad81e851f65cd5b73f883833052e7e5d1a2fb` 为已有实现。阅读原任务、Preflight、设计、验收和 QA。见 [补齐 Preflight](20261109-kanata-sqlite-m4-completion-preflight-v1.md)。
 - 产品语义核对于 2026-11-09。来源为 `raw/彼方 · Kanata 技术设计.txt` 及当前 legacy 实现，包括保留导入格式、来源精确修订和效果独立重放。接管时未提供历史群成员变更权限。2026-11-09 用户在 M4 补齐会话确认方案 1，空群原地编辑，有消息时保留原群并按新名单另建同世界独立会话。详见 [补齐设计](20261109-kanata-sqlite-m4-completion-design-v1.md#群聊成员变更)。
+
+## 2026-11-10 Kanata SQLite M4 续作来源
+
+- [锁定的任务书](https://github.com/Zhoubin601/ForMyself/blob/428b7bcfeffe2722e72b4809a6d1a82b5734aeb1/docs/20261110-kanata-sqlite-m4-continuation-task-v1.md)，核对日 2026-11-10；M 远端初始为同一提交。旧证据来自验收 v2、Completion QA 和保存的原始运行日志。
+- `raw/彼方 · Kanata 技术设计.txt` §3、§6 与 `raw/完整需求清单.txt`：用于核对群聊独立会话、世界书角色权限、记忆来源精确修订及事件归属。空群原地保存、有历史保留原群并另建由续作任务书明确确认。设备资料仅来自仓库合成夹具。

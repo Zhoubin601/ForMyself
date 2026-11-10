@@ -1,4 +1,4 @@
-> **2026-11-10 当前检查点为 M4 BLOCKED，M5 NO。** 当前唯一执行入口为 [M4 剩余缺口续作任务书 v1](20261110-kanata-sqlite-m4-continuation-task-v1.md)，代码接管基线为 `e296b2c5dd082f35b95c943bd838e3fe6a506357`。旧 M4 任务书、验收和 QA 保留为历史证据。生产 canonical 仍为 legacy，普通 Android SQLite 激活位 false。
+> **2026-11-10 当前检查点为 M4 BLOCKED，M5 NO。** 当前唯一执行入口为 [M4 剩余缺口续作任务书 v1](20261110-kanata-sqlite-m4-continuation-task-v1.md)，代码接管的远端基线为 `428b7bcfeffe2722e72b4809a6d1a82b5734aeb1`；增量状态与证据见 [续作验收 v3](20261110-kanata-sqlite-m4-acceptance-v3.md)。旧 M4 任务书、验收和 QA 保留为历史证据。生产 canonical 仍为 legacy，普通 Android SQLite 激活位 false。
 
 # 执行计划
 
@@ -1170,7 +1170,8 @@ P6最终PASS/Go：501 Node/317组件、Web12/6布局、Android17、原生8通过
 
 - [x] 核对 M 分支最新远端基线 e296b2c5dd082f35b95c943bd838e3fe6a506357，并复核 M4 acceptance v2、completion QA、群聊成员变更设计和现有测试。
 - [x] 制定 [M4 剩余缺口续作任务书 v1](20261110-kanata-sqlite-m4-continuation-task-v1.md)，更新接管基线、GROUP-01–05 实施要求、A–G 未完成流程、事件 Effects 有界化、记忆宽关系增长、生命周期、G1–G11 和 R0–R8 执行顺序。
-- [ ] Windows 本地 Codex 按新任务书完成 M4 剩余实现、真实 Android 合成 AVD 验收、两轮全范围自检和 M 分支普通推送。
+- [x] 接续增量已在 Windows API 34 合成 AVD 验证：GROUP-01～05、事件撤销与 Effects、记忆冲突/分享/增长、空白世界及角色世界书预览。
+- [ ] 续完 [验收 v3](20261110-kanata-sqlite-m4-acceptance-v3.md) 所列缺口及两轮全范围自检。
 - [ ] 在 G1–G11 全部 PASS 前，M4 保持 BLOCKED，M5 不放行。
 - 生产 canonical 继续 legacy；普通 Android SQLite 激活位继续 false；M5/M6/M7 不提前实施。
 

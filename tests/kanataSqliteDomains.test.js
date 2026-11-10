@@ -32,7 +32,9 @@ async function setup(t) {
         const result = await run({
           async query(sql, parameters = []) {
             state.queries.push(sql)
-            return db.prepare(sql).all(...parameters)
+            const rows = db.prepare(sql).all(...parameters)
+            state.observeRows?.(sql, rows.length)
+            return rows
           },
           async execute(sql, parameters = []) {
             if (state.failOn && sql.startsWith(state.failOn)) throw new Error('injected statement failure')
@@ -104,6 +106,27 @@ test('M3 world and identity creation are atomic, idempotent and reversibly archi
   assert.equal(competing.find(result => result.status === 'rejected').reason.code, 'KANATA_WORLD_REVISION_CONFLICT')
 })
 
+test('R5 candidate world creation derives owner and retries after failed commit without duplicates',async t=>{
+  const {domains,state,fixture}=await setup(t)
+  const candidate={withDomains:async({assertOwner},action)=>{assertOwner(); return action(domains)}}
+  const runtime=createKanataSqliteWorldRuntime({candidate})
+  const fields={name:'合成空白世界',rules:'合成设定',displayName:'合成身份',background:''}
+  const options={key:'new-world',now:state.now,timeZone:'UTC',idFactory:kind=>kind+'-candidate-created'}
+  state.failCommit=true
+  await assert.rejects(runtime.createWorld(fields,options,()=>{}),/injected commit failure/)
+  state.failCommit=false
+  assert.equal(await domains.worlds.get('world-candidate-created'),null)
+  const id=await runtime.createWorld(fields,options,()=>{})
+  assert.equal(await runtime.createWorld(fields,options,()=>{}),id)
+  const created=await domains.worlds.get(id)
+  assert.equal(created.identity.userId,fixture.userId)
+  assert.equal(created.world.autonomyEnabled,false)
+  assert.equal(created.world.rules,fields.rules)
+  assert.deepEqual((await domains.managementView.list(id,'conversations')).entries,[])
+  runtime.select(id)
+  await assert.rejects(runtime.createWorld(fields,options,()=>{}),/KANATA_WORLD_OWNER_EXPIRED/)
+})
+
 test('M3 character version publication is immutable and instance scope stays isolated', async t => {
   const { domains, fixture, scope, other } = await setup(t)
   const card = fixture.cards[0], oldVersion = fixture.cardVersions.find(version => version.id === card.currentVersionId)
@@ -128,6 +151,34 @@ test('M3 lore visibility is checked before projection and associations roll back
   assert.equal((await domains.lorebook.list(scope.worldId, '', 50, other.id)).entries.length, 0)
   await domains.lorebook.delete(scope.worldId, entry.id, saved.revision)
   assert.equal((await domains.lorebook.list(scope.worldId)).entries.some(row => row.id === entry.id), false)
+})
+
+test('R5 role lore preview reuses prompt activation, scope and ranking across SQLite pages', async t => {
+  const { scope, other, domains, state } = await setup(t)
+  const withDomains = ({ assertOwner }, action) => { assertOwner(); return action(domains) }
+  const runtime = createKanataSqliteWorldRuntime({ candidate:{ withDomains } })
+  const owner = runtime.select(scope.worldId)
+  for (const entry of (await domains.lorebook.list(scope.worldId)).entries) await domains.lorebook.delete(scope.worldId,entry.id,entry.revision)
+  const publicEntry = { worldId:scope.worldId,ownerId:scope.worldId,scope:'world',visibility:'public',
+    knownBy:[],sourceTag:'synthetic',revision:1,enabled:true,activationRule:'always',keys:[],priority:5 }
+  for (let index=0;index<52;index++) {
+    const id='lore-preview-'+String(index).padStart(2,'0')
+    await domains.lorebook.save({...publicEntry,id,content:id},null)
+  }
+  await domains.lorebook.save({...publicEntry,id:'lore-keyword',content:'matched keyword',activationRule:'keyword',
+    keys:['Red'],secondaryKeys:['Town'],caseSensitive:true,priority:100},null)
+  await domains.lorebook.save({...publicEntry,id:'lore-disabled',content:'disabled entry',enabled:false,priority:200},null)
+  const first=await owner.previewLore(scope.instanceId,'Red Town',0,()=>{})
+  assert.equal(first.entries.length,50)
+  assert.equal(first.entries[0].id,'lore-keyword')
+  assert.equal(first.hasMore,true)
+  const second=await owner.previewLore(scope.instanceId,'Red Town',50,()=>{})
+  assert.deepEqual(second.entries.map(row=>row.id),['lore-preview-49','lore-preview-50','lore-preview-51'])
+  assert.equal(second.hasMore,false)
+  assert.equal((await owner.previewLore(scope.instanceId,'red Town',0,()=>{})).entries[0].id,'lore-preview-00')
+  state.queries=[]
+  await assert.rejects(owner.previewLore(other.id,'Red Town',0,()=>{}),/KANATA_CONTEXT_SCOPE_DENIED/)
+  assert.ok(!state.queries.some(sql=>sql.includes('l.content')))
 })
 
 test('M3 remember, read and share reject before sensitive queries and archived source requires exact revision', async t => {
@@ -170,6 +221,68 @@ test('M3 remember, read and share reject before sensitive queries and archived s
   noBodies()
 })
 
+test('R4 candidate share copies exact source metadata without reading body into JS or bypassing the recipient grant',async t=>{
+  const { domains,fixture,messages,state,scope,db,other }=await setup(t)
+  const peer=fixture.instances.find(actor=>actor.worldId===scope.worldId&&actor.id!==scope.instanceId)
+  const grant=await domains.autonomy.setGrant(scope.worldId,scope.instanceId,'todo',2,{read:true,remember:true,share:true})
+  const ref={messageId:'r4-share-msg',revision:1}
+  await messages.insert({...fixture.messages[0],id:ref.messageId,revision:1,lifeSources:[{
+    grantId:grant.id,revision:grant.revision,instanceId:scope.instanceId,moduleId:'todo',fingerprint:'c'.repeat(64),
+  }]})
+  const memory={id:'r4-share-memory',worldId:scope.worldId,ownerType:'character',ownerId:scope.instanceId,layer:'L3',
+    key:'合成分享',content:'合成分享正文',status:'active',revision:1,visibility:'private',sourceRefs:[ref],knownBy:[scope.instanceId]}
+  await domains.memories.save(memory,null)
+  const share=recipient=>domains.memories.shareManaged(scope,memory.id,1,recipient,'share-r4')
+  const sensitive=/SELECT (?:.*\bcontent\b|\*)\s+FROM (?:memories|messages)\b/i
+  state.queries.length=0
+  await assert.rejects(share(peer.id),/LIFE_PERMISSION_DENIED/)
+  await assert.rejects(share(other.id),/SCOPE_DENIED/)
+  assert.ok(!state.queries.some(sql=>sensitive.test(sql)))
+  const peerGrant=await domains.autonomy.setGrant(scope.worldId,peer.id,'todo',null,{read:true,remember:true,share:false})
+  state.queries.length=0
+  state.failCommit=true
+  await assert.rejects(share(peer.id),/injected commit/)
+  state.failCommit=false
+  assert.equal(db.prepare("SELECT count(*) AS total FROM memory_links WHERE kind='shared' AND target_memory_id=?").get(memory.id).total,0)
+  const {id}=await share(peer.id)
+  assert.equal((await share(peer.id)).id,id)
+  assert.ok(!state.queries.some(sql=>sensitive.test(sql)))
+  const recipient={worldId:scope.worldId,instanceId:peer.id}
+  assert.equal((await domains.memories.readDetailFor(recipient,id)).content,memory.content)
+  const page=await domains.memories.sourcePage(recipient,id)
+  assert.deepEqual(page.entries,[ref])
+  await assert.rejects(domains.memories.resolveSource(recipient,id,ref),/CONTEXT_DENIED/)
+  await domains.autonomy.setGrant(scope.worldId,peer.id,'todo',peerGrant.revision,{read:false,remember:false,share:false})
+  state.queries.length=0
+  await assert.rejects(domains.memories.readDetailFor(recipient,id),/CONTEXT_DENIED|LIFE_PERMISSION_DENIED/)
+  assert.ok(!state.queries.some(sql=>sensitive.test(sql)))
+})
+
+test('R4 conflicts page without body, bind the revisions, and retain discarded memories for review', async t=>{
+  const {domains,scope,db}=await setup(t)
+  const base={worldId:scope.worldId,ownerType:'character',ownerId:scope.instanceId,
+    layer:'L3',key:'合成冲突',sourceRefs:[],status:'active',revision:1,visibility:'private'}
+  await domains.memories.save({...base,id:'r4-conflict-old',content:'旧事实'},null)
+  await domains.memories.save({...base,id:'r4-conflict-new',content:'新事实'},null)
+  const preferred='r4-conflict-new', older='r4-conflict-old'
+  const managed=await domains.memories.managedDetailFor(scope,preferred)
+  assert.equal(managed.status,'candidate')
+  assert.equal(managed.canManage,true)
+  await assert.rejects(domains.memories.readDetailFor(scope,preferred),/CONTEXT_DENIED/)
+  const first=await domains.memories.previewConflicts(scope,preferred)
+  assert.equal(first.plan.count,1)
+  assert.deepEqual(first.entries.map(row=>row.id),[older])
+  db.prepare('UPDATE memories SET revision=revision+1 WHERE id=?').run(older)
+  await assert.rejects(domains.memories.confirmConflicts(scope,first.plan,'r4-conflict-command'),/CONFLICT_PREVIEW_STALE/)
+  const second=await domains.memories.previewConflicts(scope,preferred)
+  await domains.memories.confirmConflicts(scope,second.plan,'r4-conflict-command')
+  await domains.memories.confirmConflicts(scope,second.plan,'r4-conflict-command')
+  assert.equal((await domains.memories.readDetailFor(scope,preferred)).content,'新事实')
+  assert.equal((await domains.memories.managedDetailFor(scope,older)).content,'旧事实')
+  assert.deepEqual({...db.prepare('SELECT status,revision FROM memories WHERE id=?').get(older)},{status:'stale',revision:3})
+  assert.equal(db.prepare("SELECT target_memory_id FROM memory_links WHERE memory_id=? AND kind='superseded'").get(older).target_memory_id,preferred)
+})
+
 test('M3 revoke retains independent same-path effects and atomically changes causal descendants', async t => {
   const { domains, state, scope, move } = await setup(t)
   const a = await domains.events.propose(move('位置甲'), 'a')
@@ -187,6 +300,81 @@ test('M3 revoke retains independent same-path effects and atomically changes cau
   await domains.events.revoke(plan)
   assert.equal((await domains.characters.getInstance(scope.worldId, scope.instanceId)).state.location, '位置乙')
   assert.equal((await domains.events.readFor(scope.worldId, b.id, { instanceId: scope.instanceId, group: false })).status, 'committed')
+})
+
+test('R3 folds 1k/10k interleaved same-path Effects in bounded legacy order', async t => {
+  const { db, domains, scope, move, state } = await setup(t)
+  for (const size of [1000, 10000]) {
+    const event = await domains.events.propose(move('撤销时不得覆盖独立效果'), 'revoke-'+size)
+    await domains.events.commit(scope.worldId, event.id, 1)
+    const seed = db.prepare(`INSERT INTO world_events(id,world_id,status,visibility,summary,effective_at,recorded_at,revision,causality)
+      VALUES(?,?,'committed','private','合成',5000,5000,1,'explicit')`)
+    const effect = db.prepare(`INSERT INTO world_effects(id,world_id,event_id,target_type,target_id,target_instance_id,operation,path,value_json,rule_version)
+      VALUES(?,?,?,'instance',?,?,'set','state.location',?,1)`)
+    const ids = Array.from({length:size},(_,index)=>'r'+size+'-'+String(index).padStart(5,'0')+['._','_-','-.',':.','aA','Aa'][index%6])
+    ids.push('r'+size+'-zAz', 'r'+size+'-zaz', 'r'+size+'-z_Z', 'r'+size+'-z-Z')
+    db.exec('BEGIN')
+    for (const id of ids) {
+      seed.run(id,scope.worldId)
+      effect.run('fx-'+id,scope.worldId,id,scope.instanceId,scope.instanceId,JSON.stringify(id))
+    }
+    db.exec('COMMIT')
+    const plan = await domains.events.preview(scope.worldId,event.id)
+    let maxRows=0, replayQueries=0
+    state.observeRows=(sql,rows)=>{
+      if(!sql.includes('FROM world_effects f JOIN world_events e'))return
+      maxRows=Math.max(maxRows,rows)
+      replayQueries++
+    }
+    await domains.events.revoke(plan)
+    state.observeRows=undefined
+    ids.sort((a,b)=>a.localeCompare(b,'en'))
+    assert.equal((await domains.characters.getInstance(scope.worldId,scope.instanceId)).state.location,ids.at(-1))
+    assert.ok(replayQueries>1&&maxRows<=128)
+    // The replay order must come from the bounded SQL cursor, not a JS array of every Effect.
+    assert.ok(state.queries.some(sql=>sql.includes('ORDER BY effective_at,recorded_at,event_key')))
+    t.diagnostic(JSON.stringify({size,activeEffects:ids.length,maxRows,replayQueries}))
+    db.prepare("DELETE FROM world_effects WHERE id LIKE ?").run('fx-r'+size+'-%')
+    db.prepare("DELETE FROM world_events WHERE id LIKE ?").run('r'+size+'-%')
+  }
+})
+
+test('R3 bounded confirmation pages freeze owned Effects and explicit/inferred decisions', async t=>{
+  const {db,domains,move,scope,state}=await setup(t)
+  const world=scope.worldId
+  const events=domains.events
+  const root=await events.propose(move('根'), 'bounded-root')
+  const child=await events.propose({...move('明确后续'),causedByEventIds:[root.id]},'bounded-child')
+  const independent=await events.propose(move('独立后续'),'bounded-independent')
+  const uncertain=await events.propose({...move('推断后续'),causality:'unknown'},'bounded-inferred')
+  for(const event of [root,child,independent,uncertain])await events.commit(world,event.id,1)
+  const open=await events.openRevocation(world,root.id,undefined,1)
+  const plan=open.plan
+  assert.equal(plan.revokeCount,2)
+  assert.equal(plan.uncertainCount,1)
+  assert.ok(!('revokeIds' in plan))
+  assert.deepEqual(open.entries.map(row=>[row.id,row.disposition]),[[root.id,'revoke']])
+  const next=await events.openRevocation(world,root.id,open.cursor,1)
+  assert.deepEqual(next.entries.map(row=>[row.id,row.disposition]),[[child.id,'revoke']])
+  const last=await events.openRevocation(world,root.id,next.cursor,1)
+  assert.deepEqual(last.entries.map(row=>[row.id,row.disposition]),[[uncertain.id,'uncertain']])
+  assert.equal(last.cursor,null)
+  await assert.rejects(events.openRevocation(world,independent.id,open.cursor,1),/CURSOR_STALE/)
+  await assert.rejects(events.confirmRevocation(plan,undefined,'bounded-run'),/DEPENDENCY_UNCERTAIN/)
+  db.prepare("UPDATE world_effects SET value_json=json_quote('合成变化') WHERE event_id=?").run(root.id)
+  await assert.rejects(events.confirmRevocation(plan,'keep-independent','bounded-run'),/PREVIEW_STALE/)
+  const fresh=(await events.openRevocation(world,root.id)).plan
+  state.failCommit=true
+  await assert.rejects(events.confirmRevocation(fresh,'mark-needs-review','bounded-run'),/injected commit/)
+  state.failCommit=false
+  assert.equal(db.prepare('SELECT status FROM world_events WHERE id=?').get(root.id).status,'committed')
+  assert.deepEqual(await events.confirmRevocation(fresh,'mark-needs-review','bounded-run'),{revoked:2,needsReview:1})
+  assert.deepEqual(await events.confirmRevocation(fresh,'mark-needs-review','bounded-run'),{revoked:2,needsReview:1})
+  assert.equal((await domains.characters.getInstance(world,scope.instanceId)).state.location,'独立后续')
+  const audits=await events.revocationAudits(world,root.id)
+  assert.deepEqual(audits.entries.map(row=>[row.previousRevision,row.nextRevision,row.status,row.effectCount]),[[2,3,'revoked',1]])
+  assert.equal(db.prepare('SELECT status FROM world_events WHERE id=?').get(independent.id).status,'committed')
+  assert.equal(db.prepare('SELECT status FROM world_events WHERE id=?').get(uncertain.id).status,'needsReview')
 })
 
 test('M3 window writes event, effects, task and watermark atomically, including failed COMMIT', async t => {
@@ -362,6 +550,43 @@ test('C2 shared memory authorization handles 1k and 10k links without fetching p
   }
 })
 
+test('R4 1k and 10k direct and mixed source graphs stay paged and deny stale tails before content',async t=>{
+  const {db,state,scope,domains,fixture}=await setup(t)
+  const seeds=await import('../docs/qa/kanata-sqlite-m4/completion/fixture.mjs')
+  const {growthSeedSql}=await import('../docs/qa/kanata-sqlite-m4/fixture.mjs')
+  const sender=fixture.identities.find(row=>row.worldId===scope.worldId).id
+  for(const size of [1000,10000]){
+    const memory='r4-mixed-'+size+'-',wide='r4-wide-'+size+'-'
+    db.exec('BEGIN')
+    db.prepare(seeds.memoryRows).run(size,memory,scope.worldId,scope.instanceId,scope.instanceId)
+    db.prepare(seeds.memoryEdges).run(size-1,scope.worldId,memory,memory)
+    db.prepare(growthSeedSql).run(size,wide,scope.worldId,scope.conversationId,sender)
+    db.prepare(seeds.memoryRows).run(0,wide,scope.worldId,scope.instanceId,scope.instanceId)
+    for(const id of [wide+'0',memory+size]){
+      assert.equal(db.prepare(seeds.memoryWideSources).run(id,scope.worldId,scope.conversationId,wide+'-history-*').changes,size)
+    }
+    db.exec('COMMIT')
+    const trace={queries:0,maxRows:0,bodies:0}
+    state.observeRows=(sql,rows)=>{
+      trace.queries++
+      trace.maxRows=Math.max(trace.maxRows,rows)
+      if(/SELECT id,memory_key,content/.test(sql))trace.bodies+=rows
+    }
+    for(const id of [wide+'0',memory+'0']){
+      Object.assign(trace,{queries:0,maxRows:0,bodies:0})
+      assert.equal((await domains.memories.readDetailFor(scope,id)).id,id)
+      assert.equal(trace.bodies,1)
+      assert.equal(trace.maxRows,50)
+      t.diagnostic(JSON.stringify({size,shape:id.startsWith(wide)?'wide':'mixed',...trace}))
+    }
+    const tail=wide+'-history-'+size
+    assert.equal(db.prepare('UPDATE messages SET revision=revision+1 WHERE world_id=? AND id=?').run(scope.worldId,tail).changes,1)
+    trace.bodies=0
+    await assert.rejects(domains.memories.readDetailFor(scope,memory+'0'),/KANATA_SOURCE_STALE/)
+    assert.equal(trace.bodies,0)
+  }
+})
+
 test('C3 new group receipts preserve ordered members and reject a cross-world actor', async t => {
   const { domains, scope, fixture, other } = await setup(t)
   const actors = fixture.instances.filter(row => row.worldId === scope.worldId).slice(0,2).map(row=>row.id).reverse()
@@ -445,4 +670,93 @@ test('C3 binding CAS preserves inherit, explicit none and archived selections', 
   await domains.worlds.archive(scope.worldId,current.world.revision,true)
   assert.equal((await domains.roleBindings.resolve('home')).status,'unavailable')
   assert.deepEqual((await domains.roleBindings.read()).global,binding)
+})
+
+test('GROUP-01–05 membership editing uses history, scope, CAS and an atomic receipt', async t => {
+  const { domains, fixture, messages, scope, state, other } = await setup(t)
+  const [a, b, c] = fixture.instances.filter(row => row.worldId === scope.worldId).map(row => row.id)
+  const repo = domains.conversations
+  const create = async id => {
+    await repo.createGroup(scope.worldId, { title:'合成成员编辑', instanceIds:[a,b] }, { id, commandId:id })
+    return { worldId:scope.worldId, conversationId:id }
+  }
+  const command = (key, hasHistory, ids = [c,a]) => ({
+    expectedRevision:1, expectedHistory:hasHistory, instanceIds:ids, commandId:key, newGroupId:'copy-'+key,
+  })
+  const send = async (target, id, from, reply) => {
+    const message = { ...fixture.messages[from], id, conversationId:target.conversationId, lifeSources:[],
+      ...(reply && { replyToMessageId:reply.id, replyToRevision:reply.revision }) }
+    await messages.insertBatch([message])
+    return message
+  }
+
+  const empty = await create('group-empty')
+  const identity = (await repo.get(empty)).participantIds[0]
+  const beforeEdit = await repo.groupEdit(empty)
+  assert.equal(beforeEdit.hasHistory, false)
+  const firstPage = await repo.groupMemberPage(empty, beforeEdit.revision, 0, 1)
+  assert.deepEqual(firstPage.entries.map(row => row.id), [a])
+  assert.deepEqual((await repo.groupMemberPage(empty, beforeEdit.revision, firstPage.cursor, 1)).entries.map(row => row.id), [b])
+  const inPlace = command('empty-edit', false)
+  assert.deepEqual(await repo.editGroupMembers(empty, inPlace), { id:empty.conversationId, created:false })
+  assert.deepEqual(await repo.editGroupMembers(empty, inPlace), { id:empty.conversationId, created:false })
+  assert.deepEqual((await repo.get(empty)).participantIds, [identity,c,a])
+  assert.equal((await repo.get(empty)).revision, 2)
+  assert.equal(await messages.count(empty), 0)
+  await assert.rejects(repo.groupMemberPage(empty, 1), /REVISION_CONFLICT/)
+  await assert.rejects(repo.editGroupMembers(empty, command('stale-edit', false)), /REVISION_CONFLICT/)
+
+  const prior = await create('group-prior')
+  const root = await send(prior,'member-edit-root',0)
+  const reply = await send(prior,'member-edit-reply',1,root)
+  const before = await repo.get(prior)
+  const history = await messages.recent(prior)
+  assert.equal((await repo.groupEdit(prior)).hasHistory, true)
+  await assert.rejects(repo.editGroupMembers(prior, command('foreign-history', true, [a,other.id])), /INVALID_GROUP_PARTICIPANTS/)
+  const move = command('history-edit', true)
+  const result = await repo.editGroupMembers(prior, move)
+  assert.deepEqual(result, { id:move.newGroupId, created:true })
+  assert.deepEqual(await repo.editGroupMembers(prior, move), result)
+  assert.deepEqual(await repo.get(prior), before)
+  assert.deepEqual(await messages.recent(prior), history)
+  assert.equal((await messages.get(prior,reply.id)).replyToMessageId, root.id)
+  const fresh = { ...prior, conversationId:result.id }
+  assert.deepEqual((await repo.get(fresh)).participantIds, [identity,c,a])
+  assert.equal(await messages.count(fresh), 0)
+  assert.deepEqual((await messages.searchHistory(fresh,root.content)).messages, [])
+  assert.equal(await messages.locate(fresh,root.id), null)
+  assert.equal(await messages.quote(fresh,root.id), null)
+  assert.deepEqual(await messages.historyForSpeaker(fresh,c,10), [])
+  assert.ok((await messages.historyForSpeaker(prior,b,10)).some(row => row.id===root.id))
+
+  const race = await create('group-race')
+  assert.equal((await repo.groupEdit(race)).hasHistory, false)
+  await assert.rejects(repo.editGroupMembers(race, command('foreign-empty', false, [a,other.id])), /INVALID_GROUP_PARTICIPANTS/)
+  const arrival = await send(race,'member-edit-arrival',0)
+  const afterArrival = await repo.get(race)
+  const confirm = command('race-edit', false)
+  await assert.rejects(repo.editGroupMembers(race, confirm), /KANATA_GROUP_HISTORY_CHANGED/)
+  assert.deepEqual(await repo.get(race), afterArrival)
+  assert.equal(await repo.get({ ...race, conversationId:confirm.newGroupId }), null)
+
+  await domains.memories.archiveSource(race.worldId, { messageId:arrival.id, revision:arrival.revision })
+  assert.equal((await repo.groupEdit(race)).hasHistory, true)
+  const confirmed = { ...confirm, expectedHistory:true }
+  state.failOn='INSERT INTO domain_command_receipts'
+  await assert.rejects(repo.editGroupMembers(race, confirmed), /injected statement failure/)
+  state.failOn=''
+  state.failCommit=true
+  await assert.rejects(repo.editGroupMembers(race, confirmed), /injected commit failure/)
+  state.failCommit=false
+  assert.equal(await repo.get({ ...race, conversationId:confirm.newGroupId }), null)
+  assert.deepEqual(await repo.get(race), afterArrival)
+  await repo.editGroupMembers(race, confirmed)
+  await repo.editGroupMembers(race, confirmed)
+  await assert.rejects(repo.editGroupMembers(race, { ...confirmed, instanceIds:[a,c] }), /IDEMPOTENCY_CONFLICT/)
+
+  const deleted = await create('group-deleted')
+  const tombstone = await send(deleted, 'member-edit-deleted', 0)
+  await messages.revise(deleted,tombstone.id,tombstone.revision,{content:'',deleted:true})
+  assert.equal((await repo.groupEdit(deleted)).hasHistory, true)
+  await assert.rejects(repo.editGroupMembers(deleted, command('deleted-edit', false)), /HISTORY_CHANGED/)
 })

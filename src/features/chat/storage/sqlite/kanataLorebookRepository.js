@@ -3,6 +3,7 @@ import { cloneKanataJson, validateId } from '../../domain/kanataValidation.js'
 import { domainTable, executeOnce, found, writeOne } from './kanataDomainRows.js'
 import { nonemptyText, pageLimit, requireSqliteValue as need, safeInteger } from './kanataRepositoryValues.js'
 import { assertWritableWorld } from './kanataWorldRepository.js'
+import { assertActor } from './kanataProvenance.js'
 
 /** @typedef {import('../../domain/kanataTypes').LorebookEntry} Entry */
 /** @typedef {Entry & {ownerInstanceId?:string}} StoredEntry */
@@ -77,6 +78,7 @@ export function createKanataLorebookRepository(operation) {
       validateId(worldId, 'worldId')
       validateId(actorId, 'instanceId')
       if (afterId) validateId(afterId, 'loreCursor')
+      await assertActor(tx, worldId, actorId)
       const rows = await tx.query(promptVisible, [worldId, actorId, afterId, pageLimit(limit) + 1])
       const result = rows.slice(0, limit).map(row => ({
         id: String(row.id), content: String(row.content), priority: Number(row.priority), revision: Number(row.revision),

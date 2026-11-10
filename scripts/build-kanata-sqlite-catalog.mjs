@@ -17,6 +17,7 @@ import { characterQueries, characterWrites } from '../src/features/chat/storage/
 import { lorebookQueries, lorebookWrites } from '../src/features/chat/storage/sqlite/kanataLorebookRepository.js'
 import { provenanceQueries } from '../src/features/chat/storage/sqlite/kanataProvenance.js'
 import { memoryQueries, memoryWrites } from '../src/features/chat/storage/sqlite/kanataMemoryRepository.js'
+import { eventRevocationQueries, eventRevocationWrites } from '../src/features/chat/storage/sqlite/kanataEventRevocation.js'
 import { eventQueries, eventWrites } from '../src/features/chat/storage/sqlite/kanataEventRepository.js'
 import { autonomyQueries, autonomyWrites } from '../src/features/chat/storage/sqlite/kanataAutonomyRepository.js'
 import { usageQueries, usageWrites } from '../src/features/chat/storage/sqlite/kanataUsageRepository.js'
@@ -56,15 +57,15 @@ add('query', 'business', [...Object.values(messageQueries), ...Object.values(con
 add('write', 'business', [...Object.values(messageWrites), ...Object.values(conversationWrites),
   ...Object.values(dependentWrites), ...Object.values(updateEffectValue), ...Object.values(deferredReplyWrites)])
 add('query', 'business', [receiptQuery, ...worldQueries, ...characterQueries, ...lorebookQueries, ...provenanceQueries,
-  ...memoryQueries, ...eventQueries, ...autonomyQueries, ...usageQueries, ...chatViewQueries, ...managementViewQueries, ...bindingQueries])
+  ...memoryQueries, ...eventQueries, ...eventRevocationQueries, ...autonomyQueries, ...usageQueries, ...chatViewQueries, ...managementViewQueries, ...bindingQueries])
 add('write', 'business', [receiptWrite, ...worldWrites, ...characterWrites, ...lorebookWrites, ...memoryWrites,
-  ...eventWrites, ...autonomyWrites, ...usageWrites, ...bindingWrites])
+  ...eventWrites, ...eventRevocationWrites, ...autonomyWrites, ...usageWrites, ...bindingWrites])
 if (process.argv.includes('--synthetic')) {
   const { m2FixtureCommands, auditInspection, fixtureWrites, futureSchema } = await import('../tests/helpers/kanataSqliteM2Fixture.js')
   const { growthSeedSql } = await import('../docs/qa/kanata-sqlite-m4/fixture.mjs')
   add('query', 'business', Object.values(auditInspection))
-  const { memoryRows, memoryEdges, eventRows, eventEdges } = await import('../docs/qa/kanata-sqlite-m4/completion/fixture.mjs')
-  add('write', 'business', [growthSeedSql, memoryRows, memoryEdges, eventRows, eventEdges])
+  const { memoryRows, memoryEdges, memoryWideSources, eventRows, eventEdges, replayEventRows, replayEffectRows } = await import('../docs/qa/kanata-sqlite-m4/completion/fixture.mjs')
+  add('write', 'business', [growthSeedSql, memoryRows, memoryEdges, memoryWideSources, eventRows, eventEdges, replayEventRows, replayEffectRows])
   add('write', 'business', [...m2FixtureCommands().map(command => command.sql), ...Object.values(fixtureWrites)])
   add('ddl', 'business', [futureSchema])
 }

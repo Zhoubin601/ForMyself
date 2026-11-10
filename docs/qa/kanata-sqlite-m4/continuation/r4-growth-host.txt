@@ -1,0 +1,16 @@
+(node:35872) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ R4 1k and 10k direct and mixed source graphs stay paged and deny stale tails before content (12335.1233ms)
+ℹ {"size":1000,"shape":"wide","queries":28,"maxRows":50,"bodies":1}
+ℹ {"size":1000,"shape":"mixed","queries":28,"maxRows":50,"bodies":1}
+ℹ {"size":10000,"shape":"wide","queries":208,"maxRows":50,"bodies":1}
+ℹ {"size":10000,"shape":"mixed","queries":208,"maxRows":50,"bodies":1}
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 12578.8001
+exit=0
