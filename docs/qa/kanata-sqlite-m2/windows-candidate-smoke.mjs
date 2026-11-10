@@ -51,6 +51,15 @@ async function attach() {
       socket.addEventListener('error', reject, { once: true })
     })
   } finally { clearTimeout(timer) }
+  if (process.argv.includes('--mr1-fanout') || process.argv.includes('--mr1-verify') || process.argv.includes('--m4-completion')) {
+    socket.addEventListener('message', event => {
+      const message = JSON.parse(event.data)
+      if (message.method !== 'Runtime.consoleAPICalled') return
+      const [tag, payload] = message.params.args.map(arg=>arg.value)
+      if (typeof tag === 'string' && tag.startsWith('MR1_')) console.log(tag, payload)
+    })
+    socket.send(JSON.stringify({ id: -1, method: 'Runtime.enable' }))
+  }
   let id = 0
   return (expression, timeoutMs = 90000) => new Promise((resolve, reject) => {
     const request = ++id
@@ -110,7 +119,45 @@ try {
   let password
   try { password = JSON.stringify(bytes.toString('base64')) }
   finally { bytes.fill(0) }
-  if (process.argv.includes('--repository') || process.argv.includes('--full')) {
+  if (process.argv.includes('--mr1-fanout') || process.argv.includes('--mr1-verify')) {
+    const verify=process.argv.includes('--mr1-verify')
+    const fixture = m2Fixture()
+    const { worldId } = fixture.messages[0]
+    for (const size of [1000,10000]) {
+      const scope={worldId,instanceId:fixture.instances.find(actor=>actor.worldId===worldId).id}
+      const input = { scope,verify,commands:size===1000?m2FixtureCommands(fixture):undefined }
+      const result = await evaluate(`window.mr1QaFanout(${password}, ${JSON.stringify(input)}, ${size})`, 420000)
+      console.log(JSON.stringify({ mr1:result },null,2))
+      assert.equal(result.error,undefined)
+      assert.match(result.health.cipher,/^4\.17\.0/)
+      if (!verify) {
+        assert.equal(result.confirmed.revoked,size+1)
+        continue
+      }
+      assert.equal(await evaluate(`window.mr1QaArmFanout(${password}, ${JSON.stringify(result.plan)}, ${size})`),'armed')
+      const deadline=Date.now()+420000
+      let state
+      do {
+        await delay(200)
+        state=await evaluate('window.m2QaCrashState()')
+      } while (state==='idle'&&Date.now()<deadline)
+      assert.equal(state,'mr1-first-batch-uncommitted')
+      const oldPid=pid
+      adb('shell','run-as',packageName,'kill','-9',oldPid)
+      await delay(300)
+      assert.equal(adb('shell','pidof '+packageName+' || true'),'')
+      detach()
+      adb('shell','am','start','-W','-n',packageName+'/com.yubin.formyself.MainActivity')
+      await delay(600)
+      evaluate=await attach()
+      assert.notEqual(pid,oldPid)
+      assert.equal(await initialize(evaluate),true)
+      const recovered=await evaluate(`window.mr1QaResumeFanout(${password}, ${JSON.stringify(scope)}, ${JSON.stringify(result.plan)}, ${size})`,420000)
+      console.log(JSON.stringify({mr1Recovery:{oldPid,newPid:pid,...recovered}},null,2))
+      assert.equal(recovered.error,undefined)
+      assert.equal(recovered.confirmed.revoked,size+1)
+    }
+  } else if (process.argv.includes('--repository') || process.argv.includes('--full')) {
     const fixture = m2Fixture()
     const input = {
       commands: m2FixtureCommands(fixture), inspection: auditInspection, deferredCommit: fixtureWrites.deferredCommit,

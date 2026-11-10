@@ -6,6 +6,7 @@ import android.system.ErrnoException;
 import android.system.Os;
 import android.system.OsConstants;
 import android.util.AtomicFile;
+import android.util.Log;
 import android.util.Xml;
 
 import com.getcapacitor.JSArray;
@@ -417,6 +418,13 @@ public final class KanataSqlitePlugin extends Plugin {
         require(transaction != null && transaction.equals(call.getString("transaction")), "TRANSACTION_BUSY");
     }
 
+    private void profileStatement(PluginCall call, long start, int rows) {
+        if (BuildConfig.KANATA_M2_SYNTHETIC && Log.isLoggable("KanataSqliteQA", Log.DEBUG)) {
+            Log.d("KanataSqliteQA", call.getString("statement", "COMMIT")
+                + " elapsedNs=" + (SystemClock.elapsedRealtimeNanos() - start) + " rows=" + rows);
+        }
+    }
+
     @PluginMethod public void commit(PluginCall call) {
         dispatch(call, "TRANSACTION_FAILED", requestedEpoch -> {
             authorizeTransaction(call, requestedEpoch);
@@ -426,6 +434,7 @@ public final class KanataSqlitePlugin extends Plugin {
             }
             database.setTransactionSuccessful();
             transaction = null;
+            long start = SystemClock.elapsedRealtimeNanos();
             try { database.endTransaction(); }
             catch (RuntimeException failure) {
                 // SQLCipher 4.17 ends the Java session and returns its writer to the pool
@@ -439,6 +448,7 @@ public final class KanataSqlitePlugin extends Plugin {
                 }
                 throw new Refusal("TRANSACTION_FAILED");
             }
+            profileStatement(call, start, 0);
             front(requestedEpoch, "LEASE_REVOKED");
             call.resolve();
         });
@@ -504,6 +514,7 @@ public final class KanataSqlitePlugin extends Plugin {
             try {
                 JSONObject entry = statement(call, true);
                 String sql = entry.getString("sql");
+                long start = SystemClock.elapsedRealtimeNanos();
                 JSArray rows = new JSArray();
                 try (Cursor cursor = database.rawQuery(sql, parameters(call, entry.getInt("arity")))) {
                     String[] names = cursor.getColumnNames();
@@ -525,6 +536,7 @@ public final class KanataSqlitePlugin extends Plugin {
                 }
                 front(requestedEpoch, "LEASE_REVOKED");
                 successful = true;
+                profileStatement(call, start, rows.length());
                 call.resolve(new JSObject().put("rows", rows));
             } finally { if (!successful) transactionFailed = true; }
         });
@@ -538,6 +550,7 @@ public final class KanataSqlitePlugin extends Plugin {
                 JSONObject entry = statement(call, false);
                 String sql = entry.getString("sql");
                 Object[] args = parameters(call, entry.getInt("arity"));
+                long start = SystemClock.elapsedRealtimeNanos();
                 int affected = 0;
                 if ("ddl".equals(entry.getString("mode"))) {
                     require(args.length == 0, "STATEMENT_DENIED");
@@ -550,6 +563,7 @@ public final class KanataSqlitePlugin extends Plugin {
                 }
                 front(requestedEpoch, "LEASE_REVOKED");
                 successful = true;
+                profileStatement(call, start, affected);
                 call.resolve(new JSObject().put("affectedRows", affected));
             } finally { if (!successful) transactionFailed = true; }
         });

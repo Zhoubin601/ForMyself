@@ -63,7 +63,7 @@ async function setup(t) {
   const scope = { worldId: instance.worldId, instanceId: instance.id, conversationId: conversation.id }
   const move = location => ({ worldId: scope.worldId, participantIds: [instance.id], sourceRefs: [], causedByEventIds: [],
     visibility: 'private', summary: '合成移动', effectiveAt: 1500, kind: 'move', action: { instanceId: instance.id, location } })
-  return { db, state, fixture, domains, messages, instance, other, scope, move }
+  return { db, state, fixture, domains, messages, instance, other, scope, move, operation }
 }
 
 test('M3 only appends to the frozen 001–003 catalog', () => {
@@ -479,13 +479,16 @@ test('R3 bounded confirmation pages freeze owned Effects and explicit/inferred d
 })
 
 test('M4 wide event confirmation covers 1k and 10k exact descendants and rolls back between batches',async t=>{
-  const {db,domains,scope,state}=await setup(t)
-  const {eventRows,eventFanout}=await import('../docs/qa/kanata-sqlite-m4/completion/fixture.mjs')
-  const {worldId}=scope
+  const {db,domains,scope,state,move}=await setup(t)
+  const {eventRows,eventFanout,replayEffectRows,fanoutAuditInspection}=await import('../docs/qa/kanata-sqlite-m4/completion/fixture.mjs')
+  const {worldId,instanceId}=scope
+  const retained=await domains.events.propose(move('保留独立位置'),'mr1-retained')
+  await domains.events.commit(worldId,retained.id,retained.revision)
   for(const size of [1000,10000]){
     const prefix='event-fanout-'+size+'-',rootId=prefix+size
     db.prepare(eventRows).run(size,prefix,worldId)
     db.prepare(eventFanout).run(size-1,worldId,prefix,rootId)
+    db.prepare(replayEffectRows).run(size,prefix+'effect-',worldId,prefix,instanceId,instanceId)
     let maxRows=0
     state.observeRows=(_sql,rows)=>{maxRows=Math.max(maxRows,rows)}
     const first=await domains.events.openRevocation(worldId,rootId)
@@ -508,11 +511,31 @@ test('M4 wide event confirmation covers 1k and 10k exact descendants and rolls b
     assert.deepEqual(await confirm(),{revoked:size+1,needsReview:0})
     assert.deepEqual(await confirm(),{revoked:size+1,needsReview:0})
     assert.equal(revoked.get(worldId,prefix+'*').total,size+1)
-    const audit=db.prepare("SELECT count(*) AS total FROM event_audits WHERE world_id=? AND event_id GLOB ?")
-    assert.equal(audit.get(worldId,prefix+'*').total,size+1)
+    const { events, original, revoked:confirmedRows, audits, exactAudits }=db.prepare(fanoutAuditInspection).get(worldId,prefix)
+    assert.deepEqual({events,original,confirmedRows,audits,exactAudits},
+      {events:size+1,original:0,confirmedRows:size+1,audits:size+1,exactAudits:size+1})
+    assert.equal((await domains.characters.getInstance(worldId,instanceId)).state.location,'保留独立位置')
     assert.ok(maxRows<=128)
     t.diagnostic(JSON.stringify({size,confirmed:size+1,maxRows,rollbackAfterFirstBatch:true,replayedReceipt:true}))
   }
+})
+
+test('M4 synthetic wide fixture preserves every edge and restores the runtime planner after seeding',async t=>{
+  const {db,scope,operation}=await setup(t)
+  const {eventRows,eventEdges,seedFanoutLinks}=await import('../docs/qa/kanata-sqlite-m4/completion/fixture.mjs')
+  const {worldId}=scope
+  const deep='mr1-deep-', wide='mr1-wide-', size=10000, root=wide+size
+  db.prepare(eventRows).run(size,deep,worldId)
+  db.prepare(eventEdges).run(size-1,worldId,deep,deep)
+  db.prepare(eventRows).run(size,wide,worldId)
+  const result=await operation.transaction(tx=>seedFanoutLinks(tx,size,worldId,wide,root))
+  assert.equal(result.affectedRows,size)
+  assert.deepEqual(result.restored,result.before)
+  assert.match(result.analyzed.join(' '),/world_id=\? AND event_id=\?/)
+  assert.equal(db.prepare("SELECT count(*) AS total FROM sqlite_stat1 WHERE tbl='event_causes'").get().total,0)
+  assert.equal(db.prepare('SELECT count(*) AS total FROM event_causes WHERE world_id=? AND cause_event_id=?').get(worldId,root).total,size)
+  assert.throws(()=>db.prepare('INSERT INTO event_causes(world_id,event_id,cause_event_id) VALUES(?,?,?)').run(worldId,root,wide+'0'),
+    /KANATA_EVENT_CAUSAL_CYCLE/)
 })
 
 test('M3 window writes event, effects, task and watermark atomically, including failed COMMIT', async t => {

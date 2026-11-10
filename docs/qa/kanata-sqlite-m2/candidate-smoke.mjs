@@ -1,6 +1,7 @@
-import { memoryRows, memoryEdges, memoryWideSources, eventRows, eventEdges, eventFanout, replayEventRows, replayEffectRows } from '../kanata-sqlite-m4/completion/fixture.mjs'
+import { memoryRows, memoryEdges, memoryWideSources, eventRows, eventEdges, seedFanoutLinks, replayEventRows, replayEffectRows, fanoutAuditInspection } from '../kanata-sqlite-m4/completion/fixture.mjs'
 import { growthSeedSql } from '../kanata-sqlite-m4/fixture.mjs'
-import { receiptWrite } from '../../../src/features/chat/storage/sqlite/kanataDomainRows.js'
+import { eventRevocationQueries, eventRevocationWrites } from '../../../src/features/chat/storage/sqlite/kanataEventRevocation.js'
+import { receiptQuery, receiptWrite } from '../../../src/features/chat/storage/sqlite/kanataDomainRows.js'
 import { sha256Text } from '../../../src/shared/crypto/sha256Text.js'
 import { restoreState } from '../../../src/platform/storage/restoreState.js'
 import { runM3DeviceScenario } from '../kanata-sqlite-m3/device-scenario.mjs'
@@ -40,15 +41,38 @@ const registry = createProtectedModuleRegistry([{
 const access = createProtectedAccessStore(registry, 'm2QaAccess')()
 const bridge = registerPlugin('KanataSqlite')
 let trace
+let eventProfile
+const profileNames = new Map([...eventRevocationQueries, ...eventRevocationWrites].map((sql, index) =>
+  [sha256Text(sql), ['root', 'projected', 'selectionBatch', 'effectProof', 'baselineProof', 'completedEffects',
+    'auditHeaders', 'auditEffectHeader', 'auditEffectPage', 'statusUpdate', 'writeAudit', 'staleMemories'][index]]))
+async function profileBridge(name, command, action) {
+  if (!eventProfile) return action(command)
+  const label = profileNames.get(command.statement) ?? command.statement ?? name
+  const arity = command.parameters?.length ?? 0
+  const start = performance.now()
+  console.info('MR1_START', JSON.stringify({ phase: eventProfile, name: label, arity,
+    parameterChars: command.parameters?.reduce((total, value) => total + String(value).length, 0) ?? 0 }))
+  const result = await action(command)
+  console.info('MR1_END', JSON.stringify({ phase: eventProfile, name: label,
+    elapsedMs: Math.round(performance.now() - start), rows: result?.rows?.length ?? result?.affectedRows ?? 0 }))
+  return result
+}
 let groupCommitFault
 let suspendCommit = false
+let fanoutCrashArmed = false
 let crashState = 'idle'
 const candidate = createKanataSqliteCandidate({
   syntheticOnly: true, auth, access, bridge: {
-    prepare: bridge.prepare, unlock: bridge.unlock, begin: bridge.begin,
+    prepare: bridge.prepare, unlock: bridge.unlock, begin: options => profileBridge("begin", options, bridge.begin),
     async execute(command) {
       if (trace) trace.writes++
-      const result = await bridge.execute(command)
+      const result = await profileBridge("execute", command, bridge.execute)
+      if (fanoutCrashArmed && command.statement === sha256Text(eventRevocationWrites[1])) {
+        check(result.affectedRows===128, 'MR1_FIRST_AUDIT_BATCH')
+        fanoutCrashArmed=false
+        crashState='mr1-first-batch-uncommitted'
+        return new Promise(()=>{})
+      }
       if (groupCommitFault && command.statement===sha256Text(receiptWrite) && command.parameters[0].includes('group:edit-members')) {
         const statement = groupCommitFault
         groupCommitFault = undefined
@@ -57,7 +81,7 @@ const candidate = createKanataSqliteCandidate({
       return result
     },
     async query(command) {
-      const result = await bridge.query(command)
+      const result = await profileBridge("query", command, bridge.query)
       if (trace) {
         trace.queries++
         trace.maxRows = Math.max(trace.maxRows, result.rows.length)
@@ -67,7 +91,7 @@ const candidate = createKanataSqliteCandidate({
     },
     close: bridge.close, health: bridge.health, rollback: bridge.rollback, completeOpen: bridge.completeOpen,
     commit: options => {
-      if (!suspendCommit) return bridge.commit(options)
+      if (!suspendCommit) return profileBridge("commit", options, bridge.commit)
       crashState = 'uncommitted-write-and-audit'
       return new Promise(() => {})
     },
@@ -1111,6 +1135,133 @@ window.m4QaWorkspace = async (password, { worldId, worldName, conversationId, ac
     await candidate.release()
   }
 }
+window.mr1QaFanout = async (password, { commands, scope, verify }, size) => {
+  check([1000,10000].includes(size), 'M4_GROWTH_SIZE')
+  session(password)
+  const prefix='mr1-fanout-'+size+'-', root=prefix+size
+  const commandId=prefix+'confirm'
+  const phases={}
+  const measure=async (phase, action)=>{
+    eventProfile=phase
+    trace={queries:0,writes:0,maxRows:0}
+    const start=performance.now()
+    try { return await action() }
+    finally {
+      phases[phase]={...trace,elapsedMs:Math.round(performance.now()-start)}
+      console.info('MR1_PHASE', JSON.stringify({size,phase,...phases[phase]}))
+      eventProfile=undefined
+      trace=undefined
+    }
+  }
+  try {
+    const health=await candidate.run({create:!!commands}, async operation=>{
+      if (commands) await operation.transaction(async tx=>{
+        for (const command of commands) await tx.execute(command.sql,command.parameters)
+      })
+      return operation.health()
+    })
+    if (verify && commands) {
+      await candidate.withDomains({},async domains=>{
+        const retained=await domains.events.propose({worldId:scope.worldId,participantIds:[scope.instanceId],
+          sourceRefs:[],causedByEventIds:[],visibility:'private',summary:'合成保留位置',effectiveAt:0,
+          kind:'move',action:{instanceId:scope.instanceId,location:'合成保留位置'}},'mr1-retained-effect')
+        await domains.events.commit(scope.worldId,retained.id,retained.revision)
+      })
+    }
+    await measure('seed',()=>candidate.run({},operation=>operation.transaction(async tx=>{
+      check((await tx.execute(eventRows,[size,prefix,scope.worldId])).affectedRows===size+1,'M4_FANOUT_SEED')
+      const links=await seedFanoutLinks(tx,size,scope.worldId,prefix,root)
+      console.info('MR1_SEED_PLAN',JSON.stringify({size,...links}))
+      check(links.affectedRows===size,'M4_FANOUT_LINKS')
+      if (verify) {
+        check((await tx.execute(replayEffectRows,[size,prefix+'effect-',scope.worldId,prefix,scope.instanceId,scope.instanceId])).affectedRows===size+1,
+          'MR1_OWNED_EFFECTS_SEED')
+      }
+    })))
+    const plans=await candidate.run({},operation=>operation.transaction(async tx=>{
+      const statements=[...eventRevocationQueries.slice(1,6),...eventRevocationWrites]
+      const bindings=[[scope.worldId,root,'',51],...Array.from({length:3},()=>[scope.worldId,root,'']),
+        [scope.worldId,'signature','','','',''],[scope.worldId,'[]','signature'],[scope.worldId,'[]','signature'],
+        [scope.worldId,'signature']]
+      const result={}
+      for(const [index,sql] of statements.entries()){
+        const rows=await tx.query('EXPLAIN QUERY PLAN '+sql,bindings[index])
+        result[profileNames.get(sha256Text(sql))]=rows.map(row=>row.detail)
+      }
+      return result
+    }))
+    console.info('MR1_PLANS', JSON.stringify({size,plans}))
+    const first=await measure('preview',()=>candidate.withDomains({},domains=>domains.events.openRevocation(scope.worldId,root)))
+    check(first.plan.revokeCount===size+1&&first.plan.uncertainCount===0&&first.entries.length===50,'M4_FANOUT_PREVIEW')
+    const second=await measure('continuation',()=>candidate.withDomains({},domains=>domains.events.openRevocation(scope.worldId,root,first.cursor)))
+    check(second.entries[0].id>first.entries.at(-1).id&&second.plan.signature===first.plan.signature,'M4_FANOUT_CONTINUATION')
+    const execute=()=>candidate.withDomains({},domains=>domains.events.confirmRevocation(first.plan,'keep-independent',commandId))
+    if (verify) return { size,health,plans,phases,plan:first.plan }
+    const confirmed=await measure('confirmation',execute)
+    check(confirmed.revoked===size+1&&confirmed.needsReview===0&&phases.confirmation.maxRows<=128,'M4_FANOUT_EXECUTION')
+    const replay=await measure('idempotent',execute)
+    check(replay.revoked===confirmed.revoked&&replay.needsReview===confirmed.needsReview,'M4_FANOUT_RETRY')
+    const audit=await candidate.withDomains({},domains=>domains.events.revocationAudits(scope.worldId,root))
+    check(audit.entries.length===1&&audit.entries[0].status==='revoked','M4_FANOUT_AUDIT')
+    return { size,health,plans,phases,confirmed,replay }
+  } catch(error) {
+    return { size,phases,error:error.code??error.message }
+  } finally {
+    auth.expireSession()
+    await candidate.release()
+  }
+}
+
+window.mr1QaArmFanout = (password, plan, size) => {
+  session(password)
+  crashState='idle'
+  fanoutCrashArmed=true
+  void candidate.withDomains({}, domains => domains.events.confirmRevocation(plan,'keep-independent','mr1-fanout-'+size+'-confirm'))
+    .catch(error=>{crashState=error.code??error.message})
+  return 'armed'
+}
+
+window.mr1QaResumeFanout = async (password, scope, plan, size) => {
+  session(password)
+  const prefix='mr1-fanout-'+size+'-', commandId=prefix+'confirm'
+  const receiptKey=JSON.stringify(['event:revoke-confirmed',scope.worldId,plan.eventId,commandId])
+  const inspect=()=>candidate.run({},operation=>operation.transaction(async tx=>{
+    const [audit]=await tx.query(fanoutAuditInspection,[scope.worldId,prefix])
+    const [receipt]=await tx.query(receiptQuery,[receiptKey])
+    return {audit,receipt}
+  }))
+  try {
+    const before=await inspect()
+    check(before.audit.events===size+1&&before.audit.original===size+1&&before.audit.audits===0&&!before.receipt,'MR1_CRASH_ROLLBACK')
+    const execute=()=>candidate.withDomains({}, domains => domains.events.confirmRevocation(plan,'keep-independent',commandId))
+    trace={queries:0,writes:0,maxRows:0}
+    eventProfile='resume-confirmation'
+    const start=performance.now()
+    const confirmed=await execute()
+    const confirmation={...trace,elapsedMs:Math.round(performance.now()-start)}
+    eventProfile=undefined
+    trace=undefined
+    check(confirmed.revoked===size+1&&confirmed.needsReview===0&&confirmation.maxRows<=128,'MR1_RESUME_COUNT')
+    const after=await inspect()
+    check(after.audit.revoked===size+1&&after.audit.audits===size+1&&after.audit.exactAudits===size+1&&after.receipt?.result_id===plan.eventId,
+      'MR1_PERSISTED_AUDITS_RECEIPT')
+    const replay=await execute()
+    const final=await inspect()
+    check(replay.revoked===confirmed.revoked&&replay.needsReview===confirmed.needsReview&&JSON.stringify(after)===JSON.stringify(final),
+      'MR1_IDEMPOTENT_AUDITS_RECEIPT')
+    const actor=await candidate.withDomains({},domains=>domains.characters.getInstance(scope.worldId,scope.instanceId))
+    check(actor.state.location==='合成保留位置','MR1_FINAL_STATE')
+    return { size,confirmed,confirmation,crashRollback:true,audits:after.audit,persistedReceipt:true,idempotent:true }
+  } catch(error) {
+    return { size,error:error.code??error.message }
+  } finally {
+    eventProfile=undefined
+    trace=undefined
+    auth.expireSession()
+    await candidate.release()
+  }
+}
+
 window.m4QaCompletion = async (password, scope, requestedSize) => {
   session(password)
   const samples = []
@@ -1118,6 +1269,8 @@ window.m4QaCompletion = async (password, scope, requestedSize) => {
     check([1000,10000].includes(requestedSize),'M4_GROWTH_SIZE')
     for (const size of [requestedSize]) {
       const started=performance.now()
+      const stage=name=>console.info('MR1_STAGE',JSON.stringify({size,name,elapsedMs:Math.round(performance.now()-started)}))
+      stage('start')
       const memory = 'm4c-memory-' + size + '-', event = 'm4c-event-' + size + '-'
       await candidate.run({}, operation => operation.transaction(async tx => {
         check((await tx.execute(memoryRows, [size, memory, scope.worldId, scope.instanceId, scope.instanceId])).affectedRows === size+1, 'C2_MEMORY_SEED')
@@ -1125,11 +1278,13 @@ window.m4QaCompletion = async (password, scope, requestedSize) => {
         check((await tx.execute(eventRows, [size, event, scope.worldId])).affectedRows === size+1, 'C2_EVENT_SEED')
         check((await tx.execute(eventEdges, [size-1, scope.worldId, event, event])).affectedRows === size, 'C2_EVENT_EDGE_SEED')
       }))
+      stage('deep-chain-seeded')
       trace = { queries:0, writes:0, maxRows:0 }
       const item = await candidate.withDomains({}, domains => domains.memories.readDetailFor(scope, memory+'0'))
       check(item?.id === memory+'0', 'C2_MEMORY_AUTHORIZATION')
       const memoryTrace = {...trace}
       trace=undefined
+      stage('deep-memory-read')
       const wide='m4c-wide-'+size+'-'
       await candidate.run({},operation=>operation.transaction(async tx=>{
         check((await tx.execute(growthSeedSql,[size,wide,scope.worldId,scope.conversationId,scope.senderId])).affectedRows===size,'R4_SOURCE_SEED')
@@ -1146,6 +1301,7 @@ window.m4QaCompletion = async (password, scope, requestedSize) => {
       const mixedResult=await candidate.withDomains({},domains=>domains.memories.readDetailFor(scope,memory+'0'))
       check(mixedResult.id===memory+'0'&&trace.maxRows<=50,'R4_MIXED_AUTH')
       const mixedTrace={...trace,edges:size,sources:size}
+      stage('wide-and-mixed-memory-read')
       trace = { queries:0, writes:0, maxRows:0 }
       let cursor, count=0, last=''
       do {
@@ -1160,6 +1316,7 @@ window.m4QaCompletion = async (password, scope, requestedSize) => {
       check(count===size && trace.maxRows<=51, 'C2_EVENT_CONTINUATION')
       const eventTrace={...trace,total:count}
       trace=undefined
+      stage('event-graph-paged')
       const revocable=await candidate.withDomains({},async domains=>{
         const proposal=await domains.events.propose({worldId:scope.worldId,participantIds:[scope.instanceId],
           sourceRefs:[],causedByEventIds:[],visibility:'private',summary:'合成可撤销位置',effectiveAt:20000+size,
@@ -1172,12 +1329,20 @@ window.m4QaCompletion = async (password, scope, requestedSize) => {
         check((await tx.execute(replayEventRows,[size-1,prefix,scope.worldId,size])).affectedRows===size,'M4_EFFECT_EVENT_SEED')
         check((await tx.execute(replayEffectRows,[size-1,event+'effect-',scope.worldId,prefix,scope.instanceId,scope.instanceId])).affectedRows===size,'M4_EFFECT_SEED')
       }))
+      stage('replay-seeded')
+      eventProfile='combined-effect-stale'
       await rejects(()=>candidate.withDomains({},domains=>domains.events.confirmRevocation(earlier,'keep-independent','replay-stale-'+size)),'EVENT_REVOKE_PREVIEW_STALE')
+      stage('replay-stale-rejected')
+      eventProfile='combined-effect-preview'
       const plan=await candidate.withDomains({},async domains=>(await domains.events.openRevocation(scope.worldId,revocable.id)).plan)
+      stage('replay-preview')
+      eventProfile='combined-effect-confirmation'
       trace={queries:0,writes:0,maxRows:0}
       const confirmed=await candidate.withDomains({},domains=>domains.events.confirmRevocation(plan,'keep-independent','replay-confirm-'+size))
       check(confirmed.revoked===1&&confirmed.needsReview===0,'M4_EFFECT_PLAN_SCOPE')
       const replay={...trace,total:size}
+      stage('replay-confirmed')
+      eventProfile=undefined
       trace=undefined
       check(replay.maxRows<=128,'M4_EFFECT_BATCH')
       const replayed=await candidate.withDomains({},domains=>domains.characters.getInstance(scope.worldId,scope.instanceId))
@@ -1189,15 +1354,26 @@ window.m4QaCompletion = async (password, scope, requestedSize) => {
       const fanoutPrefix='m4c-fanout-'+size+'-',fanoutRoot=fanoutPrefix+size
       await candidate.run({},operation=>operation.transaction(async tx=>{
         check((await tx.execute(eventRows,[size,fanoutPrefix,scope.worldId])).affectedRows===size+1,'M4_FANOUT_SEED')
-        check((await tx.execute(eventFanout,[size-1,scope.worldId,fanoutPrefix,fanoutRoot])).affectedRows===size,'M4_FANOUT_LINKS')
+        stage('fanout-rows-seeded')
+        const links=await seedFanoutLinks(tx,size,scope.worldId,fanoutPrefix,fanoutRoot)
+        console.info('MR1_SEED_PLAN',JSON.stringify({size,...links}))
+        check(links.affectedRows===size,'M4_FANOUT_LINKS')
       }))
+      stage('fanout-seeded')
+      eventProfile='combined-fanout-preview'
       const first=await candidate.withDomains({},domains=>domains.events.openRevocation(scope.worldId,fanoutRoot))
       check(first.plan.revokeCount===size+1&&first.plan.uncertainCount===0&&first.entries.length===50,'M4_FANOUT_PREVIEW')
+      stage('fanout-preview')
+      eventProfile='combined-fanout-continuation'
       const second=await candidate.withDomains({},domains=>domains.events.openRevocation(scope.worldId,fanoutRoot,first.cursor))
       check(second.entries[0].id>first.entries.at(-1).id&&second.plan.signature===first.plan.signature,'M4_FANOUT_CONTINUATION')
       trace={queries:0,writes:0,maxRows:0}
       const execute=()=>candidate.withDomains({},domains=>domains.events.confirmRevocation(first.plan,'keep-independent','m4c-fanout-confirm-'+size))
+      stage('fanout-continuation')
+      eventProfile='combined-fanout-confirmation'
       const fanout=await execute()
+      stage('fanout-confirmed')
+      eventProfile=undefined
       const fanoutTrace={...trace,confirmed:fanout.revoked}
       trace=undefined
       check(fanout.revoked===size+1&&fanout.needsReview===0&&fanoutTrace.maxRows<=128
@@ -1211,5 +1387,5 @@ window.m4QaCompletion = async (password, scope, requestedSize) => {
     return { samples }
   } catch(error) {
     return { error:error.code??error.message, samples }
-  } finally { trace=undefined; auth.expireSession(); await candidate.release() }
+  } finally { eventProfile=undefined; trace=undefined; auth.expireSession(); await candidate.release() }
 }

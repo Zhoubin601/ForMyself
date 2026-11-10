@@ -127,3 +127,5 @@ M 分支本轮接管的远端基线为 428b7bcfeffe2722e72b4809a6d1a82b5734aeb1�
 ## 2026-11-10 M4-R 最终收尾入口
 
 当前 M 分支基线为 d1737e7d598a14ec3f3ef1febd0bf8be050edbe2。**M4 仍 BLOCKED，M5 不放行。** 本轮首要阻塞是 Android API 34 / SQLCipher 4.17.0 的 10k 宽事件确认在现有 420 秒驱动 deadline 超时；主机 10k 已通过，Android 1k 已通过，但不能替代 Android 10k。G4 的普通聊天记忆来源 DTO 路径已关闭，授权标签及事件/消息 provenance、旧兼容导出仍需全链路有界证据。当前执行入口为 [M4-R 最终收尾任务书 v1](docs/20261110-kanata-sqlite-m4-r-closeout-task-v1.md)，逐项事实见 [验收 v4](docs/20261110-kanata-sqlite-m4-acceptance-v4.md) 和 [closeout QA](docs/qa/kanata-sqlite-m4/closeout/README.md)。GROUP-01～05 与 G10 已有通过证据，避免重复施工。生产 canonical 保持 legacy，普通 Android SQLite 激活位 false，Schema 001–004 checksum 冻结；不触碰真实数据，不实施 M5/M6/M7。
+
+M4-R 接管与 MR1 验收见 [M4-R QA](qa/kanata-sqlite-m4/m4-r/README.md)。Android 综合 10k 宽事件及强停重开后的逐项审计和回执通过。M4 仍 BLOCKED，M5 NO。

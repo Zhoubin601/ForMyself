@@ -623,3 +623,7 @@ Windows 使用 `npm.cmd`、`npx.cmd` 和 `android/gradlew.bat` 的对应命令�
 ## Kanata SQLite M4 Completion 增量
 
 候选 `graphPage` 与 `sourcePage` 使用世界、根实体/角色与 revision 绑定的游标，每页最多 50。授权通过后才读取单记忆和消息正文。该事件图页用于浏览，原事件撤销仍按原确认流程执行。新增独立群聊和全局角色绑定分别使用事务回执与全局 CAS。绑定的明确不选与继承分开保存，归档世界不删除绑定。详见 [设计](docs/20261109-kanata-sqlite-m4-completion-design-v1.md)及 [验收 v2](docs/20261109-kanata-sqlite-m4-acceptance-v2.md)。
+
+## Kanata SQLite M4-R 宽事件确认
+
+确认批次使用现有 effects_by_event 索引约束事件归属后再排序，逐项审计快照和 CAS 同一事务，继续沿用每批 128 条上限。独立合成驱动提供 MR1 确认、强停回滚和同一计划重试，合成边种子统计在进入业务操作前清除。命令及证据见 [M4-R QA](docs/qa/kanata-sqlite-m4/m4-r/README.md)。

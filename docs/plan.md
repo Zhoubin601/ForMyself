@@ -1185,3 +1185,5 @@ P6最终PASS/Go：501 Node/317组件、Web12/6布局、Android17、原生8通过
 - [ ] 执行 MR0–MR8；先定位 Android 10k 瓶颈，再完成 G4、A–G 剩余流程、生命周期、Android 全量验证与两轮独立审查。
 - [ ] G1–G11 全部 PASS 前，M4 保持 BLOCKED，M5 不放行。
 - 生产 canonical 保持 legacy，普通 Android SQLite 激活位 false，Schema 001–004 checksum 不变；不迁移真实数据，不实施 M5/M6/M7。
+
+MR0 和 MR1 检查点见 [M4-R QA](qa/kanata-sqlite-m4/m4-r/README.md)。接管提交 c4ba18911c705c5efde7f7614171659f056e2f1e。Android 10k 宽事件、强停重开、逐项审计和幂等回执已通过。MR2 进入 G4 全链路审计。M4 BLOCKED，M5 NO。

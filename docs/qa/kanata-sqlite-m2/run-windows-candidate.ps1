@@ -1,7 +1,7 @@
 param(
     [Parameter(Mandatory)] [string] $ManifestPath,
     [Parameter(Mandatory)] [string] $EvidenceDirectory,
-    [ValidateSet('repository','full')] [string] $Mode = 'full',
+    [ValidateSet('repository','full','mr1-fanout','mr1-verify')] [string] $Mode = 'full',
     [switch] $M4Growth,
     [switch] $M4Completion
 )

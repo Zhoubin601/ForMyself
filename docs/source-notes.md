@@ -1244,3 +1244,9 @@ raw/完整需求清单.txt 4.1/4.4/8.3及最新连续执行v3驱动当前实现�
 - [raw/彼方 · Kanata 技术设计.txt](../raw/彼方%20%C2%B7%20Kanata%20技术设计.txt)：角色卡与实例隔离、会话/消息身份、记忆来源 revision、事件 Effects 独立归属、存储访问模型和分阶段实施依据。
 - [M0–M7 SQLite 迁移计划](20261103-kanata-sqlite-migration-plan-v1.md)、[AGENTS.md](../AGENTS.md)、[架构接口与 Agent 开发说明书](../架构接口与Agent开发说明书.md)。
 - 计划依据只用于建立 M4-R 执行合同；raw 原件保持只读，未把未定义的世界复制语义补写为已确认产品决策。
+
+## 2026-11-10 M4-R 接管与 MR1 来源
+
+- 仓库内权威执行文件为 [M4-R 任务书](20261110-kanata-sqlite-m4-r-closeout-task-v1.md)，采用锁定提交 c4ba18911c705c5efde7f7614171659f056e2f1e。引用日期 2026-11-10。
+- 原始资料为 raw/完整需求清单.txt 与 raw/彼方 · Kanata 技术设计.txt。角色卡原格式和扩展保留、世界隔离、生活权限、历史与来源要求按原文和当前用户决策核对。静态复制的具体范围来自现行 legacy 的 copyKanataWorld。该函数过滤并重置动态状态，保留静态成员、非角色间会话结构、世界书与无事件来源的队友关系。
+- 历史测试口径取自 [v4 QA](qa/kanata-sqlite-m4/closeout/README.md) 原始日志。当前 A–G 缺口、设备白名单及 MR1 复现见 [M4-R QA](qa/kanata-sqlite-m4/m4-r/README.md)。

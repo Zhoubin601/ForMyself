@@ -32,3 +32,5 @@ node docs/qa/kanata-sqlite-m4/completion/verify-catalog.mjs android/app/build/ge
 最终 Android 候选轮通过聊天来源、分享撤回、事件账本、世界设置、历史整理和 1,001 条宽事件确认。后者为 6,412 ms、22 次查询、18 次写入，每批最多 128 行。10k 宽事件确认在 420 秒超时，未取得回执，驱动退出 1。10k 深链、宽来源、混合关系和 Effects 可在前次设备复测中单独核对。
 
 主机 `heapUsed` 是分配/GC 会影响的进程采样，Android `performance.memory` 是 WebView 粗粒度采样。两者均不能代替完整堆峰值。单批 SQL 行数、每次编码对象数、Pinia 状态计数和 VM 窗口分别记录。
+
+[M4-R MR0/MR1 新复测](../m4-r/README.md)已覆盖本文记录的 10k 宽事件超时场景。本文历史结果继续保留。

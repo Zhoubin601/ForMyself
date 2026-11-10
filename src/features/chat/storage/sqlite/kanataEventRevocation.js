@@ -79,9 +79,12 @@ const eventSnapshot = `json_patch(e.extensions_json,json_object(
   'sourceRefs',json(COALESCE(json_extract(e.extensions_json,'$.sourceRefs'),(SELECT json_group_array(json_object(
     'messageId',s.message_id,'revision',s.message_revision)) FROM event_sources s WHERE s.world_id=e.world_id AND s.event_id=e.id)))
 ))`
+// Constrain the lookup to its owner before ordering by ID. SQLCipher can otherwise
+// use the world/ID index for ORDER BY and scan unrelated Effects for each audit.
 const ownedEffects = `(SELECT json_group_array(json_object('id',f.id,'targetType',f.target_type,'targetId',f.target_id,
     'path',f.path,'operation',f.operation,'value',json(f.value_json),'ruleVersion',f.rule_version))
-  FROM (SELECT * FROM world_effects WHERE world_id=p.world AND event_id=p.event ORDER BY id) f)`
+  FROM (SELECT * FROM world_effects INDEXED BY effects_by_event
+    WHERE world_id=p.world AND event_id=p.event ORDER BY id) f)`
 const writeAudit = batchInput + `,
   snapshot AS (SELECT p.*,e.revision,e.status,${eventSnapshot} AS body,${ownedEffects} AS owned_effects
     FROM p JOIN world_events e ON e.world_id=p.world AND e.id=p.event AND e.revision=p.old_revision+1 AND e.status=p.next_status)

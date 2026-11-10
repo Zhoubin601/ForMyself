@@ -1,0 +1,13 @@
+{
+  "parent": "c4ba18911c705c5efde7f7614171659f056e2f1e",
+  "m2SyntheticFixtureSha256": "2417814bb2ee508ab059dceae4cf30dfa0def8561d4fc9f0d596f188a644a07f",
+  "normalizedLfFileSha256": {
+    "src/features/chat/storage/sqlite/kanataEventRevocation.js": "2a45bf3e383237251ad3985805e046c87882c0d4e58f6b452dedec4ca5e0958a",
+    "tests/kanataSqliteDomains.test.js": "cc376f4b1d091c1a2d42205429f37d73d8d81485c4b79a0a75e1af535f177e4b",
+    "android/app/src/main/java/com/yubin/formyself/KanataSqlitePlugin.java": "4318469d9e78ff780855272390bb4e2081b7c0a9c2c6bb09be041b02e3a484f6",
+    "scripts/build-kanata-sqlite-catalog.mjs": "cfe37370b30775d3d8a95f08ead15b0948be2a61b34ed4cb78d3f6bc08a040f7",
+    "docs/qa/kanata-sqlite-m2/candidate-smoke.mjs": "11ab68b65ab3c08475e466ead35ba8573df26c02945520457b5ce725db79f34c",
+    "docs/qa/kanata-sqlite-m2/windows-candidate-smoke.mjs": "5cd9f05da6e915e8dbc11d2b882ac461458111e8c3ddd317b74720a4ba74c2c3",
+    "docs/qa/kanata-sqlite-m4/completion/fixture.mjs": "fde9108b26aaacb7a4ae80b26bc49138d16f10c69164cefa9fcb99b1d67e00b5"
+  }
+}

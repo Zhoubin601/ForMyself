@@ -1,0 +1,293 @@
+{
+  "combinedStagesMs": {
+    "1000": {
+      "start": 0,
+      "deep-chain-seeded": 2371,
+      "deep-memory-read": 2447,
+      "wide-and-mixed-memory-read": 3570,
+      "event-graph-paged": 4195,
+      "replay-seeded": 4580,
+      "replay-stale-rejected": 5067,
+      "replay-preview": 5536,
+      "replay-confirmed": 6501,
+      "fanout-rows-seeded": 6584,
+      "fanout-seeded": 6692,
+      "fanout-preview": 7038,
+      "fanout-continuation": 7371,
+      "fanout-confirmed": 8366
+    },
+    "10000": {
+      "start": 0,
+      "deep-chain-seeded": 17246,
+      "deep-memory-read": 17491,
+      "wide-and-mixed-memory-read": 39021,
+      "event-graph-paged": 50588,
+      "replay-seeded": 52436,
+      "replay-stale-rejected": 68283,
+      "replay-preview": 83692,
+      "replay-confirmed": 110050,
+      "fanout-rows-seeded": 110372,
+      "fanout-seeded": 110830,
+      "fanout-preview": 120657,
+      "fanout-continuation": 130072,
+      "fanout-confirmed": 152241
+    }
+  },
+  "baseline10kBridge": {
+    "begin": {
+      "calls": 1,
+      "totalMs": 3,
+      "maxMs": 3
+    },
+    "e1f064445dc9053e2fc34707cef33bdbe271395e52879801a3f7b49cd4344ea3": {
+      "calls": 1,
+      "totalMs": 3,
+      "maxMs": 3
+    },
+    "8179fdd8eb9ce21a8c6d5fe96c878247365335b6f9dc880e020dadcad3019365": {
+      "calls": 1,
+      "totalMs": 3,
+      "maxMs": 3
+    },
+    "root": {
+      "calls": 1,
+      "totalMs": 3,
+      "maxMs": 3
+    },
+    "selectionBatch": {
+      "calls": 94,
+      "totalMs": 10714,
+      "maxMs": 174
+    },
+    "effectProof": {
+      "calls": 1,
+      "totalMs": 191,
+      "maxMs": 191
+    },
+    "baselineProof": {
+      "calls": 1,
+      "totalMs": 194,
+      "maxMs": 194
+    },
+    "statusUpdate": {
+      "calls": 15,
+      "totalMs": 212,
+      "maxMs": 21
+    },
+    "writeAudit": {
+      "calls": 14,
+      "totalMs": 141010,
+      "maxMs": 10508
+    }
+  },
+  "fixed10kBridge": {
+    "begin": {
+      "calls": 1,
+      "totalMs": 5,
+      "maxMs": 5
+    },
+    "e1f064445dc9053e2fc34707cef33bdbe271395e52879801a3f7b49cd4344ea3": {
+      "calls": 1,
+      "totalMs": 4,
+      "maxMs": 4
+    },
+    "8179fdd8eb9ce21a8c6d5fe96c878247365335b6f9dc880e020dadcad3019365": {
+      "calls": 1,
+      "totalMs": 5,
+      "maxMs": 5
+    },
+    "root": {
+      "calls": 1,
+      "totalMs": 6,
+      "maxMs": 6
+    },
+    "selectionBatch": {
+      "calls": 158,
+      "totalMs": 17547,
+      "maxMs": 174
+    },
+    "effectProof": {
+      "calls": 1,
+      "totalMs": 178,
+      "maxMs": 178
+    },
+    "baselineProof": {
+      "calls": 1,
+      "totalMs": 179,
+      "maxMs": 179
+    },
+    "statusUpdate": {
+      "calls": 79,
+      "totalMs": 954,
+      "maxMs": 23
+    },
+    "writeAudit": {
+      "calls": 79,
+      "totalMs": 2201,
+      "maxMs": 52
+    },
+    "staleMemories": {
+      "calls": 1,
+      "totalMs": 10,
+      "maxMs": 10
+    },
+    "completedEffects": {
+      "calls": 1,
+      "totalMs": 118,
+      "maxMs": 118
+    },
+    "eb0ad0955753ec6e8cf4b9d10a4161c5114711ad122582a8974f0c73e6402355": {
+      "calls": 1,
+      "totalMs": 6,
+      "maxMs": 6
+    },
+    "commit": {
+      "calls": 1,
+      "totalMs": 200,
+      "maxMs": 200
+    }
+  },
+  "recovery10kBridge": {
+    "begin": {
+      "calls": 1,
+      "totalMs": 6,
+      "maxMs": 6
+    },
+    "e1f064445dc9053e2fc34707cef33bdbe271395e52879801a3f7b49cd4344ea3": {
+      "calls": 1,
+      "totalMs": 7,
+      "maxMs": 7
+    },
+    "8179fdd8eb9ce21a8c6d5fe96c878247365335b6f9dc880e020dadcad3019365": {
+      "calls": 1,
+      "totalMs": 6,
+      "maxMs": 6
+    },
+    "root": {
+      "calls": 1,
+      "totalMs": 5,
+      "maxMs": 5
+    },
+    "selectionBatch": {
+      "calls": 158,
+      "totalMs": 15066,
+      "maxMs": 158
+    },
+    "effectProof": {
+      "calls": 86,
+      "totalMs": 17436,
+      "maxMs": 235
+    },
+    "baselineProof": {
+      "calls": 1,
+      "totalMs": 131,
+      "maxMs": 131
+    },
+    "statusUpdate": {
+      "calls": 79,
+      "totalMs": 1059,
+      "maxMs": 26
+    },
+    "writeAudit": {
+      "calls": 79,
+      "totalMs": 2553,
+      "maxMs": 53
+    },
+    "staleMemories": {
+      "calls": 1,
+      "totalMs": 10,
+      "maxMs": 10
+    },
+    "completedEffects": {
+      "calls": 79,
+      "totalMs": 17189,
+      "maxMs": 398
+    },
+    "4975075cae7d4b06d33753910490d62a1d86c0e0861ad4c3bb2c2635b319b967": {
+      "calls": 1,
+      "totalMs": 4,
+      "maxMs": 4
+    },
+    "22baf9a94ae223c7c54970e116d373be199276ad2fd42be512a153d7c081078b": {
+      "calls": 1,
+      "totalMs": 97,
+      "maxMs": 97
+    },
+    "c28fe8340d6f3047dafbe9f3b56ba5b8aed717e19ee2e4120b54a628d90ee107": {
+      "calls": 1,
+      "totalMs": 4,
+      "maxMs": 4
+    },
+    "74bbe16a3393d0f5f9f0660a3a89e074415222880ef1a7d5c68cd42ad363807c": {
+      "calls": 1,
+      "totalMs": 6,
+      "maxMs": 6
+    },
+    "eb0ad0955753ec6e8cf4b9d10a4161c5114711ad122582a8974f0c73e6402355": {
+      "calls": 1,
+      "totalMs": 5,
+      "maxMs": 5
+    },
+    "commit": {
+      "calls": 1,
+      "totalMs": 162,
+      "maxMs": 162
+    }
+  },
+  "forcedStopResults": [
+    {
+      "oldPid": "7173",
+      "newPid": "7310",
+      "size": 1000,
+      "confirmed": {
+        "revoked": 1001,
+        "needsReview": 0
+      },
+      "confirmation": {
+        "queries": 38,
+        "writes": 20,
+        "maxRows": 128,
+        "elapsedMs": 2354
+      },
+      "crashRollback": true,
+      "audits": {
+        "events": 1001,
+        "original": 0,
+        "revoked": 1001,
+        "audits": 1001,
+        "exactAudits": 1001
+      },
+      "persistedReceipt": true,
+      "idempotent": true
+    },
+    {
+      "oldPid": "7310",
+      "newPid": "7487",
+      "size": 10000,
+      "confirmed": {
+        "revoked": 10001,
+        "needsReview": 0
+      },
+      "confirmation": {
+        "queries": 329,
+        "writes": 162,
+        "maxRows": 128,
+        "elapsedMs": 55449
+      },
+      "crashRollback": true,
+      "audits": {
+        "events": 10001,
+        "original": 0,
+        "revoked": 10001,
+        "audits": 10001,
+        "exactAudits": 10001
+      },
+      "persistedReceipt": true,
+      "idempotent": true
+    }
+  ],
+  "appProcessMaxSampleKb": {
+    "TOTAL PSS": 109462,
+    "TOTAL RSS": 254216
+  }
+}
