@@ -1,8 +1,8 @@
-> **2026-11-10 当前检查点：M4 BLOCKED，M5 NO。** 当前唯一执行入口为 [M4-R 最终收尾任务书 v1](20261110-kanata-sqlite-m4-r-closeout-task-v1.md)，接管基线为 d1737e7d598a14ec3f3ef1febd0bf8be050edbe2。最新门禁与实测见 [M4 收尾验收 v4](20261110-kanata-sqlite-m4-acceptance-v4.md) 和 [closeout QA](qa/kanata-sqlite-m4/closeout/README.md)。G10 PASS；G1–G9、G11 BLOCKED。生产 canonical 仍为 legacy，普通 Android SQLite 激活位 false，Schema 001–004 checksum 冻结。
+> **2026-11-10 最新检查点：M4 BLOCKED，M5 NO。** M 分支当前已核实 HEAD 为 271936dd4aa5a5421b0a71a8dda2b4848c15ea71；MR0、MR1 PASS，MR2/G4 BLOCKED。最新代码与证据见 [MR2-G4 验收 v1](20261110-kanata-sqlite-mr2-g4-acceptance-v1.md)。下一执行切片为 [MR2-G4 事件来源有界化任务书 v1](20261110-kanata-sqlite-mr2-event-provenance-task-v1.md)，它从属于 [M4-R 最终收尾任务书 v1](20261110-kanata-sqlite-m4-r-closeout-task-v1.md)，不替代总验收合同。G10 PASS；G1–G9、G11 BLOCKED。生产 canonical 仍为 legacy，普通 Android SQLite 激活位 false，Schema 001–004 checksum 冻结。
 
 # 执行计划
 
-> **当前执行入口（2026-11-03）：** 先在 [M 分支](https://github.com/Zhoubin601/ForMyself/tree/M) 完成 [彼方 SQLite 迁移计划 M v1](20261103-kanata-sqlite-migration-plan-v1.md) 的 M0–M7。M 从 Kanata 的 73158a058d35124e1572b2161fe0f364f2140c48 创建，M0、M1已有独立验收；2026-11-07本轮执行M1-R补充审计，当前入口见[审计记录](20261107-kanata-sqlite-m1-r-audit-v1.md)和[M2完整任务书](20261107-kanata-sqlite-m2-task-v1.md)；M2代码尚未开始。
+> **历史背景（2026-11-03；不再作为当前执行入口）：** M 分支最初按 [彼方 SQLite 迁移计划 M v1](20261103-kanata-sqlite-migration-plan-v1.md) 从 M0–M7 推进。后续阶段与当前状态以本页顶部链接的 M4-R 总任务书、最新验收和 QA 为准。
 >
 > **分支顺序：** Kanata（P7 No-Go 基线）→ M（SQLite 迁移与性能重构）→ M7 验收后审查并合并回 Kanata → 继续 P7。M 未完成前，P7 暂停在 Kanata，不并行修改同一套存储代码；不合并 main。
 >
@@ -1191,3 +1191,14 @@ MR0 和 MR1 检查点见 [M4-R QA](qa/kanata-sqlite-m4/m4-r/README.md)。接管�
 MR2 检查点已完成记忆详情、精确来源和后台任务的 SQL 授权证明。1k/10k 不同授权的设备定向切片通过。G4 的普通聊天标签集合、事件与消息来源及旧兼容入口仍 BLOCKED。后续按 [M4-R QA](qa/kanata-sqlite-m4/m4-r/README.md) 续作。
 
 MR2-G4 以 8d3b8f768617143312fd800ab05decaa53d6114d 接管。新进展与兼容导出剩余阻塞见 [本轮验收](20261110-kanata-sqlite-mr2-g4-acceptance-v1.md)。仍在 MR2，后续阶段未启动。
+
+
+## 2026-11-10 MR2-G4 事件来源有界化续作
+
+- [x] 重新核对 M 分支 HEAD 271936dd4aa5a5421b0a71a8dda2b4848c15ea71、MR2-G4 验收 v1、G4 调用图、事件 Repository、provenance 与 event row 解码实现。
+- [x] 建立 [MR2-G4 事件来源有界化任务书 v1](20261110-kanata-sqlite-mr2-event-provenance-task-v1.md)，限定事件来源的创建、提交、读取、列表、预览、撤销、修正与审计链路。
+- [ ] Windows 本地 Codex 按子任务书实施、完成主机和 Android API 34 / SQLCipher 4.17.0 合成验证。
+- [ ] 事件来源切片未通过前，不解除 G4/MR2；其余兼容 DTO 和自治来源缺口仍须独立收敛。
+- M4 保持 BLOCKED，SQLite 阶段 M5 保持 NO；生产 canonical 继续 legacy，普通 APK SQLite 激活位继续 false，Schema 001–004 checksum 不变。
+
+本次仅更新执行计划与 QA 入口，不代表事件代码、测试或设备验收已经完成。
