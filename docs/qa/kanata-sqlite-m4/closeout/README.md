@@ -1,5 +1,7 @@
 # M4 收尾验证
 
+**当前执行入口：** [M4-R 最终收尾任务书 v1](../../../20261110-kanata-sqlite-m4-r-closeout-task-v1.md)。接管基线 d1737e7d598a14ec3f3ef1febd0bf8be050edbe2。M4 BLOCKED，M5 NO。P0 为 Android 10k 宽事件确认超时与 G4 provenance 全链路有界性；本目录现有日志为历史 v4 证据，不得冒充 M4-R 新复测。
+
 [接管与缺口矩阵](matrix.md) · [验收 v4](../../../20261110-kanata-sqlite-m4-acceptance-v4.md) · [本轮复核](reviews.md) · [v3 历史证据](../continuation/README.md)
 
 | 切片 | 可复现证据 |

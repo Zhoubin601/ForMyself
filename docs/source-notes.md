@@ -1234,3 +1234,13 @@ raw/完整需求清单.txt 4.1/4.4/8.3及最新连续执行v3驱动当前实现�
 ## 2026-11-10 M4 收尾来源
 
 以 [验收 v3](20261110-kanata-sqlite-m4-acceptance-v3.md)、[执行合同](20261110-kanata-sqlite-m4-continuation-task-v1.md) 和远端基线 `964f3dfe8e4441a1c41a1097204df1b4ae36eefb` 核对缺口。`raw/彼方 · Kanata 技术设计.txt` §3.3 及事件历史段落、`raw/完整需求清单.txt` 和实际 legacy 提示词、引用保护与事件界面提供行为依据。Android 与增长样本均来自仓库合成种子。
+
+
+## 2026-11-10 Kanata M4-R 最终收尾来源
+
+- 用户 2026-11-10 最新检查点：M4 BLOCKED、M5 NO；提交 d1737e7d598a14ec3f3ef1febd0bf8be050edbe2；普通聊天记忆来源 DTO 已改为授权后分页编码；G4 仍因不同授权标签与事件/消息 provenance 暂存无界证据而 BLOCKED；Android 10k 宽事件确认在 420 秒超时。
+- [M4 验收 v4](20261110-kanata-sqlite-m4-acceptance-v4.md)、[closeout QA](qa/kanata-sqlite-m4/closeout/README.md)、[closeout 缺口矩阵](qa/kanata-sqlite-m4/closeout/matrix.md)、[两轮历史复核](qa/kanata-sqlite-m4/closeout/reviews.md) 与原始设备/主机日志。
+- [raw/完整需求清单.txt](../raw/完整需求清单.txt)：世界、角色实例、世界书、记忆、事件、历史修正、角色自主社交、生活模块三权限与 AI 统计的产品要求。
+- [raw/彼方 · Kanata 技术设计.txt](../raw/彼方%20%C2%B7%20Kanata%20技术设计.txt)：角色卡与实例隔离、会话/消息身份、记忆来源 revision、事件 Effects 独立归属、存储访问模型和分阶段实施依据。
+- [M0–M7 SQLite 迁移计划](20261103-kanata-sqlite-migration-plan-v1.md)、[AGENTS.md](../AGENTS.md)、[架构接口与 Agent 开发说明书](../架构接口与Agent开发说明书.md)。
+- 计划依据只用于建立 M4-R 执行合同；raw 原件保持只读，未把未定义的世界复制语义补写为已确认产品决策。

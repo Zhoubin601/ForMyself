@@ -56,3 +56,6 @@ M2 Windows 接续已通过（2026-11-09）。[最新验收 v2](../docs/20261109-
 2026-11-10 M4 当前续作入口：[M4 剩余缺口续作任务书 v1](../docs/20261110-kanata-sqlite-m4-continuation-task-v1.md)。M 分支远端接管基线 428b7bcfeffe2722e72b4809a6d1a82b5734aeb1；M4 BLOCKED、M5 NO。当前实施和实测见 [续作验收 v3 检查点](../docs/20261110-kanata-sqlite-m4-acceptance-v3.md)。GROUP-01～05 已有候选 UI/Repository/Android 证据；完整 A–G、兼容链路、生命周期与 G1–G11 尚待关闭。生产仍 legacy，普通 Android SQLite 激活位 false；不得迁移真实数据或提前实施 M5/M6/M7。
 
 2026-11-10 最新入口为 [M4 收尾验收 v4](../docs/20261110-kanata-sqlite-m4-acceptance-v4.md)。候选提示词逐页编码精确来源且在现有预算内保留原 JSON，仍须验证宽授权标签、A–F 其余操作、历史扩展引用、全生命周期与两轮全范围复核。M4 BLOCKED，M5 NO。
+
+
+2026-11-10 M4-R 最新接续入口：[M4-R 最终收尾任务书 v1](../docs/20261110-kanata-sqlite-m4-r-closeout-task-v1.md)。M 分支已核验基线 d1737e7d598a14ec3f3ef1febd0bf8be050edbe2；M4 BLOCKED，M5 NO。以 [验收 v4](../docs/20261110-kanata-sqlite-m4-acceptance-v4.md) 和 [closeout QA](../docs/qa/kanata-sqlite-m4/closeout/README.md) 为最新证据。首要阻塞：Android API 34 / SQLCipher 4.17.0 的 10k 宽事件确认在现有 420 秒 deadline 超时；主机 10k、Android 1k 已通过但不可替代。G4 普通聊天 readFor→readMemory→sourceRefs[] 路径已关闭，生活授权标签、事件/消息 provenance 和旧兼容导出仍缺整链上界。GROUP-01～05 与 G10 有既有 PASS 证据，不重复施工，受影响时才回归。生产仍 legacy，普通 Android SQLite 激活位 false，Schema 001–004 checksum 不变；不触碰真实数据、不调用真实模型 API、不实施 M5/M6/M7。

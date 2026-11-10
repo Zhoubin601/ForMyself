@@ -1,4 +1,4 @@
-> **2026-11-10 当前检查点为 M4 BLOCKED，M5 NO。** 当前唯一执行入口为 [M4 剩余缺口续作任务书 v1](20261110-kanata-sqlite-m4-continuation-task-v1.md)，本轮接管基线为 `964f3dfe8e4441a1c41a1097204df1b4ae36eefb`，最新增量与逐项门禁见 [收尾验收 v4](20261110-kanata-sqlite-m4-acceptance-v4.md)，[续作验收 v3](20261110-kanata-sqlite-m4-acceptance-v3.md) 保留作历史。旧 M4 任务书、验收和 QA 保留为历史证据。生产 canonical 仍为 legacy，普通 Android SQLite 激活位 false。
+> **2026-11-10 当前检查点：M4 BLOCKED，M5 NO。** 当前唯一执行入口为 [M4-R 最终收尾任务书 v1](20261110-kanata-sqlite-m4-r-closeout-task-v1.md)，接管基线为 d1737e7d598a14ec3f3ef1febd0bf8be050edbe2。最新门禁与实测见 [M4 收尾验收 v4](20261110-kanata-sqlite-m4-acceptance-v4.md) 和 [closeout QA](qa/kanata-sqlite-m4/closeout/README.md)。G10 PASS；G1–G9、G11 BLOCKED。生产 canonical 仍为 legacy，普通 Android SQLite 激活位 false，Schema 001–004 checksum 冻结。
 
 # 执行计划
 
@@ -1176,3 +1176,12 @@ P6最终PASS/Go：501 Node/317组件、Web12/6布局、Android17、原生8通过
 - 生产 canonical 继续 legacy；普通 Android SQLite 激活位继续 false；M5/M6/M7 不提前实施。
 
 本次提交仅更新计划与索引，不代表任何代码、测试或设备验收已经完成。
+
+
+## 2026-11-10 M4-R 最终收尾轮
+
+- [x] 核对 M 分支当前远端基线 d1737e7d598a14ec3f3ef1febd0bf8be050edbe2、M4 acceptance v4、closeout QA、raw 需求/技术设计和现有开发规范。
+- [x] 建立 [M4-R 最终收尾任务书 v1](20261110-kanata-sqlite-m4-r-closeout-task-v1.md)，以 Android 10k 宽事件确认 420 秒超时和 G4 provenance 全链路有界性为 P0。
+- [ ] 执行 MR0–MR8；先定位 Android 10k 瓶颈，再完成 G4、A–G 剩余流程、生命周期、Android 全量验证与两轮独立审查。
+- [ ] G1–G11 全部 PASS 前，M4 保持 BLOCKED，M5 不放行。
+- 生产 canonical 保持 legacy，普通 Android SQLite 激活位 false，Schema 001–004 checksum 不变；不迁移真实数据，不实施 M5/M6/M7。
