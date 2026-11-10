@@ -333,3 +333,10 @@ M7 PASS 后，生成新的交接记录，至少包含：
 **最终路线：** Kanata（P7 No-Go 基线）→ M（M0–M7 SQLite 迁移）→ 验收并合并回 Kanata → 继续 P7 → 最终验收。
 
 2026-11-09 补齐状态见 [M4 验收 v2](20261109-kanata-sqlite-m4-acceptance-v2.md)。M4 仍 BLOCKED。完整管理、事件撤销、跨模块消费者和有界性矩阵收口前不进入 M5。
+
+
+## 2026-11-10 M4 剩余缺口续作
+
+当前 M 分支 M4 接管基线为 e296b2c5dd082f35b95c943bd838e3fe6a506357。M4 仍 BLOCKED，M5 NO。原 M4 completion task v1 与 acceptance v1/v2 保留为历史证据；后续执行以 [M4 剩余缺口续作任务书 v1](20261110-kanata-sqlite-m4-continuation-task-v1.md) 为当前入口。
+
+本轮必须完成实际群聊成员编辑 GROUP-01–05、事件撤销与 Effects 重放有界化、记忆整理/冲突/分享、A–G 剩余候选管理与跨模块消费者、全页面生命周期、1k/10k 深宽混合增长验证和两轮全范围自检。G1–G11 全部通过前不得进入 M5。生产 canonical 保持 legacy，普通 Android SQLite 激活位保持 false；本阶段不读取或迁移真实 legacy 文件，不实施 M6/M7。

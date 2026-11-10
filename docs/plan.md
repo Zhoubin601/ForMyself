@@ -1164,3 +1164,14 @@ P6最终PASS/Go：501 Node/317组件、Web12/6布局、Android17、原生8通过
 ## M4 Completion 执行记录
 
 [补齐验收 v2](20261109-kanata-sqlite-m4-acceptance-v2.md)与 [QA](qa/kanata-sqlite-m4/completion/README.md)记录已接线范围和剩余门禁。M4 BLOCKED，M5 NO。
+
+
+## 2026-11-10 M4 剩余缺口续作计划
+
+- [x] 核对 M 分支最新远端基线 e296b2c5dd082f35b95c943bd838e3fe6a506357，并复核 M4 acceptance v2、completion QA、群聊成员变更设计和现有测试。
+- [x] 制定 [M4 剩余缺口续作任务书 v1](20261110-kanata-sqlite-m4-continuation-task-v1.md)，更新接管基线、GROUP-01–05 实施要求、A–G 未完成流程、事件 Effects 有界化、记忆宽关系增长、生命周期、G1–G11 和 R0–R8 执行顺序。
+- [ ] Windows 本地 Codex 按新任务书完成 M4 剩余实现、真实 Android 合成 AVD 验收、两轮全范围自检和 M 分支普通推送。
+- [ ] 在 G1–G11 全部 PASS 前，M4 保持 BLOCKED，M5 不放行。
+- 生产 canonical 继续 legacy；普通 Android SQLite 激活位继续 false；M5/M6/M7 不提前实施。
+
+本次提交仅更新计划与索引，不代表任何代码、测试或设备验收已经完成。
