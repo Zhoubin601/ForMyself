@@ -72,3 +72,12 @@ export const fanoutAuditInspection = `WITH p(world,prefix) AS (VALUES(?,?))
   FROM p JOIN world_events e ON e.world_id=p.world AND e.id GLOB p.prefix||'*'
   LEFT JOIN event_audits a ON a.world_id=e.world_id AND a.event_id=e.id
   LEFT JOIN world_effects f ON f.world_id=e.world_id AND f.event_id=e.id`
+
+export const grantOriginActors = sequence + `
+  INSERT INTO character_instances(id,world_id,card_id,card_version_id,revision,overrides_json,mood,energy,location,autonomy_enabled,proactive_enabled)
+  SELECT ?||n,i.world_id,i.card_id,i.card_version_id,1,'{}','synthetic',1,'',0,0
+  FROM seq CROSS JOIN character_instances i WHERE i.world_id=? AND i.id=?`
+export const grantOrigins = `INSERT INTO life_grants(id,world_id,instance_id,module_id,can_read,can_remember,can_share,revision)
+  SELECT 'grant-'||id,world_id,id,'todo',1,1,1,1 FROM character_instances WHERE world_id=? AND id GLOB ?`
+export const grantMessageTags = `INSERT INTO message_life_sources(world_id,message_id,grant_id,instance_id,module_id,grant_revision,fingerprint)
+  SELECT world_id,?,id,instance_id,module_id,revision,printf('%064x',1) FROM life_grants WHERE world_id=? AND instance_id GLOB ?`

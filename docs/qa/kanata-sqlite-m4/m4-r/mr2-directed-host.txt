@@ -1,0 +1,17 @@
+(node:43532) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ M3 remember, read and share reject before sensitive queries and archived source requires exact revision (82.6919ms)
+✔ MR2 memory detail and source resolution prove every distinct reply-chain grant without projecting tags (459.3626ms)
+ℹ {"size":1000,"queries":25,"projectedTags":0,"bodyReadsAfterRevocation":0}
+ℹ {"size":10000,"queries":25,"projectedTags":0,"bodyReadsAfterRevocation":0}
+✔ R4 candidate share copies exact source metadata without reading body into JS or bypassing the recipient grant (58.5862ms)
+✔ M3 window writes event, effects, task and watermark atomically, including failed COMMIT (57.8088ms)
+✔ M3 expired lease cannot complete and duplicate task completion writes one event (44.6606ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 899.8003

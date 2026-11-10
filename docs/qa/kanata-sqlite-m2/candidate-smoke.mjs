@@ -1,4 +1,4 @@
-import { memoryRows, memoryEdges, memoryWideSources, eventRows, eventEdges, seedFanoutLinks, replayEventRows, replayEffectRows, fanoutAuditInspection } from '../kanata-sqlite-m4/completion/fixture.mjs'
+import { memoryRows, memoryEdges, memoryWideSources, eventRows, eventEdges, seedFanoutLinks, replayEventRows, replayEffectRows, fanoutAuditInspection, grantOriginActors, grantOrigins, grantMessageTags } from '../kanata-sqlite-m4/completion/fixture.mjs'
 import { growthSeedSql } from '../kanata-sqlite-m4/fixture.mjs'
 import { eventRevocationQueries, eventRevocationWrites } from '../../../src/features/chat/storage/sqlite/kanataEventRevocation.js'
 import { receiptQuery, receiptWrite } from '../../../src/features/chat/storage/sqlite/kanataDomainRows.js'
@@ -1135,6 +1135,72 @@ window.m4QaWorkspace = async (password, { worldId, worldName, conversationId, ac
     await candidate.release()
   }
 }
+window.mr2QaWideGrantProof = async (password, { commands, scope, sample }) => {
+  session(password)
+  const {worldId,instanceId,conversationId}=scope
+  const samples=[]
+  try {
+    const health=await candidate.run({create:true},async operation=>{
+      await operation.transaction(async tx=>{
+        for (const {sql,parameters} of commands) await tx.execute(sql,parameters)
+      })
+      return operation.health()
+    })
+    await candidate.withDomains({},domains=>domains.autonomy.setGrant(worldId,instanceId,'todo',2,
+      {read:true,remember:true,share:true}))
+    for(const size of [1000,10000]){
+      const prefix='mr2-origin-'+size+'-'
+      const source='mr2-source-'+size, reply='mr2-reply-'+size, memory='mr2-memory-'+size+'-'
+      await candidate.withRepositories({},async messages=>{
+        await messages.insert({...sample,id:source,revision:1,lifeSources:[]})
+        await messages.insert({...sample,id:reply,revision:1,lifeSources:[],replyToMessageId:source,replyToRevision:1})
+      })
+      await candidate.run({},operation=>operation.transaction(async tx=>{
+        check((await tx.execute(grantOriginActors,[size-1,prefix,worldId,instanceId])).affectedRows===size,'MR2_ORIGIN_ACTORS')
+        check((await tx.execute(grantOrigins,[worldId,prefix+'*'])).affectedRows===size,'MR2_ORIGIN_GRANTS')
+        check((await tx.execute(grantMessageTags,[source,worldId,prefix+'*'])).affectedRows===size,'MR2_MESSAGE_TAGS')
+        check((await tx.execute(memoryRows,[0,memory,worldId,instanceId,instanceId])).affectedRows===1,'MR2_MEMORY')
+        check((await tx.execute(memoryWideSources,[memory+'0',worldId,conversationId,reply])).affectedRows===1,'MR2_MEMORY_SOURCE')
+      }))
+      const ref={messageId:reply,revision:1}
+      const read=domains=>domains.memories.readDetailFor(scope,memory+'0')
+      const resolve=domains=>domains.memories.resolveSource(scope,memory+'0',ref)
+      let projectedTags=0,bodyReads=0
+      const observation=()=>({queries:0,writes:0,maxRows:0,observeQuery(rows){
+        for(const row of rows){
+          if(Object.hasOwn(row,'grant_id'))projectedTags++
+          if(Object.hasOwn(row,'content'))bodyReads++
+        }
+      }})
+      trace=observation()
+      const started=performance.now()
+      check((await candidate.withDomains({},read)).content==='synthetic','MR2_MEMORY_AUTHORIZATION')
+      check((await candidate.withDomains({},resolve)).content===sample.content,'MR2_EXACT_MESSAGE_REVISION')
+      const allowed={queries:trace.queries,maxRows:trace.maxRows,projectedTags,bodyReads,elapsedMs:Math.round(performance.now()-started)}
+      check(projectedTags===0&&bodyReads===2&&trace.maxRows<=50,'MR2_AUTHORIZED_PROJECTIONS')
+      trace=undefined
+      await candidate.withDomains({},domains=>domains.autonomy.setGrant(worldId,prefix+(size-1),'todo',1,
+        {read:false,remember:false,share:false}))
+      trace=observation()
+      bodyReads=0
+      for(const action of [read,resolve]) await rejects(()=>candidate.withDomains({},action),'KANATA_LIFE_PERMISSION_DENIED')
+      const denied={queries:trace.queries,bodyReads,projectedTags,maxRows:trace.maxRows}
+      check(bodyReads===0&&projectedTags===0,'MR2_REVOKED_BODY_OR_TAGS')
+      trace=undefined
+      samples.push({size,allowed,denied})
+    }
+    check(samples[0].allowed.queries===samples[1].allowed.queries
+      &&samples[0].denied.queries===samples[1].denied.queries,'MR2_GRANT_QUERY_GROWTH')
+    return {health,samples}
+  } catch(error) {
+    return {error:error.code??error.message,samples}
+  } finally {
+    trace=undefined
+    auth.expireSession()
+    await candidate.release()
+  }
+}
+
 window.mr1QaFanout = async (password, { commands, scope, verify }, size) => {
   check([1000,10000].includes(size), 'M4_GROWTH_SIZE')
   session(password)

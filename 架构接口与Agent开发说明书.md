@@ -627,3 +627,5 @@ Windows 使用 `npm.cmd`、`npx.cmd` 和 `android/gradlew.bat` 的对应命令�
 ## Kanata SQLite M4-R 宽事件确认
 
 确认批次使用现有 effects_by_event 索引约束事件归属后再排序，逐项审计快照和 CAS 同一事务，继续沿用每批 128 条上限。独立合成驱动提供 MR1 确认、强停回滚和同一计划重试，合成边种子统计在进入业务操作前清除。命令及证据见 [M4-R QA](docs/qa/kanata-sqlite-m4/m4-r/README.md)。
+
+MR2 已将记忆详情、精确来源及后台任务的回复链授权证明放在 SQLite 内，SQL 返回权限结论。规范化消息 scope 与 revision 校验先于正文读取，单项授权共享同一源角色和接收角色谓词。现有公开类型保留。宽标签定向测试及仍未收口的普通聊天和兼容入口见 [M4-R QA](docs/qa/kanata-sqlite-m4/m4-r/README.md)。

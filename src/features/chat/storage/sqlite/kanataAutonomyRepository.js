@@ -10,7 +10,7 @@ import { domainTable, executeOnce, found, writeOne } from './kanataDomainRows.js
 import { commitEvent, insertEvent } from './kanataEventRepository.js'
 import { saveMemory } from './kanataMemoryRepository.js'
 import { visitRows } from './kanataMessageDependents.js'
-import { conversationAccess, grantById, grantTable, requireLifeSources, sourceMetadata } from './kanataProvenance.js'
+import { conversationAccess, grantById, grantTable, hasSourceGrants, requireSourceGrants, sourceConversation } from './kanataProvenance.js'
 import { equalDto, nonemptyText, pageLimit, requireSqliteValue as need, safeInteger } from './kanataRepositoryValues.js'
 import { assertWritableWorld, readWorld, worldTable } from './kanataWorldRepository.js'
 
@@ -147,13 +147,13 @@ async function* visitWindowEvents(tx, plan) {
 /** @param {Tx} tx @param {Task} task */
 async function checkTaskSources(tx, task) {
   for (const ref of task.sourceRefs) {
-    const source = await sourceMetadata(tx, task.worldId, ref)
-    need(!task.conversationId || source.conversationId === task.conversationId, 'KANATA_TASK_SOURCE_SCOPE')
+    const conversationId = await sourceConversation(tx, task.worldId, ref)
+    need(!task.conversationId || conversationId === task.conversationId, 'KANATA_TASK_SOURCE_SCOPE')
     if (task.instanceId) {
-      const access = found(await conversationAccess(tx, task.worldId, source.conversationId, task.instanceId), 'KANATA_TASK_SOURCE_SCOPE')
-      await requireLifeSources(tx, source.sources, { worldId: task.worldId, instanceId: task.instanceId, group: access.group,
+      const access = found(await conversationAccess(tx, task.worldId, conversationId, task.instanceId), 'KANATA_TASK_SOURCE_SCOPE')
+      await requireSourceGrants(tx, ref, { worldId: task.worldId, instanceId: task.instanceId, group: access.group,
         remember: task.kind === 'memory' || task.kind === 'summary' || task.kind === 'world' })
-    } else need(!source.sources.length, 'KANATA_TASK_SOURCE_SCOPE')
+    } else need(!(await hasSourceGrants(tx, task.worldId, ref)), 'KANATA_TASK_SOURCE_SCOPE')
   }
 }
 

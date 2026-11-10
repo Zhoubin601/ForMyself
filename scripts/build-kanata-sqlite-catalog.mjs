@@ -68,11 +68,11 @@ if (process.argv.includes('--synthetic')) {
   add('query', 'business', [...eventRevocationQueries.slice(1,6), ...eventRevocationWrites]
     .map(sql => 'EXPLAIN QUERY PLAN ' + sql))
   const { memoryRows, memoryEdges, memoryWideSources, eventRows, eventEdges, eventFanout, replayEventRows, replayEffectRows, fanoutAuditInspection,
-    fanoutAnalyze, fanoutClearStats, fanoutReloadStats, fanoutCyclePlan } = await import('../docs/qa/kanata-sqlite-m4/completion/fixture.mjs')
+    fanoutAnalyze, fanoutClearStats, fanoutReloadStats, fanoutCyclePlan, grantOriginActors, grantOrigins, grantMessageTags } = await import('../docs/qa/kanata-sqlite-m4/completion/fixture.mjs')
   add('query', 'business', [fanoutAuditInspection, fanoutCyclePlan])
   add('write', 'business', [fanoutClearStats])
   add('ddl', 'business', [fanoutAnalyze, fanoutReloadStats])
-  add('write', 'business', [growthSeedSql, memoryRows, memoryEdges, memoryWideSources, eventRows, eventEdges, eventFanout, replayEventRows, replayEffectRows])
+  add('write', 'business', [growthSeedSql, memoryRows, memoryEdges, memoryWideSources, eventRows, eventEdges, eventFanout, replayEventRows, replayEffectRows, grantOriginActors, grantOrigins, grantMessageTags])
   add('write', 'business', [...m2FixtureCommands().map(command => command.sql), ...Object.values(fixtureWrites)])
   add('ddl', 'business', [futureSchema])
 }

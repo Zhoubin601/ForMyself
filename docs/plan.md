@@ -1187,3 +1187,5 @@ P6最终PASS/Go：501 Node/317组件、Web12/6布局、Android17、原生8通过
 - 生产 canonical 保持 legacy，普通 Android SQLite 激活位 false，Schema 001–004 checksum 不变；不迁移真实数据，不实施 M5/M6/M7。
 
 MR0 和 MR1 检查点见 [M4-R QA](qa/kanata-sqlite-m4/m4-r/README.md)。接管提交 c4ba18911c705c5efde7f7614171659f056e2f1e。Android 10k 宽事件、强停重开、逐项审计和幂等回执已通过。MR2 进入 G4 全链路审计。M4 BLOCKED，M5 NO。
+
+MR2 检查点已完成记忆详情、精确来源和后台任务的 SQL 授权证明。1k/10k 不同授权的设备定向切片通过。G4 的普通聊天标签集合、事件与消息来源及旧兼容入口仍 BLOCKED。后续按 [M4-R QA](qa/kanata-sqlite-m4/m4-r/README.md) 续作。

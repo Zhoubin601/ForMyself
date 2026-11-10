@@ -4,7 +4,7 @@ import { cloneKanataJson, validateId } from '../../domain/kanataValidation.js'
 import { domainTable, executeOnce, found, writeOne } from './kanataDomainRows.js'
 import { visitEventProvenance, visitAuthorizedEventSources } from './kanataEventRepository.js'
 import { visitRows } from './kanataMessageDependents.js'
-import { assertActor, conversationAccess, grantTable, requireLifeSources, sourceConversation, uniqueLifeSources, visitSourceGrants } from './kanataProvenance.js'
+import { assertActor, conversationAccess, grantTable, requireLifeSources, requireSourceGrants, sourceConversation, uniqueLifeSources, visitSourceGrants } from './kanataProvenance.js'
 import { messageQueries } from './kanataRepositorySql.js'
 import { equalDto, pageLimit, requireSqliteValue as need, safeInteger } from './kanataRepositoryValues.js'
 import { assertWritableWorld } from './kanataWorldRepository.js'
@@ -171,9 +171,10 @@ async function authorizeMemory(tx, id, scope, share = false, collect = true, vis
   const [valid] = await tx.query(review ? chainValidManaged : chainValid, keys)
   need(valid, 'KANATA_MEMORY_CONTEXT_DENIED')
   const provenance = []
+  const grantScope = { worldId, instanceId, group, remember: true, share }
   /** @param {LifeSource} source */
   const authorize = async source => {
-    await requireLifeSources(tx, [source], { worldId, instanceId, group, remember: true, share })
+    await requireLifeSources(tx, [source], grantScope)
     if (collect) provenance.push(source)
     if (visitGrant) await visitGrant(source)
   }
@@ -192,8 +193,12 @@ async function authorizeMemory(tx, id, scope, share = false, collect = true, vis
         need(row.conversation_id === conversationId && source === conversationId, 'KANATA_MEMORY_CONTEXT_DENIED')
       }
     }
-    if(reply||link.has_grant===1){
-      for await (const tag of visitSourceGrants(tx, worldId, ref)) await authorize(tag)
+    if (reply || link.has_grant === 1) {
+      if (collect || visitGrant) {
+        for await (const tag of visitSourceGrants(tx, worldId, ref)) await authorize(tag)
+      } else {
+        await requireSourceGrants(tx, ref, grantScope)
+      }
     }
   }
   need(!group || row.visibility === 'public' || rootHasSource, 'KANATA_MEMORY_CONTEXT_DENIED')
@@ -616,9 +621,7 @@ export function createKanataMemoryRepository(operation, idFactory) {
       need(linked, 'KANATA_SOURCE_STALE')
       const conversationId = await sourceConversation(tx, scope.worldId, ref)
       const access = found(await conversationAccess(tx, scope.worldId, conversationId, scope.instanceId), 'KANATA_MEMORY_CONTEXT_DENIED')
-      for await (const tag of visitSourceGrants(tx, scope.worldId, ref)) {
-        await requireLifeSources(tx, [tag], { ...scope, group: access.group || proof.group })
-      }
+      await requireSourceGrants(tx, ref, { ...scope, group: access.group || proof.group })
       const [row] = await tx.query(messageQueries.quote, [scope.worldId, conversationId, ref.messageId])
       need(row?.revision === ref.revision, 'KANATA_SOURCE_STALE')
       const archived = (await tx.query(isArchived, [scope.worldId, conversationId, ref.messageId])).length > 0

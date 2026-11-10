@@ -235,6 +235,40 @@ test('M3 remember, read and share reject before sensitive queries and archived s
   noBodies()
 })
 
+test('MR2 memory detail and source resolution prove every distinct reply-chain grant without projecting tags', async t => {
+  const { domains, fixture, messages, db, scope, state } = await setup(t)
+  const { grantOriginActors, grantOrigins, grantMessageTags, memoryRows, memoryWideSources } =
+    await import('../docs/qa/kanata-sqlite-m4/completion/fixture.mjs')
+  const { worldId, instanceId, conversationId } = scope
+  await domains.autonomy.setGrant(worldId, instanceId, 'todo', 2, { read: true, remember: true, share: true })
+  const samples = []
+  for (const size of [1000, 10000]) {
+    const prefix = 'mr2-origin-' + size + '-'
+    const source = 'mr2-source-' + size, reply = 'mr2-reply-' + size, memory = 'mr2-memory-' + size + '-'
+    await messages.insert({ ...fixture.messages[0], id: source, revision: 1, lifeSources: [] })
+    await messages.insert({ ...fixture.messages[0], id: reply, revision: 1, lifeSources: [], replyToMessageId: source, replyToRevision: 1 })
+    assert.equal(db.prepare(grantOriginActors).run(size - 1, prefix, worldId, instanceId).changes, size)
+    assert.equal(db.prepare(grantOrigins).run(worldId, prefix + '*').changes, size)
+    assert.equal(db.prepare(grantMessageTags).run(source, worldId, prefix + '*').changes, size)
+    db.prepare(memoryRows).run(0, memory, worldId, instanceId, instanceId)
+    db.prepare(memoryWideSources).run(memory + '0', worldId, conversationId, reply)
+    const ref = { messageId: reply, revision: 1 }
+    state.queries.length = 0
+    assert.equal((await domains.memories.readDetailFor(scope, memory + '0')).content, 'synthetic')
+    assert.equal((await domains.memories.resolveSource(scope, memory + '0', ref)).content, fixture.messages[0].content)
+    assert.ok(!state.queries.some(sql => sql.includes('SELECT DISTINCT l.grant_id') && sql.includes('JOIN message_life_sources l')))
+    samples.push(state.queries.length)
+    const deniedActor = prefix + (size - 1)
+    await domains.autonomy.setGrant(worldId, deniedActor, 'todo', 1, { read: false, remember: false, share: false })
+    state.queries.length = 0
+    await assert.rejects(domains.memories.readDetailFor(scope, memory + '0'), /LIFE_PERMISSION_DENIED/)
+    await assert.rejects(domains.memories.resolveSource(scope, memory + '0', ref), /LIFE_PERMISSION_DENIED/)
+    assert.ok(!state.queries.some(sql => /SELECT (?:.*\bcontent\b|\*)\s+FROM (?:memories|messages)\b/i.test(sql)))
+    t.diagnostic(JSON.stringify({ size, queries: samples.at(-1), projectedTags: 0, bodyReadsAfterRevocation: 0 }))
+  }
+  assert.equal(samples[0], samples[1])
+})
+
 test('R4 candidate share copies exact source metadata without reading body into JS or bypassing the recipient grant',async t=>{
   const { domains,fixture,messages,state,scope,db,other }=await setup(t)
   const peer=fixture.instances.find(actor=>actor.worldId===scope.worldId&&actor.id!==scope.instanceId)

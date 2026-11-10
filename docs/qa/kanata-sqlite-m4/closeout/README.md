@@ -34,3 +34,5 @@ node docs/qa/kanata-sqlite-m4/completion/verify-catalog.mjs android/app/build/ge
 主机 `heapUsed` 是分配/GC 会影响的进程采样，Android `performance.memory` 是 WebView 粗粒度采样。两者均不能代替完整堆峰值。单批 SQL 行数、每次编码对象数、Pinia 状态计数和 VM 窗口分别记录。
 
 [M4-R MR0/MR1 新复测](../m4-r/README.md)已覆盖本文记录的 10k 宽事件超时场景。本文历史结果继续保留。
+
+[验收 v5 检查点](../../../20261110-kanata-sqlite-m4-r-acceptance-v5.md)记录 MR0/MR1 已通过、MR2 定向成果和全范围未通过项。

@@ -348,3 +348,5 @@ M7 PASS 后，生成新的交接记录，至少包含：
 当前 M 分支接管基线为 d1737e7d598a14ec3f3ef1febd0bf8be050edbe2。M4 仍 BLOCKED、M5 NO。后续以 [M4-R 最终收尾任务书 v1](20261110-kanata-sqlite-m4-r-closeout-task-v1.md) 为唯一执行入口；[M4 验收 v4](20261110-kanata-sqlite-m4-acceptance-v4.md) 与 closeout QA 保留为当前证据。优先定位 Android API 34 / SQLCipher 4.17.0 的 10k 宽事件确认超时，并关闭 G4 provenance 全链路有界性、A–G 剩余流程、生命周期与两轮全范围复核。生产 canonical 保持 legacy，普通 APK SQLite 激活位 false，Schema 001–004 checksum 冻结；不实施 M5/M6/M7。
 
 M4-R MR0/MR1 已在 [当前 QA](qa/kanata-sqlite-m4/m4-r/README.md) 记录。API 34 / SQLCipher 4.17.0 的 10k 宽事件确认与强停恢复通过。继续 MR2 provenance 及后续门禁。M4 BLOCKED，M5 NO。
+
+[M4-R 验收 v5 检查点](20261110-kanata-sqlite-m4-r-acceptance-v5.md)记录 MR2 定向成果和后续未闭环条件。G1–G11 仍按唯一执行任务书验收。

@@ -1,0 +1,54 @@
+▲ [WARNING] Ignoring this import because "src/features/chat/kanataManagement.css" was marked as having no side effects [ignored-bare-import]
+
+    src/features/chat/KanataView.vue:8:7:
+      8 │ import './kanataManagement.css'
+        ╵        ~~~~~~~~~~~~~~~~~~~~~~~~
+
+{"qaBundleSha256":"197d12b97c3cfb331d5511a392b5211d631dc26013b916141a898a501f4e4c7f"}
+{
+  "mr2GrantProof": {
+    "health": {
+      "cipher": "4.17.0 community",
+      "journalMode": "wal",
+      "synchronous": 2,
+      "foreignKeys": 1,
+      "cacheSize": -2048,
+      "checkpoint": 1000,
+      "busyTimeout": 5000
+    },
+    "samples": [
+      {
+        "size": 1000,
+        "allowed": {
+          "queries": 25,
+          "maxRows": 1,
+          "projectedTags": 0,
+          "bodyReads": 2,
+          "elapsedMs": 122
+        },
+        "denied": {
+          "queries": 14,
+          "bodyReads": 0,
+          "projectedTags": 0,
+          "maxRows": 1
+        }
+      },
+      {
+        "size": 10000,
+        "allowed": {
+          "queries": 25,
+          "maxRows": 1,
+          "projectedTags": 0,
+          "bodyReads": 2,
+          "elapsedMs": 367
+        },
+        "denied": {
+          "queries": 14,
+          "bodyReads": 0,
+          "projectedTags": 0,
+          "maxRows": 1
+        }
+      }
+    ]
+  }
+}

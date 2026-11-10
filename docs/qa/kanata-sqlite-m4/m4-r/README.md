@@ -49,3 +49,25 @@ pwsh -NoProfile -File docs/qa/kanata-sqlite-m2/run-windows-candidate.ps1 -Manife
 - [汇总](mr1-metrics.json) · [主机 check](mr1-check.txt.gz) · [主机定向](mr1-directed-host.txt) · [普通 APK 门禁](mr1-default-gate.json) · [源码与数据指纹](mr1-tested-files-sha256.json) · [候选 catalog SHA](mr1-fixed-catalog-sha256.txt)
 - [Android 进程 RSS/PSS 采样](mr1-device-memory-samples.txt)。这是 App 进程的间隔采样，保留 WebView 整链堆峰值和 G2 验证为待验。
 - [MR2 G4 入口审计](g4-call-map.md)。
+
+## MR2 已验证切片 · G4 仍 BLOCKED
+
+记忆详情、兼容 readFor、精确来源解析和有角色后台任务对规范化回复链在 SQLite 内验证生活授权。无角色任务在 SQL 内只检查是否存在生活标签。传入单项来源时使用相同的授权谓词，来源与接收者的读、记、分享范围独立。正文读取沿用先验 scope 和精确消息 revision 的顺序。现有公开 Repository 契约沿用。
+
+| Android 不同来源角色及授权 | 1,000 | 10,000 |
+| --- | ---: | ---: |
+| 详情及精确来源成功读取总查询数 | 25 | 25 |
+| 最高 SQL 返回行数 | 1 | 1 |
+| 跨桥生活标签 | 0 | 0 |
+| 撤销其中一项授权后的正文读取数 | 0 | 0 |
+
+仍有风险的真实入口和旧兼容链路见 [G4 调用审计](g4-call-map.md)。详细反例及复测状态见 [两轮检查点复核](reviews.md)。两轮仍缺完整产品、生命周期和故障证据。
+
+```powershell
+node --test --test-name-pattern 'MR2 memory detail|remember, read and share|candidate share|task' tests/kanataSqliteDomains.test.js
+pwsh -NoProfile -File docs/qa/kanata-sqlite-m2/run-windows-candidate.ps1 -ManifestPath $manifest -EvidenceDirectory $grants -Mode mr2-grants
+```
+
+[两档设备结果](mr2-grants-result.txt) · [设备退出码](mr2-grants-exit.txt) · [综合回归](mr2-regression-result.txt.gz) · [综合退出码](mr2-regression-exit.txt) · [主机定向](mr2-directed-host.txt) · [全量 check](mr2-check.txt.gz) · [候选 catalog](mr2-catalog-sha256.txt) · [源码与夹具指纹](mr2-tested-files-sha256.json) · [普通 APK](mr2-default-gate.json)。
+
+主机独立权限对照通过 1,024 种同角色与跨角色权限组合，另覆盖 5 种身份、revision 和世界不匹配。运行 node docs/qa/kanata-sqlite-m4/m4-r/verify-grant-predicate.mjs。[权限对照日志](mr2-host-permission-equivalence.txt)

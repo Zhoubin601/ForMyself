@@ -119,7 +119,18 @@ try {
   let password
   try { password = JSON.stringify(bytes.toString('base64')) }
   finally { bytes.fill(0) }
-  if (process.argv.includes('--mr1-fanout') || process.argv.includes('--mr1-verify')) {
+  if (process.argv.includes('--mr2-grants')) {
+    const fixture=m2Fixture()
+    const sample=fixture.messages[0]
+    const {worldId,conversationId}=sample
+    const instanceId=fixture.instances.find(actor=>actor.worldId===worldId).id
+    const input={scope:{worldId,conversationId,instanceId},sample,commands:m2FixtureCommands(fixture)}
+    const result=await evaluate(`window.mr2QaWideGrantProof(${password}, ${JSON.stringify(input)})`,420000)
+    console.log(JSON.stringify({mr2GrantProof:result},null,2))
+    assert.equal(result.error,undefined)
+    assert.match(result.health.cipher,/^4\.17\.0/)
+    assert.deepEqual(result.samples.map(item=>item.size),[1000,10000])
+  } else if (process.argv.includes('--mr1-fanout') || process.argv.includes('--mr1-verify')) {
     const verify=process.argv.includes('--mr1-verify')
     const fixture = m2Fixture()
     const { worldId } = fixture.messages[0]
