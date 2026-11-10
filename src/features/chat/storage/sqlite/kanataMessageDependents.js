@@ -2,6 +2,7 @@
 import { applyKanataEffect, assertKanataEffectExecutable } from '../../experience/kanataEvents.js'
 import { validateId } from '../../domain/kanataValidation.js'
 import { dependentQueries as query, dependentWrites as write, updateEffectValue } from './kanataMessageDependentsSql.js'
+import { eventAuditSupport, writeEventStatusAudit } from './kanataEventSnapshot.js'
 import { messageWrites } from './kanataRepositorySql.js'
 import { extensionObject, requireSqliteValue as need, safeInteger } from './kanataRepositoryValues.js'
 
@@ -145,15 +146,23 @@ export async function rebuildEventEffects(tx, sql, bindings) {
 export async function reviseMessageDependents(tx, message, tools, revise, messages) {
   const scope = [message.worldId, message.conversationId, message.id]
   need((await tx.query(query.uncertain, scope)).length === 0, 'EVENT_DEPENDENCY_UNCERTAIN')
-  for await (const row of visitRows(tx, query.events, scope, ['id'])) {
-    const previous = await eventFromRow(tx, row)
-    const next = { ...previous, status: 'needsReview', revision: previous.revision + 1 }
+  for await (const row of visitRows(tx, query.events, scope, ['id'], 50)) {
+    const key = [row.world_id,row.id], revision = Number(row.revision)
+    const [audit] = await tx.query(eventAuditSupport,[...key,revision])
+    need(audit && Number(audit.supported)>=0,'KANATA_SQLITE_INTEGRITY_FAILED')
+    const previous = audit.supported === 0
+      ? await eventFromRow(tx,(await tx.query(query.eventFallback,key))[0])
+      : undefined
     const id = tools.id(), at = tools.clock()
     validateId(id, 'eventAuditId')
     need(safeInteger(at), 'KANATA_MESSAGE_AUDIT_INVALID')
-    await changeOne(tx, write.event, [previous.worldId, previous.id, previous.revision])
-    await changeOne(tx, write.audit, [id, previous.worldId, previous.id, at, previous.revision,
-      next.revision, JSON.stringify(previous), JSON.stringify(next)])
+    await changeOne(tx, write.event, [...key,revision])
+    if (previous) {
+      const next = { ...previous, status:'needsReview', revision:revision+1 }
+      await changeOne(tx,write.audit,[id,...key,at,revision,revision+1,JSON.stringify(previous),JSON.stringify(next)])
+    } else {
+      await changeOne(tx,writeEventStatusAudit,[id,at,row.status,...key,revision+1])
+    }
   }
   await tx.execute(write.eventMemories, scope)
   await rebuildEventEffects(tx, query.affectedEffects, scope)

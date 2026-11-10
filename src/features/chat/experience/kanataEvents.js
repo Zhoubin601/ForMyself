@@ -53,7 +53,7 @@ export function proposeKanataEvent(input,fields,tools) {
   const event={...cloneKanataJson(fields),id:tools.id(),status:/** @type {const} */('candidate'),revision:1,recordedAt:tools.clock(),causality:fields.causality||/** @type {const} */('explicit')}
   data.events.push(event);return validateKanataData(data)
 }
-/** @param {Pick<Data,'relationships'|'instances'>} data @param {Event} event @param {()=>string} id @returns {Effect[]} */
+/** @param {Pick<Data,'relationships'|'instances'>} data @param {Pick<Event,'id'|'worldId'|'kind'|'action'|'participantIds'>} event @param {()=>string} id @returns {Effect[]} */
 export function eventEffects(data,event,id) {
   const kind=event.kind||'note',action=event.action||{}
   /** @type {Effect[]} */

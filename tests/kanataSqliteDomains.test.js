@@ -955,3 +955,90 @@ test('GROUP-01–05 membership editing uses history, scope, CAS and an atomic re
   assert.equal((await repo.groupEdit(deleted)).hasHistory, true)
   await assert.rejects(repo.editGroupMembers(deleted, command('deleted-edit', false)), /HISTORY_CHANGED/)
 })
+
+test('MR2 event write acknowledgements preserve 1k/10k mixed provenance, legacy snapshots and rollback', async t => {
+  const { seedWideChatSources } = await import('../docs/qa/kanata-sqlite-m4/completion/fixture.mjs')
+  const { db, state, fixture, domains, messages, scope, other, move, operation } = await setup(t)
+  await domains.autonomy.setGrant(scope.worldId,scope.instanceId,'todo',2,{read:true,remember:true,share:true})
+  const { lifeSources:_life, ...sample } = fixture.messages[0]
+  for (const size of [1000,10000]) {
+    const source = 'write-source-' + size, idempotency = 'event-proof-' + size
+    await messages.insert({...sample,id:source,revision:1,createdAt:size+2000})
+    const seeds = await operation.transaction(tx=>seedWideChatSources(tx,scope,source,size))
+    const refs = [{messageId:source,revision:1,future:{nested:null}}]
+    const local = db.prepare('SELECT id,revision FROM life_grants WHERE world_id=? AND instance_id=? AND module_id=?').get(scope.worldId,scope.instanceId,'todo')
+    const tag = {grantId:local.id,instanceId:scope.instanceId,moduleId:'todo',revision:local.revision,fingerprint:'f'.repeat(64)}
+    const fields = {...move('来源顺序'),sourceRefs:refs,causedByEventIds:[seeds.eventId],
+      visibility:'public', participantIds:['g4-origin-'+size+'-0',scope.instanceId],
+      future:{nested:[null,3,{key:'保留'}]}, action:{instanceId:scope.instanceId,location:'来源顺序',future:null},
+      lifeSources:[{...tag,instanceId:'wrong-owner',future:'old'},{...tag,future:'last'}]}
+    let maxRows=0, fullReads=0
+    state.observeRows=(sql,rows)=>{
+      maxRows=Math.max(maxRows,rows)
+      if (/SELECT \* FROM world_events|SELECT id,at,previous_json/.test(sql)) fullReads++
+    }
+    state.queries.length=0
+    const {id}=await domains.events.proposeAcknowledged(fields,idempotency)
+    assert.deepEqual(await domains.events.proposeAcknowledged(fields,idempotency),{id})
+    state.failCommit=true
+    await assert.rejects(()=>domains.events.commitAcknowledged(scope.worldId,id,1),/injected commit failure/)
+    state.failCommit=false
+    assert.equal((await domains.events.managedEvent(scope.worldId,id)).revision,1)
+    const allowed=await domains.events.commitAcknowledged(scope.worldId,id,1)
+    assert.deepEqual(allowed,{id})
+    assert.deepEqual(await domains.events.commitAcknowledged(scope.worldId,id,1),{id})
+    assert.equal(fullReads,0)
+    assert.ok(maxRows<=50)
+    t.diagnostic(JSON.stringify({size,maxRows,fullReads,queries:state.queries.length}))
+    state.observeRows=undefined
+    const audit=(await domains.events.audits(scope.worldId,id)).audits
+    assert.equal(audit.length,1)
+    const before=audit[0].previous
+    assert.deepEqual(before.sourceRefs,refs)
+    assert.deepEqual(before.participantIds,fields.participantIds)
+    assert.deepEqual(before.future,fields.future)
+    assert.deepEqual(before.action,fields.action)
+    assert.equal(before.lifeSources.length,size+1)
+    assert.deepEqual(before.lifeSources[0],{...tag,future:'last'})
+    const oldOrder=db.prepare('SELECT grant_id FROM message_life_sources WHERE world_id=? AND message_id=? ORDER BY grant_id').all(scope.worldId,source).map(row=>row.grant_id)
+    assert.deepEqual(before.lifeSources.slice(1).map(value=>value.grantId),oldOrder)
+    const current=(await domains.events.list(scope.worldId)).events.find(item=>item.id===id)
+    assert.deepEqual(audit[0].next,current)
+    assert.deepEqual((await domains.events.effects(scope.worldId,id)).map(effect=>effect.value),['来源顺序'])
+    const plan=(await domains.events.openRevocation(scope.worldId,id)).plan
+    state.observeRows=(sql)=>{
+      if (/SELECT \* FROM world_events|SELECT id,at,previous_json/.test(sql)) fullReads++
+    }
+    const replacement=await domains.events.correctConfirmed(plan,undefined,idempotency+'-correct','合成修正')
+    assert.deepEqual(await domains.events.correctConfirmed(plan,undefined,idempotency+'-correct','合成修正'),replacement)
+    assert.equal(fullReads,0)
+    state.observeRows=undefined
+    const corrected=(await domains.events.list(scope.worldId)).events.find(item=>item.id===replacement.id)
+    assert.equal(corrected.replacesEventId,id)
+    assert.deepEqual(corrected.sourceRefs,refs)
+    assert.deepEqual(corrected.lifeSources,current.lifeSources)
+    assert.equal((await domains.events.revocationAudits(scope.worldId,id)).entries.length,1)
+    await domains.autonomy.setGrant(scope.worldId,seeds.deniedActor,'todo',1,{read:false,remember:false,share:false})
+    state.queries.length=0
+    await assert.rejects(()=>domains.events.readFor(scope.worldId,seeds.eventId,{instanceId:scope.instanceId,group:false}),/KANATA_LIFE_PERMISSION_DENIED/)
+    assert.equal(state.queries.some(sql=>sql.startsWith('SELECT * FROM world_events')),false)
+    await assert.rejects(()=>domains.events.proposeAcknowledged(fields,idempotency+'-denied'),/KANATA_LIFE_PERMISSION_DENIED/)
+    await assert.rejects(()=>domains.events.proposeAcknowledged({...fields,sourceRefs:[{messageId:source,revision:2}]},idempotency+'-stale'),/KANATA_SOURCE_STALE/)
+    await assert.rejects(()=>domains.events.proposeAcknowledged({...fields,worldId:other.worldId},idempotency+'-cross-world'),/KANATA_SOURCE_STALE/)
+  }
+})
+
+test('MR2 rejects duplicate or damaged event relation hints before publishing state', async t => {
+  const {db,domains,scope,move}=await setup(t)
+  const {worldId,instanceId}=scope
+  const other=db.prepare('SELECT id FROM participants WHERE world_id=? AND id<>? LIMIT 1').get(worldId,instanceId).id
+  const fields={...move('合成完整性'),participantIds:[other,instanceId]}
+  const changeHint=db.prepare("UPDATE world_events SET extensions_json=json_set(extensions_json,'$.participantIds',json(?)) WHERE world_id=? AND id=?")
+  for(const [index,hint] of [[0,[instanceId,instanceId]],[1,[instanceId]],[2,[instanceId,'missing-role']],[3,null]]) {
+    const {id}=await domains.events.proposeAcknowledged(fields,'invalid-event-hint-'+index)
+    changeHint.run(JSON.stringify(hint),worldId,id)
+    await assert.rejects(()=>domains.events.commitAcknowledged(worldId,id,1),/KANATA_SQLITE_INTEGRITY_FAILED/)
+    assert.equal((await domains.events.managedEvent(worldId,id)).revision,1)
+    assert.deepEqual(await domains.events.effects(worldId,id),[])
+  }
+})

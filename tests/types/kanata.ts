@@ -262,3 +262,12 @@ void encryptedPage
 // @ts-expect-error asynchronous native crypto cannot be consumed as a synchronous plaintext result
 const insecureSynchronousPage:string=decryptPassphraseAesAsync('synthetic','synthetic-password')
 void insecureSynchronousPage
+
+import type { KanataEventAcknowledgement, KanataSqliteWorldRuntime } from '../../src/application/contracts'
+declare const sqliteWorld: ReturnType<KanataSqliteWorldRuntime['select']>
+const acknowledgedEvent: Promise<KanataEventAcknowledgement> =
+  sqliteWorld.commitEventAcknowledged('event', 1, () => {})
+// @ts-expect-error An acknowledged command returns the ID without hydrating source relations.
+void acknowledgedEvent.then(event => event.lifeSources)
+// @ts-expect-error Candidate commands must provide the current request guard.
+void sqliteWorld.commitEventAcknowledged('event', 1)

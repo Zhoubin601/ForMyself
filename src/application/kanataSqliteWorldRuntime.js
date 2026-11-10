@@ -238,6 +238,14 @@ export function createKanataSqliteWorldRuntime({ candidate, clock = Date.now, se
         },guard),
         /** @param {string} eventId @param {number} revision @param {()=>void} [guard] */
         commitEvent: (eventId, revision, guard) => run(domains => domains.events.commit(worldId, eventId, revision),guard),
+        /** @param {Parameters<Domains['events']['proposeAcknowledged']>[0]} fields @param {string} commandId @param {()=>void} guard */
+        proposeEventAcknowledged: (fields, commandId, guard) => run(domains => {
+          if (fields.worldId !== worldId) throw new Error('KANATA_WORLD_OWNER_EXPIRED')
+          return domains.events.proposeAcknowledged(fields, commandId)
+        },guard),
+        /** @param {string} eventId @param {number} revision @param {()=>void} guard */
+        commitEventAcknowledged: (eventId, revision, guard) =>
+          run(domains => domains.events.commitAcknowledged(worldId, eventId, revision),guard),
         /** @param {string} eventId */
         previewRevoke: eventId => run(domains => domains.events.preview(worldId, eventId)),
         /** @param {Parameters<Domains['events']['revoke']>[0]} plan @param {Parameters<Domains['events']['revoke']>[1]} decision */

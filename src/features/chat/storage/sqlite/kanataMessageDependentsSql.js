@@ -37,8 +37,10 @@ export const dependentQueries = Object.freeze({
     WHERE e.status='committed' AND e.causality IS NOT 'explicit' AND e.id NOT IN (SELECT id FROM affected_events)
       AND e.effective_at>=(SELECT min(affected.effective_at) FROM affected_events a
         JOIN world_events affected ON affected.id=a.id AND affected.world_id=args.world) LIMIT 1`,
-  events: events + ` SELECT e.* FROM affected_events a JOIN world_events e ON e.id=a.id JOIN args ON e.world_id=args.world
-    WHERE e.status<>'revoked' AND e.id>? ORDER BY e.id LIMIT 128`,
+  events: events + ` SELECT e.world_id,e.id,e.status,e.revision FROM affected_events a
+    JOIN world_events e ON e.id=a.id JOIN args ON e.world_id=args.world
+    WHERE e.status<>'revoked' AND e.id>? ORDER BY e.id LIMIT 50`,
+  eventFallback: 'SELECT * FROM world_events WHERE world_id=? AND id=?',
   replies: messages + ` SELECT ${messageProjection} FROM affected_messages a JOIN messages m ON m.id=a.id
     JOIN args ON m.world_id=args.world AND m.conversation_id=args.conversation
     WHERE m.id<>args.message AND m.id>? ORDER BY m.id LIMIT 128`,

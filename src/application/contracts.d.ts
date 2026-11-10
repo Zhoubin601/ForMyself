@@ -7,7 +7,7 @@ export type { KanataSqliteWriteResult, KanataSqliteTransaction, KanataSqliteHeal
 export type { KanataReplyProvenance, KanataMessageState, KanataMessageScope, KanataMessageCursor, KanataMessagePage, KanataMessageRepository, KanataHistoryCursor, KanataHistoryPage, KanataHistoryArchivePlan,
   KanataConversationRepository, KanataGroupMemberEdit, KanataMessageProvenance, KanataReplyExpectation,
   KanataChatContextState, KanataDeferredReply } from '../features/chat/storage/sqlite/kanataRepositoryTypes'
-export type { KanataSqliteDomains, KanataSqliteDomainOwner, KanataEventGraphCursor, KanataMemorySourceCursor,
+export type { KanataSqliteDomains, KanataSqliteDomainOwner, KanataEventAcknowledgement, KanataEventGraphCursor, KanataMemorySourceCursor,
   KanataEventRevocationPlan, KanataEventRevocationCursor, KanataEventRevocationDecision, KanataEventEffectAuditCursor,
   KanataMemoryConflictPlan, KanataMemoryConflictCursor,
   KanataMemoryPromptProjection, KanataOutgoingMemoryShareCursor } from '../features/chat/storage/sqlite/kanataDomainTypes'

@@ -20,6 +20,8 @@ import { lorebookQueries, lorebookWrites } from '../src/features/chat/storage/sq
 import { provenanceQueries } from '../src/features/chat/storage/sqlite/kanataProvenance.js'
 import { memoryQueries, memoryWrites } from '../src/features/chat/storage/sqlite/kanataMemoryRepository.js'
 import { eventRevocationQueries, eventRevocationWrites } from '../src/features/chat/storage/sqlite/kanataEventRevocation.js'
+import { eventSnapshotQueries, eventSnapshotWrites } from '../src/features/chat/storage/sqlite/kanataEventSnapshot.js'
+import { eventProofDdl, eventProofQueries, eventProofWrites } from '../src/features/chat/storage/sqlite/kanataEventProof.js'
 import { eventQueries, eventWrites } from '../src/features/chat/storage/sqlite/kanataEventRepository.js'
 import { autonomyQueries, autonomyWrites } from '../src/features/chat/storage/sqlite/kanataAutonomyRepository.js'
 import { usageQueries, usageWrites } from '../src/features/chat/storage/sqlite/kanataUsageRepository.js'
@@ -54,7 +56,9 @@ add('ddl', 'schema', [
   schema.setApplicationId,
   ...KANATA_SCHEMA_MIGRATIONS.flatMap(migration => [...migration.statements, schema.setVersion(migration.version)]),
 ])
-add('ddl', 'business', replyProofDdl)
+add('ddl', 'business', [...replyProofDdl, ...eventProofDdl])
+add('query', 'business', eventProofQueries)
+add('write', 'business', eventProofWrites)
 add('query', 'business', replyProofQueries)
 add('write', 'business', replyProofWrites)
 add('query', 'business', [...Object.values(messageQueries), ...Object.values(conversationQueries), ...Object.values(dependentQueries),
@@ -62,9 +66,9 @@ add('query', 'business', [...Object.values(messageQueries), ...Object.values(con
 add('write', 'business', [...Object.values(messageWrites), ...Object.values(conversationWrites),
   ...Object.values(dependentWrites), ...Object.values(updateEffectValue), ...Object.values(deferredReplyWrites), ...historyArchiveWrites])
 add('query', 'business', [receiptQuery, ...worldQueries, ...characterQueries, ...lorebookQueries, ...provenanceQueries,
-  ...memoryQueries, ...eventQueries, ...eventRevocationQueries, ...autonomyQueries, ...usageQueries, ...chatViewQueries, ...managementViewQueries, ...bindingQueries])
+  ...memoryQueries, ...eventSnapshotQueries, ...eventQueries, ...eventRevocationQueries, ...autonomyQueries, ...usageQueries, ...chatViewQueries, ...managementViewQueries, ...bindingQueries])
 add('write', 'business', [receiptWrite, ...worldWrites, ...characterWrites, ...lorebookWrites, ...memoryWrites,
-  ...eventWrites, ...eventRevocationWrites, ...autonomyWrites, ...usageWrites, ...bindingWrites])
+  ...eventSnapshotWrites, ...eventWrites, ...eventRevocationWrites, ...autonomyWrites, ...usageWrites, ...bindingWrites])
 if (process.argv.includes('--synthetic')) {
   const { m2FixtureCommands, auditInspection, fixtureWrites, futureSchema } = await import('../tests/helpers/kanataSqliteM2Fixture.js')
   const { growthSeedSql } = await import('../docs/qa/kanata-sqlite-m4/fixture.mjs')

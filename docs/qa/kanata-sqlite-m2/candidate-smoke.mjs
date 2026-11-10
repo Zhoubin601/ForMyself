@@ -1,6 +1,7 @@
 import { memoryRows, memoryEdges, memoryWideSources, eventRows, eventEdges, seedFanoutLinks, replayEventRows, replayEffectRows, fanoutAuditInspection, grantOriginActors, grantOrigins, grantMessageTags, seedWideChatSources, chatReplyTagCheck } from '../kanata-sqlite-m4/completion/fixture.mjs'
 import { growthSeedSql } from '../kanata-sqlite-m4/fixture.mjs'
 import { eventRevocationQueries, eventRevocationWrites } from '../../../src/features/chat/storage/sqlite/kanataEventRevocation.js'
+import { eventProofDdl, eventProofWrites } from '../../../src/features/chat/storage/sqlite/kanataEventProof.js'
 import { replyProofDdl } from '../../../src/features/chat/storage/sqlite/kanataReplyProvenance.js'
 import { receiptQuery, receiptWrite } from '../../../src/features/chat/storage/sqlite/kanataDomainRows.js'
 import { sha256Text } from '../../../src/shared/crypto/sha256Text.js'
@@ -59,6 +60,7 @@ async function profileBridge(name, command, action) {
   return result
 }
 let groupCommitFault
+let eventCommitFault
 let replyCommitFault
 let suspendCommit = false
 let fanoutCrashArmed = false
@@ -67,13 +69,21 @@ const candidate = createKanataSqliteCandidate({
   syntheticOnly: true, auth, access, bridge: {
     prepare: bridge.prepare, unlock: bridge.unlock, begin: options => profileBridge("begin", options, bridge.begin),
     async execute(command) {
-      if (trace) trace.writes++
+      if (trace) {
+        trace.writes++
+        trace.observeWrite?.(command)
+      }
       const result = await profileBridge("execute", command, bridge.execute)
       if (fanoutCrashArmed && command.statement === sha256Text(eventRevocationWrites[1])) {
         check(result.affectedRows===128, 'MR1_FIRST_AUDIT_BATCH')
         fanoutCrashArmed=false
         crashState='mr1-first-batch-uncommitted'
         return new Promise(()=>{})
+      }
+      if (eventCommitFault && command.statement===sha256Text(eventProofDdl[1])) {
+        const statement=eventCommitFault
+        eventCommitFault=undefined
+        await bridge.execute({...command,statement,parameters:['g4-event-orphan','absent-card',1,'{}','{}','synthetic']})
       }
       if (replyCommitFault && command.statement===sha256Text(replyProofDdl[1])) {
         const statement=replyCommitFault
@@ -1586,4 +1596,167 @@ window.m4QaCompletion = async (password, scope, requestedSize) => {
   } catch(error) {
     return { error:error.code??error.message, samples }
   } finally { eventProfile=undefined; trace=undefined; auth.expireSession(); await candidate.release() }
+}
+window.mr2QaEventProvenance = async (password, {commands,scope,sample,commitFault}) => {
+  session(password)
+  const {worldId,instanceId}=scope
+  const runtime=candidate.createWorldRuntime(()=>50000)
+  const results=[], observations=[]
+  try {
+    const health=await candidate.run({create:true},async operation=>{
+      await operation.transaction(async tx=>{
+        for (const {sql,parameters} of commands) await tx.execute(sql,parameters)
+      })
+      return operation.health()
+    })
+    await candidate.withDomains({},domains=>domains.autonomy.setGrant(worldId,instanceId,'todo',2,
+      {read:true,remember:true,share:true}))
+    const model=runtime.select(worldId)
+    const guard=()=>{}
+    for (const size of [1000,10000]) {
+      const source='mr2-event-source-'+size
+      const {lifeSources:_life,...base}=sample
+      await candidate.withRepositories({},messages=>messages.insert({...base,id:source,revision:1,createdAt:size+2000}))
+      const seeds=await candidate.run({},operation=>operation.transaction(tx=>seedWideChatSources(tx,scope,source,size)))
+      const refs=[{messageId:source,revision:1,future:{nested:null}}]
+      const fields={worldId,participantIds:[instanceId],sourceRefs:refs,causedByEventIds:[seeds.eventId],
+        visibility:'private',summary:'合成事件来源',effectiveAt:1200,kind:'move',
+        action:{instanceId,location:'合成位置',future:null},future:{nested:[null,3,{key:'保留'}]}}
+      let fullDtos=0,maxTagRows=0,maxStagedTags=0
+      const heapStart=performance.memory?.usedJSHeapSize??null
+      let heapSample=heapStart
+      trace={queries:0,writes:0,maxRows:0,observeQuery(rows) {
+        fullDtos+=rows.filter(row=>(Object.hasOwn(row,'extensions_json')&&Object.hasOwn(row,'summary')&&Object.hasOwn(row,'recorded_at'))
+          ||Object.hasOwn(row,'previous_json')).length
+        maxTagRows=Math.max(maxTagRows,rows.filter(row=>Object.hasOwn(row,'grant_id')).length)
+        if(performance.memory)heapSample=Math.max(heapSample??0,performance.memory.usedJSHeapSize)
+      },observeWrite(command){
+        if(command.statement===sha256Text(eventProofWrites[0])) {
+          maxStagedTags=Math.max(maxStagedTags,JSON.parse(command.parameters[0]).length)
+        }
+      }}
+      let cancellation
+      if(size===1000) {
+        const observeWrite=trace.observeWrite
+        let closed=false, ioAtClose
+        trace.observeWrite=command=>{
+          observeWrite(command)
+          if(!closed&&command.statement===sha256Text(eventProofWrites[0])) {
+            closed=true
+            ioAtClose=[trace.queries,trace.writes]
+          }
+        }
+        await rejects(()=>model.proposeEventAcknowledged(fields,'mr2-event-'+size,()=>{
+          if(closed)throw new Error('EVENT_QA_CLOSED')
+        }),'EVENT_QA_CLOSED')
+        cancellation={queries:trace.queries-ioAtClose[0],writes:trace.writes-ioAtClose[1]}
+        check(cancellation.queries===0&&cancellation.writes===0,'EVENT_PROPOSAL_IO_AFTER_CLOSE')
+        trace.observeWrite=observeWrite
+        trace.queries=0
+        trace.writes=0
+      }
+      const started=performance.now()
+      const {id}=await model.proposeEventAcknowledged(fields,'mr2-event-'+size,guard)
+      check((await model.proposeEventAcknowledged(fields,'mr2-event-'+size,guard)).id===id,'EVENT_PROPOSE_RECEIPT')
+      eventCommitFault=sha256Text(commitFault)
+      await rejects(()=>model.commitEventAcknowledged(id,1,guard),'KANATA_SQLITE_TRANSACTION_FAILED')
+      check((await model.eventDetail(id,guard)).revision===1,'EVENT_COMMIT_ROLLBACK')
+      check((await model.commitEventAcknowledged(id,1,guard)).id===id,'EVENT_COMMIT_ACK')
+      check((await model.commitEventAcknowledged(id,1,guard)).id===id,'EVENT_COMMIT_RECEIPT')
+      await rejects(()=>model.commitEventAcknowledged(id,2,guard),'EVENT_COMMIT_CONFLICT')
+      const observation={queries:trace.queries,writes:trace.writes,maxRows:trace.maxRows,maxTagRows,maxStagedTags,
+        fullDtos,heapStart,heapSample,elapsedMs:Math.round(performance.now()-started)}
+      trace=undefined
+      observations.push({size,...observation})
+      check(fullDtos===0&&observation.maxRows<=50&&maxTagRows===50&&maxStagedTags===50,'EVENT_PROVENANCE_BOUNDS')
+      const snapshot=await candidate.withDomains({},async ({events})=>{
+        const page=await events.audits(worldId,id)
+        check(page.audits.length===1,'EVENT_AUDIT_COUNT')
+        const {previous,next}=page.audits[0]
+        check(previous.lifeSources.length===size&&next.lifeSources.length===size,'EVENT_TAG_TAIL')
+        check(JSON.stringify(previous.sourceRefs)===JSON.stringify(refs)
+          &&JSON.stringify(next.future)===JSON.stringify(fields.future)&&next.action.future===null,'EVENT_LEGACY_JSON')
+        const grants=next.lifeSources.map(tag=>tag.grantId)
+        check(grants[0]==='grant-'+seeds.deniedActor.replace(/\d+$/,'0')&&new Set(grants).size===size,'EVENT_LEGACY_TAG_ORDER')
+        const effects=await events.effects(worldId,id)
+        check(effects.length===1&&effects[0].value===fields.action.location&&effects[0].eventId===id,'EVENT_EFFECT_OWNER')
+        return {count:grants.length,sha256:sha256Text(JSON.stringify(grants))}
+      })
+      const opened=await model.openRevocation(id,undefined,guard)
+      trace={queries:0,writes:0,maxRows:0,observeQuery(rows){
+        fullDtos+=rows.filter(row=>(Object.hasOwn(row,'extensions_json')&&Object.hasOwn(row,'summary')&&Object.hasOwn(row,'recorded_at'))
+          ||Object.hasOwn(row,'previous_json')).length
+      }}
+      const correction=await model.correctConfirmedEvent(opened.plan,undefined,'mr2-event-correct-'+size,'合成修正',guard)
+      check((await model.correctConfirmedEvent(opened.plan,undefined,'mr2-event-correct-'+size,'合成修正',guard)).id===correction.id,
+        'EVENT_CORRECTION_RECEIPT')
+      const correctionIo={queries:trace.queries,writes:trace.writes,maxRows:trace.maxRows,fullDtos}
+      trace=undefined
+      check(fullDtos===0&&correctionIo.maxRows<=128,'EVENT_CORRECTION_BOUNDS')
+      await candidate.withDomains({},async ({events})=>{
+        const replacement=(await events.list(worldId)).events.find(event=>event.id===correction.id)
+        check(replacement.replacesEventId===id&&replacement.lifeSources.length===size
+          &&JSON.stringify(replacement.sourceRefs)===JSON.stringify(refs),'EVENT_CORRECTION_RELATIONS')
+        check((await events.revocationAudits(worldId,id)).entries.length===1,'EVENT_CORRECTION_AUDIT')
+      })
+      await candidate.withDomains({},domains=>domains.autonomy.setGrant(worldId,seeds.deniedActor,'todo',1,
+        {read:false,remember:false,share:false}))
+      let deniedBodyReads=0
+      trace={queries:0,writes:0,maxRows:0,observeQuery(rows){
+        deniedBodyReads+=rows.filter(row=>Object.hasOwn(row,'summary')).length
+      }}
+      await rejects(()=>candidate.withDomains({},domains=>domains.events.readFor(worldId,seeds.eventId,{instanceId,group:false})),'KANATA_LIFE_PERMISSION_DENIED')
+      await rejects(()=>model.proposeEventAcknowledged(fields,'mr2-event-denied-'+size,guard),'KANATA_LIFE_PERMISSION_DENIED')
+      await rejects(()=>model.proposeEventAcknowledged({...fields,sourceRefs:[{messageId:source,revision:2}]},
+        'mr2-event-stale-'+size,guard),'KANATA_SOURCE_STALE')
+      check(deniedBodyReads===0,'EVENT_DENIED_BODY')
+      trace=undefined
+      results.push({size,...observation,correctionIo,snapshot,deniedBodyReads,cancellation,commitFailure:true,idempotentReplay:true})
+    }
+    return {health,results,realModelCalls:0}
+  } catch(error) {
+    return {error:error.code??error.message,results,observations}
+  } finally {
+    trace=undefined
+    eventCommitFault=undefined
+    runtime.dispose()
+    auth.expireSession()
+    await candidate.release()
+  }
+}
+
+window.mr2QaArmEventCrash = async (password, {worldId,instanceId}) => {
+  session(password)
+  const runtime=candidate.createWorldRuntime(()=>50000)
+  const model=runtime.select(worldId), guard=()=>{}
+  const {id}=await model.proposeEventAcknowledged({worldId,participantIds:[instanceId],sourceRefs:[],causedByEventIds:[],
+    visibility:'private',summary:'合成强停事件',effectiveAt:9000,kind:'move',action:{instanceId,location:'强停恢复位置'}},
+  'mr2-event-crash',guard)
+  crashState='idle'
+  suspendCommit=true
+  void model.commitEventAcknowledged(id,1,guard).catch(error=>{crashState=error.code??error.message})
+  return id
+}
+window.mr2QaRecoverEventCrash = async (password, worldId, id) => {
+  session(password)
+  const runtime=candidate.createWorldRuntime(()=>50000)
+  const model=runtime.select(worldId), guard=()=>{}
+  try {
+    const inspect=()=>candidate.withDomains({},async ({events})=>({
+      revision:(await events.managedEvent(worldId,id)).revision,
+      audits:(await events.audits(worldId,id)).audits.length,
+      effects:(await events.effects(worldId,id)).length,
+    }))
+    const before=await inspect()
+    check(before.revision===1&&before.audits===0&&before.effects===0,'EVENT_CRASH_ROLLBACK')
+    check((await model.commitEventAcknowledged(id,1,guard)).id===id,'EVENT_CRASH_RETRY')
+    check((await model.commitEventAcknowledged(id,1,guard)).id===id,'EVENT_CRASH_RECEIPT')
+    const after=await inspect()
+    check(after.revision===2&&after.audits===1&&after.effects===1,'EVENT_CRASH_REPLAY')
+    return {before,after}
+  } finally {
+    runtime.dispose()
+    auth.expireSession()
+    await candidate.release()
+  }
 }

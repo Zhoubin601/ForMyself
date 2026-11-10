@@ -4,6 +4,10 @@ export interface KanataSqliteDomainOwner {
   assertCurrent(): void
 }
 
+export interface KanataEventAcknowledgement {
+  readonly id: string
+}
+
 export interface KanataEventRevocationPlan {
   readonly worldId: string
   readonly eventId: string

@@ -2,12 +2,15 @@
 import { sha256Text } from '../../../../shared/crypto/sha256Text.js'
 import { assertKanataEffectExecutable, eventEffects } from '../../experience/kanataEvents.js'
 import { cloneKanataJson, validateId } from '../../domain/kanataValidation.js'
+import { authorizeEventProof, storeEventProof, storeEventProofLinks, withEventProof } from './kanataEventProof.js'
+import { correctionCauses, correctionSourceRefs, correctionTags, eventAuditSupport, eventCorrectionLinks,
+  insertEventCorrection, updateEventFromAudit, writeEventCommitAudit, writeEventStatusAudit } from './kanataEventSnapshot.js'
 import { createEventRevocation } from './kanataEventRevocation.js'
 import { instanceTable, unpackInstance } from './kanataCharacterRepository.js'
 import { domainTable, executeOnce, found, writeOne } from './kanataDomainRows.js'
 import { effectFromRow, eventFromRow, rebuildEventEffects, visitRows } from './kanataMessageDependents.js'
 import { dependentQueries, dependentWrites } from './kanataMessageDependentsSql.js'
-import { assertActor, grantAccess, grantAllowed, grantBindings, requireLifeSources, requireSourceGrants, sourceConversation, sourceMetadata, uniqueLifeSources, visitSourceGrants } from './kanataProvenance.js'
+import { assertActor, grantAccess, grantAllowed, grantBindings, requireLifeSources, requireSourceGrants, sourceConversation, uniqueLifeSources, visitSourceGrants } from './kanataProvenance.js'
 import { equalDto, nonemptyText, pageLimit, requireSqliteValue as need, safeInteger } from './kanataRepositoryValues.js'
 import { assertWritableWorld } from './kanataWorldRepository.js'
 
@@ -37,7 +40,12 @@ const deniedContext = new Set(['EVENT_CONTEXT_DENIED', 'EVENT_CAUSE_UNAVAILABLE'
   'KANATA_CONTEXT_SCOPE_DENIED', 'KANATA_SOURCE_STALE', 'KANATA_LIFE_PERMISSION_DENIED'])
 const eventAudits = `SELECT id,at,previous_json,next_json FROM event_audits WHERE world_id=? AND event_id=? AND id>? ORDER BY id LIMIT ?`
 const listEffects = 'SELECT * FROM world_effects WHERE world_id=? AND event_id=? AND id>? ORDER BY id LIMIT 128'
-const participants = 'SELECT participant_id FROM event_participants WHERE world_id=? AND event_id=? ORDER BY participant_id'
+const eventCharacters = `SELECT l.participant_id FROM event_participants l JOIN participants p
+  ON p.world_id=l.world_id AND p.id=l.participant_id AND p.kind='character'
+  WHERE l.world_id=? AND l.event_id=? AND l.participant_id>? ORDER BY l.participant_id LIMIT 50`
+const effectInput = `SELECT status,revision,kind,visibility,effective_at,action_instance_id,action_relationship_id,action_location
+  FROM world_events WHERE world_id=? AND id=?`
+const eventIdentity = 'SELECT id FROM world_events WHERE world_id=? AND id=?'
 const previewRows = 'SELECT id,status,revision,effective_at,causality FROM world_events WHERE world_id=? AND id>? ORDER BY id LIMIT 128'
 const descendants = `WITH RECURSIVE args(world,root) AS (VALUES(?,?)), affected(id) AS (
   SELECT root FROM args UNION SELECT c.event_id FROM affected a JOIN event_causes c ON c.cause_event_id=a.id
@@ -68,6 +76,7 @@ const relation = /** @type {ReturnType<typeof domainTable<StoredRelation>>} */ (
 const eventInsert = `INSERT INTO world_events(world_id,id,status,visibility,summary,effective_at,recorded_at,revision,causality,
   kind,action_instance_id,action_relationship_id,action_location,replaces_event_id,extensions_json) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
 const eventUpdate = 'UPDATE world_events SET status=?,revision=revision+1,extensions_json=? WHERE world_id=? AND id=? AND revision=?'
+const eventStatus = 'UPDATE world_events SET status=?,revision=revision+1 WHERE world_id=? AND id=? AND revision=?'
 const eventParticipant = 'INSERT INTO event_participants(world_id,event_id,participant_id) VALUES(?,?,?)'
 const eventSource = 'INSERT INTO event_sources(world_id,event_id,message_id,message_revision) VALUES(?,?,?,?)'
 const eventCause = 'INSERT INTO event_causes(world_id,event_id,cause_event_id) VALUES(?,?,?)'
@@ -94,8 +103,8 @@ const provenanceGrants = dependentQueries.eventLifeSources.replace('LIMIT 128','
 const deniedEventGrant = `WITH ${grantAccess}
   SELECT 1 FROM event_life_sources s CROSS JOIN access WHERE s.world_id=? AND s.event_id=?
     AND NOT ${grantAllowed} LIMIT 1`
-export const eventQueries = [graphRoot, ...Object.values(graphQueries), outgoing, managedEventRelations, managedEventCauses, relationDimensions, eventRow, list, pathHasEffects, listEffects, eventAudits, contextCandidates, contextBody, eventMembership, targetEvents, participants, previewRows, descendants, originRows, provenanceSources, provenanceGrants, deniedEventGrant, relation.get, relationEvents, baselineValue]
-export const eventWrites = [eventInsert, eventUpdate, eventParticipant, eventSource, eventCause, eventLife, eventLifeClear,
+export const eventQueries = [graphRoot, ...Object.values(graphQueries), outgoing, managedEventRelations, managedEventCauses, relationDimensions, eventRow, list, pathHasEffects, listEffects, eventAudits, contextCandidates, contextBody, eventMembership, targetEvents, eventCharacters, effectInput, eventIdentity, previewRows, descendants, originRows, provenanceSources, provenanceGrants, deniedEventGrant, relation.get, relationEvents, baselineValue]
+export const eventWrites = [eventInsert, eventUpdate, eventStatus, eventParticipant, eventSource, eventCause, eventLife, eventLifeClear,
   effectInsert, baselineInsert, relationLink, staleEventMemories, ...relation.writeStatements]
 
 /** @param {Event} event */
@@ -208,21 +217,82 @@ export async function insertEvent(tx, event) {
   validateId(id, 'eventId')
   need(nonemptyText(event.summary) && event.summary.length <= 2000 && safeInteger(effectiveAt) && safeInteger(recordedAt),
     'INVALID_EVENT_FIELDS')
-  const sources = [...event.lifeSources ?? []]
-  for (const ref of sourceRefs) sources.push(...(await sourceMetadata(tx, worldId, ref)).sources)
-  for (const cause of causedByEventIds) sources.push(...await eventProvenance(tx, worldId, cause, 'propose'))
-  if (sources.length) {
-    event.lifeSources = uniqueLifeSources(sources)
-    await authorizeParticipants(tx, event)
-  }
-  await writeOne(tx, eventInsert, [worldId, id, event.status, event.visibility, event.summary, effectiveAt, recordedAt, event.revision,
-    event.causality ?? null, event.kind ?? null, event.action?.instanceId ?? null, event.action?.relationshipId ?? null,
-    event.action?.location ?? null, event.replacesEventId ?? null, eventExtensions(event)])
-  for (const member of participantIds) await writeOne(tx, eventParticipant, [worldId, id, member])
-  for (const ref of sourceRefs) await writeOne(tx, eventSource, [worldId, id, ref.messageId, ref.revision])
-  for (const cause of causedByEventIds) await writeOne(tx, eventCause, [worldId, id, cause])
-  await writeEventLife(tx, event)
+  await withEventProof(tx, proposalSources(tx, event), async () => {
+    await authorizeEventProof(tx, worldId, characterParticipants(tx, event), event.visibility !== 'private')
+    await writeOne(tx, eventInsert, [worldId, id, event.status, event.visibility, event.summary, effectiveAt, recordedAt, event.revision,
+      event.causality ?? null, event.kind ?? null, event.action?.instanceId ?? null, event.action?.relationshipId ?? null,
+      event.action?.location ?? null, event.replacesEventId ?? null, eventExtensions(event)])
+    for (const member of participantIds) await writeOne(tx, eventParticipant, [worldId, id, member])
+    for (const ref of sourceRefs) await writeOne(tx, eventSource, [worldId, id, ref.messageId, ref.revision])
+    for (const cause of causedByEventIds) await writeOne(tx, eventCause, [worldId, id, cause])
+    await storeEventProof(tx, worldId, id)
+  })
   return event
+}
+
+/** @param {Tx} tx @param {Event} event */
+async function* proposalSources(tx, event) {
+  yield* event.lifeSources ?? []
+  for (const ref of event.sourceRefs) {
+    await sourceConversation(tx, event.worldId, ref)
+    yield* visitSourceGrants(tx, event.worldId, ref)
+  }
+  for (const cause of event.causedByEventIds) yield* visitEventProvenance(tx, event.worldId, cause, 'propose')
+}
+
+/** @param {Tx} tx @param {string} worldId @param {string} id @param {string} sql */
+async function* correctionItems(tx, worldId, id, sql) {
+  let after = -1
+  for (;;) {
+    const page = await tx.query(sql,[worldId,id,after])
+    for (const row of page) yield JSON.parse(String(row.item))
+    if (page.length < 50) return
+    after = Number(page[page.length-1].position)
+  }
+}
+
+/** @param {Tx} tx @param {string} worldId @param {string} id */
+async function* correctedSources(tx, worldId, id) {
+  yield* correctionItems(tx,worldId,id,correctionTags)
+  for await (const ref of correctionItems(tx,worldId,id,correctionSourceRefs)) {
+    await sourceConversation(tx,worldId,ref)
+    yield* visitSourceGrants(tx,worldId,ref)
+  }
+  for await (const cause of correctionItems(tx,worldId,id,correctionCauses)) {
+    yield* visitEventProvenance(tx,worldId,cause,'propose')
+  }
+}
+
+/** @param {Tx} tx @param {string} worldId @param {string} id @param {string} summary @param {Tools} tools */
+async function prepareCorrection(tx,worldId,id,summary,tools) {
+  const original = found((await tx.query(effectInput,[worldId,id]))[0],'EVENT_UNAVAILABLE')
+  const [audit] = await tx.query(eventAuditSupport,[worldId,id,original.revision])
+  need(audit && Number(audit.supported)>=0,'KANATA_SQLITE_INTEGRITY_FAILED')
+  if (audit.supported===0) {
+    const legacy = found(await loadEvent(tx,worldId,id),'EVENT_UNAVAILABLE')
+    return async () => (await insertEvent(tx,{...legacy,id:tools.id(),replacesEventId:id,summary,
+      status:'candidate',revision:1,recordedAt:tools.clock()})).id
+  }
+  return async () => {
+    const replacementId = tools.id(), recordedAt = tools.clock()
+    validateId(replacementId,'eventId')
+    need(safeInteger(recordedAt) && safeInteger(Number(original.effective_at)),'INVALID_EVENT_FIELDS')
+    await withEventProof(tx,correctedSources(tx,worldId,id),async () => {
+      await authorizeEventProof(tx,worldId,storedCharacters(tx,worldId,id),original.visibility!=='private')
+      await writeOne(tx,insertEventCorrection,[replacementId,summary,recordedAt,worldId,id])
+      for (const sql of eventCorrectionLinks) await tx.execute(sql,[replacementId,worldId,id])
+      await storeEventProof(tx,worldId,replacementId)
+    })
+    return replacementId
+  }
+}
+
+/** @param {Tx} tx @param {Event} event */
+async function* characterParticipants(tx, event) {
+  for (const id of event.participantIds) {
+    const [person] = await tx.query(participantKind, [event.worldId, id])
+    if (person?.kind === 'character') yield id
+  }
 }
 
 /** @param {Tx} tx @param {Event} event */
@@ -273,35 +343,86 @@ async function insertEffect(tx, effect, tools) {
     JSON.stringify(effect.value), effect.ruleVersion])
 }
 
+/** @param {Tx} tx @param {Pick<Event,'id'|'worldId'|'revision'>} previous @param {Tools} tools */
+export async function commitEvent(tx, {id,worldId,revision}, tools) {
+  const row = found((await tx.query(effectInput, [worldId,id]))[0], 'EVENT_UNAVAILABLE')
+  need(row.status === 'candidate' && row.revision === revision, 'EVENT_COMMIT_CONFLICT')
+  const scope = [worldId,id,revision]
+  const [audit] = await tx.query(eventAuditSupport, scope)
+  need(audit && Number(audit.supported) >= 0, 'KANATA_SQLITE_INTEGRITY_FAILED')
+  if (audit.supported === 0) {
+    // Historical non-object action strings use JavaScript object-spread UTF-16 semantics.
+    await commitLegacyStringAction(tx, found(await loadEvent(tx,worldId,id),'EVENT_UNAVAILABLE'), tools)
+    return
+  }
+  const action = {
+    ...(row.action_instance_id !== null && {instanceId:String(row.action_instance_id)}),
+    ...(row.action_relationship_id !== null && {relationshipId:String(row.action_relationship_id)}),
+    ...(row.action_location !== null && {location:String(row.action_location)}),
+  }
+  const effects = await withEventProof(tx, visitEventProvenance(tx,worldId,id,'commit'), async () => {
+    await authorizeEventProof(tx,worldId,storedCharacters(tx,worldId,id),row.visibility !== 'private')
+    const effects = await calculateEffects(tx, {id,worldId,kind:/** @type {Event['kind']} */ (row.kind),action}, tools)
+    const auditId = tools.id()
+    await writeOne(tx,eventStatus,['committed',...scope])
+    const committed = [worldId,id,revision+1]
+    need((await tx.execute(writeEventCommitAudit,[auditId,tools.clock(),'candidate',...committed])).affectedRows === 1,
+      'KANATA_SQLITE_INTEGRITY_FAILED')
+    await writeOne(tx, updateEventFromAudit, [auditId,...committed])
+    await tx.execute(eventLifeClear, [worldId,id])
+    await tx.execute(storeEventProofLinks,[worldId,id])
+    return effects
+  })
+  await publishEffects(tx,worldId,id,effects,tools)
+}
+
+/** @param {Tx} tx @param {string} worldId @param {string} id */
+async function* storedCharacters(tx, worldId, id) {
+  for await (const row of visitRows(tx,eventCharacters,[worldId,id],['participant_id'],50)) yield String(row.participant_id)
+}
+
 /** @param {Tx} tx @param {Event} previous @param {Tools} tools */
-export async function commitEvent(tx, previous, tools) {
+async function commitLegacyStringAction(tx, previous, tools) {
   const { id, worldId } = previous
-  need(previous.status === 'candidate', 'EVENT_COMMIT_CONFLICT')
   const sources = await eventProvenance(tx, worldId, id, 'commit')
   /** @type {Event} */
   const next = { ...previous, status: 'committed', revision: previous.revision + 1, ...(sources.length && { lifeSources: sources }) }
   await authorizeParticipants(tx, next)
+  const effects = await calculateEffects(tx,previous,tools)
+  await transition(tx, previous, next, tools)
+  await tx.execute(eventLifeClear, [worldId, id])
+  await writeEventLife(tx, next)
+  await publishEffects(tx,worldId,id,effects,tools)
+}
+
+/** @param {Tx} tx @param {Pick<Event,'id'|'worldId'|'kind'|'action'>} event @param {Tools} tools */
+async function calculateEffects(tx, event, tools) {
+  const { worldId, id, action } = event
   const relationships = []
   const instances = []
-  const target = previous.action?.relationshipId ? await relation.read(tx, [worldId, previous.action.relationshipId]) : null
+  const target = action?.relationshipId ? await relation.read(tx, [worldId, action.relationshipId]) : null
   if (target) {
     const { trust, intimacy, understanding, ...fields } = target
     relationships.push({ ...fields, dimensions: { trust, intimacy, understanding }, sourceEventIds: [] })
   }
-  for (const instanceId of new Set([previous.action?.instanceId, target?.fromId])) {
+  for (const instanceId of new Set([action?.instanceId, target?.fromId])) {
     const row = instanceId && await instanceTable.read(tx, [worldId, instanceId])
     if (row) instances.push(unpackInstance(row))
   }
-  const effects = eventEffects({ relationships, instances }, previous, tools.id)
-  await transition(tx, previous, next, tools)
-  await tx.execute(eventLifeClear, [worldId, id])
-  await writeEventLife(tx, next)
+  const participantIds = []
+  for (const member of new Set([action?.instanceId,target?.fromId,target?.toId])) {
+    if (member && (await tx.query(eventMembership,[worldId,id,member])).length) participantIds.push(member)
+  }
+  return eventEffects({ relationships, instances }, {...event,participantIds}, tools.id)
+}
+
+/** @param {Tx} tx @param {string} worldId @param {string} id @param {Effect[]} effects @param {Tools} tools */
+async function publishEffects(tx, worldId, id, effects, tools) {
   for (const effect of effects) await insertEffect(tx, effect, tools)
   await rebuildEventEffects(tx, dependentQueries.eventEffectPaths, [worldId, id])
   for (const targetId of new Set(effects.filter(effect => effect.targetType === 'relationship').map(effect => effect.targetId))) {
     await writeOne(tx, relationLink, [worldId, targetId, id])
   }
-  return next
 }
 
 /** @param {Tx} tx @param {string} worldId @param {string} eventId @returns {Promise<Preview>} */
@@ -329,9 +450,24 @@ async function revoke(tx, plan, decision, tools) {
   const ids = [...current.revokeIds, ...(decision === 'mark-needs-review' ? current.uncertainIds : [])]
   const changes = new Set(current.revokeIds)
   for (const id of ids) {
-    const previous = found(await loadEvent(tx, plan.worldId, id), 'EVENT_UNAVAILABLE')
-    if (previous.status === 'revoked') continue
-    await transition(tx, previous, { ...previous, status: changes.has(id) ? 'revoked' : 'needsReview', revision: previous.revision + 1 }, tools)
+    const [row] = await tx.query(eventRole,[plan.worldId,id])
+    const current = found(row,'EVENT_UNAVAILABLE')
+    if (current.status === 'revoked') continue
+    const scope = [plan.worldId,id,current.revision]
+    const [audit] = await tx.query(eventAuditSupport,scope)
+    need(audit && Number(audit.supported)>=0,'KANATA_SQLITE_INTEGRITY_FAILED')
+    const status = changes.has(id) ? 'revoked' : 'needsReview'
+    const revision = Number(current.revision)+1
+    if (audit.supported === 0) {
+      const previous = found(await loadEvent(tx,plan.worldId,id),'EVENT_UNAVAILABLE')
+      await transition(tx,previous,{...previous,status,revision},tools)
+    } else {
+      await writeOne(tx,eventStatus,[status,...scope])
+      const auditId = tools.id()
+      need((await tx.execute(writeEventStatusAudit,[auditId,tools.clock(),current.status,plan.worldId,id,revision])).affectedRows===1,
+        'KANATA_SQLITE_INTEGRITY_FAILED')
+      await writeOne(tx,updateEventFromAudit,[auditId,plan.worldId,id,revision])
+    }
   }
   await tx.execute(staleEventMemories, [plan.worldId, plan.worldId, JSON.stringify(ids)])
   await rebuildEventEffects(tx, dependentQueries.plannedEffectPaths, [JSON.stringify(ids), plan.worldId])
@@ -363,15 +499,32 @@ async function targetVisible(tx, worldId, targetId, scope) {
 }
 /** @param {Operation} operation @param {Tools} tools */
 export function createKanataEventRepository(operation, tools) {
+  /** @param {Tx} tx @param {Omit<Event,'id'|'status'|'revision'|'recordedAt'>} fields @param {string} commandId */
+  async function proposeCommand(tx, fields, commandId) {
+    await assertWritableWorld(tx, fields.worldId)
+    return executeOnce(tx, ['event:propose', fields.worldId, commandId], fields, async () => {
+      const event = await insertEvent(tx, { ...cloneKanataJson(fields), id: tools.id(), revision: 1, status: 'candidate',
+        recordedAt: tools.clock(), causality: fields.causality ?? 'explicit' })
+      return event.id
+    })
+  }
+  /** @param {Tx} tx @param {string} worldId @param {string} id @param {number} revision */
+  async function commitCommand(tx, worldId, id, revision) {
+    await assertWritableWorld(tx, worldId)
+    return executeOnce(tx, ['event:commit', worldId, id, String(revision)], revision, async () => {
+      await commitEvent(tx, {id,worldId,revision}, tools)
+      return id
+    })
+  }
+  /** @param {Tx} tx @param {string} worldId @param {string} id
+   * @returns {Promise<import('./kanataDomainTypes').KanataEventAcknowledgement>} */
+  async function acknowledgement(tx, worldId, id) {
+    found((await tx.query(eventIdentity,[worldId,id]))[0],'EVENT_UNAVAILABLE')
+    return {id}
+  }
   return {
-    ...createEventRevocation(operation, tools, async (tx,plan,summary)=>{
-      const original=found(await loadEvent(tx,plan.worldId,plan.eventId),'EVENT_UNAVAILABLE')
-      return async()=>{
-        const replacement=await insertEvent(tx,{...original,id:tools.id(),replacesEventId:original.id,
-          summary,status:'candidate',revision:1,recordedAt:tools.clock()})
-        return replacement.id
-      }
-    }),
+    ...createEventRevocation(operation,tools,(tx,plan,summary)=>
+      prepareCorrection(tx,plan.worldId,plan.eventId,summary,tools)),
     /** @param {string} worldId @param {string} after */
     proposalRelations: (worldId,after='') => operation.transaction(async tx=>{
       await assertWritableWorld(tx,worldId)
@@ -504,25 +657,20 @@ export function createKanataEventRepository(operation, tools) {
     }),
     /** @param {Omit<Event,'id'|'status'|'revision'|'recordedAt'>} fields @param {string} commandId */
     propose: (fields, commandId) => operation.transaction(async tx => {
-      await assertWritableWorld(tx, fields.worldId)
-      const id = await executeOnce(tx, ['event:propose', fields.worldId, commandId], fields, async () => {
-        const event = await insertEvent(tx, { ...cloneKanataJson(fields), id: tools.id(), revision: 1, status: 'candidate',
-          recordedAt: tools.clock(), causality: fields.causality ?? 'explicit' })
-        return event.id
-      })
-      return found(await loadEvent(tx, fields.worldId, id), 'EVENT_UNAVAILABLE')
+      const id = await proposeCommand(tx,fields,commandId)
+      return found(await loadEvent(tx,fields.worldId,id),'EVENT_UNAVAILABLE')
     }),
+    /** @param {Omit<Event,'id'|'status'|'revision'|'recordedAt'>} fields @param {string} commandId */
+    proposeAcknowledged: (fields, commandId) => operation.transaction(async tx =>
+      acknowledgement(tx,fields.worldId,await proposeCommand(tx,fields,commandId))),
     /** @param {string} worldId @param {string} id @param {number} revision */
     commit: (worldId, id, revision) => operation.transaction(async tx => {
-      await assertWritableWorld(tx, worldId)
-      await executeOnce(tx, ['event:commit', worldId, id, String(revision)], revision, async () => {
-        const event = found(await loadEvent(tx, worldId, id), 'EVENT_UNAVAILABLE')
-        need(event.revision === revision, 'EVENT_COMMIT_CONFLICT')
-        await commitEvent(tx, event, tools)
-        return id
-      })
-      return found(await loadEvent(tx, worldId, id), 'EVENT_UNAVAILABLE')
+      await commitCommand(tx,worldId,id,revision)
+      return found(await loadEvent(tx,worldId,id),'EVENT_UNAVAILABLE')
     }),
+    /** @param {string} worldId @param {string} id @param {number} revision */
+    commitAcknowledged: (worldId,id,revision) => operation.transaction(async tx =>
+      acknowledgement(tx,worldId,await commitCommand(tx,worldId,id,revision))),
     /** @param {string} worldId @param {string} id */
     preview: (worldId, id) => operation.transaction(tx => preview(tx, worldId, id)),
     /** @param {Preview} plan @param {'mark-needs-review'|'keep-independent'} [decision] */
@@ -538,11 +686,9 @@ export function createKanataEventRepository(operation, tools) {
       await assertWritableWorld(tx, plan.worldId)
       need(nonemptyText(summary) && summary.length <= 2000, 'INVALID_EVENT_SUMMARY')
       const id = await executeOnce(tx, ['event:correct', plan.worldId, plan.eventId, plan.signature], { plan, decision: decision ?? null, summary }, async () => {
-        const original = found(await loadEvent(tx, plan.worldId, plan.eventId), 'EVENT_UNAVAILABLE')
+        const replacement = await prepareCorrection(tx,plan.worldId,plan.eventId,summary.trim(),tools)
         await revoke(tx, plan, decision, tools)
-        const replacement = await insertEvent(tx, { ...original, id: tools.id(), replacesEventId: original.id,
-          summary: summary.trim(), status: 'candidate', revision: 1, recordedAt: tools.clock() })
-        return replacement.id
+        return replacement()
       })
       return found(await loadEvent(tx, plan.worldId, id), 'EVENT_UNAVAILABLE')
     }),

@@ -66,7 +66,7 @@ function propose(){
     :usesActor?{instanceId:actor.value.id,...(rule==='move'&&{location:location.value.trim()})}:undefined
   const fields={worldId:props.model.worldId,summary:summary.value.trim(),effectiveAt,visibility:visibility.value,participantIds,
     sourceRefs:[],causedByEventIds:cause.value?[cause.value.id]:[],kind:rule,causality:'explicit',...(action&&{action})}
-  void perform(()=>props.model.proposeEvent(fields,proposalKey,guard),value=>emit('saved',value.id))
+  void perform(()=>props.model.proposeEventAcknowledged(fields,proposalKey,guard),value=>emit('saved',value.id))
 }
 function commit(){
   if(props.archived||event.value?.status!=='candidate')return
@@ -74,7 +74,7 @@ function commit(){
     const accepted=await appConfirm('确认将此候选事件记入世界账本？',{title:'确认事件',confirmText:'记入账本',sensitive:true,owner:dialogOwner})
     guard()
     if(accepted){
-      await props.model.commitEvent(event.value.id,event.value.revision,guard)
+      await props.model.commitEventAcknowledged(event.value.id,event.value.revision,guard)
       return props.model.eventDetail(event.value.id,guard)
     }
   },value=>{event.value=value;appToast('事件已记入账本。',{tone:'success'})})

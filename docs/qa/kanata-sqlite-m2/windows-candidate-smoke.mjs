@@ -119,19 +119,45 @@ try {
   let password
   try { password = JSON.stringify(bytes.toString('base64')) }
   finally { bytes.fill(0) }
-  if (process.argv.includes('--mr2-grants') || process.argv.includes('--mr2-chat-provenance')) {
+  if (['--mr2-grants','--mr2-chat-provenance','--mr2-event-provenance'].some(mode=>process.argv.includes(mode))) {
     const fixture=m2Fixture()
     const sample=fixture.messages[0]
     const {worldId,conversationId}=sample
     const instanceId=fixture.instances.find(actor=>actor.worldId===worldId).id
     const input={scope:{worldId,conversationId,instanceId},sample,commands:m2FixtureCommands(fixture),commitFault:fixtureWrites.deferredCommit}
     const chat=process.argv.includes('--mr2-chat-provenance')
-    const scenario=chat?'mr2QaChatProvenance':'mr2QaWideGrantProof'
+    const event=process.argv.includes('--mr2-event-provenance')
+    const scenario=event?'mr2QaEventProvenance':chat?'mr2QaChatProvenance':'mr2QaWideGrantProof'
     const result=await evaluate(`window.${scenario}(${password}, ${JSON.stringify(input)})`,420000)
-    console.log(JSON.stringify({mr2GrantProof:result},null,2))
+    console.log(JSON.stringify({dataSha256:createHash('sha256').update(JSON.stringify(input)).digest('hex'),
+      [event?'mr2EventProof':'mr2GrantProof']:result},null,2))
     assert.equal(result.error,undefined)
     assert.match(result.health.cipher,/^4\.17\.0/)
-    assert.deepEqual((chat?result.results:result.samples).map(item=>item.size),[1000,10000])
+    assert.deepEqual((chat||event?result.results:result.samples).map(item=>item.size),[1000,10000])
+    if(event){
+      console.log(JSON.stringify({eventMeminfoBeforeCrash:adb('shell','dumpsys','meminfo',packageName)}))
+      const eventId=await evaluate(`window.mr2QaArmEventCrash(${password},${JSON.stringify(input.scope)})`)
+      const deadline=Date.now()+420000
+      let state
+      do {
+        await delay(200)
+        state=await evaluate('window.m2QaCrashState()')
+      } while(state==='idle'&&Date.now()<deadline)
+      assert.equal(state,'uncommitted-write-and-audit')
+      const oldPid=pid
+      adb('shell','am','force-stop',packageName)
+      assert.equal(adb('shell','pidof '+packageName+' || true'),'')
+      detach()
+      adb('shell','am','start','-W','-n',packageName+'/com.yubin.formyself.MainActivity')
+      await delay(600)
+      evaluate=await attach()
+      assert.notEqual(pid,oldPid)
+      assert.equal(await initialize(evaluate),true)
+      const recovery=await evaluate(`window.mr2QaRecoverEventCrash(${password},${JSON.stringify(worldId)},${JSON.stringify(eventId)})`)
+      console.log(JSON.stringify({eventRecovery:{oldPid,newPid:pid,...recovery}},null,2))
+      assert.deepEqual(recovery,{before:{revision:1,audits:0,effects:0},after:{revision:2,audits:1,effects:1}})
+      console.log(JSON.stringify({eventMeminfoAfterCrash:adb('shell','dumpsys','meminfo',packageName)}))
+    }
   } else if (process.argv.includes('--mr1-fanout') || process.argv.includes('--mr1-verify')) {
     const verify=process.argv.includes('--mr1-verify')
     const fixture = m2Fixture()
