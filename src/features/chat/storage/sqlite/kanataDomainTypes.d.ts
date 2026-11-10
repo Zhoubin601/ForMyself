@@ -18,11 +18,34 @@ export interface KanataEventRevocationCursor {
   readonly after: string
 }
 
+export interface KanataEventEffectAuditCursor {
+  readonly worldId: string
+  readonly eventId: string
+  readonly auditId: string
+  readonly after: string
+}
 export interface KanataEventGraphCursor {
   readonly worldId: string
   readonly eventId: string
   readonly direction: 'cause' | 'consequence'
   readonly rootRevision: number
+  readonly after: string
+}
+
+/** Storage-authenticated projection for assembling the unchanged system message. */
+export interface KanataMemoryPromptProjection {
+  readonly id: string
+  readonly revision: number
+  readonly lifeSources: import('../../domain/kanataTypes').LifeSource[]
+  readonly promptJson: string
+  readonly promptBytes: number
+}
+
+export interface KanataOutgoingMemoryShareCursor {
+  readonly worldId: string
+  readonly instanceId: string
+  readonly memoryId: string
+  readonly revision: number
   readonly after: string
 }
 

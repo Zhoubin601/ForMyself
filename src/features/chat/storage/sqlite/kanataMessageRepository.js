@@ -3,6 +3,7 @@ import { normalizeArchiveQuery } from '../messageArchiveCore.js'
 import { cloneKanataJson, validateId } from '../../domain/kanataValidation.js'
 import { conversationQueries, messageQueries as query, messageWrites as write } from './kanataRepositorySql.js'
 import { equalDto, extensionObject, nonemptyText, pageLimit, requireSqliteValue as need, safeInteger, scopeBindings, validId } from './kanataRepositoryValues.js'
+import { createKanataHistoryArchive } from './kanataHistoryArchive.js'
 import { reviseMessageDependents } from './kanataMessageDependents.js'
 
 /** @typedef {import('../../domain/kanataTypes').Message} Message */
@@ -185,6 +186,7 @@ async function readForUpdate(tx, scope, id, expectedRevision) {
 export function createKanataMessageRepository(operation, tools) {
   const run = operation.transaction
   return {
+    ...createKanataHistoryArchive(operation),
     async insert(message) {
       const dto = cloneKanataJson(message)
       validateMessage(dto)

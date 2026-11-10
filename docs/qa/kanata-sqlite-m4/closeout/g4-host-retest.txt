@@ -1,0 +1,21 @@
+(node:6956) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ M4 chat metadata reads a scoped light projection without projecting cards or history (67.4895ms)
+✔ M4 cost buckets match exact ranked greedy selection across mixed costs and ties (15.2162ms)
+✔ M4 reply-timing CAS and pending activity acceleration roll back together (42.8915ms)
+✔ M4 real SQLite runtime keeps identical access shape from 1k to 10k messages (1746.5146ms)
+ℹ {"size":1000,"sourcePages":15,"sourcePageMax":51,"serializedSourceObjects":0,"singleSourceWrites":585,"heapAtStart":14238272,"highHeapSample":23049896,"retainedWindow":100}
+ℹ {"size":10000,"sourcePages":15,"sourcePageMax":51,"serializedSourceObjects":0,"singleSourceWrites":571,"heapAtStart":17769520,"highHeapSample":41753240,"retainedWindow":100}
+ℹ {"seeds":[1000,10000],"queryCounts":[159,159],"recent":50,"window":100,"fullGraphCalls":0}
+✔ M4 turn source and deferred task roll back on a failed link write and retry exactly once (39.6631ms)
+✔ M4 history handles Unicode normalization and scope-bound continuations after a sparse scan (58.2574ms)
+✔ M4 autonomy rotates the exact legacy locale order across actor batches and wraps (64.16ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 7
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2302.3399
+exit=0

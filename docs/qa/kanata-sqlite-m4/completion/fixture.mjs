@@ -12,6 +12,10 @@ export const eventEdges = sequence + `
   INSERT INTO event_causes(world_id,event_id,cause_event_id)
   SELECT ?,?||n,?||(n+1) FROM seq ORDER BY n`
 
+export const eventFanout = sequence + `
+  INSERT INTO event_causes(world_id,event_id,cause_event_id)
+  SELECT ?,?||n,? FROM seq ORDER BY n`
+
 export const memoryWideSources = `INSERT INTO memory_sources(world_id,memory_id,message_id,message_revision)
   SELECT world_id,?,id,revision FROM messages WHERE world_id=? AND conversation_id=? AND id GLOB ?`
 

@@ -1,0 +1,13 @@
+(node:9728) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ M4 real SQLite runtime keeps identical access shape from 1k to 10k messages (1798.6198ms)
+ℹ {"seeds":[1000,10000],"queryCounts":[159,159],"recent":50,"window":100,"fullGraphCalls":0}
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2089.0106
+exit=0

@@ -174,6 +174,10 @@ export function createKanataSqliteWorldRuntime({ candidate, clock = Date.now, se
         /** @param {string} instanceId @param {import('./contracts').KanataMemoryConflictPlan} plan @param {string} key @param {()=>void} guard */
         confirmMemoryConflicts: (instanceId,plan,key,guard) =>
           run(domains=>domains.memories.confirmConflicts({worldId,instanceId},plan,key),guard),
+        /** @param {string} instanceId @param {import('./contracts').KanataMemoryConflictPlan} plan
+         * @param {string} key @param {string} content @param {()=>void} guard */
+        mergeMemoryConflicts: (instanceId,plan,key,content,guard) =>
+          run(domains=>domains.memories.confirmConflicts({worldId,instanceId},plan,key,content),guard),
         /** @param {string} id @param {'cause'|'consequence'} direction
          * @param {import('../features/chat/storage/sqlite/kanataDomainTypes').KanataEventGraphCursor|undefined} cursor @param {()=>void} assertRequest */
         eventGraph: (id, direction, cursor, assertRequest) => run(domains => domains.events.graphPage(worldId, id, direction, cursor), assertRequest),
@@ -181,6 +185,8 @@ export function createKanataSqliteWorldRuntime({ candidate, clock = Date.now, se
         updateIdentity: (revision, fields, assertRequest) => run(domains => domains.worlds.updateIdentity(worldId, revision, fields), assertRequest),
         /** @param {string} name @param {number} revision */
         rename: (name, revision) => run(domains => domains.worlds.rename(worldId, revision, name)),
+        /** @param {number} revision @param {Parameters<Domains['worlds']['updateSettings']>[2]} fields @param {()=>void} guard */
+        updateWorldSettings: (revision,fields,guard) => run(domains=>domains.worlds.updateSettings(worldId,revision,fields),guard),
         /** @param {boolean} archived @param {number} revision */
         archive: (archived, revision) => run(domains => domains.worlds.archive(worldId, revision, archived)),
         /** @param {Parameters<Domains['autonomy']['configure']>[2]} fields @param {number} revision */
@@ -209,8 +215,22 @@ export function createKanataSqliteWorldRuntime({ candidate, clock = Date.now, se
           if(plan.worldId!==worldId)throw new Error('KANATA_WORLD_OWNER_EXPIRED')
           return domains.events.confirmRevocation(plan,decision,key)
         },guard),
+        /** @param {import('./contracts').KanataEventRevocationPlan} plan
+         * @param {import('./contracts').KanataEventRevocationDecision|undefined} decision
+         * @param {string} key @param {string} summary @param {()=>void} guard */
+        correctConfirmedEvent: (plan,decision,key,summary,guard) => run(domains=>{
+          if(plan.worldId!==worldId)throw new Error('KANATA_WORLD_OWNER_EXPIRED')
+          return domains.events.correctConfirmed(plan,decision,key,summary)
+        },guard),
         /** @param {string} id @param {string|undefined} after @param {()=>void} guard */
         revocationAudits: (id,after,guard) => run(domains=>domains.events.revocationAudits(worldId,id,after),guard),
+        /** @param {string} id @param {string} auditId @param {import('./contracts').KanataEventEffectAuditCursor|undefined} cursor @param {()=>void} guard */
+        revocationEffectAudit: (id,auditId,cursor,guard) =>
+          run(domains=>domains.events.revocationEffectAudit(worldId,id,auditId,cursor),guard),
+        /** @param {string|undefined} cursor @param {()=>void} guard */
+        eventProposalRelations: (cursor,guard) => run(domains=>domains.events.proposalRelations(worldId,cursor),guard),
+        /** @param {string|undefined} cursor @param {()=>void} guard */
+        eventProposalCauses: (cursor,guard) => run(domains=>domains.events.proposalCauses(worldId,cursor),guard),
         /** @param {Parameters<Domains['events']['propose']>[0]} fields @param {string} commandId @param {()=>void} [guard] */
         proposeEvent: (fields, commandId, guard) => run(domains => {
           if (fields.worldId !== worldId) throw new Error('KANATA_WORLD_OWNER_EXPIRED')
@@ -239,6 +259,14 @@ export function createKanataSqliteWorldRuntime({ candidate, clock = Date.now, se
          * @param {string} key @param {()=>void} guard */
         shareManagedMemory: (instanceId,id,revision,recipientId,key,guard) =>
           run(domains=>domains.memories.shareManaged({worldId,instanceId},id,revision,recipientId,key),guard),
+        /** @param {string} instanceId @param {string} id @param {import('./contracts').KanataOutgoingMemoryShareCursor|undefined} cursor @param {()=>void} guard */
+        listOutgoingMemoryShares: (instanceId, id, cursor, guard) =>
+          run(domains => domains.memories.listOutgoingShares({ worldId, instanceId }, id, cursor), guard),
+        /** @param {string} instanceId @param {string} id @param {string} copyId @param {number} copyRevision @param {string} key @param {()=>void} guard */
+        async withdrawMemoryShare(instanceId, id, copyId, copyRevision, key, guard) {
+          await run(domains => domains.memories.withdrawShare({ worldId, instanceId }, id, copyId, copyRevision, key), guard)
+          await onGrantChanged()
+        },
         /** @param {string} instanceId @param {string} id @param {number} revision @param {string} key @param {()=>void} guard */
         removeOwnedMemory: (instanceId,id,revision,key,guard) =>
           run(domains=>domains.memories.removeOwned({worldId,instanceId},id,revision,key),guard),

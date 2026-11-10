@@ -613,6 +613,13 @@ Windows 使用 `npm.cmd`、`npx.cmd` 和 `android/gradlew.bat` 的对应命令�
 - 候选 `managedDetailFor/sourcePage/resolveSource/previewConflicts/confirmConflicts/shareManaged` 按角色和来源 revision 前置授权；分享在 SQLCipher 内复制。旧 DTO 兼容入口与聊天来源数组尚未关闭。操作及负向类型样例见 `contracts.d.ts`、`tests/types/kanataSqliteM4.ts`。
 - 使用现有 001–004 和固定 SQL catalog，未增加存储键。复现命令和保留门禁见 [续作验收 v3](docs/20261110-kanata-sqlite-m4-acceptance-v3.md)。
 
+## Kanata SQLite M4 收尾候选接口
+
+- `memories.readPrompt(scope,id,remainingBytes)` 先校验角色、世界、来源 revision 与权限，再把有界来源页按原顺序编码为提示词 JSON。能放入既有预算的引用完整保留，溢出使用原错误码。普通聊天不再调用完整记忆 DTO；宽生活授权标签另有门禁。
+- 候选 `readFor/listFor/listManaged/save/share` 改用投影或回执。自定义合并和分享撤回维持 CAS、精确来源和事务。撤回保留失效边，并释放候选 lease，阻止后代读取和迟到结果。
+- 事件确认每批最多 128 条，状态 CAS 与逐项审计都随同一事务完成。候选 `correctConfirmed` 以同一确认范围保存新候选。审计只分页返回指定修订快照中的自有 Effects。
+- `previewArchive/confirmArchive` 绑定会话、revision 和候选集合摘要，保留最近记录、正常化来源和回复组件。归档标记不删除原文。旧扩展引用的完整等价仍未证实。世界设置使用现有世界 CAS 和时区校验。详见 [验收 v4](docs/20261110-kanata-sqlite-m4-acceptance-v4.md)。
+
 ## Kanata SQLite M4 Completion 增量
 
 候选 `graphPage` 与 `sourcePage` 使用世界、根实体/角色与 revision 绑定的游标，每页最多 50。授权通过后才读取单记忆和消息正文。该事件图页用于浏览，原事件撤销仍按原确认流程执行。新增独立群聊和全局角色绑定分别使用事务回执与全局 CAS。绑定的明确不选与继承分开保存，归档世界不删除绑定。详见 [设计](docs/20261109-kanata-sqlite-m4-completion-design-v1.md)及 [验收 v2](docs/20261109-kanata-sqlite-m4-acceptance-v2.md)。

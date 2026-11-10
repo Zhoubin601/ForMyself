@@ -1,4 +1,4 @@
-import { memoryRows, memoryEdges, memoryWideSources, eventRows, eventEdges, replayEventRows, replayEffectRows } from '../kanata-sqlite-m4/completion/fixture.mjs'
+import { memoryRows, memoryEdges, memoryWideSources, eventRows, eventEdges, eventFanout, replayEventRows, replayEffectRows } from '../kanata-sqlite-m4/completion/fixture.mjs'
 import { growthSeedSql } from '../kanata-sqlite-m4/fixture.mjs'
 import { receiptWrite } from '../../../src/features/chat/storage/sqlite/kanataDomainRows.js'
 import { sha256Text } from '../../../src/shared/crypto/sha256Text.js'
@@ -16,6 +16,7 @@ import { deriveKanataSqliteKek } from '../../../src/platform/security/kanataSqli
 import { createKanataSqliteChatRuntime } from '../../../src/application/kanataSqliteChatRuntime.js'
 import { resolveKanataCharacter } from '../../../src/features/chat/domain/kanataManagementCore.js'
 import AppFeedbackHost from '../../../src/components/AppFeedbackHost.vue'
+import KanataCandidateHistoryPanel from '../../../src/features/chat/KanataCandidateHistoryPanel.vue'
 import KanataCandidateWorkspace from '../../../src/features/chat/KanataCandidateWorkspace.vue'
 import KanataConversationView from '../../../src/features/chat/KanataConversationView.vue'
 import conversationStyle from '../../../src/features/chat/kanataManagement.css'
@@ -60,6 +61,7 @@ const candidate = createKanataSqliteCandidate({
       if (trace) {
         trace.queries++
         trace.maxRows = Math.max(trace.maxRows, result.rows.length)
+        trace.observeQuery?.(result.rows)
       }
       return result
     },
@@ -494,6 +496,16 @@ window.m4QaGrowth = async (password, { base, senderId }) => {
   const samples = []
   let controlledModelCalls = 0
   let revocationWhilePending = 'NOT RUN'
+  const promptGrowth = []
+  const countStateObjects = root => {
+    const seen=new WeakSet()
+    const walk=value=>{
+      if(!value||typeof value!=='object'||seen.has(value))return 0
+      seen.add(value)
+      return 1+Object.values(value).reduce((count,child)=>count+walk(child),0)
+    }
+    return walk(root)
+  }
   const stringify = JSON.stringify
   const clone = globalThis.structuredClone
   let fullGraphCalls = 0
@@ -512,15 +524,16 @@ window.m4QaGrowth = async (password, { base, senderId }) => {
       const seeded = await candidate.run({}, operation => operation.transaction(tx => tx.execute(growthSeedSql,
         [size, conversationId, worldId, conversationId, senderId])))
       check(seeded.affectedRows === size, 'M4_SEED_COUNT')
-      let failure = true, deltas = 0, resumeProvider
+      let failure = true, deltas = 0, resumeProvider, promptSystem
       const runtime = createKanataSqliteChatRuntime({
         candidate, auth, clock: () => 90000,
         lifeReaders: { home: async () => [{ value: '合成生活资料授权标记' }] },
         completion: async options => {
           controlledModelCalls++
+          promptSystem = options.messages[0].content
           check(options.messages.length <= 41, 'M4_PROMPT_UNBOUNDED')
           if (failure) { failure = false; throw new Error('M4_CONTROLLED_PROVIDER_FAILURE') }
-          if (options.messages.some(item => item.role === 'user' && item.content.includes('合成授权迟到'))) {
+          if (options.messages.findLast(item => item.role === 'user')?.content.includes('合成授权迟到')) {
             check(options.messages.some(item => item.content.includes('合成生活资料授权标记')), 'M4_AUTHORIZED_CONTEXT_ABSENT')
             return new Promise(resolve => { resumeProvider = resolve })
           }
@@ -582,6 +595,69 @@ window.m4QaGrowth = async (password, { base, senderId }) => {
             revocationWhilePending = 'PASS'
           } finally { worlds.dispose() }
         }
+        const instanceId = base.participantIds.find(id => id !== senderId)
+        const prefix = 'qa-prompt-' + size + '-'
+        const memoryId = prefix + '0'
+        await candidate.run({}, operation => operation.transaction(async tx => {
+          await tx.execute(memoryRows, [0, prefix, worldId, instanceId, instanceId])
+          check((await tx.execute(memoryWideSources, [memoryId, worldId, conversationId, conversationId+'-history-*'])).affectedRows===size,
+            'M4_PROMPT_SEED')
+        }))
+        let arrayObjects = 0
+        let maxEncodedRefs = 0
+        JSON.stringify = (value, ...args) => {
+          observe(value)
+          if (Array.isArray(value)) for (const entry of value) arrayObjects += entry?.sourceRefs?.length ?? 0
+          if (value && Object.hasOwn(value,'messageId') && Object.hasOwn(value,'revision') && Object.keys(value).length===2) maxEncodedRefs=1
+          return stringify(value, ...args)
+        }
+        let bodyReads = 0, pages = 0, pageObjects = 0, canceledAt = 0, cancelOnPage = false
+        const beforeHeap = performance.memory?.usedJSHeapSize ?? null
+        let heapSample = beforeHeap
+        trace = { queries: 0, writes: 0, maxRows: 0, observeQuery(rows) {
+          if (performance.memory) heapSample = Math.max(heapSample, performance.memory.usedJSHeapSize)
+          const [row] = rows
+          if (!row) return
+          if ('confidence' in row && 'content' in row && 'layer' in row) bodyReads += rows.length
+          if ('message_id' in row && 'message_revision' in row && Object.keys(row).length === 2) {
+            pages++
+            pageObjects = Math.max(pageObjects, rows.length)
+            if (cancelOnPage) {
+              canceledAt=trace.queries
+              runtime.cancel()
+            }
+          }
+        } }
+        const callsBefore = controlledModelCalls
+        await rejects(() => runtime.send(conversationId,{text:'合成宽来源预算',timing:'immediate'}),'CONTEXT_BUDGET_EXCEEDED')
+        check(controlledModelCalls===callsBefore&&pages>1&&pages*51<size&&bodyReads===1,'M4_PROMPT_EARLY_BUDGET')
+        const wide = { queries:trace.queries, sqlMaxRows:trace.maxRows, bodyReads, pages, pageObjects }
+        cancelOnPage=true
+        await rejects(() => runtime.send(conversationId,{text:'合成宽来源取消',timing:'immediate'}),'ABORTED')
+        check(canceledAt>0&&trace.queries===canceledAt&&controlledModelCalls===callsBefore,'M4_PROMPT_AFTER_CANCEL')
+        const noQueriesAfterCancel=trace.queries-canceledAt
+        cancelOnPage=false
+        await candidate.withDomains({}, domains => domains.memories.removeOwned({worldId,instanceId},memoryId,1,prefix+'delete'))
+        const narrowPrefix = prefix+'small-'
+        const narrowId = narrowPrefix+'0'
+        await candidate.run({}, operation => operation.transaction(async tx => {
+          await tx.execute(memoryRows,[0,narrowPrefix,worldId,instanceId,instanceId])
+          for(const pattern of ['[1-9]','[1-5][0-9]']) {
+            await tx.execute(memoryWideSources,[narrowId,worldId,conversationId,conversationId+'-history-'+pattern])
+          }
+        }))
+        await runtime.send(conversationId,{text:'合成来源恢复',timing:'immediate'})
+        check(controlledModelCalls===callsBefore+1,'M4_PROMPT_RECOVERY')
+        const promptJson=promptSystem.split('\n').find(line=>line.startsWith('可追溯的动态记忆')).split('：')[1]
+        const entry=JSON.parse(promptJson).find(memory=>memory.id===narrowId)
+        const expected=Array.from({length:59},(_,index)=>conversationId+'-history-'+(index+1)).sort()
+        check(stringify(entry.sourceRefs)===stringify(expected.map(messageId=>({messageId,revision:1})))&&arrayObjects===0,
+          'M4_PROMPT_EXACT_REFS')
+        await candidate.withDomains({}, domains=>domains.memories.removeOwned({worldId,instanceId},narrowId,1,prefix+'small-delete'))
+        promptGrowth.push({size,wide,maxEncodedRefs,arrayObjects,noQueriesAfterCancel,recovered:true,
+          retainedWindow:view.window.messages.value.length,piniaStores:pinia._s.size,
+          piniaStateObjects:countStateObjects(pinia.state.value),
+          heapUsedAtStart:beforeHeap,heapUsedHighSample:heapSample})
       } finally {
         JSON.stringify = stringify
         if (clone) globalThis.structuredClone = clone
@@ -592,10 +668,56 @@ window.m4QaGrowth = async (password, { base, senderId }) => {
     }
     check(samples[0].queries === samples[1].queries && samples[0].writes === samples[1].writes, 'M4_SQL_GROWTH')
     check(fullGraphCalls === 0, 'M4_FULL_GRAPH_PATH')
-    return { samples, fullGraphCalls, controlledModelCalls, realModelCalls: 0, restoreGate: 'PASS', revocationWhilePending }
+    return { samples, promptGrowth, fullGraphCalls, controlledModelCalls, realModelCalls: 0, restoreGate: 'PASS', revocationWhilePending }
   } catch (error) {
     return { error: error.code ?? error.message, samples, fullGraphCalls, controlledModelCalls }
   } finally { auth.expireSession(); await candidate.release() }
+}
+window.m4QaArchive = async (password,{base,senderId})=>{
+  session(password)
+  const worldId=base.worldId,conversationId='m4-archive-ui'
+  const scope={worldId,conversationId}
+  const runtime=createKanataSqliteChatRuntime({candidate,auth,releaseOnDispose:false,
+    completion:async()=>{throw new Error('M4_ARCHIVE_PROVIDER_CALL')}})
+  const container=document.createElement('div')
+  document.body.append(container)
+  const app=createApp({render:()=>[h(KanataCandidateHistoryPanel,{
+    search:(text,cursor,guard)=>runtime.searchHistory(conversationId,text,cursor,guard),
+    previewArchive:guard=>runtime.previewArchive(conversationId,guard),
+    confirmArchive:(plan,key,guard)=>runtime.confirmArchive(conversationId,plan,key,guard),
+  }),h(AppFeedbackHost)]}).use(pinia)
+  const locate=(root,label)=>[...root.querySelectorAll('button')].find(item=>item.textContent.trim()===label)
+  const settle=async condition=>{
+    const deadline=performance.now()+15000
+    while(!condition()){
+      if(performance.now()>deadline)throw new Error('M4_ARCHIVE_UI_TIMEOUT')
+      await new Promise(resolve=>setTimeout(resolve,30))
+    }
+  }
+  try {
+    await candidate.withRepositories({},(_messages,conversations)=>conversations.create({...base,id:conversationId,revision:1,lastReadAt:0}))
+    await candidate.run({},operation=>operation.transaction(tx=>tx.execute(growthSeedSql,[250,conversationId,worldId,conversationId,senderId])))
+    runtime.activate(scope)
+    app.mount(container)
+    locate(container,'预览整理较早聊天').click()
+    await settle(()=>Boolean(locate(container,'确认整理历史')))
+    check(container.querySelector('[aria-label="历史整理预览"]').textContent.includes('50 条'),'M4_ARCHIVE_UI_PREVIEW_COUNT')
+    locate(container,'确认整理历史').click()
+    await settle(()=>Boolean(locate(document,'整理这些消息')))
+    locate(document,'整理这些消息').click()
+    await settle(()=>container.textContent.includes('已整理 50 条消息'))
+    const older=await candidate.withRepositories({},messages=>messages.quote(scope,conversationId+'-history-1'))
+    check(older?.content==='合成历史消息','M4_ARCHIVE_QUOTE_LOST')
+    check((await runtime.previewArchive(conversationId,()=>{})).count===0,'M4_ARCHIVE_RECEIPT_MISMATCH')
+    return {archivedCount:50,retainedRecent:200,quotePreserved:true}
+  }catch(error){return {error:error.code??error.message}}
+  finally{
+    app.unmount()
+    container.remove()
+    await runtime.dispose()
+    auth.expireSession()
+    await candidate.release()
+  }
 }
 window.m4QaWorkspace = async (password, { worldId, worldName, conversationId, actorId, membership }) => {
   session(password)
@@ -832,6 +954,15 @@ window.m4QaWorkspace = async (password, { worldId, worldName, conversationId, ac
       button('提议事件').click()
       const eventPanel=()=>container.querySelector('[aria-label="候选事件账本"]')
       await settle(()=>Boolean(eventPanel()?.querySelector('textarea')))
+      eventPanel().querySelector('input[value=move]').click()
+      await nextTick()
+      button('选择事件角色').click()
+      const eventActor=()=>eventPanel()?.querySelector('[data-event-choice="'+a+'"]')
+      await settle(()=>Boolean(eventActor()))
+      eventActor().click()
+      const place=eventPanel().querySelector('input[maxlength="200"]')
+      place.value='合成界面移动地点'
+      place.dispatchEvent(new Event('input',{bubbles:true}))
       const draft=eventPanel().querySelector('textarea')
       draft.value='合成候选账本事件'
       draft.dispatchEvent(new Event('input',{bubbles:true}))
@@ -850,6 +981,8 @@ window.m4QaWorkspace = async (password, { worldId, worldName, conversationId, ac
       await settle(()=>eventPanel()?.textContent.includes('已撤销'))
       button('查看撤销审计').click()
       await settle(()=>Boolean(eventPanel()?.querySelector('[aria-label="撤销审计"] li')))
+      button('查看逐项影响').click()
+      await settle(()=>eventPanel()?.querySelector('[aria-label="逐项影响审计"] li')?.textContent.includes('合成界面移动地点'))
 
       stage='R4-memory-management'
       const memoryBase={worldId,ownerType:'character',ownerId:a,layer:'L3',key:'合成冲突管理',
@@ -868,10 +1001,14 @@ window.m4QaWorkspace = async (password, { worldId, worldName, conversationId, ac
       asActor().click()
       await settle(()=>Boolean(button('核对候选和冲突')))
       button('核对候选和冲突').click()
-      await settle(()=>Boolean(button('确认采用并处理冲突')))
-      button('确认采用并处理冲突').click()
-      await settle(()=>Boolean(dialogButton('采用当前内容')))
-      dialogButton('采用当前内容').click()
+      await settle(()=>Boolean(button('自定义正文并合并来源')))
+      button('自定义正文并合并来源').click()
+      await settle(()=>Boolean(dialogButton('确认合并')))
+      const mergeInput=document.querySelector('input.feedback-input')
+      mergeInput.value='合成自定义正文'
+      mergeInput.dispatchEvent(new Event('input',{bubbles:true}))
+      await nextTick()
+      dialogButton('确认合并').click()
       await settle(()=>Boolean(button('分享这条记忆')))
       const managed=await candidate.withDomains({},domains=>domains.memories.managedDetailFor({worldId,instanceId:a},oldId))
       check(managed.status==='stale'&&managed.content==='合成旧内容','R4_CONFLICT_RETAINED')
@@ -885,7 +1022,19 @@ window.m4QaWorkspace = async (password, { worldId, worldName, conversationId, ac
       dialogButton('确认分享').click()
       await settle(()=>!memoryPanel()?.querySelector('[aria-label="选择分享对象"]'))
       const shared=await candidate.withDomains({},domains=>domains.memories.listFor({worldId,instanceId:c}))
-      check(shared.entries.some(item=>item.sharedFromId===newId&&item.content==='合成新内容'),'R4_SHARED_COPY')
+      const copy=shared.entries.find(item=>item.sharedFromId===newId)
+      check(copy?.content==='合成自定义正文','R4_SHARED_COPY')
+      button('查看已分享对象').click()
+      const revoke=()=>memoryPanel()?.querySelector('[data-share-copy="'+copy.id+'"]')
+      await settle(()=>Boolean(revoke()))
+      revoke().click()
+      await settle(()=>Boolean(dialogButton('撤回此分享')))
+      dialogButton('撤回此分享').click()
+      await settle(()=>!memoryPanel()&&Boolean(button(worldName)))
+      await rejects(()=>candidate.withDomains({},domains=>domains.memories.readDetailFor({worldId,instanceId:c},copy.id)),
+        'KANATA_MEMORY_CONTEXT_DENIED')
+      button(worldName).click()
+      await settle(()=>Boolean(button('世界书')&&!button('世界书').disabled))
 
       stage='R5-role-lore-preview'
       await candidate.withDomains({},domains=>domains.lorebook.save({id:'qa-role-lore',worldId,scope:'world',ownerId:worldId,
@@ -930,9 +1079,29 @@ window.m4QaWorkspace = async (password, { worldId, worldName, conversationId, ac
         check(value.identity.userId===original.identity.userId&&value.identity.displayName==='合成身份','R5_WORLD_IDENTITY')
         check((await domains.managementView.list(created.id,'conversations')).entries.length===0,'R5_WORLD_EMPTY')
       })
+      stage='R5-world-settings'
+      button('编辑世界设置').click()
+      const settings=()=>container.querySelector('form[aria-label="世界设置"]')
+      await settle(()=>Boolean(settings()))
+      const rules=settings().querySelector('textarea')
+      rules.value='合成世界规则更新'
+      rules.dispatchEvent(new Event('input',{bubbles:true}))
+      const zone=settings().querySelector('input[placeholder="Asia/Shanghai"]')
+      zone.value='Asia/Shanghai'
+      zone.dispatchEvent(new Event('input',{bubbles:true}))
+      settings().querySelector('input[value="roleplay"]').click()
+      await nextTick()
+      settings().requestSubmit()
+      await settle(()=>!settings())
+      await candidate.withDomains({},async domains=>{
+        const created=(await domains.managementView.worlds()).entries.find(item=>item.title==='合成新世界')
+        const value=await domains.worlds.get(created.id)
+        check(value.world.rules==='合成世界规则更新'&&value.world.timeZone==='Asia/Shanghai'&&value.world.defaultChatMode==='roleplay',
+          'R5_WORLD_SETTINGS')
+      })
     }
     return { passed, groupCases, ...(membership && { groupCommitFailure:'PASS', softDeletedHistory:'PASS',
-      eventLedger:'PASS', memoryManagement:'PASS', roleLorePreview:'PASS', createWorld:'PASS' }) }
+      eventLedger:'PASS', memoryManagement:'PASS', shareWithdrawal:'PASS', roleLorePreview:'PASS', createWorld:'PASS', worldSettings:'PASS' }) }
   } catch (error) {
     return { error: error.code ?? error.message, passed, stage, uiError: container.querySelector('[role=alert]')?.textContent }
   } finally {
@@ -1015,7 +1184,29 @@ window.m4QaCompletion = async (password, scope, requestedSize) => {
       check(replayed.state.location==='synthetic-location-'+(size-1),'M4_EFFECT_FOLD')
       const audit=await candidate.withDomains({},domains=>domains.events.revocationAudits(scope.worldId,revocable.id))
       check(audit.entries.length===1&&audit.entries[0].effectCount===1,'M4_EFFECT_AUDIT')
-      samples.push({ size, memory:memoryTrace, wideMemory:wideTrace, mixedMemory:mixedTrace, event:eventTrace, replay, elapsedMs:Math.round(performance.now()-started) })
+      const owned=await candidate.withDomains({},domains=>domains.events.revocationEffectAudit(scope.worldId,revocable.id,audit.entries[0].id))
+      check(owned.complete&&owned.total===1&&owned.entries[0].value==='合成可撤销位置','M4_EFFECT_AUDIT_ENTRY')
+      const fanoutPrefix='m4c-fanout-'+size+'-',fanoutRoot=fanoutPrefix+size
+      await candidate.run({},operation=>operation.transaction(async tx=>{
+        check((await tx.execute(eventRows,[size,fanoutPrefix,scope.worldId])).affectedRows===size+1,'M4_FANOUT_SEED')
+        check((await tx.execute(eventFanout,[size-1,scope.worldId,fanoutPrefix,fanoutRoot])).affectedRows===size,'M4_FANOUT_LINKS')
+      }))
+      const first=await candidate.withDomains({},domains=>domains.events.openRevocation(scope.worldId,fanoutRoot))
+      check(first.plan.revokeCount===size+1&&first.plan.uncertainCount===0&&first.entries.length===50,'M4_FANOUT_PREVIEW')
+      const second=await candidate.withDomains({},domains=>domains.events.openRevocation(scope.worldId,fanoutRoot,first.cursor))
+      check(second.entries[0].id>first.entries.at(-1).id&&second.plan.signature===first.plan.signature,'M4_FANOUT_CONTINUATION')
+      trace={queries:0,writes:0,maxRows:0}
+      const execute=()=>candidate.withDomains({},domains=>domains.events.confirmRevocation(first.plan,'keep-independent','m4c-fanout-confirm-'+size))
+      const fanout=await execute()
+      const fanoutTrace={...trace,confirmed:fanout.revoked}
+      trace=undefined
+      check(fanout.revoked===size+1&&fanout.needsReview===0&&fanoutTrace.maxRows<=128
+        &&fanoutTrace.writes<=2*Math.ceil((size+1)/128)+3,'M4_FANOUT_EXECUTION')
+      check((await execute()).revoked===size+1,'M4_FANOUT_RETRY')
+      const fanoutAudit=await candidate.withDomains({},domains=>domains.events.revocationAudits(scope.worldId,fanoutRoot))
+      check(fanoutAudit.entries.length===1&&fanoutAudit.entries[0].status==='revoked','M4_FANOUT_AUDIT')
+      samples.push({ size, memory:memoryTrace, wideMemory:wideTrace, mixedMemory:mixedTrace, event:eventTrace, replay,
+        confirmationFanout:fanoutTrace,elapsedMs:Math.round(performance.now()-started) })
     }
     return { samples }
   } catch(error) {

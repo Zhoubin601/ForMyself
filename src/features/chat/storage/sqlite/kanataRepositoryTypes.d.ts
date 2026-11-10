@@ -14,6 +14,12 @@ export interface KanataMessageCursor extends KanataMessageScope {
 export interface KanataHistoryCursor extends KanataMessageCursor {
   readonly query: string
 }
+export interface KanataHistoryArchivePlan extends KanataMessageScope {
+  readonly keepRecent: number
+  readonly conversationRevision: number
+  readonly count: number
+  readonly signature: string
+}
 export interface KanataHistoryPage {
   readonly messages: readonly Pick<Message, 'id' | 'content' | 'senderNameSnapshot' | 'createdAt' | 'revision'>[]
   readonly cursor: KanataHistoryCursor | null
@@ -54,6 +60,8 @@ export interface KanataMessageRepository {
   insertBatch(messages: readonly Message[]): Promise<readonly ('inserted' | 'existing')[]>
   recent(scope: KanataMessageScope, limit?: number): Promise<KanataMessagePage>
   older(scope: KanataMessageScope, cursor: KanataMessageCursor, limit?: number): Promise<KanataMessagePage>
+  previewArchive(scope: KanataMessageScope, keepRecent?: number): Promise<KanataHistoryArchivePlan>
+  confirmArchive(scope: KanataMessageScope, plan: KanataHistoryArchivePlan, commandId: string): Promise<{archivedCount: number}>
   searchHistory(scope: KanataMessageScope, text: string, cursor?: KanataHistoryCursor): Promise<KanataHistoryPage>
   locate(scope: KanataMessageScope, id: string, limit?: number): Promise<KanataMessagePage | null>
   get(scope: KanataMessageScope, id: string): Promise<Message | null>

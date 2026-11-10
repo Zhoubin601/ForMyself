@@ -54,3 +54,5 @@ M2 Windows 接续已通过（2026-11-09）。[最新验收 v2](../docs/20261109-
 
 
 2026-11-10 M4 当前续作入口：[M4 剩余缺口续作任务书 v1](../docs/20261110-kanata-sqlite-m4-continuation-task-v1.md)。M 分支远端接管基线 428b7bcfeffe2722e72b4809a6d1a82b5734aeb1；M4 BLOCKED、M5 NO。当前实施和实测见 [续作验收 v3 检查点](../docs/20261110-kanata-sqlite-m4-acceptance-v3.md)。GROUP-01～05 已有候选 UI/Repository/Android 证据；完整 A–G、兼容链路、生命周期与 G1–G11 尚待关闭。生产仍 legacy，普通 Android SQLite 激活位 false；不得迁移真实数据或提前实施 M5/M6/M7。
+
+2026-11-10 最新入口为 [M4 收尾验收 v4](../docs/20261110-kanata-sqlite-m4-acceptance-v4.md)。候选提示词逐页编码精确来源且在现有预算内保留原 JSON，仍须验证宽授权标签、A–F 其余操作、历史扩展引用、全生命周期与两轮全范围复核。M4 BLOCKED，M5 NO。

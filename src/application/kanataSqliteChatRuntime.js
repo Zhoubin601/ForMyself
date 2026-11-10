@@ -61,8 +61,8 @@ async function* knowledgeEntries(read) {
   }
 }
 
-/** @param {Domains} domains @param {Scope & {instanceId:string}} scope @param {string} text */
-async function readPromptKnowledge(domains, scope, text) {
+/** @param {Domains} domains @param {Scope & {instanceId:string}} scope @param {string} text @param {number} contextBudget */
+async function readPromptKnowledge(domains, scope, text, contextBudget) {
   const score = kanataMemoryRanker(text)
   const rank = createKanataBudgetSelection(4000,
     (/** @type {{id:string,score:number}} */ a, /** @type {{id:string,score:number}} */ b) =>
@@ -71,7 +71,13 @@ async function readPromptKnowledge(domains, scope, text) {
     rank.offer({ id: entry.id, score: score(entry) }, estimateKanataContextTokens(entry.content) + 16)
   }
   const memories = []
-  for (const { id } of rank.finish()) memories.push(await domains.memories.readFor(scope, id))
+  let remainingBytes = contextBudget - 2
+  for (const { id } of rank.finish()) {
+    if (memories.length) remainingBytes--
+    const memory = await domains.memories.readPrompt(scope, id, remainingBytes)
+    remainingBytes -= memory.promptBytes
+    memories.push(memory)
+  }
   return { memories, lorebook: await readKanataRoleLore(domains.lorebook, scope.worldId, scope.instanceId, text) }
 }
 /** @param {Domains['chatView']} view @param {Scope} scope @param {Conversation['type']} type
@@ -342,7 +348,7 @@ export function createKanataSqliteChatRuntime({ candidate, completion, auth, lif
         const relations = await domains.events.relationshipContext(scope.worldId, actorScope, policy.contextBudget)
         const actors = await domains.characters.promptActor(scope.worldId, instanceId, verified.hiddenTargetIds.has(instanceId))
         const text = history.slice(-3).map(message => message.content).join('\n')
-        const knowledge = await readPromptKnowledge(domains, { ...scope, instanceId }, text)
+        const knowledge = await readPromptKnowledge(domains, { ...scope, instanceId }, text, policy.contextBudget)
         const origins = new Set()
         for (const entry of [...history, ...knowledge.memories, ...verified.events]) {
           for (const source of entry.lifeSources ?? []) origins.add(source.grantId)
@@ -397,6 +403,17 @@ export function createKanataSqliteChatRuntime({ candidate, completion, auth, lif
       load: candidate.loadConversationView, readMembers: candidate.readConversationMembers,
       readUsage: (request, cursor) => candidate.withDomains(request, domains => domains.usage.forConversation(request.scope, cursor)),
     }),
+    /** @param {string} conversationId @param {()=>void} guard */
+    previewArchive(conversationId,guard){
+      const request=owner(conversationId)
+      return candidate.withRepositories({assertOwner(){request.assertOwner();guard()}},messages=>messages.previewArchive(request.scope))
+    },
+    /** @param {string} conversationId @param {import('./contracts').KanataHistoryArchivePlan} plan @param {string} key @param {()=>void} guard */
+    confirmArchive(conversationId,plan,key,guard){
+      const request=owner(conversationId)
+      cancel()
+      return candidate.withRepositories({assertOwner(){request.assertOwner();guard()}},messages=>messages.confirmArchive(request.scope,plan,key))
+    },
     /** @param {string} conversationId @param {string} text
      * @param {import('../features/chat/storage/sqlite/kanataRepositoryTypes').KanataHistoryCursor|undefined} cursor
      * @param {()=>void} assertSearch */

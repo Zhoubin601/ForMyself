@@ -1,7 +1,7 @@
 // @ts-check
 import { sha256Text } from '../../../../shared/crypto/sha256Text.js'
 import { validateId } from '../../domain/kanataValidation.js'
-import { executeOnce, writeOne } from './kanataDomainRows.js'
+import { executeOnce } from './kanataDomainRows.js'
 import { rebuildEventEffects, visitRows } from './kanataMessageDependents.js'
 import { equalDto, pageLimit, requireSqliteValue as need } from './kanataRepositoryValues.js'
 import { assertWritableWorld } from './kanataWorldRepository.js'
@@ -58,8 +58,16 @@ const staleMemories = `WITH p(world,signature) AS (VALUES(?,?))
   AND id IN (SELECT l.memory_id FROM p JOIN memory_events l ON l.world_id=p.world
     JOIN world_events e ON e.world_id=l.world_id AND e.id=l.event_id ${auditedOwner})`
 
-const statusUpdate = `UPDATE world_events SET status=?,revision=revision+1
-  WHERE world_id=? AND id=? AND revision=? AND status=?`
+const batchInput = `WITH args(world,changes,signature) AS (VALUES(?,?,?)), p AS MATERIALIZED (
+  SELECT world,signature,json_extract(j.value,'$.id') AS event,json_extract(j.value,'$.auditId') AS id,
+    json_extract(j.value,'$.at') AS at,json_extract(j.value,'$.status') AS old_status,
+    json_extract(j.value,'$.revision') AS old_revision,json_extract(j.value,'$.next') AS next_status,
+    json_extract(j.value,'$.effectCount') AS effect_count
+  FROM args JOIN json_each(args.changes) j
+)`
+const statusUpdate = batchInput + `
+  UPDATE world_events AS e SET status=p.next_status,revision=e.revision+1 FROM p
+  WHERE e.world_id=p.world AND e.id=p.event AND e.revision=p.old_revision AND e.status=p.old_status`
 const arrayLinks = (/** @type {string} */ table, /** @type {string} */ field) =>
   `(SELECT json_group_array(v) FROM (SELECT ${field} AS v FROM ${table} l
     WHERE l.world_id=e.world_id AND l.event_id=e.id ORDER BY ${field}))`
@@ -71,18 +79,31 @@ const eventSnapshot = `json_patch(e.extensions_json,json_object(
   'sourceRefs',json(COALESCE(json_extract(e.extensions_json,'$.sourceRefs'),(SELECT json_group_array(json_object(
     'messageId',s.message_id,'revision',s.message_revision)) FROM event_sources s WHERE s.world_id=e.world_id AND s.event_id=e.id)))
 ))`
-const writeAudit = `WITH p(id,at,old_status,old_revision,signature,effect_count,world,event) AS (VALUES(?,?,?,?,?,?,?,?)),
-  snapshot AS (SELECT p.*,e.revision,e.status,${eventSnapshot} AS body FROM p JOIN world_events e ON e.world_id=p.world AND e.id=p.event)
+const ownedEffects = `(SELECT json_group_array(json_object('id',f.id,'targetType',f.target_type,'targetId',f.target_id,
+    'path',f.path,'operation',f.operation,'value',json(f.value_json),'ruleVersion',f.rule_version))
+  FROM (SELECT * FROM world_effects WHERE world_id=p.world AND event_id=p.event ORDER BY id) f)`
+const writeAudit = batchInput + `,
+  snapshot AS (SELECT p.*,e.revision,e.status,${eventSnapshot} AS body,${ownedEffects} AS owned_effects
+    FROM p JOIN world_events e ON e.world_id=p.world AND e.id=p.event AND e.revision=p.old_revision+1 AND e.status=p.next_status)
   INSERT INTO event_audits(id,world_id,event_id,at,previous_revision,next_revision,previous_json,next_json,extensions_json)
   SELECT id,world,event,at,old_revision,revision,json_set(body,'$.status',old_status,'$.revision',old_revision),
     json_set(body,'$.status',status,'$.revision',revision),
-    json_object('revocationSignature',signature,'ownedEffectCount',effect_count)
-  FROM snapshot`
+    json_object('revocationSignature',signature,'ownedEffectCount',effect_count,'ownedEffects',json(owned_effects))
+  FROM snapshot WHERE json_array_length(owned_effects)=effect_count`
 const auditHeaders = `SELECT id,at,previous_revision,next_revision,json_extract(next_json,'$.status') AS status,
   json_extract(extensions_json,'$.ownedEffectCount') AS effect_count
   FROM event_audits WHERE world_id=? AND event_id=? AND id>?
   AND json_extract(extensions_json,'$.revocationSignature') IS NOT NULL ORDER BY id LIMIT ?`
-export const eventRevocationQueries = [root, projected, selectionBatch, effectProof, baselineProof, completedEffects, auditHeaders]
+const auditEffectHeader = `SELECT json_type(extensions_json,'$.ownedEffects') AS snapshot_type,
+  json_extract(extensions_json,'$.ownedEffectCount') AS effect_count
+  FROM event_audits WHERE world_id=? AND event_id=? AND id=?
+    AND json_extract(extensions_json,'$.revocationSignature') IS NOT NULL`
+const auditEffectPage = `SELECT json_extract(j.value,'$.id') AS id,j.value AS effect
+  FROM event_audits a JOIN json_each(a.extensions_json,'$.ownedEffects') j
+  WHERE a.world_id=? AND a.event_id=? AND a.id=? AND json_extract(j.value,'$.id')>?
+  ORDER BY id LIMIT ?`
+export const eventRevocationQueries = [root, projected, selectionBatch, effectProof, baselineProof, completedEffects,
+  auditHeaders, auditEffectHeader, auditEffectPage]
 export const eventRevocationWrites = [statusUpdate, writeAudit, staleMemories]
 
 /** @param {Row} row */
@@ -112,8 +133,51 @@ async function snapshot(tx, worldId, eventId) {
   return { worldId,eventId,rootRevision,revokeCount,uncertainCount,signature }
 }
 
-/** @param {Operation} operation @param {{id:()=>string,clock:()=>number}} tools */
-export function createEventRevocation(operation,tools) {
+/** @param {Operation} operation @param {{id:()=>string,clock:()=>number}} tools
+ * @param {(tx:Tx,plan:Plan,summary:string)=>Promise<()=>Promise<string>>} prepareCorrection */
+export function createEventRevocation(operation,tools,prepareCorrection) {
+  /** @param {Tx} tx @param {Plan} plan @param {Decision|undefined} decision
+   * @param {string} commandId @param {string} [summary] */
+  async function apply(tx,plan,decision,commandId,summary){
+    const {worldId,eventId,signature}=plan
+    validateId(commandId,'commandId')
+    validateId(eventId,'eventId')
+    need(decision===undefined||decision==='keep-independent'||decision==='mark-needs-review','EVENT_REVOCATION_DECISION_INVALID')
+    await assertWritableWorld(tx,worldId)
+    const expected={revoked:plan.revokeCount,needsReview:decision==='mark-needs-review'?plan.uncertainCount:0}
+    const command=summary===undefined?'event:revoke-confirmed':'event:correct-confirmed'
+    const resultId=await executeOnce(tx,[command,worldId,eventId,commandId],{plan,decision:decision??null,...(summary!==undefined&&{summary})},async()=>{
+      const current=await snapshot(tx,worldId,eventId)
+      need(equalDto(current,plan),'EVENT_REVOKE_PREVIEW_STALE')
+      need(!plan.uncertainCount||decision!==undefined,'EVENT_DEPENDENCY_UNCERTAIN')
+      const correct=summary===undefined?undefined:await prepareCorrection(tx,plan,summary)
+      let revoked=0,needsReview=0,after=''
+      for (;;) {
+        const rows=await tx.query(selectionBatch,[worldId,eventId,after])
+        const changes=[]
+        for(const row of rows){
+          const next=row.disposition==='revoke'?'revoked':decision==='mark-needs-review'?'needsReview':null
+          if(!next)continue
+          changes.push({id:row.id,revision:row.revision,status:row.status,next,
+            auditId:tools.id(),at:tools.clock(),effectCount:row.effect_count})
+          if(next==='revoked')revoked++
+          else needsReview++
+        }
+        if(changes.length){
+          const parameters=[worldId,JSON.stringify(changes),signature]
+          need((await tx.execute(statusUpdate,parameters)).affectedRows===changes.length,'EVENT_REVOKE_PREVIEW_STALE')
+          need((await tx.execute(writeAudit,parameters)).affectedRows===changes.length,'EVENT_REVOKE_AUDIT_CONFLICT')
+        }
+        if(rows.length<128)break
+        after=String(rows[rows.length-1].id)
+      }
+      need(revoked===expected.revoked&&needsReview===expected.needsReview,'EVENT_REVOKE_PREVIEW_STALE')
+      await tx.execute(staleMemories,[worldId,signature])
+      await rebuildEventEffects(tx,completedEffects,[worldId,signature])
+      return correct?correct():eventId
+    })
+    return {expected,resultId}
+  }
   return {
     /** @param {string} worldId @param {string} eventId @param {Cursor} [cursor] @param {number} [limit] */
     openRevocation: (worldId,eventId,cursor,limit=50) => operation.transaction(async tx=>{
@@ -129,32 +193,33 @@ export function createEventRevocation(operation,tools) {
       return { plan:current,entries,cursor:rows.length>limit?{plan:current,after:entries[limit-1].id}:null }
     }),
     /** @param {Plan} plan @param {Decision|undefined} decision @param {string} commandId */
-    confirmRevocation: (plan,decision,commandId) => operation.transaction(async tx=>{
-      const {worldId,eventId,signature}=plan
-      validateId(commandId,'commandId')
-      validateId(eventId,'eventId')
-      need(decision===undefined||decision==='keep-independent'||decision==='mark-needs-review','EVENT_REVOCATION_DECISION_INVALID')
-      await assertWritableWorld(tx,worldId)
-      const expected={revoked:plan.revokeCount,needsReview:decision==='mark-needs-review'?plan.uncertainCount:0}
-      await executeOnce(tx,['event:revoke-confirmed',worldId,eventId,commandId],{plan,decision:decision??null},async()=>{
-        const current=await snapshot(tx,worldId,eventId)
-        need(equalDto(current,plan),'EVENT_REVOKE_PREVIEW_STALE')
-        need(!plan.uncertainCount||decision!==undefined,'EVENT_DEPENDENCY_UNCERTAIN')
-        let revoked=0,needsReview=0
-        for await(const row of visitRows(tx,selectionBatch,[worldId,eventId],['id'])){
-          const next=row.disposition==='revoke'?'revoked':decision==='mark-needs-review'?'needsReview':null
-          if(!next)continue
-          await writeOne(tx,statusUpdate,[next,worldId,row.id,row.revision,row.status])
-          await writeOne(tx,writeAudit,[tools.id(),tools.clock(),row.status,row.revision,signature,row.effect_count,worldId,row.id])
-          if(next==='revoked')revoked++
-          else needsReview++
-        }
-        need(revoked===expected.revoked&&needsReview===expected.needsReview,'EVENT_REVOKE_PREVIEW_STALE')
-        await tx.execute(staleMemories,[worldId,signature])
-        await rebuildEventEffects(tx,completedEffects,[worldId,signature])
-        return eventId
-      })
-      return expected
+    confirmRevocation: (plan,decision,commandId) => operation.transaction(async tx=>
+      (await apply(tx,plan,decision,commandId)).expected),
+    /** @param {Plan} plan @param {Decision|undefined} decision @param {string} commandId @param {string} summary */
+    correctConfirmed: (plan,decision,commandId,summary) => operation.transaction(async tx=>{
+      need(typeof summary==='string'&&summary.trim()&&summary.length<=2000,'INVALID_EVENT_SUMMARY')
+      const result=await apply(tx,plan,decision,commandId,summary.trim())
+      return {id:result.resultId,...result.expected}
+    }),
+    /** @param {string} worldId @param {string} eventId @param {string} auditId
+     * @param {import('./kanataDomainTypes').KanataEventEffectAuditCursor} [cursor] @param {number} [limit] */
+    revocationEffectAudit: (worldId, eventId, auditId, cursor, limit=50) => operation.transaction(async tx => {
+      validateId(worldId, 'worldId')
+      validateId(eventId, 'eventId')
+      validateId(auditId, 'auditId')
+      if(cursor){
+        validateId(cursor.after,'cursor')
+        need(cursor.worldId===worldId&&cursor.eventId===eventId&&cursor.auditId===auditId,'EVENT_AUDIT_CURSOR_STALE')
+      }
+      const keys=[worldId,eventId,auditId]
+      const [header]=await tx.query(auditEffectHeader,keys)
+      need(header,'EVENT_AUDIT_UNAVAILABLE')
+      const complete=header.snapshot_type==='array'
+      const rows=complete ? await tx.query(auditEffectPage,[...keys,cursor?.after??'',pageLimit(limit)+1]) : []
+      const entries=rows.slice(0,limit).map(row=> /** @type {Omit<import('../../domain/kanataTypes').WorldEffect,'worldId'|'eventId'>} */ (JSON.parse(String(row.effect))))
+      return {entries,complete,total:Number(header.effect_count),cursor:rows.length>limit ? {
+        worldId,eventId,auditId,after:entries[limit-1].id,
+      } : null}
     }),
     /** @param {string} worldId @param {string} eventId @param {string} [after] @param {number} [limit] */
     revocationAudits: (worldId,eventId,after='',limit=50) => operation.transaction(async tx=>{

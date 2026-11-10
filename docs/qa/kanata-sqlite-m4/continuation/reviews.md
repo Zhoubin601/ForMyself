@@ -1,5 +1,7 @@
 # M4 续作的两轮反例复核（检查点）
 
+本页是 v3 历史。v4 复核另见 [收尾复核](../closeout/reviews.md)。
+
 这两轮按任务书分别执行。现有证据不足以把任一轮标为“全范围通过”。结论为 BLOCKED。v2 历史自检保留在 [Completion QA](../completion/reviews.md)。
 
 ## 第一轮：安全、权限、Repository、事务与暂存

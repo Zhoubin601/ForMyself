@@ -46,6 +46,16 @@ function appendWorld(data, options, fields) {
 export const createKanataWorld = (input, fields, options) => change(input, data => { appendWorld(data, options, fields) })
 /** @param {KanataData} input @param {string} worldId @param {string} name */
 export const renameKanataWorld = (input, worldId, name) => change(input, data => { const world = worldIn(data, worldId); world.name = name.trim(); world.revision++ })
+/** @param {KanataData} input @param {string} worldId
+ * @param {Pick<import('./kanataTypes').World,'name'|'rules'|'timeZone'|'defaultChatMode'>} fields */
+export const updateKanataWorldSettings = (input, worldId, fields) => change(input, data => {
+  const world = activeWorld(data, worldId)
+  need(typeof fields.name==='string'&&fields.name.trim()&&fields.name.length<=200
+    && typeof fields.rules==='string'&&fields.rules.length<=4000, 'INVALID_WORLD_SETTINGS', 'world')
+  need(fields.defaultChatMode==='daily'||fields.defaultChatMode==='roleplay','INVALID_WORLD_SETTINGS','world.defaultChatMode')
+  Object.assign(world,{name:fields.name.trim(),rules:fields.rules,timeZone:fields.timeZone,
+    defaultChatMode:fields.defaultChatMode,revision:world.revision+1})
+})
 /** Archive is reversible and disables automatic work; it never deletes history or turns it back on.
  * @param {KanataData} input @param {string} worldId @param {boolean} archived
  */

@@ -22,7 +22,7 @@ const modules=[['home','首页'],['mood','心情'],['weight','体重'],['savings
 const world=shallowRef(null),directory=shallowRef(null),page=shallowRef(null),section=ref('conversations')
 const chat=shallowRef(null),actor=shallowRef(null),grants=shallowRef(null)
 const cardEditor=shallowRef(null),bindingEditor=shallowRef(null),groupEditor=shallowRef(null),identityDraft=ref(null),loreEntry=shallowRef(null),eventGraph=shallowRef(null),memoryEntry=shallowRef(null)
-const eventLedger=shallowRef(null), worldDraft=ref(null)
+const eventLedger=shallowRef(null), worldDraft=ref(null), settingsDraft=ref(null)
 let creationOptions
 const busy=ref(false),error=ref(''),name=ref('')
 const dialogOwner=Symbol('kanata-workspace')
@@ -32,7 +32,7 @@ function clear(){
   props.worlds.clearSelection()
   owner=null
   world.value=directory.value=page.value=chat.value=actor.value=grants.value=null
-  identityDraft.value=loreEntry.value=eventGraph.value=eventLedger.value=memoryEntry.value=groupEditor.value=bindingEditor.value=cardEditor.value=null
+  settingsDraft.value=identityDraft.value=loreEntry.value=eventGraph.value=eventLedger.value=memoryEntry.value=groupEditor.value=bindingEditor.value=cardEditor.value=null
   section.value='conversations'
   worldDraft.value=creationOptions=null
   name.value=error.value=''
@@ -105,7 +105,7 @@ function loadSection(next,cursor){
   section.value=next
   page.value=null
   actor.value=grants.value=null
-  identityDraft.value=loreEntry.value=eventGraph.value=eventLedger.value=memoryEntry.value=groupEditor.value=bindingEditor.value=cardEditor.value=null
+  settingsDraft.value=identityDraft.value=loreEntry.value=eventGraph.value=eventLedger.value=memoryEntry.value=groupEditor.value=bindingEditor.value=cardEditor.value=null
   void read(assertRequest=>selected.list(next,cursor,assertRequest),value=>{page.value=value})
 }
 function openGroupEditor(id=''){
@@ -165,6 +165,25 @@ function saveGrant(moduleId,key,event){
   const selected=owner,id=actor.value.id,previous=grantOf(moduleId)
   const flags={read:previous?.read??false,remember:previous?.remember??false,share:previous?.share??false,[key]:event.target.checked}
   void read(()=>selected.setGrant(id,moduleId,previous?.revision??null,flags),()=>{})
+}
+function openSettings(){
+  if(!owner||busy.value)return
+  const selected=owner
+  void read(guard=>selected.read(guard),value=>{
+    const {name,rules,timeZone,defaultChatMode,revision}=value.world
+    settingsDraft.value={name,rules,timeZone,defaultChatMode,revision}
+  })
+}
+function saveSettings(){
+  if(!owner||busy.value||!settingsDraft.value||world.value.archived)return
+  const selected=owner
+  const {revision,...fields}=settingsDraft.value
+  void read(guard=>selected.updateWorldSettings(revision,fields,guard),value=>{
+    world.value={id:value.id,title:value.name,archived:Boolean(value.archived),revision:value.revision}
+    name.value=value.name
+    settingsDraft.value=null
+    appToast('已保存世界设置。',{tone:'success'})
+  })
 }
 function rename(){
   if(!owner||!name.value.trim()||busy.value)return
@@ -235,6 +254,19 @@ onBeforeUnmount(()=>{
         <button type="submit" :disabled="busy">保存名称</button>
       </form>
       <button type="button" :disabled="busy" @click="archive">{{ world.archived ? '取消归档' : '归档世界' }}</button>
+      <button v-if="!world.archived&&!settingsDraft" type="button" :disabled="busy" @click="openSettings">编辑世界设置</button>
+      <form v-if="settingsDraft" class="kanata-form" aria-label="世界设置" @submit.prevent="saveSettings">
+        <label>世界设置名称<input v-model="settingsDraft.name" maxlength="200" required :disabled="busy||world.archived" /></label>
+        <label>世界设定规则<textarea v-model="settingsDraft.rules" maxlength="4000" :disabled="busy||world.archived" /></label>
+        <label>世界时区<input v-model="settingsDraft.timeZone" maxlength="100" placeholder="Asia/Shanghai" required :disabled="busy||world.archived" /></label>
+        <fieldset :disabled="busy||world.archived">
+          <legend>默认聊天模式</legend>
+          <label><input v-model="settingsDraft.defaultChatMode" type="radio" value="daily" />日常</label>
+          <label><input v-model="settingsDraft.defaultChatMode" type="radio" value="roleplay" />角色扮演</label>
+        </fieldset>
+        <button type="submit" :disabled="busy||world.archived">保存世界设置</button>
+        <button type="button" :disabled="busy" @click="settingsDraft=null">关闭世界设置</button>
+      </form>
       <button type="button" :disabled="busy" @click="editIdentity">查看世界身份</button>
       <form v-if="identityDraft" class="kanata-form" @submit.prevent="saveIdentity">
         <label>身份名称<input v-model="identityDraft.displayName" maxlength="200" required :disabled="busy||world.archived" /></label>

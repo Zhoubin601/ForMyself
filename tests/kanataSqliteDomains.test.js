@@ -127,6 +127,20 @@ test('R5 candidate world creation derives owner and retries after failed commit 
   await assert.rejects(runtime.createWorld(fields,options,()=>{}),/KANATA_WORLD_OWNER_EXPIRED/)
 })
 
+test('M4 candidate world settings validate time zone and CAS without touching identity',async t=>{
+  const {domains,scope}=await setup(t)
+  const {world,identity}=await domains.worlds.get(scope.worldId)
+  const fields={name:'新合成世界名',rules:'合成规则',timeZone:'Asia/Shanghai',defaultChatMode:'roleplay'}
+  await assert.rejects(domains.worlds.updateSettings(world.id,world.revision,{...fields,timeZone:'Invalid/Synthetic'}),/INVALID_TIMEZONE/)
+  assert.deepEqual(await domains.worlds.get(world.id),{world,identity})
+  const result=await domains.worlds.updateSettings(world.id,world.revision,fields)
+  for(const [key,value] of Object.entries(fields))assert.equal(result[key],value)
+  await assert.rejects(domains.worlds.updateSettings(world.id,world.revision,fields),/REVISION_CONFLICT/)
+  await domains.worlds.archive(world.id,result.revision,true)
+  await assert.rejects(domains.worlds.updateSettings(world.id,result.revision+1,fields),/WORLD_ARCHIVED/)
+  assert.deepEqual((await domains.worlds.get(world.id)).identity,identity)
+})
+
 test('M3 character version publication is immutable and instance scope stays isolated', async t => {
   const { domains, fixture, scope, other } = await setup(t)
   const card = fixture.cards[0], oldVersion = fixture.cardVersions.find(version => version.id === card.currentVersionId)
@@ -258,6 +272,39 @@ test('R4 candidate share copies exact source metadata without reading body into 
   assert.ok(!state.queries.some(sql=>sensitive.test(sql)))
 })
 
+test('M4 outgoing share withdrawal is scoped, atomic and denies all downstream bodies',async t=>{
+  const {domains,scope,fixture,state,db,other}=await setup(t)
+  const [recipient,next]=fixture.instances.filter(actor=>actor.worldId===scope.worldId&&actor.id!==scope.instanceId)
+  const item={id:'outgoing-origin',worldId:scope.worldId,ownerType:'character',ownerId:scope.instanceId,layer:'L3',
+    key:'合成分享来源',content:'合成正文',status:'active',revision:1,visibility:'private',sourceRefs:[]}
+  await domains.memories.save(item,null)
+  const peer={worldId:scope.worldId,instanceId:recipient.id}
+  const onward={worldId:scope.worldId,instanceId:next.id}
+  const copy=await domains.memories.shareManaged(scope,item.id,1,recipient.id,'share-first')
+  const child=await domains.memories.shareManaged(peer,copy.id,1,next.id,'share-second')
+  assert.equal((await domains.memories.readDetailFor(onward,child.id)).content,item.content)
+  await assert.rejects(domains.memories.listOutgoingShares(peer,item.id),/CONTEXT_DENIED/)
+  await assert.rejects(domains.memories.listOutgoingShares({...scope,instanceId:other.id},item.id),/SCOPE_DENIED/)
+  const shares=await domains.memories.listOutgoingShares(scope,item.id)
+  assert.deepEqual(shares.entries.map(({id,recipientId,revision})=>[id,recipientId,revision]),[[copy.id,recipient.id,1]])
+  const withdraw=()=>domains.memories.withdrawShare(scope,item.id,copy.id,1,'withdraw-first')
+  await assert.rejects(domains.memories.withdrawShare(scope,item.id,child.id,1,'wrong-edge'),/CONTEXT_DENIED/)
+  await assert.rejects(domains.memories.withdrawShare(scope,item.id,copy.id,2,'stale-copy'),/EDIT_CONFLICT/)
+  state.failCommit=true
+  await assert.rejects(withdraw(),/injected commit/)
+  state.failCommit=false
+  assert.equal((await domains.memories.readDetailFor(peer,copy.id)).content,item.content)
+  await withdraw()
+  await withdraw()
+  assert.equal((await domains.memories.listOutgoingShares(scope,item.id)).entries.length,0)
+  state.queries=[]
+  await assert.rejects(domains.memories.readDetailFor(peer,copy.id),/CONTEXT_DENIED/)
+  await assert.rejects(domains.memories.readDetailFor(onward,child.id),/CONTEXT_DENIED/)
+  assert.ok(!state.queries.some(sql=>/SELECT .*content FROM memories/i.test(sql)))
+  assert.equal(db.prepare('SELECT revision FROM memories WHERE world_id=? AND id=?').get(scope.worldId,copy.id).revision,2)
+  assert.equal((await domains.memories.readDetailFor(scope,item.id)).content,item.content)
+})
+
 test('R4 conflicts page without body, bind the revisions, and retain discarded memories for review', async t=>{
   const {domains,scope,db}=await setup(t)
   const base={worldId:scope.worldId,ownerType:'character',ownerId:scope.instanceId,
@@ -281,6 +328,52 @@ test('R4 conflicts page without body, bind the revisions, and retain discarded m
   assert.equal((await domains.memories.managedDetailFor(scope,older)).content,'旧事实')
   assert.deepEqual({...db.prepare('SELECT status,revision FROM memories WHERE id=?').get(older)},{status:'stale',revision:3})
   assert.equal(db.prepare("SELECT target_memory_id FROM memory_links WHERE memory_id=? AND kind='superseded'").get(older).target_memory_id,preferred)
+})
+
+test('M4 custom memory merge keeps both exact sources and retries atomically',async t=>{
+  const {domains,fixture,scope,messages,state}=await setup(t)
+  const refs=[]
+  for(const id of ['merge-source-a','merge-source-b']){
+    await messages.insert({...fixture.messages[0],id,revision:1,lifeSources:[]})
+    refs.push({messageId:id,revision:1})
+  }
+  const base={worldId:scope.worldId,ownerType:'character',ownerId:scope.instanceId,layer:'L3',key:'合成合并',
+    status:'active',revision:1,visibility:'private'}
+  await domains.memories.save({...base,id:'merge-a',sourceRefs:[refs[0]],content:'合成甲'},null)
+  await domains.memories.save({...base,id:'merge-b',sourceRefs:[refs[1]],content:'合成乙'},null)
+  const plan=(await domains.memories.previewConflicts(scope,'merge-b')).plan
+  const merge=()=>domains.memories.confirmConflicts(scope,plan,'merge-user','用户合成核对')
+  state.failCommit=true
+  await assert.rejects(merge(),/injected commit/)
+  state.failCommit=false
+  assert.deepEqual((await domains.memories.sourcePage(scope,'merge-b',undefined,true)).entries,[refs[1]])
+  await merge()
+  await merge()
+  assert.deepEqual((await domains.memories.sourcePage(scope,'merge-b')).entries,refs)
+  assert.equal((await domains.memories.readFor(scope,'merge-b')).content,'用户合成核对')
+  assert.equal((await domains.memories.managedDetailFor(scope,'merge-a')).status,'stale')
+})
+
+test('M4 correcting a confirmed event reuses the frozen scope and rolls back candidate and effects together',async t=>{
+  const {domains,move,scope,state}=await setup(t)
+  const {worldId}=scope
+  const initial=await domains.events.propose(move('原地点'),'correct-origin')
+  const original=await domains.events.commit(worldId,initial.id,initial.revision)
+  const plan=(await domains.events.openRevocation(worldId,original.id)).plan
+  const correct=()=>domains.events.correctConfirmed(plan,'keep-independent','correct-key','合成修正')
+  state.failCommit=true
+  await assert.rejects(correct(),/injected commit/)
+  state.failCommit=false
+  assert.equal((await domains.events.managedEvent(worldId,original.id)).status,'committed')
+  assert.equal((await domains.characters.getInstance(worldId,scope.instanceId)).state.location,'原地点')
+  const receipt=await correct()
+  assert.deepEqual(await correct(),receipt)
+  assert.equal(receipt.revoked,1)
+  assert.equal((await domains.events.managedEvent(worldId,original.id)).status,'revoked')
+  const replacement=await domains.events.managedEvent(worldId,receipt.id)
+  assert.equal(replacement.status,'candidate')
+  assert.equal(replacement.summary,'合成修正')
+  assert.notEqual((await domains.characters.getInstance(worldId,scope.instanceId)).state.location,'原地点')
 })
 
 test('M3 revoke retains independent same-path effects and atomically changes causal descendants', async t => {
@@ -373,8 +466,53 @@ test('R3 bounded confirmation pages freeze owned Effects and explicit/inferred d
   assert.equal((await domains.characters.getInstance(world,scope.instanceId)).state.location,'独立后续')
   const audits=await events.revocationAudits(world,root.id)
   assert.deepEqual(audits.entries.map(row=>[row.previousRevision,row.nextRevision,row.status,row.effectCount]),[[2,3,'revoked',1]])
+  const recorded=await events.revocationEffectAudit(world,root.id,audits.entries[0].id)
+  assert.equal(recorded.complete,true)
+  assert.equal(recorded.total,1)
+  assert.equal(recorded.entries[0].value,'合成变化')
+  assert.equal(recorded.entries[0].path,'state.location')
+  db.prepare("UPDATE world_effects SET value_json=json_quote('合成后写') WHERE event_id=?").run(root.id)
+  assert.deepEqual(await events.revocationEffectAudit(world,root.id,audits.entries[0].id),recorded)
+  await assert.rejects(events.revocationEffectAudit(world,independent.id,audits.entries[0].id),/AUDIT_UNAVAILABLE/)
   assert.equal(db.prepare('SELECT status FROM world_events WHERE id=?').get(independent.id).status,'committed')
   assert.equal(db.prepare('SELECT status FROM world_events WHERE id=?').get(uncertain.id).status,'needsReview')
+})
+
+test('M4 wide event confirmation covers 1k and 10k exact descendants and rolls back between batches',async t=>{
+  const {db,domains,scope,state}=await setup(t)
+  const {eventRows,eventFanout}=await import('../docs/qa/kanata-sqlite-m4/completion/fixture.mjs')
+  const {worldId}=scope
+  for(const size of [1000,10000]){
+    const prefix='event-fanout-'+size+'-',rootId=prefix+size
+    db.prepare(eventRows).run(size,prefix,worldId)
+    db.prepare(eventFanout).run(size-1,worldId,prefix,rootId)
+    let maxRows=0
+    state.observeRows=(_sql,rows)=>{maxRows=Math.max(maxRows,rows)}
+    const first=await domains.events.openRevocation(worldId,rootId)
+    assert.equal(first.plan.revokeCount,size+1)
+    assert.equal(first.plan.uncertainCount,0)
+    const second=await domains.events.openRevocation(worldId,rootId,first.cursor)
+    assert.deepEqual(second.plan,first.plan)
+    assert.ok(second.entries[0].id>first.entries.at(-1).id)
+    const snapshotBatches=Math.floor((size+1)/128)+1
+    let selectionBatches=0
+    state.observeRows=(sql,rows)=>{
+      maxRows=Math.max(maxRows,rows)
+      if(sql.includes('SELECT selected.*')&&++selectionBatches===snapshotBatches+2)throw new Error('CANCEL_BETWEEN_BATCHES')
+    }
+    const confirm=()=>domains.events.confirmRevocation(first.plan,'keep-independent',prefix+'command')
+    await assert.rejects(confirm(),/CANCEL_BETWEEN_BATCHES/)
+    const revoked=db.prepare("SELECT count(*) AS total FROM world_events WHERE world_id=? AND id GLOB ? AND status='revoked'")
+    assert.equal(revoked.get(worldId,prefix+'*').total,0)
+    state.observeRows=(_sql,rows)=>{maxRows=Math.max(maxRows,rows)}
+    assert.deepEqual(await confirm(),{revoked:size+1,needsReview:0})
+    assert.deepEqual(await confirm(),{revoked:size+1,needsReview:0})
+    assert.equal(revoked.get(worldId,prefix+'*').total,size+1)
+    const audit=db.prepare("SELECT count(*) AS total FROM event_audits WHERE world_id=? AND event_id GLOB ?")
+    assert.equal(audit.get(worldId,prefix+'*').total,size+1)
+    assert.ok(maxRows<=128)
+    t.diagnostic(JSON.stringify({size,confirmed:size+1,maxRows,rollbackAfterFirstBatch:true,replayedReceipt:true}))
+  }
 })
 
 test('M3 window writes event, effects, task and watermark atomically, including failed COMMIT', async t => {

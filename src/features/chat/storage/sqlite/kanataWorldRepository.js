@@ -1,6 +1,6 @@
 // @ts-check
 import { createEmptyKanataData } from '../../domain/kanataCore.js'
-import { archiveKanataWorld, createKanataWorld, renameKanataWorld, updateKanataIdentity } from '../../domain/kanataManagementCore.js'
+import { archiveKanataWorld, createKanataWorld, renameKanataWorld, updateKanataIdentity, updateKanataWorldSettings } from '../../domain/kanataManagementCore.js'
 import { validateId } from '../../domain/kanataValidation.js'
 import { messageQueries } from './kanataRepositorySql.js'
 import { executeOnce, found, domainTable, writeOne } from './kanataDomainRows.js'
@@ -99,6 +99,14 @@ export function createKanataWorldRepository(operation) {
       need(previous.world.revision === expectedRevision, 'KANATA_WORLD_REVISION_CONFLICT')
       const [world] = renameKanataWorld(projection(previous), worldId, name).worlds
       await worldTable.replace(tx, { ...world, identityId: previous.identity.id }, [worldId], expectedRevision)
+      return world
+    }),
+    /** @param {string} worldId @param {number} expectedRevision @param {Parameters<typeof updateKanataWorldSettings>[2]} fields */
+    updateSettings: (worldId, expectedRevision, fields) => operation.transaction(async tx => {
+      const previous = found(await readWorld(tx,worldId),'WORLD_NOT_FOUND')
+      need(previous.world.revision===expectedRevision,'KANATA_WORLD_REVISION_CONFLICT')
+      const [world]=updateKanataWorldSettings(projection(previous),worldId,fields).worlds
+      await worldTable.replace(tx,{...world,identityId:previous.identity.id},[worldId],expectedRevision)
       return world
     }),
     /** @param {string} worldId @param {number} expectedRevision @param {boolean} archived */

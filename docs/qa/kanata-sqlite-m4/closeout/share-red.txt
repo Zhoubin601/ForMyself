@@ -1,0 +1,22 @@
+(node:31028) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✖ M4 outgoing share withdrawal is scoped, atomic and denies all downstream bodies (73.7042ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 255.8965
+
+✖ failing tests:
+
+test at tests\kanataSqliteDomains.test.js:261:1
+✖ M4 outgoing share withdrawal is scoped, atomic and denies all downstream bodies (73.7042ms)
+  TypeError: domains.memories.listOutgoingShares is not a function
+      at TestContext.<anonymous> (file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata-m0/tests/kanataSqliteDomains.test.js:272:41)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:358:3)
+exit=1

@@ -1,0 +1,16 @@
+(node:41232) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ M4 correcting a confirmed event reuses the frozen scope and rolls back candidate and effects together (83.098ms)
+✔ R3 bounded confirmation pages freeze owned Effects and explicit/inferred decisions (70.1904ms)
+✔ M4 wide event confirmation covers 1k and 10k exact descendants and rolls back between batches (12092.571ms)
+ℹ {"size":1000,"confirmed":1001,"maxRows":128,"rollbackAfterFirstBatch":true,"replayedReceipt":true}
+ℹ {"size":10000,"confirmed":10001,"maxRows":128,"rollbackAfterFirstBatch":true,"replayedReceipt":true}
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 12443.2003
+exit=0

@@ -113,6 +113,10 @@ P6首批时间规则与受保护持久化已实现，完整check为500 Node/278�
 
 2026-10-31：已按用户要求准备推送P7 WIP并转云端，唯一新交接入口见文首。最终check565/382与生产子集已验证，P7因100k Web内存/Android反向改密及余项仍No-Go；所有测量和合成基线恢复已结束。请用本日交接及结构化结果覆盖前述旧进度，不将WIP当最终完成。
 
+## 2026-11-10 M4 收尾检查点
+
+M4 仍为 BLOCKED，M5 不放行。本轮关闭普通聊天的完整记忆引用数组路径，增加分享撤回、自定义合并、事件逐项 Effects 审计、历史整理和世界设置。范围、证据和其余门禁见 [验收 v4](docs/20261110-kanata-sqlite-m4-acceptance-v4.md)。
+
 ## 2026-11-10：M4 剩余缺口续作入口
 
 M 分支本轮接管的远端基线为 428b7bcfeffe2722e72b4809a6d1a82b5734aeb1。M4 仍 BLOCKED、M5 NO。[续作验收 v3](docs/20261110-kanata-sqlite-m4-acceptance-v3.md) 记录 GROUP-01～05、事件 Effects、记忆关系增长与其他增量的实测和剩余门禁。当前执行入口改为 [M4 剩余缺口续作任务书](docs/20261110-kanata-sqlite-m4-continuation-task-v1.md)；原 M4 completion task v1、acceptance v1/v2 和 QA 作为历史证据保留。

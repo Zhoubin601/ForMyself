@@ -1,12 +1,14 @@
 <script setup>
 import { onBeforeUnmount, ref, shallowRef } from 'vue'
-import { appConfirm, appToast, cancelOwnedFeedbackDialog } from '../../services/uiFeedback.js'
+import { appConfirm, appPrompt, appToast, cancelOwnedFeedbackDialog } from '../../services/uiFeedback.js'
 import { registerBackHandler } from '../../services/backNavigation.js'
 const props=defineProps({model:{type:Object,required:true},memoryId:{type:String,required:true},archived:Boolean})
 const emit=defineEmits(['close','open-related','removed'])
 const actors=shallowRef(null),detail=shallowRef(null),sources=shallowRef(null),source=shallowRef(null)
 const actorId=ref(''),busy=ref(false),error=ref('')
 const conflicts=shallowRef(null),sharing=ref(false),recipient=shallowRef(null)
+const outgoingShares=shallowRef(null)
+const withdrawCommands=new Map()
 const dialog=Symbol('kanata-managed-memory')
 let shareKey,resolveKey,removeKey,generation=0
 async function read(action,publish) {
@@ -37,7 +39,8 @@ function selectActor(id) {
   actorId.value=id
   cancelOwnedFeedbackDialog(dialog)
   sharing.value=false
-  recipient.value=conflicts.value=null
+  recipient.value=conflicts.value=outgoingShares.value=null
+  withdrawCommands.clear()
   removeKey=crypto.randomUUID()
   detail.value=sources.value=source.value=null
   void read(async guard=>{
@@ -79,6 +82,22 @@ function resolveConflicts(){
     appToast('已采用当前记忆。',{tone:'success'})
   })
 }
+function mergeConflicts(){
+  if(props.archived||!conflicts.value?.plan.count||busy.value)return
+  const {plan}=conflicts.value,id=actorId.value
+  void read(async guard=>{
+    const content=await appPrompt('填写要保留的正文。会合并预览范围内未处理记录的来源，旧记录保留为过期。',
+      detail.value.content,{title:'合并冲突记忆',confirmText:'确认合并',sensitive:true,owner:dialog})
+    guard()
+    if(!content?.trim())return
+    await props.model.mergeMemoryConflicts(id,plan,resolveKey,content,guard)
+    return props.model.memoryDetail(props.memoryId,id,guard)
+  },value=>{
+    detail.value=value
+    conflicts.value=source.value=sources.value=null
+    appToast('已合并正文和来源。',{tone:'success'})
+  })
+}
 function beginShare(){
   sharing.value=true
   recipient.value=null
@@ -98,6 +117,26 @@ function saveShare(){
     appToast('记忆已分享。',{tone:'success'})
   })
 }
+function loadOutgoingShares(cursor){
+  withdrawCommands.clear()
+  void read(guard=>props.model.listOutgoingMemoryShares(actorId.value,props.memoryId,cursor,guard),
+    value=>{outgoingShares.value=value})
+}
+function withdrawShare(copy){
+  if(props.archived||busy.value)return
+  const id=actorId.value
+  if(!withdrawCommands.has(copy.id))withdrawCommands.set(copy.id,crypto.randomUUID())
+  const key=withdrawCommands.get(copy.id)
+  void read(async guard=>{
+    const confirmed=await appConfirm('撤回给 '+copy.recipientName+' 的记忆？该副本及由它转出的记忆将无法再读取。',
+      {title:'撤回分享',confirmText:'撤回此分享',destructive:true,sensitive:true,owner:dialog})
+    guard()
+    if(!confirmed)return
+    await props.model.withdrawMemoryShare(id,props.memoryId,copy.id,copy.revision,key,guard)
+    guard()
+    return true
+  },()=>loadOutgoingShares())
+}
 function remove(){
   if(props.archived||busy.value)return
   const id=actorId.value,rev=detail.value.revision
@@ -116,7 +155,8 @@ onBeforeUnmount(()=>{
   generation++
   unregister()
   cancelOwnedFeedbackDialog(dialog)
-  recipient.value=conflicts.value=null
+  recipient.value=conflicts.value=outgoingShares.value=null
+  withdrawCommands.clear()
   actorId.value=''
   actors.value=detail.value=sources.value=source.value=null
   error.value=''
@@ -149,6 +189,7 @@ loadActors()
       <div v-if="detail.canManage&&!archived" class="kanata-actions">
         <button type="button" :disabled="busy" @click="loadConflicts()">核对候选和冲突</button>
         <button v-if="detail.status==='active'" type="button" :disabled="busy" @click="beginShare">分享这条记忆</button>
+        <button type="button" :disabled="busy" @click="loadOutgoingShares()">查看已分享对象</button>
         <button type="button" :disabled="busy" @click="remove">删除记忆正文</button>
       </div>
       <section v-if="conflicts" aria-label="记忆冲突">
@@ -160,6 +201,18 @@ loadActors()
         <button v-if="conflicts.cursor" type="button" :disabled="busy" @click="loadConflicts(conflicts.cursor)">更多冲突</button>
         <button type="button" :disabled="busy" @click="conflicts=null">关闭冲突</button>
         <button type="button" :disabled="busy||archived" @click="resolveConflicts">确认采用并处理冲突</button>
+        <button v-if="conflicts.plan.count" type="button" :disabled="busy||archived" @click="mergeConflicts">自定义正文并合并来源</button>
+      </section>
+      <section v-if="outgoingShares" aria-label="已分享对象">
+        <p v-if="!outgoingShares.entries.length">没有有效的分享副本。</p>
+        <ul>
+          <li v-for="copy in outgoingShares.entries" :key="copy.id">
+            {{ copy.recipientName }}
+            <button type="button" :data-share-copy="copy.id" :disabled="busy||archived" @click="withdrawShare(copy)">撤回分享</button>
+          </li>
+        </ul>
+        <button v-if="outgoingShares.cursor" type="button" :disabled="busy" @click="loadOutgoingShares(outgoingShares.cursor)">更多已分享对象</button>
+        <button type="button" :disabled="busy" @click="outgoingShares=null;withdrawCommands.clear()">关闭已分享对象</button>
       </section>
       <section v-if="sharing" aria-label="选择分享对象">
         <p>选择本世界的其他角色。</p>

@@ -1230,3 +1230,7 @@ raw/完整需求清单.txt 4.1/4.4/8.3及最新连续执行v3驱动当前实现�
 
 - [锁定的任务书](https://github.com/Zhoubin601/ForMyself/blob/428b7bcfeffe2722e72b4809a6d1a82b5734aeb1/docs/20261110-kanata-sqlite-m4-continuation-task-v1.md)，核对日 2026-11-10；M 远端初始为同一提交。旧证据来自验收 v2、Completion QA 和保存的原始运行日志。
 - `raw/彼方 · Kanata 技术设计.txt` §3、§6 与 `raw/完整需求清单.txt`：用于核对群聊独立会话、世界书角色权限、记忆来源精确修订及事件归属。空群原地保存、有历史保留原群并另建由续作任务书明确确认。设备资料仅来自仓库合成夹具。
+
+## 2026-11-10 M4 收尾来源
+
+以 [验收 v3](20261110-kanata-sqlite-m4-acceptance-v3.md)、[执行合同](20261110-kanata-sqlite-m4-continuation-task-v1.md) 和远端基线 `964f3dfe8e4441a1c41a1097204df1b4ae36eefb` 核对缺口。`raw/彼方 · Kanata 技术设计.txt` §3.3 及事件历史段落、`raw/完整需求清单.txt` 和实际 legacy 提示词、引用保护与事件界面提供行为依据。Android 与增长样本均来自仓库合成种子。

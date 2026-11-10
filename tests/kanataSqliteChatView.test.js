@@ -125,6 +125,7 @@ test('M4 real SQLite runtime keeps identical access shape from 1k to 10k message
     const deferred = createKanataDeferredReplyRepository(operation)
     const generation = shallowRef(0)
     let calls = 0
+    let lastSystem
     let tail = Promise.resolve()
     function run(request, task) {
       const result = tail.then(async () => {
@@ -147,6 +148,7 @@ test('M4 real SQLite runtime keeps identical access shape from 1k to 10k message
       candidate, auth: { sessionRevision: 1, isLocked: false }, clock: tools.clock, id: tools.id,
       completion: async options => {
         calls++
+        lastSystem = options.messages[0].content
         assert.ok(options.messages.length <= 41)
         options.onDelta?.('合成')
         return { content: '一段合成回复\n\n二段合成回复' }
@@ -157,7 +159,17 @@ test('M4 real SQLite runtime keeps identical access shape from 1k to 10k message
     const originalStringify = JSON.stringify
     const originalClone = globalThis.structuredClone
     const fullGraphs = []
+    let serializedSourceObjects = 0
+    let singleSourceWrites = 0
+    let highHeapSample = 0
     const observe = value => {
+      if (value && Object.hasOwn(value, 'messageId') && Object.hasOwn(value, 'revision') && Object.keys(value).length === 2) {
+        singleSourceWrites++
+        if (singleSourceWrites % 50 === 0) highHeapSample = Math.max(highHeapSample, process.memoryUsage().heapUsed)
+      }
+      if (Array.isArray(value)) {
+        for (const entry of value) serializedSourceObjects += entry?.sourceRefs?.length ?? 0
+      }
       if (value && typeof value === 'object' && ['worlds', 'conversations', 'messages', 'cards'].every(key => Object.hasOwn(value, key))) {
         fullGraphs.push(Object.keys(value))
       }
@@ -179,6 +191,39 @@ test('M4 real SQLite runtime keeps identical access shape from 1k to 10k message
       assert.deepEqual(fullGraphs, [])
       assert.ok(reads.every(read => read.rows <= 51))
       counts.push(reads.length)
+
+      const instanceId = fixture.instances.find(row => row.worldId === worldId && fixture.conversations[0].participantIds.includes(row.id)).id
+      db.prepare(`INSERT INTO memories(id,world_id,owner_type,owner_id,owner_instance_id,layer,memory_key,content,status,revision,visibility)
+        VALUES('wide-prompt-memory',?,'character',?,?,'L3','合成来源','合成待引用记忆','active',1,'private')`).run(worldId, instanceId, instanceId)
+      db.prepare(`INSERT INTO memory_sources(world_id,memory_id,message_id,message_revision)
+        SELECT world_id,'wide-prompt-memory',id,revision FROM messages WHERE world_id=? AND conversation_id=? AND id GLOB 'm4-load-*'`)
+        .run(worldId, conversationId)
+      reads.length = 0
+      const heapAtStart = process.memoryUsage().heapUsed
+      await assert.rejects(runtime.send(conversationId, { text: '合成宽来源', timing: 'immediate' }), { code: 'CONTEXT_BUDGET_EXCEEDED', sourceSaved: true })
+      assert.equal(calls, 1)
+      assert.equal(serializedSourceObjects, 0, 'ordinary send must not assemble or serialize a source-reference array')
+      const sourcePages = reads.filter(read => read.keys.join() === 'message_id,message_revision')
+      assert.ok(sourcePages.length > 1 && sourcePages.reduce((total, page) => total + page.rows, 0) < size)
+      assert.ok(singleSourceWrites < size)
+      assert.ok(!reads.some(read => /SELECT (?:instance_id|kind,target_memory_id|event_id) FROM memory_/.test(read.sql)))
+      t.diagnostic(JSON.stringify({size, sourcePages:sourcePages.length, sourcePageMax:Math.max(...sourcePages.map(page=>page.rows)),
+        serializedSourceObjects,singleSourceWrites, heapAtStart, highHeapSample, retainedWindow:view.window.messages.value.length}))
+
+      db.prepare(`DELETE FROM memory_sources WHERE world_id=? AND memory_id='wide-prompt-memory'
+        AND cast(substr(message_id,9) AS INTEGER)>55`).run(worldId)
+      await domains.memories.archiveSource(worldId, { messageId: 'm4-load-1', revision: 1 })
+      const sent = await runtime.send(conversationId, { text: '合成可引用来源', timing: 'immediate' })
+      assert.equal(calls, 2)
+      assert.equal((await messages.replies(scope, sent.messageId)).messages.length, 2)
+      const expectedRefs = db.prepare(`SELECT message_id AS messageId,message_revision AS revision FROM memory_sources
+        WHERE world_id=? AND memory_id='wide-prompt-memory' ORDER BY message_id`).all(worldId).map(row => ({ ...row }))
+      assert.equal(expectedRefs.length, 55)
+      const json = lastSystem.split('\n').find(line => line.startsWith('可追溯的动态记忆')).split('：')[1]
+      assert.deepEqual(JSON.parse(json).find(row => row.id === 'wide-prompt-memory'), {
+        id: 'wide-prompt-memory', layer: 'L3', content: '合成待引用记忆', confidence: 'statement', sourceRefs: expectedRefs,
+      })
+      assert.equal(serializedSourceObjects, 0)
     } finally {
       JSON.stringify = originalStringify
       globalThis.structuredClone = originalClone
@@ -207,6 +252,46 @@ test('M4 turn source and deferred task roll back on a failed link write and retr
   assert.equal((await repository.get(scope, source.id)).revision, 1)
   await repository.insert({ ...source, id: 'm4-newer-source', createdAt: 2001 })
   await assert.rejects(turns.save(scope, { source, retry: true, conversationRevision: fixture.conversations[0].revision, deferred }), /STALE_TURN/)
+})
+
+test('M4 candidate history archive freezes protected components and keeps archived messages addressable',async t=>{
+  const {operation,fixture,db,failOn,reads}=await setup(t)
+  const {worldId,id:conversationId,participantIds}=fixture.conversations[0]
+  const scope={worldId,conversationId}
+  const senderId=fixture.identities.find(identity=>identity.worldId===worldId).id
+  const instanceId=fixture.instances.find(actor=>participantIds.includes(actor.id)).id
+  const tools={clock:()=>90000,id:()=> 'archive-id'}
+  const messages=createKanataMessageRepository(operation,tools)
+  const domains=createKanataSqliteDomains(operation,tools)
+  db.prepare(`WITH RECURSIVE seq(n) AS (VALUES(1) UNION ALL SELECT n+1 FROM seq WHERE n<250)
+    INSERT INTO messages(id,world_id,conversation_id,role,sender_type,sender_id,sender_name_snapshot,
+      content,created_at,revision,status,turn_id,batch_id,extensions_json)
+    SELECT 'archive-'||n,?,?,'user','user',?,'合成','合成归档',n+5000,1,'complete','archive-turn','archive-batch','{}' FROM seq`)
+    .run(worldId,conversationId,senderId)
+  db.prepare("UPDATE messages SET reply_to_message_id='archive-2',reply_to_revision=1 WHERE id='archive-250'").run()
+  const before=await messages.previewArchive(scope)
+  await domains.memories.save({id:'archive-source-memory',worldId,ownerType:'character',ownerId:instanceId,layer:'L3',
+    key:'合成引用保护',content:'合成',status:'active',visibility:'private',revision:1,sourceRefs:[{messageId:'archive-1',revision:1}]},null)
+  await assert.rejects(messages.confirmArchive(scope,before,'archive-first'),/ARCHIVE_PREVIEW_STALE/)
+  const plan=await messages.previewArchive(scope)
+  assert.equal(plan.count,before.count-1)
+  failOn('INSERT INTO archived_message_marks')
+  await assert.rejects(messages.confirmArchive(scope,plan,'archive-first'),/INJECTED_WRITE_FAILURE/)
+  failOn('')
+  assert.deepEqual(await messages.previewArchive(scope),plan)
+  reads.length=0
+  const receipt=await messages.confirmArchive(scope,plan,'archive-first')
+  assert.deepEqual(await messages.confirmArchive(scope,plan,'archive-first'),receipt)
+  assert.equal(receipt.archivedCount,plan.count)
+  assert.ok(reads.every(query=>query.rows<=128))
+  const marked=db.prepare('SELECT message_id FROM archived_message_marks WHERE world_id=? AND conversation_id=?').all(worldId,conversationId)
+    .map(row=>row.message_id)
+  assert.equal(marked.length,plan.count)
+  assert.ok(marked.includes('archive-3'))
+  assert.ok(!marked.includes('archive-1')&&!marked.includes('archive-2')&&!marked.includes('archive-250'))
+  assert.equal((await messages.quote(scope,'archive-3')).content,'合成归档')
+  assert.equal((await messages.locate(scope,'archive-3',10)).messages[0].id,'archive-3')
+  assert.equal((await messages.previewArchive(scope)).count,0)
 })
 
 test('M4 history handles Unicode normalization and scope-bound continuations after a sparse scan', async t => {

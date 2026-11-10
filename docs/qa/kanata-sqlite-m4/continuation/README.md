@@ -1,6 +1,8 @@
 
 # Kanata SQLite M4 续作 QA：接管、实施和证据
 
+本页保留 v3 证据。当前入口为 [v4 收尾 QA](../closeout/README.md) 与 [收尾验收](../../../20261110-kanata-sqlite-m4-acceptance-v4.md)。
+
 任务来源：[锁定的续作任务书](../../../20261110-kanata-sqlite-m4-continuation-task-v1.md)、[验收 v2](../../../20261109-kanata-sqlite-m4-acceptance-v2.md)、[Completion QA](../completion/README.md)与 [历史自检](../completion/reviews.md)。产品依据：`raw/彼方 · Kanata 技术设计.txt` §3、§6，以及续作任务书中的已确认群聊规则。未读取真实存储资料。
 
 本地在 `.worktrees/kanata-m0` 使用 M。接管时 clean、HEAD `e296b2c5dd082f35b95c943bd838e3fe6a506357`；`git fetch origin M` 和 `git ls-remote origin refs/heads/M` 得到 `428b7bcfeffe2722e72b4809a6d1a82b5734aeb1`。核对两个提交均只改文档和 README 后，以 `git merge --ff-only origin/M` 更新。主工作树仍在 `main` 及原有 4 个过程文档修改、1 个 APK 删除、未跟踪资料；另外的 `Kanata` 工作树未切换。未执行 reset、clean、stash 或恢复删除项。

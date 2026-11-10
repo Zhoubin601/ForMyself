@@ -1,0 +1,59 @@
+(node:39820) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+Host SQLite automatic_index=ON
+MERGE (UNION ALL)
+LEFT
+MATERIALIZE descendants
+SETUP
+MATERIALIZE scope
+SCAN CONSTANT ROW
+SCAN scope
+RECURSIVE STEP
+SCAN d
+SCAN scope
+SEARCH l USING AUTOMATIC COVERING INDEX (cause_event_id=?)
+SEARCH e USING INDEX sqlite_autoindex_world_events_1 (id>?)
+BLOOM FILTER ON d (id=?)
+SEARCH d USING AUTOMATIC COVERING INDEX (id=?)
+SCAN scope
+SCAN scope
+CORRELATED SCALAR SUBQUERY 7
+SEARCH f USING COVERING INDEX effects_by_event (world_id=? AND event_id=?)
+RIGHT
+SEARCH e USING INDEX sqlite_autoindex_world_events_1 (id>?)
+CORRELATED SCALAR SUBQUERY 5
+BLOOM FILTER ON d (id=?)
+SEARCH d USING AUTOMATIC COVERING INDEX (id=?)
+SCAN scope
+SEARCH original USING INDEX sqlite_autoindex_world_events_2 (world_id=? AND id=?)
+SCAN scope
+CORRELATED SCALAR SUBQUERY 7
+SEARCH f USING COVERING INDEX effects_by_event (world_id=? AND event_id=?)
+Host SQLite automatic_index=OFF
+MERGE (UNION ALL)
+LEFT
+MATERIALIZE descendants
+SETUP
+MATERIALIZE scope
+SCAN CONSTANT ROW
+SCAN scope
+RECURSIVE STEP
+SCAN d
+SCAN scope
+SEARCH l USING COVERING INDEX event_causes_reverse (world_id=? AND cause_event_id=?)
+SEARCH e USING INDEX sqlite_autoindex_world_events_1 (id>?)
+SCAN d
+SCAN scope
+SCAN scope
+CORRELATED SCALAR SUBQUERY 7
+SEARCH f USING COVERING INDEX effects_by_event (world_id=? AND event_id=?)
+RIGHT
+SEARCH e USING INDEX sqlite_autoindex_world_events_1 (id>?)
+CORRELATED SCALAR SUBQUERY 5
+SCAN d
+SCAN scope
+SEARCH original USING INDEX sqlite_autoindex_world_events_2 (world_id=? AND id=?)
+SCAN scope
+CORRELATED SCALAR SUBQUERY 7
+SEARCH f USING COVERING INDEX effects_by_event (world_id=? AND event_id=?)
+exit=0

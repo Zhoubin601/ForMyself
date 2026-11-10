@@ -74,7 +74,7 @@ export function createKanataSpeakerSelection(text, maxSpeakers, previous) {
  * @param {PromptScope} data @param {string} conversationId @param {string} instanceId
  * @param {{lifeEntries?:{moduleId:string,value:unknown}[],lifeSources?:import('./kanataTypes').LifeSource[],historyMessageIds?:string[],
  * provenance?:readonly import('../experience/kanataKnowledge.js').KnowledgeMessage[],
- * repositoryKnowledge?: {memories:Data['memories'],lorebook:Pick<Data['lorebookEntries'][number],'id'|'revision'|'content'>[],events:Pick<Data['events'][number],'id'|'summary'|'effectiveAt'|'revision'|'lifeSources'>[],hiddenTargetIds:ReadonlySet<string>}}} [options]
+ * repositoryKnowledge?: {memories: (Pick<Data['memories'][number],'id'|'revision'|'lifeSources'> & {promptJson:string})[],lorebook:Pick<Data['lorebookEntries'][number],'id'|'revision'|'content'>[],events:Pick<Data['events'][number],'id'|'summary'|'effectiveAt'|'revision'|'lifeSources'>[],hiddenTargetIds:ReadonlySet<string>}}} [options]
  */
 export function buildKanataConversationContext(data, conversationId, instanceId, options={}) {
   const c = kanataConversation(data, conversationId)
@@ -89,7 +89,10 @@ export function buildKanataConversationContext(data, conversationId, instanceId,
   const text = history.slice(-3).map(m=>m.content).join('\n')
   const verified = options.repositoryKnowledge
   const lorebook = verified?.lorebook ?? selectKanataLorebook(data,{worldId:c.worldId,instanceId,text,tokenBudget:4000}).entries
-  const memories = verified?.memories ?? selectKanataMemories(knowledgeData,{worldId:c.worldId,instanceId,text,group,budget:4000,conversationId:c.id}).entries
+  const legacyMemories = verified ? [] : selectKanataMemories(knowledgeData,{worldId:c.worldId,instanceId,text,group,budget:4000,conversationId:c.id}).entries
+  const memories = verified?.memories ?? legacyMemories
+  const memoryJson = verified ? '[' + verified.memories.map(memory => memory.promptJson).join(',') + ']'
+    : JSON.stringify(legacyMemories.map(m=>({id:m.id,layer:m.layer,content:m.content,confidence:m.confidence||'statement',sourceRefs:m.sourceRefs})))
   const legacyEvents=verified?[]:data.events.filter(e=>e.worldId===c.worldId&&canUseKanataEvent(knowledgeData,e,instanceId,group)).slice(-12)
   const events=verified?.events ?? legacyEvents
   const instance=data.instances.find(i=>i.id===instanceId)
@@ -107,7 +110,7 @@ export function buildKanataConversationContext(data, conversationId, instanceId,
     '当前用户身份：'+JSON.stringify({name:identity.displayName,background:identity.background}),
     '你有权知道的静态设定：'+JSON.stringify(lorebook.map(l=>l.content)),
     '你的有向关系（数值仅为描述性基线的增量，不是绝对好感）：'+JSON.stringify(data.relationships.filter(r=>r.worldId===c.worldId&&r.fromId===instanceId).map(r=>({target:r.toId,kind:r.kind,summary:r.publicSummary,...(allowedState(r.id)?{dimensions:r.dimensions}:{dynamicStateUnavailable:true})}))),
-    '可追溯的动态记忆（摘要和角色陈述不等于已确认世界事实）：'+JSON.stringify(memories.map(m=>({id:m.id,layer:m.layer,content:m.content,confidence:m.confidence||'statement',sourceRefs:m.sourceRefs}))),
+    '可追溯的动态记忆（摘要和角色陈述不等于已确认世界事实）：'+memoryJson,
     '当前角色状态：'+JSON.stringify(allowedState(instanceId)?instance?.state:{dynamicStateUnavailable:true}),
     '经代码确认且你知晓的世界事件：'+JSON.stringify(events.map(e=>({id:e.id,summary:e.summary,effectiveAt:e.effectiveAt}))),
     c.type==='group'?'群聊只输出你自己的发言。先根据自己的兴趣、动机和底线独立判断，再回应同伴；不自动同意上一位，也不为分歧而反对。如果同意，提供自己的新理由、不同方案或保留条件，不复述上一位的段落。':'私聊只和当前用户交流。',

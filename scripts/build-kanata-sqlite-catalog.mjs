@@ -9,6 +9,7 @@ import { KANATA_AUDIT_VALIDATION_QUERIES } from '../src/features/chat/storage/sq
 import { KANATA_SCHEMA_SQL as schema, kanataSchemaObjectsAt } from '../src/features/chat/storage/sqlite/kanataSchemaMigrator.js'
 import { conversationQueries, conversationWrites, messageQueries, messageWrites } from '../src/features/chat/storage/sqlite/kanataRepositorySql.js'
 import { dependentQueries, dependentWrites, updateEffectValue } from '../src/features/chat/storage/sqlite/kanataMessageDependentsSql.js'
+import { historyArchiveQueries, historyArchiveWrites } from '../src/features/chat/storage/sqlite/kanataHistoryArchive.js'
 import { deferredReplyQueries, deferredReplyWrites } from '../src/features/chat/storage/sqlite/kanataDeferredReplySql.js'
 
 import { receiptQuery, receiptWrite } from '../src/features/chat/storage/sqlite/kanataDomainRows.js'
@@ -53,9 +54,9 @@ add('ddl', 'schema', [
   ...KANATA_SCHEMA_MIGRATIONS.flatMap(migration => [...migration.statements, schema.setVersion(migration.version)]),
 ])
 add('query', 'business', [...Object.values(messageQueries), ...Object.values(conversationQueries), ...Object.values(dependentQueries),
-  ...Object.values(deferredReplyQueries)])
+  ...Object.values(deferredReplyQueries), ...historyArchiveQueries])
 add('write', 'business', [...Object.values(messageWrites), ...Object.values(conversationWrites),
-  ...Object.values(dependentWrites), ...Object.values(updateEffectValue), ...Object.values(deferredReplyWrites)])
+  ...Object.values(dependentWrites), ...Object.values(updateEffectValue), ...Object.values(deferredReplyWrites), ...historyArchiveWrites])
 add('query', 'business', [receiptQuery, ...worldQueries, ...characterQueries, ...lorebookQueries, ...provenanceQueries,
   ...memoryQueries, ...eventQueries, ...eventRevocationQueries, ...autonomyQueries, ...usageQueries, ...chatViewQueries, ...managementViewQueries, ...bindingQueries])
 add('write', 'business', [receiptWrite, ...worldWrites, ...characterWrites, ...lorebookWrites, ...memoryWrites,
@@ -64,8 +65,8 @@ if (process.argv.includes('--synthetic')) {
   const { m2FixtureCommands, auditInspection, fixtureWrites, futureSchema } = await import('../tests/helpers/kanataSqliteM2Fixture.js')
   const { growthSeedSql } = await import('../docs/qa/kanata-sqlite-m4/fixture.mjs')
   add('query', 'business', Object.values(auditInspection))
-  const { memoryRows, memoryEdges, memoryWideSources, eventRows, eventEdges, replayEventRows, replayEffectRows } = await import('../docs/qa/kanata-sqlite-m4/completion/fixture.mjs')
-  add('write', 'business', [growthSeedSql, memoryRows, memoryEdges, memoryWideSources, eventRows, eventEdges, replayEventRows, replayEffectRows])
+  const { memoryRows, memoryEdges, memoryWideSources, eventRows, eventEdges, eventFanout, replayEventRows, replayEffectRows } = await import('../docs/qa/kanata-sqlite-m4/completion/fixture.mjs')
+  add('write', 'business', [growthSeedSql, memoryRows, memoryEdges, memoryWideSources, eventRows, eventEdges, eventFanout, replayEventRows, replayEffectRows])
   add('write', 'business', [...m2FixtureCommands().map(command => command.sql), ...Object.values(fixtureWrites)])
   add('ddl', 'business', [futureSchema])
 }

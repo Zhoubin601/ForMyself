@@ -139,6 +139,8 @@ const jumpToMessage=async id=>{
   }
 }
 const searchHistory=(text,cursor,assertSearch)=>runtime.searchHistory(props.conversationId,text,cursor,assertSearch)
+const previewHistoryArchive=guard=>runtime.previewArchive(props.conversationId,guard)
+const confirmHistoryArchive=(plan,key,guard)=>runtime.confirmArchive(props.conversationId,plan,key,guard)
 const locateHistory=async id=>{
   historyOpen.value=false
   await jumpToMessage(id)
@@ -204,7 +206,8 @@ onBeforeUnmount(()=>{mounted=false;stop();candidateView?.dispose();preview.value
       <p v-if="candidateView.error.value" class="kanata-error" role="alert">会话资料载入失败，请重试。</p>
       <button v-if="candidateView.error.value || (!overview && runtime.isAvailable() && !candidateView.loading.value)" type="button" @click="reloadCandidate">重试载入会话</button>
       <button type="button" :disabled="!windowReady||windowBusy||busy" @click="historyOpen=!historyOpen">查找会话历史</button>
-      <KanataCandidateHistoryPanel v-if="historyOpen" :search="searchHistory" @close="historyOpen=false" @locate="locateHistory" />
+      <KanataCandidateHistoryPanel v-if="historyOpen" :search="searchHistory" :preview-archive="previewHistoryArchive"
+        :confirm-archive="confirmHistoryArchive" @close="historyOpen=false" @locate="locateHistory" />
       <div class="kanata-actions">
         <button v-if="hasEarlier" type="button" :disabled="windowBusy" @click="readEarlier">加载更早消息</button>
         <button v-if="browsingEarlier" type="button" :disabled="windowBusy" @click="messageWindow.recent()">{{ newerMessages?'有新消息，回到最近':'回到最近' }}</button>

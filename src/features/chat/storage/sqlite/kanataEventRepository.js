@@ -80,12 +80,16 @@ const baselineInsert = `INSERT INTO effect_baselines(world_id,id,target_type,tar
 const relationLink = 'INSERT INTO relationship_events(world_id,relationship_id,event_id) VALUES(?,?,?)'
 const outgoing = `SELECT id,from_id,to_id,kind,public_summary FROM relationships
   WHERE world_id=? AND from_id=? AND id>? ORDER BY id LIMIT 50`
+const managedEventRelations = `SELECT id,from_id,to_id,kind,public_summary FROM relationships
+  WHERE world_id=? AND id>? ORDER BY id LIMIT 51`
+const managedEventCauses = `SELECT id,summary FROM world_events
+  WHERE world_id=? AND status='committed' AND id>? ORDER BY id LIMIT 51`
 const relationDimensions = 'SELECT trust,intimacy,understanding FROM relationships WHERE world_id=? AND id=?'
 const relationEvents = 'SELECT event_id FROM relationship_events WHERE world_id=? AND relationship_id=? ORDER BY event_id'
 const staleEventMemories = `UPDATE memories SET status='stale',revision=revision+1 WHERE world_id=? AND status<>'deleted'
   AND id IN (SELECT memory_id FROM memory_events WHERE world_id=? AND event_id IN (SELECT value FROM json_each(?)))`
 const baselineValue = `SELECT mood,energy,location FROM character_instances WHERE world_id=? AND id=?`
-export const eventQueries = [graphRoot, ...Object.values(graphQueries), outgoing, relationDimensions, eventRow, list, pathHasEffects, listEffects, eventAudits, contextCandidates, contextBody, eventMembership, targetEvents, participants, previewRows, descendants, originRows, relation.get, relationEvents, baselineValue]
+export const eventQueries = [graphRoot, ...Object.values(graphQueries), outgoing, managedEventRelations, managedEventCauses, relationDimensions, eventRow, list, pathHasEffects, listEffects, eventAudits, contextCandidates, contextBody, eventMembership, targetEvents, participants, previewRows, descendants, originRows, relation.get, relationEvents, baselineValue]
 export const eventWrites = [eventInsert, eventUpdate, eventParticipant, eventSource, eventCause, eventLife, eventLifeClear,
   effectInsert, baselineInsert, relationLink, staleEventMemories, ...relation.writeStatements]
 
@@ -105,7 +109,7 @@ async function loadEvent(tx, worldId, eventId) {
 
 /** Collect proof of all source revisions and grants without accessing event summaries or transcripts.
  * @param {Tx} tx @param {string} worldId @param {string} eventId @param {'committed'|'commit'|'propose'} mode */
-async function* visitEventProvenance(tx, worldId, eventId, mode = 'committed') {
+export async function* visitEventProvenance(tx, worldId, eventId, mode = 'committed') {
   let present = false
   for await (const origin of visitRows(tx, originRows, [worldId, eventId], ['id'])) {
     present ||= origin.id === eventId
@@ -309,14 +313,45 @@ async function authorizedEventProof(tx, worldId, id, scope) {
 /** @param {Tx} tx @param {string} worldId @param {string} targetId @param {{instanceId:string,group:boolean}} scope */
 async function targetVisible(tx, worldId, targetId, scope) {
   for await (const row of visitRows(tx, targetEvents, [worldId, targetId], ['event_id'])) {
-    if (!await authorizedEventProof(tx, worldId, String(row.event_id), scope)) return false
+    try {
+      for await (const _source of visitAuthorizedEventSources(tx, worldId, String(row.event_id), scope)) {
+        // Iterate to validate every origin. Visibility does not need to retain provenance.
+      }
+    } catch (error) {
+      if (!deniedContext.has(/** @type {{code?:string}} */ (error).code ?? '')) throw error
+      return false
+    }
   }
   return true
 }
 /** @param {Operation} operation @param {Tools} tools */
 export function createKanataEventRepository(operation, tools) {
   return {
-    ...createEventRevocation(operation, tools),
+    ...createEventRevocation(operation, tools, async (tx,plan,summary)=>{
+      const original=found(await loadEvent(tx,plan.worldId,plan.eventId),'EVENT_UNAVAILABLE')
+      return async()=>{
+        const replacement=await insertEvent(tx,{...original,id:tools.id(),replacesEventId:original.id,
+          summary,status:'candidate',revision:1,recordedAt:tools.clock()})
+        return replacement.id
+      }
+    }),
+    /** @param {string} worldId @param {string} after */
+    proposalRelations: (worldId,after='') => operation.transaction(async tx=>{
+      await assertWritableWorld(tx,worldId)
+      if(after)validateId(after,'cursor')
+      const rows=await tx.query(managedEventRelations,[worldId,after])
+      const entries=rows.slice(0,50).map(row=>({id:String(row.id),fromId:String(row.from_id),toId:String(row.to_id),
+        title:String(row.public_summary||row.kind)}))
+      return {entries,cursor:rows.length>50?entries[49].id:null}
+    }),
+    /** @param {string} worldId @param {string} after */
+    proposalCauses: (worldId,after='') => operation.transaction(async tx=>{
+      await assertWritableWorld(tx,worldId)
+      if(after)validateId(after,'cursor')
+      const rows=await tx.query(managedEventCauses,[worldId,after])
+      const entries=rows.slice(0,50).map(row=>({id:String(row.id),title:String(row.summary)}))
+      return {entries,cursor:rows.length>50?entries[49].id:null}
+    }),
     /** @param {string} worldId @param {string} eventId */
     managedEvent: (worldId,eventId) => operation.transaction(async tx=>{
       validateId(worldId,'worldId')

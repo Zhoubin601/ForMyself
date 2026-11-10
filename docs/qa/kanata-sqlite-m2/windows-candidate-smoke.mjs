@@ -186,13 +186,21 @@ try {
         const growth = await evaluate(`window.m4QaGrowth(${password}, ${JSON.stringify({
           base: fixture.conversations.find(row => row.id === scope.conversationId),
           senderId: fixture.identities.find(row => row.worldId === scope.worldId).id,
-        })})`)
+        })})`, 300000)
         console.log(JSON.stringify({ m4: growth }, null, 2))
         assert.equal(growth.error, undefined)
         assert.equal(growth.samples.length, 2)
-        assert.equal(growth.controlledModelCalls, 5)
+        assert.equal(growth.controlledModelCalls, 7)
+        assert.deepEqual(growth.promptGrowth.map(sample=>sample.size),[1000,10000])
+        assert(growth.promptGrowth.every(sample=>sample.recovered&&sample.arrayObjects===0&&sample.noQueriesAfterCancel===0))
         assert.equal(growth.revocationWhilePending, 'PASS')
         assert.equal(growth.realModelCalls, 0)
+        const archive = await evaluate(`window.m4QaArchive(${password}, ${JSON.stringify({
+          base:fixture.conversations.find(row=>row.id===scope.conversationId),
+          senderId:fixture.identities.find(row=>row.worldId===scope.worldId).id,
+        })})`)
+        console.log(JSON.stringify({m4HistoryArchive:archive},null,2))
+        assert.deepEqual(archive,{archivedCount:50,retainedRecent:200,quotePreserved:true})
         const actors = fixture.instances.filter(actor=>actor.worldId===scope.worldId).map(actor=>actor.id)
         const membership = process.argv.includes('--m4-completion') ? {
           actors, foreign:fixture.instances.find(actor=>actor.worldId!==scope.worldId).id, sample:input.sample,
@@ -243,7 +251,7 @@ try {
       if (process.argv.includes('--m4-completion')) {
         const actor = fixture.instances.find(item => item.worldId === scope.worldId)
         for (const size of [1000, 10000]) {
-          const completion = await evaluate(`window.m4QaCompletion(${password}, ${JSON.stringify({ ...scope, instanceId: actor.id, senderId: fixture.identities.find(item=>item.worldId===scope.worldId).id })}, ${size})`, 300000)
+          const completion = await evaluate(`window.m4QaCompletion(${password}, ${JSON.stringify({ ...scope, instanceId: actor.id, senderId: fixture.identities.find(item=>item.worldId===scope.worldId).id })}, ${size})`, 420000)
           console.log(JSON.stringify({ m4Completion: completion }, null, 2))
           assert.equal(completion.error, undefined)
           assert.deepEqual(completion.samples.map(sample => sample.size), [size])

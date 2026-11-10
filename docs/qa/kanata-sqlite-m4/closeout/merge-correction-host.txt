@@ -1,0 +1,13 @@
+(node:25648) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ M4 custom memory merge keeps both exact sources and retries atomically (87.4174ms)
+✔ M4 correcting a confirmed event reuses the frozen scope and rolls back candidate and effects together (50.3153ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 327.6558
+exit=0
