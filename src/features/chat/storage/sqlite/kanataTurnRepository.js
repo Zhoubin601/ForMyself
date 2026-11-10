@@ -24,7 +24,7 @@ export function createKanataTurnRepository(operation, tools) {
       const messages = createKanataMessageRepository(unit, tools)
       const replies = createKanataDeferredReplyRepository(unit)
       if (!retry) await messages.insert(source)
-      const latest = await messages.latest(scope, 'user')
+      const latest = await messages.latestState(scope, 'user')
       if (!latest || latest.id !== source.id || latest.revision !== source.revision || latest.deleted || latest.status !== 'complete') {
         throw new Error('STALE_TURN')
       }

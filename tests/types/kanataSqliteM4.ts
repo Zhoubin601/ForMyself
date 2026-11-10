@@ -5,6 +5,13 @@ declare const view: KanataChatViewModel
 declare const repository: KanataConversationRepository
 declare const scope: KanataMessageScope
 declare const messageRepository: import('../../src/application/contracts').KanataMessageRepository
+void messageRepository.historyForSpeaker(scope,'actor',10,'transcript')
+// @ts-expect-error Only the fixed light projection may bypass compatibility DTO decoding.
+void messageRepository.historyForSpeaker(scope,'actor',10,'raw')
+declare const sourcePlan: import('../../src/application/contracts').KanataReplyProvenance
+// @ts-expect-error Frozen roots must carry revisions, including event roots.
+const badSourcePlan: typeof sourcePlan = { ...sourcePlan, events: [{ id: 'event' }] }
+void badSourcePlan
 void messageRepository.previewArchive(scope).then(plan=>messageRepository.confirmArchive(scope,plan,'archive-command'))
 // @ts-expect-error Archive confirmation requires a scope-bound preview signature and revision.
 void messageRepository.confirmArchive(scope,{count:42},'archive-command')

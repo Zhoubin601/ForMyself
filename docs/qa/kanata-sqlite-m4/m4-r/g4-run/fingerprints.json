@@ -1,0 +1,30 @@
+{
+  "parent": "8d3b8f768617143312fd800ab05decaa53d6114d",
+  "sourceFilesNormalizedLfSha256": {
+    "android/app/src/main/java/com/yubin/formyself/KanataSqlitePlugin.java": "ccf54f45d43749a0fa786847ab426c71dd9ec1e031a6bdb929bfde0bcd712c93",
+    "docs/qa/kanata-sqlite-m2/candidate-smoke.mjs": "88346fd21eea796442366d7af9928a8062919532751922ed1d7943bc806f8054",
+    "docs/qa/kanata-sqlite-m2/run-windows-candidate.ps1": "edaf15b36bfa451e3be49b4249a1995cfa57a401137cbe6f770c1f045ccfe693",
+    "docs/qa/kanata-sqlite-m2/windows-candidate-smoke.mjs": "dbb8066cfe59fe9a0d5f0cb89748c0bf96fa318b371f619f8fc85fb5d4c2d8d9",
+    "docs/qa/kanata-sqlite-m4/completion/fixture.mjs": "21c47236b9c6dabcbc1527ff8832a5b81d72396be6cd51101deffaa348815b79",
+    "docs/qa/kanata-sqlite-m4/completion/verify-catalog.mjs": "0e5a8b72feac9a3dbe5d1f85987abcb386144640eb940b352db2a76a83f13415",
+    "scripts/build-kanata-sqlite-catalog.mjs": "6463306c6bf28da9b1d007f10afcd10ba8a3b689fba6ff5eabb6d562891f82d8",
+    "src/application/contracts.d.ts": "590c3874977075aad1b55e0c848db5c12115c833dcf5d53ed66cf2c6ce145c37",
+    "src/application/kanataSqliteChatRuntime.js": "3e90734c8cd747fab164a425b1d608f11ccd4a62a0c5b956aaebf49a4ff6f685",
+    "src/features/chat/domain/kanataConversation.js": "7a54c1afe6bfa4d2b3968829cca5593d7ab44c029a3db6ba33a1cd90b194987d",
+    "src/features/chat/storage/sqlite/kanataAutonomyRepository.js": "e8200a27b38071860356cde231f486b4f134f876e08446e9352b922ab0b68d3b",
+    "src/features/chat/storage/sqlite/kanataDeferredReplyRepository.js": "b52578e98fac0de3b0e6c0bcf17dc7cc170c4b84d99bcba9c08e6d42ce1c16d9",
+    "src/features/chat/storage/sqlite/kanataDomainTypes.d.ts": "a31abd97c7ced238a0aeab4d64294257c315b2e742039f7998715cc8801ea1fd",
+    "src/features/chat/storage/sqlite/kanataEventRepository.js": "5beb78fa0c1780c2ec2d2eb0da651ee680056c6dcae9342d43040fbc590e032a",
+    "src/features/chat/storage/sqlite/kanataHistoryArchive.js": "d47d3abccaabbea8232e029587f7ba7abc6ddb4fed44131faf266ed8ba2c4d46",
+    "src/features/chat/storage/sqlite/kanataMemoryRepository.js": "af1ed7481d43c3944006ce493bba0f84dd04868cd62783ddfbb0934f204b88a4",
+    "src/features/chat/storage/sqlite/kanataMessageRepository.js": "dfa439d0448aa251928f353cc0861f5a666ba71a862b668b5e541dd83fc2ad7a",
+    "src/features/chat/storage/sqlite/kanataProvenance.js": "fae41c94ceac712568a6ec098a453eab105f736ada90c08315e67a169911501a",
+    "src/features/chat/storage/sqlite/kanataReplyProvenance.js": "41081128d941aead86bb9f7f7f30121998b1317ea820bb099919dd51fa756701",
+    "src/features/chat/storage/sqlite/kanataRepositorySql.js": "0b679fd962aad7c56ec8a34616f00797a7fbb51ae4d3909a806218a4f38d5a22",
+    "src/features/chat/storage/sqlite/kanataRepositoryTypes.d.ts": "527ec9bc592297c835a71c4dad56e6536ba5c809ef15037d40d42795dd4acd06",
+    "src/features/chat/storage/sqlite/kanataTurnRepository.js": "9c6c3246cb7bace768aca892e31774add5d7dae198fb05409a0bfe4493a76ee8",
+    "src/features/chat/useKanataMessageWindow.js": "f172afeb2e8d349281dc60249cc83bb4174361df44c1b92a3ddb4d4a633668d4",
+    "tests/kanataSqliteChatView.test.js": "5b05a9b2a5a97216b1893aa97c30f0d741eb4d284e8b78debcc2d599343853c4",
+    "tests/types/kanataSqliteM4.ts": "2fa48af99052305a8e156dd8411b787a2335f7530bb9c825b06816d11dfe93fc"
+  }
+}

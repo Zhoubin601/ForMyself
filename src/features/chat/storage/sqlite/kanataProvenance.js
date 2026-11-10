@@ -12,7 +12,6 @@ export const grantTable = /** @type {ReturnType<typeof domainTable<LifeGrant>>} 
   world_id: 'worldId', instance_id: 'instanceId', module_id: 'moduleId', id: 'id',
   can_read: 'read:flag', can_remember: 'remember:flag', can_share: 'share:flag', revision: 'revision',
 }, ['world_id', 'instance_id', 'module_id']))
-export const grantById = `SELECT ${grantTable.stored} FROM life_grants WHERE world_id=? AND id=?`
 const member = `SELECT c.type FROM conversations c JOIN conversation_participants p
   ON p.world_id=c.world_id AND p.conversation_id=c.id
   WHERE c.world_id=? AND c.id=? AND p.participant_id=? AND p.kind='character'`
@@ -41,8 +40,8 @@ const chainGrants = replyChain + `
   WHERE (l.grant_id,l.grant_revision,l.fingerprint)>(?,?,?)
   ORDER BY l.grant_id,l.grant_revision,l.fingerprint LIMIT 50`
 // Use the same predicate for a single supplied tag and a normalized reply chain.
-const access = 'access(actor,group_scope,remember,share) AS (VALUES(?,?,?,?))'
-const grantAllowed = `EXISTS(
+export const grantAccess = 'access(actor,group_scope,remember,share) AS (VALUES(?,?,?,?))'
+export const grantAllowed = `EXISTS(
   SELECT 1 FROM life_grants origin JOIN life_grants receiver
     ON receiver.world_id=origin.world_id AND receiver.module_id=origin.module_id AND receiver.instance_id=access.actor
   WHERE origin.world_id=s.world_id AND origin.id=s.grant_id AND origin.instance_id=s.instance_id
@@ -52,15 +51,15 @@ const grantAllowed = `EXISTS(
     AND receiver.can_read=1 AND (access.remember=0 OR receiver.can_remember=1)
     AND (access.group_scope=0 OR receiver.can_share=1)
 )`
-const allowedGrant = `WITH s(world_id,grant_id,instance_id,module_id,grant_revision) AS (VALUES(?,?,?,?,?)), ${access}
+const allowedGrant = `WITH s(world_id,grant_id,instance_id,module_id,grant_revision) AS (VALUES(?,?,?,?,?)), ${grantAccess}
   SELECT 1 FROM s CROSS JOIN access WHERE ${grantAllowed}`
 const chainGrantLinks = `FROM scope CROSS JOIN chain c
   JOIN message_life_sources s ON s.world_id=scope.world AND s.message_id=c.id`
 const anyChainGrant = replyChain + ' SELECT 1 ' + chainGrantLinks + ' LIMIT 1'
-const deniedChainGrant = replyChain + `, ${access}
+const deniedChainGrant = replyChain + `, ${grantAccess}
   SELECT 1 ${chainGrantLinks} CROSS JOIN access
   WHERE NOT ${grantAllowed} LIMIT 1`
-export const provenanceQueries = [grantTable.get, grantById, member, activeActor, chainIntegrity, chainGrants, allowedGrant, anyChainGrant, deniedChainGrant]
+export const provenanceQueries = [grantTable.get, member, activeActor, chainIntegrity, chainGrants, allowedGrant, anyChainGrant, deniedChainGrant]
 /** @param {Tx} tx @param {string} worldId @param {string} actor */
 export async function assertActor(tx, worldId, actor) {
   need((await tx.query(activeActor, [worldId, actor])).length === 1, 'KANATA_CONTEXT_SCOPE_DENIED')
@@ -109,7 +108,7 @@ export function uniqueLifeSources(sources) {
 }
 
 /** @param {GrantScope} scope */
-function grantBindings(scope) {
+export function grantBindings(scope) {
   return [scope.instanceId, Number(scope.group), Number(Boolean(scope.remember)), Number(Boolean(scope.share))]
 }
 

@@ -305,6 +305,8 @@ public final class KanataSqlitePlugin extends Plugin {
         database = SQLiteDatabase.openDatabase(dbFile().getPath(), rawKey, null, flags, (db, error) -> {}, null);
         database.setForeignKeyConstraintsEnabled(true);
         require(database.enableWriteAheadLogging(), "INTEGRITY_FAILED");
+        // Reply provenance and other SQLite work sets may contain protected metadata.
+        database.rawExecSQL("PRAGMA temp_store=MEMORY");
         database.rawExecSQL("PRAGMA synchronous=FULL");
         database.rawExecSQL("PRAGMA cache_size=-2048");
         database.rawExecSQL("PRAGMA wal_autocheckpoint=1000");
@@ -598,6 +600,7 @@ public final class KanataSqlitePlugin extends Plugin {
             String cipher = scalar("PRAGMA cipher_version");
             require(cipher.startsWith("4.17.0") && "wal".equals(scalar("PRAGMA journal_mode"))
                 && "2".equals(scalar("PRAGMA synchronous")) && "1".equals(scalar("PRAGMA foreign_keys"))
+                && "2".equals(scalar("PRAGMA temp_store"))
                 && "-2048".equals(scalar("PRAGMA cache_size")) && "1000".equals(scalar("PRAGMA wal_autocheckpoint"))
                 && "5000".equals(scalar("PRAGMA busy_timeout")), "INTEGRITY_FAILED");
             noRows("PRAGMA cipher_integrity_check");

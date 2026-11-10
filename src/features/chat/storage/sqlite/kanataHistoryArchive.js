@@ -12,6 +12,19 @@ import { assertWritableWorld } from './kanataWorldRepository.js'
 /** @typedef {import('../../../../platform/storage/kanataSqliteTypes').KanataSqliteTransaction} Tx */
 
 const conversation = 'SELECT c.revision,w.archived FROM conversations c JOIN worlds w ON w.id=c.world_id WHERE c.world_id=? AND c.id=?'
+// Legacy archives protect exact message IDs found in nested extension values.
+// Search SQLite's stored JSON values without handing any extension graph to JS.
+const extensionDocuments = [
+  ...['dataset_metadata','worlds','world_identities','character_cards','card_versions','character_instances',
+    'conversations','messages','lorebook_entries','memories','relationships','world_events','world_effects',
+    'effect_baselines','background_tasks','life_grants','preset_applications','usage_events','virtual_schedules',
+    'memory_policies','autonomy_policies','role_binding_state','role_bindings','data_migrations','message_audits','event_audits']
+    .map(table => 'SELECT extensions_json FROM ' + table),
+  'SELECT definition_json FROM card_versions','SELECT raw_data_json FROM card_versions','SELECT imported_json FROM card_versions',
+  'SELECT overrides_json FROM character_instances','SELECT metadata_json FROM background_tasks',
+  'SELECT previous_json FROM event_audits','SELECT next_json FROM event_audits',
+  'SELECT previous_json FROM message_audits','SELECT next_json FROM message_audits',
+].join(' UNION ALL ')
 const selection = `WITH RECURSIVE p(world,conversation,keep_recent) AS (VALUES(?,?,?)),
   active(id,revision,created_at,parent) AS MATERIALIZED (
     SELECT m.id,m.revision,m.created_at,m.reply_to_message_id FROM p JOIN messages m ON m.world_id=p.world AND m.conversation_id=p.conversation
@@ -20,8 +33,11 @@ const selection = `WITH RECURSIVE p(world,conversation,keep_recent) AS (VALUES(?
   components(root,id) AS (
     SELECT a.id,a.id FROM active a WHERE a.parent IS NULL OR NOT EXISTS(SELECT 1 FROM active b WHERE b.id=a.parent)
     UNION ALL SELECT c.root,a.id FROM components c JOIN active a ON a.parent=c.id
+  ), opaque(document) AS (${extensionDocuments}), extension_refs(id) AS (
+    SELECT DISTINCT a.id FROM opaque o CROSS JOIN json_tree(o.document) j
+    JOIN active a ON a.id=j.atom WHERE j.type='text'
   ), protected(id) AS (
-    SELECT id FROM recent
+    SELECT id FROM recent UNION SELECT id FROM extension_refs
     UNION SELECT a.id FROM active a CROSS JOIN p WHERE EXISTS(
       SELECT 1 FROM memory_sources r WHERE r.world_id=p.world AND r.message_id=a.id
       UNION ALL SELECT 1 FROM event_sources r WHERE r.world_id=p.world AND r.message_id=a.id
@@ -36,7 +52,7 @@ const selection = `WITH RECURSIVE p(world,conversation,keep_recent) AS (VALUES(?
   ), eligible(id,revision,created_at) AS (
     SELECT a.id,a.revision,a.created_at FROM safe s JOIN components c ON c.root=s.root JOIN active a ON a.id=c.id
   )`
-const page = selection + ' SELECT id,revision,created_at FROM eligible WHERE id>? ORDER BY id LIMIT 128'
+const page = selection + ' SELECT id,revision,created_at FROM eligible WHERE id>? ORDER BY id LIMIT 50'
 const mark = selection + ' INSERT INTO archived_message_marks(world_id,conversation_id,message_id) SELECT p.world,p.conversation,e.id FROM eligible e CROSS JOIN p'
 
 export const historyArchiveQueries = [conversation, page]
@@ -51,7 +67,7 @@ async function preview(tx,scope,keepRecent) {
   const conversationRevision=Number(current.revision)
   let signature=sha256Text(JSON.stringify([...keys,keepRecent,conversationRevision,'archive-marks-v1']))
   let count=0
-  for await(const row of visitRows(tx,page,[...keys,keepRecent],['id'])){
+  for await(const row of visitRows(tx,page,[...keys,keepRecent],['id'],50)){
     count++
     signature=sha256Text(signature+JSON.stringify([row.id,row.revision,row.created_at]))
   }

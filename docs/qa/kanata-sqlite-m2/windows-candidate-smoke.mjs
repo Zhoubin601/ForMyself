@@ -119,17 +119,19 @@ try {
   let password
   try { password = JSON.stringify(bytes.toString('base64')) }
   finally { bytes.fill(0) }
-  if (process.argv.includes('--mr2-grants')) {
+  if (process.argv.includes('--mr2-grants') || process.argv.includes('--mr2-chat-provenance')) {
     const fixture=m2Fixture()
     const sample=fixture.messages[0]
     const {worldId,conversationId}=sample
     const instanceId=fixture.instances.find(actor=>actor.worldId===worldId).id
-    const input={scope:{worldId,conversationId,instanceId},sample,commands:m2FixtureCommands(fixture)}
-    const result=await evaluate(`window.mr2QaWideGrantProof(${password}, ${JSON.stringify(input)})`,420000)
+    const input={scope:{worldId,conversationId,instanceId},sample,commands:m2FixtureCommands(fixture),commitFault:fixtureWrites.deferredCommit}
+    const chat=process.argv.includes('--mr2-chat-provenance')
+    const scenario=chat?'mr2QaChatProvenance':'mr2QaWideGrantProof'
+    const result=await evaluate(`window.${scenario}(${password}, ${JSON.stringify(input)})`,420000)
     console.log(JSON.stringify({mr2GrantProof:result},null,2))
     assert.equal(result.error,undefined)
     assert.match(result.health.cipher,/^4\.17\.0/)
-    assert.deepEqual(result.samples.map(item=>item.size),[1000,10000])
+    assert.deepEqual((chat?result.results:result.samples).map(item=>item.size),[1000,10000])
   } else if (process.argv.includes('--mr1-fanout') || process.argv.includes('--mr1-verify')) {
     const verify=process.argv.includes('--mr1-verify')
     const fixture = m2Fixture()
@@ -256,9 +258,10 @@ try {
         const archive = await evaluate(`window.m4QaArchive(${password}, ${JSON.stringify({
           base:fixture.conversations.find(row=>row.id===scope.conversationId),
           senderId:fixture.identities.find(row=>row.worldId===scope.worldId).id,
+          extensionWrite:fixtureWrites.messageExtensions,
         })})`)
         console.log(JSON.stringify({m4HistoryArchive:archive},null,2))
-        assert.deepEqual(archive,{archivedCount:50,retainedRecent:200,quotePreserved:true})
+        assert.deepEqual(archive,{archivedCount:49,retainedRecent:200,quotePreserved:true,unknownReferenceProtected:true})
         const actors = fixture.instances.filter(actor=>actor.worldId===scope.worldId).map(actor=>actor.id)
         const membership = process.argv.includes('--m4-completion') ? {
           actors, foreign:fixture.instances.find(actor=>actor.worldId!==scope.worldId).id, sample:input.sample,

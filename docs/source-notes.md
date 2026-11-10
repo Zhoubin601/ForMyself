@@ -1250,3 +1250,9 @@ raw/完整需求清单.txt 4.1/4.4/8.3及最新连续执行v3驱动当前实现�
 - 仓库内权威执行文件为 [M4-R 任务书](20261110-kanata-sqlite-m4-r-closeout-task-v1.md)，采用锁定提交 c4ba18911c705c5efde7f7614171659f056e2f1e。引用日期 2026-11-10。
 - 原始资料为 raw/完整需求清单.txt 与 raw/彼方 · Kanata 技术设计.txt。角色卡原格式和扩展保留、世界隔离、生活权限、历史与来源要求按原文和当前用户决策核对。静态复制的具体范围来自现行 legacy 的 copyKanataWorld。该函数过滤并重置动态状态，保留静态成员、非角色间会话结构、世界书与无事件来源的队友关系。
 - 历史测试口径取自 [v4 QA](qa/kanata-sqlite-m4/closeout/README.md) 原始日志。当前 A–G 缺口、设备白名单及 MR1 复现见 [M4-R QA](qa/kanata-sqlite-m4/m4-r/README.md)。
+
+## 2026-11-10 MR2-G4 续作
+
+- 原始需求来自 raw/完整需求清单.txt 第五节与第九节。提示词按角色、世界和权限检索，读取、记忆、分享权限分别生效，撤权停止后续读取或传播。
+- raw/彼方 · Kanata 技术设计.txt 的原始事件和来源定义用于核对 revision、候选校验、关系和撤销。旧归档行为按当前 planMessageArchive 源码验证嵌套精确 ID。
+- 2026-11-10 引用当前任务、[M4-R 任务书](20261110-kanata-sqlite-m4-r-closeout-task-v1.md)及 [验收 v5](20261110-kanata-sqlite-m4-r-acceptance-v5.md)。本轮接管 8d3b8f768617143312fd800ab05decaa53d6114d，实测及仍缺项见 [MR2-G4 验收](20261110-kanata-sqlite-mr2-g4-acceptance-v1.md)。

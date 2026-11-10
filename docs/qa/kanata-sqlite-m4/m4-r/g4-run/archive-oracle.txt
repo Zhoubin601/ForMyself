@@ -1,0 +1,4 @@
+(node:44960) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+{"size":1000,"archived":798,"exactLegacySet":true,"maxRows":50}
+{"size":10000,"archived":9798,"exactLegacySet":true,"maxRows":50}

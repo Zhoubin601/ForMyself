@@ -1189,3 +1189,5 @@ P6最终PASS/Go：501 Node/317组件、Web12/6布局、Android17、原生8通过
 MR0 和 MR1 检查点见 [M4-R QA](qa/kanata-sqlite-m4/m4-r/README.md)。接管提交 c4ba18911c705c5efde7f7614171659f056e2f1e。Android 10k 宽事件、强停重开、逐项审计和幂等回执已通过。MR2 进入 G4 全链路审计。M4 BLOCKED，M5 NO。
 
 MR2 检查点已完成记忆详情、精确来源和后台任务的 SQL 授权证明。1k/10k 不同授权的设备定向切片通过。G4 的普通聊天标签集合、事件与消息来源及旧兼容入口仍 BLOCKED。后续按 [M4-R QA](qa/kanata-sqlite-m4/m4-r/README.md) 续作。
+
+MR2-G4 以 8d3b8f768617143312fd800ab05decaa53d6114d 接管。新进展与兼容导出剩余阻塞见 [本轮验收](20261110-kanata-sqlite-mr2-g4-acceptance-v1.md)。仍在 MR2，后续阶段未启动。

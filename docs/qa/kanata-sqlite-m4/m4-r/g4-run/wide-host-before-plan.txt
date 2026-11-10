@@ -1,0 +1,14 @@
+(node:43704) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ M4 candidate history archive freezes protected components and keeps archived messages addressable (104.5339ms)
+✔ MR2 wide chat keeps ordered legacy tags and rolls back its SQL work set (101508.5106ms)
+ℹ {"size":1000,"tags":2002,"normalized":1001,"rollback":true,"afterRevocation":"excluded"}
+ℹ {"size":10000,"tags":20002,"normalized":10001,"rollback":true,"afterRevocation":"excluded"}
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 101893.326

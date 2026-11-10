@@ -36,7 +36,6 @@ export interface KanataEventGraphCursor {
 export interface KanataMemoryPromptProjection {
   readonly id: string
   readonly revision: number
-  readonly lifeSources: import('../../domain/kanataTypes').LifeSource[]
   readonly promptJson: string
   readonly promptBytes: number
 }

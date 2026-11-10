@@ -1,6 +1,7 @@
-import { memoryRows, memoryEdges, memoryWideSources, eventRows, eventEdges, seedFanoutLinks, replayEventRows, replayEffectRows, fanoutAuditInspection, grantOriginActors, grantOrigins, grantMessageTags } from '../kanata-sqlite-m4/completion/fixture.mjs'
+import { memoryRows, memoryEdges, memoryWideSources, eventRows, eventEdges, seedFanoutLinks, replayEventRows, replayEffectRows, fanoutAuditInspection, grantOriginActors, grantOrigins, grantMessageTags, seedWideChatSources, chatReplyTagCheck } from '../kanata-sqlite-m4/completion/fixture.mjs'
 import { growthSeedSql } from '../kanata-sqlite-m4/fixture.mjs'
 import { eventRevocationQueries, eventRevocationWrites } from '../../../src/features/chat/storage/sqlite/kanataEventRevocation.js'
+import { replyProofDdl } from '../../../src/features/chat/storage/sqlite/kanataReplyProvenance.js'
 import { receiptQuery, receiptWrite } from '../../../src/features/chat/storage/sqlite/kanataDomainRows.js'
 import { sha256Text } from '../../../src/shared/crypto/sha256Text.js'
 import { restoreState } from '../../../src/platform/storage/restoreState.js'
@@ -58,6 +59,7 @@ async function profileBridge(name, command, action) {
   return result
 }
 let groupCommitFault
+let replyCommitFault
 let suspendCommit = false
 let fanoutCrashArmed = false
 let crashState = 'idle'
@@ -73,6 +75,11 @@ const candidate = createKanataSqliteCandidate({
         crashState='mr1-first-batch-uncommitted'
         return new Promise(()=>{})
       }
+      if (replyCommitFault && command.statement===sha256Text(replyProofDdl[1])) {
+        const statement=replyCommitFault
+        replyCommitFault=undefined
+        await bridge.execute({...command,statement,parameters:['g4-reply-orphan','absent-card',1,'{}','{}','synthetic']})
+      }
       if (groupCommitFault && command.statement===sha256Text(receiptWrite) && command.parameters[0].includes('group:edit-members')) {
         const statement = groupCommitFault
         groupCommitFault = undefined
@@ -85,7 +92,7 @@ const candidate = createKanataSqliteCandidate({
       if (trace) {
         trace.queries++
         trace.maxRows = Math.max(trace.maxRows, result.rows.length)
-        trace.observeQuery?.(result.rows)
+        trace.observeQuery?.(result.rows, command)
       }
       return result
     },
@@ -697,7 +704,7 @@ window.m4QaGrowth = async (password, { base, senderId }) => {
     return { error: error.code ?? error.message, samples, fullGraphCalls, controlledModelCalls }
   } finally { auth.expireSession(); await candidate.release() }
 }
-window.m4QaArchive = async (password,{base,senderId})=>{
+window.m4QaArchive = async (password,{base,senderId,extensionWrite})=>{
   session(password)
   const worldId=base.worldId,conversationId='m4-archive-ui'
   const scope={worldId,conversationId}
@@ -720,20 +727,32 @@ window.m4QaArchive = async (password,{base,senderId})=>{
   }
   try {
     await candidate.withRepositories({},(_messages,conversations)=>conversations.create({...base,id:conversationId,revision:1,lastReadAt:0}))
-    await candidate.run({},operation=>operation.transaction(tx=>tx.execute(growthSeedSql,[250,conversationId,worldId,conversationId,senderId])))
+    await candidate.run({},operation=>operation.transaction(async tx=>{
+      await tx.execute(growthSeedSql,[250,conversationId,worldId,conversationId,senderId])
+      const result=await tx.execute(extensionWrite,[JSON.stringify({legacyNested:[{unknownKey:conversationId+'-history-1'}]}),
+        conversationId+'-history-249'])
+      check(result.affectedRows===1,'M4_ARCHIVE_UNKNOWN_REFERENCE_SEED')
+    }))
     runtime.activate(scope)
     app.mount(container)
     locate(container,'预览整理较早聊天').click()
     await settle(()=>Boolean(locate(container,'确认整理历史')))
-    check(container.querySelector('[aria-label="历史整理预览"]').textContent.includes('50 条'),'M4_ARCHIVE_UI_PREVIEW_COUNT')
+    check(container.querySelector('[aria-label="历史整理预览"]').textContent.includes('49 条'),'M4_ARCHIVE_UI_PREVIEW_COUNT')
     locate(container,'确认整理历史').click()
     await settle(()=>Boolean(locate(document,'整理这些消息')))
     locate(document,'整理这些消息').click()
-    await settle(()=>container.textContent.includes('已整理 50 条消息'))
+    await settle(()=>container.textContent.includes('已整理 49 条消息'))
     const older=await candidate.withRepositories({},messages=>messages.quote(scope,conversationId+'-history-1'))
     check(older?.content==='合成历史消息','M4_ARCHIVE_QUOTE_LOST')
     check((await runtime.previewArchive(conversationId,()=>{})).count===0,'M4_ARCHIVE_RECEIPT_MISMATCH')
-    return {archivedCount:50,retainedRecent:200,quotePreserved:true}
+    const marks=await candidate.run({},operation=>operation.transaction(async tx=>{
+      const sql='SELECT 1 FROM archived_message_marks WHERE world_id=? AND conversation_id=? AND message_id=?'
+      const retained=await tx.query(sql,[worldId,conversationId,conversationId+'-history-1'])
+      const archived=await tx.query(sql,[worldId,conversationId,conversationId+'-history-2'])
+      return [retained,archived]
+    }))
+    check(marks[0].length===0&&marks[1].length===1,'M4_ARCHIVE_UNKNOWN_REFERENCE_PROTECTED')
+    return {archivedCount:49,retainedRecent:200,quotePreserved:true,unknownReferenceProtected:true}
   }catch(error){return {error:error.code??error.message}}
   finally{
     app.unmount()
@@ -1135,6 +1154,119 @@ window.m4QaWorkspace = async (password, { worldId, worldName, conversationId, ac
     await candidate.release()
   }
 }
+window.mr2QaChatProvenance = async (password, { commands, scope, sample, commitFault }) => {
+  session(password)
+  const results=[]
+  const provider=[]
+  let ignoreAbort, providerStarted
+  const entered=new Promise(resolve=>{providerStarted=resolve})
+  const runtime=createKanataSqliteChatRuntime({candidate,auth,clock:()=>50000,
+    completion:async ({messages})=>{
+      provider.push(JSON.stringify(messages))
+      if (messages.at(-1).content.includes('合成挂起结果')) {
+        const late=new Promise(resolve=>{ignoreAbort=resolve})
+        providerStarted()
+        return late
+      }
+      return {content:'合成宽授权回复'}
+    }})
+  try {
+    const health=await candidate.run({create:true},async operation=>{
+      await operation.transaction(async tx=>{
+        for(const {sql,parameters} of commands) await tx.execute(sql,parameters)
+      })
+      return operation.health()
+    })
+    await candidate.withDomains({},domains=>domains.autonomy.setGrant(scope.worldId,scope.instanceId,'todo',2,
+      {read:true,remember:true,share:true}))
+    runtime.activate(scope)
+    for(const size of [1000,10000]){
+      const source='g4-wide-source-'+size
+      const {lifeSources:_tags,...base}=sample
+      await candidate.withRepositories({},messages=>messages.insert({...base,id:source,revision:1,createdAt:size+2000}))
+      const seeds=await candidate.run({},operation=>operation.transaction(tx=>seedWideChatSources(tx,scope,source,size)))
+      let completeDtos=0,largestTagPage=0
+      const heapStart=performance.memory?.usedJSHeapSize??null
+      let heapSample=heapStart
+      trace={queries:0,writes:0,maxRows:0,observeQuery(rows){
+        largestTagPage=Math.max(largestTagPage,rows.filter(row=>Object.hasOwn(row,'grant_id')).length)
+        for(const row of rows){
+          if(typeof row.life_sources==='string'&&row.life_sources!=='[]')completeDtos++
+        }
+        if(performance.memory)heapSample=Math.max(heapSample??0,performance.memory.usedJSHeapSize)
+      }}
+      const started=performance.now()
+      const turn=await runtime.send(scope.conversationId,{text:'合成宽授权测试'})
+      const result={queries:trace.queries,writes:trace.writes,maxRows:trace.maxRows,largestTagPage,completeDtos,heapStart,heapSample,
+        elapsedMs:Math.round(performance.now()-started)}
+      trace=undefined
+      const body=JSON.parse(provider.at(-1))[0].content
+      check(body.includes(source)&&body.includes(seeds.memoryId)&&body.includes(seeds.eventId),'G4_WIDE_PROMPT_ROOTS')
+      check(result.completeDtos===0&&result.largestTagPage<=50&&result.maxRows<=51,'G4_WIDE_PROJECTION')
+      const [reply]=await candidate.withRepositories({},messages=>messages.completedReplies(scope,turn.messageId))
+      check(reply,'G4_WIDE_REPLY')
+      const [order]=await candidate.run({},operation=>operation.transaction(tx=>tx.query(chatReplyTagCheck,[scope.worldId,source,reply.id,scope.instanceId])))
+      check(order.tags===2*size+2&&order.ordered_matches===order.tags&&order.links===size+1,'G4_WIDE_REPLY_ORDER')
+      const taskFields={...scope,kind:'memory',state:'pending',sourceRevision:1,attempt:0,notBefore:0,leaseUntil:0,
+        sourceRefs:[{messageId:source,revision:1}],resultEventIds:[]}
+      const taskId='g4-task-'+size
+      const deniedTaskId='g4-task-denied-'+size
+      await candidate.withDomains({},async ({autonomy})=>{
+        for(const id of [taskId,deniedTaskId]) await autonomy.enqueue({...taskFields,id,idempotencyKey:id})
+        const now=Date.now()
+        const lease=await autonomy.claim(scope.worldId,taskId,now,now+30000)
+        const result={status:'succeeded',events:[]}
+        check((await autonomy.finish(scope.worldId,taskId,lease,result)).state==='succeeded','G4_TASK_FINISH')
+        check((await autonomy.finish(scope.worldId,taskId,lease,result)).state==='succeeded','G4_TASK_FINISH_RECEIPT')
+        await autonomy.setGrant(scope.worldId,seeds.deniedActor,'todo',1,{read:false,remember:false,share:false})
+        await rejects(()=>autonomy.claim(scope.worldId,deniedTaskId,now,now+30000),'KANATA_LIFE_PERMISSION_DENIED')
+      })
+      let revokedBodyReads=0
+      const blocked=new Set([source,seeds.memoryId,seeds.eventId,reply.id])
+      trace={queries:0,writes:0,maxRows:0,observeQuery(rows,command){
+        for(const row of rows){
+          if((Object.hasOwn(row,'content')||Object.hasOwn(row,'summary'))
+            && (blocked.has(row.id)||command.parameters.some(value=>blocked.has(value))))revokedBodyReads++
+        }
+      }}
+      await runtime.send(scope.conversationId,{text:'合成撤权之后'})
+      trace=undefined
+      check(!provider.at(-1).includes(source)&&!provider.at(-1).includes(seeds.memoryId)&&!provider.at(-1).includes(seeds.eventId)
+        &&revokedBodyReads===0,'G4_WIDE_REVOKED_PROMPT')
+      results.push({size,...result,order,providerJsonSha256:sha256Text(provider.at(-2)),
+        providerMessages:JSON.parse(provider.at(-2)),revokedBodyReads,taskGrantAndReceipt:true})
+    }
+    replyCommitFault=sha256Text(commitFault)
+    await rejects(()=>runtime.send(scope.conversationId,{text:'合成提交故障'}),'KANATA_SQLITE_TRANSACTION_FAILED')
+    const failedSource=await candidate.withRepositories({},messages=>messages.latestState(scope,'user'))
+    const replies=()=>candidate.withRepositories({},messages=>messages.completedReplies(scope,failedSource.id))
+    check((await replies()).length===0,'G4_COMMIT_LEFT_REPLY')
+    await runtime.send(scope.conversationId,{retryMessageId:failedSource.id})
+    const persisted=await replies()
+    const calls=provider.length
+    await runtime.send(scope.conversationId,{retryMessageId:failedSource.id})
+    check(persisted.length===1&&JSON.stringify(await replies())===JSON.stringify(persisted)&&provider.length===calls,'G4_RETRY_DUPLICATED_REPLY')
+    trace={queries:0,writes:0,maxRows:0}
+    const pending=runtime.send(scope.conversationId,{text:'合成挂起结果'}).then(()=>null,error=>error.code??error.message)
+    check(await Promise.race([entered.then(()=>true),pending.then(()=>false)]),'G4_PROVIDER_NOT_REACHED')
+    runtime.cancel()
+    const before={queries:trace.queries,writes:trace.writes}
+    ignoreAbort({content:'合成迟到结果'})
+    check(await pending==='ABORTED','G4_LATE_PROVIDER_RESULT')
+    const afterCancel={queries:trace.queries-before.queries,writes:trace.writes-before.writes}
+    trace=undefined
+    check(afterCancel.queries===0&&afterCancel.writes===0,'G4_LATE_PROVIDER_IO')
+    return {health,results,afterCancel,commitFailureRolledBack:true,idempotentRetry:true,syntheticModelCalls:provider.length,realModelCalls:0}
+  } catch(error) {
+    return {error:error.code??error.message,results}
+  } finally {
+    trace=undefined
+    await runtime.dispose()
+    auth.expireSession()
+    await candidate.release()
+  }
+}
+
 window.mr2QaWideGrantProof = async (password, { commands, scope, sample }) => {
   session(password)
   const {worldId,instanceId,conversationId}=scope

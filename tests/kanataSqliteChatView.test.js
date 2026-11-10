@@ -273,8 +273,10 @@ test('M4 candidate history archive freezes protected components and keeps archiv
   await domains.memories.save({id:'archive-source-memory',worldId,ownerType:'character',ownerId:instanceId,layer:'L3',
     key:'合成引用保护',content:'合成',status:'active',visibility:'private',revision:1,sourceRefs:[{messageId:'archive-1',revision:1}]},null)
   await assert.rejects(messages.confirmArchive(scope,before,'archive-first'),/ARCHIVE_PREVIEW_STALE/)
+  db.prepare("UPDATE worlds SET extensions_json=json_set(extensions_json,'$.legacyNested',json(?)) WHERE id=?")
+    .run(JSON.stringify([{ arbitrary:'archive-3' }]), worldId)
   const plan=await messages.previewArchive(scope)
-  assert.equal(plan.count,before.count-1)
+  assert.equal(plan.count,before.count-2)
   failOn('INSERT INTO archived_message_marks')
   await assert.rejects(messages.confirmArchive(scope,plan,'archive-first'),/INJECTED_WRITE_FAILURE/)
   failOn('')
@@ -287,7 +289,7 @@ test('M4 candidate history archive freezes protected components and keeps archiv
   const marked=db.prepare('SELECT message_id FROM archived_message_marks WHERE world_id=? AND conversation_id=?').all(worldId,conversationId)
     .map(row=>row.message_id)
   assert.equal(marked.length,plan.count)
-  assert.ok(marked.includes('archive-3'))
+  assert.ok(marked.includes('archive-4') && !marked.includes('archive-3'))
   assert.ok(!marked.includes('archive-1')&&!marked.includes('archive-2')&&!marked.includes('archive-250'))
   assert.equal((await messages.quote(scope,'archive-3')).content,'合成归档')
   assert.equal((await messages.locate(scope,'archive-3',10)).messages[0].id,'archive-3')
@@ -329,5 +331,53 @@ test('M4 autonomy rotates the exact legacy locale order across actor batches and
       assert.deepEqual(await selectKanataWindowActors(visit, offset, group.length),
         [...order.slice(offset), ...order.slice(0, offset)].slice(0, 8))
     }
+  }
+})
+test('MR2 wide chat keeps ordered legacy tags and rolls back its SQL work set', async t => {
+  const { seedWideChatSources, chatReplyTagCheck } = await import('../docs/qa/kanata-sqlite-m4/completion/fixture.mjs')
+  for (const size of [1000, 10000]) {
+    const { db, reads, operation, fixture, failOn } = await setup(t)
+    const { worldId, id: conversationId, participantIds, revision } = fixture.conversations[0]
+    const instanceId = fixture.instances.find(actor => participantIds.includes(actor.id)).id
+    const scope = { worldId, conversationId, instanceId }
+    let nextId = 0
+    const tools = { id: () => 'g4-test-' + (++nextId), clock: () => 60000 }
+    const domains = createKanataSqliteDomains(operation, tools)
+    const messages = createKanataMessageRepository(operation, tools)
+    await domains.autonomy.setGrant(worldId, instanceId, 'todo', 2, { read:true, remember:true, share:true })
+    const { lifeSources: _oldTags, ...sample } = fixture.messages[0]
+    const source = { ...sample, id: 'wide-user', createdAt: 50000, revision: 1 }
+    await messages.insert(source)
+    const seeds = await operation.transaction(tx => seedWideChatSources(tx, scope, source.id, size))
+    reads.length = 0
+    const history = [...await messages.historyForSpeaker(scope, instanceId, 12, 'transcript')].reverse()
+    assert.ok(history.some(row => row.id === source.id))
+    assert.ok(history.every(row => row.lifeSources === undefined))
+    const memory = await domains.memories.readPrompt(scope, seeds.memoryId, 4000)
+    const context = await domains.events.context(worldId, { instanceId, group: false }, [instanceId])
+    assert.ok(context.events.some(row => row.id === seeds.eventId))
+    assert.equal(memory.lifeSources, undefined)
+    const expected = { sourceId:source.id, sourceRevision:1, conversationRevision:revision, speakerId:instanceId,
+      speakerRevision:(await domains.characters.getInstance(worldId, instanceId)).revision }
+    const reply = { ...sample, id:'wide-reply', role:'assistant', senderType:'character', senderId:instanceId,
+      senderNameSnapshot:'合成', createdAt:50001, revision:1, replyToMessageId:source.id, replyToRevision:1 }
+    const ref = ({ id, revision }) => ({ id, revision })
+    const proof = { history:history.map(ref), recentMessages:12, memories:[ref(memory)], events:context.events.map(ref), life:[] }
+    const append = () => messages.insertReplyBatch(scope, expected, [reply], proof)
+    failOn('SELECT DISTINCT ?,?,json_extract(tag')
+    await assert.rejects(append(), /INJECTED_WRITE_FAILURE/)
+    assert.equal(db.prepare('SELECT count(*) AS n FROM messages WHERE id=?').get(reply.id).n, 0)
+    assert.equal(db.prepare("SELECT count(*) AS n FROM sqlite_temp_master WHERE name='kanata_reply_proof'").get().n, 0)
+    failOn('')
+    await append()
+    await append()
+    const order = db.prepare(chatReplyTagCheck).get(worldId, source.id, reply.id, instanceId)
+    assert.deepEqual({...order}, { tags:2*size+2,links:size+1,ordered_matches:2*size+2 })
+    assert.ok(reads.every(row => row.rows<=51))
+    await domains.autonomy.setGrant(worldId, seeds.deniedActor, 'todo', 1, { read:false, remember:false, share:false })
+    const current = await messages.historyForSpeaker(scope, instanceId, 12, 'transcript')
+    assert.ok(current.every(row => row.id !== reply.id && row.id !== source.id))
+    await assert.rejects(append(), /KANATA_MESSAGE_REPLY_STALE/)
+    t.diagnostic(JSON.stringify({ size, tags:order.tags, normalized:order.links, rollback:true, afterRevocation:'excluded' }))
   }
 })

@@ -73,8 +73,8 @@ export function createKanataSpeakerSelection(text, maxSpeakers, previous) {
  * No raw card extensions, other private chats, other persona definitions or life stores.
  * @param {PromptScope} data @param {string} conversationId @param {string} instanceId
  * @param {{lifeEntries?:{moduleId:string,value:unknown}[],lifeSources?:import('./kanataTypes').LifeSource[],historyMessageIds?:string[],
- * provenance?:readonly import('../experience/kanataKnowledge.js').KnowledgeMessage[],
- * repositoryKnowledge?: {memories: (Pick<Data['memories'][number],'id'|'revision'|'lifeSources'> & {promptJson:string})[],lorebook:Pick<Data['lorebookEntries'][number],'id'|'revision'|'content'>[],events:Pick<Data['events'][number],'id'|'summary'|'effectiveAt'|'revision'|'lifeSources'>[],hiddenTargetIds:ReadonlySet<string>}}} [options]
+ * repositoryHistory?: boolean, provenance?:readonly import('../experience/kanataKnowledge.js').KnowledgeMessage[],
+ * repositoryKnowledge?: {memories: (Pick<Data['memories'][number],'id'|'revision'> & {promptJson:string,lifeSources?:Data['memories'][number]['lifeSources']})[],lorebook:Pick<Data['lorebookEntries'][number],'id'|'revision'|'content'>[],events:(Pick<Data['events'][number],'id'|'summary'|'effectiveAt'|'revision'> & {lifeSources?:Data['events'][number]['lifeSources']})[],hiddenTargetIds:ReadonlySet<string>}}} [options]
  */
 export function buildKanataConversationContext(data, conversationId, instanceId, options={}) {
   const c = kanataConversation(data, conversationId)
@@ -85,7 +85,7 @@ export function buildKanataConversationContext(data, conversationId, instanceId,
   const knowledgeData = options.provenance ? { ...data, messages: [...data.messages, ...options.provenance] } : data
   const policy=kanataMemoryPolicy(data,c.worldId),group=c.type==='group'
   if(options.lifeEntries?.length)need(!!options.lifeSources?.length&&canUseKanataLifeSources(data,options.lifeSources,{worldId:c.worldId,instanceId,group}),'LIFE_CONTEXT_PERMISSION_DENIED','life')
-  const history = data.messages.filter(m=>m.worldId===c.worldId && m.conversationId===c.id && (!options.historyMessageIds||options.historyMessageIds.includes(m.id)) && canUseKanataMessage(knowledgeData,m,instanceId,group)).slice(-policy.recentMessages)
+  const history = data.messages.filter(m=>m.worldId===c.worldId && m.conversationId===c.id && (!options.historyMessageIds||options.historyMessageIds.includes(m.id)) && (options.repositoryHistory || canUseKanataMessage(knowledgeData,m,instanceId,group))).slice(-policy.recentMessages)
   const text = history.slice(-3).map(m=>m.content).join('\n')
   const verified = options.repositoryKnowledge
   const lorebook = verified?.lorebook ?? selectKanataLorebook(data,{worldId:c.worldId,instanceId,text,tokenBudget:4000}).entries

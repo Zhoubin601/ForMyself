@@ -55,27 +55,40 @@ export interface KanataDeferredReply {
   readonly activityDelay: boolean
 }
 
+/** Authorized roots to revisit within the reply write transaction. */
+export interface KanataReplyProvenance {
+  readonly recentMessages: number
+  readonly history: readonly { id: string; revision: number }[]
+  readonly memories: readonly { id: string; revision: number }[]
+  readonly events: readonly { id: string; revision: number }[]
+  readonly life: readonly import('../../domain/kanataTypes').LifeSource[]
+}
+
+export type KanataMessageState = Pick<Message,'id'|'revision'|'createdAt'|'status'|'senderId'> & { readonly deleted: boolean }
+
 export interface KanataMessageRepository {
   insert(message: Message): Promise<'inserted' | 'existing'>
   insertBatch(messages: readonly Message[]): Promise<readonly ('inserted' | 'existing')[]>
-  recent(scope: KanataMessageScope, limit?: number): Promise<KanataMessagePage>
-  older(scope: KanataMessageScope, cursor: KanataMessageCursor, limit?: number): Promise<KanataMessagePage>
+  recent(scope: KanataMessageScope, limit?: number, projection?: 'transcript'): Promise<KanataMessagePage>
+  older(scope: KanataMessageScope, cursor: KanataMessageCursor, limit?: number, projection?: 'transcript'): Promise<KanataMessagePage>
   previewArchive(scope: KanataMessageScope, keepRecent?: number): Promise<KanataHistoryArchivePlan>
   confirmArchive(scope: KanataMessageScope, plan: KanataHistoryArchivePlan, commandId: string): Promise<{archivedCount: number}>
   searchHistory(scope: KanataMessageScope, text: string, cursor?: KanataHistoryCursor): Promise<KanataHistoryPage>
-  locate(scope: KanataMessageScope, id: string, limit?: number): Promise<KanataMessagePage | null>
-  get(scope: KanataMessageScope, id: string): Promise<Message | null>
+  locate(scope: KanataMessageScope, id: string, limit?: number, projection?: 'transcript'): Promise<KanataMessagePage | null>
+  get(scope: KanataMessageScope, id: string, projection?: 'transcript'): Promise<Message | null>
+  state(scope: KanataMessageScope, id: string): Promise<KanataMessageState | null>
+  latestState(scope: KanataMessageScope, role?: Message['role']): Promise<KanataMessageState | null>
   quote(scope: KanataMessageScope, id: string): Promise<Pick<Message, 'id' | 'content' | 'senderNameSnapshot' | 'revision'> | null>
   count(scope: KanataMessageScope): Promise<number>
-  latest(scope: KanataMessageScope, role: Message['role']): Promise<Message | null>
-  historyForSpeaker(scope: KanataMessageScope, speakerId: string, limit: number): Promise<readonly Message[]>
+  latest(scope: KanataMessageScope, role: Message['role'], projection?: 'transcript'): Promise<Message | null>
+  historyForSpeaker(scope: KanataMessageScope, speakerId: string, limit: number, projection?: 'transcript'): Promise<readonly Message[]>
   contextState(scope: KanataMessageScope, speakerId: string, ids: {
     events: readonly string[]; memories: readonly string[]; relationships: readonly string[]
   }): Promise<KanataChatContextState>
   provenance(worldId: string, id: string): Promise<KanataMessageProvenance | null>
   replies(scope: KanataMessageScope, id: string, cursor?: KanataMessageCursor, limit?: number): Promise<KanataMessagePage>
   completedReplies(scope: KanataMessageScope, id: string): Promise<readonly Pick<Message, 'id' | 'revision' | 'senderId'>[]>
-  insertReplyBatch(scope: KanataMessageScope, expected: KanataReplyExpectation, messages: readonly Message[]): Promise<void>
+  insertReplyBatch(scope: KanataMessageScope, expected: KanataReplyExpectation, messages: readonly Message[], provenance?: KanataReplyProvenance): Promise<void>
   setStatus(scope: KanataMessageScope, id: string, expectedRevision: number, status: Message['status']): Promise<Message>
   revise(scope: KanataMessageScope, id: string, expectedRevision: number, change: { content: string; deleted: boolean }): Promise<Message>
 }

@@ -1,14 +1,17 @@
-# G4 入口审计
+# G4 调用链与边界
 
-以 MR0 树 c4ba18911c705c5efde7f7614171659f056e2f1e 为起点。以下是目前读到的调用链和实测缺口。矩阵待扩展到修复后的真实设备增量。
+本轮接管树为 8d3b8f768617143312fd800ab05decaa53d6114d，按最新 M 核对。结论对应同目录源码指纹和实测结果。历史 c4ba189 审计保留在 Git。
 
-| 入口 | 候选调用链 | 仍需处理 |
-|---|---|---|
-| 私聊、群聊、character、引用及延迟回复恢复 | KanataConversationView → SQLite Chat Runtime send/runDue → historyForSpeaker、readPromptKnowledge、event context → buildKanataConversationContext → provider → append/revision CAS | historyForSpeaker 和 provenance 投影先聚合 message_life_sources。fetchReplyProvenance 最多随活动历史条数，但单条仍可包含全量标签。Chat Runtime 收集 origins Set，contextGrants 接受整数组，domain builder 展平来源并返回完整 lifeSources，最终回复按数组写回。 |
-| 记忆提示词 | readPromptKnowledge → Memory.readPrompt → authorizeMemory → chainSources/chainEvents/chainLife → source refs 单条编码 | 记忆源引用 DTO 已移除。authorizeMemory 默认 collect 会累计生活来源和事件标签，readPrompt 返回 proof.provenance。 |
-| 记忆管理、冲突、精确来源、分享、撤回 | CandidateMemoryDetail → World Runtime → managedDetailFor/sourcePage/resolveSource/previewConflicts/confirmConflicts/shareManaged/revokeShare | 管理详情和分页已有独立入口。合并、跨组、各权限制及旧 DTO 保存/导出仍需逐项审计。分享路径复用授权，不应该重新读回完整来源 DTO。 |
-| 事件上下文、创建、修正、撤销、审计 | CandidateEventLedger → World Runtime → EventRepository/EventRevocation；聊天读取 events.context/relationshipContext | visitEventProvenance 分页，但 eventProvenance/authorizeEvent/insertEvent/commitEvent 收集数组。loadEvent → eventFromRow 累计参与者、原因、消息引用、标签并建 Set 校验旧顺序。当前候选撤销使用分页计划；兼容 preview/revoke/correct 仍建整个闭包。 |
-| 消息编辑/删除、历史及兼容来源 | Chat Runtime → MessageRepository → reviseMessageDependents、HistoryArchive；get/recent/older/startingAt/replies 复用 messageProjection | reviseMessageDependents 逐事件取完整 eventFromRow 写审计。messageFromRow 同时解码归一化和扩展 lifeSources 并建 Set。旧扩展引用扫描仍需单独审计。 |
-| 自治任务旧来源 | Autonomy Repository → sourceMetadata → visitSourceGrants | sourceMetadata 将整段回复链的标签组装成数组。 |
+| 入口 | 当前链路 | 未关闭条件 |
+| --- | --- | --- |
+| 私聊、群聊、引用、延期恢复 | KanataConversationView → SQLite Chat Runtime send/runDue → transcriptForSpeaker → readPromptKnowledge / events.context → buildKanataConversationContext → 合成 provider → insertReplyBatch CAS。消息窗口、引文选择和重试采用轻量投影。普通发送拒绝 character 会话，保留历史入口。 | 宽源实际发送已测试私聊。群聊、引用和延期走共享路径并有回归。尚缺每类入口独立 1k/10k 故障组合。 |
+| 普通聊天授权 | historyForSpeaker 的标准化标签约束 read 与群聊 share。回复直属引用校验同一世界、会话和精确 revision。候选用本角色最多七条模块授权，旧 origins Set 与 contextGrants 已移除。 | 旧 get、recent、older、replies、provenance 的完整兼容 DTO 仍可显式取回完整标签。 |
+| 回复落库 | 预算内的消息、记忆和事件 ID/revision 进入 append。SQL 复核角色与会话 CAS，预览根重新授权。SQLite 内存临时表保留旧标签顺序、全 JSON 去重、归属去重与接收者标签。在同一事务写回复、扩展顺序提示和规范化关系。 | 保留兼容 DTO 路径需单独完成流式导出与逐条核对。 |
+| 记忆提示词、管理、分享 | readPromptKnowledge → Memory.readPrompt → authorizeMemory 以 SQL 验证消息链及记忆授权。提示词逐条编码消息来源且受字节预算。append 用分页 visitor 重读来源标签，管理详情和精确来源沿用原读、记、分享区分。 | 待测管理分享及撤回的所有宽数据故障组合。 |
+| 事件上下文和 Effect 可见性 | events.context / relationshipContext → assertEventProvenance → 分页事件来源和 SQLite 授权谓词，正文在证明后读取。append 通过 visitor 收集有限页，事件摘要不携带标签数组。 | insertEvent、commitEvent 仍用 eventProvenance 聚合。eventFromRow 和旧 preview/revoke/correct 完整 DTO 与因果闭包仍待改造。 |
+| 消息修订和归档 | reviseMessageDependents 仍读完整审计快照。HistoryArchive 用 SQL 检查标准化引用及 SQLite JSON 扩展中的嵌套精确消息 ID，纳入同一冻结集合和 CAS。 | 旧不透明编码、兼容导出以及全量等价实测未覆盖。 |
+| 自治任务来源 | enqueue、claim、finish 先校验 world、会话、actor、精确消息 revision。claim/finish 以 50 条分页读已存来源，结果引用用 SQL 精确匹配任务来源。 | 旧 loadTask 返回完整任务 DTO，仍为兼容导出缺口。待跑自治来源专用 Android 1k/10k。 |
 
-权限基础来自同世界 actor、会话成员、准确消息 revision 和授权来源/接收者。静态审计里 requireLifeSources 以 Map 暂存所有 origin/receiver。权限拒绝与来源 stale 现有码值需逐层核对，避免用数组为空来表示失败。旧兼容入口在迁移时要核查仓库实际调用和严格类型，并用源顺序、权限前置、迟到结果和回执的设备证据覆盖。
+来源为 M4-R 任务书、验收 v5、当前候选和 legacy 源码、raw/完整需求清单.txt 与 raw/彼方 · Kanata 技术设计.txt。
+
+[本轮源码与夹具 SHA-256](g4-run/fingerprints.json) · [真设备指标](g4-run/summary.json)

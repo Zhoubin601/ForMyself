@@ -8,31 +8,21 @@ export const messageProjection = 'm.*, ' + lifeSources
 const anchor = ' AND (created_at,id)<(?,?)'
 const descending = ' ORDER BY created_at DESC,id DESC LIMIT ?'
 const message = 'SELECT ' + messageProjection + ' FROM messages m WHERE ' + scope
+// Candidate transcript projections deliberately exclude opaque extensions and
+// normalized provenance. The compatibility DTO queries still return both.
+const transcriptProjection = `m.id,m.world_id,m.conversation_id,m.role,m.sender_type,m.sender_id,m.sender_name_snapshot,
+  m.content,m.created_at,m.revision,m.status,m.turn_id,m.batch_id,m.deleted,m.reply_to_message_id,m.reply_to_revision,
+  '{}' AS extensions_json,'[]' AS life_sources`
+const replyBaseProjection = transcriptProjection.replace("'{}' AS extensions_json",
+  "json_remove(m.extensions_json,'$.lifeSources') AS extensions_json")
+const messageState = 'SELECT id,revision,created_at,status,deleted,sender_id FROM messages WHERE ' + scope
+const transcript = 'SELECT ' + transcriptProjection + ' FROM messages m WHERE ' + scope
 const history = 'SELECT id,content,sender_name_snapshot,created_at,revision FROM messages WHERE ' + scope + ' AND coalesce(deleted,0)=0'
 const conversationColumns = 'id,world_id,type,title,mode,revision,last_read_at,max_speakers,max_messages,reply_timing_enabled,reply_wait_ms,extensions_json'
 
-export const messageQueries = Object.freeze({
-  get: message + ' AND id=?',
-  recent: message + descending,
-  older: message + anchor + descending,
-  startingAt: message + ' AND (created_at,id)<=(?,?)' + descending,
-  replies: message + ' AND reply_to_message_id=?' + descending,
-  history: history + descending,
-  olderHistory: history + anchor + descending,
-  completedReplies: 'SELECT id,revision,sender_id FROM messages WHERE ' + scope
-    + " AND reply_to_message_id=? AND role='assistant' AND status='complete' AND coalesce(deleted,0)=0" + descending,
-  olderReplies: message + ' AND reply_to_message_id=?' + anchor + descending,
-  latest: message + ' AND role=? ORDER BY created_at DESC,id DESC LIMIT 1',
-  provenance: `SELECT m.id,m.world_id,m.conversation_id,m.revision,m.status,m.deleted,m.reply_to_message_id,m.reply_to_revision,
-    ${lifeSources} FROM messages m WHERE m.world_id=? AND m.id=?`,
-  speakerRevision: 'SELECT revision FROM character_instances WHERE world_id=? AND id=?',
-  speakerState: 'SELECT revision,mood,energy,location FROM character_instances WHERE world_id=? AND id=?',
-  eventState: 'SELECT id,status,revision FROM world_events WHERE world_id=? AND id IN (SELECT value FROM json_each(?)) LIMIT 128',
-  memoryState: 'SELECT id,status,revision FROM memories WHERE world_id=? AND id IN (SELECT value FROM json_each(?)) LIMIT 128',
-  relationshipState: `SELECT id,trust,intimacy,understanding,revision FROM relationships
-    WHERE world_id=? AND from_id=? AND id IN (SELECT value FROM json_each(?)) LIMIT 128`,
-  historyForSpeaker: `WITH args(world,conversation,speaker) AS (VALUES(?,?,?))
-    SELECT ${messageProjection} FROM args JOIN conversations c ON c.world_id=args.world AND c.id=args.conversation
+/** @param {string} projection */
+const speakerHistory = projection => `WITH args(world,conversation,speaker) AS (VALUES(?,?,?))
+    SELECT ${projection} FROM args JOIN conversations c ON c.world_id=args.world AND c.id=args.conversation
     JOIN messages m ON m.world_id=args.world AND m.conversation_id=args.conversation
     JOIN conversation_participants p ON p.world_id=args.world AND p.conversation_id=args.conversation
       AND p.participant_id=args.speaker AND p.kind='character'
@@ -53,7 +43,43 @@ export const messageQueries = Object.freeze({
             AND receiver.can_read=1 AND (g.can_share=1 OR (c.type<>'group' AND s.instance_id=args.speaker))
             AND (c.type<>'group' OR receiver.can_share=1)
         )
-      ) ORDER BY m.created_at DESC,m.id DESC LIMIT ?`,
+      ) ORDER BY m.created_at DESC,m.id DESC LIMIT ?`
+
+export const messageQueries = Object.freeze({
+  get: message + ' AND id=?',
+  recent: message + descending,
+  older: message + anchor + descending,
+  startingAt: message + ' AND (created_at,id)<=(?,?)' + descending,
+  replies: message + ' AND reply_to_message_id=?' + descending,
+  history: history + descending,
+  olderHistory: history + anchor + descending,
+  completedReplies: 'SELECT id,revision,sender_id FROM messages WHERE ' + scope
+    + " AND reply_to_message_id=? AND role='assistant' AND status='complete' AND coalesce(deleted,0)=0" + descending,
+  olderReplies: message + ' AND reply_to_message_id=?' + anchor + descending,
+  latest: message + ' AND role=? ORDER BY created_at DESC,id DESC LIMIT 1',
+  state: messageState + ' AND id=?',
+  latestState: messageState + ' AND role=? ORDER BY created_at DESC,id DESC LIMIT 1',
+  newestState: messageState + ' ORDER BY created_at DESC,id DESC LIMIT 1',
+  latestTranscript: transcript + ' AND role=? ORDER BY created_at DESC,id DESC LIMIT 1',
+  transcriptAnchor: 'SELECT id,created_at FROM messages WHERE ' + scope + ' AND id=?',
+  getTranscript: transcript + ' AND id=?',
+  getReplyBase: 'SELECT ' + replyBaseProjection + ' FROM messages m WHERE ' + scope + ' AND id=?',
+  recentTranscript: transcript + descending,
+  olderTranscript: transcript + anchor + descending,
+  startingAtTranscript: transcript + ' AND (created_at,id)<=(?,?)' + descending,
+  provenance: `SELECT m.id,m.world_id,m.conversation_id,m.revision,m.status,m.deleted,m.reply_to_message_id,m.reply_to_revision,
+    ${lifeSources} FROM messages m WHERE m.world_id=? AND m.id=?`,
+  speakerRevision: 'SELECT revision FROM character_instances WHERE world_id=? AND id=?',
+  speakerState: 'SELECT revision,mood,energy,location FROM character_instances WHERE world_id=? AND id=?',
+  eventState: 'SELECT id,status,revision FROM world_events WHERE world_id=? AND id IN (SELECT value FROM json_each(?)) LIMIT 128',
+  memoryState: 'SELECT id,status,revision FROM memories WHERE world_id=? AND id IN (SELECT value FROM json_each(?)) LIMIT 128',
+  relationshipState: `SELECT id,trust,intimacy,understanding,revision FROM relationships
+    WHERE world_id=? AND from_id=? AND id IN (SELECT value FROM json_each(?)) LIMIT 128`,
+  historyForSpeaker: speakerHistory(messageProjection),
+  transcriptForSpeaker: speakerHistory(transcriptProjection),
+  transcriptForAppend: speakerHistory(transcriptProjection)
+    .replace('args(world,conversation,speaker) AS (VALUES(?,?,?))', 'args(world,conversation,speaker,batch) AS (VALUES(?,?,?,?))')
+    .replace("WHERE m.status='complete'", "WHERE NOT EXISTS (SELECT 1 FROM json_each(args.batch) j WHERE j.value=m.id) AND m.status='complete'"),
   count: 'SELECT count(*) AS count FROM messages WHERE ' + scope,
   quote: 'SELECT id,content,sender_name_snapshot,revision FROM messages WHERE ' + scope + ' AND id=? AND coalesce(deleted,0)=0',
   identity: 'SELECT table_name FROM entity_ids WHERE id=?',

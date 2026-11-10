@@ -71,3 +71,29 @@ pwsh -NoProfile -File docs/qa/kanata-sqlite-m2/run-windows-candidate.ps1 -Manife
 [两档设备结果](mr2-grants-result.txt) · [设备退出码](mr2-grants-exit.txt) · [综合回归](mr2-regression-result.txt.gz) · [综合退出码](mr2-regression-exit.txt) · [主机定向](mr2-directed-host.txt) · [全量 check](mr2-check.txt.gz) · [候选 catalog](mr2-catalog-sha256.txt) · [源码与夹具指纹](mr2-tested-files-sha256.json) · [普通 APK](mr2-default-gate.json)。
 
 主机独立权限对照通过 1,024 种同角色与跨角色权限组合，另覆盖 5 种身份、revision 和世界不匹配。运行 node docs/qa/kanata-sqlite-m4/m4-r/verify-grant-predicate.mjs。[权限对照日志](mr2-host-permission-equivalence.txt)
+
+## MR2-G4 继续验证
+
+本轮接管 8d3b8f768617143312fd800ab05decaa53d6114d。普通聊天用轻量消息投影与 SQL 权限。回复事务在 SQLite 内存工作表按原顺序保存标签。记忆和事件提示词不返回完整标签数组。历史归档在 SQL 内保护嵌套扩展中的精确引用。自治 claim/finish 的来源检查改为分页校验。
+
+```powershell
+npm.cmd run check
+node --test --test-name-pattern 'MR2 wide chat|candidate history archive' tests/kanataSqliteChatView.test.js
+node docs/qa/kanata-sqlite-m4/m4-r/verify-grant-predicate.mjs
+node docs/qa/kanata-sqlite-m4/m4-r/verify-archive-extensions.mjs
+.\android\gradlew.bat -p android --offline --max-workers=2 -PkanataM2Synthetic=true :app:assembleDebug :app:assembleDebugAndroidTest
+pwsh -NoProfile -File docs/qa/kanata-sqlite-m2/run-windows-candidate.ps1 -ManifestPath $manifest -EvidenceDirectory $wide -Mode mr2-chat-provenance
+pwsh -NoProfile -File docs/qa/kanata-sqlite-m2/run-windows-candidate.ps1 -ManifestPath $manifest -EvidenceDirectory $regression -Mode full -M4Growth -M4Completion
+```
+
+[M4-R MR2-G4 验收](../../../20261110-kanata-sqlite-mr2-g4-acceptance-v1.md) · [当前调用图](g4-call-map.md) · [增长与缺口矩阵](matrix.md) · [两轮复核](reviews.md)
+
+| 同轮证据 | 原始结果 |
+| --- | --- |
+| 原始 420 秒 QA 超时 | [驱动](g4-run/01-qa-timeout.txt.gz) · [原生 SQL](g4-run/01-qa-timeout-native.txt.gz) |
+| 撤权正文反例 | [复测失败](g4-run/02-revoked-body-red.txt.gz) |
+| SQL 优化前 | [设备回执](g4-run/03-wide-before-sql-plan.txt.gz) · [原生计时](g4-run/03-wide-before-sql-plan-native.txt.gz) |
+| 最终设备综合回归 | [驱动](g4-run/04-combined.txt.gz) · [APK 指纹](g4-run/04-combined-apk-sha256.txt) |
+| 最终设备宽授权及故障 | [provider JSON 和回执](g4-run/05-wide.txt.gz) · [原生 SQL](g4-run/05-wide-native.txt.gz) · [APK 指纹](g4-run/05-wide-apk-sha256.txt) · [汇总](g4-run/summary.json) |
+| 主机 | [全量 check](g4-run/check.txt.gz) · [宽标签定向](g4-run/wide-host.txt) · [权限对照](g4-run/grant-predicate.txt) · [旧归档对照](g4-run/archive-oracle.txt) |
+| 指纹与边界 | [源文件与夹具](g4-run/fingerprints.json) · [候选 catalog](g4-run/catalog-sha256.txt) · [普通 APK](g4-run/default-gate.json) · [PSS/RSS 采样](g4-run/memory-samples.txt) |

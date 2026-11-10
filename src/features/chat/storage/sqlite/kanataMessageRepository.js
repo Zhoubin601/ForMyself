@@ -5,6 +5,7 @@ import { conversationQueries, messageQueries as query, messageWrites as write } 
 import { equalDto, extensionObject, nonemptyText, pageLimit, requireSqliteValue as need, safeInteger, scopeBindings, validId } from './kanataRepositoryValues.js'
 import { createKanataHistoryArchive } from './kanataHistoryArchive.js'
 import { reviseMessageDependents } from './kanataMessageDependents.js'
+import { assertTranscriptHints, withReplyProvenance } from './kanataReplyProvenance.js'
 
 /** @typedef {import('../../domain/kanataTypes').Message} Message */
 /** @typedef {import('./kanataRepositoryTypes').KanataMessageScope} Scope */
@@ -79,6 +80,12 @@ export function messageFromRow(row) {
   return message
 }
 
+/** @param {Row} row @returns {import('./kanataRepositoryTypes').KanataMessageState} */
+function messageState(row) {
+  return { id: String(row.id), revision: Number(row.revision), createdAt: Number(row.created_at),
+    status: /** @type {Message['status']} */ (row.status), deleted: row.deleted === 1, senderId: String(row.sender_id) }
+}
+
 /** @param {Row} row @returns {Provenance} */
 function provenanceFromRow(row) {
   const sources = JSON.parse(String(row.life_sources))
@@ -103,16 +110,17 @@ async function readContextRows(tx, sql, bindings, ids) {
   return rows
 }
 
-/** @param {Transaction} tx @param {Scope} scope @param {string} id */
-async function readMessage(tx, scope, id) {
+/** @param {Transaction} tx @param {Scope} scope @param {string} id @param {'transcript'|'reply-base'} [projection] */
+async function readMessage(tx, scope, id, projection) {
   validateId(id, 'messageId')
-  const [row] = await tx.query(query.get, [...scopeBindings(scope), id])
+  const sql = projection === 'transcript' ? query.getTranscript : projection === 'reply-base' ? query.getReplyBase : query.get
+  const [row] = await tx.query(sql, [...scopeBindings(scope), id])
   return row ? messageFromRow(row) : null
 }
 
-/** @param {Transaction} tx @param {Message} message */
-async function insertMessage(tx, message) {
-  const prior = await readMessage(tx, message, message.id)
+/** @param {Transaction} tx @param {Message} message @param {'reply-base'} [projection] */
+async function insertMessage(tx, message, projection) {
+  const prior = await readMessage(tx, message, message.id, projection)
   if (prior) {
     need(equalDto(prior, message), 'KANATA_MESSAGE_ID_CONFLICT')
     return /** @type {const} */ ('existing')
@@ -203,10 +211,10 @@ export function createKanataMessageRepository(operation, tools) {
         return results
       })
     },
-    recent: (scope, limit = 50) => run(async tx => page(await tx.query(query.recent, [
+    recent: (scope, limit = 50, projection) => run(async tx => page(await tx.query(projection === 'transcript' ? query.recentTranscript : query.recent, [
       ...scopeBindings(scope), pageLimit(limit) + 1,
     ]), limit)),
-    older: (scope, cursor, limit = 50) => run(async tx => page(await tx.query(query.older, [
+    older: (scope, cursor, limit = 50, projection) => run(async tx => page(await tx.query(projection === 'transcript' ? query.olderTranscript : query.older, [
       ...scopeBindings(scope), ...cursorBindings(scope, cursor), pageLimit(limit) + 1,
     ]), limit)),
     searchHistory: (scope, text, cursor) => run(async tx => {
@@ -233,22 +241,36 @@ export function createKanataMessageRepository(operation, tools) {
       }
       return { messages, cursor: before ?? null }
     }),
-    locate: (scope, id, limit = 50) => run(async tx => {
+    locate: (scope, id, limit = 50, projection) => run(async tx => {
       pageLimit(limit)
-      const found = await readMessage(tx, scope, id)
-      if (!found) return null
-      return page(await tx.query(query.startingAt, [...scopeBindings(scope), found.createdAt, found.id, limit + 1]), limit)
+      validateId(id, 'messageId')
+      const keys = scopeBindings(scope)
+      const [anchor] = await tx.query(query.transcriptAnchor, [...keys, id])
+      if (!anchor) return null
+      const sql = projection === 'transcript' ? query.startingAtTranscript : query.startingAt
+      return page(await tx.query(sql, [...keys, anchor.created_at, anchor.id, limit + 1]), limit)
     }),
-    get: (scope, id) => run(tx => readMessage(tx, scope, id)),
+    get: (scope, id, projection) => run(tx => readMessage(tx, scope, id, projection)),
+    state: (scope, id) => run(async tx => {
+      validateId(id, 'messageId')
+      const [row] = await tx.query(query.state, [...scopeBindings(scope), id])
+      return row ? messageState(row) : null
+    }),
+    latestState: (scope, role) => run(async tx => {
+      const keys = scopeBindings(scope)
+      const [row] = role === undefined ? await tx.query(query.newestState, keys)
+        : await tx.query(query.latestState, [...keys, role])
+      return row ? messageState(row) : null
+    }),
     quote: (scope, id) => run(async tx => {
       validateId(id, 'messageId')
       const [row] = await tx.query(query.quote, [...scopeBindings(scope), id])
       return row ? { id: String(row.id), revision: Number(row.revision), senderNameSnapshot: String(row.sender_name_snapshot), content: String(row.content) } : null
     }),
     count: scope => run(async tx => Number((await tx.query(query.count, scopeBindings(scope)))[0].count)),
-    latest: (scope, role) => run(async tx => {
+    latest: (scope, role, projection) => run(async tx => {
       need(role === 'user' || role === 'assistant', 'KANATA_MESSAGE_INVALID')
-      const [row] = await tx.query(query.latest, [...scopeBindings(scope), role])
+      const [row] = await tx.query(projection === 'transcript' ? query.latestTranscript : query.latest, [...scopeBindings(scope), role])
       return row ? messageFromRow(row) : null
     }),
     completedReplies: (scope, id) => run(async tx => {
@@ -256,9 +278,13 @@ export function createKanataMessageRepository(operation, tools) {
       const rows = await tx.query(query.completedReplies, [...scopeBindings(scope), id, 32])
       return rows.map(row => ({ id: String(row.id), revision: Number(row.revision), senderId: String(row.sender_id) }))
     }),
-    historyForSpeaker: (scope, speaker, limit) => run(async tx => {
+    historyForSpeaker: (scope, speaker, limit, projection) => run(async tx => {
       validateId(speaker, 'speakerId')
-      return (await tx.query(query.historyForSpeaker, [...scopeBindings(scope), speaker, pageLimit(limit)])).map(messageFromRow)
+      const rows = await tx.query(projection === 'transcript' ? query.transcriptForSpeaker : query.historyForSpeaker,
+        [...scopeBindings(scope), speaker, pageLimit(limit)])
+      const messages = rows.map(messageFromRow)
+      if (projection === 'transcript') await assertTranscriptHints(tx, scope, messages.map(({ id, revision }) => ({ id, revision })))
+      return messages
     }),
     contextState: (scope, speaker, ids) => run(async tx => {
       validateId(speaker, 'speakerId')
@@ -301,10 +327,15 @@ export function createKanataMessageRepository(operation, tools) {
         ...scopeBindings(scope), id, ...(cursor ? cursorBindings(scope, cursor) : []), pageLimit(limit) + 1,
       ]), limit)
     }),
-    async insertReplyBatch(scope, expected, messages) {
+    async insertReplyBatch(scope, expected, messages, provenance) {
       const binding = scopeBindings(scope)
       const owner = cloneKanataJson(expected)
       const batch = cloneKanataJson(messages)
+      if (provenance) {
+        need(provenance.history.length <= pageLimit(provenance.recentMessages) && provenance.events.length <= 12
+          && provenance.life.length <= modules.length && provenance.memories.length <= 250, 'KANATA_MESSAGE_BATCH_INVALID')
+      }
+      const proof = provenance && cloneKanataJson(provenance)
       const code = 'KANATA_MESSAGE_REPLY_STALE'
       need(validId(owner.sourceId) && validId(owner.speakerId) && safeInteger(owner.sourceRevision, 1)
         && safeInteger(owner.speakerRevision, 1) && safeInteger(owner.conversationRevision, 1), code)
@@ -316,13 +347,30 @@ export function createKanataMessageRepository(operation, tools) {
           && message.replyToRevision === owner.sourceRevision && message.status === 'complete', code)
       })
       await run(async tx => {
-        const [source] = await tx.query(query.latest, [...binding, 'user'])
+        const [source] = await tx.query(query.latestState, [...binding, 'user'])
         const [conversation] = await tx.query(conversationQueries.get, binding)
         const [speaker] = await tx.query(query.speakerRevision, [binding[0], owner.speakerId])
         need(source?.id === owner.sourceId && source.revision === owner.sourceRevision && source.deleted !== 1
           && source.status === 'complete' && conversation?.type !== 'character'
           && conversation?.revision === owner.conversationRevision && speaker?.revision === owner.speakerRevision, code)
-        for (const message of batch) await insertMessage(tx, message)
+        if (!proof) {
+          for (const message of batch) await insertMessage(tx, message)
+          return
+        }
+        need(batch.every(message => message.lifeSources === undefined), 'KANATA_MESSAGE_BATCH_INVALID')
+        const rows = await tx.query(query.transcriptForAppend, [
+          ...binding, owner.speakerId, JSON.stringify(batch.map(message => message.id)), proof.recentMessages,
+        ])
+        const history = [...rows].reverse().map(row => ({ id: row.id, revision: row.revision }))
+        need(equalDto(history, proof.history), code)
+        await assertTranscriptHints(tx, scope, proof.history)
+        await withReplyProvenance(tx, { ...scope, instanceId: owner.speakerId, group: conversation.type === 'group' }, proof,
+          async persist => {
+            for (const message of batch) {
+              const result = await insertMessage(tx, message, 'reply-base')
+              await persist(message.id, result === 'existing')
+            }
+          })
       })
     },
     setStatus: (scope, id, expectedRevision, status) => run(async tx => {

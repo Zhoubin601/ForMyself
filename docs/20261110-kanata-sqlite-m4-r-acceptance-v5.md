@@ -48,3 +48,5 @@
 - 当前主机 npm check 退出 0，677 项 Node、397 项 Vue，lint、strict 正负类型和生产构建通过。5 项定向是 Node 子集。当前综合 Android 驱动和 MR2 定向退出 0。尚未执行的强制设备场景见 [阶段矩阵](qa/kanata-sqlite-m4/m4-r/matrix.md) 和 [G4 调用图](qa/kanata-sqlite-m4/m4-r/g4-call-map.md)。
 
 资料来自 raw/完整需求清单.txt、raw/彼方 · Kanata 技术设计.txt、当前 legacy 与候选源码、任务书及合成日志。原工作树中的修改、删除项和未跟踪文件保留。真实资料与备份未参与本轮。未实施 SQLite 阶段 M5/M6/M7。
+
+后续 [MR2-G4 验收](20261110-kanata-sqlite-mr2-g4-acceptance-v1.md)记录当前源码和设备证据。本报告保留为 8d3b8f7 的历史检查点。

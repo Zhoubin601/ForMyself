@@ -21,7 +21,7 @@ function taskFromRow(row) {
 
 /** @param {Transaction} tx @param {string[]} bindings @param {Pick<Task,'sourceId'|'sourceRevision'>} expected */
 async function currentSource(tx, bindings, expected) {
-  const [source] = await tx.query(messageQueries.latest, [...bindings, 'user'])
+  const [source] = await tx.query(messageQueries.latestState, [...bindings, 'user'])
   return source?.id === expected.sourceId && source.revision === expected.sourceRevision
     && source.status === 'complete' && source.deleted !== 1
 }

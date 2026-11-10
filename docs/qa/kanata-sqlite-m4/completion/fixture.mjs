@@ -81,3 +81,40 @@ export const grantOrigins = `INSERT INTO life_grants(id,world_id,instance_id,mod
   SELECT 'grant-'||id,world_id,id,'todo',1,1,1,1 FROM character_instances WHERE world_id=? AND id GLOB ?`
 export const grantMessageTags = `INSERT INTO message_life_sources(world_id,message_id,grant_id,instance_id,module_id,grant_revision,fingerprint)
   SELECT world_id,?,id,instance_id,module_id,revision,printf('%064x',1) FROM life_grants WHERE world_id=? AND instance_id GLOB ?`
+
+export const chatEventActor = 'INSERT INTO event_participants(world_id,event_id,participant_id) VALUES(?,?,?)'
+export const chatEventSource = 'INSERT INTO event_sources(world_id,event_id,message_id,message_revision) VALUES(?,?,?,1)'
+export const chatReplyTagCheck = `WITH args(world,source,reply,actor) AS (VALUES(?,?,?,?)),
+  origins AS (SELECT l.*,row_number() OVER (ORDER BY l.grant_id,l.grant_revision,l.fingerprint) AS n
+    FROM args JOIN message_life_sources l ON l.world_id=args.world AND l.message_id=args.source),
+  expected AS (
+    SELECT n,0 AS pass,json_object('grantId',grant_id,'instanceId',instance_id,'moduleId',module_id,'revision',grant_revision,'fingerprint',fingerprint) AS tag FROM origins
+    UNION ALL SELECT n,1,json_object('grantId',grant_id,'revision',grant_revision,'fingerprint',fingerprint,'instanceId',instance_id,'moduleId',module_id) FROM origins
+    UNION ALL SELECT 1,2,json_object('grantId',g.id,'instanceId',g.instance_id,'moduleId',g.module_id,'revision',g.revision,'fingerprint',printf('%064x',1))
+      FROM args JOIN life_grants g ON g.world_id=args.world AND g.instance_id=args.actor AND g.module_id='todo'
+    UNION ALL SELECT 1,3,json_object('grantId',g.id,'revision',g.revision,'fingerprint',printf('%064x',1),'instanceId',g.instance_id,'moduleId',g.module_id)
+      FROM args JOIN life_grants g ON g.world_id=args.world AND g.instance_id=args.actor AND g.module_id='todo'
+  ), ordered AS (
+    SELECT json_group_array(json(tag)) AS tags FROM (SELECT tag FROM expected ORDER BY pass,n)
+  ), actual AS (
+    SELECT json_extract(m.extensions_json,'$.lifeSources') AS tags
+    FROM args JOIN messages m ON m.world_id=args.world AND m.id=args.reply
+  )
+  SELECT (SELECT json_array_length(tags) FROM actual) AS tags,
+    (SELECT count(*) FROM args JOIN message_life_sources l ON l.world_id=args.world AND l.message_id=args.reply) AS links,
+    CASE WHEN (SELECT tags FROM actual)=(SELECT tags FROM ordered) THEN (SELECT json_array_length(tags) FROM actual)
+      ELSE -1 END AS ordered_matches`
+
+export async function seedWideChatSources(tx, {worldId,conversationId,instanceId}, source, size) {
+  const prefix='g4-origin-'+size+'-',memory='g4-memory-'+size+'-',event='g4-event-'+size+'-'
+  const actorCount=(await tx.execute(grantOriginActors,[size-1,prefix,worldId,instanceId])).affectedRows
+  const grantCount=(await tx.execute(grantOrigins,[worldId,prefix+'*'])).affectedRows
+  const tagCount=(await tx.execute(grantMessageTags,[source,worldId,prefix+'*'])).affectedRows
+  if(actorCount!==size||grantCount!==size||tagCount!==size)throw new Error('G4_WIDE_GRANT_FIXTURE')
+  await tx.execute(memoryRows,[0,memory,worldId,instanceId,instanceId])
+  await tx.execute(memoryWideSources,[memory+'0',worldId,conversationId,source])
+  await tx.execute(eventRows,[0,event,worldId])
+  await tx.execute(chatEventActor,[worldId,event+'0',instanceId])
+  await tx.execute(chatEventSource,[worldId,event+'0',source])
+  return {deniedActor:prefix+(size-1), memoryId:memory+'0', eventId:event+'0'}
+}

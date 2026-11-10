@@ -629,3 +629,7 @@ Windows 使用 `npm.cmd`、`npx.cmd` 和 `android/gradlew.bat` 的对应命令�
 确认批次使用现有 effects_by_event 索引约束事件归属后再排序，逐项审计快照和 CAS 同一事务，继续沿用每批 128 条上限。独立合成驱动提供 MR1 确认、强停回滚和同一计划重试，合成边种子统计在进入业务操作前清除。命令及证据见 [M4-R QA](docs/qa/kanata-sqlite-m4/m4-r/README.md)。
 
 MR2 已将记忆详情、精确来源及后台任务的回复链授权证明放在 SQLite 内，SQL 返回权限结论。规范化消息 scope 与 revision 校验先于正文读取，单项授权共享同一源角色和接收角色谓词。现有公开类型保留。宽标签定向测试及仍未收口的普通聊天和兼容入口见 [M4-R QA](docs/qa/kanata-sqlite-m4/m4-r/README.md)。
+
+## Kanata SQLite MR2-G4 继续验证
+
+候选 SQLite Chat Runtime 的 transcript 只读展示和提示词所需字段。CAS、上一位发言者与引用元数据走 state/latestState。回复提交接收有预算的 ID/revision 根描述，在同一受保护事务复核授权并重建标签。标签顺序与去重在 SQLite 内存临时表中完成。Android 固定并核验 temp_store=MEMORY。正常和错误结束由事务清理。候选历史整理在 SQL 中检查已规范化引用与 JSON 扩展中的精确嵌套 ID。兼容导出仍有待闭环入口，参见 [MR2-G4 QA](docs/qa/kanata-sqlite-m4/m4-r/README.md)。

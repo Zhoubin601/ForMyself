@@ -22,3 +22,15 @@
 | E 事件 | KanataCandidateEventLedger；World Runtime 提议、修正、撤销与审计 | Event Repository / EventRevocation；冻结摘要、逐项 Effects 审计和事务回执 | 一次只保留单条详情或分页计划；旧兼容全图仍待处理 | 主机 1k/10k，Android 1k 通过；历史综合设备轮 10k timeout | MR1 定位、宽确认故障/恢复及全规则；MR2 事件和消息来源 |
 | F 自治和生活 | Workspace 任务摘要、Bindings；World Runtime 配置 | Autonomy / RoleBinding Repository；窗口、水位与回执 | 授权和精确实例绑定已有；后台消费者缺接线 | M3 窗口强停回滚证据；完整后台、解绑、归档和撤权未跑 | 自治调度、contact/social 和真实生活模块消费者 |
 | G 历史整理 | KanataCandidateHistoryPanel；Chat Runtime 预览、确认 | HistoryArchive / Message Repository；签名、CAS、回执 | 消息窗口与归档标记保留标准化引用 | v4 Android UI 回读及引用切片 | legacy 非规范化扩展引用扫描、软删与稀疏引用及全故障矩阵 |
+
+## 本轮 MR2-G4 接管与验证
+
+接管树 8d3b8f768617143312fd800ab05decaa53d6114d。工作区位于 M 的既有隔离 worktree。main 上四个文档修改、一个 APK 删除和三个未跟踪入口按原状态保留。
+
+| 切片 | 当前覆盖 | 未验范围 |
+| --- | --- | --- |
+| 普通聊天 | 消息 transcript、SQL 权限、预算内根、SQLite 内存临时工作表、旧顺序逐条对照 | 每种入口独立 1k/10k 与所有故障组合 |
+| 记忆和事件提示词 | SQL 验证 read、remember、share，查正文后才构建提示词。复用上一轮记忆详情定向证据并以普通聊天重测 | 旧事件创建、提交、修正和导出全图 |
+| 消息归档 | 嵌套扩展中的精确 ID、正常引用、事务快照 | 不透明编码、旧导出逐条等价和独立 Android 增长 |
+| 自治 | claim/finish 按页校验已存来源与精确结果成员关系 | 旧 loadTask 及真实设备自治来源宽样本 |
+| 故障 | 复测源授权撤销、reply CAS、写入故障回滚、迟到 provider 的读写护栏 | 其余独立故障组合见验收报告 |

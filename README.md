@@ -131,3 +131,5 @@ M 分支本轮接管的远端基线为 428b7bcfeffe2722e72b4809a6d1a82b5734aeb1�
 M4-R 接管与 MR1 验收见 [M4-R QA](qa/kanata-sqlite-m4/m4-r/README.md)。Android 综合 10k 宽事件及强停重开后的逐项审计和回执通过。M4 仍 BLOCKED，M5 NO。
 
 [M4-R 验收 v5 检查点](docs/20261110-kanata-sqlite-m4-r-acceptance-v5.md)记录 10k 宽事件修复、G4 授权切片和剩余阻塞。
+
+[MR2-G4 验收检查点](docs/20261110-kanata-sqlite-mr2-g4-acceptance-v1.md)记录候选聊天、回复 provenance、归档引用及自治来源校验的进展。G4 仍 BLOCKED，后续阶段未启动。

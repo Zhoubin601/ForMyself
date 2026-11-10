@@ -7,7 +7,7 @@ import { instanceTable, unpackInstance } from './kanataCharacterRepository.js'
 import { domainTable, executeOnce, found, writeOne } from './kanataDomainRows.js'
 import { effectFromRow, eventFromRow, rebuildEventEffects, visitRows } from './kanataMessageDependents.js'
 import { dependentQueries, dependentWrites } from './kanataMessageDependentsSql.js'
-import { assertActor, requireLifeSources, sourceConversation, sourceMetadata, uniqueLifeSources, visitSourceGrants } from './kanataProvenance.js'
+import { assertActor, grantAccess, grantAllowed, grantBindings, requireLifeSources, requireSourceGrants, sourceConversation, sourceMetadata, uniqueLifeSources, visitSourceGrants } from './kanataProvenance.js'
 import { equalDto, nonemptyText, pageLimit, requireSqliteValue as need, safeInteger } from './kanataRepositoryValues.js'
 import { assertWritableWorld } from './kanataWorldRepository.js'
 
@@ -47,7 +47,7 @@ const originRows = `WITH RECURSIVE args(world,root) AS (VALUES(?,?)), origins(id
   SELECT root FROM args UNION SELECT c.cause_event_id FROM origins o JOIN event_causes c ON c.event_id=o.id
   JOIN args ON c.world_id=args.world
 ) SELECT e.id,e.status,e.visibility FROM origins o JOIN world_events e ON e.id=o.id JOIN args ON e.world_id=args.world
-  WHERE e.id>? ORDER BY e.id LIMIT 128`
+  WHERE e.id>? ORDER BY e.id LIMIT 50`
 const graphPageSql = (/** @type {'cause'|'consequence'} */ direction) => {
   const [from, to] = direction === 'cause' ? ['event_id', 'cause_event_id'] : ['cause_event_id', 'event_id']
   return `WITH RECURSIVE scope(world,root) AS (VALUES(?,?)), nodes(id) AS (
@@ -89,7 +89,12 @@ const relationEvents = 'SELECT event_id FROM relationship_events WHERE world_id=
 const staleEventMemories = `UPDATE memories SET status='stale',revision=revision+1 WHERE world_id=? AND status<>'deleted'
   AND id IN (SELECT memory_id FROM memory_events WHERE world_id=? AND event_id IN (SELECT value FROM json_each(?)))`
 const baselineValue = `SELECT mood,energy,location FROM character_instances WHERE world_id=? AND id=?`
-export const eventQueries = [graphRoot, ...Object.values(graphQueries), outgoing, managedEventRelations, managedEventCauses, relationDimensions, eventRow, list, pathHasEffects, listEffects, eventAudits, contextCandidates, contextBody, eventMembership, targetEvents, participants, previewRows, descendants, originRows, relation.get, relationEvents, baselineValue]
+const provenanceSources = dependentQueries.eventSources.replace('LIMIT 128','LIMIT 50')
+const provenanceGrants = dependentQueries.eventLifeSources.replace('LIMIT 128','LIMIT 50')
+const deniedEventGrant = `WITH ${grantAccess}
+  SELECT 1 FROM event_life_sources s CROSS JOIN access WHERE s.world_id=? AND s.event_id=?
+    AND NOT ${grantAllowed} LIMIT 1`
+export const eventQueries = [graphRoot, ...Object.values(graphQueries), outgoing, managedEventRelations, managedEventCauses, relationDimensions, eventRow, list, pathHasEffects, listEffects, eventAudits, contextCandidates, contextBody, eventMembership, targetEvents, participants, previewRows, descendants, originRows, provenanceSources, provenanceGrants, deniedEventGrant, relation.get, relationEvents, baselineValue]
 export const eventWrites = [eventInsert, eventUpdate, eventParticipant, eventSource, eventCause, eventLife, eventLifeClear,
   effectInsert, baselineInsert, relationLink, staleEventMemories, ...relation.writeStatements]
 
@@ -107,25 +112,36 @@ async function loadEvent(tx, worldId, eventId) {
   return row ? eventFromRow(tx, row) : null
 }
 
-/** Collect proof of all source revisions and grants without accessing event summaries or transcripts.
- * @param {Tx} tx @param {string} worldId @param {string} eventId @param {'committed'|'commit'|'propose'} mode */
-export async function* visitEventProvenance(tx, worldId, eventId, mode = 'committed') {
+/** @param {Tx} tx @param {string} worldId @param {string} eventId @param {'committed'|'commit'|'propose'} mode */
+async function* visitOrigins(tx, worldId, eventId, mode) {
   let present = false
-  for await (const origin of visitRows(tx, originRows, [worldId, eventId], ['id'])) {
+  for await (const origin of visitRows(tx, originRows, [worldId, eventId], ['id'], 50)) {
     present ||= origin.id === eventId
     need(origin.status === 'committed' || (origin.status === 'candidate' && (mode === 'propose' || (mode === 'commit' && origin.id === eventId))), 'EVENT_CAUSE_UNAVAILABLE')
-    const keys = [worldId, origin.id]
-    for await (const ref of visitRows(tx, dependentQueries.eventSources, keys, ['message_id'])) {
-      const source = { messageId: String(ref.message_id), revision: Number(ref.message_revision) }
-      await sourceConversation(tx, worldId, source)
-      yield* visitSourceGrants(tx, worldId, source)
-    }
-    for await (const grant of visitRows(tx, dependentQueries.eventLifeSources, keys, ['grant_id', 'grant_revision', 'fingerprint'])) {
+    yield String(origin.id)
+  }
+  need(present, 'EVENT_UNAVAILABLE')
+}
+
+/** @param {Tx} tx @param {string} worldId @param {string} id */
+async function* visitEventRefs(tx, worldId, id) {
+  for await (const row of visitRows(tx, provenanceSources, [worldId, id], ['message_id'], 50)) {
+    const ref = { messageId: String(row.message_id), revision: Number(row.message_revision) }
+    await sourceConversation(tx, worldId, ref)
+    yield ref
+  }
+}
+
+/** Collect proof without accessing event summaries or transcripts.
+ * @param {Tx} tx @param {string} worldId @param {string} eventId @param {'committed'|'commit'|'propose'} mode */
+export async function* visitEventProvenance(tx, worldId, eventId, mode = 'committed') {
+  for await (const id of visitOrigins(tx, worldId, eventId, mode)) {
+    for await (const ref of visitEventRefs(tx, worldId, id)) yield* visitSourceGrants(tx, worldId, ref)
+    for await (const grant of visitRows(tx, provenanceGrants, [worldId, id], ['grant_id', 'grant_revision', 'fingerprint'], 50)) {
       yield { grantId: String(grant.grant_id), instanceId: String(grant.instance_id), moduleId: /** @type {LifeSource['moduleId']} */ (grant.module_id),
         revision: Number(grant.grant_revision), fingerprint: String(grant.fingerprint) }
     }
   }
-  need(present, 'EVENT_UNAVAILABLE')
 }
 
 /** @param {Tx} tx @param {string} worldId @param {string} eventId @param {'committed'|'commit'|'propose'} [mode] */
@@ -135,7 +151,7 @@ export async function eventProvenance(tx, worldId, eventId, mode) {
   return uniqueLifeSources(sources)
 }
 /** @param {Tx} tx @param {string} worldId @param {string} eventId @param {{instanceId:string,group:boolean,sharedMemory?:boolean}} scope */
-export async function* visitAuthorizedEventSources(tx, worldId, eventId, scope) {
+async function assertEventAudience(tx, worldId, eventId, scope) {
   await assertActor(tx, worldId, scope.instanceId)
   const [metadata] = await tx.query(eventRole, [worldId, eventId])
   need(metadata?.status === 'committed' && (!scope.group || metadata.visibility === 'public'), 'EVENT_CONTEXT_DENIED')
@@ -143,10 +159,23 @@ export async function* visitAuthorizedEventSources(tx, worldId, eventId, scope) 
     const [member] = await tx.query(eventMembership, [worldId, eventId, scope.instanceId])
     need(member, 'EVENT_CONTEXT_DENIED')
   }
-  for await (const source of visitEventProvenance(tx, worldId, eventId)) {
-    await requireLifeSources(tx, [source], { worldId, ...scope, remember: true })
-    yield source
+}
+
+/** @param {Tx} tx @param {string} worldId @param {string} eventId @param {{instanceId:string,group:boolean,sharedMemory?:boolean}} scope */
+export async function assertEventProvenance(tx, worldId, eventId, scope) {
+  await assertEventAudience(tx, worldId, eventId, scope)
+  const access = { worldId, ...scope, remember: true }
+  for await (const id of visitOrigins(tx, worldId, eventId, 'committed')) {
+    for await (const ref of visitEventRefs(tx, worldId, id)) await requireSourceGrants(tx, ref, access)
+    const denied = await tx.query(deniedEventGrant, [...grantBindings(access), worldId, id])
+    need(denied.length === 0, 'KANATA_LIFE_PERMISSION_DENIED')
   }
+}
+
+/** @param {Tx} tx @param {string} worldId @param {string} eventId @param {{instanceId:string,group:boolean,sharedMemory?:boolean}} scope */
+export async function* visitAuthorizedEventSources(tx, worldId, eventId, scope) {
+  await assertEventProvenance(tx, worldId, eventId, scope)
+  yield* visitEventProvenance(tx, worldId, eventId)
 }
 
 /** @param {Tx} tx @param {string} worldId @param {string} eventId @param {{instanceId:string,group:boolean,sharedMemory?:boolean}} scope */
@@ -155,7 +184,14 @@ export async function authorizeEvent(tx, worldId, eventId, scope) {
   for await (const source of visitAuthorizedEventSources(tx, worldId, eventId, scope)) sources.push(source)
   return uniqueLifeSources(sources)
 }
-const eventRole = 'SELECT status,visibility FROM world_events WHERE world_id=? AND id=?'
+const eventRole = 'SELECT status,visibility,revision FROM world_events WHERE world_id=? AND id=?'
+/** @param {Tx} tx @param {string} worldId @param {{id:string,revision:number}} entry
+ * @param {{instanceId:string,group:boolean}} scope @param {(source:LifeSource)=>Promise<void>} visit */
+export async function visitEventPromptGrants(tx, worldId, entry, scope, visit) {
+  const [row] = await tx.query(eventRole, [worldId, entry.id])
+  need(row?.revision === entry.revision, 'EVENT_CONTEXT_DENIED')
+  for await (const source of visitAuthorizedEventSources(tx, worldId, entry.id, scope)) await visit(source)
+}
 const managedEvent = 'SELECT id,summary,status,revision,kind,effective_at FROM world_events WHERE world_id=? AND id=?'
 eventQueries.push(eventRole,managedEvent)
 
@@ -303,7 +339,10 @@ async function revoke(tx, plan, decision, tools) {
 
 /** @param {Tx} tx @param {string} worldId @param {string} id @param {{instanceId:string,group:boolean}} scope */
 async function authorizedEventProof(tx, worldId, id, scope) {
-  try { return await authorizeEvent(tx, worldId, id, scope) }
+  try {
+    await assertEventProvenance(tx, worldId, id, scope)
+    return true
+  }
   catch (error) {
     if (!deniedContext.has(/** @type {{code?:string}} */ (error).code ?? '')) throw error
     return null
@@ -314,9 +353,7 @@ async function authorizedEventProof(tx, worldId, id, scope) {
 async function targetVisible(tx, worldId, targetId, scope) {
   for await (const row of visitRows(tx, targetEvents, [worldId, targetId], ['event_id'])) {
     try {
-      for await (const _source of visitAuthorizedEventSources(tx, worldId, String(row.event_id), scope)) {
-        // Iterate to validate every origin. Visibility does not need to retain provenance.
-      }
+      await assertEventProvenance(tx, worldId, String(row.event_id), scope)
     } catch (error) {
       if (!deniedContext.has(/** @type {{code?:string}} */ (error).code ?? '')) throw error
       return false
@@ -404,11 +441,10 @@ export function createKanataEventRepository(operation, tools) {
         const page = await tx.query(contextCandidates, [worldId, scope.instanceId, Number(scope.group), before])
         for (const row of page) {
           const id = String(row.id)
-          const lifeSources = await authorizedEventProof(tx, worldId, id, scope)
-          if (!lifeSources) continue
+          if (!await authorizedEventProof(tx, worldId, id, scope)) continue
           const [event] = await tx.query(contextBody, [worldId, id])
           const body = found(event, 'EVENT_UNAVAILABLE')
-          events.unshift({ id, summary: String(body.summary), effectiveAt: Number(body.effective_at), revision: Number(body.revision), lifeSources })
+          events.unshift({ id, summary: String(body.summary), effectiveAt: Number(body.effective_at), revision: Number(body.revision) })
           if (events.length === 12) break
         }
         if (page.length < 50) break

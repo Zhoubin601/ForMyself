@@ -1,0 +1,66 @@
+{
+  "health": {
+    "cipher": "4.17.0 community",
+    "journalMode": "wal",
+    "synchronous": 2,
+    "foreignKeys": 1,
+    "cacheSize": -2048,
+    "checkpoint": 1000,
+    "busyTimeout": 5000
+  },
+  "results": [
+    {
+      "size": 1000,
+      "queries": 279,
+      "writes": 49,
+      "maxRows": 50,
+      "largestTagPage": 50,
+      "completeDtos": 0,
+      "heapStart": 24500000,
+      "heapSample": 24500000,
+      "elapsedMs": 2554,
+      "order": {
+        "tags": 2002,
+        "links": 1001,
+        "ordered_matches": 2002
+      },
+      "providerJsonSha256": "5f7a3e2d399f735f3735a82fa3ec5e9a3fb3727e5a2e7a485b2ac73e2055da27",
+      "revokedBodyReads": 0,
+      "taskGrantAndReceipt": true,
+      "queryExecuteBridgeCalls": 328
+    },
+    {
+      "size": 10000,
+      "queries": 664,
+      "writes": 409,
+      "maxRows": 50,
+      "largestTagPage": 50,
+      "completeDtos": 0,
+      "heapStart": 24500000,
+      "heapSample": 24500000,
+      "elapsedMs": 27729,
+      "order": {
+        "tags": 20002,
+        "links": 10001,
+        "ordered_matches": 20002
+      },
+      "providerJsonSha256": "bebb955f50ad06894c9ed0e8b8c93d6f6b8751879e50eb06dd3afcfa286ab65e",
+      "revokedBodyReads": 0,
+      "taskGrantAndReceipt": true,
+      "queryExecuteBridgeCalls": 1073
+    }
+  ],
+  "afterCancel": {
+    "queries": 0,
+    "writes": 0
+  },
+  "commitFailureRolledBack": true,
+  "idempotentRetry": true,
+  "syntheticModelCalls": 7,
+  "realModelCalls": 0,
+  "appProcessPeakSamplesKb": {
+    "TOTAL PSS": 140103,
+    "TOTAL RSS": 283544
+  },
+  "transcriptHintSqlMaxMs": 3.28
+}

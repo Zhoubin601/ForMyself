@@ -12,6 +12,7 @@ import { dependentQueries, dependentWrites, updateEffectValue } from '../src/fea
 import { historyArchiveQueries, historyArchiveWrites } from '../src/features/chat/storage/sqlite/kanataHistoryArchive.js'
 import { deferredReplyQueries, deferredReplyWrites } from '../src/features/chat/storage/sqlite/kanataDeferredReplySql.js'
 
+import { replyProofDdl, replyProofQueries, replyProofWrites } from '../src/features/chat/storage/sqlite/kanataReplyProvenance.js'
 import { receiptQuery, receiptWrite } from '../src/features/chat/storage/sqlite/kanataDomainRows.js'
 import { worldQueries, worldWrites } from '../src/features/chat/storage/sqlite/kanataWorldRepository.js'
 import { characterQueries, characterWrites } from '../src/features/chat/storage/sqlite/kanataCharacterRepository.js'
@@ -53,6 +54,9 @@ add('ddl', 'schema', [
   schema.setApplicationId,
   ...KANATA_SCHEMA_MIGRATIONS.flatMap(migration => [...migration.statements, schema.setVersion(migration.version)]),
 ])
+add('ddl', 'business', replyProofDdl)
+add('query', 'business', replyProofQueries)
+add('write', 'business', replyProofWrites)
 add('query', 'business', [...Object.values(messageQueries), ...Object.values(conversationQueries), ...Object.values(dependentQueries),
   ...Object.values(deferredReplyQueries), ...historyArchiveQueries])
 add('write', 'business', [...Object.values(messageWrites), ...Object.values(conversationWrites),
@@ -68,11 +72,12 @@ if (process.argv.includes('--synthetic')) {
   add('query', 'business', [...eventRevocationQueries.slice(1,6), ...eventRevocationWrites]
     .map(sql => 'EXPLAIN QUERY PLAN ' + sql))
   const { memoryRows, memoryEdges, memoryWideSources, eventRows, eventEdges, eventFanout, replayEventRows, replayEffectRows, fanoutAuditInspection,
-    fanoutAnalyze, fanoutClearStats, fanoutReloadStats, fanoutCyclePlan, grantOriginActors, grantOrigins, grantMessageTags } = await import('../docs/qa/kanata-sqlite-m4/completion/fixture.mjs')
-  add('query', 'business', [fanoutAuditInspection, fanoutCyclePlan])
+    fanoutAnalyze, fanoutClearStats, fanoutReloadStats, fanoutCyclePlan, grantOriginActors, grantOrigins, grantMessageTags,
+    chatEventActor, chatEventSource, chatReplyTagCheck } = await import('../docs/qa/kanata-sqlite-m4/completion/fixture.mjs')
+  add('query', 'business', [fanoutAuditInspection, fanoutCyclePlan, chatReplyTagCheck])
   add('write', 'business', [fanoutClearStats])
   add('ddl', 'business', [fanoutAnalyze, fanoutReloadStats])
-  add('write', 'business', [growthSeedSql, memoryRows, memoryEdges, memoryWideSources, eventRows, eventEdges, eventFanout, replayEventRows, replayEffectRows, grantOriginActors, grantOrigins, grantMessageTags])
+  add('write', 'business', [growthSeedSql, memoryRows, memoryEdges, memoryWideSources, eventRows, eventEdges, eventFanout, replayEventRows, replayEffectRows, grantOriginActors, grantOrigins, grantMessageTags, chatEventActor, chatEventSource])
   add('write', 'business', [...m2FixtureCommands().map(command => command.sql), ...Object.values(fixtureWrites)])
   add('ddl', 'business', [futureSchema])
 }
