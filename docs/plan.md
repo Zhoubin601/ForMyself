@@ -1,4 +1,4 @@
-> **2026-11-09 当前检查点为 M4 BLOCKED，M5 NO。** [M4 阶段验收](20261109-kanata-sqlite-m4-acceptance-v1.md)记录已通过切片与剩余缺口；接续按 [M4 补齐任务书](20261109-kanata-sqlite-m4-completion-task-v1.md) 定点关闭，不重做已通过部分。生产为 legacy，普通 Android SQLite 激活位 false。
+> **2026-11-10 当前检查点为 M4 BLOCKED，M5 NO。** 当前唯一执行入口为 [M4 剩余缺口续作任务书 v1](20261110-kanata-sqlite-m4-continuation-task-v1.md)，代码接管基线为 `e296b2c5dd082f35b95c943bd838e3fe6a506357`。旧 M4 任务书、验收和 QA 保留为历史证据。生产 canonical 仍为 legacy，普通 Android SQLite 激活位 false。
 
 # 执行计划
 
