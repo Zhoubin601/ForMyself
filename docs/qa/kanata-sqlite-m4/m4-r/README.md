@@ -2,7 +2,7 @@
 
 [M4-R 执行任务书](../../../20261110-kanata-sqlite-m4-r-closeout-task-v1.md) · [MR2-G4 事件来源任务书](../../../20261110-kanata-sqlite-mr2-event-provenance-task-v1.md) · [接管矩阵](matrix.md) · [历史验收与证据](../closeout/README.md)
 
-本目录区分历史通过切片、本轮实测、复现与待验。M 分支 HEAD 271936dd4aa5a5421b0a71a8dda2b4848c15ea71：MR0、MR1 PASS；MR2/G4 BLOCKED；M4 BLOCKED，SQLite 阶段 M5 NO。下一执行切片见 [MR2-G4 事件来源有界化任务书](../../../20261110-kanata-sqlite-mr2-event-provenance-task-v1.md)。本任务书从属于 M4-R 总任务书，不代表代码或设备验收已经完成。测试仅连接已核对的隔离合成 AVD，所有 provider 为合成实现。
+本目录区分历史通过切片、本轮实测、复现与待验。本轮任务书以代码基线 271936dd4aa5a5421b0a71a8dda2b4848c15ea71 建立；启动时须重新 fetch M。MR0、MR1 PASS；MR2/G4 BLOCKED；M4 BLOCKED，SQLite 阶段 M5 NO。下一执行切片见 [MR2-G4 事件来源有界化任务书](../../../20261110-kanata-sqlite-mr2-event-provenance-task-v1.md)。本任务书从属于 M4-R 总任务书，不代表代码或设备验收已经完成。测试仅连接已核对的隔离合成 AVD，所有 provider 为合成实现。
 
 ## MR1 原始超时复现
 
