@@ -18,10 +18,11 @@ try {
   try { $rawCatalog = $reader.ReadToEnd() } finally { $reader.Dispose() }
   $catalog = $rawCatalog | ConvertFrom-Json
   $baseline = Get-Content -Raw 'docs/qa/kanata-sqlite-m3/evidence/schema-fingerprints.json' | ConvertFrom-Json
-  if ($catalog.version -ne 4 -or ($catalog.journal.checksum -join ',') -ne ($baseline.checksum -join ',')) {
+  if ($catalog.version -ne 5 -or ($catalog.journal[0..3].checksum -join ',') -ne ($baseline.checksum -join ',') -or
+      $catalog.journal.Count -ne 5 -or $catalog.journal[4].name -ne 'kanata-domain-array-order') {
     throw 'Applied schema history changed'
   }
-  if ($rawCatalog -match 'm4-seed-turn|PRAGMA user_version = 999|m2-android-|synthetic-user') {
+  if ($rawCatalog -match 'm4-seed-turn|PRAGMA user_version = 999|m2-android-|synthetic-user|SYNTHETIC_ORDER_005|synthetic-order-005') {
     throw 'Synthetic statement included in default APK'
   }
   $indexEntry = $archive.GetEntry('assets/public/index.html')

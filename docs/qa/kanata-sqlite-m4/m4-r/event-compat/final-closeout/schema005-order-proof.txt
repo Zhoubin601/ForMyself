@@ -1,0 +1,121 @@
+(node:12948) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+{
+  "status": "PASS",
+  "scope": "Schema 005 order persistence only; E/G4/M4 still BLOCKED",
+  "authority": "pure-domain (user decision 2026-11-11)",
+  "domainOrderA": [
+    "er1-00001",
+    "er1-00002",
+    "er1-00003",
+    "er1-00004"
+  ],
+  "domainOrderB": [
+    "er1-00001",
+    "er1-00003",
+    "er1-00004",
+    "er1-00002"
+  ],
+  "descendantsA": [
+    "er1-00001",
+    "er1-00002",
+    "er1-00003",
+    "er1-00004"
+  ],
+  "descendantsB": [
+    "er1-00001",
+    "er1-00004",
+    "er1-00002",
+    "er1-00003"
+  ],
+  "metadata": {
+    "events": [
+      "event-one",
+      "event-dependent",
+      "event-independent",
+      "event-revoked",
+      "er1-00001",
+      "er1-00002",
+      "er1-00003",
+      "er1-00004"
+    ],
+    "effects": [
+      "effect-one",
+      "effect-independent",
+      "effect-revoked"
+    ],
+    "baselines": [
+      "baseline-one",
+      "baseline-revoked"
+    ]
+  },
+  "rowidsBefore": [
+    {
+      "rowid": 1,
+      "id": "event-one"
+    },
+    {
+      "rowid": 2,
+      "id": "event-dependent"
+    },
+    {
+      "rowid": 3,
+      "id": "event-independent"
+    },
+    {
+      "rowid": 4,
+      "id": "event-revoked"
+    },
+    {
+      "rowid": 5,
+      "id": "er1-00001"
+    },
+    {
+      "rowid": 6,
+      "id": "er1-00002"
+    },
+    {
+      "rowid": 7,
+      "id": "er1-00003"
+    },
+    {
+      "rowid": 8,
+      "id": "er1-00004"
+    }
+  ],
+  "rowidsAfter": [
+    {
+      "rowid": 1,
+      "id": "event-one"
+    },
+    {
+      "rowid": 2,
+      "id": "event-dependent"
+    },
+    {
+      "rowid": 3,
+      "id": "event-independent"
+    },
+    {
+      "rowid": 4,
+      "id": "event-revoked"
+    },
+    {
+      "rowid": 5,
+      "id": "er1-00001"
+    },
+    {
+      "rowid": 7,
+      "id": "er1-00003"
+    },
+    {
+      "rowid": 8,
+      "id": "er1-00004"
+    },
+    {
+      "rowid": 9,
+      "id": "er1-00002"
+    }
+  ],
+  "conclusion": "New candidate writes retain explicit immutable ordinal metadata. Rowid changes cannot change it. Historical missing order is not inferred or backfilled. No production rowid was touched."
+}

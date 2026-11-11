@@ -1,0 +1,19 @@
+(node:16688) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ 005 freezes 001–004 checksums and never backfills a populated v4 (78.5951ms)
+✔ 005 persists original non-ID/non-time array order; rowid changes cannot change it (39.1956ms)
+✔ 005 rejects ordinary updates/deletes, replace/ignore, orphan/cross-world and invalid ordinals (42.0782ms)
+✔ 005 full Repository coverage check rejects a partially damaged mapping before reads or writes (39.2194ms)
+✔ 005 covers normal/legacy commit and both correction writers, Effects/Baselines and rollback/idempotency (60.1909ms)
+✔ 005 v4 migration failures and COMMIT failure preserve disk; cold retry installs no backfill (248.1777ms)
+✔ 005 ordinal keyset stays at 50 rows with 1k/10k synthetic appends (366.3584ms)
+ℹ {"size":1000,"maxRows":50,"elapsedMs":16}
+ℹ {"size":10000,"maxRows":50,"elapsedMs":268}
+ℹ tests 7
+ℹ suites 0
+ℹ pass 7
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1061.974

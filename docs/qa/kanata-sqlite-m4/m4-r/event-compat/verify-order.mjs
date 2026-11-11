@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import { eventCompatFixture } from '../../../../../tests/helpers/kanataEventCompatFixture.js'
 import { historicalEvent } from '../../../../../tests/helpers/kanataEventCompatibilityOracle.js'
 import { previewKanataEventRevoke } from '../../../../../src/features/chat/experience/kanataEvents.js'
+import { domainArrayOrderPage } from '../../../../../src/features/chat/storage/sqlite/kanataArrayOrder.js'
 
 const h=await eventCompatFixture()
 try{
@@ -17,9 +18,19 @@ try{
   const b=previewKanataEventRevoke({...base,events:reordered},root.id)
   assert.notDeepEqual(a.revokeIds,b.revokeIds)
   const metadata={}
-  for(const table of ['world_events','world_effects','effect_baselines']){
-    metadata[table]=h.db.prepare(`PRAGMA table_info(${table})`).all().map(c=>c.name)
-    assert.equal(metadata[table].some(name=>/ordinal|position|sequence|array_order/.test(name)),false)
+  const keys=['events','effects','baselines']
+  const originals=[h.fixture.events.map(e=>e.id).concat(ordered.map(e=>e.id)),h.fixture.effects.map(e=>e.id),h.fixture.effectBaselines.map(e=>e.id)]
+  async function readOrder(kind){
+    // Full ID collection is a deliberate tiny test-only Oracle, never a product API.
+    const ids=[];let after=-1
+    for(;;){const page=await domainArrayOrderPage(h.tx,kind,h.worldId,after);assert.ok(page.length<=50)
+      if(!page.length)return ids
+      ids.push(...page.map(row=>row.id));after=page.at(-1).ordinal
+    }
+  }
+  for(const [index,kind] of keys.entries()){
+    metadata[kind]=await readOrder(kind)
+    assert.deepEqual(metadata[kind],originals[index])
   }
   const before=h.db.prepare('SELECT * FROM world_events ORDER BY id').all()
   const rowidsBefore=h.db.prepare('SELECT rowid,id FROM world_events ORDER BY rowid').all()
@@ -30,9 +41,9 @@ try{
   const rowidsAfter=h.db.prepare('SELECT rowid,id FROM world_events ORDER BY rowid').all()
   assert.deepEqual(h.db.prepare('SELECT * FROM world_events ORDER BY id').all(),before)
   assert.notDeepEqual(rowidsBefore,rowidsAfter)
-  console.log(JSON.stringify({status:'BLOCKED',authority:'pure-domain (user decision 2026-11-11)',
+  assert.deepEqual(await readOrder('events'),metadata.events)
+  console.log(JSON.stringify({status:'PASS',scope:'Schema 005 order persistence only; E/G4/M4 still BLOCKED',authority:'pure-domain (user decision 2026-11-11)',
     domainOrderA:ordered.map(e=>e.id),domainOrderB:reordered.map(e=>e.id),
     descendantsA:a.revokeIds,descendantsB:b.revokeIds,metadata,rowidsBefore,rowidsAfter,
-    conclusion:'No frozen original-array-order mapping has been proven. Implicit rowid is not a schema-guaranteed ordinal. This does not prove every candidate insertion loses order; it prevents certifying arbitrary historical domain order. No production rowid was touched.'},null,2))
-  process.exitCode=1
+    conclusion:'New candidate writes retain explicit immutable ordinal metadata. Rowid changes cannot change it. Historical missing order is not inferred or backfilled. No production rowid was touched.'},null,2))
 }finally{h.close()}

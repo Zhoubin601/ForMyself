@@ -70,7 +70,7 @@ test('M3 only appends to the frozen 001–003 catalog', () => {
   const frozen = JSON.parse(readFileSync(new URL('../docs/qa/kanata-sqlite-m2/evidence/schema-fingerprints.json', import.meta.url)))
   assert.deepEqual(KANATA_SCHEMA_MIGRATIONS.slice(0, 3).map(m => sha256Text(JSON.stringify([m.version, m.name, m.statements]))),
     frozen.migrations.map(m => m.checksum))
-  assert.equal(KANATA_SCHEMA_MIGRATIONS.at(-1).version, 4)
+  assert.equal(KANATA_SCHEMA_MIGRATIONS.at(-1).version, 5)
 })
 
 test('M3 upgrades a populated v3 and preserves historical application times', async t => {
@@ -79,10 +79,10 @@ test('M3 upgrades a populated v3 and preserves historical application times', as
   await installLegacySchema(h, 3, m2FixtureCommands())
   const messages = h.db.prepare('SELECT * FROM messages ORDER BY id')
   const before = messages.all()
-  assert.deepEqual(await migrateKanataSchema(h.connection, { now: () => 1100 }), { version: 4, appliedVersions: [4] })
+  assert.deepEqual(await migrateKanataSchema(h.connection, { now: () => 1100 }), { version: 5, appliedVersions: [4,5] })
   assert.deepEqual(messages.all(), before)
   assert.deepEqual(h.db.prepare('SELECT applied_at FROM schema_migration_applications ORDER BY version').all().map(row => row.applied_at),
-    [null, null, 1000, 1100])
+    [null, null, 1000, 1100, 1100])
 })
 
 test('M3 world and identity creation are atomic, idempotent and reversibly archived', async t => {
@@ -430,8 +430,8 @@ test('M3 revoke retains independent same-path effects and atomically changes cau
 })
 
 test('R3 folds 1k/10k interleaved same-path Effects in bounded legacy order', async t => {
-  const { db, domains, scope, move, state } = await setup(t)
   for (const size of [1000, 10000]) {
+    const { db, domains, scope, move, state } = await setup(t)
     const event = await domains.events.legacy.propose(move('撤销时不得覆盖独立效果'), 'revoke-'+size)
     await domains.events.legacy.commit(scope.worldId, event.id, 1)
     const seed = db.prepare(`INSERT INTO world_events(id,world_id,status,visibility,summary,effective_at,recorded_at,revision,causality)
@@ -461,8 +461,7 @@ test('R3 folds 1k/10k interleaved same-path Effects in bounded legacy order', as
     // The replay order must come from the bounded SQL cursor, not a JS array of every Effect.
     assert.ok(state.queries.some(sql=>sql.includes('ORDER BY effective_at,recorded_at,event_key')))
     t.diagnostic(JSON.stringify({size,activeEffects:ids.length,maxRows,replayQueries}))
-    db.prepare("DELETE FROM world_effects WHERE id LIKE ?").run('fx-r'+size+'-%')
-    db.prepare("DELETE FROM world_events WHERE id LIKE ?").run('r'+size+'-%')
+    // Order metadata is immutable. Each size owns its fresh synthetic fixture.
   }
 })
 

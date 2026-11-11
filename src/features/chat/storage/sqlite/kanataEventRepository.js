@@ -14,6 +14,7 @@ import { dependentQueries, dependentWrites } from './kanataMessageDependentsSql.
 import { assertActor, grantAccess, grantAllowed, grantBindings, requireLifeSources, requireSourceGrants, sourceConversation, uniqueLifeSources, visitSourceGrants } from './kanataProvenance.js'
 import { nonemptyText, pageLimit, requireSqliteValue as need, safeInteger } from './kanataRepositoryValues.js'
 import { assertWritableWorld } from './kanataWorldRepository.js'
+import { assertDomainArrayOrder } from './kanataArrayOrder.js'
 
 /** @typedef {import('../../domain/kanataTypes').WorldEvent} Event */
 /** @typedef {import('../../domain/kanataTypes').WorldEffect} Effect */
@@ -195,6 +196,7 @@ async function assertEventAudience(tx, worldId, eventId, scope) {
 
 /** @param {Tx} tx @param {string} worldId @param {string} eventId @param {{instanceId:string,group:boolean,sharedMemory?:boolean}} scope */
 export async function assertEventProvenance(tx, worldId, eventId, scope) {
+  await assertDomainArrayOrder(tx,worldId)
   await assertEventAudience(tx, worldId, eventId, scope)
   const access = { worldId, ...scope, remember: true }
   for await (const id of visitOrigins(tx, worldId, eventId, 'committed')) {
@@ -238,6 +240,7 @@ async function writeEventLife(tx, event) {
 
 /** @param {Tx} tx @param {Event} event */
 export async function insertEvent(tx, event) {
+  await assertDomainArrayOrder(tx,event.worldId)
   const { id, worldId, effectiveAt, recordedAt, participantIds, causedByEventIds, sourceRefs } = event
   validateId(id, 'eventId')
   need(nonemptyText(event.summary) && event.summary.length <= 2000 && safeInteger(effectiveAt) && safeInteger(recordedAt),
@@ -370,6 +373,7 @@ async function insertEffect(tx, effect, tools) {
 
 /** @param {Tx} tx @param {Pick<Event,'id'|'worldId'|'revision'>} previous @param {Tools} tools */
 export async function commitEvent(tx, {id,worldId,revision}, tools) {
+  await assertDomainArrayOrder(tx,worldId)
   const row = found((await tx.query(effectInput, [worldId,id]))[0], 'EVENT_UNAVAILABLE')
   need(row.status === 'candidate' && row.revision === revision, 'EVENT_COMMIT_CONFLICT')
   const scope = [worldId,id,revision]
@@ -452,6 +456,7 @@ async function publishEffects(tx, worldId, id, effects, tools) {
 
 /** @param {Tx} tx @param {string} worldId @param {string} eventId */
 async function legacySignature(tx,worldId,eventId) {
+  await assertDomainArrayOrder(tx,worldId)
   const [root]=await tx.query(previewRoot,[worldId,eventId])
   need(root && root.status !== 'revoked','EVENT_UNAVAILABLE')
   let signature=''
@@ -574,6 +579,7 @@ export function createKanataEventRepository(operation, tools) {
     /** @param {string} worldId @param {string} afterId @param {number} limit */
     list: (worldId, afterId = '', limit = 50) => operation.transaction(async tx => {
       validateId(worldId, 'worldId')
+      await assertDomainArrayOrder(tx,worldId)
       const rows = await tx.query(list, [worldId, afterId, pageLimit(limit) + 1])
       const events = []
       for (const row of rows.slice(0, limit)) events.push(found(await loadEvent(tx,worldId,String(row.id)),'EVENT_UNAVAILABLE'))
@@ -587,12 +593,14 @@ export function createKanataEventRepository(operation, tools) {
     }),
     /** @param {string} worldId @param {string} eventId */
     effects: (worldId, eventId) => operation.transaction(async tx => {
+      await assertDomainArrayOrder(tx,worldId)
       const result = []
       for await (const row of visitRows(tx, listEffects, [worldId, eventId], ['id'], 50)) result.push(effectFromRow(row))
       return result
     }),
     /** @param {string} worldId @param {string} eventId @param {string} afterId @param {number} limit */
     audits: (worldId, eventId, afterId = '', limit = 50) => operation.transaction(async tx => {
+      await assertDomainArrayOrder(tx,worldId)
       const rows = await tx.query(eventAudits, [worldId, eventId, afterId, pageLimit(limit) + 1])
       const audits=[]
       for(const row of rows.slice(0,limit)){
@@ -636,6 +644,7 @@ export function createKanataEventRepository(operation, tools) {
     }),
     /** @param {string} worldId @param {string} id */
     relationship: (worldId, id) => operation.transaction(async tx => {
+      await assertDomainArrayOrder(tx,worldId)
       const row = await relation.read(tx, [worldId, id])
       if (!row) return null
       const { trust, intimacy, understanding, ...fields } = row
@@ -668,6 +677,7 @@ export function createKanataEventRepository(operation, tools) {
     }),
     /** @param {string} worldId @param {string} eventId */
     managedEvent: (worldId,eventId) => operation.transaction(async tx=>{
+      await assertDomainArrayOrder(tx,worldId)
       validateId(worldId,'worldId')
       validateId(eventId,'eventId')
       const [row]=await tx.query(managedEvent,[worldId,eventId])
@@ -677,6 +687,7 @@ export function createKanataEventRepository(operation, tools) {
     /** @param {string} worldId @param {string} eventId @param {'cause'|'consequence'} direction
      * @param {import('./kanataDomainTypes').KanataEventGraphCursor} [cursor] */
     graphPage: (worldId, eventId, direction, cursor) => operation.transaction(async tx => {
+      await assertDomainArrayOrder(tx,worldId)
       validateId(worldId, 'worldId')
       validateId(eventId, 'eventId')
       need(Object.hasOwn(graphQueries, direction), 'EVENT_GRAPH_DIRECTION_INVALID')
@@ -697,6 +708,7 @@ export function createKanataEventRepository(operation, tools) {
     }),
     /** @param {string} worldId @param {{instanceId:string,group:boolean}} scope @param {readonly string[]} targets */
     context: (worldId, scope, targets) => operation.transaction(async tx => {
+      await assertDomainArrayOrder(tx,worldId)
       await assertActor(tx, worldId, scope.instanceId)
       const events = []
       let before = Number.MAX_SAFE_INTEGER
@@ -721,6 +733,7 @@ export function createKanataEventRepository(operation, tools) {
     }),
     /** @param {string} worldId @param {{instanceId:string,group:boolean}} scope @param {number} byteBudget */
     relationshipContext: (worldId, scope, byteBudget) => operation.transaction(async tx => {
+      await assertDomainArrayOrder(tx,worldId)
       await assertActor(tx, worldId, scope.instanceId)
       need(safeInteger(byteBudget, 1) && byteBudget <= 64000, 'INVALID_CONTEXT_BUDGET')
       const relationships = []
@@ -765,6 +778,7 @@ export function createKanataEventRepository(operation, tools) {
     }),
     /** @param {string} worldId @param {string} id */
     relationship: (worldId,id) => operation.transaction(async tx=>{
+      await assertDomainArrayOrder(tx,worldId)
       validateId(worldId,'worldId')
       validateId(id,'relationshipId')
       const [row]=await tx.query(relationshipHeader,[worldId,id])
@@ -777,6 +791,7 @@ export function createKanataEventRepository(operation, tools) {
     /** @param {string} worldId @param {string} id @param {import('./kanataDomainTypes').KanataRelationshipEventCursor} [cursor]
      * @param {number} [limit] */
     relationshipEvents: (worldId,id,cursor,limit=50) => operation.transaction(async tx=>{
+      await assertDomainArrayOrder(tx,worldId)
       validateId(worldId,'worldId')
       validateId(id,'relationshipId')
       const [row]=await tx.query(relationshipHeader,[worldId,id])

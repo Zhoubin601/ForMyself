@@ -3,6 +3,7 @@ import { cloneKanataJson, validateId } from '../../domain/kanataValidation.js'
 import { eventAuditSupport, eventRelationReads, eventIntegrityDdl, eventIntegrityCached, clearEventIntegrity, storeEventIntegrity } from './kanataEventSnapshot.js'
 import { effectFromRow } from './kanataMessageDependents.js'
 import { equalDto, pageLimit, requireSqliteValue as need, safeInteger } from './kanataRepositoryValues.js'
+import { assertDomainArrayOrder } from './kanataArrayOrder.js'
 
 /** @typedef {import('../../../../platform/storage/kanataSqliteTypes').KanataSqliteOperation} Operation */
 /** @typedef {import('../../../../platform/storage/kanataSqliteTypes').KanataSqliteTransaction} Tx */
@@ -90,6 +91,7 @@ export function createEventRead(operation, authorize) {
   async function identity(tx,worldId,eventId,scope) {
     validateId(worldId,'worldId')
     validateId(eventId,'eventId')
+    await assertDomainArrayOrder(tx,worldId)
     const access=scope?{instanceId:scope.instanceId,group:scope.group}:null
     if(access){
       need(typeof access.instanceId==='string'&&typeof access.group==='boolean','KANATA_CONTEXT_SCOPE_DENIED')
@@ -126,6 +128,7 @@ export function createEventRead(operation, authorize) {
     /** @param {string} worldId @param {string} [after] @param {number} [limit] */
     list: (worldId,after='',limit=50)=>operation.transaction(async tx=>{
       validateId(worldId,'worldId')
+      await assertDomainArrayOrder(tx,worldId)
       if(after)validateId(after,'cursor')
       const rows=await tx.query(summaryPage,[worldId,after,pageLimit(limit)+1])
       return {events:rows.slice(0,limit).map(summary),cursor:rows.length>limit?String(rows[limit-1].id):null}

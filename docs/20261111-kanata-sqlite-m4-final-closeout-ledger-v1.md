@@ -89,7 +89,7 @@ MR5 是 M4-R 内部工作包编号，不是 SQLite 阶段 M5。
 | ER1-0 调用审计 | 完成 | 已区分产品、测试、Android QA 消费者 |
 | ER1-1 无界完整对象边界 | PARTIAL | 无消费者的 Runtime legacyEvents 包装已移除；Repository Facade、QA 调用与真实回退仍在 |
 | ER1-2 历史 action 字段级兼容 | BLOCKED | 原生 UTF-16 Spike 通过，但四条业务写路径仍有完整 Event 回退 |
-| ER1-3 纯领域撤销语义 | BLOCKED | 原始数组顺序恢复和增量完整世界签名尚无证明；12 项兼容差异保留 |
+| ER1-3 纯领域撤销语义 | BLOCKED | 005 新写入顺序存储及旧缺序号拒绝已通过；撤销算法消费原序、增量完整世界签名与 revoked no-op 仍未闭环，12 项兼容差异保留 |
 | ER1-4 生命周期与内存 | PARTIAL / BLOCKED | 组件关闭 guard 和局部状态清理已修；Android 专用生命周期、Heap retained、Pinia/局部状态分类及长 Effect Audit 分块缺证据 |
 | ER1-5 最终回归与两轮审查 | PARTIAL / BLOCKED | 主机 check、既有 Android 综合回归和两轮检查点审查已完成；ER1 完整最终设备矩阵未完成 |
 
@@ -200,7 +200,7 @@ MR5 是 M4-R 内部工作包编号，不是 SQLite 阶段 M5。
 - 纯领域撤销为唯一权威：revokeIds 包含全部因果后代（包括已 revoked 后代）；顺序保留 descendants() Set 插入顺序；uncertainIds 保留 data.events 遍历顺序。
 - Preview signature 增量覆盖同世界完整 Events、Effects、EffectBaselines；世界相关数据变化必须使旧预览失效。
 - 已 revoked 事件可以留在确认集合，但执行不得重复增加 revision 或重复生成状态变更审计。
-- 必须证明 SQLite 对 Events、Effects、EffectBaselines 的原始领域数组顺序可恢复。不能用 ORDER BY id 或隐式 rowid 冒充证明。
+- 顺序存储切片已通过：005 新写入按三张旁表恢复 Events、Effects、EffectBaselines 同世界原序，历史缺序号明确拒绝；撤销算法还须实际消费该顺序。不能用 ORDER BY id 或隐式 rowid 冒充原序。
 - 若 001–004 无法无损表达所需顺序，先提交最小方案、数据兼容/恢复影响和回滚证据，等待用户明确批准；未经批准不改 Schema、不新增 005。
 - 历史 action 的 UTF-16 object-spread 兼容必须在 commit、correction、message revision、status/revoke 四条相关业务路径中字段级处理，不得再完整 materialize Event；不得擅自增加 action 长度限制。
 - Repository 完整 Event/Effect/Audit Facade、旧 preview ID 全量数组和 QA 旧回读迁移到有界 API 或 test-only Oracle；真实产品路径不得分页后重新 gather。
@@ -215,7 +215,7 @@ MR5 是 M4-R 内部工作包编号，不是 SQLite 阶段 M5。
 - 本轮重跑既有顺序探针、兼容探针：均退出 1；后者仍有 12 项差异。另用两份经过 `validateKanataData` 的合法合成数组（乱序父子、含 revoked 后代，同时反转 Effects/Baselines），通过现有 `m2FixtureCommands` 装入真实 v4 SQLite。**全部表声明列的逻辑快照 SHA 相同** `1338c35f2037e2654998be8a86ee153ba5ab2491cc0a4754f9893acb67355742`，纯领域 revokeIds 顺序与完整世界签名却不同。原始日志及可复现脚本见 [本轮证据](qa/kanata-sqlite-m4/m4-r/event-compat/final-closeout/README.md)。这证明当前映射缺少可恢复信息；不是声称 SQLite/JSON 不能表达顺序，也不是证明每次受控追加都会丢序。
 - ID、时间和物理 rowid 不是该合同的原始数组顺序；关系内 order hint 不能恢复顶层三个数组。现有写路径不保存顶层顺序。即使未来在 extensions_json 中另设序号协议，也不能从旧行推导已经缺失的顺序；还须解决任意未知扩展的命名碰撞、协议识别、完整性与索引预算，当前没有这样的已冻结协议。不得把“可容纳 JSON”当作已有无损映射证明。
 
-建议批准的范围仅为 **附加 Schema 005 顺序元数据**，不改变 001–004 历史定义/checksum，不改变生产 canonical/default false，不开始 M5。最小结构为下列三张类型明确的旁表；这里只是可评审方案，**未注册 migration、未修改产品 Schema、未写入 Android 数据库**：
+`0a5e0b3` 提交时建议批准的范围仅为 **附加 Schema 005 顺序元数据**，不改变 001–004 历史定义/checksum，不改变生产 canonical/default false，不开始 M5。下列为当时待批准的最小结构；该提交只有 QA 方案，尚未注册 migration。后续明确批准与实施结果紧接本方案记录：
 
 | 旁表（拟议名称） | 所属表 | 字段与约束 |
 | --- | --- | --- |
@@ -230,7 +230,19 @@ MR5 是 M4-R 内部工作包编号，不是 SQLite 阶段 M5。
 - 回滚要求：提交前失败或强杀，整个 DDL/行事务回滚；提交后仅允许升级后的二进制重开，不提供删表/降版本的“降级恢复”。保留原 v4，任何恢复必须走既定保护协调；本轮不实施真实恢复/迁移。
 - 沙箱在 **主机 SQLite 3.51.2** 通过原数组往返、冷重开、DDL 回滚、写入 DDL+行后独立进程 SIGKILL/重开、重复 ID/序号、跨世界 FK 拒绝、缺序号 fail closed；旧声明列和未知 JSON 不变。沙箱故意仍报 BLOCKED/退出 1，`experimentAssertions=PASS` 仅表示实验断言成功。**Android SQLCipher 4.17.0、新迁移校验、普通 APK catalog 和最终回归均尚未覆盖该方案**，批准后必须实跑。
 
-需要用户明确决定的唯一问题：是否批准上述仅限隔离候选的附加 Schema 005 方案？未批准前不实施该结构，不放宽纯领域合同。其他条目继续保持各自既有状态，不能借顺序方案把 A–G 或 G1–G11 升为 PASS；本轮在请求该明确决策时交还控制，未开始后续集成。
+上述决定已由用户在 2026-11-11 明确批准：仅在 M 分支隔离候选追加 event_array_order / effect_array_order / baseline_array_order 三张旁表；要求同一 BEGIN IMMEDIATE、覆盖所有生产者、历史缺序号 fail closed、数据库级不可更新/删除、分页及增量签名不退化，并实跑 Android 迁移/冷启动/回滚/强停/缺序号拒绝。不得将该批准扩展到真实迁移、生产切换、普通 APK 激活或 SQLite M5。
+
+**Schema 005 结构实现及本次指定验收：PASS；E/ER1/G4/M4 仍 BLOCKED。** 三张旁表及 BEFORE INSERT 原子记录触发器已加入，不回填旧行；普通更新/删除/替换序号拒绝，完整覆盖校验在 Repository 入口保留，缺序号和部分损坏映射在相关读取/修改前拒绝。第五版最终 checksum 为 `10db9e4533df23fd0b82cd054e19703601001292a147c0ef38187a2c420840be`，001–004 checksum 与冻结值逐项一致。
+
+- 实际候选能力：正常/历史 action 提交、两类修正、自治事件、Effects/Baseline 的新实体都会在同一 BEGIN IMMEDIATE 事务内获得 ordinal；原序可分页读取，物理 rowid 变化不改变它。原子回滚、冷启动和幂等有实际验证。
+- 最终主机 `npm run check` 退出 0：700 Node、402 Vue/44 文件、strict 正负类型、生产构建；7 项新增定向为 Node 子集，不重复累计。初版 90/93 的三项迁移版本期望差异已修复，失败保留。
+- 最终 Android 专项退出 0：旧合成 v4 APK 建立真实加密库后原地安装 v5，实跑 DDL/真实 COMMIT 失败、迁移中 SIGKILL 后重开 v4、成功升级、写入 Effects/Baselines/ordinal 后强停回滚、重试幂等和冷启动缺序号拒绝。旧世界 4/3/2 条记录保留，三张序号表仍为 0；没有猜序或回填。
+- 综合候选最终回归退出 0，GROUP-01–05、消息/记忆/自治等现有场景和 1k/10k 均重跑。10k 综合耗时 156,693ms，确认 10,001 条，批次最多 128，原 420 秒 deadline 不变。最终原生 instrumentation 1/1 OK。全 M4 尚未接齐的 A–G、专用 Heap/生命周期及最终两轮审查不由这些切片替代。
+- 原始回归失败保留：一轮在强停后 ADB `/proc/net/unix` 超时；初版逐行 count 扫描造成另一轮 10k 超过 420 秒。仅优化触发器的遗留空映射存在性检查，保留 Repository 完整覆盖检查及部分损坏反例后，原规模/原 deadline 复测通过，没有降低门槛。
+- 普通 APK 仅构建复核，activation=false、无合成页面/SQL，Schema catalog=5，001–004 checksum 不变；生产 canonical legacy。真实数据/备份未触碰，真实模型调用 0，未发布 APK、未启动 M5。
+- 源码/fixture 583 个文件 SHA、候选 APK/catalog、设备与 20 份压缩原始证据绑定见 [本轮 QA](qa/kanata-sqlite-m4/m4-r/event-compat/final-closeout/README.md)及其 schema005-fingerprints.json。旧 005 计数实现和旧 APK 的 PASS 不套用到最终修复树。
+
+下一步继续本节已有的纯领域撤销消费原序、全世界增量签名、revoked no-op、历史 action 四路径和长 Audit/G4 边界，不再请求已批准的 005 权限，不新增 MR/ER 编号。MR7/MR8 的最终全范围集成与两轮独立审查仍待全部 A–G 实现后执行。
 
 ### F. 自治、contact/social 与生活角色消费者
 

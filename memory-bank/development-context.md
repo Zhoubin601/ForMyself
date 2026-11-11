@@ -75,6 +75,8 @@ M2 Windows 接续已通过（2026-11-09）。[最新验收 v2](../docs/20261109-
 
 ## 2026-11-11 Kanata SQLite M4 收口管理规则
 
+2026-11-11 最新：用户已批准并完成隔离 Schema 005 三张原序旁表；001–004 checksum 不变，旧缺序号拒绝且不回填，ordinal 数据库级不可普通改删。最终 check 700 Node/402 Vue，API34/SQLCipher4.17 原地 v4→v5、回滚/强停/冷启动及 1k/10k 回归通过；曾引入逐行 count 超时，已按原 420 秒门槛修复，证据保留。普通 APK=false、生产 legacy；005 PASS 不代表 E/G4/M4 PASS，M5 NO。后续从唯一清单 E 继续纯领域撤销消费原序、完整签名/action/G4，不重复申请 005；[本轮 QA](../docs/qa/kanata-sqlite-m4/m4-r/event-compat/final-closeout/README.md)。
+
 2026-11-11 后续接管 1042110：同一 v4 声明行不能唯一决定用户要求的领域数组顺序已有真实合成反例，见最终清单 E 与 [接管 QA](../docs/qa/kanata-sqlite-m4/m4-r/event-compat/final-closeout/README.md)。473 份既有指纹和同设备/APK/catalog 复核一致；本轮未改业务代码/Schema/Android。最小附加顺序存储方案只在 QA 临时库实验，不是已注册 005 或产品能力。新增 Schema 仍须用户明确批准；M4 BLOCKED、M5 NO，不按历史检查点 PASS 启动后续阶段。
 
 用户已确认 Kanata 采用“工程质量优先，但必须有明确终点”。当前 M4 只按 [最终收口清单](../docs/20261111-kanata-sqlite-m4-final-closeout-ledger-v1.md) 统一推进，不再增加 MR9/ER1-3A 等新工作包。P0 是实际正确性/安全/数据问题，P1 是 M4-R 合同明确要求的强制证据；两者均阻断 M4。只有合同外新需求、无复现依据的理论风险和非必要优化进入 P2。已有 PASS 证据按源码/fixture/设备/APK/catalog 指纹与影响范围复用。M4 必须 G1–G11 全部 PASS；M5 不自动启动，必须等待用户明确授权。当前 M4 BLOCKED、M5 NO，生产 canonical legacy、普通 Android APK SQLite=false、Schema 001–004 冻结。

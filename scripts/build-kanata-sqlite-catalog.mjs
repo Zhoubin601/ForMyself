@@ -6,6 +6,7 @@ import {
   KANATA_SCHEMA_VERSION, KANATA_REGISTRY_VALIDATION_QUERIES,
 } from '../src/features/chat/storage/sqlite/kanataSchema.js'
 import { KANATA_AUDIT_VALIDATION_QUERIES } from '../src/features/chat/storage/sqlite/kanataSchemaHardening.js'
+import { arrayOrderQueries } from '../src/features/chat/storage/sqlite/kanataArrayOrder.js'
 import { KANATA_SCHEMA_SQL as schema, kanataSchemaObjectsAt } from '../src/features/chat/storage/sqlite/kanataSchemaMigrator.js'
 import { conversationQueries, conversationWrites, messageQueries, messageWrites } from '../src/features/chat/storage/sqlite/kanataRepositorySql.js'
 import { dependentQueries, dependentWrites, updateEffectValue } from '../src/features/chat/storage/sqlite/kanataMessageDependentsSql.js'
@@ -66,11 +67,17 @@ add('query', 'business', [...Object.values(messageQueries), ...Object.values(con
   ...Object.values(deferredReplyQueries), ...historyArchiveQueries])
 add('write', 'business', [...Object.values(messageWrites), ...Object.values(conversationWrites),
   ...Object.values(dependentWrites), ...Object.values(updateEffectValue), ...Object.values(deferredReplyWrites), ...historyArchiveWrites])
-add('query', 'business', [receiptQuery, ...worldQueries, ...characterQueries, ...lorebookQueries, ...provenanceQueries,
+add('query', 'business', [...arrayOrderQueries, receiptQuery, ...worldQueries, ...characterQueries, ...lorebookQueries, ...provenanceQueries,
   ...memoryQueries, ...eventReadQueries, ...eventSnapshotQueries, ...eventQueries, ...eventRevocationQueries, ...autonomyQueries, ...usageQueries, ...chatViewQueries, ...managementViewQueries, ...bindingQueries])
 add('write', 'business', [receiptWrite, ...worldWrites, ...characterWrites, ...lorebookWrites, ...memoryWrites,
   ...eventSnapshotWrites, ...eventWrites, ...eventRevocationWrites, ...autonomyWrites, ...usageWrites, ...bindingWrites])
 if (process.argv.includes('--synthetic')) {
+  const { orderLegacyCounts, orderCounts, orderSchemaOrphan, orderBusinessOrphan, orderMutations } =
+    await import('../docs/qa/kanata-sqlite-m4/m4-r/event-compat/final-closeout/schema005-device.mjs')
+  add('query', 'schema', [orderLegacyCounts])
+  add('write', 'schema', [orderSchemaOrphan])
+  add('query', 'business', [orderCounts])
+  add('write', 'business', [orderBusinessOrphan, ...orderMutations])
   const { m2FixtureCommands, auditInspection, fixtureWrites, futureSchema } = await import('../tests/helpers/kanataSqliteM2Fixture.js')
   const { growthSeedSql } = await import('../docs/qa/kanata-sqlite-m4/fixture.mjs')
   add('query', 'business', Object.values(auditInspection))

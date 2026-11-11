@@ -19,7 +19,7 @@ async function fixture(t){const h=schemaHarness();t.after(h.close);await migrate
 const code=c=>e=>e.code===c
 
 test('R1-01 成功版本保存真实注入UTC毫秒，回拨不伪造单调时间，幂等不重写',async t=>{
- const h=schemaHarness();t.after(h.close);const epoch=Date.UTC(2026,10,7,1,2,3,456),times=[epoch,epoch-1000,epoch+500,epoch+2000]
+ const h=schemaHarness();t.after(h.close);const epoch=Date.UTC(2026,10,7,1,2,3,456),times=[epoch,epoch-1000,epoch+500,epoch+2000,epoch+3000]
  let i=0;await migrateKanataSchema(h.connection,{now:()=>times[i++]})
  assert.deepEqual(q(h,'SELECT applied_at FROM schema_migration_applications ORDER BY version').map(r=>r.applied_at),times)
  assert.equal(i,currentVersion);h.writes.length=0
@@ -186,7 +186,10 @@ test('R6 NOT-A-DEFECT：NO ACTION保留引用，未引用叶子可删，延迟FK
  assert.deepEqual(actual, [
    ...saved.map(({parent,child,id,columns,targetColumns,onDelete,onUpdate})=>({parent,child,id,columns,targetColumns,onDelete,onUpdate})),
    {parent:'messages',child:'archived_message_marks',id:0,columns:['world_id','conversation_id','message_id'],
-     targetColumns:['world_id','conversation_id','id'],onDelete:'NO ACTION',onUpdate:'NO ACTION'}
+     targetColumns:['world_id','conversation_id','id'],onDelete:'NO ACTION',onUpdate:'NO ACTION'},
+   ...[['world_events','event_array_order'],['world_effects','effect_array_order'],['effect_baselines','baseline_array_order']].map(([parent,child])=>({
+     parent,child,id:0,columns:['world_id','entity_id'],targetColumns:['world_id','id'],onDelete:'NO ACTION',onUpdate:'NO ACTION'
+   }))
  ])
 
  for(const sql of ["DELETE FROM worlds WHERE id=(SELECT world_id FROM messages LIMIT 1)","DELETE FROM messages WHERE id='message-one'","DELETE FROM world_events WHERE id='event-one'","DELETE FROM conversations WHERE id=(SELECT conversation_id FROM messages LIMIT 1)"]){assert.throws(()=>run(h,sql),/FOREIGN KEY/)}

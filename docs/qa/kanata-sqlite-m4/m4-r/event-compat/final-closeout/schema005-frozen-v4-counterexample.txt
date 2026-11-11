@@ -1,0 +1,94 @@
+(node:32324) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+{
+  "status": "BLOCKED",
+  "experimentAssertions": "PASS",
+  "sqliteVersion": "3.51.2",
+  "results": [
+    {
+      "label": "A",
+      "logicalV4Digest": "2cdd040443a9888b009e10bb3ad176b41c3e75c05e59bb5d43a24c095ff93316",
+      "originalOrder": {
+        "events": [
+          "event-one",
+          "event-dependent",
+          "event-independent",
+          "event-revoked",
+          "event-order-sibling"
+        ],
+        "effects": [
+          "effect-one",
+          "effect-independent",
+          "effect-revoked"
+        ],
+        "effectBaselines": [
+          "baseline-one",
+          "baseline-revoked"
+        ]
+      },
+      "revokeIds": [
+        "event-one",
+        "event-dependent",
+        "event-revoked",
+        "event-order-sibling"
+      ],
+      "signatureDigest": "4e3856eb3f870b4281e0a88ab69d9b1cac00e55df131d31a3cfac869458804ca",
+      "sandbox": {
+        "originalArrayRoundTrip": true,
+        "coldReopen": true,
+        "ddlRollback": true,
+        "killedBeforeCommitRollback": true,
+        "crashExit": 1,
+        "crashSignal": null,
+        "missingOrderFailClosed": true,
+        "duplicateAndCrossWorldRejected": true,
+        "oldRowsUnchanged": true,
+        "userVersion": 4,
+        "registeredMigration005": false
+      }
+    },
+    {
+      "label": "B",
+      "logicalV4Digest": "2cdd040443a9888b009e10bb3ad176b41c3e75c05e59bb5d43a24c095ff93316",
+      "originalOrder": {
+        "events": [
+          "event-one",
+          "event-revoked",
+          "event-order-sibling",
+          "event-dependent",
+          "event-independent"
+        ],
+        "effects": [
+          "effect-revoked",
+          "effect-independent",
+          "effect-one"
+        ],
+        "effectBaselines": [
+          "baseline-revoked",
+          "baseline-one"
+        ]
+      },
+      "revokeIds": [
+        "event-one",
+        "event-order-sibling",
+        "event-dependent",
+        "event-revoked"
+      ],
+      "signatureDigest": "65c50669895a8ca9574421523e91c6a6df97f8b2deb6bc1e42bcc304d2a34be5",
+      "sandbox": {
+        "originalArrayRoundTrip": true,
+        "coldReopen": true,
+        "ddlRollback": true,
+        "killedBeforeCommitRollback": true,
+        "crashExit": 1,
+        "crashSignal": null,
+        "missingOrderFailClosed": true,
+        "duplicateAndCrossWorldRejected": true,
+        "oldRowsUnchanged": true,
+        "userVersion": 4,
+        "registeredMigration005": false
+      }
+    }
+  ],
+  "conclusion": "The current declared v4 rows are identical for two valid arrays with different required previews. Proposed QA-only side tables round-trip a supplied original order, but cannot reconstruct missing historical order. No production migration or Android validation performed."
+}

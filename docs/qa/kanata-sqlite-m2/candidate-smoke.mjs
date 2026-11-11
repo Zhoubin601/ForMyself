@@ -1,6 +1,7 @@
 import { memoryRows, memoryEdges, memoryWideSources, eventRows, eventEdges, seedFanoutLinks, replayEventRows, replayEffectRows, fanoutAuditInspection, grantOriginActors, grantOrigins, grantMessageTags, seedWideChatSources, chatReplyTagCheck, eventReadEffects, eventReadAudits, eventReadRevision, eventReadShapeEdges, eventReadPublic, seedEventReadShape, chatEventActor, chatEventSource } from '../kanata-sqlite-m4/completion/fixture.mjs'
 import { growthSeedSql } from '../kanata-sqlite-m4/fixture.mjs'
 import { eventRevocationQueries, eventRevocationWrites } from '../../../src/features/chat/storage/sqlite/kanataEventRevocation.js'
+import { installSchema005Device, schema005AfterExecute, schema005BeforeCommit } from '../kanata-sqlite-m4/m4-r/event-compat/final-closeout/schema005-device.mjs'
 import { eventReadQueries } from '../../../src/features/chat/storage/sqlite/kanataEventRead.js'
 import { eventProofDdl, eventProofWrites } from '../../../src/features/chat/storage/sqlite/kanataEventProof.js'
 import { replyProofDdl } from '../../../src/features/chat/storage/sqlite/kanataReplyProvenance.js'
@@ -96,7 +97,7 @@ const candidate = createKanataSqliteCandidate({
         groupCommitFault = undefined
         await bridge.execute({...command,statement,parameters:['group-edit-orphan','absent-card',1,'{}','{}','synthetic']})
       }
-      return result
+      return schema005AfterExecute(command,result)
     },
     async query(command) {
       if(trace?.failQuery===command.statement)throw new Error('EVENT_READ_QUERY_INJECTED')
@@ -117,7 +118,8 @@ const candidate = createKanataSqliteCandidate({
       return result
     },
     close: bridge.close, health: bridge.health, rollback: bridge.rollback, completeOpen: bridge.completeOpen,
-    commit: options => {
+    commit: async options => {
+      await schema005BeforeCommit(options,bridge)
       if (!suspendCommit) return profileBridge("commit", options, bridge.commit)
       crashState = 'uncommitted-write-and-audit'
       return new Promise(() => {})
@@ -290,6 +292,7 @@ window.m2QaScenario = async (password, { commands, inspection, deferredCommit, s
 }
 
 const session = password => { auth.savedMasterPwd = password; auth.isLocked = false }
+installSchema005Device({ candidate, bridge, auth, session })
 
 window.m2QaArmCrash = (password, scope) => {
   session(password)

@@ -1287,3 +1287,5 @@ raw/完整需求清单.txt 4.1/4.4/8.3及最新连续执行v3驱动当前实现�
 - 来源文件：raw/完整需求清单.txt §6.7–6.8（修正/撤销的范围与恢复点）；raw/彼方 · Kanata 技术设计.txt §3.3（事件、Effect 归属与独立效果保留）。引用日期：2026-11-11。原文件只读；顺序细则由用户已确认的纯领域契约裁决，不从 raw 补造。
 - 执行索引：[最终收口清单](20261111-kanata-sqlite-m4-final-closeout-ledger-v1.md)，远端接管提交 10421105b745fa4bb9b2107379c39786fac68b96。技术依据：M4-R/ER1 合同、kanataEvents.js、kanataSchema.js、kanataEventRepository.js、现有独立 Oracle 与 m2FixtureCommands。
 - [本轮原始证据](qa/kanata-sqlite-m4/m4-r/event-compat/final-closeout/README.md)：473 份源码/fixture 指纹一致、历史设备与已装 APK/catalog 比对、既有 12 项兼容失败复现、相同 v4 声明行却要求不同领域结果的反例，以及新临时合成 SQLite 旁表往返/回滚/强杀取证。没有引入外部资料、读取真实备份或调用真实模型 API。
+
+2026-11-11 后续来源：用户明确批准 M 隔离候选的 Schema 005 三旁表及八项实施条件，已直接落实到最终清单 E；不再是待批准方案。本次依据真实源码/数据库测试、已核验旧合成 v4 APK与新 v5 APK原地升级、API34/WHPX/SQLCipher4.17.0 实测和原始失败/复测日志。最终 700/402、005 强停/回滚、10k 综合 156,693ms 和普通 APK=false 见同一 QA；raw 原件、真实备份与模型 API 均未使用。

@@ -1,0 +1,33 @@
+{
+  "version": 5,
+  "journal": [
+    {
+      "version": 1,
+      "name": "kanata-core",
+      "checksum": "76a3464b65c48dd33ebe80a51af1327696e67be2790384e2883ad6b5447ab0a2"
+    },
+    {
+      "version": 2,
+      "name": "kanata-access-indexes",
+      "checksum": "545360d8561fe05514846ad935fd7acc37b6ed073440f3a04a3fda0943cddab2"
+    },
+    {
+      "version": 3,
+      "name": "kanata-audit-and-application-time",
+      "checksum": "1a48f88ae4507086b8ab0c364cc213f228dcc7f50f71e2c03c66f7b2c8cdd8e1"
+    },
+    {
+      "version": 4,
+      "name": "kanata-domain-commands",
+      "checksum": "e1546c3456c50b286249b1e8e7a3af5bb85cabbfd5e305726499bb52a6619d68"
+    },
+    {
+      "version": 5,
+      "name": "kanata-domain-array-order",
+      "checksum": "988ef3d61ee22500bf75232482b24115211ef7f1f3b79e3dd756c0e5cf3a3725"
+    }
+  ],
+  "catalogSha256": "f9c265ef158bebf9769ec02ce7f78337b820c0319e21481a5984317f15f83251",
+  "apkSha256": "31d294dd83c50c1babc5e1d77b0c8e0c193557cccbbe7b8ae768e2f6f31cbaaa",
+  "testApkSha256": "db7f4d2142b82575d5d846f47d9f11e42799e0a4ab020f1a20d55054e4cb203e"
+}

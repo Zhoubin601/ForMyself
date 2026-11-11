@@ -1,0 +1,522 @@
+/data/app/~~nwUrw50t3_7I1GADwAz8uA==/com.yubin.formyself.m2qa-2Tr92cvDcp6fh0KSCt6HsQ==/base.apk: 1 file pulled, 0 skipped. 78.6 MB/s (19025642 bytes in 0.231s)
+/data/app/~~dV7WpxoP83zCQflgl0Yhbg==/com.yubin.formyself.m2qa.test-rOvkew1wubHF3eXSfUjxyw==/base.apk: 1 file pulled, 0 skipped. 19.7 MB/s (598741 bytes in 0.029s)
+▲ [WARNING] Ignoring this import because "src/features/chat/kanataManagement.css" was marked as having no side effects [ignored-bare-import]
+
+    src/features/chat/KanataView.vue:8:7:
+      8 │ import './kanataManagement.css'
+        ╵        ~~~~~~~~~~~~~~~~~~~~~~~~
+
+{"qaBundleSha256":"018fb0e2be8218b3ade645fcd12721be32972bc76e4254fc3a238b24fb970bb5"}
+{
+  "passed": [
+    "schema-js-bridge-and-synthetic-seed",
+    "repository-batches-keyset-quote-locate-fk-and-conversation",
+    "concurrent-cas-real-commit-failure-and-derived-delete",
+    "close-reopen-wrong-password-replay-and-lease"
+  ],
+  "health": {
+    "cipher": "4.17.0 community",
+    "journalMode": "wal",
+    "synchronous": 2,
+    "foreignKeys": 1,
+    "cacheSize": -2048,
+    "checkpoint": 1000,
+    "busyTimeout": 5000
+  }
+}
+{
+  "envelope": "PASS_M0_V1_CROSS_UNWRAP",
+  "challenge": "PASS_EXPIRED_REJECTED",
+  "background": "PASS_OLD_LEASE_REJECTED",
+  "plaintext": "PASS_NO_PLAINTEXT_HEADER_OR_SYNTHETIC_SECRET_IN_PID_LOGS_AND_PREFERENCES",
+  "sigkill": {
+    "oldPid": "6065",
+    "newPid": "6259",
+    "status": "complete",
+    "revision": 1,
+    "auditAbsent": true
+  }
+}
+{
+  "passed": [
+    "bounded-window-scroll-anchor-quote-and-history",
+    "group-speakers-atomic-bubbles-retry-and-jump",
+    "deferred-reply-persists-and-resumes",
+    "fast-world-switch-late-completion-character-and-lock"
+  ],
+  "controlledModelCalls": 5,
+  "realModelCalls": 0
+}
+{
+  "m4": {
+    "samples": [
+      {
+        "seedRows": 1000,
+        "queries": 198,
+        "writes": 34,
+        "maxRows": 51,
+        "retainedWindow": 100
+      },
+      {
+        "seedRows": 10000,
+        "queries": 198,
+        "writes": 34,
+        "maxRows": 51,
+        "retainedWindow": 100
+      }
+    ],
+    "promptGrowth": [
+      {
+        "size": 1000,
+        "wide": {
+          "queries": 119,
+          "sqlMaxRows": 51,
+          "bodyReads": 1,
+          "pages": 9,
+          "pageObjects": 51
+        },
+        "maxEncodedRefs": 1,
+        "arrayObjects": 0,
+        "noQueriesAfterCancel": 0,
+        "recovered": true,
+        "retainedWindow": 0,
+        "piniaStores": 3,
+        "piniaStateObjects": 25,
+        "heapUsedAtStart": 33100000,
+        "heapUsedHighSample": 33100000
+      },
+      {
+        "size": 10000,
+        "wide": {
+          "queries": 477,
+          "sqlMaxRows": 51,
+          "bodyReads": 1,
+          "pages": 9,
+          "pageObjects": 51
+        },
+        "maxEncodedRefs": 1,
+        "arrayObjects": 0,
+        "noQueriesAfterCancel": 0,
+        "recovered": true,
+        "retainedWindow": 0,
+        "piniaStores": 3,
+        "piniaStateObjects": 25,
+        "heapUsedAtStart": 33100000,
+        "heapUsedHighSample": 33100000
+      }
+    ],
+    "fullGraphCalls": 0,
+    "controlledModelCalls": 7,
+    "realModelCalls": 0,
+    "restoreGate": "PASS",
+    "revocationWhilePending": "PASS"
+  }
+}
+{
+  "m4HistoryArchive": {
+    "archivedCount": 49,
+    "retainedRecent": 200,
+    "quotePreserved": true,
+    "unknownReferenceProtected": true
+  }
+}
+{
+  "m4Workspace": {
+    "passed": [
+      "workspace-directory-scoped-conversation-and-return",
+      "workspace-domain-summaries-grant-and-revoke-invalidation"
+    ],
+    "groupCases": [
+      "GROUP-01",
+      "GROUP-02",
+      "GROUP-03",
+      "GROUP-04",
+      "GROUP-05"
+    ],
+    "groupCommitFailure": "PASS",
+    "softDeletedHistory": "PASS",
+    "eventLedger": "PASS",
+    "memoryManagement": "PASS",
+    "shareWithdrawal": "PASS",
+    "roleLorePreview": "PASS",
+    "createWorld": "PASS",
+    "worldSettings": "PASS"
+  }
+}
+{
+  "m3": [
+    "world-card-lore-scope-and-archive",
+    "memory-archive-source-revision-and-revoke-before-content",
+    "same-path-event-revoke-isolation",
+    "task-event-usage-commit-failure-and-idempotency"
+  ],
+  "ownerSwitch": "PASS"
+}
+{
+  "m3Sigkill": {
+    "oldPid": "6259",
+    "newPid": "6397",
+    "before": 1800000,
+    "absent": true,
+    "eventCount": 1,
+    "after": 3600000
+  }
+}
+MR1_STAGE {"size":1000,"name":"start","elapsedMs":0}
+MR1_STAGE {"size":1000,"name":"deep-chain-seeded","elapsedMs":1527}
+MR1_STAGE {"size":1000,"name":"deep-memory-read","elapsedMs":1562}
+MR1_STAGE {"size":1000,"name":"wide-and-mixed-memory-read","elapsedMs":2216}
+MR1_STAGE {"size":1000,"name":"event-graph-paged","elapsedMs":2584}
+MR1_STAGE {"size":1000,"name":"replay-seeded","elapsedMs":3020}
+MR1_START {"phase":"combined-effect-stale","name":"begin","arity":0,"parameterChars":0}
+MR1_END {"phase":"combined-effect-stale","name":"begin","elapsedMs":5,"rows":0}
+MR1_START {"phase":"combined-effect-stale","name":"e1f064445dc9053e2fc34707cef33bdbe271395e52879801a3f7b49cd4344ea3","arity":1,"parameterChars":30}
+MR1_END {"phase":"combined-effect-stale","name":"e1f064445dc9053e2fc34707cef33bdbe271395e52879801a3f7b49cd4344ea3","elapsedMs":4,"rows":1}
+MR1_START {"phase":"combined-effect-stale","name":"cbe3781f70cf1a5a5b25f34a850d752f8241ea070434f693ac469d513a371e30","arity":1,"parameterChars":30}
+MR1_END {"phase":"combined-effect-stale","name":"cbe3781f70cf1a5a5b25f34a850d752f8241ea070434f693ac469d513a371e30","elapsedMs":4,"rows":0}
+MR1_START {"phase":"combined-effect-stale","name":"8179fdd8eb9ce21a8c6d5fe96c878247365335b6f9dc880e020dadcad3019365","arity":1,"parameterChars":118}
+MR1_END {"phase":"combined-effect-stale","name":"8179fdd8eb9ce21a8c6d5fe96c878247365335b6f9dc880e020dadcad3019365","elapsedMs":3,"rows":0}
+MR1_START {"phase":"combined-effect-stale","name":"cbe3781f70cf1a5a5b25f34a850d752f8241ea070434f693ac469d513a371e30","arity":1,"parameterChars":30}
+MR1_END {"phase":"combined-effect-stale","name":"cbe3781f70cf1a5a5b25f34a850d752f8241ea070434f693ac469d513a371e30","elapsedMs":3,"rows":0}
+MR1_START {"phase":"combined-effect-stale","name":"root","arity":2,"parameterChars":66}
+MR1_END {"phase":"combined-effect-stale","name":"root","elapsedMs":3,"rows":1}
+MR1_START {"phase":"combined-effect-stale","name":"selectionBatch","arity":3,"parameterChars":66}
+MR1_END {"phase":"combined-effect-stale","name":"selectionBatch","elapsedMs":4,"rows":1}
+MR1_START {"phase":"combined-effect-stale","name":"effectProof","arity":3,"parameterChars":66}
+MR1_END {"phase":"combined-effect-stale","name":"effectProof","elapsedMs":35,"rows":128}
+MR1_START {"phase":"combined-effect-stale","name":"effectProof","arity":3,"parameterChars":91}
+MR1_END {"phase":"combined-effect-stale","name":"effectProof","elapsedMs":24,"rows":128}
+MR1_START {"phase":"combined-effect-stale","name":"effectProof","arity":3,"parameterChars":91}
+MR1_END {"phase":"combined-effect-stale","name":"effectProof","elapsedMs":27,"rows":128}
+MR1_START {"phase":"combined-effect-stale","name":"effectProof","arity":3,"parameterChars":91}
+MR1_END {"phase":"combined-effect-stale","name":"effectProof","elapsedMs":25,"rows":128}
+MR1_START {"phase":"combined-effect-stale","name":"effectProof","arity":3,"parameterChars":91}
+MR1_END {"phase":"combined-effect-stale","name":"effectProof","elapsedMs":23,"rows":128}
+MR1_START {"phase":"combined-effect-stale","name":"effectProof","arity":3,"parameterChars":90}
+MR1_END {"phase":"combined-effect-stale","name":"effectProof","elapsedMs":22,"rows":128}
+MR1_START {"phase":"combined-effect-stale","name":"effectProof","arity":3,"parameterChars":91}
+MR1_END {"phase":"combined-effect-stale","name":"effectProof","elapsedMs":22,"rows":128}
+MR1_START {"phase":"combined-effect-stale","name":"effectProof","arity":3,"parameterChars":90}
+MR1_END {"phase":"combined-effect-stale","name":"effectProof","elapsedMs":20,"rows":109}
+MR1_START {"phase":"combined-effect-stale","name":"baselineProof","arity":3,"parameterChars":66}
+MR1_END {"phase":"combined-effect-stale","name":"baselineProof","elapsedMs":4,"rows":1}
+MR1_STAGE {"size":1000,"name":"replay-stale-rejected","elapsedMs":3309}
+MR1_START {"phase":"combined-effect-preview","name":"begin","arity":0,"parameterChars":0}
+MR1_END {"phase":"combined-effect-preview","name":"begin","elapsedMs":3,"rows":0}
+MR1_START {"phase":"combined-effect-preview","name":"cbe3781f70cf1a5a5b25f34a850d752f8241ea070434f693ac469d513a371e30","arity":1,"parameterChars":30}
+MR1_END {"phase":"combined-effect-preview","name":"cbe3781f70cf1a5a5b25f34a850d752f8241ea070434f693ac469d513a371e30","elapsedMs":3,"rows":0}
+MR1_START {"phase":"combined-effect-preview","name":"root","arity":2,"parameterChars":66}
+MR1_END {"phase":"combined-effect-preview","name":"root","elapsedMs":2,"rows":1}
+MR1_START {"phase":"combined-effect-preview","name":"selectionBatch","arity":3,"parameterChars":66}
+MR1_END {"phase":"combined-effect-preview","name":"selectionBatch","elapsedMs":4,"rows":1}
+MR1_START {"phase":"combined-effect-preview","name":"effectProof","arity":3,"parameterChars":66}
+MR1_END {"phase":"combined-effect-preview","name":"effectProof","elapsedMs":30,"rows":128}
+MR1_START {"phase":"combined-effect-preview","name":"effectProof","arity":3,"parameterChars":91}
+MR1_END {"phase":"combined-effect-preview","name":"effectProof","elapsedMs":23,"rows":128}
+MR1_START {"phase":"combined-effect-preview","name":"effectProof","arity":3,"parameterChars":91}
+MR1_END {"phase":"combined-effect-preview","name":"effectProof","elapsedMs":25,"rows":128}
+MR1_START {"phase":"combined-effect-preview","name":"effectProof","arity":3,"parameterChars":91}
+MR1_END {"phase":"combined-effect-preview","name":"effectProof","elapsedMs":26,"rows":128}
+MR1_START {"phase":"combined-effect-preview","name":"effectProof","arity":3,"parameterChars":91}
+MR1_END {"phase":"combined-effect-preview","name":"effectProof","elapsedMs":23,"rows":128}
+MR1_START {"phase":"combined-effect-preview","name":"effectProof","arity":3,"parameterChars":90}
+MR1_END {"phase":"combined-effect-preview","name":"effectProof","elapsedMs":24,"rows":128}
+MR1_START {"phase":"combined-effect-preview","name":"effectProof","arity":3,"parameterChars":91}
+MR1_END {"phase":"combined-effect-preview","name":"effectProof","elapsedMs":25,"rows":128}
+MR1_START {"phase":"combined-effect-preview","name":"effectProof","arity":3,"parameterChars":90}
+MR1_END {"phase":"combined-effect-preview","name":"effectProof","elapsedMs":21,"rows":109}
+MR1_START {"phase":"combined-effect-preview","name":"baselineProof","arity":3,"parameterChars":66}
+MR1_END {"phase":"combined-effect-preview","name":"baselineProof","elapsedMs":4,"rows":1}
+MR1_START {"phase":"combined-effect-preview","name":"projected","arity":4,"parameterChars":68}
+MR1_END {"phase":"combined-effect-preview","name":"projected","elapsedMs":4,"rows":1}
+MR1_START {"phase":"combined-effect-preview","name":"commit","arity":0,"parameterChars":0}
+MR1_END {"phase":"combined-effect-preview","name":"commit","elapsedMs":2,"rows":0}
+MR1_STAGE {"size":1000,"name":"replay-preview","elapsedMs":3590}
+MR1_START {"phase":"combined-effect-confirmation","name":"begin","arity":0,"parameterChars":0}
+MR1_END {"phase":"combined-effect-confirmation","name":"begin","elapsedMs":2,"rows":0}
+MR1_START {"phase":"combined-effect-confirmation","name":"e1f064445dc9053e2fc34707cef33bdbe271395e52879801a3f7b49cd4344ea3","arity":1,"parameterChars":30}
+MR1_END {"phase":"combined-effect-confirmation","name":"e1f064445dc9053e2fc34707cef33bdbe271395e52879801a3f7b49cd4344ea3","elapsedMs":2,"rows":1}
+MR1_START {"phase":"combined-effect-confirmation","name":"cbe3781f70cf1a5a5b25f34a850d752f8241ea070434f693ac469d513a371e30","arity":1,"parameterChars":30}
+MR1_END {"phase":"combined-effect-confirmation","name":"cbe3781f70cf1a5a5b25f34a850d752f8241ea070434f693ac469d513a371e30","elapsedMs":2,"rows":0}
+MR1_START {"phase":"combined-effect-confirmation","name":"8179fdd8eb9ce21a8c6d5fe96c878247365335b6f9dc880e020dadcad3019365","arity":1,"parameterChars":120}
+MR1_END {"phase":"combined-effect-confirmation","name":"8179fdd8eb9ce21a8c6d5fe96c878247365335b6f9dc880e020dadcad3019365","elapsedMs":2,"rows":0}
+MR1_START {"phase":"combined-effect-confirmation","name":"cbe3781f70cf1a5a5b25f34a850d752f8241ea070434f693ac469d513a371e30","arity":1,"parameterChars":30}
+MR1_END {"phase":"combined-effect-confirmation","name":"cbe3781f70cf1a5a5b25f34a850d752f8241ea070434f693ac469d513a371e30","elapsedMs":2,"rows":0}
+MR1_START {"phase":"combined-effect-confirmation","name":"root","arity":2,"parameterChars":66}
+MR1_END {"phase":"combined-effect-confirmation","name":"root","elapsedMs":2,"rows":1}
+MR1_START {"phase":"combined-effect-confirmation","name":"selectionBatch","arity":3,"parameterChars":66}
+MR1_END {"phase":"combined-effect-confirmation","name":"selectionBatch","elapsedMs":3,"rows":1}
+MR1_START {"phase":"combined-effect-confirmation","name":"effectProof","arity":3,"parameterChars":66}
+MR1_END {"phase":"combined-effect-confirmation","name":"effectProof","elapsedMs":30,"rows":128}
+MR1_START {"phase":"combined-effect-confirmation","name":"effectProof","arity":3,"parameterChars":91}
+MR1_END {"phase":"combined-effect-confirmation","name":"effectProof","elapsedMs":24,"rows":128}
+MR1_START {"phase":"combined-effect-confirmation","name":"effectProof","arity":3,"parameterChars":91}
+MR1_END {"phase":"combined-effect-confirmation","name":"effectProof","elapsedMs":24,"rows":128}
+MR1_START {"phase":"combined-effect-confirmation","name":"effectProof","arity":3,"parameterChars":91}
+MR1_END {"phase":"combined-effect-confirmation","name":"effectProof","elapsedMs":25,"rows":128}
+MR1_START {"phase":"combined-effect-confirmation","name":"effectProof","arity":3,"parameterChars":91}
+MR1_END {"phase":"combined-effect-confirmation","name":"effectProof","elapsedMs":21,"rows":128}
+MR1_START {"phase":"combined-effect-confirmation","name":"effectProof","arity":3,"parameterChars":90}
+MR1_END {"phase":"combined-effect-confirmation","name":"effectProof","elapsedMs":22,"rows":128}
+MR1_START {"phase":"combined-effect-confirmation","name":"effectProof","arity":3,"parameterChars":91}
+MR1_END {"phase":"combined-effect-confirmation","name":"effectProof","elapsedMs":25,"rows":128}
+MR1_START {"phase":"combined-effect-confirmation","name":"effectProof","arity":3,"parameterChars":90}
+MR1_END {"phase":"combined-effect-confirmation","name":"effectProof","elapsedMs":19,"rows":109}
+MR1_START {"phase":"combined-effect-confirmation","name":"baselineProof","arity":3,"parameterChars":66}
+MR1_END {"phase":"combined-effect-confirmation","name":"baselineProof","elapsedMs":5,"rows":1}
+MR1_START {"phase":"combined-effect-confirmation","name":"selectionBatch","arity":3,"parameterChars":66}
+MR1_END {"phase":"combined-effect-confirmation","name":"selectionBatch","elapsedMs":4,"rows":1}
+MR1_START {"phase":"combined-effect-confirmation","name":"statusUpdate","arity":3,"parameterChars":276}
+MR1_END {"phase":"combined-effect-confirmation","name":"statusUpdate","elapsedMs":5,"rows":1}
+MR1_START {"phase":"combined-effect-confirmation","name":"writeAudit","arity":3,"parameterChars":276}
+MR1_END {"phase":"combined-effect-confirmation","name":"writeAudit","elapsedMs":4,"rows":1}
+MR1_START {"phase":"combined-effect-confirmation","name":"staleMemories","arity":2,"parameterChars":94}
+MR1_END {"phase":"combined-effect-confirmation","name":"staleMemories","elapsedMs":3,"rows":0}
+MR1_START {"phase":"combined-effect-confirmation","name":"cbe3781f70cf1a5a5b25f34a850d752f8241ea070434f693ac469d513a371e30","arity":1,"parameterChars":30}
+MR1_END {"phase":"combined-effect-confirmation","name":"cbe3781f70cf1a5a5b25f34a850d752f8241ea070434f693ac469d513a371e30","elapsedMs":3,"rows":0}
+MR1_START {"phase":"combined-effect-confirmation","name":"completedEffects","arity":6,"parameterChars":94}
+MR1_END {"phase":"combined-effect-confirmation","name":"completedEffects","elapsedMs":4,"rows":1}
+MR1_START {"phase":"combined-effect-confirmation","name":"4975075cae7d4b06d33753910490d62a1d86c0e0861ad4c3bb2c2635b319b967","arity":4,"parameterChars":85}
+MR1_END {"phase":"combined-effect-confirmation","name":"4975075cae7d4b06d33753910490d62a1d86c0e0861ad4c3bb2c2635b319b967","elapsedMs":2,"rows":1}
+MR1_START {"phase":"combined-effect-confirmation","name":"22baf9a94ae223c7c54970e116d373be199276ad2fd42be512a153d7c081078b","arity":10,"parameterChars":89}
+MR1_END {"phase":"combined-effect-confirmation","name":"22baf9a94ae223c7c54970e116d373be199276ad2fd42be512a153d7c081078b","elapsedMs":40,"rows":128}
+MR1_START {"phase":"combined-effect-confirmation","name":"22baf9a94ae223c7c54970e116d373be199276ad2fd42be512a153d7c081078b","arity":10,"parameterChars":205}
+MR1_END {"phase":"combined-effect-confirmation","name":"22baf9a94ae223c7c54970e116d373be199276ad2fd42be512a153d7c081078b","elapsedMs":32,"rows":128}
+MR1_START {"phase":"combined-effect-confirmation","name":"22baf9a94ae223c7c54970e116d373be199276ad2fd42be512a153d7c081078b","arity":10,"parameterChars":205}
+MR1_END {"phase":"combined-effect-confirmation","name":"22baf9a94ae223c7c54970e116d373be199276ad2fd42be512a153d7c081078b","elapsedMs":28,"rows":128}
+MR1_START {"phase":"combined-effect-confirmation","name":"22baf9a94ae223c7c54970e116d373be199276ad2fd42be512a153d7c081078b","arity":10,"parameterChars":205}
+MR1_END {"phase":"combined-effect-confirmation","name":"22baf9a94ae223c7c54970e116d373be199276ad2fd42be512a153d7c081078b","elapsedMs":24,"rows":128}
+MR1_START {"phase":"combined-effect-confirmation","name":"22baf9a94ae223c7c54970e116d373be199276ad2fd42be512a153d7c081078b","arity":10,"parameterChars":205}
+MR1_END {"phase":"combined-effect-confirmation","name":"22baf9a94ae223c7c54970e116d373be199276ad2fd42be512a153d7c081078b","elapsedMs":28,"rows":128}
+MR1_START {"phase":"combined-effect-confirmation","name":"22baf9a94ae223c7c54970e116d373be199276ad2fd42be512a153d7c081078b","arity":10,"parameterChars":205}
+MR1_END {"phase":"combined-effect-confirmation","name":"22baf9a94ae223c7c54970e116d373be199276ad2fd42be512a153d7c081078b","elapsedMs":48,"rows":128}
+MR1_START {"phase":"combined-effect-confirmation","name":"22baf9a94ae223c7c54970e116d373be199276ad2fd42be512a153d7c081078b","arity":10,"parameterChars":205}
+MR1_END {"phase":"combined-effect-confirmation","name":"22baf9a94ae223c7c54970e116d373be199276ad2fd42be512a153d7c081078b","elapsedMs":25,"rows":128}
+MR1_START {"phase":"combined-effect-confirmation","name":"22baf9a94ae223c7c54970e116d373be199276ad2fd42be512a153d7c081078b","arity":10,"parameterChars":205}
+MR1_END {"phase":"combined-effect-confirmation","name":"22baf9a94ae223c7c54970e116d373be199276ad2fd42be512a153d7c081078b","elapsedMs":18,"rows":106}
+MR1_START {"phase":"combined-effect-confirmation","name":"c28fe8340d6f3047dafbe9f3b56ba5b8aed717e19ee2e4120b54a628d90ee107","arity":3,"parameterChars":85}
+MR1_END {"phase":"combined-effect-confirmation","name":"c28fe8340d6f3047dafbe9f3b56ba5b8aed717e19ee2e4120b54a628d90ee107","elapsedMs":2,"rows":1}
+MR1_START {"phase":"combined-effect-confirmation","name":"74bbe16a3393d0f5f9f0660a3a89e074415222880ef1a7d5c68cd42ad363807c","arity":2,"parameterChars":63}
+MR1_END {"phase":"combined-effect-confirmation","name":"74bbe16a3393d0f5f9f0660a3a89e074415222880ef1a7d5c68cd42ad363807c","elapsedMs":3,"rows":1}
+MR1_START {"phase":"combined-effect-confirmation","name":"eb0ad0955753ec6e8cf4b9d10a4161c5114711ad122582a8974f0c73e6402355","arity":3,"parameterChars":220}
+MR1_END {"phase":"combined-effect-confirmation","name":"eb0ad0955753ec6e8cf4b9d10a4161c5114711ad122582a8974f0c73e6402355","elapsedMs":3,"rows":1}
+MR1_START {"phase":"combined-effect-confirmation","name":"commit","arity":0,"parameterChars":0}
+MR1_END {"phase":"combined-effect-confirmation","name":"commit","elapsedMs":5,"rows":0}
+MR1_STAGE {"size":1000,"name":"replay-confirmed","elapsedMs":4148}
+MR1_STAGE {"size":1000,"name":"fanout-rows-seeded","elapsedMs":4369}
+MR1_SEED_PLAN {"size":1000,"before":["CO-ROUTINE ancestors","SETUP","SCAN CONSTANT ROW","RECURSIVE STEP","SEARCH c USING COVERING INDEX event_causes_reverse (world_id=?)","SCAN a","SCAN ancestors"],"analyzed":["CO-ROUTINE ancestors","SETUP","SCAN CONSTANT ROW","RECURSIVE STEP","SCAN a","SEARCH c USING COVERING INDEX sqlite_autoindex_event_causes_1 (world_id=? AND event_id=?)","SCAN ancestors"],"restored":["CO-ROUTINE ancestors","SETUP","SCAN CONSTANT ROW","RECURSIVE STEP","SCAN a","SCAN c","SCAN ancestors"],"affectedRows":1000}
+MR1_STAGE {"size":1000,"name":"fanout-seeded","elapsedMs":4419}
+MR1_START {"phase":"combined-fanout-preview","name":"begin","arity":0,"parameterChars":0}
+MR1_END {"phase":"combined-fanout-preview","name":"begin","elapsedMs":5,"rows":0}
+MR1_START {"phase":"combined-fanout-preview","name":"cbe3781f70cf1a5a5b25f34a850d752f8241ea070434f693ac469d513a371e30","arity":1,"parameterChars":30}
+MR1_END {"phase":"combined-fanout-preview","name":"cbe3781f70cf1a5a5b25f34a850d752f8241ea070434f693ac469d513a371e30","elapsedMs":2,"rows":0}
+MR1_START {"phase":"combined-fanout-preview","name":"root","arity":2,"parameterChars":50}
+MR1_END {"phase":"combined-fanout-preview","name":"root","elapsedMs":3,"rows":1}
+MR1_START {"phase":"combined-fanout-preview","name":"selectionBatch","arity":3,"parameterChars":50}
+MR1_END {"phase":"combined-fanout-preview","name":"selectionBatch","elapsedMs":19,"rows":128}
+MR1_START {"phase":"combined-fanout-preview","name":"selectionBatch","arity":3,"parameterChars":69}
+MR1_END {"phase":"combined-fanout-preview","name":"selectionBatch","elapsedMs":15,"rows":128}
+MR1_START {"phase":"combined-fanout-preview","name":"selectionBatch","arity":3,"parameterChars":69}
+MR1_END {"phase":"combined-fanout-preview","name":"selectionBatch","elapsedMs":15,"rows":128}
+MR1_START {"phase":"combined-fanout-preview","name":"selectionBatch","arity":3,"parameterChars":69}
+MR1_END {"phase":"combined-fanout-preview","name":"selectionBatch","elapsedMs":15,"rows":128}
+MR1_START {"phase":"combined-fanout-preview","name":"selectionBatch","arity":3,"parameterChars":69}
+MR1_END {"phase":"combined-fanout-preview","name":"selectionBatch","elapsedMs":14,"rows":128}
+MR1_START {"phase":"combined-fanout-preview","name":"selectionBatch","arity":3,"parameterChars":69}
+MR1_END {"phase":"combined-fanout-preview","name":"selectionBatch","elapsedMs":13,"rows":128}
+MR1_START {"phase":"combined-fanout-preview","name":"selectionBatch","arity":3,"parameterChars":69}
+MR1_END {"phase":"combined-fanout-preview","name":"selectionBatch","elapsedMs":13,"rows":128}
+MR1_START {"phase":"combined-fanout-preview","name":"selectionBatch","arity":3,"parameterChars":69}
+MR1_END {"phase":"combined-fanout-preview","name":"selectionBatch","elapsedMs":12,"rows":105}
+MR1_START {"phase":"combined-fanout-preview","name":"effectProof","arity":3,"parameterChars":50}
+MR1_END {"phase":"combined-fanout-preview","name":"effectProof","elapsedMs":9,"rows":0}
+MR1_START {"phase":"combined-fanout-preview","name":"baselineProof","arity":3,"parameterChars":50}
+MR1_END {"phase":"combined-fanout-preview","name":"baselineProof","elapsedMs":7,"rows":0}
+MR1_START {"phase":"combined-fanout-preview","name":"projected","arity":4,"parameterChars":52}
+MR1_END {"phase":"combined-fanout-preview","name":"projected","elapsedMs":10,"rows":51}
+MR1_START {"phase":"combined-fanout-preview","name":"commit","arity":0,"parameterChars":0}
+MR1_END {"phase":"combined-fanout-preview","name":"commit","elapsedMs":2,"rows":0}
+MR1_STAGE {"size":1000,"name":"fanout-preview","elapsedMs":4611}
+MR1_START {"phase":"combined-fanout-continuation","name":"begin","arity":0,"parameterChars":0}
+MR1_END {"phase":"combined-fanout-continuation","name":"begin","elapsedMs":4,"rows":0}
+MR1_START {"phase":"combined-fanout-continuation","name":"cbe3781f70cf1a5a5b25f34a850d752f8241ea070434f693ac469d513a371e30","arity":1,"parameterChars":30}
+MR1_END {"phase":"combined-fanout-continuation","name":"cbe3781f70cf1a5a5b25f34a850d752f8241ea070434f693ac469d513a371e30","elapsedMs":4,"rows":0}
+MR1_START {"phase":"combined-fanout-continuation","name":"root","arity":2,"parameterChars":50}
+MR1_END {"phase":"combined-fanout-continuation","name":"root","elapsedMs":4,"rows":1}
+MR1_START {"phase":"combined-fanout-continuation","name":"selectionBatch","arity":3,"parameterChars":50}
+MR1_END {"phase":"combined-fanout-continuation","name":"selectionBatch","elapsedMs":18,"rows":128}
+MR1_START {"phase":"combined-fanout-continuation","name":"selectionBatch","arity":3,"parameterChars":69}
+MR1_END {"phase":"combined-fanout-continuation","name":"selectionBatch","elapsedMs":36,"rows":128}
+MR1_START {"phase":"combined-fanout-continuation","name":"selectionBatch","arity":3,"parameterChars":69}
+MR1_END {"phase":"combined-fanout-continuation","name":"selectionBatch","elapsedMs":13,"rows":128}
+MR1_START {"phase":"combined-fanout-continuation","name":"selectionBatch","arity":3,"parameterChars":69}
+MR1_END {"phase":"combined-fanout-continuation","name":"selectionBatch","elapsedMs":13,"rows":128}
+MR1_START {"phase":"combined-fanout-continuation","name":"selectionBatch","arity":3,"parameterChars":69}
+MR1_END {"phase":"combined-fanout-continuation","name":"selectionBatch","elapsedMs":14,"rows":128}
+MR1_START {"phase":"combined-fanout-continuation","name":"selectionBatch","arity":3,"parameterChars":69}
+MR1_END {"phase":"combined-fanout-continuation","name":"selectionBatch","elapsedMs":13,"rows":128}
+MR1_START {"phase":"combined-fanout-continuation","name":"selectionBatch","arity":3,"parameterChars":69}
+MR1_END {"phase":"combined-fanout-continuation","name":"selectionBatch","elapsedMs":15,"rows":128}
+MR1_START {"phase":"combined-fanout-continuation","name":"selectionBatch","arity":3,"parameterChars":69}
+MR1_END {"phase":"combined-fanout-continuation","name":"selectionBatch","elapsedMs":13,"rows":105}
+MR1_START {"phase":"combined-fanout-continuation","name":"effectProof","arity":3,"parameterChars":50}
+MR1_END {"phase":"combined-fanout-continuation","name":"effectProof","elapsedMs":10,"rows":0}
+MR1_START {"phase":"combined-fanout-continuation","name":"baselineProof","arity":3,"parameterChars":50}
+MR1_END {"phase":"combined-fanout-continuation","name":"baselineProof","elapsedMs":7,"rows":0}
+MR1_START {"phase":"combined-fanout-continuation","name":"projected","arity":4,"parameterChars":71}
+MR1_END {"phase":"combined-fanout-continuation","name":"projected","elapsedMs":12,"rows":51}
+MR1_START {"phase":"combined-fanout-continuation","name":"commit","arity":0,"parameterChars":0}
+MR1_END {"phase":"combined-fanout-continuation","name":"commit","elapsedMs":4,"rows":0}
+MR1_STAGE {"size":1000,"name":"fanout-continuation","elapsedMs":4833}
+MR1_START {"phase":"combined-fanout-confirmation","name":"begin","arity":0,"parameterChars":0}
+MR1_END {"phase":"combined-fanout-confirmation","name":"begin","elapsedMs":4,"rows":0}
+MR1_START {"phase":"combined-fanout-confirmation","name":"e1f064445dc9053e2fc34707cef33bdbe271395e52879801a3f7b49cd4344ea3","arity":1,"parameterChars":30}
+MR1_END {"phase":"combined-fanout-confirmation","name":"e1f064445dc9053e2fc34707cef33bdbe271395e52879801a3f7b49cd4344ea3","elapsedMs":3,"rows":1}
+MR1_START {"phase":"combined-fanout-confirmation","name":"cbe3781f70cf1a5a5b25f34a850d752f8241ea070434f693ac469d513a371e30","arity":1,"parameterChars":30}
+MR1_END {"phase":"combined-fanout-confirmation","name":"cbe3781f70cf1a5a5b25f34a850d752f8241ea070434f693ac469d513a371e30","elapsedMs":4,"rows":0}
+MR1_START {"phase":"combined-fanout-confirmation","name":"8179fdd8eb9ce21a8c6d5fe96c878247365335b6f9dc880e020dadcad3019365","arity":1,"parameterChars":108}
+MR1_END {"phase":"combined-fanout-confirmation","name":"8179fdd8eb9ce21a8c6d5fe96c878247365335b6f9dc880e020dadcad3019365","elapsedMs":3,"rows":0}
+MR1_START {"phase":"combined-fanout-confirmation","name":"cbe3781f70cf1a5a5b25f34a850d752f8241ea070434f693ac469d513a371e30","arity":1,"parameterChars":30}
+MR1_END {"phase":"combined-fanout-confirmation","name":"cbe3781f70cf1a5a5b25f34a850d752f8241ea070434f693ac469d513a371e30","elapsedMs":3,"rows":0}
+MR1_START {"phase":"combined-fanout-confirmation","name":"root","arity":2,"parameterChars":50}
+MR1_END {"phase":"combined-fanout-confirmation","name":"root","elapsedMs":3,"rows":1}
+MR1_START {"phase":"combined-fanout-confirmation","name":"selectionBatch","arity":3,"parameterChars":50}
+MR1_END {"phase":"combined-fanout-confirmation","name":"selectionBatch","elapsedMs":23,"rows":128}
+MR1_START {"phase":"combined-fanout-confirmation","name":"selectionBatch","arity":3,"parameterChars":69}
+MR1_END {"phase":"combined-fanout-confirmation","name":"selectionBatch","elapsedMs":16,"rows":128}
+MR1_START {"phase":"combined-fanout-confirmation","name":"selectionBatch","arity":3,"parameterChars":69}
+MR1_END {"phase":"combined-fanout-confirmation","name":"selectionBatch","elapsedMs":15,"rows":128}
+MR1_START {"phase":"combined-fanout-confirmation","name":"selectionBatch","arity":3,"parameterChars":69}
+MR1_END {"phase":"combined-fanout-confirmation","name":"selectionBatch","elapsedMs":42,"rows":128}
+MR1_START {"phase":"combined-fanout-confirmation","name":"selectionBatch","arity":3,"parameterChars":69}
+MR1_END {"phase":"combined-fanout-confirmation","name":"selectionBatch","elapsedMs":17,"rows":128}
+MR1_START {"phase":"combined-fanout-confirmation","name":"selectionBatch","arity":3,"parameterChars":69}
+MR1_END {"phase":"combined-fanout-confirmation","name":"selectionBatch","elapsedMs":17,"rows":128}
+MR1_START {"phase":"combined-fanout-confirmation","name":"selectionBatch","arity":3,"parameterChars":69}
+MR1_END {"phase":"combined-fanout-confirmation","name":"selectionBatch","elapsedMs":13,"rows":128}
+MR1_START {"phase":"combined-fanout-confirmation","name":"selectionBatch","arity":3,"parameterChars":69}
+MR1_END {"phase":"combined-fanout-confirmation","name":"selectionBatch","elapsedMs":14,"rows":105}
+MR1_START {"phase":"combined-fanout-confirmation","name":"effectProof","arity":3,"parameterChars":50}
+MR1_END {"phase":"combined-fanout-confirmation","name":"effectProof","elapsedMs":8,"rows":0}
+MR1_START {"phase":"combined-fanout-confirmation","name":"baselineProof","arity":3,"parameterChars":50}
+MR1_END {"phase":"combined-fanout-confirmation","name":"baselineProof","elapsedMs":8,"rows":0}
+MR1_START {"phase":"combined-fanout-confirmation","name":"selectionBatch","arity":3,"parameterChars":50}
+MR1_END {"phase":"combined-fanout-confirmation","name":"selectionBatch","elapsedMs":15,"rows":128}
+MR1_START {"phase":"combined-fanout-confirmation","name":"statusUpdate","arity":3,"parameterChars":21070}
+MR1_END {"phase":"combined-fanout-confirmation","name":"statusUpdate","elapsedMs":29,"rows":128}
+MR1_START {"phase":"combined-fanout-confirmation","name":"writeAudit","arity":3,"parameterChars":21070}
+MR1_END {"phase":"combined-fanout-confirmation","name":"writeAudit","elapsedMs":13,"rows":128}
+MR1_START {"phase":"combined-fanout-confirmation","name":"selectionBatch","arity":3,"parameterChars":69}
+MR1_END {"phase":"combined-fanout-confirmation","name":"selectionBatch","elapsedMs":16,"rows":128}
+MR1_START {"phase":"combined-fanout-confirmation","name":"statusUpdate","arity":3,"parameterChars":21074}
+MR1_END {"phase":"combined-fanout-confirmation","name":"statusUpdate","elapsedMs":31,"rows":128}
+MR1_START {"phase":"combined-fanout-confirmation","name":"writeAudit","arity":3,"parameterChars":21074}
+MR1_END {"phase":"combined-fanout-confirmation","name":"writeAudit","elapsedMs":11,"rows":128}
+MR1_START {"phase":"combined-fanout-confirmation","name":"selectionBatch","arity":3,"parameterChars":69}
+MR1_END {"phase":"combined-fanout-confirmation","name":"selectionBatch","elapsedMs":15,"rows":128}
+MR1_START {"phase":"combined-fanout-confirmation","name":"statusUpdate","arity":3,"parameterChars":21073}
+MR1_END {"phase":"combined-fanout-confirmation","name":"statusUpdate","elapsedMs":29,"rows":128}
+MR1_START {"phase":"combined-fanout-confirmation","name":"writeAudit","arity":3,"parameterChars":21073}
+MR1_END {"phase":"combined-fanout-confirmation","name":"writeAudit","elapsedMs":11,"rows":128}
+MR1_START {"phase":"combined-fanout-confirmation","name":"selectionBatch","arity":3,"parameterChars":69}
+MR1_END {"phase":"combined-fanout-confirmation","name":"selectionBatch","elapsedMs":14,"rows":128}
+MR1_START {"phase":"combined-fanout-confirmation","name":"statusUpdate","arity":3,"parameterChars":21074}
+MR1_END {"phase":"combined-fanout-confirmation","name":"statusUpdate","elapsedMs":35,"rows":128}
+MR1_START {"phase":"combined-fanout-confirmation","name":"writeAudit","arity":3,"parameterChars":21074}
+MR1_END {"phase":"combined-fanout-confirmation","name":"writeAudit","elapsedMs":10,"rows":128}
+MR1_START {"phase":"combined-fanout-confirmation","name":"selectionBatch","arity":3,"parameterChars":69}
+MR1_END {"phase":"combined-fanout-confirmation","name":"selectionBatch","elapsedMs":13,"rows":128}
+MR1_START {"phase":"combined-fanout-confirmation","name":"statusUpdate","arity":3,"parameterChars":21073}
+MR1_END {"phase":"combined-fanout-confirmation","name":"statusUpdate","elapsedMs":28,"rows":128}
+MR1_START {"phase":"combined-fanout-confirmation","name":"writeAudit","arity":3,"parameterChars":21073}
+MR1_END {"phase":"combined-fanout-confirmation","name":"writeAudit","elapsedMs":11,"rows":128}
+MR1_START {"phase":"combined-fanout-confirmation","name":"selectionBatch","arity":3,"parameterChars":69}
+MR1_END {"phase":"combined-fanout-confirmation","name":"selectionBatch","elapsedMs":15,"rows":128}
+MR1_START {"phase":"combined-fanout-confirmation","name":"statusUpdate","arity":3,"parameterChars":21074}
+MR1_END {"phase":"combined-fanout-confirmation","name":"statusUpdate","elapsedMs":33,"rows":128}
+MR1_START {"phase":"combined-fanout-confirmation","name":"writeAudit","arity":3,"parameterChars":21074}
+MR1_END {"phase":"combined-fanout-confirmation","name":"writeAudit","elapsedMs":11,"rows":128}
+MR1_START {"phase":"combined-fanout-confirmation","name":"selectionBatch","arity":3,"parameterChars":69}
+MR1_END {"phase":"combined-fanout-confirmation","name":"selectionBatch","elapsedMs":15,"rows":128}
+MR1_START {"phase":"combined-fanout-confirmation","name":"statusUpdate","arity":3,"parameterChars":21071}
+MR1_END {"phase":"combined-fanout-confirmation","name":"statusUpdate","elapsedMs":218,"rows":128}
+MR1_START {"phase":"combined-fanout-confirmation","name":"writeAudit","arity":3,"parameterChars":21071}
+MR1_END {"phase":"combined-fanout-confirmation","name":"writeAudit","elapsedMs":11,"rows":128}
+MR1_START {"phase":"combined-fanout-confirmation","name":"selectionBatch","arity":3,"parameterChars":69}
+MR1_END {"phase":"combined-fanout-confirmation","name":"selectionBatch","elapsedMs":17,"rows":105}
+MR1_START {"phase":"combined-fanout-confirmation","name":"statusUpdate","arity":3,"parameterChars":17306}
+MR1_END {"phase":"combined-fanout-confirmation","name":"statusUpdate","elapsedMs":438,"rows":105}
+MR1_START {"phase":"combined-fanout-confirmation","name":"writeAudit","arity":3,"parameterChars":17306}
+MR1_END {"phase":"combined-fanout-confirmation","name":"writeAudit","elapsedMs":12,"rows":105}
+MR1_START {"phase":"combined-fanout-confirmation","name":"staleMemories","arity":2,"parameterChars":94}
+MR1_END {"phase":"combined-fanout-confirmation","name":"staleMemories","elapsedMs":4,"rows":0}
+MR1_START {"phase":"combined-fanout-confirmation","name":"cbe3781f70cf1a5a5b25f34a850d752f8241ea070434f693ac469d513a371e30","arity":1,"parameterChars":30}
+MR1_END {"phase":"combined-fanout-confirmation","name":"cbe3781f70cf1a5a5b25f34a850d752f8241ea070434f693ac469d513a371e30","elapsedMs":8,"rows":0}
+MR1_START {"phase":"combined-fanout-confirmation","name":"completedEffects","arity":6,"parameterChars":94}
+MR1_END {"phase":"combined-fanout-confirmation","name":"completedEffects","elapsedMs":9,"rows":0}
+MR1_START {"phase":"combined-fanout-confirmation","name":"eb0ad0955753ec6e8cf4b9d10a4161c5114711ad122582a8974f0c73e6402355","arity":3,"parameterChars":192}
+MR1_END {"phase":"combined-fanout-confirmation","name":"eb0ad0955753ec6e8cf4b9d10a4161c5114711ad122582a8974f0c73e6402355","elapsedMs":3,"rows":1}
+MR1_START {"phase":"combined-fanout-confirmation","name":"commit","arity":0,"parameterChars":0}
+MR1_END {"phase":"combined-fanout-confirmation","name":"commit","elapsedMs":33,"rows":0}
+MR1_STAGE {"size":1000,"name":"fanout-confirmed","elapsedMs":6181}
+{
+  "m4Completion": {
+    "samples": [
+      {
+        "size": 1000,
+        "memory": {
+          "queries": 9,
+          "writes": 0,
+          "maxRows": 1
+        },
+        "wideMemory": {
+          "queries": 28,
+          "writes": 0,
+          "maxRows": 50,
+          "total": 1000
+        },
+        "mixedMemory": {
+          "queries": 29,
+          "writes": 0,
+          "maxRows": 50,
+          "edges": 1000,
+          "sources": 1000
+        },
+        "event": {
+          "queries": 60,
+          "writes": 0,
+          "maxRows": 51,
+          "total": 1000
+        },
+        "replay": {
+          "queries": 27,
+          "writes": 6,
+          "maxRows": 128,
+          "total": 1000
+        },
+        "confirmationFanout": {
+          "queries": 25,
+          "writes": 18,
+          "maxRows": 128,
+          "confirmed": 1001
+        },
+        "elapsedMs": 6200
+      }
+    ]
+  }
+}
+MR1_STAGE {"size":10000,"name":"start","elapsedMs":0}
+MR1_STAGE {"size":10000,"name":"deep-chain-seeded","elapsedMs":49467}
+MR1_STAGE {"size":10000,"name":"deep-memory-read","elapsedMs":49613}
+MR1_STAGE {"size":10000,"name":"wide-and-mixed-memory-read","elapsedMs":62699}
+MR1_STAGE {"size":10000,"name":"event-graph-paged","elapsedMs":73393}
+file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata-m0/docs/qa/kanata-sqlite-m2/windows-candidate-smoke.mjs:68
+      reject(new Error('CDP_EVALUATION_TIMEOUT'))
+             ^
+
+Error: CDP_EVALUATION_TIMEOUT
+    at Timeout._onTimeout (file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata-m0/docs/qa/kanata-sqlite-m2/windows-candidate-smoke.mjs:68:14)
+    at listOnTimeout (node:internal/timers:605:17)
+    at process.processTimers (node:internal/timers:541:7)
+
+Node.js v24.14.1

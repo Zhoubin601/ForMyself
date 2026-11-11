@@ -1,6 +1,6 @@
 # M4 最终收口 · E 顺序阻断取证
 
-当前唯一执行索引仍为 [最终收口清单](../../../../../20261111-kanata-sqlite-m4-final-closeout-ledger-v1.md)，最小待批准方案直接记录在其 E 条目；本目录不是新任务书/新阶段。接管 M/origin/M 为 `10421105b745fa4bb9b2107379c39786fac68b96`。本轮没有新增实际产品能力，M4 BLOCKED、M5 NO。
+当前唯一执行索引仍为 [最终收口清单](../../../../../20261111-kanata-sqlite-m4-final-closeout-ledger-v1.md)；本目录不是新任务书/新阶段。接管取证提交 `0a5e0b3` 从远端 `1042110` 接续，只提供了当时的阻断证据，没有新增产品能力。**后续用户已明确批准 Schema 005 的隔离候选实施与测试**，见末节；历史结果保留各自范围。M4 仍 BLOCKED、M5 NO。
 
 来源：raw/完整需求清单.txt §6.7–6.8、raw/彼方 · Kanata 技术设计.txt §3.3、当前用户决策、最终清单 E/§8–9、M4-R/ER1 合同和当前源码。引用日期：2026-11-11；raw 只读，无外部研究、真实用户数据或真实模型 API。
 
@@ -46,3 +46,43 @@ evidence-reuse.txt 首次审计失败是新脚本将历史 PowerShell JSON 的 `
 建议仅批准最终清单 E 内附加 Schema 005 的最小顺序元数据方案；它不能恢复已经丢失的历史顺序。批准前没有注册/实施 005，相关结构变更停止。本轮未修改产品代码，不把该决策扩展成真实迁移或 SQLite M5 授权。
 
 所有工作区的原修改、APK 删除和未跟踪文件保留。只提交本次证据和对应索引；无 Kanata/main 合并、APK 发布、reset/clean/force push。用户需要复核的是上述附加顺序元数据方案及历史缺序号时 fail closed 的边界。
+
+## 2026-11-11 批准后的 Schema 005 实施（现有 E 条目）
+
+用户已明确批准仅在 M 的隔离候选追加三张顺序旁表和测试；旧“待批准/未实施”段落为接管取证历史，不再是当前授权状态。当前实际实现：
+
+- 001–004 checksum 不变；追加 005 `kanata-domain-array-order`，最终 checksum `10db9e4533df23fd0b82cd054e19703601001292a147c0ef38187a2c420840be`。
+- 每个源实体的 BEFORE INSERT 在同一个 BEGIN IMMEDIATE 中先记录 deferred-FK 绑定的 ordinal；源实体/序号/回执原子提交。普通/历史 action 提交、两类修正、自治事件、Effects、Baseline 都由共同数据库触发器覆盖。
+- 旁表 UPDATE/DELETE 显式拒绝，现存实体补序、重复、OR IGNORE/REPLACE 不可绕过；没有旧行回填。索引 keyset 页最多 50，不新增完整对象 gather。
+- Repository 入口保留完整 count 覆盖校验；部分映射损坏也在读取/写入前拒绝。逐行触发器仅用索引存在性检查识别 v4 遗留的空映射；在新实体必经触发器、序号不可改删和复合 FK 的写闭包内，不反复扫描整个世界。
+
+| 当前检查 | 真实结果 / 原始证据 |
+| --- | --- |
+| 005 结构/约束/写入覆盖/缺序号/1k10k | 7 项通过；schema005-guard-retest.txt / -exit.txt；新常规测试位于 tests/kanataSqliteArrayOrder.test.js |
+| 全项目主机 | 最终 `npm run check` 退出 0：700 Node、402 Vue/44 文件、strict 正负类型、生产 build；schema005-final-check.txt / -exit.txt。7 项定向是这 700 项的子集，不相加 |
+| 最终候选构建 | 退出 0；schema005-final-candidate-build.txt / -exit.txt；APK/catalog/journal 见 schema005-final-candidate-fingerprint.json |
+| 最终 Android 专项 | 退出 0；schema005-device-final-driver.txt / -exit.txt；同一隔离 API34 / SQLCipher 4.17.0，真实合成 v4 APK 建库→v5 APK 原地升级、DDL/真实 COMMIT 失败、迁移写入后 SIGKILL、重开 v4 回滚、升级重试、Effects/Baselines/ordinal 强停回滚、幂等和冷启动缺序号拒绝 |
+| Android 综合候选 | 最终退出 0；schema005-regression-final-driver.txt / -exit.txt；1k/10k 完整候选，10k 耗时 156,693ms，确认 10,001，批次≤128；原生 1/1 OK |
+| 普通 APK | schema005-default-build.txt / -exit.txt、schema005-default-gate.json、schema005-default-catalog.txt：构建及门禁通过，activation=false、无合成页面/语句、Schema5；普通 APK 未安装/发布，生产 canonical legacy |
+| E/ER1/G4/M4 | 不自动 PASS；已知 12 项兼容差异、完整世界增量签名/纯领域执行、历史 action 和其他门禁仍需继续关闭；最终 MR8 两轮独立审查尚未启动 |
+
+失败与修复：首次定向 90/93，通过部分不计作全套通过；3 项为新增迁移版本导致的时间数组/FK 清单期望，已补第五项时间及精确三组 FK，最终全 check 700/700 通过。初版计数触发器在 Android 综合 10k 的 replay seed 阶段触发原 420 秒 deadline；schema005-regression-retry-* 保留失败。修复逐行扫描后，主机同一 10k 追加/分页从 2476ms 变为 268ms，最终 Android 原规模/原 420 秒 deadline 在 156,693ms 完成并取得回执，没有减少样本或放宽门槛。另一次 schema005-regression-* 在强停重开时出现 ADB `/proc/net/unix` 15 秒读取超时；不计业务 PASS。
+
+最终专项回读：旧世界 4 Events / 3 Effects / 2 Baselines，三张顺序表仍全为 0；缺序号读取拒绝。独立新世界成功产生 2 Events / 3 Effects / 3 Baselines，对应序号数量完全相等。强停恢复后同命令不重复增加 Effects/Baselines 或序号。测试和模型调用均为合成，真实模型请求 0。
+
+复现命令仍使用既有 runner，不新增工作包：
+
+```powershell
+node --test tests/kanataSqliteArrayOrder.test.js
+npm.cmd run check
+npx.cmd cap sync android
+./android/gradlew.bat -p android --offline --max-workers=2 -PkanataM2Synthetic=true :app:assembleDebug :app:assembleDebugAndroidTest
+pwsh -NoProfile -File docs/qa/kanata-sqlite-m2/run-windows-candidate.ps1 -ManifestPath $manifest -EvidenceDirectory $newIsolatedEvidence -Mode array-order
+pwsh -NoProfile -File docs/qa/kanata-sqlite-m2/run-windows-candidate.ps1 -ManifestPath $manifest -EvidenceDirectory $anotherNewIsolatedEvidence -Mode full -M4Growth -M4Completion
+```
+
+`array-order` 仅在既有 manifest 白名单环境使用已核验的旧合成 APK，原地升级到本轮已构建的候选，不安装普通 APK。EvidenceDirectory 必须是该隔离根中的新目录；不得指向真实资料。旧源码/旧 APK 的 PASS 不套用到新 005；最终专项已重新运行。
+
+最终指纹：候选 APK `4ac866a6d9a5039bff48c35cd2c0e0a4036267437d78e2cf2663b81924ce1bee`，候选 catalog `6dbe944eeddd68b91dc9b6a7786f55be5af20066768a5af79b0048a52e0948e6`，普通 APK `5663f155549427b8ee62d04ebe84041a3fe982d04176bc79ac1114bc88b0ea80`。583 份源码/fixture SHA 与设备/20 份压缩原始证据由 schema005-fingerprints.json 绑定；源码 aggregate `d48195cda486d9381677f273b5fceac9207aead8e46a166b4538bc64394061c1`。collect-schema005.mjs 只读已批准合成设备的身份/APK，不读取数据库、信封或 Key。
+
+Schema 005 结构及指定验收 PASS；E/ER1/G4/MR2/M4 仍 BLOCKED，M5 NO。最终兼容探针 schema005-final-compatibility.txt 仍退出 1/12 项差异；schema005-final-order-proof.txt 仅证明新 005 存储原序，退出 0。下一步仍为唯一清单 E 内已有撤销语义/action/完整对象边界，不新开工作包。最终两轮全范围独立审查未运行，不把本次局部自查称作 MR8。

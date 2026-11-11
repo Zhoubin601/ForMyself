@@ -652,4 +652,15 @@ MR2 已将记忆详情、精确来源及后台任务的回复链授权证明放�
 
 用户明确撤销以纯领域 `kanataEvents.js` 为唯一权威：含 revoked 后代、descendants Set 顺序、uncertain 的 data.events 顺序、同世界完整 Events/Effects/Baselines 的增量签名，revoked 执行 no-op。必须先证明存储可恢复原始领域数组顺序；当前未证明，ER1-3 BLOCKED，不用 SQL ID/rowid 排序代替，也不修改 001–004/新增 005。旧 SQLite Oracle 仅历史对照；历史 action UTF-16 保护仍依任务书保留。
 
-新 Node Oracle 回归进入 `npm test`/`npm run check`；独立兼容验收运行 `node docs/qa/kanata-sqlite-m4/m4-r/event-compat/verify-compatibility.mjs`，顺序证明运行同目录 `verify-order.mjs`，当前均故意保留非零 BLOCKED 结果，不计 PASS。Android action Spike 通过同目录 `run-action-spike.ps1 -ManifestPath <现有隔离manifest>` 运行，仅在合成 QA 包新 cache 库取证，不替代业务矩阵。详细结果见 [ER1 BLOCKED 验收](docs/20261111-kanata-sqlite-mr2-g4-acceptance-v4.md)。ER1/G4/MR2/M4 BLOCKED，M5 NO；生产 legacy/default false 不变。
+### 2026-11-11 用户批准后的 Schema 005 隔离候选接口
+
+上段“不得新增 005”为批准前检查点；用户后续明确批准仅在 M 的隔离候选追加 `kanata-domain-array-order`。001–004 原定义/checksum 不变。`event_array_order`、`effect_array_order`、`baseline_array_order` 分别以 `(world_id,entity_id)` 为主键、`(world_id,ordinal)` 唯一，并用延迟复合 FK 绑定原实体。
+
+- BEFORE INSERT 触发器在原实体写入的同一 BEGIN IMMEDIATE 事务内，为当前新增实体记录追加 ordinal；新建、普通/历史 action 提交、两条修正路径、自治事件、Effects 与首次 Baseline 都受同一数据库规则约束。回滚或 COMMIT 失败不保留实体、序号或回执。
+- 三张旁表的 UPDATE/DELETE 均由数据库拒绝；INSERT 对现存实体、重复 ID/序号显式 RAISE，OR IGNORE/REPLACE 不能修改原序。孤儿顺序行不能提交。没有普通回填/修复 API。
+- 迁移只追加结构，不为旧行填序号。缺序号世界的相关事件读取、预览、签名、修改及调用 assertWritableWorld 的写操作拒绝 `KANATA_DOMAIN_ARRAY_ORDER_REQUIRED`；旧库与原行保留。该错误不能转为空数组或触发“自动修复”。
+- 内部 `domainArrayOrderPage(tx,kind,worldId,after,limit)` 仅支持 events/effects/baselines，按 world+ordinal keyset 返回最多 50 个 ID/序号；`after=-1` 开始，不按 ID/时间/rowid 猜顺序，不公开完整集合接口。事务的原有 owner/session/恢复租约仍然有效。
+- 固定 SQL catalog 增加合法查询与 005 DDL；synthetic-only 升级/故障 SQL 只在合成 catalog 注册，Gradle 声明其脚本输入依赖。普通 APK 激活仍 false、生产 canonical legacy，不授权真实迁移或 SQLite M5。
+- 验证：`node --test tests/kanataSqliteArrayOrder.test.js`、`npm run check`（含新增正负类型样例）；原顺序探针现在仅裁决 005 新写入原序，不能代替完整 E 撤销验收。实际命令、迁移/冷启动/强停及未覆盖项仍以[唯一清单 E](docs/20261111-kanata-sqlite-m4-final-closeout-ledger-v1.md)与[当前 QA](docs/qa/kanata-sqlite-m4/m4-r/event-compat/final-closeout/README.md)为准，不据结构通过自动提升 E/G4/M4。
+
+新 Node Oracle 回归进入 `npm test`/`npm run check`；独立兼容验收运行 `node docs/qa/kanata-sqlite-m4/m4-r/event-compat/verify-compatibility.mjs`，仍保留非零 BLOCKED 结果，不计 PASS。顺序证明同目录 `verify-order.mjs` 在 005 后仅验证新写入的原序；旧 v4 信息缺失反例由 final-closeout/verify-order-storage.mjs 显式固定 v4 保留，仍退出 1。005 Android 验收由既有 Windows runner 的 `-Mode array-order` 执行原地合成 v4→v5 升级及故障；普通完整回归命令不变。Android action Spike 仍只验证新 cache 库中的可行性，不替代四条业务路径。历史缺口见 [ER1 BLOCKED 验收](docs/20261111-kanata-sqlite-mr2-g4-acceptance-v4.md)，最新实际状态只认[唯一清单](docs/20261111-kanata-sqlite-m4-final-closeout-ledger-v1.md)。ER1/G4/MR2/M4 未自动通过，M5 NO；生产 legacy/default false 不变。

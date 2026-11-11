@@ -7,7 +7,7 @@ import { spawnSync } from 'node:child_process'
 import { mkdtempSync, unlinkSync, rmdirSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { migrateKanataSchema } from '../../../../../../src/features/chat/storage/sqlite/kanataSchemaMigrator.js'
+import { installLegacySchema } from '../../../../../../tests/helpers/kanataSqliteLegacy.js'
 import { previewKanataEventRevoke } from '../../../../../../src/features/chat/experience/kanataEvents.js'
 import { validateKanataData } from '../../../../../../src/features/chat/domain/kanataValidation.js'
 import { m2Fixture, m2FixtureCommands } from '../../../../../../tests/helpers/kanataSqliteM2Fixture.js'
@@ -39,14 +39,14 @@ try {
     let db = new DatabaseSync(file)
     databases.push(db)
     db.exec('PRAGMA foreign_keys=ON')
-    await migrateKanataSchema({ transaction: async action => {
+    await installLegacySchema({ connection: { transaction: async action => {
       db.exec('BEGIN IMMEDIATE')
       try {
         await action({ query: async (sql, args = []) => db.prepare(sql).all(...args),
           execute: async (sql, args = []) => { db.prepare(sql).run(...args) } })
         db.exec('COMMIT')
       } catch (error) { db.exec('ROLLBACK'); throw error }
-    } }, { now: () => 1800000 })
+    } } }, 4, [])
     db.exec('BEGIN IMMEDIATE')
     // A valid domain array need not be topologically ordered. Check all FKs at
     // commit rather than making the fixture writer impose a product ordering.

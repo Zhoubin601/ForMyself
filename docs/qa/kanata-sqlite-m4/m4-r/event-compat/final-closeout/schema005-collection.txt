@@ -1,0 +1,1 @@
+{"sourceFingerprint":"d48195cda486d9381677f273b5fceac9207aead8e46a166b4538bc64394061c1","sourceFiles":583,"installed":{"com.yubin.formyself.m2qa":"4ac866a6d9a5039bff48c35cd2c0e0a4036267437d78e2cf2663b81924ce1bee","com.yubin.formyself.m2qa.test":"db7f4d2142b82575d5d846f47d9f11e42799e0a4ab020f1a20d55054e4cb203e"},"archives":20}

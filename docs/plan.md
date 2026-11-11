@@ -1232,3 +1232,7 @@ MR2-G4 以 8d3b8f768617143312fd800ab05decaa53d6114d 接管。新进展与兼容�
 - 当前 M4 BLOCKED、M5 NO；生产 canonical legacy，普通 APK SQLite=false，Schema 001–004 冻结。
 
 2026-11-11 从远端 `1042110` 接管后，MR0 已轻量复核，473 个既有文件指纹、同一隔离设备/APK/catalog 与历史证据匹配。当前执行索引仍只有上面的最终清单。E 原始数组顺序的可复现信息缺失反例、附加顺序元数据方案与实际回滚/冷重开/强杀沙箱证据已直接补入其 E 条目，参见 [本轮 QA](qa/kanata-sqlite-m4/m4-r/event-compat/final-closeout/README.md)。未注册 Schema 005；按用户安全边界在该结构决策处交还控制，A–G 和 G1–G11 不提升。未开始最终集成、MR8 或 M5。
+
+后续用户已批准 Schema 005 的三张旁表及其隔离测试；在同一 E 条目继续实施，不增加工作包。顺序为：数据库级原子记录/不可变约束与缺序号门禁 → 受影响主机测试/strict/check → 同一合成 API34/SQLCipher4.17 的 v4 原地升级、DDL/COMMIT 回滚、强停、冷重开及缺序号拒绝 → 更新该条目的真实结论，再继续剩余 E/G4 合同。
+
+本次 005 指定验收已通过：主机最终 check 700 Node / 402 Vue，strict/build，通过 Android 最终迁移/恢复专项和候选 1k/10k 综合回归；初版逐行 count 导致的 420 秒超时已按原规模/原 deadline 修复复测，10k 最终 156,693ms。普通 APK 激活仍 false。证据及失败均保存在同一 QA 目录，当前状态以唯一清单 E 的更新为准。继续已有纯领域撤销/action/G4 项，不将 005 PASS 升为 E/G4/M4 PASS。

@@ -52,7 +52,7 @@ test('M1-02 有数据v1逐版升级保留原记录；日志指纹固定且重复
     for(const s of kanataFixtureCommands())await tx.execute(s.sql,s.parameters)
   })
   const before=rows(h,'SELECT * FROM messages')
-  assert.deepEqual(await migrateKanataSchema(h.connection),{version,appliedVersions:[2,3,4]})
+  assert.deepEqual(await migrateKanataSchema(h.connection),{version,appliedVersions:[2,3,4,5]})
   assert.deepEqual(rows(h,'SELECT * FROM messages'),before)
   h.writes.length=0
   await migrateKanataSchema(h.connection)
@@ -123,7 +123,7 @@ test('M1-15 已有v1记录升级失败保留逐字节文件，新运行时重试
     assert.deepEqual(readFileSync(path),readFileSync(base))
     const reopened=schemaHarness(path)
     assert.equal(rows(reopened,'PRAGMA user_version')[0].user_version,1)
-    assert.deepEqual((await migrateKanataSchema(reopened.connection)).appliedVersions,[2,3,4])
+    assert.deepEqual((await migrateKanataSchema(reopened.connection)).appliedVersions,[2,3,4,5])
     assert.equal(rows(reopened,'SELECT count(*) n FROM messages')[0].n,2);reopened.close()
   }
 })

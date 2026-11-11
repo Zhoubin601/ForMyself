@@ -84,3 +84,12 @@ void domains.memories.confirmConflicts({worldId:'world',instanceId:'actor'},conf
 void domains.memories.confirmConflicts({worldId:'world',instanceId:'actor'},['old'],'command')
 // @ts-expect-error A source cursor must also bind its memory revision and role.
 void domains.memories.sourcePage({ worldId: 'world', instanceId: 'actor' }, 'memory', { after: 'message' })
+
+// Internal ordinal access stays typed and bounded; no full-object Repository API.
+import { domainArrayOrderPage } from '../../src/features/chat/storage/sqlite/kanataArrayOrder.js'
+declare const orderedTransaction: import('../../src/platform/storage/kanataSqliteTypes').KanataSqliteTransaction
+void domainArrayOrderPage(orderedTransaction, 'events', 'world', -1, 50)
+// @ts-expect-error Only the three approved collections have stored array order.
+void domainArrayOrderPage(orderedTransaction, 'messages', 'world')
+// @ts-expect-error Ordinal continuation is numeric, never an entity ID guess.
+void domainArrayOrderPage(orderedTransaction, 'effects', 'world', 'event-id')

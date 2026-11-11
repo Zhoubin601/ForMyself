@@ -1,6 +1,7 @@
 // @ts-check
 // M1 definitions only. No connection, plugin registration or production data access.
 import {createKanataSchemaHardening, createKanataRegistryValidationQueries} from './kanataSchemaHardening.js'
+import {createKanataArrayOrderMigration} from './kanataSchemaArrayOrder.js'
 const MAX = Number.MAX_SAFE_INTEGER
 /** @param {string} name */
 const id = name => `${name} TEXT NOT NULL CHECK(length(${name}) BETWEEN 1 AND 200 AND substr(${name},1,1) GLOB '[A-Za-z0-9]' AND ${name} NOT GLOB '*[^A-Za-z0-9._:-]*')`
@@ -290,9 +291,10 @@ export const KANATA_SCHEMA_MIGRATIONS = Object.freeze([
     "CREATE INDEX memories_world_id ON memories(world_id,id)",
     "CREATE INDEX events_world_id ON world_events(world_id,id)",
     "CREATE TRIGGER card_versions_immutable BEFORE UPDATE ON card_versions BEGIN SELECT RAISE(ABORT,'KANATA_CARD_VERSION_IMMUTABLE'); END",
-  ])})
+  ])}),
+  createKanataArrayOrderMigration(),
 ])
-export const KANATA_SCHEMA_VERSION = 4
+export const KANATA_SCHEMA_VERSION = 5
 export const KANATA_SCHEMA_APPLICATION_ID = 0x4b4e5441
 
 export const KANATA_REGISTRY_VALIDATION_QUERIES = createKanataRegistryValidationQueries(entityTables)

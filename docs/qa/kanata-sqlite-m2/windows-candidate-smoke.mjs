@@ -121,7 +121,66 @@ try {
   let password
   try { password = JSON.stringify(bytes.toString('base64')) }
   finally { bytes.fill(0) }
-  if(process.argv.includes('--mr2-event-read')){
+  if(process.argv.includes('--array-order')){
+    const fixture=m2Fixture(), legacyWorld=fixture.events[0].worldId
+    const prepared=await evaluate(`window.schema005PrepareV4(${password},${JSON.stringify(fixture)},${JSON.stringify(m2FixtureCommands(fixture))})`)
+    assert.equal(prepared.version,4)
+    assert.match(prepared.health.cipher,/^4\.17\.0/)
+    console.log(JSON.stringify({schema005:{prepared}},null,2))
+    // Upgrade the same isolated installed package; no uninstall or database copy.
+    detach()
+    adb('shell','am','force-stop',packageName)
+    const upgrade=path.resolve('android/app/build/outputs/apk/debug/app-debug.apk')
+    const expectedHash=createHash('sha256').update(await readFile(upgrade)).digest('hex')
+    assert.match(adb('install','-r','-t',upgrade),/Success/)
+    const remote=adb('shell','pm','path',packageName).replace(/^package:/,'')
+    assert.match(remote,/^\/data\/app\/\S+\/base\.apk$/)
+    assert.equal(adb('shell','sha256sum',remote).split(/\s/)[0],expectedHash)
+    adb('shell','am','start','-W','-n',packageName+'/com.yubin.formyself.MainActivity')
+    await delay(600); evaluate=await attach(); assert.equal(await initialize(evaluate),true)
+    for(const fault of ['migration-ddl','migration-commit']){
+      const result=await evaluate(`window.schema005MigrationFault(${password},${JSON.stringify(legacyWorld)},${JSON.stringify(fault)})`)
+      assert.equal(result.version,4); assert.equal(result.orderTables,0)
+      console.log(JSON.stringify({schema005:{fault,result}},null,2))
+    }
+    async function killAndReopen(){
+      const oldPid=pid
+      adb('shell','run-as',packageName,'kill','-9',oldPid)
+      await delay(300); assert.equal(adb('shell','pidof '+packageName+' || true'),'')
+      detach()
+      adb('shell','am','start','-W','-n',packageName+'/com.yubin.formyself.MainActivity')
+      await delay(600); evaluate=await attach(); assert.notEqual(pid,oldPid)
+      assert.equal(await initialize(evaluate),true)
+      return {oldPid,newPid:pid}
+    }
+    async function waitForState(expected){
+      let state
+      for(let i=0;i<80;i++){
+        state=await evaluate('window.schema005State()')
+        if(state!=='idle')break
+        await delay(100)
+      }
+      assert.equal(state,expected)
+    }
+    assert.equal(await evaluate(`window.schema005ArmMigration(${password})`),'armed')
+    await waitForState('schema005-ddl-uncommitted')
+    const migrationKill=await killAndReopen()
+    const rolledBack=await evaluate(`window.schema005InspectV4(${password},${JSON.stringify(legacyWorld)})`)
+    assert.equal(rolledBack.version,4); assert.equal(rolledBack.orderTables,0)
+    console.log(JSON.stringify({schema005:{migrationKill,rolledBack,upgradeApkSha256:expectedHash}},null,2))
+    const active=await evaluate(`window.schema005MigrateAndWrite(${password},${JSON.stringify(fixture)})`)
+    assert.equal(active.realModelCalls,0); assert.equal(active.commitFailure,true); assert.equal(active.immutableMutations,9)
+    console.log(JSON.stringify({schema005:{active}},null,2))
+    const armed=await evaluate(`window.schema005ArmWrite(${password},${JSON.stringify(active.scope)})`)
+    await waitForState('schema005-entity-ordinal-uncommitted')
+    const writeKill=await killAndReopen()
+    const recovered=await evaluate(`window.schema005RecoverWrite(${password},${JSON.stringify(active.scope)},${JSON.stringify(armed.eventId)})`)
+    assert.equal(recovered.retryIdempotent,true)
+    const coldKill=await killAndReopen()
+    const cold=await evaluate(`window.schema005ColdCheck(${password},${JSON.stringify(legacyWorld)},${JSON.stringify(active.scope)})`)
+    assert.equal(cold.coldRejectedMissingOrder,true)
+    console.log(JSON.stringify({schema005:{writeKill,recovered,coldKill,cold,realModelCalls:0}},null,2))
+  }else if(process.argv.includes('--mr2-event-read')){
     const fixture=m2Fixture()
     const sample=fixture.messages[0], {worldId,conversationId}=sample
     const instanceId=fixture.instances.find(actor=>actor.worldId===worldId).id

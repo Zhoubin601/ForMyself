@@ -5,6 +5,7 @@ import { executeOnce } from './kanataDomainRows.js'
 import { rebuildEventEffects, visitRows } from './kanataMessageDependents.js'
 import { equalDto, pageLimit, requireSqliteValue as need } from './kanataRepositoryValues.js'
 import { assertWritableWorld } from './kanataWorldRepository.js'
+import { assertDomainArrayOrder } from './kanataArrayOrder.js'
 
 /** @typedef {import('../../../../platform/storage/kanataSqliteTypes').KanataSqliteOperation} Operation */
 /** @typedef {import('../../../../platform/storage/kanataSqliteTypes').KanataSqliteTransaction} Tx */
@@ -119,6 +120,7 @@ function entry(row) {
 
 /** @param {Tx} tx @param {string} worldId @param {string} eventId */
 async function snapshot(tx, worldId, eventId) {
+  await assertDomainArrayOrder(tx,worldId)
   const scope = [worldId,eventId]
   const [original] = await tx.query(root,scope)
   need(original && original.status!=='revoked','EVENT_UNAVAILABLE')
@@ -207,6 +209,7 @@ export function createEventRevocation(operation,tools,prepareCorrection) {
     /** @param {string} worldId @param {string} eventId @param {string} auditId
      * @param {import('./kanataDomainTypes').KanataEventEffectAuditCursor} [cursor] @param {number} [limit] */
     revocationEffectAudit: (worldId, eventId, auditId, cursor, limit=50) => operation.transaction(async tx => {
+      await assertDomainArrayOrder(tx,worldId)
       validateId(worldId, 'worldId')
       validateId(eventId, 'eventId')
       validateId(auditId, 'auditId')
@@ -226,6 +229,7 @@ export function createEventRevocation(operation,tools,prepareCorrection) {
     }),
     /** @param {string} worldId @param {string} eventId @param {string} [after] @param {number} [limit] */
     revocationAudits: (worldId,eventId,after='',limit=50) => operation.transaction(async tx=>{
+      await assertDomainArrayOrder(tx,worldId)
       validateId(worldId,'worldId')
       validateId(eventId,'eventId')
       if(after)validateId(after,'cursor')

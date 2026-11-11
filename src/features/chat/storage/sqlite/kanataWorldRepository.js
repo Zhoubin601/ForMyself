@@ -5,6 +5,7 @@ import { validateId } from '../../domain/kanataValidation.js'
 import { messageQueries } from './kanataRepositorySql.js'
 import { executeOnce, found, domainTable, writeOne } from './kanataDomainRows.js'
 import { pageLimit, requireSqliteValue as need, safeInteger } from './kanataRepositoryValues.js'
+import { assertDomainArrayOrder } from './kanataArrayOrder.js'
 
 /** @typedef {import('../../domain/kanataTypes').World} World */
 /** @typedef {import('../../domain/kanataTypes').WorldUserIdentity} Identity */
@@ -43,6 +44,7 @@ export async function assertWritableWorld(tx, id) {
   validateId(id, 'worldId')
   const [row] = await tx.query(messageQueries.world, [id])
   need(row && row.archived !== 1, 'WORLD_ARCHIVED')
+  await assertDomainArrayOrder(tx, id)
 }
 
 /** @param {NonNullable<Awaited<ReturnType<typeof readWorld>>>} record */

@@ -5,6 +5,7 @@ import { dependentQueries as query, dependentWrites as write, updateEffectValue 
 import { eventAuditSupport, writeEventStatusAudit } from './kanataEventSnapshot.js'
 import { messageWrites } from './kanataRepositorySql.js'
 import { extensionObject, requireSqliteValue as need, safeInteger } from './kanataRepositoryValues.js'
+import { assertDomainArrayOrder } from './kanataArrayOrder.js'
 
 /** @typedef {import('../../domain/kanataTypes').Message} Message */
 /** @typedef {import('../../domain/kanataTypes').WorldEvent} Event */
@@ -49,6 +50,7 @@ function originalOrder(actual, hint, identity) {
 /** Explicit historical materializer. Ordinary readers use header/relation/chunk APIs.
  * @param {Transaction} tx @param {Row} row @returns {Promise<Event>} */
 export async function eventFromRow(tx, row) {
+  await assertDomainArrayOrder(tx,String(row.world_id))
   const keys = [row.world_id, row.id]
   let json='',offset=0
   for(;;){
@@ -133,6 +135,7 @@ async function replayEffectPath(tx, { worldId, targetType, targetId, path }) {
  * and one replay page; update a target revision only once for all its paths.
  * @param {Transaction} tx @param {string} sql @param {Value[]} bindings */
 export async function rebuildEventEffects(tx, sql, bindings) {
+  await assertDomainArrayOrder(tx,String(bindings[0]))
   /** @type {Effect|undefined} */
   let previous
   /** @param {Effect} effect */
@@ -154,6 +157,7 @@ export async function rebuildEventEffects(tx, sql, bindings) {
  * @param {() => Promise<void>} revise
  * @param {{ decode(row:Row):Message, audit(tx:Transaction, previous:Message, next:Message, tools:Tools):Promise<void> }} messages */
 export async function reviseMessageDependents(tx, message, tools, revise, messages) {
+  await assertDomainArrayOrder(tx,message.worldId)
   const scope = [message.worldId, message.conversationId, message.id]
   need((await tx.query(query.uncertain, scope)).length === 0, 'EVENT_DEPENDENCY_UNCERTAIN')
   for await (const row of visitRows(tx, query.events, scope, ['id'], 50)) {

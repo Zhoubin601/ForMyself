@@ -1,7 +1,7 @@
 param(
     [Parameter(Mandatory)] [string] $ManifestPath,
     [Parameter(Mandatory)] [string] $EvidenceDirectory,
-    [ValidateSet('repository','full','mr1-fanout','mr1-verify','mr2-grants','mr2-chat-provenance','mr2-event-provenance','mr2-event-read')] [string] $Mode = 'full',
+    [ValidateSet('repository','full','mr1-fanout','mr1-verify','mr2-grants','mr2-chat-provenance','mr2-event-provenance','mr2-event-read','array-order')] [string] $Mode = 'full',
     [switch] $M4Growth,
     [switch] $M4Completion
 )
@@ -37,6 +37,12 @@ foreach ($spec in @(
     @{ id = "$app.test"; file = 'android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk' }
 )) {
     $apk = (Resolve-Path -LiteralPath $spec.file).Path
+    if ($Mode -eq 'array-order' -and $spec.id -eq $app) {
+        $apk = Join-Path $manifest.root 'er1-final-regression-20261111/com.yubin.formyself.m2qa-base.apk'
+        if ((Get-FileHash -LiteralPath $apk).Hash.ToLower() -ne '0dacf543a3318fa8d049d2e046f12f33fe02a45448a23f24cf2585995c4da612') {
+            throw 'Archived synthetic v4 APK mismatch'
+        }
+    }
     $badging = & $aapt dump badging $apk
     if ($LASTEXITCODE -ne 0 -or -not ($badging -match "^package: name='$([regex]::Escape($spec.id))'")) { throw 'Unexpected APK' }
     $badging > "$evidence/$($spec.id)-badging.txt"

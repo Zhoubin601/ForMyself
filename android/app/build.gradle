@@ -14,6 +14,7 @@ def generateKanataSqliteCatalog = tasks.register('generateKanataSqliteCatalog', 
         inputs.dir new File(kanataRepository, 'tests/helpers')
         inputs.file new File(kanataRepository, 'docs/qa/kanata-sqlite-m4/fixture.mjs')
         inputs.file new File(kanataRepository, 'docs/qa/kanata-sqlite-m4/completion/fixture.mjs')
+        inputs.file new File(kanataRepository, 'docs/qa/kanata-sqlite-m4/m4-r/event-compat/final-closeout/schema005-device.mjs')
         inputs.dir new File(kanataRepository, 'src/features/chat/presets')
         args '--synthetic'
     }

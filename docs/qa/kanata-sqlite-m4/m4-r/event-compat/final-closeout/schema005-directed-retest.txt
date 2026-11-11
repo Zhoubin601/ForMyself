@@ -1,0 +1,25 @@
+(node:30300) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ 005 freezes 001–004 checksums and never backfills a populated v4 (77.0144ms)
+✔ 005 persists original non-ID/non-time array order; rowid changes cannot change it (38.614ms)
+✔ 005 rejects ordinary updates/deletes, replace/ignore, orphan/cross-world and invalid ordinals (43.3369ms)
+✔ 005 covers normal/legacy commit and both correction writers, Effects/Baselines and rollback/idempotency (60.7505ms)
+✔ 005 v4 migration failures and COMMIT failure preserve disk; cold retry installs no backfill (242.9319ms)
+✔ 005 ordinal keyset stays at 50 rows with 1k/10k synthetic appends (2676.6293ms)
+ℹ {"size":1000,"maxRows":50,"elapsedMs":40}
+ℹ {"size":10000,"maxRows":50,"elapsedMs":2549}
+(node:34632) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ M3 upgrades a populated v3 and preserves historical application times (71.1452ms)
+(node:28744) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ R1-01 成功版本保存真实注入UTC毫秒，回拨不伪造单调时间，幂等不重写 (51.9915ms)
+✔ R6 NOT-A-DEFECT：NO ACTION保留引用，未引用叶子可删，延迟FK与回滚不留悬挂 (62.9119ms)
+ℹ tests 9
+ℹ suites 0
+ℹ pass 9
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3400.9653
