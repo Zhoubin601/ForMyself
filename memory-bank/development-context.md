@@ -71,3 +71,8 @@ M2 Windows 接续已通过（2026-11-09）。[最新验收 v2](../docs/20261109-
 2026-11-11 事件读取与旧兼容切片见 [MR2-G4 验收 v3](../docs/20261111-kanata-sqlite-mr2-g4-acceptance-v3.md)。普通读取用 header、关系/Effect/Audit 页与 JSON 块；完整旧 DTO 显式置于 events.legacy，旧 Runtime 入口置于 legacyEvents。SQL 临时完整性证明只在连接状态与 revision 均未变化时复用，权限仍逐页校验。M4 BLOCKED，M5 NO。
 
 2026-11-11 ER1 当前入口：[BLOCKED 验收 v4](../docs/20261111-kanata-sqlite-mr2-g4-acceptance-v4.md)。候选 Runtime 无消费者 legacyEvents 包装已移除，Repository 回退尚在。用户已确定纯领域为撤销唯一权威，包含 revoked 后代、原始领域数组/Set 顺序和同世界完整数据增量签名；不能证明原数组顺序恢复则 ER1-3 BLOCKED。当前尚无该证明，不回退旧 SQLite 契约、不改 frozen Schema/新增005、不开始M5。ER1/G4/MR2/M4 BLOCKED，M5 NO，生产 legacy/default false。
+
+
+## 2026-11-11 Kanata SQLite M4 收口管理规则
+
+用户已确认 Kanata 采用“工程质量优先，但必须有明确终点”。当前 M4 只按 [最终收口清单](../docs/20261111-kanata-sqlite-m4-final-closeout-ledger-v1.md) 统一推进，不再增加 MR9/ER1-3A 等新工作包。P0 是实际正确性/安全/数据问题，P1 是 M4-R 合同明确要求的强制证据；两者均阻断 M4。只有合同外新需求、无复现依据的理论风险和非必要优化进入 P2。已有 PASS 证据按源码/fixture/设备/APK/catalog 指纹与影响范围复用。M4 必须 G1–G11 全部 PASS；M5 不自动启动，必须等待用户明确授权。当前 M4 BLOCKED、M5 NO，生产 canonical legacy、普通 Android APK SQLite=false、Schema 001–004 冻结。

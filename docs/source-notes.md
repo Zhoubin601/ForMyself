@@ -1270,3 +1270,14 @@ raw/完整需求清单.txt 4.1/4.4/8.3及最新连续执行v3驱动当前实现�
 ## 2026-11-11 ER1
 
 唯一任务依据为 docs/20261111-kanata-sqlite-mr2-g4-event-compat-closure-task-v1.md；raw/完整需求清单.txt §6.7–6.8 和 raw/彼方 · Kanata 技术设计.txt §3.3 提供事件修正、用户确认与 Effect 保留要求，原文件只读。当前用户补充决策指定纯领域撤销为唯一权威，详见 [ER1 契约](qa/kanata-sqlite-m4/m4-r/event-compat/compatibility-contract.md)。执行使用本仓源码和隔离合成设备，未引入外部资料。
+
+
+## 2026-11-11 Kanata M4 最终收口清单来源
+
+- 用户确认开发原则：工程质量优先，但必须有明确终点；不满意点包括交付周期长、审计占用开发时间、任务不断拆分。
+- 当前 M 基线：5095b8ec537b1af182f7dbb091671c63aa917c6e。当前事实以该提交及其后最新远端为准。
+- 原始产品资料：[raw/完整需求清单.txt](../raw/完整需求清单.txt)，重点为角色卡/世界隔离、聊天、世界书/记忆、事件与历史修正、虚拟生活、生活模块权限、数据安全与最终验收；[raw/彼方 · Kanata 技术设计.txt](<../raw/彼方 · Kanata 技术设计.txt>)，重点为领域模型、事件/Effect/来源、存储与迁移边界。
+- 工程合同：[M4 原始任务书](20261109-kanata-sqlite-m4-task-v1.md)、[M4-R 最终收尾合同](20261110-kanata-sqlite-m4-r-closeout-task-v1.md)、[ER1 事件兼容任务书](20261111-kanata-sqlite-mr2-g4-event-compat-closure-task-v1.md)。
+- 当前验收事实：[M4-R 验收 v5](20261110-kanata-sqlite-m4-r-acceptance-v5.md)、[ER1 验收 v4](20261111-kanata-sqlite-mr2-g4-acceptance-v4.md)、[M4-R QA 矩阵](qa/kanata-sqlite-m4/m4-r/matrix.md)、[G4 调用图](qa/kanata-sqlite-m4/m4-r/g4-call-map.md)、[ER1 兼容契约](qa/kanata-sqlite-m4/m4-r/event-compat/compatibility-contract.md)、[Oracle](qa/kanata-sqlite-m4/m4-r/event-compat/oracle.md)、[生命周期矩阵](qa/kanata-sqlite-m4/m4-r/event-compat/lifecycle-matrix.md)。
+- 项目执行规范：[AGENTS.md](../AGENTS.md)、[架构接口与 Agent 开发规范](../架构接口与Agent开发说明书.md)、[开发背景](../memory-bank/development-context.md)。
+- 本次只做范围与状态收敛，不改 raw，不改业务源码、Schema、Android 配置或真实数据；未引入外部资料。

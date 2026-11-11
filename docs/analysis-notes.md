@@ -1318,3 +1318,20 @@ planMessageArchive现有Map<string, Message[]>/逐组件对象数组/归档Set�
 ## 2026-11-11 ER1 分析
 
 [调用审计](qa/kanata-sqlite-m4/m4-r/event-compat/call-map.md)确认 Runtime 包装无消费者，Repository 仍有 action 真实回退和设备 QA 消费者。独立 probe 复现 12 项兼容差异；原始数组顺序未取得可证明的恢复映射，按用户纯领域权威决定保留 ER1-3 BLOCKED。可独立安全收口的 Runtime 与 Ledger 关闭 guard 已修改并测试。完整对象迁移、字段级 action 与专用设备/Heap 证据仍待完成，不以局部通过当整项 PASS。
+
+
+## 2026-11-11 Kanata M4 最终收口分析
+
+用户选择“工程质量优先，但必须有明确终点”，并明确不满意开发周期、审计投入和任务不断拆分。本次对照 raw 两份原始资料、M4 原始任务书、M4-R 总合同、ER1 任务书、当前验收 v5/v4、A–G/G1–G11 矩阵和当前 M 分支基线 5095b8e。
+
+结论与约束：
+
+1. M4 的问题不是缺少另一份子任务书，而是当前已有 M4-R 总合同、ER1 任务书、验收和 QA 之间缺少唯一的状态索引。因此新增的是一份统一收口清单，不新增 MR/ER 工作包或产品需求。
+2. M4 范围仍由 M4-R 合同中的 A–G、MR0–MR8、G1–G11 决定；raw 提供产品语义，不自动把 M5/M6/M7/P7 或多模态未来需求提前加入 M4。
+3. P0 定义为可复现的产品正确性/数据/安全/权限阻断；P1 定义为现有合同明确要求但尚缺的强制证据。P0、P1 均阻断 M4。P2 仅容纳合同外新增需求、无复现依据的理论风险和后续优化，不得借 P2 降低原合同门槛。
+4. MR0/MR1、GROUP-01–05、已有记忆来源/事件写入/事件读取切片按指纹与影响范围复用；不因新一轮开始无原因重做。最终集成树仍需执行受影响回归、完整 check、强制 Android 验收和两轮最终全范围审查。
+5. 事件撤销继续以用户已确认的纯领域契约为唯一权威。原始领域数组顺序、增量完整世界签名、revoked no-op 和历史 action 四路径字段级兼容仍是当前明确阻断；不以 rowid/ID 排序代替，不擅自新增 Schema 005。
+6. 旧兼容完整对象接口、消息/事件 provenance、自治 loadTask、长 Effect Audit、A–G 真实消费者、生命周期/Heap/Store 证据按现有清单收口；不另拆新编号。
+7. M4 PASS 仍要求 G1–G11 全部通过。M5 只有在 M4 PASS 后提出放行建议，并且必须等待用户明确授权；生产 canonical 继续 legacy，普通 APK SQLite=false。
+
+本轮文档交付为 docs/20261111-kanata-sqlite-m4-final-closeout-ledger-v1.md。未修改业务源码、测试、Schema、Android 配置或生产数据。
