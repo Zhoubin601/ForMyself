@@ -1241,3 +1241,15 @@ test('MR2 integrity proof invalidates on another SQLite connection commit',async
   assert.equal(db.prepare('SELECT total_changes() AS n').get().n,originalChanges)
   await assert.rejects(()=>events.relations(worldId,id,'participantIds',null),/KANATA_SQLITE_INTEGRITY_FAILED/)
 })
+
+test('MR2 event read keeps the legacy depth limit for unknown extension JSON',async t=>{
+  const {db,domains,scope,move}=await setup(t)
+  const {events}=domains,{worldId}=scope
+  const {id}=await events.proposeAcknowledged(move('扩展深度'),'extension-depth')
+  let value=null
+  for(let i=0;i<65;i++)value={child:value}
+  const raw={participantIds:[scope.instanceId],sourceRefs:[],causedByEventIds:[],future:value}
+  db.prepare('UPDATE world_events SET extensions_json=? WHERE world_id=? AND id=?').run(JSON.stringify(raw),worldId,id)
+  await assert.rejects(()=>events.legacy.list(worldId),/KANATA_SQLITE_INTEGRITY_FAILED/)
+  await assert.rejects(()=>events.relations(worldId,id,'participantIds',null),/KANATA_SQLITE_INTEGRITY_FAILED/)
+})

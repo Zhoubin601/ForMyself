@@ -1,5 +1,5 @@
 // @ts-check
-import { validateId } from '../../domain/kanataValidation.js'
+import { cloneKanataJson, validateId } from '../../domain/kanataValidation.js'
 import { eventAuditSupport, eventRelationReads, eventIntegrityDdl, eventIntegrityCached, clearEventIntegrity, storeEventIntegrity } from './kanataEventSnapshot.js'
 import { effectFromRow } from './kanataMessageDependents.js'
 import { equalDto, pageLimit, requireSqliteValue as need, safeInteger } from './kanataRepositoryValues.js'
@@ -144,7 +144,7 @@ export function createEventRead(operation, authorize) {
       const rows=await tx.query(eventRelationReads[kind].page,[worldId,id,current.eventRevision,cursor?.after??-1,pageLimit(limit)+1])
       return {entries:rows.slice(0,limit).map(row=>row.item===null
         ? {position:Number(row.position),chunked:true}
-        : {position:Number(row.position),value:/** @type {unknown} */ (JSON.parse(String(row.item)))}),
+        : {position:Number(row.position),value:/** @type {unknown} */ (cloneKanataJson(JSON.parse(String(row.item))))}),
       cursor:rows.length>limit?{...current,kind,after:Number(rows[limit-1].position)}:null}
     }),
     /** @param {string} worldId @param {string} id @param {PageCursor} [cursor] @param {number} [limit] */

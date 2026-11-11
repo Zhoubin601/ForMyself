@@ -76,8 +76,17 @@ const snapshot = `json_remove(json_set(e.extensions_json,
   ${remove("json_type(e.extensions_json,'$.lifeSources') IS NULL AND NOT EXISTS (SELECT 1 FROM event_life_sources l WHERE l.world_id=e.world_id AND l.event_id=e.id)",'lifeSources')}
 )`
 const scope = 'FROM world_events e WHERE e.world_id=? AND e.id=? AND e.revision=?'
+const extensionJsonValid = `NOT EXISTS (
+  WITH RECURSIVE tree(value,kind,depth) AS (
+    SELECT e.extensions_json,'object',0
+    UNION ALL SELECT j.value,j.type,t.depth+1 FROM tree t
+      CROSS JOIN json_each(CASE WHEN t.kind IN ('object','array') THEN t.value ELSE '[]' END) j
+      WHERE t.depth<=64
+  ) SELECT 1 FROM tree WHERE depth>64
+    OR (kind='real' AND abs(value)>1.7976931348623157e308) LIMIT 1
+)`
 const valid = `CASE WHEN json_valid(e.extensions_json) THEN json_type(e.extensions_json)='object'
-  AND ${projections.map(({valid}) => '('+valid+')').join(' AND ')} ELSE 0 END`
+  AND ${extensionJsonValid} AND ${projections.map(({valid}) => '('+valid+')').join(' AND ')} ELSE 0 END`
 export const eventAuditSupport = `SELECT CASE WHEN ${valid}
   THEN CASE WHEN json_type(e.extensions_json,'$.action') IS 'text' THEN 0 ELSE 1 END
   ELSE -1 END AS supported ${scope}`
