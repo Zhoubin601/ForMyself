@@ -118,6 +118,16 @@ export function createKanataSqliteWorldRuntime({ candidate, clock = Date.now, se
         assertOwner()
         return result
       }
+      const eventReadOwner=crypto.randomUUID()
+      /** @template {object} T @param {(T & {owner:string})|undefined} cursor */
+      function checkEventCursor(cursor) {
+        if(cursor && cursor.owner!==eventReadOwner)throw new Error('EVENT_READ_CURSOR_STALE')
+        return cursor
+      }
+      /** @template {object} T,C @param {T & {cursor:C|null}} page */
+      function ownEventPage({cursor,...page}) {
+        return {...page,cursor:cursor?{...cursor,owner:eventReadOwner}:null}
+      }
       return {
         worldId, assertCurrent,
         /** @param {()=>void} [assertRequest] */
@@ -231,13 +241,6 @@ export function createKanataSqliteWorldRuntime({ candidate, clock = Date.now, se
         eventProposalRelations: (cursor,guard) => run(domains=>domains.events.proposalRelations(worldId,cursor),guard),
         /** @param {string|undefined} cursor @param {()=>void} guard */
         eventProposalCauses: (cursor,guard) => run(domains=>domains.events.proposalCauses(worldId,cursor),guard),
-        /** @param {Parameters<Domains['events']['propose']>[0]} fields @param {string} commandId @param {()=>void} [guard] */
-        proposeEvent: (fields, commandId, guard) => run(domains => {
-          if (fields.worldId !== worldId) throw new Error('KANATA_WORLD_OWNER_EXPIRED')
-          return domains.events.propose(fields, commandId)
-        },guard),
-        /** @param {string} eventId @param {number} revision @param {()=>void} [guard] */
-        commitEvent: (eventId, revision, guard) => run(domains => domains.events.commit(worldId, eventId, revision),guard),
         /** @param {Parameters<Domains['events']['proposeAcknowledged']>[0]} fields @param {string} commandId @param {()=>void} guard */
         proposeEventAcknowledged: (fields, commandId, guard) => run(domains => {
           if (fields.worldId !== worldId) throw new Error('KANATA_WORLD_OWNER_EXPIRED')
@@ -246,18 +249,45 @@ export function createKanataSqliteWorldRuntime({ candidate, clock = Date.now, se
         /** @param {string} eventId @param {number} revision @param {()=>void} guard */
         commitEventAcknowledged: (eventId, revision, guard) =>
           run(domains => domains.events.commitAcknowledged(worldId, eventId, revision),guard),
-        /** @param {string} eventId */
-        previewRevoke: eventId => run(domains => domains.events.preview(worldId, eventId)),
-        /** @param {Parameters<Domains['events']['revoke']>[0]} plan @param {Parameters<Domains['events']['revoke']>[1]} decision */
-        revokeEvent: (plan, decision) => run(domains => {
-          if (plan.worldId !== worldId) throw new Error('KANATA_WORLD_OWNER_EXPIRED')
-          return domains.events.revoke(plan, decision)
-        }),
-        /** @param {Parameters<Domains['events']['correct']>[0]} plan @param {Parameters<Domains['events']['correct']>[1]} decision @param {string} summary */
-        correctEvent: (plan, decision, summary) => run(domains => {
-          if (plan.worldId !== worldId) throw new Error('KANATA_WORLD_OWNER_EXPIRED')
-          return domains.events.correct(plan, decision, summary)
-        }),
+        legacyEvents: {
+          /** @param {Parameters<Domains['events']['legacy']['propose']>[0]} fields @param {string} commandId @param {()=>void} [guard] */
+          proposeEvent: (fields, commandId, guard) => run(domains => {
+            if (fields.worldId !== worldId) throw new Error('KANATA_WORLD_OWNER_EXPIRED')
+            return domains.events.legacy.propose(fields, commandId)
+          },guard),
+          /** @param {string} eventId @param {number} revision @param {()=>void} [guard] */
+          commitEvent: (eventId, revision, guard) => run(domains => domains.events.legacy.commit(worldId, eventId, revision),guard),
+          /** @param {string} eventId */
+          previewRevoke: eventId => run(domains => domains.events.legacy.preview(worldId, eventId)),
+          /** @param {Parameters<Domains['events']['legacy']['revoke']>[0]} plan @param {Parameters<Domains['events']['legacy']['revoke']>[1]} decision */
+          revokeEvent: (plan, decision) => run(domains => {
+            if (plan.worldId !== worldId) throw new Error('KANATA_WORLD_OWNER_EXPIRED')
+            return domains.events.legacy.revoke(plan, decision)
+          }),
+          /** @param {Parameters<Domains['events']['legacy']['correct']>[0]} plan @param {Parameters<Domains['events']['legacy']['correct']>[1]} decision @param {string} summary */
+          correctEvent: (plan, decision, summary) => run(domains => {
+            if (plan.worldId !== worldId) throw new Error('KANATA_WORLD_OWNER_EXPIRED')
+            return domains.events.legacy.correct(plan, decision, summary)
+          }),
+        },
+        /** @param {string} id @param {import('./contracts').KanataEventReadScope} scope @param {()=>void} guard */
+        eventReadFor: (id,scope,guard) => run(domains=>domains.events.readFor(worldId,id,scope),guard),
+        /** @param {string} id @param {import('./contracts').KanataEventRelationKind} kind
+         * @param {import('./contracts').KanataEventReadScope|null} scope
+         * @param {(import('./contracts').KanataEventRelationCursor & {owner:string})|undefined} cursor @param {()=>void} guard */
+        eventRelations: (id,kind,scope,cursor,guard) => run(async domains=>
+          ownEventPage(await domains.events.relations(worldId,id,kind,scope,checkEventCursor(cursor))),guard),
+        /** @param {string} id @param {(import('./contracts').KanataEventReadCursor & {owner:string})|undefined} cursor @param {()=>void} guard */
+        eventEffects: (id,cursor,guard) => run(async domains=>
+          ownEventPage(await domains.events.effects(worldId,id,checkEventCursor(cursor))),guard),
+        /** @param {string} id @param {(import('./contracts').KanataEventReadCursor & {owner:string})|undefined} cursor @param {()=>void} guard */
+        eventAudits: (id,cursor,guard) => run(async domains=>
+          ownEventPage(await domains.events.audits(worldId,id,checkEventCursor(cursor))),guard),
+        /** @param {string} id @param {import('./contracts').KanataEventJsonSelection} selection
+         * @param {import('./contracts').KanataEventReadScope|null} scope
+         * @param {(import('./contracts').KanataEventJsonCursor & {owner:string})|undefined} cursor @param {()=>void} guard */
+        eventJsonChunk: (id,selection,scope,cursor,guard) => run(async domains=>
+          ownEventPage(await domains.events.jsonChunk(worldId,id,selection,scope,checkEventCursor(cursor))),guard),
         /** @param {Parameters<Domains['memories']['save']>[0]} memory @param {number|null} revision */
         saveMemory: (memory, revision) => run(domains => {
           if (memory.worldId !== worldId) throw new Error('KANATA_WORLD_OWNER_EXPIRED')

@@ -10,4 +10,13 @@ void domains.memories.resolveSource({ worldId: 'world-one', instanceId: 'actor-o
 // @ts-expect-error Callers cannot directly update the watermark.
 void domains.autonomy.setWatermark('world-one', 100)
 // @ts-expect-error Effect reversal is driven by a complete preview.
-void domains.events.revoke({ eventId: 'event-one' })
+void domains.events.legacy.revoke({ eventId: 'event-one' })
+
+import type { KanataEventJsonSelection, KanataEventRelationCursor } from '../../src/application/contracts'
+declare const relationCursor: KanataEventRelationCursor
+// @ts-expect-error Every continuation must retain the event revision.
+const brokenEventCursor: KanataEventRelationCursor = { worldId:'world',eventId:'event',scope:null,kind:'lifeSources',after:1 }
+// @ts-expect-error An audit stream selects an exact snapshot revision.
+const unboundAudit: KanataEventJsonSelection = { kind:'audit',auditId:'audit',side:'previous' }
+// @ts-expect-error A relation cursor is not an Effect continuation.
+void domains.events.effects('world','event',relationCursor)

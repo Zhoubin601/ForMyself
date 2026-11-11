@@ -73,3 +73,35 @@ export interface KanataMemorySourceCursor {
   readonly revision: number
   readonly after: string
 }
+export type KanataEventReadScope = { readonly instanceId: string; readonly group: boolean }
+export type KanataEventRelationKind = 'participantIds' | 'causedByEventIds' | 'sourceRefs' | 'lifeSources'
+export interface KanataEventReadIdentity {
+  readonly worldId: string
+  readonly eventId: string
+  readonly eventRevision: number
+  readonly scope: KanataEventReadScope | null
+}
+export interface KanataEventRelationCursor extends KanataEventReadIdentity {
+  readonly kind: KanataEventRelationKind
+  readonly after: number
+}
+export interface KanataEventReadCursor extends KanataEventReadIdentity {
+  readonly kind: 'effects' | 'audits'
+  readonly after: string
+}
+export type KanataEventJsonSelection =
+  | { readonly kind: 'extensions' | 'summary' }
+  | { readonly kind: 'relation'; readonly relation: KanataEventRelationKind; readonly position: number }
+  | { readonly kind: 'effectValue' | 'effectPath'; readonly effectId: string }
+  | { readonly kind: 'audit'; readonly auditId: string; readonly side: 'previous' | 'next';
+      readonly snapshotRevision: number; readonly field?: KanataEventRelationKind }
+export interface KanataEventJsonCursor extends KanataEventReadIdentity {
+  readonly selection: KanataEventJsonSelection
+  readonly offset: number
+}
+export interface KanataRelationshipEventCursor {
+  readonly worldId: string
+  readonly relationshipId: string
+  readonly relationshipRevision: number
+  readonly after: string
+}

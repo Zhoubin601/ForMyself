@@ -1,6 +1,7 @@
-import { memoryRows, memoryEdges, memoryWideSources, eventRows, eventEdges, seedFanoutLinks, replayEventRows, replayEffectRows, fanoutAuditInspection, grantOriginActors, grantOrigins, grantMessageTags, seedWideChatSources, chatReplyTagCheck } from '../kanata-sqlite-m4/completion/fixture.mjs'
+import { memoryRows, memoryEdges, memoryWideSources, eventRows, eventEdges, seedFanoutLinks, replayEventRows, replayEffectRows, fanoutAuditInspection, grantOriginActors, grantOrigins, grantMessageTags, seedWideChatSources, chatReplyTagCheck, eventReadEffects, eventReadAudits, eventReadRevision, eventReadShapeEdges, eventReadPublic, chatEventActor, chatEventSource } from '../kanata-sqlite-m4/completion/fixture.mjs'
 import { growthSeedSql } from '../kanata-sqlite-m4/fixture.mjs'
 import { eventRevocationQueries, eventRevocationWrites } from '../../../src/features/chat/storage/sqlite/kanataEventRevocation.js'
+import { eventReadQueries } from '../../../src/features/chat/storage/sqlite/kanataEventRead.js'
 import { eventProofDdl, eventProofWrites } from '../../../src/features/chat/storage/sqlite/kanataEventProof.js'
 import { replyProofDdl } from '../../../src/features/chat/storage/sqlite/kanataReplyProvenance.js'
 import { receiptQuery, receiptWrite } from '../../../src/features/chat/storage/sqlite/kanataDomainRows.js'
@@ -98,6 +99,7 @@ const candidate = createKanataSqliteCandidate({
       return result
     },
     async query(command) {
+      if(trace?.failQuery===command.statement)throw new Error('EVENT_READ_QUERY_INJECTED')
       const result = await profileBridge("query", command, bridge.query)
       if (trace) {
         trace.queries++
@@ -1370,10 +1372,10 @@ window.mr1QaFanout = async (password, { commands, scope, verify }, size) => {
     })
     if (verify && commands) {
       await candidate.withDomains({},async domains=>{
-        const retained=await domains.events.propose({worldId:scope.worldId,participantIds:[scope.instanceId],
+        const retained=await domains.events.proposeAcknowledged({worldId:scope.worldId,participantIds:[scope.instanceId],
           sourceRefs:[],causedByEventIds:[],visibility:'private',summary:'合成保留位置',effectiveAt:0,
           kind:'move',action:{instanceId:scope.instanceId,location:'合成保留位置'}},'mr1-retained-effect')
-        await domains.events.commit(scope.worldId,retained.id,retained.revision)
+        await domains.events.commitAcknowledged(scope.worldId,retained.id,1)
       })
     }
     await measure('seed',()=>candidate.run({},operation=>operation.transaction(async tx=>{
@@ -1526,10 +1528,10 @@ window.m4QaCompletion = async (password, scope, requestedSize) => {
       trace=undefined
       stage('event-graph-paged')
       const revocable=await candidate.withDomains({},async domains=>{
-        const proposal=await domains.events.propose({worldId:scope.worldId,participantIds:[scope.instanceId],
+        const proposal=await domains.events.proposeAcknowledged({worldId:scope.worldId,participantIds:[scope.instanceId],
           sourceRefs:[],causedByEventIds:[],visibility:'private',summary:'合成可撤销位置',effectiveAt:20000+size,
           kind:'move',action:{instanceId:scope.instanceId,location:'合成可撤销位置'}},'m4-replay-'+size)
-        return domains.events.commit(scope.worldId,proposal.id,proposal.revision)
+        return domains.events.legacy.commit(scope.worldId,proposal.id,1)
       })
       const earlier=await candidate.withDomains({},async domains=>(await domains.events.openRevocation(scope.worldId,revocable.id)).plan)
       await candidate.run({},operation=>operation.transaction(async tx=>{
@@ -1670,7 +1672,7 @@ window.mr2QaEventProvenance = async (password, {commands,scope,sample,commitFaul
       observations.push({size,...observation})
       check(fullDtos===0&&observation.maxRows<=50&&maxTagRows===50&&maxStagedTags===50,'EVENT_PROVENANCE_BOUNDS')
       const snapshot=await candidate.withDomains({},async ({events})=>{
-        const page=await events.audits(worldId,id)
+        const page=await events.legacy.audits(worldId,id)
         check(page.audits.length===1,'EVENT_AUDIT_COUNT')
         const {previous,next}=page.audits[0]
         check(previous.lifeSources.length===size&&next.lifeSources.length===size,'EVENT_TAG_TAIL')
@@ -1678,7 +1680,7 @@ window.mr2QaEventProvenance = async (password, {commands,scope,sample,commitFaul
           &&JSON.stringify(next.future)===JSON.stringify(fields.future)&&next.action.future===null,'EVENT_LEGACY_JSON')
         const grants=next.lifeSources.map(tag=>tag.grantId)
         check(grants[0]==='grant-'+seeds.deniedActor.replace(/\d+$/,'0')&&new Set(grants).size===size,'EVENT_LEGACY_TAG_ORDER')
-        const effects=await events.effects(worldId,id)
+        const effects=await events.legacy.effects(worldId,id)
         check(effects.length===1&&effects[0].value===fields.action.location&&effects[0].eventId===id,'EVENT_EFFECT_OWNER')
         return {count:grants.length,sha256:sha256Text(JSON.stringify(grants))}
       })
@@ -1694,7 +1696,7 @@ window.mr2QaEventProvenance = async (password, {commands,scope,sample,commitFaul
       trace=undefined
       check(fullDtos===0&&correctionIo.maxRows<=128,'EVENT_CORRECTION_BOUNDS')
       await candidate.withDomains({},async ({events})=>{
-        const replacement=(await events.list(worldId)).events.find(event=>event.id===correction.id)
+        const replacement=(await events.legacy.list(worldId)).events.find(event=>event.id===correction.id)
         check(replacement.replacesEventId===id&&replacement.lifeSources.length===size
           &&JSON.stringify(replacement.sourceRefs)===JSON.stringify(refs),'EVENT_CORRECTION_RELATIONS')
         check((await events.revocationAudits(worldId,id)).entries.length===1,'EVENT_CORRECTION_AUDIT')
@@ -1744,8 +1746,8 @@ window.mr2QaRecoverEventCrash = async (password, worldId, id) => {
   try {
     const inspect=()=>candidate.withDomains({},async ({events})=>({
       revision:(await events.managedEvent(worldId,id)).revision,
-      audits:(await events.audits(worldId,id)).audits.length,
-      effects:(await events.effects(worldId,id)).length,
+      audits:(await events.audits(worldId,id)).entries.length,
+      effects:(await events.effects(worldId,id)).entries.length,
     }))
     const before=await inspect()
     check(before.revision===1&&before.audits===0&&before.effects===0,'EVENT_CRASH_ROLLBACK')
@@ -1755,6 +1757,219 @@ window.mr2QaRecoverEventCrash = async (password, worldId, id) => {
     check(after.revision===2&&after.audits===1&&after.effects===1,'EVENT_CRASH_REPLAY')
     return {before,after}
   } finally {
+    runtime.dispose()
+    auth.expireSession()
+    await candidate.release()
+  }
+}
+
+window.mr2QaEventRead = async (password,{commands,scope,sample},size) => {
+  window.mr2EventReadPhase='seed'
+  session(password)
+  const {worldId,instanceId}=scope
+  const viewer={instanceId,group:false}
+  const runtime=candidate.createWorldRuntime(()=>50000)
+  try{
+    const health=await candidate.run({create:!!commands},async operation=>{
+      if(commands)await operation.transaction(async tx=>{
+        for(const {sql,parameters} of commands)await tx.execute(sql,parameters)
+      })
+      return operation.health()
+    })
+    if(commands)await candidate.withDomains({},domains=>domains.autonomy.setGrant(worldId,instanceId,'todo',2,
+      {read:true,remember:true,share:true}))
+    const source='event-read-source-'+size
+    const {lifeSources:_life,...base}=sample
+    await candidate.withRepositories({},messages=>messages.insert({...base,id:source,revision:1,createdAt:5000+size}))
+    const seeds=await candidate.run({},operation=>operation.transaction(tx=>seedWideChatSources(tx,scope,source,size)))
+    let model=runtime.select(worldId)
+    const guard=()=>{}
+    const ref={messageId:source,revision:1,future:'界😀'.repeat(3200)}
+    const fields={worldId,participantIds:[instanceId],sourceRefs:[ref],causedByEventIds:[seeds.eventId],
+      visibility:'private',summary:'合成事件读取',effectiveAt:5000,kind:'move',action:{instanceId,location:'合成读取位置'},
+      future:{value:'界😀'.repeat(4400),nil:null}}
+    const {id}=await model.proposeEventAcknowledged(fields,'mr2-read-'+size,guard)
+    await model.commitEventAcknowledged(id,1,guard)
+    await candidate.run({},operation=>operation.transaction(async tx=>{
+      await tx.execute(eventReadEffects,[size-1,'zz-read-effect-'+size+'-',worldId,id,instanceId,instanceId])
+      await tx.execute(eventReadRevision,[size+2,worldId,id])
+      await tx.execute(eventReadAudits,[size-1,'zz-read-audit-'+size+'-',worldId,id])
+    }))
+    let fullDtos=0,maxPageObjects=0,maxChunk=0,revokedBodyReads=0
+    let previousId='',tagHash=''
+    trace={queries:0,writes:0,maxRows:0,observeQuery(rows){
+      fullDtos+=rows.filter(row=>Object.hasOwn(row,'previous_json')||Object.hasOwn(row,'next_json')
+        ||(Object.hasOwn(row,'summary')&&Object.hasOwn(row,'extensions_json'))).length
+    }}
+    window.mr2EventReadPhase='read'
+    const started=performance.now()
+    const header=await model.eventReadFor(id,viewer,guard)
+    check(header.revision===size+2&&header.summary===fields.summary,'EVENT_READ_HEADER')
+    let initial=await model.eventRelations(id,'lifeSources',null,undefined,guard)
+    const old=model
+    model=runtime.select(worldId)
+    await rejects(()=>model.eventRelations(id,'lifeSources',null,initial.cursor,guard),'EVENT_READ_CURSOR_STALE')
+    await rejects(()=>old.eventReadFor(id,viewer,guard),'KANATA_WORLD_OWNER_EXPIRED')
+    initial=null
+    let cursor,tagCount=0
+    do {
+      const page=await model.eventRelations(id,'lifeSources',null,cursor,guard)
+      maxPageObjects=Math.max(maxPageObjects,page.entries.length)
+      for(const entry of page.entries){
+        const value=entry.value
+        check(value&&previousId<value.grantId,'EVENT_READ_TAG_ORDER')
+        previousId=value.grantId
+        tagHash=sha256Text(tagHash+previousId)
+        tagCount++
+      }
+      cursor=page.cursor
+    }while(cursor)
+    check(tagCount===size,'EVENT_READ_TAG_COUNT')
+    const refs=await model.eventRelations(id,'sourceRefs',viewer,undefined,guard)
+    check(refs.entries[0].chunked===true,'EVENT_READ_REFERENCE_CHUNK')
+    async function inspectChunk(selection,access,expected){
+      let cursor,offset=0
+      do {
+        const page=await model.eventJsonChunk(id,selection,access,cursor,guard)
+        const n=Array.from(page.part).length
+        maxChunk=Math.max(maxChunk,n)
+        if(expected){
+          const part=Array.from(expected).slice(offset,offset+n).join('')
+          check(page.part===part,'EVENT_READ_CHUNK_ORACLE')
+        }
+        offset+=n
+        cursor=page.cursor
+      }while(cursor)
+      if(expected)check(offset===Array.from(expected).length,'EVENT_READ_CHUNK_TAIL')
+      return offset
+    }
+    await inspectChunk({kind:'relation',relation:'sourceRefs',position:0},viewer,JSON.stringify(ref))
+    let effectCount=0
+    cursor=undefined
+    do{
+      const page=await model.eventEffects(id,cursor,guard)
+      maxPageObjects=Math.max(maxPageObjects,page.entries.length)
+      effectCount+=page.entries.length
+      cursor=page.cursor
+    }while(cursor)
+    let auditCount=0,firstAudit
+    cursor=undefined
+    do{
+      const page=await model.eventAudits(id,cursor,guard)
+      maxPageObjects=Math.max(maxPageObjects,page.entries.length)
+      firstAudit??=page.entries[0]
+      auditCount+=page.entries.length
+      cursor=page.cursor
+    }while(cursor)
+    check(auditCount===size+1&&effectCount===size+1,'EVENT_READ_EFFECT_AUDIT_COUNTS')
+    const snapshotCharacters=await inspectChunk({kind:'audit',auditId:firstAudit.id,side:'next',snapshotRevision:2},null)
+    const measured={queries:trace.queries,maxRows:trace.maxRows,elapsedMs:Math.round(performance.now()-started),
+      fullDtos,maxPageObjects,maxChunk}
+    trace=undefined
+    check(measured.maxRows<=51&&maxPageObjects<=50&&maxChunk<=4096&&fullDtos===0,'EVENT_READ_BOUNDS')
+    window.mr2EventReadPhase='faults'
+    const afterClose={}
+    for(const [kind,read] of [
+      ['header',guard=>model.eventReadFor(id,viewer,guard)],
+      ['relation',guard=>model.eventRelations(id,'lifeSources',null,undefined,guard)],
+      ['effect',guard=>model.eventEffects(id,undefined,guard)],
+      ['audit',guard=>model.eventAudits(id,undefined,guard)],
+      ['snapshot',guard=>model.eventJsonChunk(id,{kind:'audit',auditId:firstAudit.id,side:'next',snapshotRevision:2},null,undefined,guard)],
+    ]){
+      let closed=false,readAtClose
+      trace={queries:0,writes:0,maxRows:0,observeQuery(){
+        if(!closed){closed=true;readAtClose=trace.queries}
+      }}
+      await rejects(()=>read(()=>{if(closed)throw new Error('EVENT_READ_CLOSED')}),'EVENT_READ_CLOSED')
+      afterClose[kind]=trace.queries-readAtClose
+      trace=undefined
+      check(afterClose[kind]===0,'EVENT_READ_AFTER_CLOSE')
+    }
+    const auditStatement=eventReadQueries.find(sql=>sql.includes('AS effect_count'))
+    trace={queries:0,writes:0,maxRows:0,failQuery:sha256Text(auditStatement)}
+    let queryFailure
+    try{await model.eventAudits(id,undefined,guard)}
+    catch(error){queryFailure=error.code??error.message}
+    trace=undefined
+    check(queryFailure&&((await model.eventAudits(id,undefined,guard)).entries[0].id===firstAudit.id),'EVENT_READ_QUERY_RECOVERY')
+    await candidate.withDomains({},domains=>domains.autonomy.setGrant(worldId,seeds.deniedActor,'todo',1,
+      {read:false,remember:false,share:false}))
+    trace={queries:0,writes:0,maxRows:0,observeQuery(rows){
+      revokedBodyReads+=rows.filter(row=>Object.hasOwn(row,'summary')||Object.hasOwn(row,'item')||Object.hasOwn(row,'part')).length
+    }}
+    await rejects(()=>model.eventReadFor(id,viewer,guard),'KANATA_LIFE_PERMISSION_DENIED')
+    await rejects(()=>model.eventRelations(id,'lifeSources',viewer,undefined,guard),'KANATA_LIFE_PERMISSION_DENIED')
+    const afterRevoke=trace.queries
+    trace=undefined
+    check(revokedBodyReads===0,'EVENT_READ_REVOKED_BODY')
+    trace={queries:0,writes:0,maxRows:0}
+    auth.expireSession()
+    await rejects(()=>model.eventReadFor(id,viewer,guard),'KANATA_WORLD_OWNER_EXPIRED')
+    const afterLock=trace.queries
+    check(afterLock===0,'EVENT_READ_AFTER_LOCK')
+    trace=undefined
+    session(password)
+    const recovered=runtime.select(worldId)
+    check((await recovered.eventDetail(id,guard)).id===id,'EVENT_READ_UNLOCK_RECOVERY')
+    return {health,size,id,...measured,afterLock,tagCount,tagHash,effectCount,auditCount,snapshotCharacters,afterClose,afterRevoke,revokedBodyReads,queryFailure}
+  }catch(error){
+    return {size,error:error.code??error.message}
+  }finally{
+    trace=undefined
+    runtime.dispose()
+    auth.expireSession()
+    await candidate.release()
+  }
+}
+
+window.mr2QaEventReadShape = async (password,{scope,sample},size,shape) => {
+  session(password)
+  window.mr2EventReadPhase='seed'
+  const {worldId,instanceId}=scope
+  const runtime=candidate.createWorldRuntime(()=>50000)
+  try{
+    const prefix='event-read-'+shape+'-'+size+'-',root=prefix+'0'
+    const source='event-read-'+shape+'-source-'+size
+    const second='g4-origin-'+size+'-0'
+    const {lifeSources:_life,...base}=sample
+    await candidate.withRepositories({},messages=>messages.insert({...base,id:source,revision:1,
+      lifeSources:[{grantId:'grant-'+second,instanceId:second,moduleId:'todo',revision:1,fingerprint:'0'.repeat(64)}]}))
+    await candidate.run({},operation=>operation.transaction(async tx=>{
+      check((await tx.execute(eventRows,[size,prefix,worldId])).affectedRows===size+1,'EVENT_SHAPE_SEED')
+      check((await tx.execute(eventReadShapeEdges,[size-1,worldId,prefix,shape,size])).affectedRows===size,'EVENT_SHAPE_EDGES')
+      for(const actor of [instanceId,second])await tx.execute(chatEventActor,[worldId,root,actor])
+      await tx.execute(eventReadPublic,[worldId,root])
+      await tx.execute(chatEventSource,[worldId,prefix+size,source])
+    }))
+    const model=runtime.select(worldId),guard=()=>{}
+    let fullDtos=0,graphCount=0,maxPage=0,firstPage
+    trace={queries:0,writes:0,maxRows:0,observeQuery(rows){
+      fullDtos+=rows.filter(row=>Object.hasOwn(row,'extensions_json')||Object.hasOwn(row,'previous_json')).length
+    }}
+    window.mr2EventReadPhase='read'
+    const start=performance.now()
+    for(const actor of [instanceId,second]){
+      const header=await model.eventReadFor(root,{instanceId:actor,group:true},guard)
+      check(header.id===root,'EVENT_SHAPE_AUTHORIZED')
+    }
+    let cursor
+    do{
+      const page=await model.eventGraph(root,'cause',cursor,guard)
+      firstPage??=page.cursor
+      graphCount+=page.entries.length
+      maxPage=Math.max(maxPage,page.entries.length)
+      cursor=page.cursor
+    }while(cursor)
+    check(graphCount===size&&maxPage<=50&&trace.maxRows<=51&&fullDtos===0,'EVENT_SHAPE_BOUNDS')
+    const io={queries:trace.queries,maxRows:trace.maxRows,elapsedMs:Math.round(performance.now()-start),graphCount,maxPage,fullDtos}
+    trace=undefined
+    await candidate.run({},operation=>operation.transaction(tx=>tx.execute(eventReadRevision,[2,worldId,root])))
+    await rejects(()=>model.eventGraph(root,'cause',firstPage,guard),'EVENT_GRAPH_CURSOR_STALE')
+    return {size,shape,...io,stale:true}
+  }catch(error){
+    return {size,shape,error:error.code??error.message}
+  }finally{
+    trace=undefined
     runtime.dispose()
     auth.expireSession()
     await candidate.release()

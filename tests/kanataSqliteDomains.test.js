@@ -391,8 +391,8 @@ test('M4 custom memory merge keeps both exact sources and retries atomically',as
 test('M4 correcting a confirmed event reuses the frozen scope and rolls back candidate and effects together',async t=>{
   const {domains,move,scope,state}=await setup(t)
   const {worldId}=scope
-  const initial=await domains.events.propose(move('原地点'),'correct-origin')
-  const original=await domains.events.commit(worldId,initial.id,initial.revision)
+  const initial=await domains.events.legacy.propose(move('原地点'),'correct-origin')
+  const original=await domains.events.legacy.commit(worldId,initial.id,initial.revision)
   const plan=(await domains.events.openRevocation(worldId,original.id)).plan
   const correct=()=>domains.events.correctConfirmed(plan,'keep-independent','correct-key','合成修正')
   state.failCommit=true
@@ -412,19 +412,19 @@ test('M4 correcting a confirmed event reuses the frozen scope and rolls back can
 
 test('M3 revoke retains independent same-path effects and atomically changes causal descendants', async t => {
   const { domains, state, scope, move } = await setup(t)
-  const a = await domains.events.propose(move('位置甲'), 'a')
-  const b = await domains.events.propose(move('位置乙'), 'b')
-  const c = await domains.events.propose({ ...move('位置丙'), causedByEventIds: [a.id] }, 'c')
-  for (const event of [a, b, c]) await domains.events.commit(scope.worldId, event.id, 1)
+  const a = await domains.events.legacy.propose(move('位置甲'), 'a')
+  const b = await domains.events.legacy.propose(move('位置乙'), 'b')
+  const c = await domains.events.legacy.propose({ ...move('位置丙'), causedByEventIds: [a.id] }, 'c')
+  for (const event of [a, b, c]) await domains.events.legacy.commit(scope.worldId, event.id, 1)
   assert.equal((await domains.characters.getInstance(scope.worldId, scope.instanceId)).state.location, '位置丙')
-  const plan = await domains.events.preview(scope.worldId, a.id)
+  const plan = await domains.events.legacy.preview(scope.worldId, a.id)
   assert.deepEqual(plan.revokeIds, [a.id, c.id])
   state.failOn = 'UPDATE character_instances SET location'
-  await assert.rejects(domains.events.revoke(plan), /injected/)
+  await assert.rejects(domains.events.legacy.revoke(plan), /injected/)
   assert.equal((await domains.events.readFor(scope.worldId, a.id, { instanceId: scope.instanceId, group: false })).status, 'committed')
   state.failOn = ''
-  await domains.events.revoke(plan)
-  await domains.events.revoke(plan)
+  await domains.events.legacy.revoke(plan)
+  await domains.events.legacy.revoke(plan)
   assert.equal((await domains.characters.getInstance(scope.worldId, scope.instanceId)).state.location, '位置乙')
   assert.equal((await domains.events.readFor(scope.worldId, b.id, { instanceId: scope.instanceId, group: false })).status, 'committed')
 })
@@ -432,8 +432,8 @@ test('M3 revoke retains independent same-path effects and atomically changes cau
 test('R3 folds 1k/10k interleaved same-path Effects in bounded legacy order', async t => {
   const { db, domains, scope, move, state } = await setup(t)
   for (const size of [1000, 10000]) {
-    const event = await domains.events.propose(move('撤销时不得覆盖独立效果'), 'revoke-'+size)
-    await domains.events.commit(scope.worldId, event.id, 1)
+    const event = await domains.events.legacy.propose(move('撤销时不得覆盖独立效果'), 'revoke-'+size)
+    await domains.events.legacy.commit(scope.worldId, event.id, 1)
     const seed = db.prepare(`INSERT INTO world_events(id,world_id,status,visibility,summary,effective_at,recorded_at,revision,causality)
       VALUES(?,?,'committed','private','合成',5000,5000,1,'explicit')`)
     const effect = db.prepare(`INSERT INTO world_effects(id,world_id,event_id,target_type,target_id,target_instance_id,operation,path,value_json,rule_version)
@@ -446,14 +446,14 @@ test('R3 folds 1k/10k interleaved same-path Effects in bounded legacy order', as
       effect.run('fx-'+id,scope.worldId,id,scope.instanceId,scope.instanceId,JSON.stringify(id))
     }
     db.exec('COMMIT')
-    const plan = await domains.events.preview(scope.worldId,event.id)
+    const plan = await domains.events.legacy.preview(scope.worldId,event.id)
     let maxRows=0, replayQueries=0
     state.observeRows=(sql,rows)=>{
       if(!sql.includes('FROM world_effects f JOIN world_events e'))return
       maxRows=Math.max(maxRows,rows)
       replayQueries++
     }
-    await domains.events.revoke(plan)
+    await domains.events.legacy.revoke(plan)
     state.observeRows=undefined
     ids.sort((a,b)=>a.localeCompare(b,'en'))
     assert.equal((await domains.characters.getInstance(scope.worldId,scope.instanceId)).state.location,ids.at(-1))
@@ -470,11 +470,11 @@ test('R3 bounded confirmation pages freeze owned Effects and explicit/inferred d
   const {db,domains,move,scope,state}=await setup(t)
   const world=scope.worldId
   const events=domains.events
-  const root=await events.propose(move('根'), 'bounded-root')
-  const child=await events.propose({...move('明确后续'),causedByEventIds:[root.id]},'bounded-child')
-  const independent=await events.propose(move('独立后续'),'bounded-independent')
-  const uncertain=await events.propose({...move('推断后续'),causality:'unknown'},'bounded-inferred')
-  for(const event of [root,child,independent,uncertain])await events.commit(world,event.id,1)
+  const root=await events.legacy.propose(move('根'), 'bounded-root')
+  const child=await events.legacy.propose({...move('明确后续'),causedByEventIds:[root.id]},'bounded-child')
+  const independent=await events.legacy.propose(move('独立后续'),'bounded-independent')
+  const uncertain=await events.legacy.propose({...move('推断后续'),causality:'unknown'},'bounded-inferred')
+  for(const event of [root,child,independent,uncertain])await events.legacy.commit(world,event.id,1)
   const open=await events.openRevocation(world,root.id,undefined,1)
   const plan=open.plan
   assert.equal(plan.revokeCount,2)
@@ -516,8 +516,8 @@ test('M4 wide event confirmation covers 1k and 10k exact descendants and rolls b
   const {db,domains,scope,state,move}=await setup(t)
   const {eventRows,eventFanout,replayEffectRows,fanoutAuditInspection}=await import('../docs/qa/kanata-sqlite-m4/completion/fixture.mjs')
   const {worldId,instanceId}=scope
-  const retained=await domains.events.propose(move('保留独立位置'),'mr1-retained')
-  await domains.events.commit(worldId,retained.id,retained.revision)
+  const retained=await domains.events.legacy.propose(move('保留独立位置'),'mr1-retained')
+  await domains.events.legacy.commit(worldId,retained.id,retained.revision)
   for(const size of [1000,10000]){
     const prefix='event-fanout-'+size+'-',rootId=prefix+size
     db.prepare(eventRows).run(size,prefix,worldId)
@@ -644,8 +644,8 @@ test('M3 a derived reply cannot launder an unrememberable source and deletion re
 test('M3 private event context reads neither its summary nor another actor’s effects', async t => {
   const { domains, fixture, scope, move, state } = await setup(t)
   const outsider = fixture.instances.find(actor => actor.worldId === scope.worldId && actor.id !== scope.instanceId)
-  const event = await domains.events.propose(move('私有活动'), 'private-effect')
-  await domains.events.commit(scope.worldId, event.id, 1)
+  const event = await domains.events.legacy.propose(move('私有活动'), 'private-effect')
+  await domains.events.legacy.commit(scope.worldId, event.id, 1)
   state.queries.length = 0
   const projected = await domains.events.context(scope.worldId, { instanceId: outsider.id, group: false }, [scope.instanceId])
   assert(projected.hiddenTargetIds.has(scope.instanceId))
@@ -654,7 +654,7 @@ test('M3 private event context reads neither its summary nor another actor’s e
   state.queries.length = 0
   await domains.characters.conversationActors(scope.worldId, [scope.instanceId], projected.hiddenTargetIds)
   assert(!state.queries.some(sql => /SELECT.*\bmood\b/.test(sql)))
-  const audit = await domains.events.audits(scope.worldId, event.id)
+  const audit = await domains.events.legacy.audits(scope.worldId, event.id)
   assert.deepEqual(audit.audits.map(item => [item.previous.status, item.next.status]), [['candidate', 'committed']])
 })
 
@@ -991,7 +991,7 @@ test('MR2 event write acknowledgements preserve 1k/10k mixed provenance, legacy 
     assert.ok(maxRows<=50)
     t.diagnostic(JSON.stringify({size,maxRows,fullReads,queries:state.queries.length}))
     state.observeRows=undefined
-    const audit=(await domains.events.audits(scope.worldId,id)).audits
+    const audit=(await domains.events.legacy.audits(scope.worldId,id)).audits
     assert.equal(audit.length,1)
     const before=audit[0].previous
     assert.deepEqual(before.sourceRefs,refs)
@@ -1002,9 +1002,9 @@ test('MR2 event write acknowledgements preserve 1k/10k mixed provenance, legacy 
     assert.deepEqual(before.lifeSources[0],{...tag,future:'last'})
     const oldOrder=db.prepare('SELECT grant_id FROM message_life_sources WHERE world_id=? AND message_id=? ORDER BY grant_id').all(scope.worldId,source).map(row=>row.grant_id)
     assert.deepEqual(before.lifeSources.slice(1).map(value=>value.grantId),oldOrder)
-    const current=(await domains.events.list(scope.worldId)).events.find(item=>item.id===id)
+    const current=(await domains.events.legacy.list(scope.worldId)).events.find(item=>item.id===id)
     assert.deepEqual(audit[0].next,current)
-    assert.deepEqual((await domains.events.effects(scope.worldId,id)).map(effect=>effect.value),['来源顺序'])
+    assert.deepEqual((await domains.events.legacy.effects(scope.worldId,id)).map(effect=>effect.value),['来源顺序'])
     const plan=(await domains.events.openRevocation(scope.worldId,id)).plan
     state.observeRows=(sql)=>{
       if (/SELECT \* FROM world_events|SELECT id,at,previous_json/.test(sql)) fullReads++
@@ -1013,7 +1013,7 @@ test('MR2 event write acknowledgements preserve 1k/10k mixed provenance, legacy 
     assert.deepEqual(await domains.events.correctConfirmed(plan,undefined,idempotency+'-correct','合成修正'),replacement)
     assert.equal(fullReads,0)
     state.observeRows=undefined
-    const corrected=(await domains.events.list(scope.worldId)).events.find(item=>item.id===replacement.id)
+    const corrected=(await domains.events.legacy.list(scope.worldId)).events.find(item=>item.id===replacement.id)
     assert.equal(corrected.replacesEventId,id)
     assert.deepEqual(corrected.sourceRefs,refs)
     assert.deepEqual(corrected.lifeSources,current.lifeSources)
@@ -1039,6 +1039,161 @@ test('MR2 rejects duplicate or damaged event relation hints before publishing st
     changeHint.run(JSON.stringify(hint),worldId,id)
     await assert.rejects(()=>domains.events.commitAcknowledged(worldId,id,1),/KANATA_SQLITE_INTEGRITY_FAILED/)
     assert.equal((await domains.events.managedEvent(worldId,id)).revision,1)
-    assert.deepEqual(await domains.events.effects(worldId,id),[])
+    assert.deepEqual(await domains.events.legacy.effects(worldId,id),[])
+  }
+})
+
+test('MR2 event reads page 1k/10k relations, Effects and audits without hydrating snapshots', async t => {
+  const {seedWideChatSources,eventReadEffects,eventReadAudits,eventReadRevision}=await import('../docs/qa/kanata-sqlite-m4/completion/fixture.mjs')
+  const {db,state,fixture,domains,messages,scope,move,operation}=await setup(t)
+  const {worldId,instanceId}=scope
+  const viewer={instanceId,group:false}
+  const {lifeSources:_life,...sample}=fixture.messages[0]
+  const {events,autonomy}=domains
+  await autonomy.setGrant(worldId,instanceId,'todo',2,{read:true,remember:true,share:true})
+  for(const size of [1000,10000]){
+    const source='event-read-source-'+size
+    await messages.insert({...sample,id:source,revision:1,createdAt:size+3000})
+    const seeds=await operation.transaction(tx=>seedWideChatSources(tx,scope,source,size))
+    const ref={messageId:source,revision:1,extension:'界😀'.repeat(3500)}
+    const {id}=await events.proposeAcknowledged({...move('读取'),causedByEventIds:[seeds.eventId],sourceRefs:[ref],
+      future:{missing:null,value:'界😀'.repeat(4500)}},'read-page-'+size)
+    await events.commitAcknowledged(worldId,id,1)
+    await operation.transaction(async tx=>{
+      await tx.execute(eventReadEffects,[size-1,'zz-effect-'+size+'-',worldId,id,instanceId,instanceId])
+      await tx.execute(eventReadRevision,[size+2,worldId,id])
+      await tx.execute(eventReadAudits,[size-1,'zz-audit-'+size+'-',worldId,id])
+    })
+    const oracle=(await events.legacy.list(worldId)).events.find(event=>event.id===id)
+    const audit=(await events.legacy.audits(worldId,id)).audits[0]
+    let maxRows=0
+    state.queries.length=0
+    state.observeRows=(_sql,count)=>{maxRows=Math.max(maxRows,count)}
+    const header=await events.readFor(worldId,id,viewer)
+    assert.equal(header.status,'committed')
+    assert.equal(Object.hasOwn(header,'lifeSources'),false)
+    assert.ok((await events.list(worldId)).events.every(event=>!Object.hasOwn(event,'sourceRefs')))
+    let cursor
+    let index=0
+    do {
+      const page=await events.relations(worldId,id,'lifeSources',null,cursor)
+      assert.ok(page.entries.length<=50)
+      for(const entry of page.entries)assert.deepEqual(entry.value,oracle.lifeSources[index++])
+      cursor=page.cursor??undefined
+    } while(cursor)
+    assert.equal(index,size)
+    const refs=await events.relations(worldId,id,'sourceRefs',viewer)
+    assert.deepEqual(refs.entries,[{position:0,chunked:true}])
+    async function stream(selection,scope=null){
+      let cursor, json=''
+      do{
+        const chunk=await events.jsonChunk(worldId,id,selection,scope,cursor)
+        assert.ok(Array.from(chunk.part).length<=4096)
+        json+=chunk.part
+        cursor=chunk.cursor??undefined
+      }while(cursor)
+      return JSON.parse(json)
+    }
+    assert.deepEqual(await stream({kind:'relation',relation:'sourceRefs',position:0},viewer),ref)
+    assert.deepEqual((await stream({kind:'extensions'})).future,oracle.future)
+    assert.deepEqual(await stream({kind:'audit',auditId:audit.id,side:'next',snapshotRevision:2}),audit.next)
+    assert.deepEqual(await stream({kind:'audit',auditId:audit.id,side:'previous',snapshotRevision:1,field:'sourceRefs'}),audit.previous.sourceRefs)
+    const firstEffect=await events.effects(worldId,id)
+    await assert.rejects(()=>events.audits(worldId,id,firstEffect.cursor),/EVENT_READ_CURSOR_STALE/)
+    for(const kind of ['effects','audits']){
+      let count=0, cursor
+      do{
+        const page=await events[kind](worldId,id,cursor)
+        count+=page.entries.length
+        assert.ok(page.entries.every(value=>!Object.hasOwn(value,'previous')&&!Object.hasOwn(value,'next')))
+        cursor=page.cursor??undefined
+      }while(cursor)
+      assert.equal(count,size+1)
+    }
+    const first=await events.relations(worldId,id,'lifeSources',null)
+    await assert.rejects(()=>events.relations(worldId,id,'lifeSources',viewer,first.cursor),/EVENT_READ_CURSOR_STALE/)
+    await autonomy.setGrant(worldId,seeds.deniedActor,'todo',1,{read:false,remember:false,share:false})
+    const queries=state.queries.length
+    await assert.rejects(()=>events.readFor(worldId,id,viewer),/KANATA_LIFE_PERMISSION_DENIED/)
+    assert.ok(!state.queries.slice(queries).some(sql=>sql.includes('AS action_type')))
+    db.prepare('UPDATE world_events SET revision=revision+1 WHERE world_id=? AND id=?').run(worldId,id)
+    await assert.rejects(()=>events.relations(worldId,id,'lifeSources',null,first.cursor),/EVENT_READ_CURSOR_STALE/)
+    assert.ok(maxRows<=51)
+    t.diagnostic(JSON.stringify({size,maxRows,queries:state.queries.length,relations:index}))
+  }
+})
+
+test('MR2 historical action oracle preserves UTF-16 object spread and JSON kinds', async t=>{
+  const {db,domains,scope,move}=await setup(t)
+  const {worldId}=scope
+  const {events}=domains
+  const inputs=['','ascii','界','😀','\ud800','x😀界\udc00',null,['😀',null],{future:'界'},undefined]
+  for(const [index,input] of inputs.entries()){
+    const {id}=await events.proposeAcknowledged({...move('oracle'),kind:'note',action:{}},'read-action-'+index)
+    const raw={participantIds:[scope.instanceId],causedByEventIds:[],sourceRefs:[]}
+    if(input!==undefined)raw.action=input
+    db.prepare('UPDATE world_events SET extensions_json=? WHERE world_id=? AND id=?').run(JSON.stringify(raw),worldId,id)
+    const before=(await events.legacy.list(worldId)).events.find(row=>row.id===id)
+    if(input===undefined)assert.equal(Object.hasOwn(before,'action'),false)
+    else assert.deepEqual(before.action,{...input})
+    await events.commitAcknowledged(worldId,id,1)
+    const [audit]=(await events.legacy.audits(worldId,id)).audits
+    assert.deepEqual(audit.previous,before)
+    assert.deepEqual(audit.next,{...before,status:'committed',revision:2})
+  }
+})
+
+test('MR2 relationship header and reverse event pages preserve exact IDs and reject stale cursors',async t=>{
+  const {db,domains,scope,move}=await setup(t)
+  const {worldId,instanceId}=scope
+  const {events}=domains
+  const {id,to_id:toId}=db.prepare('SELECT id,to_id FROM relationships WHERE world_id=? AND from_id=? LIMIT 1').get(worldId,instanceId)
+  for(const n of [1,2]){
+    const {id:eventId}=await events.proposeAcknowledged({...move('relationship'),kind:'support',
+      participantIds:[instanceId,toId],action:{relationshipId:id}},'relationship-event-'+n)
+    await events.commitAcknowledged(worldId,eventId,1)
+  }
+  const legacy=await events.legacy.relationship(worldId,id)
+  const {sourceEventIds,...header}=legacy
+  assert.deepEqual(await events.relationship(worldId,id),header)
+  const first=await events.relationshipEvents(worldId,id,undefined,1)
+  assert.deepEqual(first.entries,sourceEventIds.slice(0,1))
+  assert.deepEqual((await events.relationshipEvents(worldId,id,first.cursor,1)).entries,sourceEventIds.slice(1))
+  db.prepare('UPDATE relationships SET revision=revision+1 WHERE world_id=? AND id=?').run(worldId,id)
+  await assert.rejects(()=>events.relationshipEvents(worldId,id,first.cursor,1),/RELATIONSHIP_EVENT_CURSOR_STALE/)
+})
+
+test('MR2 event read deep, wide and mixed graphs retain all 1k/10k nodes and old confirmation sets',async t=>{
+  const {eventRows,eventReadShapeEdges,chatEventActor}=await import('../docs/qa/kanata-sqlite-m4/completion/fixture.mjs')
+  const {operation,domains,scope,state}=await setup(t)
+  const {worldId,instanceId}=scope
+  const {events}=domains
+  for(const size of [1000,10000])for(const shape of ['deep','wide','mixed']){
+    const prefix='read-'+shape+'-'+size+'-'
+    await operation.transaction(async tx=>{
+      assert.equal((await tx.execute(eventRows,[size,prefix,worldId])).affectedRows,size+1)
+      assert.equal((await tx.execute(eventReadShapeEdges,[size-1,worldId,prefix,shape,size])).affectedRows,size)
+      await tx.execute(chatEventActor,[worldId,prefix+'0',instanceId])
+    })
+    state.queries.length=0
+    assert.equal((await events.readFor(worldId,prefix+'0',{instanceId,group:false})).id,prefix+'0')
+    let cursor,count=0
+    do{
+      const page=await events.graphPage(worldId,prefix+'0','cause',cursor)
+      count+=page.entries.length
+      cursor=page.cursor??undefined
+    }while(cursor)
+    assert.equal(count,size)
+    const leaf=prefix+size
+    const oracle=await events.legacy.preview(worldId,leaf)
+    let plan,ids=[],continuation
+    do{
+      const page=await events.openRevocation(worldId,leaf,continuation)
+      plan=page.plan
+      ids.push(...page.entries.filter(row=>row.disposition==='revoke').map(row=>row.id))
+      continuation=page.cursor??undefined
+    }while(continuation)
+    assert.deepEqual(ids,oracle.revokeIds)
+    t.diagnostic(JSON.stringify({size,shape,nodes:count,confirm:plan.revokeCount,queries:state.queries.length}))
   }
 })

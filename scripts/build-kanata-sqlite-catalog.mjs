@@ -20,9 +20,10 @@ import { lorebookQueries, lorebookWrites } from '../src/features/chat/storage/sq
 import { provenanceQueries } from '../src/features/chat/storage/sqlite/kanataProvenance.js'
 import { memoryQueries, memoryWrites } from '../src/features/chat/storage/sqlite/kanataMemoryRepository.js'
 import { eventRevocationQueries, eventRevocationWrites } from '../src/features/chat/storage/sqlite/kanataEventRevocation.js'
+import { eventReadQueries } from '../src/features/chat/storage/sqlite/kanataEventRead.js'
 import { eventSnapshotQueries, eventSnapshotWrites } from '../src/features/chat/storage/sqlite/kanataEventSnapshot.js'
 import { eventProofDdl, eventProofQueries, eventProofWrites } from '../src/features/chat/storage/sqlite/kanataEventProof.js'
-import { eventQueries, eventWrites } from '../src/features/chat/storage/sqlite/kanataEventRepository.js'
+import { eventQueries, eventWrites, legacyEventDdl } from '../src/features/chat/storage/sqlite/kanataEventRepository.js'
 import { autonomyQueries, autonomyWrites } from '../src/features/chat/storage/sqlite/kanataAutonomyRepository.js'
 import { usageQueries, usageWrites } from '../src/features/chat/storage/sqlite/kanataUsageRepository.js'
 
@@ -56,7 +57,7 @@ add('ddl', 'schema', [
   schema.setApplicationId,
   ...KANATA_SCHEMA_MIGRATIONS.flatMap(migration => [...migration.statements, schema.setVersion(migration.version)]),
 ])
-add('ddl', 'business', [...replyProofDdl, ...eventProofDdl])
+add('ddl', 'business', [...replyProofDdl, ...eventProofDdl, ...legacyEventDdl])
 add('query', 'business', eventProofQueries)
 add('write', 'business', eventProofWrites)
 add('query', 'business', replyProofQueries)
@@ -66,7 +67,7 @@ add('query', 'business', [...Object.values(messageQueries), ...Object.values(con
 add('write', 'business', [...Object.values(messageWrites), ...Object.values(conversationWrites),
   ...Object.values(dependentWrites), ...Object.values(updateEffectValue), ...Object.values(deferredReplyWrites), ...historyArchiveWrites])
 add('query', 'business', [receiptQuery, ...worldQueries, ...characterQueries, ...lorebookQueries, ...provenanceQueries,
-  ...memoryQueries, ...eventSnapshotQueries, ...eventQueries, ...eventRevocationQueries, ...autonomyQueries, ...usageQueries, ...chatViewQueries, ...managementViewQueries, ...bindingQueries])
+  ...memoryQueries, ...eventReadQueries, ...eventSnapshotQueries, ...eventQueries, ...eventRevocationQueries, ...autonomyQueries, ...usageQueries, ...chatViewQueries, ...managementViewQueries, ...bindingQueries])
 add('write', 'business', [receiptWrite, ...worldWrites, ...characterWrites, ...lorebookWrites, ...memoryWrites,
   ...eventSnapshotWrites, ...eventWrites, ...eventRevocationWrites, ...autonomyWrites, ...usageWrites, ...bindingWrites])
 if (process.argv.includes('--synthetic')) {
@@ -77,7 +78,8 @@ if (process.argv.includes('--synthetic')) {
     .map(sql => 'EXPLAIN QUERY PLAN ' + sql))
   const { memoryRows, memoryEdges, memoryWideSources, eventRows, eventEdges, eventFanout, replayEventRows, replayEffectRows, fanoutAuditInspection,
     fanoutAnalyze, fanoutClearStats, fanoutReloadStats, fanoutCyclePlan, grantOriginActors, grantOrigins, grantMessageTags,
-    chatEventActor, chatEventSource, chatReplyTagCheck } = await import('../docs/qa/kanata-sqlite-m4/completion/fixture.mjs')
+    chatEventActor, chatEventSource, chatReplyTagCheck, eventReadEffects, eventReadAudits, eventReadRevision, eventReadShapeEdges, eventReadPublic } = await import('../docs/qa/kanata-sqlite-m4/completion/fixture.mjs')
+  add('write', 'business', [eventReadEffects, eventReadAudits, eventReadRevision, eventReadShapeEdges, eventReadPublic])
   add('query', 'business', [fanoutAuditInspection, fanoutCyclePlan, chatReplyTagCheck])
   add('write', 'business', [fanoutClearStats])
   add('ddl', 'business', [fanoutAnalyze, fanoutReloadStats])

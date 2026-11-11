@@ -61,7 +61,7 @@ async function attach() {
     socket.send(JSON.stringify({ id: -1, method: 'Runtime.enable' }))
   }
   let id = 0
-  return (expression, timeoutMs = 90000) => new Promise((resolve, reject) => {
+  const command = (method, params, timeoutMs = 90000) => new Promise((resolve, reject) => {
     const request = ++id
     const timeout = setTimeout(() => {
       socket.removeEventListener('message', onMessage)
@@ -73,13 +73,15 @@ async function attach() {
       clearTimeout(timeout)
       socket.removeEventListener('message', onMessage)
       if (reply.error || reply.result.exceptionDetails) reject(new Error('CDP_EVALUATION_FAILED'))
-      else resolve(reply.result.result.value)
+      else resolve(reply.result)
     }
     socket.addEventListener('message', onMessage)
-    socket.send(JSON.stringify({ id: request, method: 'Runtime.evaluate', params: {
-      expression, returnByValue: true, awaitPromise: true,
-    } }))
+    socket.send(JSON.stringify({ id: request, method, params }))
   })
+  return Object.assign(async (expression, timeoutMs) => {
+    const response = await command('Runtime.evaluate', {expression,returnByValue:true,awaitPromise:true}, timeoutMs)
+    return response.result.value
+  },{command})
 }
 function detach() {
   socket?.close()
@@ -119,7 +121,70 @@ try {
   let password
   try { password = JSON.stringify(bytes.toString('base64')) }
   finally { bytes.fill(0) }
-  if (['--mr2-grants','--mr2-chat-provenance','--mr2-event-provenance'].some(mode=>process.argv.includes(mode))) {
+  if(process.argv.includes('--mr2-event-read')){
+    const fixture=m2Fixture()
+    const sample=fixture.messages[0], {worldId,conversationId}=sample
+    const instanceId=fixture.instances.find(actor=>actor.worldId===worldId).id
+    const scope={worldId,conversationId,instanceId}
+    async function measured(expression,labels){
+      const observations=[]
+      let finished=false
+      const pending=evaluate(expression,420000).finally(()=>{finished=true})
+      const sampleMemory=async()=>{
+        while(!finished){
+          const phase=await evaluate('window.mr2EventReadPhase??null',5000).catch(()=>null)
+          const heap=await evaluate.command('Runtime.getHeapUsage',{},5000).catch(()=>null)
+          const mem=adb('shell','dumpsys','meminfo',packageName).match(/TOTAL PSS:\s+(\d+)\s+TOTAL RSS:\s+(\d+)/)
+          observations.push({phase,heapUsedBytes:heap?.usedSize??null,pssKiB:mem?Number(mem[1]):null,rssKiB:mem?Number(mem[2]):null})
+          if(!finished)await delay(400)
+        }
+      }
+      let result
+      try{
+        const sampled=await Promise.all([pending,sampleMemory()])
+        result=sampled[0]
+      }catch(error){
+        console.log(JSON.stringify({...labels,observations,error:error.message},null,2))
+        throw error
+      }
+      console.log(JSON.stringify({...labels,result,observations},null,2))
+      assert.equal(result.error,undefined)
+      return result
+    }
+    for(const size of [1000,10000]){
+      const input={scope,sample,commands:size===1000?m2FixtureCommands(fixture):undefined}
+      const result=await measured(`window.mr2QaEventRead(${password},${JSON.stringify(input)},${size})`,
+        {size,shape:'pages',inputSha256:createHash('sha256').update(JSON.stringify(input)).digest('hex')})
+      assert.match(result.health.cipher,/^4\.17\.0/)
+      assert.equal(result.tagCount,size)
+      for(const shape of ['deep','wide','mixed']){
+        const graphInput={scope,sample}
+        const graph=await measured(`window.mr2QaEventReadShape(${password},${JSON.stringify(graphInput)},${size},${JSON.stringify(shape)})`,
+          {size,shape,inputSha256:createHash('sha256').update(JSON.stringify(graphInput)).digest('hex')})
+        assert.equal(graph.graphCount,size)
+      }
+    }
+    const eventId=await evaluate(`window.mr2QaArmEventCrash(${password},${JSON.stringify(scope)})`)
+    const deadline=Date.now()+420000
+    let state
+    do{
+      await delay(200)
+      state=await evaluate('window.m2QaCrashState()')
+    }while(state==='idle'&&Date.now()<deadline)
+    assert.equal(state,'uncommitted-write-and-audit')
+    const oldPid=pid
+    adb('shell','am','force-stop',packageName)
+    assert.equal(adb('shell','pidof '+packageName+' || true'),'')
+    detach()
+    adb('shell','am','start','-W','-n',packageName+'/com.yubin.formyself.MainActivity')
+    await delay(600)
+    evaluate=await attach()
+    assert.notEqual(pid,oldPid)
+    assert.equal(await initialize(evaluate),true)
+    const recovery=await evaluate(`window.mr2QaRecoverEventCrash(${password},${JSON.stringify(worldId)},${JSON.stringify(eventId)})`)
+    console.log(JSON.stringify({eventRecovery:{oldPid,newPid:pid,...recovery}},null,2))
+    assert.deepEqual(recovery,{before:{revision:1,audits:0,effects:0},after:{revision:2,audits:1,effects:1}})
+  } else if (['--mr2-grants','--mr2-chat-provenance','--mr2-event-provenance'].some(mode=>process.argv.includes(mode))) {
     const fixture=m2Fixture()
     const sample=fixture.messages[0]
     const {worldId,conversationId}=sample

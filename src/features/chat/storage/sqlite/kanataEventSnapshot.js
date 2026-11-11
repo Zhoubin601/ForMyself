@@ -112,6 +112,18 @@ export const eventCorrectionLinks = [
   copyLinks('event_participants','participant_id'), copyLinks('event_causes','cause_event_id'),
   copyLinks('event_sources','message_id,message_revision'),
 ]
-export const eventSnapshotQueries = [eventAuditSupport, correctionSourceRefs, correctionCauses, correctionTags]
+// Keep oversized members out of the page. The same ordinal can be read in JSON chunks.
+const relationRead = projections.map(({field,value}) => {
+  const from = `FROM world_events e CROSS JOIN json_each(${value}) j
+    WHERE e.world_id=? AND e.id=? AND e.revision=?`
+  const item = 'json_quote(j.value)'
+  return {field,
+    page:`SELECT j.key AS position, CASE WHEN length(${item})<=4096 THEN ${item} END AS item
+      ${from} AND j.key>? ORDER BY j.key LIMIT ?`,
+    chunk:`SELECT substr(${item},?,4097) AS part ${from} AND j.key=?`}
+})
+export const eventRelationReads = /** @type {Record<import('./kanataDomainTypes').KanataEventRelationKind,{page:string,chunk:string}>} */ (
+  Object.fromEntries(relationRead.map(({field,...sql})=>[field,sql])))
+export const eventSnapshotQueries = [eventAuditSupport, correctionSourceRefs, correctionCauses, correctionTags, ...relationRead.flatMap(({page,chunk})=>[page,chunk])]
 export const eventSnapshotWrites = [writeEventCommitAudit, writeEventStatusAudit, updateEventFromAudit,
   insertEventCorrection, ...eventCorrectionLinks]

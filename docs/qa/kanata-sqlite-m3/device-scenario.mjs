@@ -58,11 +58,11 @@ export function runM3DeviceScenario(candidate, fixture, failCommitSql) {
     passed.push('memory-archive-source-revision-and-revoke-before-content')
     const move = (location, effectiveAt) => ({ worldId, participantIds: [instance.id], sourceRefs: [], causedByEventIds: [],
       visibility: 'private', summary: '合成移动', effectiveAt, kind: 'move', action: { instanceId: instance.id, location } })
-    const first = await domains.events.propose(move('甲', 1600), 'first-move')
-    await domains.events.commit(worldId, first.id, 1)
-    const independent = await domains.events.propose(move('乙', 1601), 'second-move')
-    await domains.events.commit(worldId, independent.id, 1)
-    await domains.events.revoke(await domains.events.preview(worldId, first.id))
+    const first = await domains.events.proposeAcknowledged(move('甲', 1600), 'first-move')
+    await domains.events.commitAcknowledged(worldId, first.id, 1)
+    const independent = await domains.events.proposeAcknowledged(move('乙', 1601), 'second-move')
+    await domains.events.commitAcknowledged(worldId, independent.id, 1)
+    await domains.events.legacy.revoke(await domains.events.legacy.preview(worldId, first.id))
     check((await domains.characters.getInstance(worldId, instance.id)).state.location === '乙', 'EFFECT_OWNERSHIP')
     passed.push('same-path-event-revoke-isolation')
     const attempt = { ...fixture.usageEvents[0], id: 'm3-qa-usage' }

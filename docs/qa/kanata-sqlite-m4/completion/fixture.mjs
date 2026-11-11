@@ -118,3 +118,20 @@ export async function seedWideChatSources(tx, {worldId,conversationId,instanceId
   await tx.execute(chatEventSource,[worldId,event+'0',source])
   return {deniedActor:prefix+(size-1), memoryId:memory+'0', eventId:event+'0'}
 }
+
+export const eventReadEffects = sequence + `
+  INSERT INTO world_effects(id,world_id,event_id,target_type,target_id,target_instance_id,operation,path,value_json,rule_version)
+  SELECT ?||printf('%05d',n),?,?,'instance',?,?,'set','state.location',json_quote('page-'||n),1 FROM seq`
+export const eventReadAudits = sequence + `, args(prefix,world,event) AS (VALUES(?,?,?))
+  INSERT INTO event_audits(id,world_id,event_id,at,previous_revision,next_revision,previous_json,next_json)
+  SELECT prefix||printf('%05d',n),world,event,n,n+2,n+3,
+    json_object('id',event,'worldId',world,'revision',n+2,'status','committed'),
+    json_object('id',event,'worldId',world,'revision',n+3,'status','committed') FROM seq CROSS JOIN args`
+export const eventReadRevision = 'UPDATE world_events SET revision=? WHERE world_id=? AND id=?'
+
+export const eventReadShapeEdges = sequence + `, input(world,prefix,shape,total) AS (VALUES(?,?,?,?))
+  INSERT INTO event_causes(world_id,event_id,cause_event_id)
+  SELECT world,
+    prefix || CASE WHEN shape='deep' OR (shape='mixed' AND n<total/2) THEN n ELSE 0 END,
+    prefix || (n+1) FROM seq CROSS JOIN input ORDER BY n`
+export const eventReadPublic = "UPDATE world_events SET visibility='public' WHERE world_id=? AND id=?"

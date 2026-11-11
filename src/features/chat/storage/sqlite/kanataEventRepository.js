@@ -5,13 +5,14 @@ import { cloneKanataJson, validateId } from '../../domain/kanataValidation.js'
 import { authorizeEventProof, storeEventProof, storeEventProofLinks, withEventProof } from './kanataEventProof.js'
 import { correctionCauses, correctionSourceRefs, correctionTags, eventAuditSupport, eventCorrectionLinks,
   insertEventCorrection, updateEventFromAudit, writeEventCommitAudit, writeEventStatusAudit } from './kanataEventSnapshot.js'
+import { createEventRead, materializeAuditSnapshot } from './kanataEventRead.js'
 import { createEventRevocation } from './kanataEventRevocation.js'
 import { instanceTable, unpackInstance } from './kanataCharacterRepository.js'
 import { domainTable, executeOnce, found, writeOne } from './kanataDomainRows.js'
 import { effectFromRow, eventFromRow, rebuildEventEffects, visitRows } from './kanataMessageDependents.js'
 import { dependentQueries, dependentWrites } from './kanataMessageDependentsSql.js'
 import { assertActor, grantAccess, grantAllowed, grantBindings, requireLifeSources, requireSourceGrants, sourceConversation, uniqueLifeSources, visitSourceGrants } from './kanataProvenance.js'
-import { equalDto, nonemptyText, pageLimit, requireSqliteValue as need, safeInteger } from './kanataRepositoryValues.js'
+import { nonemptyText, pageLimit, requireSqliteValue as need, safeInteger } from './kanataRepositoryValues.js'
 import { assertWritableWorld } from './kanataWorldRepository.js'
 
 /** @typedef {import('../../domain/kanataTypes').WorldEvent} Event */
@@ -24,8 +25,8 @@ import { assertWritableWorld } from './kanataWorldRepository.js'
 /** @typedef {{id:()=>string, clock:()=>number}} Tools */
 /** @typedef {{worldId:string,eventId:string,revokeIds:string[],uncertainIds:string[],signature:string}} Preview */
 
-const eventRow = 'SELECT * FROM world_events WHERE world_id=? AND id=?'
-const list = 'SELECT * FROM world_events WHERE world_id=? AND id>? ORDER BY id LIMIT ?'
+const eventRow = 'SELECT id,world_id,status,visibility,summary,effective_at,recorded_at,revision,causality,kind,action_instance_id,action_relationship_id,action_location,replaces_event_id FROM world_events WHERE world_id=? AND id=?'
+const list = 'SELECT id FROM world_events WHERE world_id=? AND id>? ORDER BY id LIMIT ?'
 const pathHasEffects = 'SELECT 1 FROM world_effects WHERE world_id=? AND target_type=? AND target_id=? AND path=? LIMIT 1'
 const contextCandidates = `WITH scope(world,actor,group_mode,before_id) AS (VALUES(?,?,?,?))
   SELECT e.id,e.rowid AS ordinal FROM scope JOIN world_events e ON e.world_id=scope.world
@@ -38,23 +39,42 @@ const targetEvents = `SELECT DISTINCT f.event_id FROM world_effects f JOIN world
   WHERE f.world_id=? AND f.target_id=? AND f.event_id>? AND e.status='committed' ORDER BY f.event_id LIMIT 128`
 const deniedContext = new Set(['EVENT_CONTEXT_DENIED', 'EVENT_CAUSE_UNAVAILABLE', 'EVENT_UNAVAILABLE',
   'KANATA_CONTEXT_SCOPE_DENIED', 'KANATA_SOURCE_STALE', 'KANATA_LIFE_PERMISSION_DENIED'])
-const eventAudits = `SELECT id,at,previous_json,next_json FROM event_audits WHERE world_id=? AND event_id=? AND id>? ORDER BY id LIMIT ?`
-const listEffects = 'SELECT * FROM world_effects WHERE world_id=? AND event_id=? AND id>? ORDER BY id LIMIT 128'
+const eventAudits = `SELECT id,at,previous_revision,next_revision FROM event_audits WHERE world_id=? AND event_id=? AND id>? ORDER BY id LIMIT ?`
+const listEffects = `SELECT id,world_id,event_id,target_type,target_id,path,operation,value_json,rule_version
+  FROM world_effects WHERE world_id=? AND event_id=? AND id>? ORDER BY id LIMIT 50`
 const eventCharacters = `SELECT l.participant_id FROM event_participants l JOIN participants p
   ON p.world_id=l.world_id AND p.id=l.participant_id AND p.kind='character'
   WHERE l.world_id=? AND l.event_id=? AND l.participant_id>? ORDER BY l.participant_id LIMIT 50`
 const effectInput = `SELECT status,revision,kind,visibility,effective_at,action_instance_id,action_relationship_id,action_location
   FROM world_events WHERE world_id=? AND id=?`
 const eventIdentity = 'SELECT id FROM world_events WHERE world_id=? AND id=?'
-const previewRows = 'SELECT id,status,revision,effective_at,causality FROM world_events WHERE world_id=? AND id>? ORDER BY id LIMIT 128'
-const descendants = `WITH RECURSIVE args(world,root) AS (VALUES(?,?)), affected(id) AS (
+const previewRows = 'SELECT id,status,revision,effective_at,causality FROM world_events WHERE world_id=? AND id>? ORDER BY id LIMIT 50'
+const legacySelection = `WITH RECURSIVE args(world,root) AS (VALUES(?,?)), affected(id) AS (
   SELECT root FROM args UNION SELECT c.event_id FROM affected a JOIN event_causes c ON c.cause_event_id=a.id
   JOIN args ON c.world_id=args.world
-) SELECT id FROM affected WHERE id>? ORDER BY id LIMIT 128`
+), selected(id,disposition) AS (
+  SELECT id,'revoke' FROM affected
+  UNION ALL
+  SELECT e.id,'uncertain' FROM args JOIN world_events r ON r.world_id=args.world AND r.id=args.root
+  JOIN world_events e ON e.world_id=args.world AND e.status='committed' AND e.causality IS NOT 'explicit'
+    AND e.effective_at>=r.effective_at
+  WHERE NOT EXISTS (SELECT 1 FROM affected a WHERE a.id=e.id)
+)`
+const legacySelectionPage = legacySelection + ' SELECT id,disposition FROM selected WHERE id>? ORDER BY id LIMIT 50'
+const legacyPlanCreate = 'CREATE TEMP TABLE kanata_legacy_event_plan (id TEXT PRIMARY KEY, disposition TEXT NOT NULL)'
+const legacyPlanDrop = 'DROP TABLE temp.kanata_legacy_event_plan'
+const legacyPlanFreeze = legacySelection + ` INSERT INTO temp.kanata_legacy_event_plan
+  SELECT id,disposition FROM selected WHERE disposition='revoke' OR ?=1`
+const legacyPlanPage = `SELECT id FROM temp.kanata_legacy_event_plan WHERE disposition=? AND id>? ORDER BY id LIMIT 50`
+const legacyEffectPaths = dependentQueries.plannedEffectPaths.replace('json_each(?) p','temp.kanata_legacy_event_plan p').replace('event_id=p.value','event_id=p.id')
+export const legacyEventDdl = [legacyPlanCreate,legacyPlanDrop]
 const originRows = `WITH RECURSIVE args(world,root) AS (VALUES(?,?)), origins(id) AS (
   SELECT root FROM args UNION SELECT c.cause_event_id FROM origins o JOIN event_causes c ON c.event_id=o.id
   JOIN args ON c.world_id=args.world
-) SELECT e.id,e.status,e.visibility FROM origins o JOIN world_events e ON e.id=o.id JOIN args ON e.world_id=args.world
+) SELECT e.id,e.status,e.visibility,
+  EXISTS(SELECT 1 FROM event_sources s WHERE s.world_id=e.world_id AND s.event_id=e.id)
+    OR EXISTS(SELECT 1 FROM event_life_sources s WHERE s.world_id=e.world_id AND s.event_id=e.id) AS has_proof
+  FROM origins o JOIN world_events e ON e.id=o.id JOIN args ON e.world_id=args.world
   WHERE e.id>? ORDER BY e.id LIMIT 50`
 const graphPageSql = (/** @type {'cause'|'consequence'} */ direction) => {
   const [from, to] = direction === 'cause' ? ['event_id', 'cause_event_id'] : ['cause_event_id', 'event_id']
@@ -94,18 +114,21 @@ const managedEventRelations = `SELECT id,from_id,to_id,kind,public_summary FROM 
 const managedEventCauses = `SELECT id,summary FROM world_events
   WHERE world_id=? AND status='committed' AND id>? ORDER BY id LIMIT 51`
 const relationDimensions = 'SELECT trust,intimacy,understanding FROM relationships WHERE world_id=? AND id=?'
-const relationEvents = 'SELECT event_id FROM relationship_events WHERE world_id=? AND relationship_id=? ORDER BY event_id'
+const relationEvents = 'SELECT event_id FROM relationship_events WHERE world_id=? AND relationship_id=? AND event_id>? ORDER BY event_id LIMIT ?'
+const legacyRelationEvents = relationEvents.replace('LIMIT ?', 'LIMIT 50')
+const relationshipHeader = `SELECT id,world_id,revision,from_id,to_id,kind,public_summary,trust_baseline,dimension_rule_version,
+  trust,intimacy,understanding FROM relationships WHERE world_id=? AND id=?`
 const staleEventMemories = `UPDATE memories SET status='stale',revision=revision+1 WHERE world_id=? AND status<>'deleted'
-  AND id IN (SELECT memory_id FROM memory_events WHERE world_id=? AND event_id IN (SELECT value FROM json_each(?)))`
+  AND id IN (SELECT memory_id FROM memory_events WHERE world_id=? AND event_id IN (SELECT id FROM temp.kanata_legacy_event_plan))`
 const baselineValue = `SELECT mood,energy,location FROM character_instances WHERE world_id=? AND id=?`
 const provenanceSources = dependentQueries.eventSources.replace('LIMIT 128','LIMIT 50')
 const provenanceGrants = dependentQueries.eventLifeSources.replace('LIMIT 128','LIMIT 50')
 const deniedEventGrant = `WITH ${grantAccess}
   SELECT 1 FROM event_life_sources s CROSS JOIN access WHERE s.world_id=? AND s.event_id=?
     AND NOT ${grantAllowed} LIMIT 1`
-export const eventQueries = [graphRoot, ...Object.values(graphQueries), outgoing, managedEventRelations, managedEventCauses, relationDimensions, eventRow, list, pathHasEffects, listEffects, eventAudits, contextCandidates, contextBody, eventMembership, targetEvents, eventCharacters, effectInput, eventIdentity, previewRows, descendants, originRows, provenanceSources, provenanceGrants, deniedEventGrant, relation.get, relationEvents, baselineValue]
+export const eventQueries = [graphRoot, ...Object.values(graphQueries), outgoing, managedEventRelations, managedEventCauses, relationDimensions, eventRow, list, pathHasEffects, listEffects, eventAudits, contextCandidates, contextBody, eventMembership, targetEvents, eventCharacters, effectInput, eventIdentity, previewRows, legacySelectionPage, legacyPlanPage, legacyEffectPaths, originRows, provenanceSources, provenanceGrants, deniedEventGrant, relation.get, relationEvents, legacyRelationEvents, relationshipHeader, baselineValue]
 export const eventWrites = [eventInsert, eventUpdate, eventStatus, eventParticipant, eventSource, eventCause, eventLife, eventLifeClear,
-  effectInsert, baselineInsert, relationLink, staleEventMemories, ...relation.writeStatements]
+  effectInsert, baselineInsert, relationLink, staleEventMemories, legacyPlanFreeze, ...relation.writeStatements]
 
 /** @param {Event} event */
 function eventExtensions(event) {
@@ -127,7 +150,7 @@ async function* visitOrigins(tx, worldId, eventId, mode) {
   for await (const origin of visitRows(tx, originRows, [worldId, eventId], ['id'], 50)) {
     present ||= origin.id === eventId
     need(origin.status === 'committed' || (origin.status === 'candidate' && (mode === 'propose' || (mode === 'commit' && origin.id === eventId))), 'EVENT_CAUSE_UNAVAILABLE')
-    yield String(origin.id)
+    if(origin.has_proof)yield String(origin.id)
   }
   need(present, 'EVENT_UNAVAILABLE')
 }
@@ -425,52 +448,75 @@ async function publishEffects(tx, worldId, id, effects, tools) {
   }
 }
 
+/** @param {Tx} tx @param {string} worldId @param {string} eventId */
+async function legacySignature(tx,worldId,eventId) {
+  const [root]=await tx.query(previewRoot,[worldId,eventId])
+  need(root && root.status !== 'revoked','EVENT_UNAVAILABLE')
+  let signature=''
+  for await(const row of visitRows(tx,previewRows,[worldId],['id'],50)) signature=sha256Text(signature+JSON.stringify(row))
+  return signature
+}
+
 /** @param {Tx} tx @param {string} worldId @param {string} eventId @returns {Promise<Preview>} */
-async function preview(tx, worldId, eventId) {
-  const [root] = await tx.query(previewRoot, [worldId, eventId])
-  need(root && root.status !== 'revoked', 'EVENT_UNAVAILABLE')
-  const affected = new Set()
-  for await (const row of visitRows(tx, descendants, [worldId, eventId], ['id'])) affected.add(String(row.id))
-  const uncertainIds = []
-  let signature = ''
-  for await (const row of visitRows(tx, previewRows, [worldId], ['id'])) {
-    signature = sha256Text(signature + JSON.stringify(row))
-    if (!affected.has(row.id) && row.status === 'committed' && row.causality !== 'explicit' && Number(row.effective_at) >= Number(root.effective_at)) uncertainIds.push(String(row.id))
+async function preview(tx,worldId,eventId) {
+  const signature=await legacySignature(tx,worldId,eventId)
+  /** @type {string[]} */
+  const revokeIds=[]
+  /** @type {string[]} */
+  const uncertainIds=[]
+  for await(const row of visitRows(tx,legacySelectionPage,[worldId,eventId],['id'],50)) {
+    (row.disposition==='revoke'?revokeIds:uncertainIds).push(String(row.id))
   }
-  return { worldId, eventId, revokeIds: [...affected], uncertainIds, signature }
+  return {worldId,eventId,revokeIds,uncertainIds,signature}
 }
 const previewRoot = 'SELECT status,effective_at FROM world_events WHERE world_id=? AND id=?'
 eventQueries.push(previewRoot)
 
 /** @param {Tx} tx @param {Preview} plan @param {'mark-needs-review'|'keep-independent'|undefined} decision @param {Tools} tools */
-async function revoke(tx, plan, decision, tools) {
-  const current = await preview(tx, plan.worldId, plan.eventId)
-  need(equalDto(current, plan), 'EVENT_REVOKE_PREVIEW_STALE')
-  need(!current.uncertainIds.length || decision === 'keep-independent' || decision === 'mark-needs-review', 'EVENT_DEPENDENCY_UNCERTAIN')
-  const ids = [...current.revokeIds, ...(decision === 'mark-needs-review' ? current.uncertainIds : [])]
-  const changes = new Set(current.revokeIds)
-  for (const id of ids) {
-    const [row] = await tx.query(eventRole,[plan.worldId,id])
-    const current = found(row,'EVENT_UNAVAILABLE')
-    if (current.status === 'revoked') continue
-    const scope = [plan.worldId,id,current.revision]
-    const [audit] = await tx.query(eventAuditSupport,scope)
-    need(audit && Number(audit.supported)>=0,'KANATA_SQLITE_INTEGRITY_FAILED')
-    const status = changes.has(id) ? 'revoked' : 'needsReview'
-    const revision = Number(current.revision)+1
-    if (audit.supported === 0) {
-      const previous = found(await loadEvent(tx,plan.worldId,id),'EVENT_UNAVAILABLE')
-      await transition(tx,previous,{...previous,status,revision},tools)
-    } else {
-      await writeOne(tx,eventStatus,[status,...scope])
-      const auditId = tools.id()
-      need((await tx.execute(writeEventStatusAudit,[auditId,tools.clock(),current.status,plan.worldId,id,revision])).affectedRows===1,
-        'KANATA_SQLITE_INTEGRITY_FAILED')
-      await writeOne(tx,updateEventFromAudit,[auditId,plan.worldId,id,revision])
+async function revoke(tx,plan,decision,tools) {
+  const {worldId,eventId,revokeIds,uncertainIds,signature}=plan
+  const currentSignature=await legacySignature(tx,worldId,eventId)
+  need(currentSignature===signature&&Object.keys(plan).length===5
+    &&Array.isArray(revokeIds)&&Array.isArray(uncertainIds),'EVENT_REVOKE_PREVIEW_STALE')
+  let revoked=0,uncertain=0
+  for await(const row of visitRows(tx,legacySelectionPage,[worldId,eventId],['id'],50)) {
+    const supplied=row.disposition==='revoke'?revokeIds[revoked++]:uncertainIds[uncertain++]
+    need(supplied===row.id,'EVENT_REVOKE_PREVIEW_STALE')
+  }
+  need(revoked===revokeIds.length&&uncertain===uncertainIds.length,'EVENT_REVOKE_PREVIEW_STALE')
+  need(!uncertain||decision==='keep-independent'||decision==='mark-needs-review','EVENT_DEPENDENCY_UNCERTAIN')
+  await tx.execute(legacyPlanCreate)
+  await tx.execute(legacyPlanFreeze,[worldId,eventId,Number(decision==='mark-needs-review')])
+  // Retain legacy command order: confirmed descendants first, then uncertain rows.
+  for (const disposition of ['revoke','uncertain']) {
+    for await(const selected of visitRows(tx,legacyPlanPage,[disposition],['id'],50)) {
+      await legacyStatus(tx,worldId,String(selected.id),disposition==='revoke'?'revoked':'needsReview',tools)
     }
   }
-  await tx.execute(staleEventMemories, [plan.worldId, plan.worldId, JSON.stringify(ids)])
-  await rebuildEventEffects(tx, dependentQueries.plannedEffectPaths, [JSON.stringify(ids), plan.worldId])
+  await tx.execute(staleEventMemories,[worldId,worldId])
+  await rebuildEventEffects(tx,legacyEffectPaths,[worldId])
+  await tx.execute(legacyPlanDrop)
+}
+
+/** @param {Tx} tx @param {string} worldId @param {string} id @param {'revoked'|'needsReview'} status @param {Tools} tools */
+async function legacyStatus(tx,worldId,id,status,tools) {
+  const [row] = await tx.query(eventRole,[worldId,id])
+  const current = found(row,'EVENT_UNAVAILABLE')
+  if (current.status === 'revoked') return
+  const scope = [worldId,id,current.revision]
+  const [audit] = await tx.query(eventAuditSupport,scope)
+  need(audit && Number(audit.supported)>=0,'KANATA_SQLITE_INTEGRITY_FAILED')
+  const revision = Number(current.revision)+1
+  if (audit.supported === 0) {
+    const previous = found(await loadEvent(tx,worldId,id),'EVENT_UNAVAILABLE')
+    await transition(tx,previous,{...previous,status,revision},tools)
+  } else {
+    await writeOne(tx,eventStatus,[status,...scope])
+    const auditId = tools.id()
+    need((await tx.execute(writeEventStatusAudit,[auditId,tools.clock(),current.status,worldId,id,revision])).affectedRows===1,
+      'KANATA_SQLITE_INTEGRITY_FAILED')
+    await writeOne(tx,updateEventFromAudit,[auditId,worldId,id,revision])
+  }
 }
 
 /** @param {Tx} tx @param {string} worldId @param {string} id @param {{instanceId:string,group:boolean}} scope */
@@ -522,7 +568,83 @@ export function createKanataEventRepository(operation, tools) {
     found((await tx.query(eventIdentity,[worldId,id]))[0],'EVENT_UNAVAILABLE')
     return {id}
   }
+  const legacy = {
+    /** @param {string} worldId @param {string} afterId @param {number} limit */
+    list: (worldId, afterId = '', limit = 50) => operation.transaction(async tx => {
+      validateId(worldId, 'worldId')
+      const rows = await tx.query(list, [worldId, afterId, pageLimit(limit) + 1])
+      const events = []
+      for (const row of rows.slice(0, limit)) events.push(found(await loadEvent(tx,worldId,String(row.id)),'EVENT_UNAVAILABLE'))
+      return { events, cursor: rows.length > limit ? String(rows[limit - 1].id) : null }
+    }),
+    /** @param {string} worldId @param {string} id @param {{instanceId:string,group:boolean}} scope */
+    readFor: (worldId, id, scope) => operation.transaction(async tx => {
+      const lifeSources = await authorizeEvent(tx, worldId, id, scope)
+      const event = found(await loadEvent(tx, worldId, id), 'EVENT_UNAVAILABLE')
+      return { ...event, lifeSources }
+    }),
+    /** @param {string} worldId @param {string} eventId */
+    effects: (worldId, eventId) => operation.transaction(async tx => {
+      const result = []
+      for await (const row of visitRows(tx, listEffects, [worldId, eventId], ['id'], 50)) result.push(effectFromRow(row))
+      return result
+    }),
+    /** @param {string} worldId @param {string} eventId @param {string} afterId @param {number} limit */
+    audits: (worldId, eventId, afterId = '', limit = 50) => operation.transaction(async tx => {
+      const rows = await tx.query(eventAudits, [worldId, eventId, afterId, pageLimit(limit) + 1])
+      const audits=[]
+      for(const row of rows.slice(0,limit)){
+        const id=String(row.id)
+        audits.push({id,worldId,eventId,at:Number(row.at),
+          previous:await materializeAuditSnapshot(tx,worldId,eventId,id,'previous',Number(row.previous_revision)),
+          next:await materializeAuditSnapshot(tx,worldId,eventId,id,'next',Number(row.next_revision))})
+      }
+      return {audits,cursor:rows.length>limit?String(rows[limit-1].id):null}
+    }),
+    /** @param {Omit<Event,'id'|'status'|'revision'|'recordedAt'>} fields @param {string} commandId */
+    propose: (fields, commandId) => operation.transaction(async tx => {
+      const id = await proposeCommand(tx,fields,commandId)
+      return found(await loadEvent(tx,fields.worldId,id),'EVENT_UNAVAILABLE')
+    }),
+    /** @param {string} worldId @param {string} id @param {number} revision */
+    commit: (worldId, id, revision) => operation.transaction(async tx => {
+      await commitCommand(tx,worldId,id,revision)
+      return found(await loadEvent(tx,worldId,id),'EVENT_UNAVAILABLE')
+    }),
+    /** @param {string} worldId @param {string} id */
+    preview: (worldId, id) => operation.transaction(tx => preview(tx, worldId, id)),
+    /** @param {Preview} plan @param {'mark-needs-review'|'keep-independent'} [decision] */
+    revoke: (plan, decision) => operation.transaction(async tx => {
+      await assertWritableWorld(tx, plan.worldId)
+      await executeOnce(tx, ['event:revoke', plan.worldId, plan.eventId, plan.signature], { plan, decision: decision ?? null }, async () => {
+        await revoke(tx, plan, decision, tools)
+        return plan.eventId
+      })
+    }),
+    /** @param {Preview} plan @param {'mark-needs-review'|'keep-independent'|undefined} decision @param {string} summary */
+    correct: (plan, decision, summary) => operation.transaction(async tx => {
+      await assertWritableWorld(tx, plan.worldId)
+      need(nonemptyText(summary) && summary.length <= 2000, 'INVALID_EVENT_SUMMARY')
+      const id = await executeOnce(tx, ['event:correct', plan.worldId, plan.eventId, plan.signature], { plan, decision: decision ?? null, summary }, async () => {
+        const replacement = await prepareCorrection(tx,plan.worldId,plan.eventId,summary.trim(),tools)
+        await revoke(tx, plan, decision, tools)
+        return replacement()
+      })
+      return found(await loadEvent(tx, plan.worldId, id), 'EVENT_UNAVAILABLE')
+    }),
+    /** @param {string} worldId @param {string} id */
+    relationship: (worldId, id) => operation.transaction(async tx => {
+      const row = await relation.read(tx, [worldId, id])
+      if (!row) return null
+      const { trust, intimacy, understanding, ...fields } = row
+      const sourceEventIds = []
+      for await(const row of visitRows(tx,legacyRelationEvents,[worldId,id],['event_id'],50)) sourceEventIds.push(String(row.event_id))
+      return { ...fields, dimensions: { trust, intimacy, understanding }, sourceEventIds }
+    }),
+  }
   return {
+    ...createEventRead(operation, assertEventProvenance),
+    legacy,
     ...createEventRevocation(operation,tools,(tx,plan,summary)=>
       prepareCorrection(tx,plan.worldId,plan.eventId,summary,tools)),
     /** @param {string} worldId @param {string} after */
@@ -550,14 +672,6 @@ export function createKanataEventRepository(operation, tools) {
       return row?{id:String(row.id),summary:String(row.summary),revision:Number(row.revision),
         status:String(row.status),kind:row.kind??'note',effectiveAt:Number(row.effective_at)}:null
     }),
-    /** @param {string} worldId @param {string} afterId @param {number} limit */
-    list: (worldId, afterId = '', limit = 50) => operation.transaction(async tx => {
-      validateId(worldId, 'worldId')
-      const rows = await tx.query(list, [worldId, afterId, pageLimit(limit) + 1])
-      const events = []
-      for (const row of rows.slice(0, limit)) events.push(await eventFromRow(tx, row))
-      return { events, cursor: rows.length > limit ? String(rows[limit - 1].id) : null }
-    }),
     /** @param {string} worldId @param {string} eventId @param {'cause'|'consequence'} direction
      * @param {import('./kanataDomainTypes').KanataEventGraphCursor} [cursor] */
     graphPage: (worldId, eventId, direction, cursor) => operation.transaction(async tx => {
@@ -578,12 +692,6 @@ export function createKanataEventRepository(operation, tools) {
         status: /** @type {Event['status']} */ (row.status),
       }))
       return { entries, cursor: rows.length > 50 ? { worldId, eventId, direction, rootRevision, after: entries[49].id } : null }
-    }),
-    /** @param {string} worldId @param {string} id @param {{instanceId:string,group:boolean}} scope */
-    readFor: (worldId, id, scope) => operation.transaction(async tx => {
-      const lifeSources = await authorizeEvent(tx, worldId, id, scope)
-      const event = found(await loadEvent(tx, worldId, id), 'EVENT_UNAVAILABLE')
-      return { ...event, lifeSources }
     }),
     /** @param {string} worldId @param {{instanceId:string,group:boolean}} scope @param {readonly string[]} targets */
     context: (worldId, scope, targets) => operation.transaction(async tx => {
@@ -637,61 +745,12 @@ export function createKanataEventRepository(operation, tools) {
         cursor = String(page[page.length - 1].id)
       }
     }),
-    /** @param {string} worldId @param {string} eventId */
-    effects: (worldId, eventId) => operation.transaction(async tx => {
-      const result = []
-      for await (const row of visitRows(tx, listEffects, [worldId, eventId], ['id'])) result.push(effectFromRow(row))
-      return result
-    }),
-    /** @param {string} worldId @param {string} eventId @param {string} afterId @param {number} limit */
-    audits: (worldId, eventId, afterId = '', limit = 50) => operation.transaction(async tx => {
-      const rows = await tx.query(eventAudits, [worldId, eventId, afterId, pageLimit(limit) + 1])
-      return {
-        audits: rows.slice(0, limit).map(row => ({
-          id: String(row.id), worldId, eventId, at: Number(row.at),
-          previous: /** @type {Event} */ (JSON.parse(String(row.previous_json))),
-          next: /** @type {Event} */ (JSON.parse(String(row.next_json))),
-        })),
-        cursor: rows.length > limit ? String(rows[limit - 1].id) : null,
-      }
-    }),
-    /** @param {Omit<Event,'id'|'status'|'revision'|'recordedAt'>} fields @param {string} commandId */
-    propose: (fields, commandId) => operation.transaction(async tx => {
-      const id = await proposeCommand(tx,fields,commandId)
-      return found(await loadEvent(tx,fields.worldId,id),'EVENT_UNAVAILABLE')
-    }),
     /** @param {Omit<Event,'id'|'status'|'revision'|'recordedAt'>} fields @param {string} commandId */
     proposeAcknowledged: (fields, commandId) => operation.transaction(async tx =>
       acknowledgement(tx,fields.worldId,await proposeCommand(tx,fields,commandId))),
     /** @param {string} worldId @param {string} id @param {number} revision */
-    commit: (worldId, id, revision) => operation.transaction(async tx => {
-      await commitCommand(tx,worldId,id,revision)
-      return found(await loadEvent(tx,worldId,id),'EVENT_UNAVAILABLE')
-    }),
-    /** @param {string} worldId @param {string} id @param {number} revision */
     commitAcknowledged: (worldId,id,revision) => operation.transaction(async tx =>
       acknowledgement(tx,worldId,await commitCommand(tx,worldId,id,revision))),
-    /** @param {string} worldId @param {string} id */
-    preview: (worldId, id) => operation.transaction(tx => preview(tx, worldId, id)),
-    /** @param {Preview} plan @param {'mark-needs-review'|'keep-independent'} [decision] */
-    revoke: (plan, decision) => operation.transaction(async tx => {
-      await assertWritableWorld(tx, plan.worldId)
-      await executeOnce(tx, ['event:revoke', plan.worldId, plan.eventId, plan.signature], { plan, decision: decision ?? null }, async () => {
-        await revoke(tx, plan, decision, tools)
-        return plan.eventId
-      })
-    }),
-    /** @param {Preview} plan @param {'mark-needs-review'|'keep-independent'|undefined} decision @param {string} summary */
-    correct: (plan, decision, summary) => operation.transaction(async tx => {
-      await assertWritableWorld(tx, plan.worldId)
-      need(nonemptyText(summary) && summary.length <= 2000, 'INVALID_EVENT_SUMMARY')
-      const id = await executeOnce(tx, ['event:correct', plan.worldId, plan.eventId, plan.signature], { plan, decision: decision ?? null, summary }, async () => {
-        const replacement = await prepareCorrection(tx,plan.worldId,plan.eventId,summary.trim(),tools)
-        await revoke(tx, plan, decision, tools)
-        return replacement()
-      })
-      return found(await loadEvent(tx, plan.worldId, id), 'EVENT_UNAVAILABLE')
-    }),
     /** @param {Relationship} value */
     createRelationship: value => operation.transaction(async tx => {
       await assertWritableWorld(tx, value.worldId)
@@ -703,12 +762,32 @@ export function createKanataEventRepository(operation, tools) {
       })
     }),
     /** @param {string} worldId @param {string} id */
-    relationship: (worldId, id) => operation.transaction(async tx => {
-      const row = await relation.read(tx, [worldId, id])
-      if (!row) return null
-      const { trust, intimacy, understanding, ...fields } = row
-      const links = await tx.query(relationEvents, [worldId, id])
-      return { ...fields, dimensions: { trust, intimacy, understanding }, sourceEventIds: links.map(link => String(link.event_id)) }
+    relationship: (worldId,id) => operation.transaction(async tx=>{
+      validateId(worldId,'worldId')
+      validateId(id,'relationshipId')
+      const [row]=await tx.query(relationshipHeader,[worldId,id])
+      if(!row)return null
+      return {id,worldId,fromId:String(row.from_id),toId:String(row.to_id),kind:row.kind,
+        revision:Number(row.revision),publicSummary:String(row.public_summary),trustBaseline:row.trust_baseline,
+        dimensionRuleVersion:Number(row.dimension_rule_version),
+        dimensions:{trust:Number(row.trust),intimacy:Number(row.intimacy),understanding:Number(row.understanding)}}
+    }),
+    /** @param {string} worldId @param {string} id @param {import('./kanataDomainTypes').KanataRelationshipEventCursor} [cursor]
+     * @param {number} [limit] */
+    relationshipEvents: (worldId,id,cursor,limit=50) => operation.transaction(async tx=>{
+      validateId(worldId,'worldId')
+      validateId(id,'relationshipId')
+      const [row]=await tx.query(relationshipHeader,[worldId,id])
+      need(row,'RELATIONSHIP_UNAVAILABLE')
+      const relationshipRevision=Number(row.revision)
+      if(cursor){
+        validateId(cursor.after,'cursor')
+        need(cursor.worldId===worldId&&cursor.relationshipId===id&&cursor.relationshipRevision===relationshipRevision,
+          'RELATIONSHIP_EVENT_CURSOR_STALE')
+      }
+      const rows=await tx.query(relationEvents,[worldId,id,cursor?.after??'',pageLimit(limit)+1])
+      const entries=rows.slice(0,limit).map(link=>String(link.event_id))
+      return {entries,cursor:rows.length>limit?{worldId,relationshipId:id,relationshipRevision,after:entries[limit-1]}:null}
     }),
   }
 }

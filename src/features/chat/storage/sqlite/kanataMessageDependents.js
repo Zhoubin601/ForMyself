@@ -46,16 +46,26 @@ function originalOrder(actual, hint, identity) {
   return /** @type {T[]} */ (hint)
 }
 
-/** @param {Transaction} tx @param {Row} row @returns {Promise<Event>} */
+/** Explicit historical materializer. Ordinary readers use header/relation/chunk APIs.
+ * @param {Transaction} tx @param {Row} row @returns {Promise<Event>} */
 export async function eventFromRow(tx, row) {
   const keys = [row.world_id, row.id]
-  const extensions = extensionObject(row.extensions_json)
-  const participants = await gather(visitRows(tx, query.eventParticipants, keys, ['participant_id']), link => String(link.participant_id))
-  const causes = await gather(visitRows(tx, query.eventCauses, keys, ['cause_event_id']), link => String(link.cause_event_id))
-  const sources = await gather(visitRows(tx, query.eventSources, keys, ['message_id']), link => ({
+  let json='',offset=0
+  for(;;){
+    const [chunk]=await tx.query(query.eventExtensionChunk,[offset+1,...keys])
+    need(chunk && typeof chunk.part==='string','KANATA_SQLITE_INTEGRITY_FAILED')
+    const characters=Array.from(String(chunk.part))
+    json+=characters.slice(0,4096).join('')
+    if(characters.length<=4096)break
+    offset+=4096
+  }
+  const extensions = extensionObject(json)
+  const participants = await gather(visitRows(tx, query.eventParticipants, keys, ['participant_id'],50), link => String(link.participant_id))
+  const causes = await gather(visitRows(tx, query.eventCauses, keys, ['cause_event_id'],50), link => String(link.cause_event_id))
+  const sources = await gather(visitRows(tx, query.eventSources, keys, ['message_id'],50), link => ({
     messageId: String(link.message_id), revision: Number(link.message_revision),
   }))
-  const life = await gather(visitRows(tx, query.eventLifeSources, keys, ['grant_id', 'grant_revision', 'fingerprint']), link => ({
+  const life = await gather(visitRows(tx, query.eventLifeSources, keys, ['grant_id', 'grant_revision', 'fingerprint'],50), link => ({
     grantId: String(link.grant_id), instanceId: String(link.instance_id),
     moduleId: /** @type {import('../../domain/kanataTypes').LifeModule} */ (link.module_id),
     revision: Number(link.grant_revision), fingerprint: String(link.fingerprint),
