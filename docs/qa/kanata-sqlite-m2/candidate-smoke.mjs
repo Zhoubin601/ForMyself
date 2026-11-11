@@ -100,9 +100,17 @@ const candidate = createKanataSqliteCandidate({
     },
     async query(command) {
       if(trace?.failQuery===command.statement)throw new Error('EVENT_READ_QUERY_INJECTED')
+      const started=performance.now()
       const result = await profileBridge("query", command, bridge.query)
       if (trace) {
         trace.queries++
+        if(trace.profile){
+          const profile=trace.profile[command.statement]??={queries:0,elapsedMs:0,maxMs:0}
+          const elapsed=performance.now()-started
+          profile.queries++
+          profile.elapsedMs+=elapsed
+          profile.maxMs=Math.max(profile.maxMs,elapsed)
+        }
         trace.maxRows = Math.max(trace.maxRows, result.rows.length)
         trace.observeQuery?.(result.rows, command)
       }
@@ -1797,7 +1805,7 @@ window.mr2QaEventRead = async (password,{commands,scope,sample},size) => {
     }))
     let fullDtos=0,maxPageObjects=0,maxChunk=0,revokedBodyReads=0
     let previousId='',tagHash=''
-    trace={queries:0,writes:0,maxRows:0,observeQuery(rows){
+    trace={queries:0,writes:0,maxRows:0,profile:{},observeQuery(rows){
       fullDtos+=rows.filter(row=>Object.hasOwn(row,'previous_json')||Object.hasOwn(row,'next_json')
         ||(Object.hasOwn(row,'summary')&&Object.hasOwn(row,'extensions_json'))).length
     }}
@@ -1811,6 +1819,7 @@ window.mr2QaEventRead = async (password,{commands,scope,sample},size) => {
     await rejects(()=>model.eventRelations(id,'lifeSources',null,initial.cursor,guard),'EVENT_READ_CURSOR_STALE')
     await rejects(()=>old.eventReadFor(id,viewer,guard),'KANATA_WORLD_OWNER_EXPIRED')
     initial=null
+    window.mr2EventReadPhase='read-tags'
     let cursor,tagCount=0
     do {
       const page=await model.eventRelations(id,'lifeSources',null,cursor,guard)
@@ -1825,6 +1834,7 @@ window.mr2QaEventRead = async (password,{commands,scope,sample},size) => {
       cursor=page.cursor
     }while(cursor)
     check(tagCount===size,'EVENT_READ_TAG_COUNT')
+    window.mr2EventReadPhase='read-reference'
     const refs=await model.eventRelations(id,'sourceRefs',viewer,undefined,guard)
     check(refs.entries[0].chunked===true,'EVENT_READ_REFERENCE_CHUNK')
     async function inspectChunk(selection,access,expected){
@@ -1844,6 +1854,7 @@ window.mr2QaEventRead = async (password,{commands,scope,sample},size) => {
       return offset
     }
     await inspectChunk({kind:'relation',relation:'sourceRefs',position:0},viewer,JSON.stringify(ref))
+    window.mr2EventReadPhase='read-effects'
     let effectCount=0
     cursor=undefined
     do{
@@ -1852,6 +1863,7 @@ window.mr2QaEventRead = async (password,{commands,scope,sample},size) => {
       effectCount+=page.entries.length
       cursor=page.cursor
     }while(cursor)
+    window.mr2EventReadPhase='read-audits'
     let auditCount=0,firstAudit
     cursor=undefined
     do{
@@ -1862,9 +1874,10 @@ window.mr2QaEventRead = async (password,{commands,scope,sample},size) => {
       cursor=page.cursor
     }while(cursor)
     check(auditCount===size+1&&effectCount===size+1,'EVENT_READ_EFFECT_AUDIT_COUNTS')
+    window.mr2EventReadPhase='read-snapshot'
     const snapshotCharacters=await inspectChunk({kind:'audit',auditId:firstAudit.id,side:'next',snapshotRevision:2},null)
     const measured={queries:trace.queries,maxRows:trace.maxRows,elapsedMs:Math.round(performance.now()-started),
-      fullDtos,maxPageObjects,maxChunk}
+      fullDtos,maxPageObjects,maxChunk,profile:trace.profile}
     trace=undefined
     check(measured.maxRows<=51&&maxPageObjects<=50&&maxChunk<=4096&&fullDtos===0,'EVENT_READ_BOUNDS')
     window.mr2EventReadPhase='faults'

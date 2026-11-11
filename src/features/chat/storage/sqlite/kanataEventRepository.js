@@ -50,8 +50,8 @@ const effectInput = `SELECT status,revision,kind,visibility,effective_at,action_
 const eventIdentity = 'SELECT id FROM world_events WHERE world_id=? AND id=?'
 const previewRows = 'SELECT id,status,revision,effective_at,causality FROM world_events WHERE world_id=? AND id>? ORDER BY id LIMIT 50'
 const legacySelection = `WITH RECURSIVE args(world,root) AS (VALUES(?,?)), affected(id) AS (
-  SELECT root FROM args UNION SELECT c.event_id FROM affected a JOIN event_causes c ON c.cause_event_id=a.id
-  JOIN args ON c.world_id=args.world
+  SELECT root FROM args UNION SELECT c.event_id FROM affected a CROSS JOIN args CROSS JOIN event_causes c
+  WHERE c.world_id=args.world AND c.cause_event_id=a.id
 ), selected(id,disposition) AS (
   SELECT id,'revoke' FROM affected
   UNION ALL
@@ -69,8 +69,8 @@ const legacyPlanPage = `SELECT id FROM temp.kanata_legacy_event_plan WHERE dispo
 const legacyEffectPaths = dependentQueries.plannedEffectPaths.replace('json_each(?) p','temp.kanata_legacy_event_plan p').replace('event_id=p.value','event_id=p.id')
 export const legacyEventDdl = [legacyPlanCreate,legacyPlanDrop]
 const originRows = `WITH RECURSIVE args(world,root) AS (VALUES(?,?)), origins(id) AS (
-  SELECT root FROM args UNION SELECT c.cause_event_id FROM origins o JOIN event_causes c ON c.event_id=o.id
-  JOIN args ON c.world_id=args.world
+  SELECT root FROM args UNION SELECT c.cause_event_id FROM origins o CROSS JOIN args CROSS JOIN event_causes c
+  WHERE c.world_id=args.world AND c.event_id=o.id
 ) SELECT e.id,e.status,e.visibility,
   EXISTS(SELECT 1 FROM event_sources s WHERE s.world_id=e.world_id AND s.event_id=e.id)
     OR EXISTS(SELECT 1 FROM event_life_sources s WHERE s.world_id=e.world_id AND s.event_id=e.id) AS has_proof

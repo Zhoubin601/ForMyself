@@ -18,29 +18,34 @@ const projections = relations.map(({field,table,keys,order}) => {
     Object.entries(keys).map(([column,key]) => "'" + key + "',l." + column).join(',') + ')'
   const hint = "json_extract(e.extensions_json,'$." + field + "')"
   const type = "json_type(e.extensions_json,'$." + field + "')"
-  const match = columns.map(column => {
-    if (scalar) return 'j.type=\'text\' AND l.' + column + '=j.value'
-    const path = "'$." + keys[column] + "'"
-    const types = keys[column] === 'revision' ? "('integer','real')" : "('text')"
-    return `json_type(j.value,${path}) IN ${types} AND l.${column}=json_extract(j.value,${path})`
-  }).join(' AND ')
-  const sameIdentity = scalar ? 'j.value' : 'json_array(' + columns.map(column => {
-    const value = "json_extract(j.value,'$." + keys[column] + "')"
-    return keys[column] === 'revision' ? 'CAST(' + value + ' AS INTEGER)' : value
-  }).join(',') + ')'
   const owner = 'l.world_id=e.world_id AND l.event_id=e.id'
   const array = `(SELECT json_group_array(${scalar ? 'item' : 'json(item)'}) FROM (
     SELECT ${member} AS item FROM ${table} l WHERE ${owner} ORDER BY ${order ?? columns[0]}
   ))`
+  const declared = columns.map(column => {
+    if(scalar)return 'j.value AS '+column
+    return `CASE WHEN j.type='object' THEN json_extract(j.value,'$.${keys[column]}') END AS ${column}`
+  }).join(',')
+  const invalidType = scalar ? "j.type<>'text'" : `j.type<>'object' OR ${columns.map(column => {
+    const type = keys[column]==='revision' ? "('integer','real')" : "('text')"
+    return `CASE WHEN j.type='object' THEN json_type(j.value,'$.${keys[column]}') NOT IN ${type} ELSE 1 END`
+  }).join(' OR ')}`
+  const names = columns.join(',')
   const valid = `CASE
     WHEN ${type} IS NULL THEN 1
     WHEN ${type}<>'array' THEN 0
     WHEN json_array_length(${hint})<>(SELECT count(*) FROM ${table} l WHERE ${owner}) THEN 0
-    WHEN EXISTS (SELECT 1 FROM json_each(${hint}) j WHERE
-      CASE WHEN j.type<>'${scalar ? 'text' : 'object'}' THEN 1 ELSE
-        NOT EXISTS (SELECT 1 FROM ${table} l WHERE ${owner} AND ${match}) END) THEN 0
-    WHEN EXISTS (SELECT 1 FROM json_each(${hint}) j GROUP BY ${sameIdentity} HAVING count(*)>1) THEN 0
-    ELSE 1 END`
+    ELSE NOT EXISTS (
+      WITH declared AS MATERIALIZED (
+        SELECT ${declared},CASE WHEN ${invalidType} THEN 1 ELSE 0 END AS invalid
+        FROM json_each(${hint}) j
+      ), normalized AS MATERIALIZED (
+        SELECT ${names} FROM ${table} l WHERE ${owner}
+      ), extra AS (SELECT ${names} FROM declared EXCEPT SELECT * FROM normalized),
+      missing AS (SELECT * FROM normalized EXCEPT SELECT ${names} FROM declared)
+      SELECT 1 WHERE EXISTS(SELECT 1 FROM declared WHERE invalid=1)
+        OR EXISTS(SELECT 1 FROM extra) OR EXISTS(SELECT 1 FROM missing)
+    ) END`
   return {field, value:`COALESCE(${hint},${array})`,valid}
 })
 const action = `json_set(
