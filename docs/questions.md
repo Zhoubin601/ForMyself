@@ -214,3 +214,11 @@ P5无新的产品关键阻塞；默认阈值为可配置工程默认。P6/P7及�
 已确认：用户选择纯领域撤销为唯一权威，保留所有 revoked 后代、Set/data.events 顺序、同世界完整数据增量签名、revoked no-op；不能证明原始数组顺序恢复时必须 BLOCKED。旧 SQLite 不再裁决产品行为。
 
 待证明（工程阻塞，不是重复请求产品批准）：001–004 现有数据如何无损恢复 Events/Effects/EffectBaselines 原始领域数组顺序；字段级 action 如何在四条写路径保留 UTF-16 而不构造完整 Event。未获新 Schema 或 M5 授权，当前不实施它们。
+
+## 2026-11-11 M4 E 的明确结构决策
+
+已补真实反例与可审阅最小方案，不再重复询问纯领域权威。见 [最终收口清单 E](20261111-kanata-sqlite-m4-final-closeout-ledger-v1.md) 和其 [QA](qa/kanata-sqlite-m4/m4-r/event-compat/final-closeout/README.md)。
+
+待用户明确批准：是否允许仅在隔离 SQLite 候选追加 Schema 005，以三张类型明确的旁表持久化 Events/Effects/EffectBaselines 同世界原数组顺序，并对已有缺序号行保持 fail closed、保留原库、不猜序？001–004、生产 legacy/default false、真实数据隔离和不启动 M5 的边界全部保留。方案只能在有原数组时保存顺序，不能补回已经丢失的历史信息。
+
+该确认来自用户当前“不得未经明确批准新增 Schema 005”及最终清单 §9 的停止条件；不是请求常规提交/推送、隔离设备或继续既有工作包的重复授权。当前尚未获得此批准。

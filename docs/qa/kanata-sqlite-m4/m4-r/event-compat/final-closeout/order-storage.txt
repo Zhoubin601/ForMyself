@@ -1,0 +1,15 @@
+(node:30836) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata-m0/docs/qa/kanata-sqlite-m4/m4-r/event-compat/final-closeout/verify-order-storage.mjs:50
+    for (const { sql, parameters } of m2FixtureCommands(data)) db.prepare(sql).run(...parameters)
+                                                                               ^
+
+Error: FOREIGN KEY constraint failed
+    at file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata-m0/docs/qa/kanata-sqlite-m4/m4-r/event-compat/final-closeout/verify-order-storage.mjs:50:80
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5) {
+  code: 'ERR_SQLITE_ERROR',
+  errcode: 787,
+  errstr: 'constraint failed'
+}
+
+Node.js v24.14.1

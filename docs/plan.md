@@ -1230,3 +1230,5 @@ MR2-G4 以 8d3b8f768617143312fd800ab05decaa53d6114d 接管。新进展与兼容�
 - 已通过证据按源码、fixture、设备、APK/catalog 指纹和影响范围复用；受影响路径定向复测，最终集成树统一全量回归和两轮审查。
 - G1–G11 全部 PASS 才能关闭 M4。M5 仅在 M4 PASS 后建议放行，并等待用户明确授权。
 - 当前 M4 BLOCKED、M5 NO；生产 canonical legacy，普通 APK SQLite=false，Schema 001–004 冻结。
+
+2026-11-11 从远端 `1042110` 接管后，MR0 已轻量复核，473 个既有文件指纹、同一隔离设备/APK/catalog 与历史证据匹配。当前执行索引仍只有上面的最终清单。E 原始数组顺序的可复现信息缺失反例、附加顺序元数据方案与实际回滚/冷重开/强杀沙箱证据已直接补入其 E 条目，参见 [本轮 QA](qa/kanata-sqlite-m4/m4-r/event-compat/final-closeout/README.md)。未注册 Schema 005；按用户安全边界在该结构决策处交还控制，A–G 和 G1–G11 不提升。未开始最终集成、MR8 或 M5。

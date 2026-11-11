@@ -1281,3 +1281,9 @@ raw/完整需求清单.txt 4.1/4.4/8.3及最新连续执行v3驱动当前实现�
 - 当前验收事实：[M4-R 验收 v5](20261110-kanata-sqlite-m4-r-acceptance-v5.md)、[ER1 验收 v4](20261111-kanata-sqlite-mr2-g4-acceptance-v4.md)、[M4-R QA 矩阵](qa/kanata-sqlite-m4/m4-r/matrix.md)、[G4 调用图](qa/kanata-sqlite-m4/m4-r/g4-call-map.md)、[ER1 兼容契约](qa/kanata-sqlite-m4/m4-r/event-compat/compatibility-contract.md)、[Oracle](qa/kanata-sqlite-m4/m4-r/event-compat/oracle.md)、[生命周期矩阵](qa/kanata-sqlite-m4/m4-r/event-compat/lifecycle-matrix.md)。
 - 项目执行规范：[AGENTS.md](../AGENTS.md)、[架构接口与 Agent 开发规范](../架构接口与Agent开发说明书.md)、[开发背景](../memory-bank/development-context.md)。
 - 本次只做范围与状态收敛，不改 raw，不改业务源码、Schema、Android 配置或真实数据；未引入外部资料。
+
+## 2026-11-11 M4 最终收口接管取证来源
+
+- 来源文件：raw/完整需求清单.txt §6.7–6.8（修正/撤销的范围与恢复点）；raw/彼方 · Kanata 技术设计.txt §3.3（事件、Effect 归属与独立效果保留）。引用日期：2026-11-11。原文件只读；顺序细则由用户已确认的纯领域契约裁决，不从 raw 补造。
+- 执行索引：[最终收口清单](20261111-kanata-sqlite-m4-final-closeout-ledger-v1.md)，远端接管提交 10421105b745fa4bb9b2107379c39786fac68b96。技术依据：M4-R/ER1 合同、kanataEvents.js、kanataSchema.js、kanataEventRepository.js、现有独立 Oracle 与 m2FixtureCommands。
+- [本轮原始证据](qa/kanata-sqlite-m4/m4-r/event-compat/final-closeout/README.md)：473 份源码/fixture 指纹一致、历史设备与已装 APK/catalog 比对、既有 12 项兼容失败复现、相同 v4 声明行却要求不同领域结果的反例，以及新临时合成 SQLite 旁表往返/回滚/强杀取证。没有引入外部资料、读取真实备份或调用真实模型 API。

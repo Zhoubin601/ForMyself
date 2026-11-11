@@ -1,0 +1,5 @@
+Exception: D:\2026Autumn Semester File\GitHub\formyself-app\.worktrees\kanata-m0\docs\qa\kanata-sqlite-m4\m4-r\event-compat\final-closeout\verify-evidence-reuse.ps1:68
+Line |
+  68 |  … ne $priorCatalog.sha256){throw 'Candidate catalog checksum mismatch'}
+     |                             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     | Candidate catalog checksum mismatch

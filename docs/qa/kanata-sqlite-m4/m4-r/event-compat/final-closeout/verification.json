@@ -1,0 +1,29 @@
+{
+  "status": "PASS",
+  "checkedLocalLinks": 6,
+  "newQaFiles": {
+    "authority-host-exit.txt": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354",
+    "authority-host.txt": "ab5ba7c39f07fd7a13c05c059cd52bc0b102d45688c28f6b987f91a7f4d98145",
+    "compatibility-existing-exit.txt": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04",
+    "compatibility-existing.txt": "0d5c6c447e5c881a27fae39c211213e5f3b71701b489dc893221bc0adf596687",
+    "evidence-reuse-exit.txt": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04",
+    "evidence-reuse-final-exit.txt": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354",
+    "evidence-reuse-final.txt": "e5f8bdf08388ca11228031489fb195bdc340e86c1016a2bc3cadd2f7b33f3011",
+    "evidence-reuse-retest-exit.txt": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354",
+    "evidence-reuse-retest.txt": "0019d3a03ce5a0f90b0147dca4291c5abd9542a3b51e822e48229a6479df42b5",
+    "evidence-reuse.txt": "65397d733b24d35a8b9ce78e49a28ea161164d984445ea7883d7f383ec4a6fdd",
+    "git-preflight.txt": "456d2e4f34cd71ab0b133b98207bb34a66293635af2b2df5cdea5c42a4268964",
+    "order-existing-exit.txt": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04",
+    "order-existing.txt": "15f0304e41fd488d3d9dc149763790997c01955516d2b081c2cf4169dda99d9e",
+    "order-storage-exit.txt": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04",
+    "order-storage-final-exit.txt": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04",
+    "order-storage-final.txt": "e1e3e4352331405849dc6f48bc221d64ef57cc0442088312ecd5a89de8d65765",
+    "order-storage-retest-exit.txt": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04",
+    "order-storage-retest.txt": "f86b6228850231e28933131b094f7ad448360d354d7e220fb0f66de60f63ec44",
+    "order-storage.txt": "9d0d56261018e27115f5cabd0d31b302dbed45cde4ebe59ef1f3700c14b32fbe",
+    "README.md": "a1e13809f3651076b8ca47a5aa949f3ef9cd29bb5036983bd19600fbdf2b5b1d",
+    "verify-evidence-reuse.ps1": "5410c41c7cd75f1c02a3de0f9be4808dac0bcf4e49f945338986f2bf17c4a2a2",
+    "verify-order-storage.mjs": "ca8648a2c4cb866459aca4e4cc8c8b5932eac9d11a6bf2f838a894fa130df130"
+  },
+  "scope": "Evidence and doc syntax/link audit only; no final M4 regression"
+}

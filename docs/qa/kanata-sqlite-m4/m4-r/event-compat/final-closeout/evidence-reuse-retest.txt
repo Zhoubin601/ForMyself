@@ -1,0 +1,48 @@
+{
+  "status": "PASS",
+  "scope": "Read-only identity and evidence reuse audit, not a new Android business run",
+  "head": "10421105b745fa4bb9b2107379c39786fac68b96",
+  "sourceCommit": "6118e9cd9721fa51fe7571f17fc22cf1c2e6c305",
+  "sourceFilesChecked": 473,
+  "sourceMismatches": [],
+  "evidenceArchivesChecked": [
+    "initial-device-result.txt.gz",
+    "initial-device-logcat.txt.gz",
+    "initial-device-instrumentation.txt.gz",
+    "initial-device-apk-sha256.txt.gz",
+    "final-device-result.txt.gz",
+    "final-device-logcat.txt.gz",
+    "final-device-instrumentation.txt.gz",
+    "final-device-apk-sha256.txt.gz"
+  ],
+  "fixtureUnchanged": true,
+  "device": {
+    "serial": "emulator-5582",
+    "avd": "kanata_m2_api34",
+    "path": "E:\\Android\\kanata-m2-synthetic-a0790ab6\\avd\\kanata_m2_api34.avd",
+    "api": "34",
+    "abi": "x86_64",
+    "fingerprint": "google/sdk_gphone64_x86_64/emu64xa:14/UE1A.230829.050/12077443:userdebug/dev-keys",
+    "acceleration": [
+      "accel:",
+      "0",
+      "WHPX(10.0.26300) is installed and usable.",
+      "accel"
+    ],
+    "packages": [
+      "package:com.yubin.formyself.m2qa.test",
+      "package:com.yubin.formyself.m2qa"
+    ]
+  },
+  "installedApks": {
+    "com.yubin.formyself.m2qa.test": "db7f4d2142b82575d5d846f47d9f11e42799e0a4ab020f1a20d55054e4cb203e",
+    "com.yubin.formyself.m2qa": "0dacf543a3318fa8d049d2e046f12f33fe02a45448a23f24cf2585995c4da612"
+  },
+  "candidateCatalog": "907476face94a439ad1f4fae77221e9df97d34f73fae18f443bbf384aafb1950",
+  "ordinaryApk": "53865d9eb5cb9e987fc64ef8f73aecebcdd9d395d9043071bfa5808a42bd953a",
+  "ordinaryCatalog": "eee80856bccbfbbcaf3f8870b2fed67d18f414701ba23d486873108d6cd7e43c",
+  "sqlcipher": "4.17.0 community in reused instrumented evidence; not executed again",
+  "actualModelRequests": 0,
+  "appDataRead": false,
+  "appDataModified": false
+}

@@ -59,7 +59,7 @@ M4 的目标是完成 SQLite 隔离候选的业务访问模型重构：候选业
 
 ### 2.1 当前检查点
 
-- 当前远端 M：5095b8ec537b1af182f7dbb091671c63aa917c6e。
+- 制定清单时远端 M：5095b8ec537b1af182f7dbb091671c63aa917c6e。2026-11-11 本轮 fetch 后接管远端 10421105b745fa4bb9b2107379c39786fac68b96，既有 M worktree 普通快进；没有回退。
 - 本清单只描述该检查点已记录的事实；Agent 启动时必须重新 fetch M，若远端已前进，从最新 HEAD 审查差异后接续。
 - 生产 canonical：legacy。
 - 普通 Android APK SQLite 激活位：false。
@@ -208,6 +208,29 @@ MR5 是 M4-R 内部工作包编号，不是 SQLite 阶段 M5。
 - 旧纯领域 Oracle、历史 SQLite adapter Oracle 分开保留；历史 SQLite Oracle 只作对照，不裁决产品撤销行为。
 
 **关闭证据：** 乱序父子事件、深链、宽扇出、混合依赖、已 revoked 后代、uncertain 交错、世界变化 stale、Effect/Baseline 变化、COMMIT 失败、强停、重试、审计与回执逐项对照；主机与 Android API 34 / SQLCipher 4.17.0 实测。
+
+**2026-11-11 接管后的实际阻断与最小待批准方案（仍归 E / ER1-3 / MR2，未新开任务）：**
+
+- 依据为本节纯领域顺序合同、§8–9 停止条件及 raw/完整需求清单.txt §6.7–6.8。分类 P0，影响 E、G3/G4/G5；历史 action 和专用设备证据仍另有未关闭项。
+- 本轮重跑既有顺序探针、兼容探针：均退出 1；后者仍有 12 项差异。另用两份经过 `validateKanataData` 的合法合成数组（乱序父子、含 revoked 后代，同时反转 Effects/Baselines），通过现有 `m2FixtureCommands` 装入真实 v4 SQLite。**全部表声明列的逻辑快照 SHA 相同** `1338c35f2037e2654998be8a86ee153ba5ab2491cc0a4754f9893acb67355742`，纯领域 revokeIds 顺序与完整世界签名却不同。原始日志及可复现脚本见 [本轮证据](qa/kanata-sqlite-m4/m4-r/event-compat/final-closeout/README.md)。这证明当前映射缺少可恢复信息；不是声称 SQLite/JSON 不能表达顺序，也不是证明每次受控追加都会丢序。
+- ID、时间和物理 rowid 不是该合同的原始数组顺序；关系内 order hint 不能恢复顶层三个数组。现有写路径不保存顶层顺序。即使未来在 extensions_json 中另设序号协议，也不能从旧行推导已经缺失的顺序；还须解决任意未知扩展的命名碰撞、协议识别、完整性与索引预算，当前没有这样的已冻结协议。不得把“可容纳 JSON”当作已有无损映射证明。
+
+建议批准的范围仅为 **附加 Schema 005 顺序元数据**，不改变 001–004 历史定义/checksum，不改变生产 canonical/default false，不开始 M5。最小结构为下列三张类型明确的旁表；这里只是可评审方案，**未注册 migration、未修改产品 Schema、未写入 Android 数据库**：
+
+| 旁表（拟议名称） | 所属表 | 字段与约束 |
+| --- | --- | --- |
+| event_array_order | world_events | world_id、entity_id、ordinal；联合主键(world_id,entity_id)，唯一(world_id,ordinal)，联合 FK→所属表(world_id,id)，ordinal 为安全非负整数 |
+| effect_array_order | world_effects | 同上 |
+| baseline_array_order | effect_baselines | 同上 |
+
+- 每个世界内保存原数组相对顺序，满足纯领域同世界筛选；不据此宣称已完成 M5 的全局图导入/导出。联合唯一索引供 world+ordinal keyset，页面仍最多 50；禁止产品端 gather。`qa_` 前缀的完整 DDL 仅在 [沙箱脚本](qa/kanata-sqlite-m4/m4-r/event-compat/final-closeout/verify-order-storage.mjs) 中。
+- 新实体和对应 ordinal 同一个 `BEGIN IMMEDIATE` 事务写入，已有序号不可普通更新/删除；分配与幂等回执一起提交。导入/重建只能以原数组或已验证的顺序元数据为来源，不能回填 rowid/ID 顺序。所有创建者、修正副本、Effects/Baselines 生产者及合成夹具均须同步覆盖后才可验收。
+- 现有 v4 若有缺失顺序的行：不猜序、不覆盖、不清理；相关预览/签名/修改 fail closed，旧库与材料保留。有原合成 fixture 的验证在独立新库重放原数组；这不授权读取真实旧数据，也不构成 M5 迁移。005 不会自动找回历史已丢信息。
+- 向前兼容要求：已知 v4 正常升级与新元数据在一个受保护迁移事务内；未知未来版本拒绝。缺序号完整性门禁保持，不能因加表自动判为 ready。旧二进制应按未来版本拒绝 v5，不降级打开。
+- 回滚要求：提交前失败或强杀，整个 DDL/行事务回滚；提交后仅允许升级后的二进制重开，不提供删表/降版本的“降级恢复”。保留原 v4，任何恢复必须走既定保护协调；本轮不实施真实恢复/迁移。
+- 沙箱在 **主机 SQLite 3.51.2** 通过原数组往返、冷重开、DDL 回滚、写入 DDL+行后独立进程 SIGKILL/重开、重复 ID/序号、跨世界 FK 拒绝、缺序号 fail closed；旧声明列和未知 JSON 不变。沙箱故意仍报 BLOCKED/退出 1，`experimentAssertions=PASS` 仅表示实验断言成功。**Android SQLCipher 4.17.0、新迁移校验、普通 APK catalog 和最终回归均尚未覆盖该方案**，批准后必须实跑。
+
+需要用户明确决定的唯一问题：是否批准上述仅限隔离候选的附加 Schema 005 方案？未批准前不实施该结构，不放宽纯领域合同。其他条目继续保持各自既有状态，不能借顺序方案把 A–G 或 G1–G11 升为 PASS；本轮在请求该明确决策时交还控制，未开始后续集成。
 
 ### F. 自治、contact/social 与生活角色消费者
 
@@ -432,4 +455,4 @@ M4 PASS 后，报告可以建议 M5 YES，但**不得自动开始 M5**；必须�
 - docs/plan.md：只链接本文件作为当前执行入口，历史章节保留。
 - memory-bank/development-context.md：只记录当前稳定状态与管理规则，不复制大段验收内容。
 
-**本次仅更新项目管理文档，不修改业务源码、测试、Schema、Android 配置或生产数据。**
+**清单制定提交仅更新项目管理文档。本轮接管追加了上述 E 阻断反例、QA 沙箱和证据复用审计；仍未修改业务源码、常规测试、产品 Schema、Android 配置或生产数据。**
