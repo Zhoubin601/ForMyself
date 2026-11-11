@@ -1,0 +1,746 @@
+{
+  "codeCommit": "1ee65765e3942722750c3ff0a35cd9e4369c3915",
+  "qaBundleSha256": "624756da473411cb124758b5fd1402e524f5b34c6a548a7f62a4c8b01bc6d124",
+  "samples": [
+    {
+      "size": 1000,
+      "shape": "pages",
+      "inputSha256": "ec94a2f26363491d9dd1c06548f61c60a31de583a9a70e3d18f875d1473787ef",
+      "result": {
+        "health": {
+          "cipher": "4.17.0 community",
+          "journalMode": "wal",
+          "synchronous": 2,
+          "foreignKeys": 1,
+          "cacheSize": -2048,
+          "checkpoint": 1000,
+          "busyTimeout": 5000
+        },
+        "size": 1000,
+        "id": "a6d590da-b68a-41b1-94d4-078bbd473bae",
+        "queries": 312,
+        "maxRows": 51,
+        "elapsedMs": 11639,
+        "fullDtos": 0,
+        "maxPageObjects": 50,
+        "maxChunk": 4096,
+        "profile": {
+          "1900ce967d56fca602b63c23f4b2a7899509c7b96d5269083dd58fdcc3a08b1a": {
+            "queries": 6,
+            "elapsedMs": 24.500000000931323,
+            "maxMs": 4.600000000093132
+          },
+          "3e85d5118fed63f5eff96070642c4a34b1fb5d50f1fc8f099ea0666bb3a3c4d6": {
+            "queries": 6,
+            "elapsedMs": 60.6999999997206,
+            "maxMs": 42.3000000002794
+          },
+          "8b57a71a64ad16ef517ae5e54c8d8b9b335f01c0b3f7e10bb5a2e11b834a77e2": {
+            "queries": 6,
+            "elapsedMs": 95.39999999990687,
+            "maxMs": 75
+          },
+          "9adca01c0fecfc2d904570e4942f5f02ffd03b7777ac4634d6c3d3c48f54727f": {
+            "queries": 4,
+            "elapsedMs": 20.49999999953434,
+            "maxMs": 5.2999999998137355
+          },
+          "b02d2aeeafb00d414d31fed25f73a5cc187c2b5d7b3b89d8284885674dbb7aa6": {
+            "queries": 8,
+            "elapsedMs": 119.8999999994412,
+            "maxMs": 89.5
+          },
+          "03ec3ae6ca5767a27851178c1c724aa1fc3a30d3904bb72da4aeb699c075a64d": {
+            "queries": 8,
+            "elapsedMs": 447.5,
+            "maxMs": 413.79999999981374
+          },
+          "8b689f4150bd095a1c1dea453d2f478027a807985c63e4253b68ec72efefbc2f": {
+            "queries": 8,
+            "elapsedMs": 259.30000000074506,
+            "maxMs": 186.60000000009313
+          },
+          "6ee3e10850aadbc834160bdce3af4f039cd57fda85a14e5f23ff16d934c38be8": {
+            "queries": 8,
+            "elapsedMs": 103.00000000093132,
+            "maxMs": 45
+          },
+          "46fc4fa6b3acff57275895309d742fb9ad14ef25dfff504a257dba32d9a74408": {
+            "queries": 116,
+            "elapsedMs": 1672.6999999983236,
+            "maxMs": 205.59999999962747
+          },
+          "c564ef73bc1831586df9f278edd69ed4299f7c3a8e20c5cb4e6dab27a4c34634": {
+            "queries": 25,
+            "elapsedMs": 223.49999999953434,
+            "maxMs": 65.39999999990687
+          },
+          "882991a4e1ec7fa76951ae2d9015d9c91ecd10a19584130da0fa7466d0c7e4b7": {
+            "queries": 1,
+            "elapsedMs": 69.29999999981374,
+            "maxMs": 69.29999999981374
+          },
+          "3f84e5fcb42cacba0260b7d9622f10d9677208f0e4843f956386e368314e4f84": {
+            "queries": 1,
+            "elapsedMs": 10.100000000093132,
+            "maxMs": 10.100000000093132
+          },
+          "741fcebd0ac94d9d7c45cfc8d366889e9749084d973592a29d6a0fb84ee8c9a6": {
+            "queries": 21,
+            "elapsedMs": 493.90000000037253,
+            "maxMs": 75.10000000009313
+          },
+          "c984523bd21a5b251b435f6f0daa878b35e94194238a8d9776af6fba6ed286af": {
+            "queries": 1,
+            "elapsedMs": 6.899999999906868,
+            "maxMs": 6.899999999906868
+          },
+          "f6138665ee31203e815660cbdc0932e461d4bc5abb4b25449e2dd3d98d40c09e": {
+            "queries": 2,
+            "elapsedMs": 16.40000000037253,
+            "maxMs": 9.300000000279397
+          },
+          "10a3174aff40dac39cb59c7e7425f8e6ffdf566d95d93de5ed484bfb397dbf64": {
+            "queries": 21,
+            "elapsedMs": 1024.1000000010245,
+            "maxMs": 270.29999999981374
+          },
+          "48a922da93a086642065dc56e29acd60c91cf89876d3e6a37ad64ca173d3a312": {
+            "queries": 21,
+            "elapsedMs": 1409.8000000016764,
+            "maxMs": 433.20000000018626
+          },
+          "1af752fe0f190cd12fe40e85c875b650f72ac51ae6e07256f7b1b0a6422a4a5a": {
+            "queries": 49,
+            "elapsedMs": 332.90000000130385,
+            "maxMs": 41.60000000009313
+          }
+        },
+        "afterLock": 0,
+        "tagCount": 1000,
+        "tagHash": "08adb15b029370322be84d6479df2a4251faec7cab66668950b6f63ed7ef7e0f",
+        "effectCount": 1001,
+        "auditCount": 1001,
+        "snapshotCharacters": 200529,
+        "afterClose": {
+          "header": 0,
+          "relation": 0,
+          "effect": 0,
+          "audit": 0,
+          "snapshot": 0
+        },
+        "afterRevoke": 14,
+        "revokedBodyReads": 0,
+        "queryFailure": "KANATA_SQLITE_BRIDGE_FAILED"
+      },
+      "phasePeaks": {
+        "seed": {
+          "samples": 13,
+          "heapUsedBytes": 17983624,
+          "pssKiB": 109511,
+          "rssKiB": 235008
+        },
+        "read": {
+          "samples": 1,
+          "heapUsedBytes": 12791540,
+          "pssKiB": 108014,
+          "rssKiB": 233524
+        },
+        "read-tags": {
+          "samples": 2,
+          "heapUsedBytes": 15545988,
+          "pssKiB": 106238,
+          "rssKiB": 227848
+        },
+        "read-reference": {
+          "samples": 1,
+          "heapUsedBytes": 15758392,
+          "pssKiB": 106562,
+          "rssKiB": 228172
+        },
+        "read-effects": {
+          "samples": 3,
+          "heapUsedBytes": 11089760,
+          "pssKiB": 107222,
+          "rssKiB": 228836
+        },
+        "read-audits": {
+          "samples": 2,
+          "heapUsedBytes": 11896284,
+          "pssKiB": 107923,
+          "rssKiB": 229552
+        },
+        "read-snapshot": {
+          "samples": 1,
+          "heapUsedBytes": 10983584,
+          "pssKiB": 106971,
+          "rssKiB": 228604
+        },
+        "faults": {
+          "samples": 3,
+          "heapUsedBytes": 12408736,
+          "pssKiB": 108251,
+          "rssKiB": 229968
+        }
+      }
+    },
+    {
+      "size": 1000,
+      "shape": "deep",
+      "inputSha256": "94895d2c356fd656a26d761a1d10af02b4b90c6ca70fd7a70ab7f740d2d34d4d",
+      "result": {
+        "size": 1000,
+        "shape": "deep",
+        "queries": 103,
+        "maxRows": 51,
+        "elapsedMs": 3592,
+        "graphCount": 1000,
+        "maxPage": 50,
+        "fullDtos": 0,
+        "stale": true,
+        "seedPlans": {
+          "affectedRows": 1000,
+          "before": [
+            "CO-ROUTINE ancestors",
+            "SETUP",
+            "SCAN CONSTANT ROW",
+            "RECURSIVE STEP",
+            "SEARCH c USING COVERING INDEX event_causes_reverse (world_id=?)",
+            "SCAN a",
+            "SCAN ancestors"
+          ],
+          "analyzed": [
+            "CO-ROUTINE ancestors",
+            "SETUP",
+            "SCAN CONSTANT ROW",
+            "RECURSIVE STEP",
+            "SCAN a",
+            "SEARCH c USING COVERING INDEX sqlite_autoindex_event_causes_1 (world_id=? AND event_id=?)",
+            "SCAN ancestors"
+          ],
+          "restored": [
+            "CO-ROUTINE ancestors",
+            "SETUP",
+            "SCAN CONSTANT ROW",
+            "RECURSIVE STEP",
+            "SEARCH c USING COVERING INDEX event_causes_reverse (world_id=?)",
+            "SCAN a",
+            "SCAN ancestors"
+          ]
+        }
+      },
+      "phasePeaks": {
+        "seed": {
+          "samples": 3,
+          "heapUsedBytes": 10316732,
+          "pssKiB": 108995,
+          "rssKiB": 230728
+        },
+        "read": {
+          "samples": 3,
+          "heapUsedBytes": 12018312,
+          "pssKiB": 109082,
+          "rssKiB": 230792
+        }
+      }
+    },
+    {
+      "size": 1000,
+      "shape": "wide",
+      "inputSha256": "94895d2c356fd656a26d761a1d10af02b4b90c6ca70fd7a70ab7f740d2d34d4d",
+      "result": {
+        "size": 1000,
+        "shape": "wide",
+        "queries": 103,
+        "maxRows": 51,
+        "elapsedMs": 2183,
+        "graphCount": 1000,
+        "maxPage": 50,
+        "fullDtos": 0,
+        "stale": true,
+        "seedPlans": {
+          "affectedRows": 1000,
+          "before": [
+            "CO-ROUTINE ancestors",
+            "SETUP",
+            "SCAN CONSTANT ROW",
+            "RECURSIVE STEP",
+            "SEARCH c USING COVERING INDEX event_causes_reverse (world_id=?)",
+            "SCAN a",
+            "SCAN ancestors"
+          ],
+          "analyzed": [
+            "CO-ROUTINE ancestors",
+            "SETUP",
+            "SCAN CONSTANT ROW",
+            "RECURSIVE STEP",
+            "SCAN a",
+            "SEARCH c USING COVERING INDEX sqlite_autoindex_event_causes_1 (world_id=? AND event_id=?)",
+            "SCAN ancestors"
+          ],
+          "restored": [
+            "CO-ROUTINE ancestors",
+            "SETUP",
+            "SCAN CONSTANT ROW",
+            "RECURSIVE STEP",
+            "SCAN a",
+            "SCAN c",
+            "SCAN ancestors"
+          ]
+        }
+      },
+      "phasePeaks": {
+        "seed": {
+          "samples": 3,
+          "heapUsedBytes": 11307128,
+          "pssKiB": 107962,
+          "rssKiB": 229676
+        },
+        "read": {
+          "samples": 2,
+          "heapUsedBytes": 13179084,
+          "pssKiB": 109143,
+          "rssKiB": 230848
+        }
+      }
+    },
+    {
+      "size": 1000,
+      "shape": "mixed",
+      "inputSha256": "94895d2c356fd656a26d761a1d10af02b4b90c6ca70fd7a70ab7f740d2d34d4d",
+      "result": {
+        "size": 1000,
+        "shape": "mixed",
+        "queries": 103,
+        "maxRows": 51,
+        "elapsedMs": 1443,
+        "graphCount": 1000,
+        "maxPage": 50,
+        "fullDtos": 0,
+        "stale": true,
+        "seedPlans": {
+          "affectedRows": 1000,
+          "before": [
+            "CO-ROUTINE ancestors",
+            "SETUP",
+            "SCAN CONSTANT ROW",
+            "RECURSIVE STEP",
+            "SCAN a",
+            "SEARCH c USING COVERING INDEX sqlite_autoindex_event_causes_1 (world_id=? AND event_id=?)",
+            "SCAN ancestors"
+          ],
+          "analyzed": [
+            "CO-ROUTINE ancestors",
+            "SETUP",
+            "SCAN CONSTANT ROW",
+            "RECURSIVE STEP",
+            "SCAN a",
+            "SEARCH c USING COVERING INDEX sqlite_autoindex_event_causes_1 (world_id=? AND event_id=?)",
+            "SCAN ancestors"
+          ],
+          "restored": [
+            "CO-ROUTINE ancestors",
+            "SETUP",
+            "SCAN CONSTANT ROW",
+            "RECURSIVE STEP",
+            "SCAN a",
+            "SCAN c",
+            "SCAN ancestors"
+          ]
+        }
+      },
+      "phasePeaks": {
+        "seed": {
+          "samples": 4,
+          "heapUsedBytes": 13312028,
+          "pssKiB": 108083,
+          "rssKiB": 229796
+        },
+        "read": {
+          "samples": 2,
+          "heapUsedBytes": 13943736,
+          "pssKiB": 110266,
+          "rssKiB": 231984
+        }
+      }
+    },
+    {
+      "size": 10000,
+      "shape": "pages",
+      "inputSha256": "94895d2c356fd656a26d761a1d10af02b4b90c6ca70fd7a70ab7f740d2d34d4d",
+      "result": {
+        "health": {
+          "cipher": "4.17.0 community",
+          "journalMode": "wal",
+          "synchronous": 2,
+          "foreignKeys": 1,
+          "cacheSize": -2048,
+          "checkpoint": 1000,
+          "busyTimeout": 5000
+        },
+        "size": 10000,
+        "id": "7903fbed-9255-46bf-aa41-ff1ece58f6ae",
+        "queries": 2404,
+        "maxRows": 51,
+        "elapsedMs": 78961,
+        "fullDtos": 0,
+        "maxPageObjects": 50,
+        "maxChunk": 4096,
+        "profile": {
+          "1900ce967d56fca602b63c23f4b2a7899509c7b96d5269083dd58fdcc3a08b1a": {
+            "queries": 6,
+            "elapsedMs": 19.299999999813735,
+            "maxMs": 4.5
+          },
+          "3e85d5118fed63f5eff96070642c4a34b1fb5d50f1fc8f099ea0666bb3a3c4d6": {
+            "queries": 6,
+            "elapsedMs": 19.799999999348074,
+            "maxMs": 6
+          },
+          "8b57a71a64ad16ef517ae5e54c8d8b9b335f01c0b3f7e10bb5a2e11b834a77e2": {
+            "queries": 6,
+            "elapsedMs": 19.600000000093132,
+            "maxMs": 4.399999999906868
+          },
+          "9adca01c0fecfc2d904570e4942f5f02ffd03b7777ac4634d6c3d3c48f54727f": {
+            "queries": 4,
+            "elapsedMs": 30.899999999906868,
+            "maxMs": 8.800000000279397
+          },
+          "b02d2aeeafb00d414d31fed25f73a5cc187c2b5d7b3b89d8284885674dbb7aa6": {
+            "queries": 8,
+            "elapsedMs": 24.100000000558794,
+            "maxMs": 4.900000000372529
+          },
+          "03ec3ae6ca5767a27851178c1c724aa1fc3a30d3904bb72da4aeb699c075a64d": {
+            "queries": 8,
+            "elapsedMs": 28.700000000651926,
+            "maxMs": 4.399999999906868
+          },
+          "8b689f4150bd095a1c1dea453d2f478027a807985c63e4253b68ec72efefbc2f": {
+            "queries": 8,
+            "elapsedMs": 1822.2999999998137,
+            "maxMs": 1118.8000000002794
+          },
+          "6ee3e10850aadbc834160bdce3af4f039cd57fda85a14e5f23ff16d934c38be8": {
+            "queries": 8,
+            "elapsedMs": 419.70000000018626,
+            "maxMs": 104.10000000009313
+          },
+          "46fc4fa6b3acff57275895309d742fb9ad14ef25dfff504a257dba32d9a74408": {
+            "queries": 1072,
+            "elapsedMs": 5918.000000007916,
+            "maxMs": 243.70000000018626
+          },
+          "c564ef73bc1831586df9f278edd69ed4299f7c3a8e20c5cb4e6dab27a4c34634": {
+            "queries": 205,
+            "elapsedMs": 1221.9000000027008,
+            "maxMs": 131.70000000018626
+          },
+          "882991a4e1ec7fa76951ae2d9015d9c91ecd10a19584130da0fa7466d0c7e4b7": {
+            "queries": 1,
+            "elapsedMs": 1408.7999999998137,
+            "maxMs": 1408.7999999998137
+          },
+          "3f84e5fcb42cacba0260b7d9622f10d9677208f0e4843f956386e368314e4f84": {
+            "queries": 1,
+            "elapsedMs": 29.399999999906868,
+            "maxMs": 29.399999999906868
+          },
+          "741fcebd0ac94d9d7c45cfc8d366889e9749084d973592a29d6a0fb84ee8c9a6": {
+            "queries": 201,
+            "elapsedMs": 13356.200000004843,
+            "maxMs": 601.7999999998137
+          },
+          "c984523bd21a5b251b435f6f0daa878b35e94194238a8d9776af6fba6ed286af": {
+            "queries": 1,
+            "elapsedMs": 30.800000000279397,
+            "maxMs": 30.800000000279397
+          },
+          "f6138665ee31203e815660cbdc0932e461d4bc5abb4b25449e2dd3d98d40c09e": {
+            "queries": 2,
+            "elapsedMs": 61.3000000002794,
+            "maxMs": 30.700000000186265
+          },
+          "10a3174aff40dac39cb59c7e7425f8e6ffdf566d95d93de5ed484bfb397dbf64": {
+            "queries": 201,
+            "elapsedMs": 11832.799999994226,
+            "maxMs": 482.39999999990687
+          },
+          "48a922da93a086642065dc56e29acd60c91cf89876d3e6a37ad64ca173d3a312": {
+            "queries": 201,
+            "elapsedMs": 1355.0000000023283,
+            "maxMs": 71.3000000002794
+          },
+          "1af752fe0f190cd12fe40e85c875b650f72ac51ae6e07256f7b1b0a6422a4a5a": {
+            "queries": 465,
+            "elapsedMs": 25621.8000000054,
+            "maxMs": 379.39999999990687
+          }
+        },
+        "afterLock": 0,
+        "tagCount": 10000,
+        "tagHash": "54be6389e9b8c1663b610c125d432c7c5ddcd74120d891bf36de7fcdf50c08e6",
+        "effectCount": 10001,
+        "auditCount": 10001,
+        "snapshotCharacters": 1903531,
+        "afterClose": {
+          "header": 0,
+          "relation": 0,
+          "effect": 0,
+          "audit": 0,
+          "snapshot": 0
+        },
+        "afterRevoke": 14,
+        "revokedBodyReads": 0,
+        "queryFailure": "KANATA_SQLITE_BRIDGE_FAILED"
+      },
+      "phasePeaks": {
+        "seed": {
+          "samples": 137,
+          "heapUsedBytes": 18835412,
+          "pssKiB": 209059,
+          "rssKiB": 331116
+        },
+        "read": {
+          "samples": 5,
+          "heapUsedBytes": 13939296,
+          "pssKiB": 165501,
+          "rssKiB": 287580
+        },
+        "read-tags": {
+          "samples": 26,
+          "heapUsedBytes": 13581940,
+          "pssKiB": 123957,
+          "rssKiB": 246048
+        },
+        "read-reference": {
+          "samples": 3,
+          "heapUsedBytes": 14095860,
+          "pssKiB": 123581,
+          "rssKiB": 245676
+        },
+        "read-effects": {
+          "samples": 22,
+          "heapUsedBytes": 16025320,
+          "pssKiB": 118921,
+          "rssKiB": 241016
+        },
+        "read-audits": {
+          "samples": 6,
+          "heapUsedBytes": 16437116,
+          "pssKiB": 120641,
+          "rssKiB": 242764
+        },
+        "read-snapshot": {
+          "samples": 57,
+          "heapUsedBytes": 14687828,
+          "pssKiB": 118165,
+          "rssKiB": 240288
+        },
+        "faults": {
+          "samples": 11,
+          "heapUsedBytes": 13444692,
+          "pssKiB": 115377,
+          "rssKiB": 237508
+        }
+      }
+    },
+    {
+      "size": 10000,
+      "shape": "deep",
+      "inputSha256": "94895d2c356fd656a26d761a1d10af02b4b90c6ca70fd7a70ab7f740d2d34d4d",
+      "result": {
+        "size": 10000,
+        "shape": "deep",
+        "queries": 823,
+        "maxRows": 51,
+        "elapsedMs": 34357,
+        "graphCount": 10000,
+        "maxPage": 50,
+        "fullDtos": 0,
+        "stale": true,
+        "seedPlans": {
+          "affectedRows": 10000,
+          "before": [
+            "CO-ROUTINE ancestors",
+            "SETUP",
+            "SCAN CONSTANT ROW",
+            "RECURSIVE STEP",
+            "SCAN a",
+            "SEARCH c USING COVERING INDEX sqlite_autoindex_event_causes_1 (world_id=? AND event_id=?)",
+            "SCAN ancestors"
+          ],
+          "analyzed": [
+            "CO-ROUTINE ancestors",
+            "SETUP",
+            "SCAN CONSTANT ROW",
+            "RECURSIVE STEP",
+            "SCAN a",
+            "SEARCH c USING COVERING INDEX sqlite_autoindex_event_causes_1 (world_id=? AND event_id=?)",
+            "SCAN ancestors"
+          ],
+          "restored": [
+            "CO-ROUTINE ancestors",
+            "SETUP",
+            "SCAN CONSTANT ROW",
+            "RECURSIVE STEP",
+            "SCAN a",
+            "SCAN c",
+            "SCAN ancestors"
+          ]
+        }
+      },
+      "phasePeaks": {
+        "seed": {
+          "samples": 12,
+          "heapUsedBytes": 16152168,
+          "pssKiB": 115481,
+          "rssKiB": 237612
+        },
+        "read": {
+          "samples": 53,
+          "heapUsedBytes": 17047800,
+          "pssKiB": 115333,
+          "rssKiB": 237464
+        }
+      }
+    },
+    {
+      "size": 10000,
+      "shape": "wide",
+      "inputSha256": "94895d2c356fd656a26d761a1d10af02b4b90c6ca70fd7a70ab7f740d2d34d4d",
+      "result": {
+        "size": 10000,
+        "shape": "wide",
+        "queries": 823,
+        "maxRows": 51,
+        "elapsedMs": 38915,
+        "graphCount": 10000,
+        "maxPage": 50,
+        "fullDtos": 0,
+        "stale": true,
+        "seedPlans": {
+          "affectedRows": 10000,
+          "before": [
+            "CO-ROUTINE ancestors",
+            "SETUP",
+            "SCAN CONSTANT ROW",
+            "RECURSIVE STEP",
+            "SCAN a",
+            "SEARCH c USING COVERING INDEX sqlite_autoindex_event_causes_1 (world_id=? AND event_id=?)",
+            "SCAN ancestors"
+          ],
+          "analyzed": [
+            "CO-ROUTINE ancestors",
+            "SETUP",
+            "SCAN CONSTANT ROW",
+            "RECURSIVE STEP",
+            "SCAN a",
+            "SEARCH c USING COVERING INDEX sqlite_autoindex_event_causes_1 (world_id=? AND event_id=?)",
+            "SCAN ancestors"
+          ],
+          "restored": [
+            "CO-ROUTINE ancestors",
+            "SETUP",
+            "SCAN CONSTANT ROW",
+            "RECURSIVE STEP",
+            "SCAN a",
+            "SCAN c",
+            "SCAN ancestors"
+          ]
+        }
+      },
+      "phasePeaks": {
+        "seed": {
+          "samples": 14,
+          "heapUsedBytes": 16874052,
+          "pssKiB": 116693,
+          "rssKiB": 238836
+        },
+        "read": {
+          "samples": 53,
+          "heapUsedBytes": 17696944,
+          "pssKiB": 115261,
+          "rssKiB": 237404
+        }
+      }
+    },
+    {
+      "size": 10000,
+      "shape": "mixed",
+      "inputSha256": "94895d2c356fd656a26d761a1d10af02b4b90c6ca70fd7a70ab7f740d2d34d4d",
+      "result": {
+        "size": 10000,
+        "shape": "mixed",
+        "queries": 823,
+        "maxRows": 51,
+        "elapsedMs": 43197,
+        "graphCount": 10000,
+        "maxPage": 50,
+        "fullDtos": 0,
+        "stale": true,
+        "seedPlans": {
+          "affectedRows": 10000,
+          "before": [
+            "CO-ROUTINE ancestors",
+            "SETUP",
+            "SCAN CONSTANT ROW",
+            "RECURSIVE STEP",
+            "SCAN a",
+            "SEARCH c USING COVERING INDEX sqlite_autoindex_event_causes_1 (world_id=? AND event_id=?)",
+            "SCAN ancestors"
+          ],
+          "analyzed": [
+            "CO-ROUTINE ancestors",
+            "SETUP",
+            "SCAN CONSTANT ROW",
+            "RECURSIVE STEP",
+            "SCAN a",
+            "SEARCH c USING COVERING INDEX sqlite_autoindex_event_causes_1 (world_id=? AND event_id=?)",
+            "SCAN ancestors"
+          ],
+          "restored": [
+            "CO-ROUTINE ancestors",
+            "SETUP",
+            "SCAN CONSTANT ROW",
+            "RECURSIVE STEP",
+            "SCAN a",
+            "SCAN c",
+            "SCAN ancestors"
+          ]
+        }
+      },
+      "phasePeaks": {
+        "seed": {
+          "samples": 18,
+          "heapUsedBytes": 7977596,
+          "pssKiB": 116070,
+          "rssKiB": 238220
+        },
+        "read": {
+          "samples": 72,
+          "heapUsedBytes": 11759400,
+          "pssKiB": 115750,
+          "rssKiB": 237900
+        }
+      }
+    }
+  ],
+  "eventRecovery": {
+    "oldPid": "22010",
+    "newPid": "24495",
+    "before": {
+      "revision": 1,
+      "audits": 0,
+      "effects": 0
+    },
+    "after": {
+      "revision": 2,
+      "audits": 1,
+      "effects": 1
+    }
+  },
+  "publicScopeInjection": "Both nonparticipant header and summary-chunk injections rejected in each pages sample.",
+  "measurements": "CDP Runtime.getHeapUsage and dumpsys meminfo sampled by stage. Sample peaks, not a retained-object heap census."
+}

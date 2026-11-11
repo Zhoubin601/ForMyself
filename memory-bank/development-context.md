@@ -67,3 +67,5 @@ M2 Windows 接续已通过（2026-11-09）。[最新验收 v2](../docs/20261109-
 2026-11-10 MR2-G4 续作入口为 [本轮验收](../docs/20261110-kanata-sqlite-mr2-g4-acceptance-v1.md)。候选聊天使用轻量 transcript 和 SQLite 回复标签工作表，嵌套精确引用纳入归档保护。旧事件、消息及任务 DTO 和完整故障矩阵待闭环。G4 BLOCKED。
 
 2026-11-10 [MR2-G4 事件来源验收 v2](../docs/20261110-kanata-sqlite-mr2-g4-acceptance-v2.md)记录候选事件命令 ID 回执、事务内保序来源去重、普通提交/修正的 SQL 路径。旧完整事件与审计 DTO、异常历史 action 和全量故障矩阵仍有缺口。MR2/G4/M4 BLOCKED，M5 NO。
+
+2026-11-11 事件读取与旧兼容切片见 [MR2-G4 验收 v3](../docs/20261111-kanata-sqlite-mr2-g4-acceptance-v3.md)。普通读取用 header、关系/Effect/Audit 页与 JSON 块；完整旧 DTO 显式置于 events.legacy，旧 Runtime 入口置于 legacyEvents。SQL 临时完整性证明只在连接状态与 revision 均未变化时复用，权限仍逐页校验。M4 BLOCKED，M5 NO。

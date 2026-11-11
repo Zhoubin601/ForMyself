@@ -1,0 +1,4 @@
+The 14c1e36 native 10k read exceeded the unchanged 420000 ms evaluation deadline.
+The pre-optimization directed runner and 14c1e36 full-check domain child were explicitly stopped after their source became obsolete.
+The first was started against a changing implementation. The second was stopped for the now-reproduced recursive/validation performance defect.
+Neither run is counted as PASS. Their raw stdout and any available native logs are retained.

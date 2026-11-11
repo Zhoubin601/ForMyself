@@ -46,3 +46,13 @@
 | 事件深链/宽扇出写入、故障全矩阵 | 有既有图读取和撤销证据 | 本轮宽标签形状不能替代宽写入闭包和权限生命周期组合 | BLOCKED |
 
 [验收 v2](../../../20261110-kanata-sqlite-mr2-g4-acceptance-v2.md) · [原始证据索引](README.md)
+
+| 补充项 | 验证范围 | 当前判定 |
+| --- | --- | --- |
+| Event header、关系、Effect、Audit 和原文块 | 普通页 50＋1，块 4096＋1；1k/10k 全来源与事件图 | 定向通过，完整证据见验收 v3 |
+| 权限与游标 | owner、角色、revision、类型、scope、内部 sharedMemory 字段拒绝；锁屏/关闭及桥接查询故障 | Runtime 定向验证；完整页面组合尚缺 |
+| 旧 JSON 与完整性证明 | 旧字段、顺序、未知扩展、UTF-16 action、同 revision 写入、外部提交、读事务失败 | 主机对照；显式特殊回退保留 |
+| 旧完整输出 | events.legacy、legacyEvents、legacy.preview、legacy.relationship | 完整物化仍存在，G4 不得整体 PASS |
+| 内存与生命周期 | 每档/阶段 CDP heap 与 PSS/RSS 采样；当前页与跨桥 DTO 计数 | retained/Pinia 逐类峰值和完整事件页面矩阵 NOT RUN |
+
+[2026-11-11 验收 v3](../../../20261111-kanata-sqlite-mr2-g4-acceptance-v3.md)

@@ -1262,3 +1262,7 @@ raw/完整需求清单.txt 4.1/4.4/8.3及最新连续执行v3驱动当前实现�
 - raw/完整需求清单.txt 中的事件确认、撤销和不确定因果确认要求，落实为用户确认、冻结选择和独立的 uncertain 决策。
 - raw/彼方 · Kanata 技术设计.txt 中的 WorldEvent、Effect 和来源失效约束，用于核对参与者、因果、消息 revision 及独立 Effect 的保留。
 - 本轮实施和验证范围以 [MR2-G4 事件任务书](20261110-kanata-sqlite-mr2-event-provenance-task-v1.md) 及 [M4-R 合同](20261110-kanata-sqlite-m4-r-closeout-task-v1.md) 为准。
+
+## 2026-11-11 Kanata 事件读取切片
+
+沿用 raw/完整需求清单.txt 中世界隔离、普通视角与上帝视角、明确影响范围和 uncertain 用户确认要求。raw/彼方 · Kanata 技术设计.txt 为 Event、Effect 与来源关系的设计依据。实施范围遵循 docs/20261110-kanata-sqlite-mr2-g4-event-read-compat-task-v1.md，总合同与上轮验收保持独立，不能因本切片测试成功推定 MR2/M4 放行。

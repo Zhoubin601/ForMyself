@@ -637,3 +637,11 @@ MR2 已将记忆详情、精确来源及后台任务的回复链授权证明放�
 ### MR2-G4 事件来源
 
 候选事件台通过受保护 World Runtime 调用 proposeEventAcknowledged / commitEventAcknowledged。返回类型 KanataEventAcknowledgement 仅有事件 ID。旧 proposeEvent / commitEvent 保留兼容契约。写入按页验证消息 revision 和因果状态，事件标签在事务内 SQLite 临时表保序去重并逐角色鉴权。提交和消息修订的普通事件审计在 SQLite 内校验顺序提示、构造旧 JSON 快照。候选修正沿用冻结确认计划与幂等回执，在同一事务复制关系和来源。兼容完整读取及历史特殊 action 的限制见 [MR2 事件来源验收](docs/20261110-kanata-sqlite-mr2-g4-acceptance-v2.md)。
+
+## Kanata SQLite MR2-G4 事件读取与兼容边界
+
+普通 events.list 返回事件标量摘要页，readFor 在角色与来源授权、JSON 完整性检查后返回单条 header。header 保留权威 action 列及原 action 类型，完整 action 和未知扩展由 jsonChunk 读取。四类子关系通过 relations 读取；Effect、Audit 分别通过 effects、audits 读取。页上限为 50，可另读一条 sentinel。超长成员明确返回 chunked 标志，通过相同位置读取原 JSON；每个 JSON 块最多 4096 个 code points。
+
+游标绑定世界、事件、revision、角色 scope 与关系/快照选择。快照选择还绑定 audit ID、side 和 snapshot revision。World Runtime 在仓库游标上绑定本次 owner；切 owner 后拒绝旧游标。权限逐页重验。完整性证明仅在同一 SQLite 连接、同 revision、total_changes 和 data_version 都未变化时复用，临时表最多一条记录。任何写入、外部提交、失败回滚造成的计数变化都会重新校验，连接释放时临时表消失。
+
+旧完整 DTO 移入 events.legacy，SQLite World Runtime 旧完整入口移入 legacyEvents。候选页面继续使用 acknowledgement 与 compact revocation 接口。原命令 receipt、旧计划签名、确认集合、排序与 UTF-16 action 回退保留。关系 sourceEventIds 改为 relationshipEvents 分页；旧完整输出仅显式使用 legacy.relationship。兼容入口与保留限制见 [验收 v3](docs/20261111-kanata-sqlite-mr2-g4-acceptance-v3.md)。

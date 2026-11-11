@@ -132,3 +132,28 @@ node docs/qa/kanata-sqlite-m4/completion/verify-catalog.mjs android/app/build/ge
 - 每档独立峰值内存、深链/宽扇出/混合角色交叉样本、事件专用生命周期矩阵仍须补齐。
 - 历史字符串 action UTF-16 兼容回退必须保留并单独验收；普通消息兼容 DTO、自治 loadTask 和旧 JSON 导出仍是 G4 剩余缺口。
 - G4、MR2、M4 继续 BLOCKED，SQLite 阶段 M5 继续 NO。
+
+## 2026-11-11 MR2-G4 事件读取与兼容边界
+
+最终代码点 `1ee65765e3942722750c3ff0a35cd9e4369c3915`，普通读取、图形状、权限反例与强停重放有定向证据。旧完整输出和全部页面/堆对象矩阵的剩余项见 [验收 v3](../../../20261111-kanata-sqlite-mr2-g4-acceptance-v3.md)。G4、MR2、M4 仍 BLOCKED，M5 NO。
+
+```powershell
+npm.cmd run check
+npx.cmd cap sync android
+.\android\gradlew.bat -p android --offline --max-workers=2 -PkanataM2Synthetic=true :app:assembleDebug :app:assembleDebugAndroidTest
+pwsh -NoProfile -File docs/qa/kanata-sqlite-m2/run-windows-candidate.ps1 -ManifestPath $manifest -EvidenceDirectory $directed -Mode mr2-event-read
+pwsh -NoProfile -File docs/qa/kanata-sqlite-m2/run-windows-candidate.ps1 -ManifestPath $manifest -EvidenceDirectory $full -Mode full -M4Growth -M4Completion
+.\android\gradlew.bat -p android --offline --max-workers=2 -PkanataM2Synthetic=false :app:assembleDebug
+pwsh -NoProfile -File docs/qa/kanata-sqlite-m4/verify-default.ps1
+node docs/qa/kanata-sqlite-m4/completion/verify-catalog.mjs android/app/build/generated/kanataSqlite/assets/kanata-sqlite-catalog.json
+```
+
+| 读取证据 | 文件 |
+| --- | --- |
+| 最终 1k/10k、八种样本、权限及强停 | [原始设备回执](event-read-run/final-device.txt.gz) · [原始 logcat](event-read-run/final-native.txt.gz) · [APK 指纹](event-read-run/final-apk-sha256.txt) · [Java instrumentation](event-read-run/final-instrumentation.txt) |
+| 内存与来源 | [每档每阶段 CDP heap、PSS/RSS 和查询画像](event-read-run/device-summary.json) · [数据表](event-read-run/sample-table.md) · [源文件及安装 catalog 指纹](event-read-run/fingerprints.json) |
+| 最终综合回归 | [原始回执](event-read-run/regression-device.txt.gz) · [原始 logcat](event-read-run/regression-native.txt.gz) · [摘要](event-read-run/regression-summary.json) · [APK 指纹](event-read-run/regression-apk-sha256.txt) |
+| 主机与普通 APK | [最终 check](event-read-run/check.txt.gz) · [默认门禁](event-read-run/final-default-gate.json) · [默认 catalog](event-read-run/final-default-catalog.txt) |
+| 失败及中止 | [420 秒超时](event-read-run/03-420-timeout.txt.gz) · [原生日志](event-read-run/03-420-native.txt.gz) · [早期控制台反例摘录](event-read-run/host-early-failures.txt) · [中止说明](event-read-run/03-obsolete-runs.txt) · [证据索引](event-read-run/evidence-index.json) |
+
+同目录 mr2-read-* 的压缩文件保留各轮已捕获 stdout/build/native 结果。源代码已替换后的长跑按 superseded 中止记录；未完成或中止轮次均不计 PASS。最终独立验证使用完整原规模与原 420 秒截止。临时 ANALYZE 仅用于合成建边，统计清除后执行业务路径，前后计划见最终 JSON 的 seedPlans。

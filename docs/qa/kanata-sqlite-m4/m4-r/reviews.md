@@ -58,3 +58,23 @@ MR2 定向夹具的早期主机探针先遇到角色实例必填字段缺失，�
 - 逐项标注完整读取、特殊历史 JSON、深链和宽扇出混合写入、每档独立 PSS/RSS 与真实页面生命周期的证据边界。两轮记录覆盖本次事件切片，G4 和 MR2 仍 BLOCKED。
 
 - 最新候选 APK 的 1k/10k 定向及综合回归均成功，APK 指纹一致。两档完整顺序的设备 SHA-256 与离线夹具 oracle 相同。普通 APK 默认门禁和冻结 checksum 已复核。
+
+## 2026-11-11 事件读取第一轮 · 权限、完整性与兼容
+
+- 逐一核对 readFor、四类关系、Effect、Audit 和 JSON chunk 的权限与游标身份。角色视角先验权，管理视角沿用受保护 World Runtime。关系提示验证必须在 SQLite 内完成，块读取不把大成员当成无引用。
+- 历史 action 以空串、ASCII、BMP、代理对、孤立 surrogate、混合串、null、数组、对象和缺失分别与旧 materializer 对照。UTF-16 JS 回退保留，普通 JSON chunk 使用 code point 定位原始编码文本。
+- 确认 legacy.revoke 的旧世界签名和 caller 集合逐页精确比较，临时 SQL 选择表与旧 receipt 在同事务。明确后代先于 uncertain 的审计生成顺序保留。
+- 审计种子首次因 revision 重叠拒绝，关系测试首次因 fixture 已有关系重复而拒绝，均修正夹具并复测。旧字段的完整输出仍可在 legacy 中显式物化。
+
+## 2026-11-11 事件读取第二轮 · 平台、性能与对象图
+
+- 首次完整设备运行因构建期间相关源码仍在变动导致目录不匹配。固定提交后重新构建，保留目录拒绝记录。
+- 14c1e36 的 10k 读取在原 420 秒截止，原始回执与采样保留。主机 EXPLAIN 显示祖先递归使用 event_causes_reverse 只按 world 过滤；改为固定递归连接顺序。完整顺序提示验证改为 SQLite 物化 declared/normalized 集合，保留集合完整性、重复与类型判定。
+- 修复提交为 6731c1430a8fac040d0993e0f0b47a0121a0d967，继续使用相同样本和截止时间。旧源码的两次主机长跑按中止记录保留，最终源码另验。
+- 内存报告按每档和阶段采集 CDP Runtime.getHeapUsage 与 PSS/RSS。该数据为采样峰值；真实 retained object 类别与整个普通页面生命周期仍需逐项核对，不能由 SQL 页计数代替。
+
+- 后续权限反例复现了公开 readFor 透传 sharedMemory 可跳过成员判断。公开 scope 改为仅投影 instanceId/group，legacy.readFor 同样收紧；内部共享记忆函数保持原内部语义。新增主机拒绝与严格类型负例，设备在两档测试非参与者夹带该字段的读取和摘要块请求。
+- 完整性临时证明通过同 revision 损坏、外部连接提交、失败 COMMIT 及连接变化反例。另发现普通读取漏验旧 64 层 JSON 限制，已加入 SQL 深度与非有限数校验；摘要块也复用同一完整性门禁。
+- 主机图 oracle 保留完整 1k/10k 规模，所有 ID 逐项对照。compact 公开首末页验证旧游标/签名，中间 SQL 选择页完整核对；避免在新读取测试中重复未改动的 MR1 全图签名算法数百次。此范围在验收报告明确列出。
+
+- 最终代码点 1ee6576 的主机完整 check 通过 688 Node / 397 Vue，严格类型及 Web 构建通过。实际候选 APK 的最终定向与综合回归一致，普通 APK 默认 false 及 001–004 checksum 已复核。显式旧完整物化、retained/Pinia 逐类峰值和完整事件页面组合仍为 BLOCKED。

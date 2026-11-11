@@ -1,0 +1,83 @@
+{
+  "takeover": "6497d28f2d18e37884d3d6aa90d1cfb153d50e9a",
+  "codeCommit": "1ee65765e3942722750c3ff0a35cd9e4369c3915",
+  "implementationCommit": "daf4e31a8e599dffbae484069db70b96e1800cc1",
+  "trees": {
+    "src": "7d8292d05132dc939d77f71d444f9a4ad5d0d679",
+    "scripts": "aecdacf8c5b377f06ad147d0d6061785332df763",
+    "tests": "c89cf1f7da5f97a35002fd866c9001ebd75f01bb",
+    "raw": "6e9432b3f45325f4ae5ac01cf9ddd6513cea768a"
+  },
+  "files": {
+    "docs/qa/kanata-sqlite-m2/candidate-smoke.mjs": {
+      "gitSha256": "fa8dd3126395cf54efd06dd996ab416de71616abe345e46dbd6bc8988acc3446",
+      "worktreeSha256": "50c54b8e26b705e88f91a79adbc68b9d796a19df4ebc85ac614c7feaaaf293e5"
+    },
+    "docs/qa/kanata-sqlite-m2/run-windows-candidate.ps1": {
+      "gitSha256": "8f53c10a66613aaa6abde5aaecbe264942b050be4156498b962db79775b250dd",
+      "worktreeSha256": "411de7a5e40edc85aaf2d7297a85e5a78904c9330a5a2c0a8adb72c390556552"
+    },
+    "docs/qa/kanata-sqlite-m2/windows-candidate-smoke.mjs": {
+      "gitSha256": "ffe01260fceeca775c281940895f0a79f34d4a207f44fb37a1a17c27673c7a24",
+      "worktreeSha256": "7b40949f043f6dcc43682e66faa74b8251fdb273c6858418d0b0cbbb8a7348cf"
+    },
+    "docs/qa/kanata-sqlite-m3/device-scenario.mjs": {
+      "gitSha256": "b62fa6a6f64de705ca9ac16d0edf9e382bedcb77c19b5c0077e67c04407680c8",
+      "worktreeSha256": "b71e47e16e59f41deb3c3a2bd150c1a98f8ab4d1416bfec88f5e1b18486d9389"
+    },
+    "docs/qa/kanata-sqlite-m4/completion/fixture.mjs": {
+      "gitSha256": "a13a12987e0a2505620947f47e87b8ac4f2e30e7843967336b2ae107ba4aeed7",
+      "worktreeSha256": "30945945b0658355ac875f0837a185150dae0b14a57a2e439b0002704dc5db91"
+    },
+    "docs/qa/kanata-sqlite-m4/completion/verify-catalog.mjs": {
+      "gitSha256": "8fb11778d6606a921baf70ad7c22d23e0921988cf7dc81bd894822860a018e85",
+      "worktreeSha256": "8539c6fbb712a2aa6590a70329b8e442e5c8af1b94273597d32d0f7a1f7feb2d"
+    },
+    "scripts/build-kanata-sqlite-catalog.mjs": {
+      "gitSha256": "be13b531e0976aff9b528955b218f9089a286725e5c4a62041aa74d388f9fe56",
+      "worktreeSha256": "e6b3cbf976e68e7aaa1ee897015ea7d078ca15debbff69ab41e8b24dfade5c5d"
+    },
+    "src/application/contracts.d.ts": {
+      "gitSha256": "bb2ced74b35c4517a011abf8d5b86b11a10b1ea62273b82438008c7f0032b695",
+      "worktreeSha256": "fa7fd9490fab440ee457b23b79f701a7af6af92bd36ec92751474e9dc86b8d75"
+    },
+    "src/application/kanataSqliteWorldRuntime.js": {
+      "gitSha256": "4b845f552c71305c42dea2086da92d608e1cff963c57ef7874f4de2f8f27e8c0",
+      "worktreeSha256": "ef4ed397db2d29a7a21f7d38f33707e24ef7e2f55308e5bfa303a51e08dd8fe2"
+    },
+    "src/features/chat/storage/sqlite/kanataDomainTypes.d.ts": {
+      "gitSha256": "9f89d606b016dc3e8536f4ee98c91d02752a81cee573e1d2161819a83163e50d",
+      "worktreeSha256": "8fefd9b36e689cec9881d70025a9311c966bd71044339844b0530fc9f5b0306d"
+    },
+    "src/features/chat/storage/sqlite/kanataEventRead.js": {
+      "gitSha256": "47f3cd489224fc15e471d0af08e3275bd474464a40238eb5e174f01958cc0a24",
+      "worktreeSha256": "49643bf4e75b3c4f958dbd10a697d69cd52b43ab05aacc05be5c76e1a4e76875"
+    },
+    "src/features/chat/storage/sqlite/kanataEventRepository.js": {
+      "gitSha256": "e40147ef8693449de5af3a0dcd96e68845cabdd54fb92375d50fd1ca7435594f",
+      "worktreeSha256": "3e52fcbe98f0c4126cee6d2b33c47caae55047df271b14659eb9719bbadedf8a"
+    },
+    "src/features/chat/storage/sqlite/kanataEventSnapshot.js": {
+      "gitSha256": "800fc7423601763e2cdbc94b858d36f7a89baba41913fbc2311bc39ae7d2b80d",
+      "worktreeSha256": "cbb45ced1c13c989b446d3f7107a663c08cb60f065b85e8179e1c86ce32317e8"
+    },
+    "src/features/chat/storage/sqlite/kanataMessageDependents.js": {
+      "gitSha256": "e3d780febef1a99c32b8dc2e07956ee5963bf436740bd3128021e5fad40b096d",
+      "worktreeSha256": "5b56e8af47b63b7d086dc7de3b4726a2b40c1263e653e8d6df3e72c1878046c8"
+    },
+    "src/features/chat/storage/sqlite/kanataMessageDependentsSql.js": {
+      "gitSha256": "bb9752b6d0abff3c4152b8c985228c952fc22ca34cd709afaca52affbddcb01b",
+      "worktreeSha256": "1232671386e086a65f7da7f328b98f56efa2ad10fe23fe5a6bd5ced7e487ec6a"
+    },
+    "tests/kanataSqliteDomains.test.js": {
+      "gitSha256": "4894efdf8519e8b9b53228ec2b852c2a6a96b22d6df7760ac463c08bf6de5417",
+      "worktreeSha256": "814ece0068148048cab71db0c5862d8cdffd4a4b87f9d94d4f909ca55d7ba567"
+    },
+    "tests/types/kanataSqliteM3.ts": {
+      "gitSha256": "bab31574bf4f8107d219e5ea127fd440e80447bca93454a20e324d0ce4bec3c5",
+      "worktreeSha256": "d4a22b4bbb2b1cd44a1cb717097b7d725906be1e8b31225cc767e019bf845ccc"
+    }
+  },
+  "installedCandidateCatalogSha256": "907476face94a439ad1f4fae77221e9df97d34f73fae18f443bbf384aafb1950",
+  "candidateAndRegressionApkMatch": true
+}

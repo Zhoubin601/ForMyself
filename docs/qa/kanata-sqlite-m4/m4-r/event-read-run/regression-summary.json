@@ -1,0 +1,87 @@
+{
+  "codeCommit": "1ee65765e3942722750c3ff0a35cd9e4369c3915",
+  "completion": [
+    {
+      "size": 1000,
+      "memory": {
+        "queries": 9,
+        "writes": 0,
+        "maxRows": 1
+      },
+      "wideMemory": {
+        "queries": 28,
+        "writes": 0,
+        "maxRows": 50,
+        "total": 1000
+      },
+      "mixedMemory": {
+        "queries": 29,
+        "writes": 0,
+        "maxRows": 50,
+        "edges": 1000,
+        "sources": 1000
+      },
+      "event": {
+        "queries": 40,
+        "writes": 0,
+        "maxRows": 51,
+        "total": 1000
+      },
+      "replay": {
+        "queries": 24,
+        "writes": 6,
+        "maxRows": 128,
+        "total": 1000
+      },
+      "confirmationFanout": {
+        "queries": 22,
+        "writes": 18,
+        "maxRows": 128,
+        "confirmed": 1001
+      },
+      "elapsedMs": 9560
+    },
+    {
+      "size": 10000,
+      "memory": {
+        "queries": 9,
+        "writes": 0,
+        "maxRows": 1
+      },
+      "wideMemory": {
+        "queries": 208,
+        "writes": 0,
+        "maxRows": 50,
+        "total": 10000
+      },
+      "mixedMemory": {
+        "queries": 209,
+        "writes": 0,
+        "maxRows": 50,
+        "edges": 10000,
+        "sources": 10000
+      },
+      "event": {
+        "queries": 400,
+        "writes": 0,
+        "maxRows": 51,
+        "total": 10000
+      },
+      "replay": {
+        "queries": 180,
+        "writes": 6,
+        "maxRows": 128,
+        "total": 10000
+      },
+      "confirmationFanout": {
+        "queries": 164,
+        "writes": 160,
+        "maxRows": 128,
+        "confirmed": 10001
+      },
+      "elapsedMs": 178392
+    }
+  ],
+  "exitCode": 0,
+  "source": "regression-device.txt.gz"
+}

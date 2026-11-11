@@ -1,0 +1,13 @@
+Preserved excerpts from initial tool output (complete later runs are separately archived).
+Synthetic event audit seed initially reused revision 1 -> 2:
+Error: KANATA_AUDIT_REVISION_CONFLICT
+Fixed the synthetic seed to contiguous non-overlapping revision intervals without changing schema guards.
+Reverse relationship fixture initially attempted to create an existing world/from/to pair:
+Error: UNIQUE constraint failed: relationships.world_id, relationships.from_id, relationships.to_id
+Reused the existing synthetic relationship.
+Type check of raw chunk loop initially reported TS2769 for Array.from(KanataSqlValue).
+Converted the already-validated string using String() before splitting.
+Later preserved failure excerpts.
+Legacy depth regression: Missing expected rejection when the normal relation reader accepted unknown extension nesting above 64 levels.
+Public role-scope regression: Missing expected rejection when sharedMemory=true bypassed private event membership.
+Both were fixed and retained as negative behavioral tests.
