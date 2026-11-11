@@ -1,0 +1,57 @@
+
+ RUN  v3.2.4 D:/2026Autumn Semester File/GitHub/formyself-app/.worktrees/kanata-m0
+
+ ❯ tests/KanataCandidateManagementLifecycle.spec.js (4 tests | 2 failed) 43ms
+   ✓ does not read sources or publish a delayed memory body after the role changes 22ms
+   ✓ cancels an event revocation confirmation when the candidate ledger unmounts 5ms
+   × closing a revocation preview invalidates an in-flight next page and its guard 7ms
+     → expected [Function] to throw an error
+   × closing the event choice panel invalidates an in-flight next page 8ms
+     → expected [Function] to throw an error
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/KanataCandidateManagementLifecycle.spec.js > closing a revocation preview invalidates an in-flight next page and its guard
+AssertionError: expected [Function] to throw an error
+
+- Expected: 
+null
+
++ Received: 
+undefined
+
+ ❯ tests/KanataCandidateManagementLifecycle.spec.js:66:27
+     64|   await click('下一页撤销范围')
+     65|   await click('关闭撤销预览')
+     66|   expect(()=>pageGuard()).toThrow(/EXPIRED/)
+       |                           ^
+     67|   pending.resolve({plan:{revokeCount:60,uncertainCount:0},entries:[{id…
+     68|   await flushPromises()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/KanataCandidateManagementLifecycle.spec.js > closing the event choice panel invalidates an in-flight next page
+AssertionError: expected [Function] to throw an error
+
+- Expected: 
+null
+
++ Received: 
+undefined
+
+ ❯ tests/KanataCandidateManagementLifecycle.spec.js:85:27
+     83|   await click('载入下一页资料')
+     84|   await click('关闭选择')
+     85|   expect(()=>pageGuard()).toThrow(/EXPIRED/)
+       |                           ^
+     86|   pending.resolve({entries:[{id:'late',title:'迟到资料'}],cursor:null})
+     87|   await flushPromises()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 2 passed (4)
+   Start at  14:14:00
+   Duration  2.40s (transform 130ms, setup 0ms, collect 268ms, tests 43ms, environment 1.49s, prepare 303ms)
+

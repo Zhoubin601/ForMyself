@@ -54,3 +54,6 @@ M 从 fd9f23d 快进到 6497d28f2d18e37884d3d6aa90d1cfb153d50e9a。两笔新增�
 原始 JSON chunk 使用 SQLite code point offset，每块最多 4096 个 code points，加一字符 sentinel。字符串 action 的 spread 仍由旧 JS UTF-16 规则处理。完整旧输出、未知字段、null/缺失及顺序不通过省略字段实现有界。
 
 公开角色 scope 仅接收 instanceId/group，额外 sharedMemory 字段不会进入内部共享记忆权限判断。非参与者带入该字段时，普通 header/块及 legacy.readFor 均拒绝。共享记忆本身的内部调用路径保留。
+# 2026-11-11 ER1 当前边界
+
+完整审计和测试 Oracle 分界见 [ER1 call map](event-compat/call-map.md)、[契约](event-compat/compatibility-contract.md)、[Oracle](event-compat/oracle.md)。Runtime legacyEvents 已移除，Repository 完整 materializer 暂保留；不因接口名 legacy 自动删除。用户指定纯领域撤销顺序和完整世界增量签名，原数组顺序恢复未证明，ER1-3 BLOCKED。下文保留此前证据，不当作本轮全项 PASS。

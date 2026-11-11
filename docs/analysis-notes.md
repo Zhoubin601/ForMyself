@@ -1314,3 +1314,7 @@ planMessageArchive现有Map<string, Message[]>/逐组件对象数组/归档Set�
 ## 2026-11-09 M3
 
 用户确认世界删除采用可逆归档，事件撤销保留预览确认的批量语义。SQLite 候选将已归档原文移出活跃角色上下文，并保持历史分页与精确来源读取。SQL 查询先校验来源、所属世界、当前授权及授权修订。事件撤销重放同路径仍生效的 Effects。合成设备和测试命令见 [M3 QA](qa/kanata-sqlite-m3/README.md)。
+
+## 2026-11-11 ER1 分析
+
+[调用审计](qa/kanata-sqlite-m4/m4-r/event-compat/call-map.md)确认 Runtime 包装无消费者，Repository 仍有 action 真实回退和设备 QA 消费者。独立 probe 复现 12 项兼容差异；原始数组顺序未取得可证明的恢复映射，按用户纯领域权威决定保留 ER1-3 BLOCKED。可独立安全收口的 Runtime 与 Ledger 关闭 guard 已修改并测试。完整对象迁移、字段级 action 与专用设备/Heap 证据仍待完成，不以局部通过当整项 PASS。

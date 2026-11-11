@@ -26,3 +26,6 @@
 | effects / audits / jsonChunk | Effect 及审计头 50＋1，长 value/path 和 before/after 原文分块。audit/side/snapshot revision 均参与游标身份 | 管理入口与角色正文读取区分，角色不能借 audit/effect 选择绕过权限 |
 | 完整性证明 | 一个连接内临时记录，绑定事件 revision、total_changes、data_version。写入、其他连接提交、回滚或释放后重新验证 | 权限逐页重验；证明没有存入 Pinia、持久 schema 或备份 |
 | 旧兼容与反向关系 | 旧 Runtime 别名显式置于 legacyEvents；旧 domain API 置于 events.legacy。relationshipEvents 返回反向页，标量关系不包含 sourceEventIds | 完整 Event / Effect / Audit、旧预览确认数组和特殊字符串 action 仍有显式物化；不计作 G4 全面关闭 |
+# 2026-11-11 ER1 更新
+
+本轮完整调用矩阵见 [event-compat/call-map.md](event-compat/call-map.md)。候选 Runtime legacyEvents 无消费者并已删除；Repository Facade 的测试/Android QA 与 action 真正回退调用全部列出。纯领域为用户确认的撤销唯一权威；当前不能证明原始领域数组顺序恢复，ER1-3 BLOCKED。下文旧包装描述作为历史记录，不代表当前 Runtime surface。

@@ -69,3 +69,5 @@ M2 Windows 接续已通过（2026-11-09）。[最新验收 v2](../docs/20261109-
 2026-11-10 [MR2-G4 事件来源验收 v2](../docs/20261110-kanata-sqlite-mr2-g4-acceptance-v2.md)记录候选事件命令 ID 回执、事务内保序来源去重、普通提交/修正的 SQL 路径。旧完整事件与审计 DTO、异常历史 action 和全量故障矩阵仍有缺口。MR2/G4/M4 BLOCKED，M5 NO。
 
 2026-11-11 事件读取与旧兼容切片见 [MR2-G4 验收 v3](../docs/20261111-kanata-sqlite-mr2-g4-acceptance-v3.md)。普通读取用 header、关系/Effect/Audit 页与 JSON 块；完整旧 DTO 显式置于 events.legacy，旧 Runtime 入口置于 legacyEvents。SQL 临时完整性证明只在连接状态与 revision 均未变化时复用，权限仍逐页校验。M4 BLOCKED，M5 NO。
+
+2026-11-11 ER1 当前入口：[BLOCKED 验收 v4](../docs/20261111-kanata-sqlite-mr2-g4-acceptance-v4.md)。候选 Runtime 无消费者 legacyEvents 包装已移除，Repository 回退尚在。用户已确定纯领域为撤销唯一权威，包含 revoked 后代、原始领域数组/Set 顺序和同世界完整数据增量签名；不能证明原数组顺序恢复则 ER1-3 BLOCKED。当前尚无该证明，不回退旧 SQLite 契约、不改 frozen Schema/新增005、不开始M5。ER1/G4/MR2/M4 BLOCKED，M5 NO，生产 legacy/default false。

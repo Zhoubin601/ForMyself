@@ -1,0 +1,10 @@
+{
+  "status": "BLOCKED",
+  "scope": "ER1-specific retained object and phase peak evidence; historical MR1/MR2 samples are not substituted",
+  "samples": [
+    {"size": 1000, "seed": {"status": "NOT RUN", "heapPeakBytes": null, "pssKiB": null, "rssKiB": null}, "read": {"status": "NOT RUN", "heapPeakBytes": null, "pssKiB": null, "rssKiB": null}, "piniaEventObjects": null, "localEventObjects": null, "retainedAfterCloseAndGc": null},
+    {"size": 10000, "seed": {"status": "NOT RUN", "heapPeakBytes": null, "pssKiB": null, "rssKiB": null}, "read": {"status": "NOT RUN", "heapPeakBytes": null, "pssKiB": null, "rssKiB": null}, "piniaEventObjects": null, "localEventObjects": null, "retainedAfterCloseAndGc": null}
+  ],
+  "componentChecks": {"cancelledPreviewPublished": 0, "cancelledChoicePublished": 0, "cancelledAuditPublished": 0, "cancelledEffectAuditPublished": 0, "localAuditAfterSuccessfulRevoke": null, "localEffectAuditAfterSuccessfulRevoke": null, "evidence": "16-lifecycle-review-retest.txt; null is the inspected local ref state, not a measured global heap count"},
+  "remainingUnboundedPaths": ["events.legacy full DTO/arrays", "historical string action full Event fallback", "revocationEffectAudit large value"]
+}

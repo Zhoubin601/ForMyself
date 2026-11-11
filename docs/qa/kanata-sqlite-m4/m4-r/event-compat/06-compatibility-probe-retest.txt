@@ -1,0 +1,110 @@
+(node:13856) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+{"case":"revoked-descendant","old":["er1-00001","er1-00003"],"pure":["er1-00001","er1-00003"],"compact":["er1-00001"]}
+{"sqlite":"3.51.2","utf16Spike":[{"name":"empty","expected":"\"\"","extracted":"\"\"","utf8":"","raw":"\"\"","extractedEqual":true,"rawEqual":true},{"name":"ascii","expected":"\"ascii\"","extracted":"\"ascii\"","utf8":"6173636969","raw":"\"ascii\"","extractedEqual":true,"rawEqual":true},{"name":"bmp","expected":"\"界\"","extracted":"\"界\"","utf8":"E7958C","raw":"\"界\"","extractedEqual":true,"rawEqual":true},{"name":"pair","expected":"\"😀\"","extracted":"\"😀\"","utf8":"F09F9880","raw":"\"😀\"","extractedEqual":true,"rawEqual":true},{"name":"high","expected":"\"\\ud800\"","extracted":"\"���\"","utf8":"EDA080","raw":"\"\\ud800\"","extractedEqual":false,"rawEqual":true},{"name":"low","expected":"\"\\udc00\"","extracted":"\"���\"","utf8":"EDB080","raw":"\"\\udc00\"","extractedEqual":false,"rawEqual":true},{"name":"mixed","expected":"\"x😀界\\ud800y\\udc00\"","extracted":"\"x😀界���y���\"","utf8":"78F09F9880E7958CEDA08079EDB080","raw":"\"x😀界\\ud800y\\udc00\"","extractedEqual":false,"rawEqual":true}]}
+{
+  "status": "BLOCKED",
+  "failures": 12,
+  "results": [
+    {
+      "name": "revoked descendant is part of both old confirmation sets",
+      "status": "FAIL",
+      "message": "Expected values to be strictly deep-equal:\n+ actual - expected\n\n  [\n    'er1-00001',\n-   'er1-00003'\n  ]\n"
+    },
+    {
+      "name": "unrelated event invalidates old and compact preview equally",
+      "status": "FAIL",
+      "message": "Missing expected rejection."
+    },
+    {
+      "name": "revoke snapshot vs adapter action empty",
+      "status": "FAIL",
+      "message": "Expected values to be strictly deep-equal:\n+ actual - expected\n\n  {\n+   action: '',\n-   action: {},\n    causality: 'explicit',\n    causedByEventIds: [],\n    effectiveAt: 1500,\n    future: {\n      kept: true\n"
+    },
+    {
+      "name": "revoke snapshot vs adapter action ascii",
+      "status": "FAIL",
+      "message": "Expected values to be strictly deep-equal:\n+ actual - expected\n\n  {\n+   action: 'ascii',\n-   action: {\n-     '0': 'a',\n-     '1': 's',\n-     '2': 'c',\n-     '3': 'i',\n-     '4': 'i'\n-   },\n    causality: 'explicit',\n    causedByEventIds: [],\n    effectiveAt: 1500,\n    future: {\n      kept: true\n"
+    },
+    {
+      "name": "revoke snapshot vs adapter action bmp",
+      "status": "FAIL",
+      "message": "Expected values to be strictly deep-equal:\n+ actual - expected\n\n  {\n+   action: '界',\n-   action: {\n-     '0': '界'\n-   },\n    causality: 'explicit',\n    causedByEventIds: [],\n    effectiveAt: 1500,\n    future: {\n      kept: true\n"
+    },
+    {
+      "name": "revoke snapshot vs adapter action pair",
+      "status": "FAIL",
+      "message": "Expected values to be strictly deep-equal:\n+ actual - expected\n\n  {\n+   action: '😀',\n-   action: {\n-     '0': '\\ud83d',\n-     '1': '\\ude00'\n-   },\n    causality: 'explicit',\n    causedByEventIds: [],\n    effectiveAt: 1500,\n    future: {\n      kept: true\n"
+    },
+    {
+      "name": "revoke snapshot vs adapter action high",
+      "status": "FAIL",
+      "message": "Expected values to be strictly deep-equal:\n+ actual - expected\n\n  {\n+   action: '\\ud800',\n-   action: {\n-     '0': '\\ud800'\n-   },\n    causality: 'explicit',\n    causedByEventIds: [],\n    effectiveAt: 1500,\n    future: {\n      kept: true\n"
+    },
+    {
+      "name": "revoke snapshot vs adapter action low",
+      "status": "FAIL",
+      "message": "Expected values to be strictly deep-equal:\n+ actual - expected\n\n  {\n+   action: '\\udc00',\n-   action: {\n-     '0': '\\udc00'\n-   },\n    causality: 'explicit',\n    causedByEventIds: [],\n    effectiveAt: 1500,\n    future: {\n      kept: true\n"
+    },
+    {
+      "name": "revoke snapshot vs adapter action mixed",
+      "status": "FAIL",
+      "message": "Expected values to be strictly deep-equal:\n+ actual - expected\n\n  {\n+   action: 'x😀界\\ud800y\\udc00',\n-   action: {\n-     '0': 'x',\n-     '1': '\\ud83d',\n-     '2': '\\ude00',\n-     '3': '界',\n-     '4': '\\ud800',\n-     '5': 'y',\n-     '6': '\\udc00'\n-   },\n    causality: 'explicit',\n    causedByEventIds: [],\n    effectiveAt: 1500,\n    future: {\n      kept: true\n"
+    },
+    {
+      "name": "revoke snapshot vs adapter action null",
+      "status": "FAIL",
+      "message": "Expected values to be strictly deep-equal:\n+ actual - expected\n\n  {\n+   action: null,\n-   action: {},\n    causality: 'explicit',\n    causedByEventIds: [],\n    effectiveAt: 1500,\n    future: {\n      kept: true\n"
+    },
+    {
+      "name": "revoke snapshot vs adapter action array",
+      "status": "FAIL",
+      "message": "Expected values to be strictly deep-equal:\n+ actual - expected\n\n  {\n+   action: [\n+     '😀',\n+     null\n+   ],\n-   action: {\n-     '0': '😀',\n-     '1': null\n-   },\n    causality: 'explicit',\n    causedByEventIds: [],\n    effectiveAt: 1500,\n    future: {\n      kept: true\n"
+    },
+    {
+      "name": "revoke snapshot vs adapter action object",
+      "status": "FAIL",
+      "message": "Expected values to be strictly deep-equal:\n+ actual - expected\n\n  {\n    action: {\n      '10': 'ten',\n      '2': 'two',\n      future: null,\n+     location: 'old'\n    },\n    causality: 'explicit',\n    causedByEventIds: [],\n    effectiveAt: 1500,\n    future: {\n"
+    },
+    {
+      "name": "revoke snapshot vs adapter action missing",
+      "status": "PASS"
+    },
+    {
+      "name": "pure domain rejects abnormal historical action empty",
+      "status": "PASS"
+    },
+    {
+      "name": "pure domain rejects abnormal historical action ascii",
+      "status": "PASS"
+    },
+    {
+      "name": "pure domain rejects abnormal historical action bmp",
+      "status": "PASS"
+    },
+    {
+      "name": "pure domain rejects abnormal historical action pair",
+      "status": "PASS"
+    },
+    {
+      "name": "pure domain rejects abnormal historical action high",
+      "status": "PASS"
+    },
+    {
+      "name": "pure domain rejects abnormal historical action low",
+      "status": "PASS"
+    },
+    {
+      "name": "pure domain rejects abnormal historical action mixed",
+      "status": "PASS"
+    },
+    {
+      "name": "pure domain rejects abnormal historical action null",
+      "status": "PASS"
+    },
+    {
+      "name": "pure domain rejects abnormal historical action array",
+      "status": "PASS"
+    }
+  ]
+}

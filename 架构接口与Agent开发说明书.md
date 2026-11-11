@@ -645,3 +645,11 @@ MR2 已将记忆详情、精确来源及后台任务的回复链授权证明放�
 游标绑定世界、事件、revision、角色 scope 与关系/快照选择。快照选择还绑定 audit ID、side 和 snapshot revision。World Runtime 在仓库游标上绑定本次 owner；切 owner 后拒绝旧游标。权限逐页重验。完整性证明仅在同一 SQLite 连接、同 revision、total_changes 和 data_version 都未变化时复用，临时表最多一条记录。任何写入、外部提交、失败回滚造成的计数变化都会重新校验，连接释放时临时表消失。
 
 旧完整 DTO 移入 events.legacy，SQLite World Runtime 旧完整入口移入 legacyEvents。候选页面继续使用 acknowledgement 与 compact revocation 接口。原命令 receipt、旧计划签名、确认集合、排序与 UTF-16 action 回退保留。关系 sourceEventIds 改为 relationshipEvents 分页；旧完整输出仅显式使用 legacy.relationship。兼容入口与保留限制见 [验收 v3](docs/20261111-kanata-sqlite-mr2-g4-acceptance-v3.md)。
+
+## Kanata SQLite ER1 事件兼容收口检查点
+
+2026-11-11 ER1 已删除无真实消费者的候选 World Runtime `legacyEvents`，接口类型由实际实现导出，strict 负例禁止重新使用完整命令包装。Repository `events.legacy` 与历史字符串 action 的完整 Event 回退尚在，不宣称全面有界。Ledger 子面板请求按 scope/sequence 守卫；关闭 choices/preview/audit/effectAudit 后旧 guard 失效，撤销成功清理隐藏的审计对象。
+
+用户明确撤销以纯领域 `kanataEvents.js` 为唯一权威：含 revoked 后代、descendants Set 顺序、uncertain 的 data.events 顺序、同世界完整 Events/Effects/Baselines 的增量签名，revoked 执行 no-op。必须先证明存储可恢复原始领域数组顺序；当前未证明，ER1-3 BLOCKED，不用 SQL ID/rowid 排序代替，也不修改 001–004/新增 005。旧 SQLite Oracle 仅历史对照；历史 action UTF-16 保护仍依任务书保留。
+
+新 Node Oracle 回归进入 `npm test`/`npm run check`；独立兼容验收运行 `node docs/qa/kanata-sqlite-m4/m4-r/event-compat/verify-compatibility.mjs`，顺序证明运行同目录 `verify-order.mjs`，当前均故意保留非零 BLOCKED 结果，不计 PASS。Android action Spike 通过同目录 `run-action-spike.ps1 -ManifestPath <现有隔离manifest>` 运行，仅在合成 QA 包新 cache 库取证，不替代业务矩阵。详细结果见 [ER1 BLOCKED 验收](docs/20261111-kanata-sqlite-mr2-g4-acceptance-v4.md)。ER1/G4/MR2/M4 BLOCKED，M5 NO；生产 legacy/default false 不变。

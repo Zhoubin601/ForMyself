@@ -1,0 +1,143 @@
+(node:30280) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+{
+  "status": "BLOCKED",
+  "authority": "pure-domain (user decision 2026-11-11)",
+  "domainOrderA": [
+    "er1-00001",
+    "er1-00002",
+    "er1-00003",
+    "er1-00004"
+  ],
+  "domainOrderB": [
+    "er1-00001",
+    "er1-00003",
+    "er1-00004",
+    "er1-00002"
+  ],
+  "descendantsA": [
+    "er1-00001",
+    "er1-00002",
+    "er1-00003",
+    "er1-00004"
+  ],
+  "descendantsB": [
+    "er1-00001",
+    "er1-00004",
+    "er1-00002",
+    "er1-00003"
+  ],
+  "metadata": {
+    "world_events": [
+      "id",
+      "world_id",
+      "status",
+      "visibility",
+      "summary",
+      "effective_at",
+      "recorded_at",
+      "revision",
+      "causality",
+      "kind",
+      "action_instance_id",
+      "action_relationship_id",
+      "action_location",
+      "replaces_event_id",
+      "extensions_json"
+    ],
+    "world_effects": [
+      "id",
+      "world_id",
+      "event_id",
+      "target_type",
+      "target_id",
+      "target_instance_id",
+      "target_relationship_id",
+      "operation",
+      "path",
+      "value_json",
+      "rule_version",
+      "extensions_json"
+    ],
+    "effect_baselines": [
+      "id",
+      "world_id",
+      "target_type",
+      "target_id",
+      "target_instance_id",
+      "target_relationship_id",
+      "path",
+      "value_json",
+      "extensions_json"
+    ]
+  },
+  "rowidsBefore": [
+    {
+      "rowid": 1,
+      "id": "event-one"
+    },
+    {
+      "rowid": 2,
+      "id": "event-dependent"
+    },
+    {
+      "rowid": 3,
+      "id": "event-independent"
+    },
+    {
+      "rowid": 4,
+      "id": "event-revoked"
+    },
+    {
+      "rowid": 5,
+      "id": "er1-00001"
+    },
+    {
+      "rowid": 6,
+      "id": "er1-00002"
+    },
+    {
+      "rowid": 7,
+      "id": "er1-00003"
+    },
+    {
+      "rowid": 8,
+      "id": "er1-00004"
+    }
+  ],
+  "rowidsAfter": [
+    {
+      "rowid": 1,
+      "id": "event-one"
+    },
+    {
+      "rowid": 2,
+      "id": "event-dependent"
+    },
+    {
+      "rowid": 3,
+      "id": "event-independent"
+    },
+    {
+      "rowid": 4,
+      "id": "event-revoked"
+    },
+    {
+      "rowid": 5,
+      "id": "er1-00001"
+    },
+    {
+      "rowid": 7,
+      "id": "er1-00003"
+    },
+    {
+      "rowid": 8,
+      "id": "er1-00004"
+    },
+    {
+      "rowid": 9,
+      "id": "er1-00002"
+    }
+  ],
+  "conclusion": "No frozen original-array-order mapping has been proven. Implicit rowid is not a schema-guaranteed ordinal. This does not prove every candidate insertion loses order; it prevents certifying arbitrary historical domain order. No production rowid was touched."
+}

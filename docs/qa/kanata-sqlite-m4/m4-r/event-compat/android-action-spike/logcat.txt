@@ -1,0 +1,15 @@
+--------- beginning of main
+11-11 06:22:27.697 25615 25636 I ER1_ACTION_SPIKE: cipher=4.17.0 community
+11-11 06:22:27.699 25615 25636 I ER1_ACTION_SPIKE: {"case":"empty","type":"text","rawEqual":true,"decodedEqual":true,"expectedCodeUnits":0,"decodedCodeUnits":0,"expectedUnits":"","decodedUnits":""}
+11-11 06:22:27.702 25615 25636 I ER1_ACTION_SPIKE: {"case":"ascii","type":"text","rawEqual":true,"decodedEqual":true,"expectedCodeUnits":5,"decodedCodeUnits":5,"expectedUnits":"00610073006300690069","decodedUnits":"00610073006300690069"}
+11-11 06:22:27.703 25615 25636 I ER1_ACTION_SPIKE: {"case":"bmp","type":"text","rawEqual":true,"decodedEqual":true,"expectedCodeUnits":1,"decodedCodeUnits":1,"expectedUnits":"754c","decodedUnits":"754c"}
+11-11 06:22:27.705 25615 25636 I ER1_ACTION_SPIKE: {"case":"pair","type":"text","rawEqual":true,"decodedEqual":true,"expectedCodeUnits":2,"decodedCodeUnits":2,"expectedUnits":"d83dde00","decodedUnits":"d83dde00"}
+11-11 06:22:27.707 25615 25636 I ER1_ACTION_SPIKE: {"case":"high","type":"text","rawEqual":true,"decodedEqual":true,"expectedCodeUnits":1,"decodedCodeUnits":1,"expectedUnits":"d800","decodedUnits":"d800"}
+11-11 06:22:27.708 25615 25636 I ER1_ACTION_SPIKE: {"case":"low","type":"text","rawEqual":true,"decodedEqual":true,"expectedCodeUnits":1,"decodedCodeUnits":1,"expectedUnits":"dc00","decodedUnits":"dc00"}
+11-11 06:22:27.711 25615 25636 I ER1_ACTION_SPIKE: {"case":"mixed","type":"text","rawEqual":true,"decodedEqual":true,"expectedCodeUnits":7,"decodedCodeUnits":7,"expectedUnits":"0078d83dde00754cd8000079dc00","decodedUnits":"0078d83dde00754cd8000079dc00"}
+11-11 06:22:27.713 25615 25636 I ER1_ACTION_SPIKE: {"case":"null","type":"null","rawEqual":true}
+11-11 06:22:27.715 25615 25636 I ER1_ACTION_SPIKE: {"case":"array","type":"array","rawEqual":true}
+11-11 06:22:27.716 25615 25636 I ER1_ACTION_SPIKE: {"case":"object","type":"object","rawEqual":true}
+11-11 06:22:27.717 25615 25636 I ER1_ACTION_SPIKE: {"case":"missing","type":"missing","rawEqual":true}
+11-11 06:22:27.767 25615 25636 I ER1_ACTION_SPIKE: {"case":"mixed-repetitions-1000","type":"text","rawEqual":true,"decodedEqual":true,"expectedCodeUnits":7000,"decodedCodeUnits":7000}
+11-11 06:22:28.176 25615 25636 I ER1_ACTION_SPIKE: {"case":"mixed-repetitions-10000","type":"text","rawEqual":true,"decodedEqual":true,"expectedCodeUnits":70000,"decodedCodeUnits":70000}

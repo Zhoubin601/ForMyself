@@ -1,5 +1,7 @@
 # Kanata SQLite M4-R QA
 
+最新 ER1 执行结果：[BLOCKED 验收 v4](../../../20261111-kanata-sqlite-mr2-g4-acceptance-v4.md) · [事件兼容证据](event-compat/README.md)。Runtime 无消费者旧包装已删；Repository 完整回退、纯领域原始数组顺序证明与 ER1 专用设备/Heap 矩阵未完成。ER1/G4/MR2/M4 BLOCKED，M5 NO。下文保留历史证据及其原范围。
+
 [M4-R 执行任务书](../../../20261110-kanata-sqlite-m4-r-closeout-task-v1.md) · [事件来源写入任务书](../../../20261110-kanata-sqlite-mr2-event-provenance-task-v1.md) · [事件读取与兼容任务书](../../../20261110-kanata-sqlite-mr2-g4-event-read-compat-task-v1.md) · [接管矩阵](matrix.md) · [历史验收与证据](../closeout/README.md)
 
 本目录区分历史通过切片、本轮实测、复现与待验。本轮事件写入实现提交 fbc8ee344d6e61aef85bf6296ac5cbd4148d2eeb，M 分支验收 HEAD fd9f23dd39d4f8a0ab42a94f3e3a4e46de98f6e6。候选事件提议、提交和普通修正写入定向 PASS；readFor/list/eventFromRow、effects/audits、旧命令回读与旧 preview 仍有完整对象物化。MR0、MR1 PASS；MR2/G4 BLOCKED；M4 BLOCKED，SQLite 阶段 M5 NO。下一执行切片见 [事件读取与旧兼容边界有界化任务书](../../../20261110-kanata-sqlite-mr2-g4-event-read-compat-task-v1.md)。启动时仍须重新 fetch M。本任务书从属于 M4-R 总任务书，不代表 G4/MR2/M4 已通过。测试仅连接已核对的隔离合成 AVD，所有 provider 为合成实现。

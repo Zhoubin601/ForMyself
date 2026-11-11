@@ -1,0 +1,26 @@
+## M...origin/M
+?? docs/qa/kanata-sqlite-m4/m4-r/event-compat/
+7b6884965051d0d0da154618d2231b429ab12b11
+worktree D:/2026Autumn Semester File/GitHub/formyself-app
+HEAD 41cbb66053bd5b9995b358c0c4846669e626bcc0
+branch refs/heads/main
+
+worktree D:/2026Autumn Semester File/GitHub/formyself-app/.worktrees/kanata
+HEAD 73158a058d35124e1572b2161fe0f364f2140c48
+branch refs/heads/Kanata
+
+worktree D:/2026Autumn Semester File/GitHub/formyself-app/.worktrees/kanata-m0
+HEAD 7b6884965051d0d0da154618d2231b429ab12b11
+branch refs/heads/M
+
+## main...origin/main
+ M docs/analysis-notes.md
+ M docs/plan.md
+ M docs/questions.md
+ M docs/source-notes.md
+ D output/20261027-ForMyself-architecture-p6-debug-v1.apk
+?? .worktrees/
+?? docs/20261027-warm-home-open-source-research-v1.md
+?? docs/qa/emulator-regression-20261027/
+## Kanata...origin/Kanata
+7b6884965051d0d0da154618d2231b429ab12b11

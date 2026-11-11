@@ -1,0 +1,25 @@
+/data/app/~~bU0aWyEKsNm1vjeVfhx63Q==/com.yubin.formyself.m2qa-0Y_D9Wwi2XEpPNE6FcXrMA==/base.apk: 1 file pulled, 0 skipped. 50.0 MB/s (19017910 bytes in 0.363s)
+/data/app/~~hEcnSI8YNS0QTZiPlkzgGA==/com.yubin.formyself.m2qa.test-pgHe3vPJWmfZf7NfUz6hmg==/base.apk: 1 file pulled, 0 skipped. 46.2 MB/s (598741 bytes in 0.012s)
+INSTRUMENTATION_STATUS: class=com.yubin.formyself.KanataEventActionCompatibilityTest
+INSTRUMENTATION_STATUS: current=1
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=1
+INSTRUMENTATION_STATUS: stream=
+com.yubin.formyself.KanataEventActionCompatibilityTest:
+INSTRUMENTATION_STATUS: test=rawJsonAndDecodedTextHaveSeparateUtf16Contracts
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.yubin.formyself.KanataEventActionCompatibilityTest
+INSTRUMENTATION_STATUS: current=1
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=1
+INSTRUMENTATION_STATUS: stream=.
+INSTRUMENTATION_STATUS: test=rawJsonAndDecodedTextHaveSeparateUtf16Contracts
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_RESULT: stream=
+
+Time: 0.301
+
+OK (1 test)
+
+
+INSTRUMENTATION_CODE: -1

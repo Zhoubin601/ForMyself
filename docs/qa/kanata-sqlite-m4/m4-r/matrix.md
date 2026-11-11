@@ -1,5 +1,9 @@
 # M4-R 接管与验证矩阵
 
+## ER1 当前检查点（2026-11-11）
+
+ER1-0 审计完成；ER1-1 只移除 Runtime 包装并建立独立 Oracle，Repository 未收口；ER1-2 仅 host/Android UTF-16 Spike；ER1-3 因纯领域原数组顺序恢复未证明 BLOCKED；ER1-4 组件关闭与局部清理已修、专用设备和 retained 分类 NOT RUN；ER1-5 主机/现有设备回归和两轮审查不能替代完整 ER1 验收。详见 [ER1 QA](event-compat/README.md)。G4/MR2/M4 BLOCKED，M5 NO。
+
 ## MR0 基线
 
 - fetch 后远端 M 与隔离工作树 M 均为 c4ba18911c705c5efde7f7614171659f056e2f1e。与任务书所列 d1737e7 相差一个纯文档提交。主工作树 main 的四项文档修改、一个 APK 删除和三项未跟踪入口按原状态保留。独立 Kanata 工作树未进入开发范围。

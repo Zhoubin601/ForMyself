@@ -1,0 +1,10 @@
+
+ RUN  v3.2.4 D:/2026Autumn Semester File/GitHub/formyself-app/.worktrees/kanata-m0
+
+ ✓ tests/KanataCandidateManagementLifecycle.spec.js (7 tests) 54ms
+
+ Test Files  1 passed (1)
+      Tests  7 passed (7)
+   Start at  14:30:46
+   Duration  2.19s (transform 116ms, setup 0ms, collect 250ms, tests 54ms, environment 1.32s, prepare 273ms)
+

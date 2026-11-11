@@ -1266,3 +1266,7 @@ raw/完整需求清单.txt 4.1/4.4/8.3及最新连续执行v3驱动当前实现�
 ## 2026-11-11 Kanata 事件读取切片
 
 沿用 raw/完整需求清单.txt 中世界隔离、普通视角与上帝视角、明确影响范围和 uncertain 用户确认要求。raw/彼方 · Kanata 技术设计.txt 为 Event、Effect 与来源关系的设计依据。实施范围遵循 docs/20261110-kanata-sqlite-mr2-g4-event-read-compat-task-v1.md，总合同与上轮验收保持独立，不能因本切片测试成功推定 MR2/M4 放行。
+
+## 2026-11-11 ER1
+
+唯一任务依据为 docs/20261111-kanata-sqlite-mr2-g4-event-compat-closure-task-v1.md；raw/完整需求清单.txt §6.7–6.8 和 raw/彼方 · Kanata 技术设计.txt §3.3 提供事件修正、用户确认与 Effect 保留要求，原文件只读。当前用户补充决策指定纯领域撤销为唯一权威，详见 [ER1 契约](qa/kanata-sqlite-m4/m4-r/event-compat/compatibility-contract.md)。执行使用本仓源码和隔离合成设备，未引入外部资料。
