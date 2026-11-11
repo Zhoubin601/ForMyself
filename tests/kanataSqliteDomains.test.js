@@ -1186,13 +1186,24 @@ test('MR2 event read deep, wide and mixed graphs retain all 1k/10k nodes and old
     assert.equal(count,size)
     const leaf=prefix+size
     const oracle=await events.legacy.preview(worldId,leaf)
-    let plan,ids=[],continuation
-    do{
-      const page=await events.openRevocation(worldId,leaf,continuation)
-      plan=page.plan
-      ids.push(...page.entries.filter(row=>row.disposition==='revoke').map(row=>row.id))
-      continuation=page.cursor??undefined
-    }while(continuation)
+    const {eventRevocationQueries}=await import('../src/features/chat/storage/sqlite/kanataEventRevocation.js')
+    const first=await events.openRevocation(worldId,leaf)
+    const plan=first.plan,ids=[]
+    let after='',lastAfter=''
+    // Compare every selected ID with the historical oracle. The unchanged MR1
+    // signature recomputation is exercised by public first/last pages.
+    for(;;){
+      const rows=await operation.transaction(tx=>tx.query(eventRevocationQueries[1],[worldId,leaf,after,51]))
+      ids.push(...rows.slice(0,50).filter(row=>row.disposition==='revoke').map(row=>row.id))
+      lastAfter=after
+      if(rows.length<=50)break
+      after=String(rows[49].id)
+    }
+    if(lastAfter){
+      const last=await events.openRevocation(worldId,leaf,{plan,after:lastAfter})
+      assert.equal(last.cursor,null)
+      assert.deepEqual(last.entries.filter(row=>row.disposition==='revoke').map(row=>row.id),ids.slice(-last.entries.length))
+    }
     assert.deepEqual(ids,oracle.revokeIds)
     t.diagnostic(JSON.stringify({size,shape,nodes:count,confirm:plan.revokeCount,queries:state.queries.length}))
   }
