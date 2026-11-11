@@ -129,6 +129,20 @@ const relationRead = projections.map(({field,value}) => {
 })
 export const eventRelationReads = /** @type {Record<import('./kanataDomainTypes').KanataEventRelationKind,{page:string,chunk:string}>} */ (
   Object.fromEntries(relationRead.map(({field,...sql})=>[field,sql])))
-export const eventSnapshotQueries = [eventAuditSupport, correctionSourceRefs, correctionCauses, correctionTags, ...relationRead.flatMap(({page,chunk})=>[page,chunk])]
-export const eventSnapshotWrites = [writeEventCommitAudit, writeEventStatusAudit, updateEventFromAudit,
+// A single connection-local integrity proof survives read pages only while SQLite
+// reports no local writes, no external commits, and the same event revision.
+export const eventIntegrityDdl = [`CREATE TEMP TABLE IF NOT EXISTS kanata_event_integrity (
+  slot INTEGER PRIMARY KEY CHECK(slot=1),world_id TEXT NOT NULL,event_id TEXT NOT NULL,
+  revision INTEGER NOT NULL,local_changes INTEGER NOT NULL,data_version INTEGER NOT NULL
+)`]
+export const eventIntegrityCached = `SELECT 1 FROM temp.kanata_event_integrity c
+  CROSS JOIN pragma_data_version p JOIN world_events e ON e.world_id=c.world_id AND e.id=c.event_id
+  WHERE c.slot=1 AND c.world_id=? AND c.event_id=? AND c.revision=?
+    AND e.revision=c.revision AND c.local_changes=total_changes() AND c.data_version=p.data_version`
+export const clearEventIntegrity = 'DELETE FROM temp.kanata_event_integrity'
+export const storeEventIntegrity = `INSERT INTO temp.kanata_event_integrity(slot,world_id,event_id,revision,local_changes,data_version)
+  SELECT 1,e.world_id,e.id,e.revision,total_changes()+1,(SELECT data_version FROM pragma_data_version)
+  ${scope} AND ${valid}`
+export const eventSnapshotQueries = [eventIntegrityCached, eventAuditSupport, correctionSourceRefs, correctionCauses, correctionTags, ...relationRead.flatMap(({page,chunk})=>[page,chunk])]
+export const eventSnapshotWrites = [clearEventIntegrity, storeEventIntegrity, writeEventCommitAudit, writeEventStatusAudit, updateEventFromAudit,
   insertEventCorrection, ...eventCorrectionLinks]

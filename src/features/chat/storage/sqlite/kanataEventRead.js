@@ -1,6 +1,6 @@
 // @ts-check
 import { validateId } from '../../domain/kanataValidation.js'
-import { eventAuditSupport, eventRelationReads } from './kanataEventSnapshot.js'
+import { eventAuditSupport, eventRelationReads, eventIntegrityDdl, eventIntegrityCached, clearEventIntegrity, storeEventIntegrity } from './kanataEventSnapshot.js'
 import { effectFromRow } from './kanataMessageDependents.js'
 import { equalDto, pageLimit, requireSqliteValue as need, safeInteger } from './kanataRepositoryValues.js'
 
@@ -59,8 +59,13 @@ function assertIdentity(current,cursor) {
 
 /** @param {Tx} tx @param {Identity} identity */
 async function assertHints(tx,{worldId,eventId,eventRevision}) {
-  const [row]=await tx.query(eventAuditSupport,[worldId,eventId,eventRevision])
+  const keys=[worldId,eventId,eventRevision]
+  await tx.execute(eventIntegrityDdl[0])
+  if((await tx.query(eventIntegrityCached,keys)).length)return
+  const [row]=await tx.query(eventAuditSupport,keys)
   need(row && Number(row.supported)>=0,'KANATA_SQLITE_INTEGRITY_FAILED')
+  await tx.execute(clearEventIntegrity)
+  need((await tx.execute(storeEventIntegrity,keys)).affectedRows===1,'KANATA_SQLITE_INTEGRITY_FAILED')
 }
 
 /** Compatibility consumers explicitly materialize one snapshot, with bounded bridge reads.

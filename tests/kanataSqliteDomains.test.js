@@ -13,10 +13,10 @@ import { installLegacySchema } from './helpers/kanataSqliteLegacy.js'
 import { schemaHarness } from './helpers/kanataSqliteHarness.js'
 import { m2Fixture, m2FixtureCommands } from './helpers/kanataSqliteM2Fixture.js'
 
-async function setup(t) {
-  const db = new DatabaseSync(':memory:')
+async function setup(t, databasePath=':memory:') {
+  const db = new DatabaseSync(databasePath)
   db.exec('PRAGMA foreign_keys=ON')
-  t.after(() => db.close())
+  t.after(() => { if(db.isOpen)db.close() })
   const state = { queries: [], failOn: '', failCommit: false, now: 1800000 }
   let tail = Promise.resolve()
   const operation = {
@@ -1196,4 +1196,48 @@ test('MR2 event read deep, wide and mixed graphs retain all 1k/10k nodes and old
     assert.deepEqual(ids,oracle.revokeIds)
     t.diagnostic(JSON.stringify({size,shape,nodes:count,confirm:plan.revokeCount,queries:state.queries.length}))
   }
+})
+
+test('MR2 cached event integrity rejects same-revision mutations and rolls back a failed read transaction',async t=>{
+  const {db,domains,scope,move,state}=await setup(t)
+  const {events}=domains,{worldId}=scope
+  const {id}=await events.proposeAcknowledged(move('缓存完整性'),'integrity-cache')
+  await events.relations(worldId,id,'participantIds',null)
+  const stored=db.prepare('SELECT extensions_json FROM world_events WHERE world_id=? AND id=?').get(worldId,id).extensions_json
+  const update=db.prepare('UPDATE world_events SET extensions_json=? WHERE world_id=? AND id=?')
+  const bad={...JSON.parse(stored),participantIds:[scope.instanceId,scope.instanceId]}
+  update.run(JSON.stringify(bad),worldId,id)
+  await assert.rejects(()=>events.relations(worldId,id,'participantIds',null),/KANATA_SQLITE_INTEGRITY_FAILED/)
+  update.run(stored,worldId,id)
+  state.failCommit=true
+  await assert.rejects(()=>events.relations(worldId,id,'participantIds',null),/injected commit failure/)
+  state.failCommit=false
+  assert.deepEqual((await events.relations(worldId,id,'participantIds',null)).entries,[{position:0,value:scope.instanceId}])
+  assert.equal(db.prepare('SELECT count(*) AS n FROM temp.kanata_event_integrity').get().n,1)
+})
+
+test('MR2 integrity proof invalidates on another SQLite connection commit',async t=>{
+  const {mkdtempSync,rmSync,rmdirSync}=await import('node:fs')
+  const {tmpdir}=await import('node:os')
+  const {join}=await import('node:path')
+  const folder=mkdtempSync(join(tmpdir(),'kanata-event-integrity-'))
+  const path=join(folder,'synthetic.sqlite')
+  const {db,domains,scope,move}=await setup(t,path)
+  const external=new DatabaseSync(path)
+  external.exec('PRAGMA foreign_keys=ON')
+  t.after(()=>{
+    if(external.isOpen)external.close()
+    if(db.isOpen)db.close()
+    for(const suffix of ['', '-wal', '-shm'])rmSync(path+suffix,{force:true})
+    rmdirSync(folder)
+  })
+  const {events}=domains,{worldId}=scope
+  const {id}=await events.proposeAcknowledged(move('跨连接完整性'),'external-integrity')
+  await events.relations(worldId,id,'participantIds',null)
+  const {extensions_json:raw}=db.prepare('SELECT extensions_json FROM world_events WHERE world_id=? AND id=?').get(worldId,id)
+  const originalChanges=db.prepare('SELECT total_changes() AS n').get().n
+  external.prepare('UPDATE world_events SET extensions_json=? WHERE world_id=? AND id=?')
+    .run(JSON.stringify({...JSON.parse(raw),participantIds:[]}),worldId,id)
+  assert.equal(db.prepare('SELECT total_changes() AS n').get().n,originalChanges)
+  await assert.rejects(()=>events.relations(worldId,id,'participantIds',null),/KANATA_SQLITE_INTEGRITY_FAILED/)
 })

@@ -21,7 +21,7 @@ import { provenanceQueries } from '../src/features/chat/storage/sqlite/kanataPro
 import { memoryQueries, memoryWrites } from '../src/features/chat/storage/sqlite/kanataMemoryRepository.js'
 import { eventRevocationQueries, eventRevocationWrites } from '../src/features/chat/storage/sqlite/kanataEventRevocation.js'
 import { eventReadQueries } from '../src/features/chat/storage/sqlite/kanataEventRead.js'
-import { eventSnapshotQueries, eventSnapshotWrites } from '../src/features/chat/storage/sqlite/kanataEventSnapshot.js'
+import { eventSnapshotQueries, eventSnapshotWrites, eventIntegrityDdl } from '../src/features/chat/storage/sqlite/kanataEventSnapshot.js'
 import { eventProofDdl, eventProofQueries, eventProofWrites } from '../src/features/chat/storage/sqlite/kanataEventProof.js'
 import { eventQueries, eventWrites, legacyEventDdl } from '../src/features/chat/storage/sqlite/kanataEventRepository.js'
 import { autonomyQueries, autonomyWrites } from '../src/features/chat/storage/sqlite/kanataAutonomyRepository.js'
@@ -57,7 +57,7 @@ add('ddl', 'schema', [
   schema.setApplicationId,
   ...KANATA_SCHEMA_MIGRATIONS.flatMap(migration => [...migration.statements, schema.setVersion(migration.version)]),
 ])
-add('ddl', 'business', [...replyProofDdl, ...eventProofDdl, ...legacyEventDdl])
+add('ddl', 'business', [...replyProofDdl, ...eventProofDdl, ...legacyEventDdl, ...eventIntegrityDdl])
 add('query', 'business', eventProofQueries)
 add('write', 'business', eventProofWrites)
 add('query', 'business', replyProofQueries)
