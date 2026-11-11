@@ -1251,6 +1251,7 @@ test('MR2 integrity proof invalidates on another SQLite connection commit',async
     .run(JSON.stringify({...JSON.parse(raw),participantIds:[]}),worldId,id)
   assert.equal(db.prepare('SELECT total_changes() AS n').get().n,originalChanges)
   await assert.rejects(()=>events.relations(worldId,id,'participantIds',null),/KANATA_SQLITE_INTEGRITY_FAILED/)
+  await assert.rejects(()=>events.jsonChunk(worldId,id,{kind:'summary'},null),/KANATA_SQLITE_INTEGRITY_FAILED/)
 })
 
 test('MR2 event read keeps the legacy depth limit for unknown extension JSON',async t=>{
@@ -1263,4 +1264,5 @@ test('MR2 event read keeps the legacy depth limit for unknown extension JSON',as
   db.prepare('UPDATE world_events SET extensions_json=? WHERE world_id=? AND id=?').run(JSON.stringify(raw),worldId,id)
   await assert.rejects(()=>events.legacy.list(worldId),/KANATA_SQLITE_INTEGRITY_FAILED/)
   await assert.rejects(()=>events.relations(worldId,id,'participantIds',null),/KANATA_SQLITE_INTEGRITY_FAILED/)
+  await assert.rejects(()=>events.jsonChunk(worldId,id,{kind:'summary'},null),/KANATA_SQLITE_INTEGRITY_FAILED/)
 })

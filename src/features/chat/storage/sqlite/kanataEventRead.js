@@ -179,6 +179,7 @@ export function createEventRead(operation, authorize) {
           rows=await tx.query(extensionChunk,[start,worldId,id])
           break
         case 'summary':
+          await assertHints(tx,current)
           rows=await tx.query(summaryChunk,[start,worldId,id])
           break
         case 'relation':
