@@ -20,3 +20,6 @@ const brokenEventCursor: KanataEventRelationCursor = { worldId:'world',eventId:'
 const unboundAudit: KanataEventJsonSelection = { kind:'audit',auditId:'audit',side:'previous' }
 // @ts-expect-error A relation cursor is not an Effect continuation.
 void domains.events.effects('world','event',relationCursor)
+
+// @ts-expect-error Public role reads cannot request internal shared-memory audience privileges.
+void domains.events.readFor('world','event',{instanceId:'actor',group:false,sharedMemory:true})
