@@ -1266,3 +1266,16 @@ test('MR2 event read keeps the legacy depth limit for unknown extension JSON',as
   await assert.rejects(()=>events.relations(worldId,id,'participantIds',null),/KANATA_SQLITE_INTEGRITY_FAILED/)
   await assert.rejects(()=>events.jsonChunk(worldId,id,{kind:'summary'},null),/KANATA_SQLITE_INTEGRITY_FAILED/)
 })
+
+test('MR2 role reads cannot opt into internal shared-memory event privileges',async t=>{
+  const {grantOriginActors}=await import('../docs/qa/kanata-sqlite-m4/completion/fixture.mjs')
+  const {operation,domains,scope,move}=await setup(t)
+  const {events}=domains,{worldId,instanceId}=scope
+  await operation.transaction(tx=>tx.execute(grantOriginActors,[0,'unlisted-reader-',worldId,instanceId]))
+  const {id}=await events.proposeAcknowledged(move('仅原参与者可读'),'scope-extra')
+  await events.commitAcknowledged(worldId,id,1)
+  const injected={instanceId:'unlisted-reader-0',group:false,sharedMemory:true}
+  await assert.rejects(()=>events.readFor(worldId,id,injected),/EVENT_CONTEXT_DENIED/)
+  await assert.rejects(()=>events.jsonChunk(worldId,id,{kind:'summary'},injected),/EVENT_CONTEXT_DENIED/)
+  await assert.rejects(()=>events.legacy.readFor(worldId,id,injected),/EVENT_CONTEXT_DENIED/)
+})

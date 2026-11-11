@@ -1811,6 +1811,9 @@ window.mr2QaEventRead = async (password,{commands,scope,sample},size) => {
     }}
     window.mr2EventReadPhase='read'
     const started=performance.now()
+    const injected={instanceId:'g4-origin-'+size+'-0',group:false,sharedMemory:true}
+    await rejects(()=>model.eventReadFor(id,injected,guard),'EVENT_CONTEXT_DENIED')
+    await rejects(()=>model.eventJsonChunk(id,{kind:'summary'},injected,undefined,guard),'EVENT_CONTEXT_DENIED')
     const header=await model.eventReadFor(id,viewer,guard)
     check(header.revision===size+2&&header.summary===fields.summary,'EVENT_READ_HEADER')
     let initial=await model.eventRelations(id,'lifeSources',null,undefined,guard)

@@ -90,10 +90,14 @@ export function createEventRead(operation, authorize) {
   async function identity(tx,worldId,eventId,scope) {
     validateId(worldId,'worldId')
     validateId(eventId,'eventId')
-    if(scope) await authorize(tx,worldId,eventId,scope)
+    const access=scope?{instanceId:scope.instanceId,group:scope.group}:null
+    if(access){
+      need(typeof access.instanceId==='string'&&typeof access.group==='boolean','KANATA_CONTEXT_SCOPE_DENIED')
+      await authorize(tx,worldId,eventId,access)
+    }
     const [row]=await tx.query(revisionSql,[worldId,eventId])
     need(row,'EVENT_UNAVAILABLE')
-    return {worldId,eventId,eventRevision:Number(row.revision),scope:scope?{instanceId:scope.instanceId,group:scope.group}:null}
+    return {worldId,eventId,eventRevision:Number(row.revision),scope:access}
   }
 
   /** @param {Tx} tx @param {string} worldId @param {string} id */

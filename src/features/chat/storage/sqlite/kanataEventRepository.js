@@ -212,8 +212,10 @@ export async function* visitAuthorizedEventSources(tx, worldId, eventId, scope) 
 
 /** @param {Tx} tx @param {string} worldId @param {string} eventId @param {{instanceId:string,group:boolean,sharedMemory?:boolean}} scope */
 export async function authorizeEvent(tx, worldId, eventId, scope) {
+  need(scope&&typeof scope.instanceId==='string'&&typeof scope.group==='boolean','KANATA_CONTEXT_SCOPE_DENIED')
+  const access={instanceId:scope.instanceId,group:scope.group}
   const sources = []
-  for await (const source of visitAuthorizedEventSources(tx, worldId, eventId, scope)) sources.push(source)
+  for await (const source of visitAuthorizedEventSources(tx, worldId, eventId, access)) sources.push(source)
   return uniqueLifeSources(sources)
 }
 const eventRole = 'SELECT status,visibility,revision FROM world_events WHERE world_id=? AND id=?'
