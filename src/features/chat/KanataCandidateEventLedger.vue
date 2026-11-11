@@ -15,17 +15,38 @@ const dialogOwner=Symbol('kanata-event-ledger')
 let proposalKey=crypto.randomUUID()
 const effectiveAt=Date.now()
 let revokeKey,active=true
+let requestSequence=0,requestScope=''
 function guard(){if(!active)throw new Error('KANATA_EVENT_EDITOR_EXPIRED')}
-async function perform(action,publish){
+function cancelRequest(scope){
+  if(requestScope!==scope)return
+  requestSequence++
+  requestScope=''
+  busy.value=false
+}
+function closeChoices(){cancelRequest('choices');choices.value=null}
+function closePreview(){
+  cancelRequest('preview')
+  cancelOwnedFeedbackDialog(dialogOwner)
+  preview.value=null
+  decision.value=null
+  correction.value=''
+  revokeKey=undefined
+}
+function closeEffectAudit(){cancelRequest('effectAudit');effectAudit.value=null}
+function closeAudits(){cancelRequest('audit');closeEffectAudit();audits.value=null}
+async function perform(action,publish,scope='ledger'){
   if(busy.value)return
+  const sequence=++requestSequence
+  requestScope=scope
+  const requestGuard=()=>{guard();if(sequence!==requestSequence)throw new Error('KANATA_EVENT_REQUEST_EXPIRED')}
   busy.value=true
   error.value=''
   try{
-    const result=await action()
-    guard()
+    const result=await action(requestGuard)
+    requestGuard()
     if(result!==undefined)publish(result)
   }catch(failure){
-    if(active){
+    if(active&&sequence===requestSequence){
       const code=failure.code??failure.message
       if(/STALE|CONFLICT/.test(code)){
         error.value='事件或影响已经变化，请重新载入后确认。'
@@ -33,10 +54,10 @@ async function perform(action,publish){
         decision.value=null
       }else error.value='事件操作未完成，请重试。'
     }
-  }finally{if(active)busy.value=false}
+  }finally{if(active&&sequence===requestSequence){busy.value=false;requestScope=''}}
 }
 function load(){
-  void perform(()=>props.model.eventDetail(props.eventId,guard),value=>{
+  void perform(requestGuard=>props.model.eventDetail(props.eventId,requestGuard),value=>{
     if(!value)throw new Error('EVENT_UNAVAILABLE')
     event.value=value
   })
@@ -45,7 +66,7 @@ function choose(kind,cursor){
   const read=kind==='actor'?guard=>props.model.list('actors',cursor,guard)
     :kind==='relation'?guard=>props.model.eventProposalRelations(cursor,guard)
       :guard=>props.model.eventProposalCauses(cursor,guard)
-  void perform(()=>read(guard),value=>{choices.value={...value,kind}})
+  void perform(requestGuard=>read(requestGuard),value=>{choices.value={...value,kind}},'choices')
 }
 function selectChoice(row){
   if(choices.value.kind==='actor')actor.value=row
@@ -66,22 +87,23 @@ function propose(){
     :usesActor?{instanceId:actor.value.id,...(rule==='move'&&{location:location.value.trim()})}:undefined
   const fields={worldId:props.model.worldId,summary:summary.value.trim(),effectiveAt,visibility:visibility.value,participantIds,
     sourceRefs:[],causedByEventIds:cause.value?[cause.value.id]:[],kind:rule,causality:'explicit',...(action&&{action})}
-  void perform(()=>props.model.proposeEventAcknowledged(fields,proposalKey,guard),value=>emit('saved',value.id))
+  void perform(requestGuard=>props.model.proposeEventAcknowledged(fields,proposalKey,requestGuard),value=>emit('saved',value.id))
 }
 function commit(){
   if(props.archived||event.value?.status!=='candidate')return
-  void perform(async()=>{
+  void perform(async requestGuard=>{
     const accepted=await appConfirm('确认将此候选事件记入世界账本？',{title:'确认事件',confirmText:'记入账本',sensitive:true,owner:dialogOwner})
-    guard()
+    requestGuard()
     if(accepted){
-      await props.model.commitEventAcknowledged(event.value.id,event.value.revision,guard)
-      return props.model.eventDetail(event.value.id,guard)
+      await props.model.commitEventAcknowledged(event.value.id,event.value.revision,requestGuard)
+      requestGuard()
+      return props.model.eventDetail(event.value.id,requestGuard)
     }
   },value=>{event.value=value;appToast('事件已记入账本。',{tone:'success'})})
 }
 function openPreview(cursor,correct=false){
   if(props.archived)return
-  void perform(async()=>{
+  void perform(async requestGuard=>{
     if(!cursor){
       revokeKey=crypto.randomUUID()
       decision.value=null
@@ -90,48 +112,49 @@ function openPreview(cursor,correct=false){
       if(correct){
         const summary=await appPrompt('填写修正说明。按预览撤销旧记录后，修正说明会保存为待确认候选。',
           event.value.summary,{title:'修正事件说明',confirmText:'预览修正影响',sensitive:true,owner:dialogOwner})
-        guard()
+        requestGuard()
         if(!summary?.trim())return
         correction.value=summary.trim()
       }
     }
-    return props.model.openRevocation(event.value.id,cursor,guard)
-  },value=>{preview.value=value})
+    return props.model.openRevocation(event.value.id,cursor,requestGuard)
+  },value=>{preview.value=value},'preview')
 }
 function revoke(){
   if(props.archived||!preview.value||preview.value.plan.uncertainCount&&!decision.value)return
   const {plan}=preview.value
   const selected=decision.value??undefined
-  void perform(async()=>{
+  void perform(async requestGuard=>{
     const count=selected==='mark-needs-review'?plan.uncertainCount:0
     const accepted=await appConfirm('将撤销 '+plan.revokeCount+' 条事件，并将 '+count+' 条推断后续标为待复核。请确认此范围。',
       {title:'确认撤销',confirmText:'撤销所列事件',sensitive:true,owner:dialogOwner})
-    guard()
+    requestGuard()
     if(accepted){
       if(correction.value){
-        const replacement=await props.model.correctConfirmedEvent(plan,selected,revokeKey,correction.value,guard)
-        guard()
+        const replacement=await props.model.correctConfirmedEvent(plan,selected,revokeKey,correction.value,requestGuard)
+        requestGuard()
         emit('saved',replacement.id)
         return
       }
-      await props.model.confirmRevocation(plan,selected,revokeKey,guard)
-      return props.model.eventDetail(event.value.id,guard)
+      await props.model.confirmRevocation(plan,selected,revokeKey,requestGuard)
+      requestGuard()
+      return props.model.eventDetail(event.value.id,requestGuard)
     }
   },value=>{
     event.value=value
     preview.value=null
-    audits.value=null
+    closeAudits()
     decision.value=null
     appToast('已撤销并重算有效影响。',{tone:'success'})
-  })
+  },'preview')
 }
 function loadAudit(cursor){
-  effectAudit.value=null
-  void perform(()=>props.model.revocationAudits(event.value.id,cursor,guard),value=>{audits.value=value})
+  closeEffectAudit()
+  void perform(requestGuard=>props.model.revocationAudits(event.value.id,cursor,requestGuard),value=>{audits.value=value},'audit')
 }
 function loadEffectAudit(auditId,cursor){
-  void perform(()=>props.model.revocationEffectAudit(event.value.id,auditId,cursor,guard),
-    value=>{effectAudit.value={...value,auditId}})
+  void perform(requestGuard=>props.model.revocationEffectAudit(event.value.id,auditId,cursor,requestGuard),
+    value=>{effectAudit.value={...value,auditId}},'effectAudit')
 }
 const unregister=registerBackHandler(()=>{emit('close');return true},{priority:610})
 onBeforeUnmount(()=>{
@@ -173,7 +196,7 @@ if(props.eventId)load()
         <button v-for="row in choices.entries" :key="row.id" :data-event-choice="row.id" type="button"
           :disabled="busy||archived" @click="selectChoice(row)">{{ row.title }}</button>
         <button v-if="choices.cursor" type="button" :disabled="busy||archived" @click="choose(choices.kind,choices.cursor)">载入下一页资料</button>
-        <button type="button" @click="choices=null">关闭选择</button>
+        <button type="button" @click="closeChoices">关闭选择</button>
       </section>
       <button type="submit" :disabled="busy||archived||!summary.trim()">保存候选事件</button>
     </form>
@@ -194,10 +217,11 @@ if(props.eventId)load()
           <label><input v-model="decision" type="radio" value="keep-independent" />保留现状</label>
           <label><input v-model="decision" type="radio" value="mark-needs-review" />标为待复核</label>
         </fieldset>
-        <button type="button" :disabled="busy" @click="preview=null;decision=null">关闭撤销预览</button>
+        <button type="button" @click="closePreview">关闭撤销预览</button>
         <button type="button" :disabled="busy||archived||(preview.plan.uncertainCount>0&&!decision)" @click="revoke">确认撤销范围</button>
       </section>
       <section v-if="audits" aria-label="撤销审计">
+        <button type="button" @click="closeAudits">关闭撤销审计</button>
         <p v-if="!audits.entries.length">暂无撤销审计。</p>
         <ul><li v-for="row in audits.entries" :key="row.id">v{{ row.previousRevision }} → v{{ row.nextRevision }} · {{ row.status==='revoked'?'已撤销':'待复核' }} · 影响 {{ row.effectCount }} 项
           <button type="button" :disabled="busy" @click="loadEffectAudit(row.id)">查看逐项影响</button>
@@ -213,7 +237,7 @@ if(props.eventId)load()
           </ul>
           <button v-if="effectAudit.cursor" type="button" :disabled="busy"
             @click="loadEffectAudit(effectAudit.auditId,effectAudit.cursor)">下一页逐项影响</button>
-          <button type="button" :disabled="busy" @click="effectAudit=null">关闭逐项影响</button>
+          <button type="button" @click="closeEffectAudit">关闭逐项影响</button>
         </section>
       </section>
     </article>

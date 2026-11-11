@@ -13,6 +13,7 @@ export type { KanataSqliteDomains, KanataSqliteDomainOwner, KanataEventAcknowled
   KanataEventRevocationPlan, KanataEventRevocationCursor, KanataEventRevocationDecision, KanataEventEffectAuditCursor,
   KanataMemoryConflictPlan, KanataMemoryConflictCursor,
   KanataMemoryPromptProjection, KanataOutgoingMemoryShareCursor } from '../features/chat/storage/sqlite/kanataDomainTypes'
+/** Candidate application event APIs use acknowledgements, pages and compact plans; no legacyEvents facade. */
 export type KanataSqliteWorldRuntime = ReturnType<typeof import('./kanataSqliteWorldRuntime.js').createKanataSqliteWorldRuntime>
 export type KanataChatViewModel = ReturnType<typeof import('../features/chat/kanataChatViewModel.js').createKanataChatViewModel>
 export type KanataSqliteChatRuntime = ReturnType<typeof import('./kanataSqliteChatRuntime.js').createKanataSqliteChatRuntime>

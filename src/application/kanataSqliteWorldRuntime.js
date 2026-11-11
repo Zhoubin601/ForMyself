@@ -249,27 +249,6 @@ export function createKanataSqliteWorldRuntime({ candidate, clock = Date.now, se
         /** @param {string} eventId @param {number} revision @param {()=>void} guard */
         commitEventAcknowledged: (eventId, revision, guard) =>
           run(domains => domains.events.commitAcknowledged(worldId, eventId, revision),guard),
-        legacyEvents: {
-          /** @param {Parameters<Domains['events']['legacy']['propose']>[0]} fields @param {string} commandId @param {()=>void} [guard] */
-          proposeEvent: (fields, commandId, guard) => run(domains => {
-            if (fields.worldId !== worldId) throw new Error('KANATA_WORLD_OWNER_EXPIRED')
-            return domains.events.legacy.propose(fields, commandId)
-          },guard),
-          /** @param {string} eventId @param {number} revision @param {()=>void} [guard] */
-          commitEvent: (eventId, revision, guard) => run(domains => domains.events.legacy.commit(worldId, eventId, revision),guard),
-          /** @param {string} eventId */
-          previewRevoke: eventId => run(domains => domains.events.legacy.preview(worldId, eventId)),
-          /** @param {Parameters<Domains['events']['legacy']['revoke']>[0]} plan @param {Parameters<Domains['events']['legacy']['revoke']>[1]} decision */
-          revokeEvent: (plan, decision) => run(domains => {
-            if (plan.worldId !== worldId) throw new Error('KANATA_WORLD_OWNER_EXPIRED')
-            return domains.events.legacy.revoke(plan, decision)
-          }),
-          /** @param {Parameters<Domains['events']['legacy']['correct']>[0]} plan @param {Parameters<Domains['events']['legacy']['correct']>[1]} decision @param {string} summary */
-          correctEvent: (plan, decision, summary) => run(domains => {
-            if (plan.worldId !== worldId) throw new Error('KANATA_WORLD_OWNER_EXPIRED')
-            return domains.events.legacy.correct(plan, decision, summary)
-          }),
-        },
         /** @param {string} id @param {import('./contracts').KanataEventReadScope} scope @param {()=>void} guard */
         eventReadFor: (id,scope,guard) => run(domains=>domains.events.readFor(worldId,id,scope),guard),
         /** @param {string} id @param {import('./contracts').KanataEventRelationKind} kind

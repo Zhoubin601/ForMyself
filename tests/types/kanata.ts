@@ -265,6 +265,10 @@ void insecureSynchronousPage
 
 import type { KanataEventAcknowledgement, KanataSqliteWorldRuntime } from '../../src/application/contracts'
 declare const sqliteWorld: ReturnType<KanataSqliteWorldRuntime['select']>
+// @ts-expect-error ER1 removes the unused unbounded candidate application facade.
+void sqliteWorld.legacyEvents
+// @ts-expect-error Full-object commands are not an alternative application boundary.
+void sqliteWorld.commitEvent('event',1)
 const acknowledgedEvent: Promise<KanataEventAcknowledgement> =
   sqliteWorld.commitEventAcknowledged('event', 1, () => {})
 // @ts-expect-error An acknowledged command returns the ID without hydrating source relations.
