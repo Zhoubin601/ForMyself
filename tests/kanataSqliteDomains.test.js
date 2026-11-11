@@ -1164,7 +1164,7 @@ test('MR2 relationship header and reverse event pages preserve exact IDs and rej
 })
 
 test('MR2 event read deep, wide and mixed graphs retain all 1k/10k nodes and old confirmation sets',async t=>{
-  const {eventRows,eventReadShapeEdges,chatEventActor}=await import('../docs/qa/kanata-sqlite-m4/completion/fixture.mjs')
+  const {eventRows,seedEventReadShape,chatEventActor}=await import('../docs/qa/kanata-sqlite-m4/completion/fixture.mjs')
   const {operation,domains,scope,state}=await setup(t)
   const {worldId,instanceId}=scope
   const {events}=domains
@@ -1172,7 +1172,7 @@ test('MR2 event read deep, wide and mixed graphs retain all 1k/10k nodes and old
     const prefix='read-'+shape+'-'+size+'-'
     await operation.transaction(async tx=>{
       assert.equal((await tx.execute(eventRows,[size,prefix,worldId])).affectedRows,size+1)
-      assert.equal((await tx.execute(eventReadShapeEdges,[size-1,worldId,prefix,shape,size])).affectedRows,size)
+      assert.equal((await seedEventReadShape(tx,size,worldId,prefix,shape)).affectedRows,size)
       await tx.execute(chatEventActor,[worldId,prefix+'0',instanceId])
     })
     state.queries.length=0

@@ -1,4 +1,4 @@
-import { memoryRows, memoryEdges, memoryWideSources, eventRows, eventEdges, seedFanoutLinks, replayEventRows, replayEffectRows, fanoutAuditInspection, grantOriginActors, grantOrigins, grantMessageTags, seedWideChatSources, chatReplyTagCheck, eventReadEffects, eventReadAudits, eventReadRevision, eventReadShapeEdges, eventReadPublic, chatEventActor, chatEventSource } from '../kanata-sqlite-m4/completion/fixture.mjs'
+import { memoryRows, memoryEdges, memoryWideSources, eventRows, eventEdges, seedFanoutLinks, replayEventRows, replayEffectRows, fanoutAuditInspection, grantOriginActors, grantOrigins, grantMessageTags, seedWideChatSources, chatReplyTagCheck, eventReadEffects, eventReadAudits, eventReadRevision, eventReadShapeEdges, eventReadPublic, seedEventReadShape, chatEventActor, chatEventSource } from '../kanata-sqlite-m4/completion/fixture.mjs'
 import { growthSeedSql } from '../kanata-sqlite-m4/fixture.mjs'
 import { eventRevocationQueries, eventRevocationWrites } from '../../../src/features/chat/storage/sqlite/kanataEventRevocation.js'
 import { eventReadQueries } from '../../../src/features/chat/storage/sqlite/kanataEventRead.js'
@@ -1947,9 +1947,11 @@ window.mr2QaEventReadShape = async (password,{scope,sample},size,shape) => {
     const {lifeSources:_life,...base}=sample
     await candidate.withRepositories({},messages=>messages.insert({...base,id:source,revision:1,
       lifeSources:[{grantId:'grant-'+second,instanceId:second,moduleId:'todo',revision:1,fingerprint:'0'.repeat(64)}]}))
+    let seedPlans
     await candidate.run({},operation=>operation.transaction(async tx=>{
       check((await tx.execute(eventRows,[size,prefix,worldId])).affectedRows===size+1,'EVENT_SHAPE_SEED')
-      check((await tx.execute(eventReadShapeEdges,[size-1,worldId,prefix,shape,size])).affectedRows===size,'EVENT_SHAPE_EDGES')
+      seedPlans=await seedEventReadShape(tx,size,worldId,prefix,shape)
+      check(seedPlans.affectedRows===size,'EVENT_SHAPE_EDGES')
       for(const actor of [instanceId,second])await tx.execute(chatEventActor,[worldId,root,actor])
       await tx.execute(eventReadPublic,[worldId,root])
       await tx.execute(chatEventSource,[worldId,prefix+size,source])
@@ -1978,7 +1980,7 @@ window.mr2QaEventReadShape = async (password,{scope,sample},size,shape) => {
     trace=undefined
     await candidate.run({},operation=>operation.transaction(tx=>tx.execute(eventReadRevision,[2,worldId,root])))
     await rejects(()=>model.eventGraph(root,'cause',firstPage,guard),'EVENT_GRAPH_CURSOR_STALE')
-    return {size,shape,...io,stale:true}
+    return {size,shape,...io,stale:true,seedPlans}
   }catch(error){
     return {size,shape,error:error.code??error.message}
   }finally{

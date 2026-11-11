@@ -135,3 +135,19 @@ export const eventReadShapeEdges = sequence + `, input(world,prefix,shape,total)
     prefix || CASE WHEN shape='deep' OR (shape='mixed' AND n<total/2) THEN n ELSE 0 END,
     prefix || (n+1) FROM seq CROSS JOIN input ORDER BY n`
 export const eventReadPublic = "UPDATE world_events SET visibility='public' WHERE world_id=? AND id=?"
+
+export async function seedEventReadShape(tx,size,world,prefix,shape){
+  const parameters=[prefix+'0',world,prefix+size]
+  const plan=async()=> (await tx.query(fanoutCyclePlan,parameters)).map(row=>row.detail)
+  const before=await plan()
+  await tx.execute(fanoutAnalyze)
+  let analyzed,affectedRows
+  try{
+    analyzed=await plan()
+    affectedRows=(await tx.execute(eventReadShapeEdges,[size-1,world,prefix,shape,size])).affectedRows
+  }finally{
+    await tx.execute(fanoutClearStats)
+    await tx.execute(fanoutReloadStats)
+  }
+  return {affectedRows,before,analyzed,restored:await plan()}
+}
