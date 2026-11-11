@@ -1,4 +1,4 @@
-> **2026-11-11 最新检查点。M4 BLOCKED，M5 NO。** 事件普通读取已拆成 header、关系、Effect、Audit 页及 JSON 块，旧完整契约显式隔离。完整证据与限制见 [验收 v3](20261111-kanata-sqlite-mr2-g4-acceptance-v3.md)。MR2/G4 尚未整体放行。
+> **2026-11-11 最新检查点。M4 BLOCKED，M5 NO。** 事件普通读取已拆成 header、关系、Effect、Audit 页及 JSON 块；下一执行工作包为 [ER1 事件兼容边界收口任务书](20261111-kanata-sqlite-mr2-g4-event-compat-closure-task-v1.md)。完整证据与限制见 [验收 v3](20261111-kanata-sqlite-mr2-g4-acceptance-v3.md)。MR2/G4 尚未整体放行。
 
 # 执行计划
 
