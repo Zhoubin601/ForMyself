@@ -664,3 +664,7 @@ MR2 已将记忆详情、精确来源及后台任务的回复链授权证明放�
 - 验证：`node --test tests/kanataSqliteArrayOrder.test.js`、`npm run check`（含新增正负类型样例）；原顺序探针现在仅裁决 005 新写入原序，不能代替完整 E 撤销验收。实际命令、迁移/冷启动/强停及未覆盖项仍以[唯一清单 E](docs/20261111-kanata-sqlite-m4-final-closeout-ledger-v1.md)与[当前 QA](docs/qa/kanata-sqlite-m4/m4-r/event-compat/final-closeout/README.md)为准，不据结构通过自动提升 E/G4/M4。
 
 新 Node Oracle 回归进入 `npm test`/`npm run check`；独立兼容验收运行 `node docs/qa/kanata-sqlite-m4/m4-r/event-compat/verify-compatibility.mjs`，仍保留非零 BLOCKED 结果，不计 PASS。顺序证明同目录 `verify-order.mjs` 在 005 后仅验证新写入的原序；旧 v4 信息缺失反例由 final-closeout/verify-order-storage.mjs 显式固定 v4 保留，仍退出 1。005 Android 验收由既有 Windows runner 的 `-Mode array-order` 执行原地合成 v4→v5 升级及故障；普通完整回归命令不变。Android action Spike 仍只验证新 cache 库中的可行性，不替代四条业务路径。历史缺口见 [ER1 BLOCKED 验收](docs/20261111-kanata-sqlite-mr2-g4-acceptance-v4.md)，最新实际状态只认[唯一清单](docs/20261111-kanata-sqlite-m4-final-closeout-ledger-v1.md)。ER1/G4/MR2/M4 未自动通过，M5 NO；生产 legacy/default false 不变。
+
+2026-11-12 消费者更新覆盖上段兼容失败快照：`kanataEventPlanOrder` 用连接内临时表和005 ordinal模拟纯领域 Set/data.events 遍历，成功清空/失败事务回滚；确认阶段按原数组序分别执行 revoke、uncertain，revoked no-op。`kanataEventWorldSignature` 按≤50行keyset及≤4096字符块增量签入完整世界数据与规范事件关系，不构造完整 DTO；raw extension 表示变化也保守失效。`kanataActionSql` 在 SQL 内扫描原 JSON 字节，保留历史 UTF-16 展开；四条写入路径完整 Event 回退已移除。Repository 旧 Facade 尚在，不能宣称 G4 全面有界。
+
+独立兼容探针已从12项失败变为退出0。主机 check 709/402、strict/build通过；既有 Windows runner `-Mode event-semantics` 实测 Android 四路径15类输入、长action、乱序图、revoked no-op和过期预览。旧005证据仅复用不变DDL/约束，最终Android综合/长Effect Audit/生命周期与两轮审查仍待完成；准确指纹、失败与复测见唯一清单E和当前QA，M4仍BLOCKED。

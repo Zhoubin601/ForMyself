@@ -1,0 +1,25 @@
+(node:39180) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ 005 freezes 001–004 checksums and never backfills a populated v4 (94.2189ms)
+✔ 005 persists original non-ID/non-time array order; rowid changes cannot change it (48.3652ms)
+✔ 005 rejects ordinary updates/deletes, replace/ignore, orphan/cross-world and invalid ordinals (51.9241ms)
+✔ 005 full Repository coverage check rejects a partially damaged mapping before reads or writes (47.9289ms)
+✔ 005 covers normal/legacy commit and both correction writers, Effects/Baselines and rollback/idempotency (75.0901ms)
+✔ 005 v4 migration failures and COMMIT failure preserve disk; cold retry installs no backfill (277.1828ms)
+✔ 005 ordinal keyset stays at 50 rows with 1k/10k synthetic appends (490.0799ms)
+ℹ {"size":1000,"maxRows":50,"elapsedMs":21}
+ℹ {"size":10000,"maxRows":50,"elapsedMs":371}
+(node:22148) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ E full-world signature detects unrelated Events, Effects, Baselines and normalized links (99.7725ms)
+✔ E full-world signature streams oversized Unicode extensions and releases cancelled work (67.1022ms)
+✔ E compact confirmation retains revoked descendants without repeating their revision or audit (71.5883ms)
+✔ E compact preview becomes stale after an unrelated event without applying old confirmation (51.3315ms)
+ℹ tests 11
+ℹ suites 0
+ℹ pass 11
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1361.188

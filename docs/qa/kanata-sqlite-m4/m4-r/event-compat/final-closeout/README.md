@@ -86,3 +86,19 @@ pwsh -NoProfile -File docs/qa/kanata-sqlite-m2/run-windows-candidate.ps1 -Manife
 最终指纹：候选 APK `4ac866a6d9a5039bff48c35cd2c0e0a4036267437d78e2cf2663b81924ce1bee`，候选 catalog `6dbe944eeddd68b91dc9b6a7786f55be5af20066768a5af79b0048a52e0948e6`，普通 APK `5663f155549427b8ee62d04ebe84041a3fe982d04176bc79ac1114bc88b0ea80`。583 份源码/fixture SHA 与设备/20 份压缩原始证据由 schema005-fingerprints.json 绑定；源码 aggregate `d48195cda486d9381677f273b5fceac9207aead8e46a166b4538bc64394061c1`。collect-schema005.mjs 只读已批准合成设备的身份/APK，不读取数据库、信封或 Key。
 
 Schema 005 结构及指定验收 PASS；E/ER1/G4/MR2/M4 仍 BLOCKED，M5 NO。最终兼容探针 schema005-final-compatibility.txt 仍退出 1/12 项差异；schema005-final-order-proof.txt 仅证明新 005 存储原序，退出 0。下一步仍为唯一清单 E 内已有撤销语义/action/完整对象边界，不新开工作包。最终两轮全范围独立审查未运行，不把本次局部自查称作 MR8。
+
+## 2026-11-12 E 消费者检查点（同一清单，非新增工作包）
+
+已消费005原序，按纯领域Set/data.events排序预览和分两阶段执行；增量完整世界签名覆盖三类实体及规范事件关系。历史action四条写路径均改为SQL字段处理，不再完整materialize Event。字节扫描保留UTF-16代理项，未新增action长度限制，001–005全部不变。
+
+- `event-consumer-check.txt` / `-exit.txt`：npm run check退出0，709 Node、402组件/44文件、strict正负/build通过。10k宽事件确认主机17,585ms；深/宽/混合图1k/10k原规模全部通过。
+- `event-consumer-compatibility.txt` / `-exit.txt`：独立兼容探针退出0，旧12项差异清零；纯领域异常action拒绝与历史adapter兼容分开裁决。
+- `event-consumer-candidate-build.txt` / `-exit.txt`：候选APK及test APK构建退出0。
+- `event-consumer-device-retry-driver.txt` / `-exit.txt`及`event-semantics-20261112-retry-*.gz`：API34/SQLCipher4.17.0，15类action的commit/revoke/correction/message-revision实际路径通过；35节点乱序多父图、revoked no-op、全世界stale通过；最大query50、chunk4096、完整Event读取0；instrumentation 1/1 OK。所有密码为内存随机合成凭据，未写入报告。
+- `event-consumer-device-driver.txt`及首轮`event-semantics-20261112-*.gz`为失败证据：探针把明确请求的有界extensions chunk误算为完整Event读取；修正检测为历史完整Event row投影，合法chunk上限仍独立验证。首轮各业务断言已经通过，最终bounds断言失败，不能将首轮算PASS。
+- `event-order-host.txt.gz`：早期扩大回归50/51。旧测试在公共操作结束后直接查已经清空的TEMP计划，导致空集合；已改成在withEventPlan的事务生命周期内分keyset页，并用纯领域原数组Oracle对照，最终check通过。原12/10项兼容失败日志保留。
+- 递归查询初版被优化器改为对ordinal范围反复扫描，10k宽确认主机约400秒；EXPLAIN定位后固定以event_causes_reverse逐父索引查找，不新增永久索引，规模和门槛不变。最终主机证据包含修复结果。
+
+`event-consumer-fingerprints.json`逐文件绑定源树/fixture、候选APK/catalog及真实设备；八份设备原始日志压缩并双SHA保留。候选APK c7602b191cf41432a6cf4f760c3a01306010329575b3cfa8aa0155048d611fcf；test APK db7f4d2142b82575d5d846f47d9f11e42799e0a4ab020f1a20d55054e4cb203e。普通APK未在本检查点重新构建/安装，旧G10的生产legacy/激活位实现未修改；最终整合后仍须核验新普通APK/catalog。旧005结构证据仅复用不变DDL/约束结论，不复用旧APK为本轮消费者PASS。
+
+E/G4/M4仍BLOCKED、M5 NO。未完成旧Facade/QA完整回读移除、长Effect Audit分块、专用Heap/生命周期、新树Android1k/10k综合故障/强停、A–G其他缺口和两轮最终独立审查。没有新Schema、真实数据、真实模型请求、普通APK激活或发布。

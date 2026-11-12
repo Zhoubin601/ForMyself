@@ -88,8 +88,8 @@ MR5 是 M4-R 内部工作包编号，不是 SQLite 阶段 M5。
 |---|---|---|
 | ER1-0 调用审计 | 完成 | 已区分产品、测试、Android QA 消费者 |
 | ER1-1 无界完整对象边界 | PARTIAL | 无消费者的 Runtime legacyEvents 包装已移除；Repository Facade、QA 调用与真实回退仍在 |
-| ER1-2 历史 action 字段级兼容 | BLOCKED | 原生 UTF-16 Spike 通过，但四条业务写路径仍有完整 Event 回退 |
-| ER1-3 纯领域撤销语义 | BLOCKED | 005 新写入顺序存储及旧缺序号拒绝已通过；撤销算法消费原序、增量完整世界签名与 revoked no-op 仍未闭环，12 项兼容差异保留 |
+| ER1-2 历史 action 字段级兼容 | PARTIAL | 四条实际业务写路径已改用 SQL UTF-16 字段处理，主机及 Android 15 类输入通过；旧 Repository Facade 和完整最终矩阵仍待关闭 |
+| ER1-3 纯领域撤销语义 | PARTIAL | 005 原序已用于 Set 遍历、uncertain/执行顺序、全世界增量签名与 revoked no-op；旧兼容探针 12 项差异已清零。仍需移除旧 Facade，完成整合后的 Android 1k/10k 故障/强停及最终矩阵 |
 | ER1-4 生命周期与内存 | PARTIAL / BLOCKED | 组件关闭 guard 和局部状态清理已修；Android 专用生命周期、Heap retained、Pinia/局部状态分类及长 Effect Audit 分块缺证据 |
 | ER1-5 最终回归与两轮审查 | PARTIAL / BLOCKED | 主机 check、既有 Android 综合回归和两轮检查点审查已完成；ER1 完整最终设备矩阵未完成 |
 
@@ -243,6 +243,17 @@ MR5 是 M4-R 内部工作包编号，不是 SQLite 阶段 M5。
 - 源码/fixture 583 个文件 SHA、候选 APK/catalog、设备与 20 份压缩原始证据绑定见 [本轮 QA](qa/kanata-sqlite-m4/m4-r/event-compat/final-closeout/README.md)及其 schema005-fingerprints.json。旧 005 计数实现和旧 APK 的 PASS 不套用到最终修复树。
 
 下一步继续本节已有的纯领域撤销消费原序、全世界增量签名、revoked no-op、历史 action 四路径和长 Audit/G4 边界，不再请求已批准的 005 权限，不新增 MR/ER 编号。MR7/MR8 的最终全范围集成与两轮独立审查仍待全部 A–G 实现后执行。
+
+**2026-11-12 同一 E 条目内的消费者检查点：**
+
+- 撤销临时计划按 005 ordinal 模拟纯领域每轮 data.events 扫描及 Set 插入顺序；uncertain 按原数组序，执行按原数组分两阶段处理状态、记忆和 Effects。已 revoked 后代保留在集合并参与路径重放，但不重复 revision/audit。临时表在成功结束清空，失败随事务回滚。
+- SHA256 增量覆盖同世界 Events、Effects、Baselines 的全部存储列和事件规范关系；每页≤50，超长 JSON 分块≤4096，不重建完整对象。签入 raw extension 的存储表示以保守失效；不声称 hash 字面等同旧 JSON.stringify 字符串。
+- 历史 action 从原始 JSON lexeme 按字节扫描，SQL 内保留 UTF-16 code unit 展开、孤立代理项、字段删除与未知属性；commit/correction/message revision/status-revoke 四条业务路径已移除完整 Event 回退，无 action 长度新限制，001–005 未修改。
+- `npm run check` 退出 0：709 Node、402 Vue/44 文件、strict 正负类型、生产 build。乱序多父 DAG、1k 反向链、两阶段 Effects/记忆/审计与纯领域对照通过；1k/10k 深/宽/混合图全部原规模通过。旧兼容探针现退出 0，12 项差异清零。
+- Android API34/SQLCipher4.17.0 四路径 15 类 action、长字段、35 节点乱序图、revoked no-op、无关世界事件使预览失效实测通过；query≤50、chunk≤4096、完整 Event 读取 0，instrumentation 1/1 OK。首轮 QA 误计合法 chunk、早期主机旧临时表读取断言失败均保留；不是产品 PASS。
+- 证据与源码/fixture/APK/catalog/设备指纹见同一 [QA](qa/kanata-sqlite-m4/m4-r/event-compat/final-closeout/README.md) 的 event-consumer-fingerprints.json。旧005专项仅复用其冻结 DDL/约束结论，不替代本轮消费者证据。
+
+本检查点尚未删除旧 Repository Facade/完整 QA 回读，未完成新消费者树的 Android 1k/10k 综合故障/强停、长 Effect Audit 和专用 Heap/生命周期；两轮最终独立审查未运行。E/G4/M4 仍 BLOCKED、M5 NO。继续本节剩余项，不新建工作包。
 
 ### F. 自治、contact/social 与生活角色消费者
 

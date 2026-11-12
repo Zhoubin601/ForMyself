@@ -1,0 +1,98 @@
+(node:2396) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+{"case":"revoked-descendant","old":["er1-00001","er1-00003"],"pure":["er1-00001","er1-00003"],"compact":["er1-00001","er1-00003"]}
+{"sqlite":"3.51.2","utf16Spike":[{"name":"empty","expected":"\"\"","extracted":"\"\"","utf8":"","raw":"\"\"","extractedEqual":true,"rawEqual":true},{"name":"ascii","expected":"\"ascii\"","extracted":"\"ascii\"","utf8":"6173636969","raw":"\"ascii\"","extractedEqual":true,"rawEqual":true},{"name":"bmp","expected":"\"界\"","extracted":"\"界\"","utf8":"E7958C","raw":"\"界\"","extractedEqual":true,"rawEqual":true},{"name":"pair","expected":"\"😀\"","extracted":"\"😀\"","utf8":"F09F9880","raw":"\"😀\"","extractedEqual":true,"rawEqual":true},{"name":"high","expected":"\"\\ud800\"","extracted":"\"���\"","utf8":"EDA080","raw":"\"\\ud800\"","extractedEqual":false,"rawEqual":true},{"name":"low","expected":"\"\\udc00\"","extracted":"\"���\"","utf8":"EDB080","raw":"\"\\udc00\"","extractedEqual":false,"rawEqual":true},{"name":"mixed","expected":"\"x😀界\\ud800y\\udc00\"","extracted":"\"x😀界���y���\"","utf8":"78F09F9880E7958CEDA08079EDB080","raw":"\"x😀界\\ud800y\\udc00\"","extractedEqual":false,"rawEqual":true}]}
+{
+  "status": "PASS",
+  "failures": 0,
+  "results": [
+    {
+      "name": "revoked descendant is part of both old confirmation sets",
+      "status": "PASS"
+    },
+    {
+      "name": "unrelated event invalidates old and compact preview equally",
+      "status": "PASS"
+    },
+    {
+      "name": "revoke snapshot vs adapter action empty",
+      "status": "PASS"
+    },
+    {
+      "name": "revoke snapshot vs adapter action ascii",
+      "status": "PASS"
+    },
+    {
+      "name": "revoke snapshot vs adapter action bmp",
+      "status": "PASS"
+    },
+    {
+      "name": "revoke snapshot vs adapter action pair",
+      "status": "PASS"
+    },
+    {
+      "name": "revoke snapshot vs adapter action high",
+      "status": "PASS"
+    },
+    {
+      "name": "revoke snapshot vs adapter action low",
+      "status": "PASS"
+    },
+    {
+      "name": "revoke snapshot vs adapter action mixed",
+      "status": "PASS"
+    },
+    {
+      "name": "revoke snapshot vs adapter action null",
+      "status": "PASS"
+    },
+    {
+      "name": "revoke snapshot vs adapter action array",
+      "status": "PASS"
+    },
+    {
+      "name": "revoke snapshot vs adapter action object",
+      "status": "PASS"
+    },
+    {
+      "name": "revoke snapshot vs adapter action missing",
+      "status": "PASS"
+    },
+    {
+      "name": "pure domain rejects abnormal historical action empty",
+      "status": "PASS"
+    },
+    {
+      "name": "pure domain rejects abnormal historical action ascii",
+      "status": "PASS"
+    },
+    {
+      "name": "pure domain rejects abnormal historical action bmp",
+      "status": "PASS"
+    },
+    {
+      "name": "pure domain rejects abnormal historical action pair",
+      "status": "PASS"
+    },
+    {
+      "name": "pure domain rejects abnormal historical action high",
+      "status": "PASS"
+    },
+    {
+      "name": "pure domain rejects abnormal historical action low",
+      "status": "PASS"
+    },
+    {
+      "name": "pure domain rejects abnormal historical action mixed",
+      "status": "PASS"
+    },
+    {
+      "name": "pure domain rejects abnormal historical action null",
+      "status": "PASS"
+    },
+    {
+      "name": "pure domain rejects abnormal historical action array",
+      "status": "PASS"
+    }
+  ]
+}

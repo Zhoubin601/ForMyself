@@ -164,19 +164,11 @@ export async function reviseMessageDependents(tx, message, tools, revise, messag
     const key = [row.world_id,row.id], revision = Number(row.revision)
     const [audit] = await tx.query(eventAuditSupport,[...key,revision])
     need(audit && Number(audit.supported)>=0,'KANATA_SQLITE_INTEGRITY_FAILED')
-    const previous = audit.supported === 0
-      ? await eventFromRow(tx,(await tx.query(query.eventFallback,key))[0])
-      : undefined
     const id = tools.id(), at = tools.clock()
     validateId(id, 'eventAuditId')
     need(safeInteger(at), 'KANATA_MESSAGE_AUDIT_INVALID')
     await changeOne(tx, write.event, [...key,revision])
-    if (previous) {
-      const next = { ...previous, status:'needsReview', revision:revision+1 }
-      await changeOne(tx,write.audit,[id,...key,at,revision,revision+1,JSON.stringify(previous),JSON.stringify(next)])
-    } else {
-      await changeOne(tx,writeEventStatusAudit,[id,at,row.status,...key,revision+1])
-    }
+    await changeOne(tx,writeEventStatusAudit,[id,at,row.status,...key,revision+1])
   }
   await tx.execute(write.eventMemories, scope)
   await rebuildEventEffects(tx, query.affectedEffects, scope)

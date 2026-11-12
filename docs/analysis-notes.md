@@ -1353,3 +1353,9 @@ planMessageArchive现有Map<string, Message[]>/逐组件对象数组/归档Set�
 初版在逐行触发器扫描整个世界 counts，导致 Android 10k 综合 replay seed 超过原 420 秒；这是本次引入、符合既有 MR1/G2 合同的真实回归，不作为新任务。优化为索引存在性检查维持新写入闭包，Repository 完整计数和部分损坏反例仍保留。主机 10k 2476→268ms，最终 Android 综合 156,693ms、10,001 确认、批次≤128，原规模/deadline 无变化。另一轮 ADB 强停重开后读取超时及早期测试版本期望失败均保留。
 
 最终主机 check 700 Node/402 Vue（7 项新增定向属 Node 子集）、strict/build 通过；最终 Android 升级、DDL/真实 COMMIT 失败、迁移中强杀、写入 Effects/Baselines/ordinal 强杀、冷重开缺序号拒绝和幂等通过；普通 APK=false、无合成语句/页面、001–004 checksum 不变。005 结构及本次条件 PASS，E/G4/M4 仍 BLOCKED；剩余 12 项兼容差异不被覆盖，最终全范围两轮独立审查仍未启动。
+
+## 2026-11-12 同一M4 E消费者检查点
+
+005原序已驱动SQL临时计划，精确模拟纯领域每轮数组扫描；已revoked后代保留、状态审计no-op，记忆和Effects按revoke/uncertain两阶段处理。全世界签名流式覆盖三实体与规范关系。历史action原始JSON按字节扫描为UTF-16索引对象，不跨桥装载完整Event；四路径回退删除。
+
+独立兼容探针旧12项差异清零。check709/402、strict/build和Android15类四路径、乱序图/stale/no-op通过。早期旧TEMP生命周期断言失败与Android误计合法chunk均保留；真实递归索引回归由EXPLAIN定位修复，主机10k宽确认约400秒降17.6秒，不降低规模/deadline。旧Facade和长Effect Audit、最终新树Android综合及生命周期/审查仍待关闭，状态见唯一清单E，不自动PASS。

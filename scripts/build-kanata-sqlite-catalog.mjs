@@ -7,6 +7,8 @@ import {
 } from '../src/features/chat/storage/sqlite/kanataSchema.js'
 import { KANATA_AUDIT_VALIDATION_QUERIES } from '../src/features/chat/storage/sqlite/kanataSchemaHardening.js'
 import { arrayOrderQueries } from '../src/features/chat/storage/sqlite/kanataArrayOrder.js'
+import { eventWorldSignatureQueries } from '../src/features/chat/storage/sqlite/kanataEventWorldSignature.js'
+import { eventPlanDdl, eventPlanWrites } from '../src/features/chat/storage/sqlite/kanataEventPlanOrder.js'
 import { KANATA_SCHEMA_SQL as schema, kanataSchemaObjectsAt } from '../src/features/chat/storage/sqlite/kanataSchemaMigrator.js'
 import { conversationQueries, conversationWrites, messageQueries, messageWrites } from '../src/features/chat/storage/sqlite/kanataRepositorySql.js'
 import { dependentQueries, dependentWrites, updateEffectValue } from '../src/features/chat/storage/sqlite/kanataMessageDependentsSql.js'
@@ -58,7 +60,7 @@ add('ddl', 'schema', [
   schema.setApplicationId,
   ...KANATA_SCHEMA_MIGRATIONS.flatMap(migration => [...migration.statements, schema.setVersion(migration.version)]),
 ])
-add('ddl', 'business', [...replyProofDdl, ...eventProofDdl, ...legacyEventDdl, ...eventIntegrityDdl])
+add('ddl', 'business', [...eventPlanDdl, ...replyProofDdl, ...eventProofDdl, ...legacyEventDdl, ...eventIntegrityDdl])
 add('query', 'business', eventProofQueries)
 add('write', 'business', eventProofWrites)
 add('query', 'business', replyProofQueries)
@@ -67,11 +69,13 @@ add('query', 'business', [...Object.values(messageQueries), ...Object.values(con
   ...Object.values(deferredReplyQueries), ...historyArchiveQueries])
 add('write', 'business', [...Object.values(messageWrites), ...Object.values(conversationWrites),
   ...Object.values(dependentWrites), ...Object.values(updateEffectValue), ...Object.values(deferredReplyWrites), ...historyArchiveWrites])
-add('query', 'business', [...arrayOrderQueries, receiptQuery, ...worldQueries, ...characterQueries, ...lorebookQueries, ...provenanceQueries,
+add('query', 'business', [...arrayOrderQueries, ...eventWorldSignatureQueries, receiptQuery, ...worldQueries, ...characterQueries, ...lorebookQueries, ...provenanceQueries,
   ...memoryQueries, ...eventReadQueries, ...eventSnapshotQueries, ...eventQueries, ...eventRevocationQueries, ...autonomyQueries, ...usageQueries, ...chatViewQueries, ...managementViewQueries, ...bindingQueries])
-add('write', 'business', [receiptWrite, ...worldWrites, ...characterWrites, ...lorebookWrites, ...memoryWrites,
+add('write', 'business', [...eventPlanWrites, receiptWrite, ...worldWrites, ...characterWrites, ...lorebookWrites, ...memoryWrites,
   ...eventSnapshotWrites, ...eventWrites, ...eventRevocationWrites, ...autonomyWrites, ...usageWrites, ...bindingWrites])
 if (process.argv.includes('--synthetic')) {
+  const {actionFixtureWrite,orderFixtureWrites}=await import('../docs/qa/kanata-sqlite-m4/m4-r/event-compat/final-closeout/event-semantics-device.mjs')
+  add('write','business',[actionFixtureWrite,...orderFixtureWrites])
   const { orderLegacyCounts, orderCounts, orderSchemaOrphan, orderBusinessOrphan, orderMutations } =
     await import('../docs/qa/kanata-sqlite-m4/m4-r/event-compat/final-closeout/schema005-device.mjs')
   add('query', 'schema', [orderLegacyCounts])

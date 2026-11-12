@@ -1,5 +1,6 @@
 // @ts-check
 import { orderedEventTags } from './kanataEventProof.js'
+import { stringActionSql } from './kanataActionSql.js'
 
 /** @type {{field:string,table:string,keys:Record<string,string|null>,order?:string}[]} */
 const relations = [
@@ -51,6 +52,7 @@ const projections = relations.map(({field,table,keys,order}) => {
 const action = `json_set(
   CASE json_type(e.extensions_json,'$.action')
     WHEN 'object' THEN json_extract(e.extensions_json,'$.action')
+    WHEN 'text' THEN ${stringActionSql}
     WHEN 'array' THEN (SELECT json_group_object(CAST(key AS TEXT),json(extensions_json -> fullkey))
       FROM json_each(extensions_json,'$.action'))
     ELSE '{}' END,
@@ -62,7 +64,7 @@ const withoutMissingAction = `json_remove(${action},
   ${remove('e.action_instance_id IS NULL','instanceId')},
   ${remove('e.action_relationship_id IS NULL','relationshipId')},
   ${remove('e.action_location IS NULL','location')})`
-const snapshot = `json_remove(json_set(e.extensions_json,
+export const eventSnapshotSql = `json_remove(json_set(e.extensions_json,
   '$.id',e.id,'$.worldId',e.world_id,'$.status',e.status,'$.visibility',e.visibility,'$.summary',e.summary,
   '$.effectiveAt',e.effective_at,'$.recordedAt',e.recorded_at,'$.revision',e.revision,
   '$.causality',e.causality,'$.kind',e.kind,'$.replacesEventId',e.replaces_event_id,
@@ -85,13 +87,14 @@ const extensionJsonValid = `NOT EXISTS (
   ) SELECT 1 FROM tree WHERE depth>64
     OR (kind='real' AND abs(value)>1.7976931348623157e308) LIMIT 1
 )`
-const valid = `CASE WHEN json_valid(e.extensions_json) THEN json_type(e.extensions_json)='object'
+export const eventSnapshotValidSql = `CASE WHEN json_valid(e.extensions_json) THEN json_type(e.extensions_json)='object'
   AND ${extensionJsonValid} AND ${projections.map(({valid}) => '('+valid+')').join(' AND ')} ELSE 0 END`
+const valid = eventSnapshotValidSql
 export const eventAuditSupport = `SELECT CASE WHEN ${valid}
-  THEN CASE WHEN json_type(e.extensions_json,'$.action') IS 'text' THEN 0 ELSE 1 END
+  THEN 1
   ELSE -1 END AS supported ${scope}`
 const auditSql = (/** @type {boolean} */ commit) => `WITH input(id,at,old_status) AS (VALUES(?,?,?)), snapshot AS MATERIALIZED (
-  SELECT e.world_id,e.id,e.status,e.revision,${snapshot} AS body ${scope} AND ${valid}
+  SELECT e.world_id,e.id,e.status,e.revision,${eventSnapshotSql} AS body ${scope} AND ${valid}
 )
 INSERT INTO event_audits(id,world_id,event_id,at,previous_revision,next_revision,previous_json,next_json)
 SELECT input.id,s.world_id,s.id,input.at,s.revision-1,s.revision,
@@ -102,6 +105,7 @@ FROM snapshot s CROSS JOIN input`
 export const writeEventCommitAudit = auditSql(true)
 export const writeEventStatusAudit = auditSql(false)
 const scalarFields = ['id','worldId','status','visibility','summary','effectiveAt','recordedAt','revision','causality','kind','replacesEventId']
+export const eventScalarFieldsSql = scalarFields.map(field => "'$."+field+"'").join(',')
 export const updateEventFromAudit = `UPDATE world_events SET extensions_json=(SELECT json_remove(next_json,${scalarFields.map(field => "'$."+field+"'").join(',')})
     FROM event_audits a WHERE a.world_id=world_events.world_id AND a.event_id=world_events.id AND a.id=?)
   WHERE world_id=? AND id=? AND revision=?`
@@ -117,7 +121,7 @@ export const insertEventCorrection = `INSERT INTO world_events(world_id,id,statu
   causality,kind,action_instance_id,action_relationship_id,action_location,replaces_event_id,extensions_json)
   SELECT e.world_id,?,'candidate',e.visibility,?,e.effective_at,?,1,
     e.causality,e.kind,e.action_instance_id,e.action_relationship_id,e.action_location,e.id,
-    json_remove(${snapshot},${scalarFields.map(field=>"'$."+field+"'").join(',')})
+    json_remove(${eventSnapshotSql},${scalarFields.map(field=>"'$."+field+"'").join(',')})
   FROM world_events e WHERE e.world_id=? AND e.id=?`
 const copyLinks = (/** @type {string} */ table, /** @type {string} */ columns) =>
   `INSERT INTO ${table}(world_id,event_id,${columns}) SELECT world_id,?,${columns} FROM ${table}

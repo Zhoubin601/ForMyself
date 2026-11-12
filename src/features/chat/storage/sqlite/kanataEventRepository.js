@@ -10,8 +10,8 @@ import { createEventRevocation } from './kanataEventRevocation.js'
 import { instanceTable, unpackInstance } from './kanataCharacterRepository.js'
 import { domainTable, executeOnce, found, writeOne } from './kanataDomainRows.js'
 import { effectFromRow, eventFromRow, rebuildEventEffects, visitRows } from './kanataMessageDependents.js'
-import { dependentQueries, dependentWrites } from './kanataMessageDependentsSql.js'
-import { assertActor, grantAccess, grantAllowed, grantBindings, requireLifeSources, requireSourceGrants, sourceConversation, uniqueLifeSources, visitSourceGrants } from './kanataProvenance.js'
+import { dependentQueries } from './kanataMessageDependentsSql.js'
+import { assertActor, grantAccess, grantAllowed, grantBindings, requireSourceGrants, sourceConversation, uniqueLifeSources, visitSourceGrants } from './kanataProvenance.js'
 import { nonemptyText, pageLimit, requireSqliteValue as need, safeInteger } from './kanataRepositoryValues.js'
 import { assertWritableWorld } from './kanataWorldRepository.js'
 import { assertDomainArrayOrder } from './kanataArrayOrder.js'
@@ -232,13 +232,6 @@ const managedEvent = 'SELECT id,summary,status,revision,kind,effective_at FROM w
 eventQueries.push(eventRole,managedEvent)
 
 /** @param {Tx} tx @param {Event} event */
-async function writeEventLife(tx, event) {
-  for (const source of event.lifeSources ?? []) {
-    await writeOne(tx, eventLife, [event.worldId, event.id, source.grantId, source.instanceId, source.moduleId, source.revision, source.fingerprint])
-  }
-}
-
-/** @param {Tx} tx @param {Event} event */
 export async function insertEvent(tx, event) {
   await assertDomainArrayOrder(tx,event.worldId)
   const { id, worldId, effectiveAt, recordedAt, participantIds, causedByEventIds, sourceRefs } = event
@@ -296,11 +289,6 @@ async function prepareCorrection(tx,worldId,id,summary,tools) {
   const original = found((await tx.query(effectInput,[worldId,id]))[0],'EVENT_UNAVAILABLE')
   const [audit] = await tx.query(eventAuditSupport,[worldId,id,original.revision])
   need(audit && Number(audit.supported)>=0,'KANATA_SQLITE_INTEGRITY_FAILED')
-  if (audit.supported===0) {
-    const legacy = found(await loadEvent(tx,worldId,id),'EVENT_UNAVAILABLE')
-    return async () => (await insertEvent(tx,{...legacy,id:tools.id(),replacesEventId:id,summary,
-      status:'candidate',revision:1,recordedAt:tools.clock()})).id
-  }
   return async () => {
     const replacementId = tools.id(), recordedAt = tools.clock()
     validateId(replacementId,'eventId')
@@ -322,29 +310,8 @@ async function* characterParticipants(tx, event) {
     if (person?.kind === 'character') yield id
   }
 }
-
-/** @param {Tx} tx @param {Event} event */
-async function authorizeParticipants(tx, event) {
-  let roles = 0
-  for (const id of event.participantIds) {
-    const [person] = await tx.query(participantKind, [event.worldId, id])
-    if (person?.kind !== 'character') continue
-    roles++
-    await requireLifeSources(tx, event.lifeSources ?? [], {
-      worldId: event.worldId, instanceId: id, group: event.visibility !== 'private', remember: true,
-    })
-  }
-  need(roles > 0 || !event.lifeSources?.length, 'EVENT_LIFE_PERMISSION_DENIED')
-}
 const participantKind = 'SELECT kind FROM participants WHERE world_id=? AND id=?'
 eventQueries.push(participantKind)
-
-/** @param {Tx} tx @param {Event} previous @param {Event} next @param {Tools} tools */
-async function transition(tx, previous, next, tools) {
-  await writeOne(tx, eventUpdate, [next.status, eventExtensions(next), previous.worldId, previous.id, previous.revision])
-  await writeOne(tx, dependentWrites.audit, [tools.id(), previous.worldId, previous.id, tools.clock(), previous.revision, next.revision,
-    JSON.stringify(previous), JSON.stringify(next)])
-}
 
 /** @param {Effect} effect */
 function targetValues({ targetType, targetId }) {
@@ -379,11 +346,6 @@ export async function commitEvent(tx, {id,worldId,revision}, tools) {
   const scope = [worldId,id,revision]
   const [audit] = await tx.query(eventAuditSupport, scope)
   need(audit && Number(audit.supported) >= 0, 'KANATA_SQLITE_INTEGRITY_FAILED')
-  if (audit.supported === 0) {
-    // Historical non-object action strings use JavaScript object-spread UTF-16 semantics.
-    await commitLegacyStringAction(tx, found(await loadEvent(tx,worldId,id),'EVENT_UNAVAILABLE'), tools)
-    return
-  }
   const action = {
     ...(row.action_instance_id !== null && {instanceId:String(row.action_instance_id)}),
     ...(row.action_relationship_id !== null && {relationshipId:String(row.action_relationship_id)}),
@@ -408,20 +370,6 @@ export async function commitEvent(tx, {id,worldId,revision}, tools) {
 /** @param {Tx} tx @param {string} worldId @param {string} id */
 async function* storedCharacters(tx, worldId, id) {
   for await (const row of visitRows(tx,eventCharacters,[worldId,id],['participant_id'],50)) yield String(row.participant_id)
-}
-
-/** @param {Tx} tx @param {Event} previous @param {Tools} tools */
-async function commitLegacyStringAction(tx, previous, tools) {
-  const { id, worldId } = previous
-  const sources = await eventProvenance(tx, worldId, id, 'commit')
-  /** @type {Event} */
-  const next = { ...previous, status: 'committed', revision: previous.revision + 1, ...(sources.length && { lifeSources: sources }) }
-  await authorizeParticipants(tx, next)
-  const effects = await calculateEffects(tx,previous,tools)
-  await transition(tx, previous, next, tools)
-  await tx.execute(eventLifeClear, [worldId, id])
-  await writeEventLife(tx, next)
-  await publishEffects(tx,worldId,id,effects,tools)
 }
 
 /** @param {Tx} tx @param {Pick<Event,'id'|'worldId'|'kind'|'action'>} event @param {Tools} tools */
@@ -514,16 +462,11 @@ async function legacyStatus(tx,worldId,id,status,tools) {
   const [audit] = await tx.query(eventAuditSupport,scope)
   need(audit && Number(audit.supported)>=0,'KANATA_SQLITE_INTEGRITY_FAILED')
   const revision = Number(current.revision)+1
-  if (audit.supported === 0) {
-    const previous = found(await loadEvent(tx,worldId,id),'EVENT_UNAVAILABLE')
-    await transition(tx,previous,{...previous,status,revision},tools)
-  } else {
-    await writeOne(tx,eventStatus,[status,...scope])
-    const auditId = tools.id()
-    need((await tx.execute(writeEventStatusAudit,[auditId,tools.clock(),current.status,worldId,id,revision])).affectedRows===1,
-      'KANATA_SQLITE_INTEGRITY_FAILED')
-    await writeOne(tx,updateEventFromAudit,[auditId,worldId,id,revision])
-  }
+  await writeOne(tx,eventStatus,[status,...scope])
+  const auditId = tools.id()
+  need((await tx.execute(writeEventStatusAudit,[auditId,tools.clock(),current.status,worldId,id,revision])).affectedRows===1,
+    'KANATA_SQLITE_INTEGRITY_FAILED')
+  await writeOne(tx,updateEventFromAudit,[auditId,worldId,id,revision])
 }
 
 /** @param {Tx} tx @param {string} worldId @param {string} id @param {{instanceId:string,group:boolean}} scope */

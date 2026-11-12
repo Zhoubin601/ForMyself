@@ -1,6 +1,8 @@
+import { runEventSemanticsDevice } from '../kanata-sqlite-m4/m4-r/event-compat/final-closeout/event-semantics-device.mjs'
 import { memoryRows, memoryEdges, memoryWideSources, eventRows, eventEdges, seedFanoutLinks, replayEventRows, replayEffectRows, fanoutAuditInspection, grantOriginActors, grantOrigins, grantMessageTags, seedWideChatSources, chatReplyTagCheck, eventReadEffects, eventReadAudits, eventReadRevision, eventReadShapeEdges, eventReadPublic, seedEventReadShape, chatEventActor, chatEventSource } from '../kanata-sqlite-m4/completion/fixture.mjs'
 import { growthSeedSql } from '../kanata-sqlite-m4/fixture.mjs'
 import { eventRevocationQueries, eventRevocationWrites } from '../../../src/features/chat/storage/sqlite/kanataEventRevocation.js'
+import { eventPlanDdl } from '../../../src/features/chat/storage/sqlite/kanataEventPlanOrder.js'
 import { installSchema005Device, schema005AfterExecute, schema005BeforeCommit } from '../kanata-sqlite-m4/m4-r/event-compat/final-closeout/schema005-device.mjs'
 import { eventReadQueries } from '../../../src/features/chat/storage/sqlite/kanataEventRead.js'
 import { eventProofDdl, eventProofWrites } from '../../../src/features/chat/storage/sqlite/kanataEventProof.js'
@@ -48,7 +50,7 @@ let trace
 let eventProfile
 const profileNames = new Map([...eventRevocationQueries, ...eventRevocationWrites].map((sql, index) =>
   [sha256Text(sql), ['root', 'projected', 'selectionBatch', 'effectProof', 'baselineProof', 'completedEffects',
-    'auditHeaders', 'auditEffectHeader', 'auditEffectPage', 'statusUpdate', 'writeAudit', 'staleMemories'][index]]))
+    'auditHeaders', 'auditEffectHeader', 'auditEffectPage', 'executionBatch', 'planCursor', 'statusUpdate', 'writeAudit', 'staleMemories', 'updateExtensions'][index]]))
 async function profileBridge(name, command, action) {
   if (!eventProfile) return action(command)
   const label = profileNames.get(command.statement) ?? command.statement ?? name
@@ -1399,11 +1401,12 @@ window.mr1QaFanout = async (password, { commands, scope, verify }, size) => {
           'MR1_OWNED_EFFECTS_SEED')
       }
     })))
-    const plans=await candidate.run({},operation=>operation.transaction(async tx=>{
+      const plans=await candidate.run({},operation=>operation.transaction(async tx=>{
+        for(const ddl of eventPlanDdl)await tx.execute(ddl)
       const statements=[...eventRevocationQueries.slice(1,6),...eventRevocationWrites]
       const bindings=[[scope.worldId,root,'',51],...Array.from({length:3},()=>[scope.worldId,root,'']),
         [scope.worldId,'signature','','','',''],[scope.worldId,'[]','signature'],[scope.worldId,'[]','signature'],
-        [scope.worldId,'signature']]
+        [scope.worldId,'signature'],[scope.worldId,'[]','signature']]
       const result={}
       for(const [index,sql] of statements.entries()){
         const rows=await tx.query('EXPLAIN QUERY PLAN '+sql,bindings[index])
@@ -1995,4 +1998,11 @@ window.mr2QaEventReadShape = async (password,{scope,sample},size,shape) => {
     auth.expireSession()
     await candidate.release()
   }
+}
+
+window.eventSemanticsQa = async(password,fixture,commands)=>{
+  session(password)
+  try{return await runEventSemanticsDevice(candidate,fixture,commands)}
+  catch(error){return {error:error.code??error.message,stack:error.stack}}
+  finally{auth.expireSession();await candidate.release()}
 }

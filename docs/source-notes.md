@@ -1289,3 +1289,5 @@ raw/完整需求清单.txt 4.1/4.4/8.3及最新连续执行v3驱动当前实现�
 - [本轮原始证据](qa/kanata-sqlite-m4/m4-r/event-compat/final-closeout/README.md)：473 份源码/fixture 指纹一致、历史设备与已装 APK/catalog 比对、既有 12 项兼容失败复现、相同 v4 声明行却要求不同领域结果的反例，以及新临时合成 SQLite 旁表往返/回滚/强杀取证。没有引入外部资料、读取真实备份或调用真实模型 API。
 
 2026-11-11 后续来源：用户明确批准 M 隔离候选的 Schema 005 三旁表及八项实施条件，已直接落实到最终清单 E；不再是待批准方案。本次依据真实源码/数据库测试、已核验旧合成 v4 APK与新 v5 APK原地升级、API34/WHPX/SQLCipher4.17.0 实测和原始失败/复测日志。最终 700/402、005 强停/回滚、10k 综合 156,693ms 和普通 APK=false 见同一 QA；raw 原件、真实备份与模型 API 均未使用。
+
+2026-11-12 E消费者来源：用户已确认纯领域kanataEvents.js（Set/数组顺序、完整世界签名、revoked no-op）和历史adapter字段兼容合同。实现以005旁表、原始JSON字节与现有Repository/Runtime为基础；四路径行为用独立historicalAction/historicalEvent及pure-domain Oracle对照。主机709/402、Android API34/SQLCipher4.17.0、失败/复测和逐文件APK/catalog/device SHA见唯一清单E及同QA的event-consumer-fingerprints.json。无新增外部资料，raw未修改，未调用真实模型API或读取用户数据。

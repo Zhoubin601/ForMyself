@@ -1,0 +1,21 @@
+(node:16020) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ ER1 application exposes bounded event capabilities without the unused legacy wrapper (1.7302ms)
+✔ ER1 independent historical action Oracle freezes code units, presence, scalar deletion and property order (1.5035ms)
+✔ ER1 independent adapter Oracle matches frozen historical reads before Facade migration (204.4235ms)
+✔ ER1 product authority freezes domain traversal, world signature and revoked descendant no-op (68.7176ms)
+✔ ER1 adapter Oracle independently retains the frozen JSON depth, finite numbers and inert keys (1.0691ms)
+(node:33884) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ E full-world signature detects unrelated Events, Effects, Baselines and normalized links (123.7213ms)
+✔ E full-world signature streams oversized Unicode extensions and releases cancelled work (84.7622ms)
+✔ E compact confirmation retains revoked descendants without repeating their revision or audit (105.374ms)
+✔ E compact preview becomes stale after an unrelated event without applying old confirmation (80.6444ms)
+ℹ tests 9
+ℹ suites 0
+ℹ pass 9
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 828.2435

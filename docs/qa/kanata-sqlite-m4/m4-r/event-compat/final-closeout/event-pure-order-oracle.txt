@@ -1,0 +1,13 @@
+(node:30708) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ E ordered preview matches pure-domain Set/data.events order on shuffled multi-parent DAGs (1917.9663ms)
+✔ E reverse causal chain keeps a bounded page and rolls failed plan work back to empty (4578.8562ms)
+✔ E execution matches pure-domain audit order, stale memory revisions and two-pass Effects replay (104.628ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 6999.5331

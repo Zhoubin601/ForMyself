@@ -121,7 +121,12 @@ try {
   let password
   try { password = JSON.stringify(bytes.toString('base64')) }
   finally { bytes.fill(0) }
-  if(process.argv.includes('--array-order')){
+  if(process.argv.includes('--event-semantics')){
+    const fixture=m2Fixture()
+    const result=await evaluate(`window.eventSemanticsQa(${password},${JSON.stringify(fixture)},${JSON.stringify(m2FixtureCommands(fixture))})`,240000)
+    console.log(JSON.stringify({eventSemantics:result},null,2))
+    assert.equal(result.status,'PASS')
+  }else if(process.argv.includes('--array-order')){
     const fixture=m2Fixture(), legacyWorld=fixture.events[0].worldId
     const prepared=await evaluate(`window.schema005PrepareV4(${password},${JSON.stringify(fixture)},${JSON.stringify(m2FixtureCommands(fixture))})`)
     assert.equal(prepared.version,4)

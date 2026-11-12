@@ -1162,7 +1162,7 @@ test('MR2 relationship header and reverse event pages preserve exact IDs and rej
   await assert.rejects(()=>events.relationshipEvents(worldId,id,first.cursor,1),/RELATIONSHIP_EVENT_CURSOR_STALE/)
 })
 
-test('MR2 event read deep, wide and mixed graphs retain all 1k/10k nodes and old confirmation sets',async t=>{
+test('MR2 event read deep, wide and mixed graphs retain all 1k/10k nodes and pure-domain confirmation order',async t=>{
   const {eventRows,seedEventReadShape,chatEventActor}=await import('../docs/qa/kanata-sqlite-m4/completion/fixture.mjs')
   const {operation,domains,scope,state}=await setup(t)
   const {worldId,instanceId}=scope
@@ -1184,20 +1184,30 @@ test('MR2 event read deep, wide and mixed graphs retain all 1k/10k nodes and old
     }while(cursor)
     assert.equal(count,size)
     const leaf=prefix+size
-    const oracle=await events.legacy.preview(worldId,leaf)
+    const {previewKanataEventRevoke}=await import('../src/features/chat/experience/kanataEvents.js')
+    // Test-only metadata Oracle, ordered by the retained source array ordinal.
+    const rows=await operation.transaction(tx=>tx.query(`SELECT e.id,e.status,e.effective_at,e.causality
+      FROM event_array_order o JOIN world_events e ON e.world_id=o.world_id AND e.id=o.entity_id
+      WHERE o.world_id=? ORDER BY o.ordinal`,[worldId]))
+    const edges=await operation.transaction(tx=>tx.query('SELECT event_id,cause_event_id FROM event_causes WHERE world_id=?',[worldId]))
+    const causes=new Map()
+    for(const edge of edges){const values=causes.get(edge.event_id)??[];values.push(edge.cause_event_id);causes.set(edge.event_id,values)}
+    const oracle=previewKanataEventRevoke({events:rows.map(row=>({id:row.id,worldId,status:row.status,
+      effectiveAt:row.effective_at,causality:row.causality,causedByEventIds:causes.get(row.id)??[]})),effects:[],effectBaselines:[]},leaf)
     const {eventRevocationQueries}=await import('../src/features/chat/storage/sqlite/kanataEventRevocation.js')
     const first=await events.openRevocation(worldId,leaf)
     const plan=first.plan,ids=[]
     let after='',lastAfter=''
-    // Compare every selected ID with the historical oracle. The unchanged MR1
-    // signature recomputation is exercised by public first/last pages.
-    for(;;){
-      const rows=await operation.transaction(tx=>tx.query(eventRevocationQueries[1],[worldId,leaf,after,51]))
+    // Inspect bounded SQL pages inside their actual plan lifetime, then exercise
+    // public first/last pages including a full incremental world signature.
+    const {withEventPlan}=await import('../src/features/chat/storage/sqlite/kanataEventPlanOrder.js')
+    await operation.transaction(tx=>withEventPlan(tx,worldId,leaf,async()=>{for(;;){
+      const rows=await tx.query(eventRevocationQueries[1],[worldId,leaf,after,51])
       ids.push(...rows.slice(0,50).filter(row=>row.disposition==='revoke').map(row=>row.id))
       lastAfter=after
       if(rows.length<=50)break
-      after=String(rows[49].id)
-    }
+      after=String(rows[49].sort_key)
+    }}))
     if(lastAfter){
       const last=await events.openRevocation(worldId,leaf,{plan,after:lastAfter})
       assert.equal(last.cursor,null)

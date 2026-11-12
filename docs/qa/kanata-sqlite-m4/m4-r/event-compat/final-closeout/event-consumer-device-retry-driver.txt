@@ -1,0 +1,160 @@
+/data/app/~~cTnhiGBgzjFfYs8i4Bj6CA==/com.yubin.formyself.m2qa-6eopgaPRFyQWyoBmrFgKHA==/base.apk: 1 file pulled, 0 skipped. 31.9 MB/s (19034218 bytes in 0.570s)
+/data/app/~~qKoL3a5GxT6X-hrjCxx-Wg==/com.yubin.formyself.m2qa.test-JA5O2VwYozaQWarVAl4JiA==/base.apk: 1 file pulled, 0 skipped. 30.3 MB/s (598741 bytes in 0.019s)
+▲ [WARNING] Ignoring this import because "src/features/chat/kanataManagement.css" was marked as having no side effects [ignored-bare-import]
+
+    src/features/chat/KanataView.vue:8:7:
+      8 │ import './kanataManagement.css'
+        ╵        ~~~~~~~~~~~~~~~~~~~~~~~~
+
+{"qaBundleSha256":"07dfced2c0702f4b7f099d6f508c598ab8fb3d448944624d3e2eb0fb5369c6db"}
+{
+  "eventSemantics": {
+    "status": "PASS",
+    "samples": [
+      {
+        "name": "empty",
+        "writes": [
+          "commit",
+          "revoke",
+          "correction",
+          "message-revision"
+        ]
+      },
+      {
+        "name": "ascii",
+        "writes": [
+          "commit",
+          "revoke",
+          "correction",
+          "message-revision"
+        ]
+      },
+      {
+        "name": "bmp",
+        "writes": [
+          "commit",
+          "revoke",
+          "correction",
+          "message-revision"
+        ]
+      },
+      {
+        "name": "pair",
+        "writes": [
+          "commit",
+          "revoke",
+          "correction",
+          "message-revision"
+        ]
+      },
+      {
+        "name": "high",
+        "writes": [
+          "commit",
+          "revoke",
+          "correction",
+          "message-revision"
+        ]
+      },
+      {
+        "name": "low",
+        "writes": [
+          "commit",
+          "revoke",
+          "correction",
+          "message-revision"
+        ]
+      },
+      {
+        "name": "mixed",
+        "writes": [
+          "commit",
+          "revoke",
+          "correction",
+          "message-revision"
+        ]
+      },
+      {
+        "name": "null",
+        "writes": [
+          "commit",
+          "revoke",
+          "correction",
+          "message-revision"
+        ]
+      },
+      {
+        "name": "array",
+        "writes": [
+          "commit",
+          "revoke",
+          "correction",
+          "message-revision"
+        ]
+      },
+      {
+        "name": "object",
+        "writes": [
+          "commit",
+          "revoke",
+          "correction",
+          "message-revision"
+        ]
+      },
+      {
+        "name": "missing",
+        "writes": [
+          "commit",
+          "revoke",
+          "correction",
+          "message-revision"
+        ]
+      },
+      {
+        "name": "boolean",
+        "writes": [
+          "commit",
+          "revoke",
+          "correction",
+          "message-revision"
+        ]
+      },
+      {
+        "name": "number",
+        "writes": [
+          "commit",
+          "revoke",
+          "correction",
+          "message-revision"
+        ]
+      },
+      {
+        "name": "control",
+        "writes": [
+          "commit",
+          "revoke",
+          "correction",
+          "message-revision"
+        ]
+      },
+      {
+        "name": "large",
+        "writes": [
+          "commit",
+          "revoke",
+          "correction",
+          "message-revision"
+        ]
+      }
+    ],
+    "maxRows": 50,
+    "maxChunk": 4096,
+    "fullEventReads": 0,
+    "graph": {
+      "nodes": 35,
+      "shuffled": true,
+      "revokedNoop": true,
+      "staleWorld": true
+    }
+  }
+}
