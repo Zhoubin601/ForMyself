@@ -21,6 +21,21 @@ async function seed(h,events){
 }
 const event=(h,id,causes=[],extra={})=>({...h.fields,id,causedByEventIds:causes,status:'committed',revision:1,recordedAt:1500,...extra})
 
+test('E prompt context follows retained array order after physical rowids change',async t=>{
+  const h=await eventCompatFixture();t.after(h.close)
+  const ids=[]
+  for(let i=0;i<4;i++){
+    const {id}=await h.domains.events.proposeAcknowledged({...h.fields,summary:'context-'+i},'context-'+i)
+    await h.domains.events.commitAcknowledged(h.worldId,id,1);ids.push(id)
+  }
+  const read=async()=> (await h.domains.events.context(h.worldId,{instanceId:h.instanceId,group:false},[]))
+    .events.filter(e=>ids.includes(e.id)).map(e=>e.id)
+  const before=await read()
+  assert.deepEqual(before,ids)
+  h.db.prepare('UPDATE world_events SET rowid=(SELECT max(rowid)+1 FROM world_events) WHERE id=?').run(ids[0])
+  assert.deepEqual(await read(),before)
+})
+
 test('E ordered preview matches pure-domain Set/data.events order on shuffled multi-parent DAGs', async t=>{
   let random=31
   const next=n=>{random=(Math.imul(random,1664525)+1013904223)>>>0;return random%n}

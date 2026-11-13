@@ -1,0 +1,25 @@
+(node:31500) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✖ E audit staging preserves the existing unsupported-path rejection and atomic rollback (70.3795ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 256.3795
+
+✖ failing tests:
+
+test at tests\kanataSqliteEffectAuditChunks.test.js:6:1
+✖ E audit staging preserves the existing unsupported-path rejection and atomic rollback (70.3795ms)
+  Error: KANATA_UNCOMMITTED_EFFECT
+      at TestContext.<anonymous> (file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata-m0/tests/kanataSqliteEffectAuditChunks.test.js:12:6)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:358:3) {
+    code: 'ERR_SQLITE_ERROR',
+    errcode: 1811,
+    errstr: 'constraint failed'
+  }

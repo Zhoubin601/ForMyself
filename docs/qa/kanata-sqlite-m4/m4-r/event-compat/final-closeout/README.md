@@ -102,3 +102,33 @@ Schema 005 结构及指定验收 PASS；E/ER1/G4/MR2/M4 仍 BLOCKED，M5 NO。�
 `event-consumer-fingerprints.json`逐文件绑定源树/fixture、候选APK/catalog及真实设备；八份设备原始日志压缩并双SHA保留。候选APK c7602b191cf41432a6cf4f760c3a01306010329575b3cfa8aa0155048d611fcf；test APK db7f4d2142b82575d5d846f47d9f11e42799e0a4ab020f1a20d55054e4cb203e。普通APK未在本检查点重新构建/安装，旧G10的生产legacy/激活位实现未修改；最终整合后仍须核验新普通APK/catalog。旧005结构证据仅复用不变DDL/约束结论，不复用旧APK为本轮消费者PASS。
 
 E/G4/M4仍BLOCKED、M5 NO。未完成旧Facade/QA完整回读移除、长Effect Audit分块、专用Heap/生命周期、新树Android1k/10k综合故障/强停、A–G其他缺口和两轮最终独立审查。没有新Schema、真实数据、真实模型请求、普通APK激活或发布。
+
+## 2026-11-12 实测、2026-11-13 归档的 E 有界读取/影响审计检查点
+
+生产旧完整Facade/materializer与撤销ID全量数组已删除，QA消费者迁入bounded API或显式test-only Oracle。新增Effect Audit片段API及Ledger当前片段查看；path/value/before/after/snapshot最多4096字符，冻结数组位置分页，跨scope/字段游标拒绝。撤销在TEMP保存阶段前值，重放后一次插入不可变审计，记录owner前后revision及命令；不修改旧审计和001–005。
+
+| 当前集成验证 | 证据 / 实际结果 |
+|---|---|
+| npm run check | event-bounded-integrated-check.txt / -exit.txt，退出0：714 Node、406 Vue/44文件、strict正负、生产build |
+| 主机扇出与故障 | 上述完整套件：1001/10001确认、批次≤128、批间失败/重试；10k持久化161、TEMP6、总167；1k持久化19、TEMP6、总25 |
+| 候选构建 | event-bounded-integrated-candidate-build.txt / -exit.txt，退出0 |
+| 四路径与长审计 | event-bounded-integrated-device-driver.txt / -exit.txt，退出0：15类action四写路径、乱序35节点图、revoked no-op、stale；实际前后值/owner revision/命令；55条长审计、23片段、数组序；未知路径原错误码和回滚 |
+| 1k/10k综合 | event-bounded-regression-integrated-driver.txt / -exit.txt，退出0；GROUP-01–05、聊天、记忆、自治、归档等现有场景通过。10k综合177113ms，10001确认，批次128，持久化159/TEMP5/总164；原420秒未提高 |
+| 确认批次强停 | event-bounded-crash-integrated-driver.txt / -exit.txt，退出0：1k/10k在首批审计后SIGKILL，重开证明全部回滚，再完成确认；持久回执及幂等不重复；完整Native EXPLAIN亦通过 |
+| 事件provenance | event-bounded-provenance-integrated-driver.txt / -exit.txt，退出0：1k/10k、QA有界回读、权限/取消/COMMIT故障与事件强杀恢复 |
+| 事件有界读取 | event-bounded-read-integrated-driver.txt / -exit.txt，退出0：1k/10k关系、Effects、审计、深/宽/混合图、stale及事件写入强杀恢复；Heap/PSS仅粗样本，不能替代retainer验收 |
+| 005重验 | event-bounded-order-integrated-driver.txt / -exit.txt，退出0：真实旧v4 APK建库→同包原地升级v5、DDL/COMMIT故障、迁移/写入强杀、冷重开缺序号拒绝。该目录初装APK故意为旧v4，并非最终候选；runner逐项校验升级SHA |
+| 普通APK | event-bounded-default-build.txt、event-bounded-default-gate.json及driver/exit：实际DEX BuildConfig=false，普通包名、canonical legacy、无合成页面/12条专用seed，未安装发布 |
+
+集成候选APK `88d3c4e1a96cf29d352cf52eee4c0f8e2a7191558d66d7f0a29d803d474f2791`，catalog `86f31e0aaf24a7ac312598b394e209daf2d4afe02c7d7cefc95c5f926c6788ba`，test APK `db7f4d2142b82575d5d846f47d9f11e42799e0a4ab020f1a20d55054e4cb203e`。普通APK `41bc39e476caa7b358565fe761a29cf0b5207f67a50fe69cbedc25381c8e1239`。event-bounded-fingerprints.json含逐文件源/fixture、设备、全部001–005 checksum与52份设备原始日志的压缩及原始双SHA；源码aggregate `3513346a5682833a0877ddda021cfad9e1eedbbe7af0b8adf637cbf81a3321f8`。collect-event-bounded.mjs只读设备身份/APK，不读取数据库、信封和Key。所有口令仅为内存合成凭据。
+
+保留的失败与修复：
+
+- effect-audit-before-after-failure：真实撤销审计缺before/after。改为TEMP保留前值、重放后一次写入不可变审计，实际阶段值与后续写入/重复命令的冻结性通过。
+- effect-audit-error-class-failure/retest：早期夹具未先commit，命中UNCOMMITTED_EFFECT，不作为产品缺陷证据。verify-effect-error.mjs及effect-audit-error-oracle.txt用合法已提交夹具重放旧表达式，证明NOT NULL会抢先覆盖原PATH_UNSUPPORTED；修复后原分类/事务回滚通过。
+- event-bounded-regression首轮：前值误假设为最新提交值。综合场景实际有效前值为另一事件的“合成休息处”；改为确认前从真实目标读取对照，仍独立断言最终synthetic-location尾值，未改变生产结果。
+- regression-retry：暂存导致写入次数超旧断言。实际优化为TEMP触发器合并状态/扩展/CAS；持久化仍受原2×批次数+3约束，临时操作另设固定上限并保留总数。无Effect的综合扇出TEMP≤5、总≤2B+6；含Effect的主机TEMP≤6、持久化≤2B+3、总≤2B+9。不忽略临时调用，不允许逐实体桥接写入。
+- TEMP级联缺索引曾使主机宽事件约38.4秒；真实EXPLAIN显示扫描子表，补TEMP索引后恢复约16.9秒。新表/触发器/索引均仅连接内TEMP，不进入迁移及其checksum。
+- crash-final/crash-trace：Native完整审计EXPLAIN超过原256行而STATEMENT_DENIED。未跳过计划或提高Native上限；快照CTE在SQLite内物化复用后主机计划247→197行，增加计划预算行为回归，集成Native完整计划和强停均通过。
+
+较早event-bounded-check/final-check、各build/device/regression的历史PASS与FAIL均保留，不套用到集成候选；当前通过以integrated系列和指纹为准。Gradle补充事件语义夹具输入声明，catalog输入重验日志保留。旧005仅复用不变结构/缺信息反例，受影响消费者已重跑。没有最终两轮全范围审查；当前E/G4/M4 BLOCKED，M5 NO，继续唯一清单中的普通消息/任务和其余A–G。

@@ -2,6 +2,7 @@
 import { assertDomainArrayOrder } from './kanataArrayOrder.js'
 import { validateId } from '../../domain/kanataValidation.js'
 import { requireSqliteValue as need, safeInteger } from './kanataRepositoryValues.js'
+import {effectAuditDdl} from './kanataEffectAuditStorage.js'
 
 /** @typedef {import('../../../../platform/storage/kanataSqliteTypes').KanataSqliteTransaction} Tx */
 export const eventPlanDdl = [
@@ -13,8 +14,16 @@ export const eventPlanDdl = [
   'CREATE INDEX IF NOT EXISTS temp.kanata_event_plan_frontier ON kanata_event_plan(disposition,round)',
   'CREATE UNIQUE INDEX IF NOT EXISTS temp.kanata_event_plan_preview ON kanata_event_plan(sort_key)',
   'CREATE UNIQUE INDEX IF NOT EXISTS temp.kanata_event_plan_execution ON kanata_event_plan(exec_key)',
+  ...effectAuditDdl,
 ]
 const clear = 'DELETE FROM temp.kanata_event_plan'
+const ready=`SELECT count(*) AS total FROM sqlite_temp_schema WHERE name IN (
+  'kanata_event_plan','kanata_event_plan_frontier','kanata_event_plan_preview','kanata_event_plan_execution',
+  'kanata_effect_audit_before','kanata_event_audit_plan','kanata_effect_audit_before_event',
+  'kanata_event_audit_plan_event','kanata_event_audit_stage')`
+const empty=`SELECT (SELECT count(*) FROM temp.kanata_event_plan)
+  +(SELECT count(*) FROM temp.kanata_effect_audit_before)+(SELECT count(*) FROM temp.kanata_event_audit_plan) AS total`
+export const eventPlanQueries=[ready,empty]
 const seed = `INSERT INTO temp.kanata_event_plan(id,ordinal,round,disposition,sort_key,exec_key)
   SELECT e.id,o.ordinal,-1,'revoke','0',printf('0:%016d',o.ordinal)
   FROM event_array_order o JOIN world_events e ON e.world_id=o.world_id AND e.id=o.entity_id
@@ -58,8 +67,8 @@ export async function withEventPlan(tx,worldId,eventId,action) {
   validateId(worldId,'worldId')
   validateId(eventId,'eventId')
   await assertDomainArrayOrder(tx,worldId)
-  for(const ddl of eventPlanDdl)await tx.execute(ddl)
-  await tx.execute(clear)
+  if(Number((await tx.query(ready))[0].total)!==9)for(const ddl of eventPlanDdl)await tx.execute(ddl)
+  need(Number((await tx.query(empty))[0].total)===0,'KANATA_EVENT_PLAN_STATE_INVALID')
   need((await tx.execute(seed,[worldId,eventId])).affectedRows===1,'EVENT_UNAVAILABLE')
   for(let round=0;;round++){
     need(safeInteger(round),'KANATA_SQLITE_INTEGRITY_FAILED')

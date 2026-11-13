@@ -1,9 +1,15 @@
 import { createKanataSqliteDomains } from '../../../../../../src/features/chat/storage/sqlite/kanataSqliteDomains.js'
 import { createKanataMessageRepository } from '../../../../../../src/features/chat/storage/sqlite/kanataMessageRepository.js'
+import {eventWrites} from '../../../../../../src/features/chat/storage/sqlite/kanataEventRepository.js'
 import { actionCases,historicalAction } from '../../../../../../tests/helpers/kanataEventCompatibilityOracle.js'
 import { previewKanataEventRevoke } from '../../../../../../src/features/chat/experience/kanataEvents.js'
 
 export const actionFixtureWrite='UPDATE world_events SET extensions_json=? WHERE world_id=? AND id=?'
+export const longAuditFixtureWrites=[
+  "UPDATE world_events SET status='revoked',revision=2 WHERE world_id=? AND id=?",
+  `INSERT INTO event_audits(id,world_id,event_id,at,previous_revision,next_revision,previous_json,next_json,extensions_json)
+    VALUES(?,?,?,1800001,1,2,?,?,?)`,
+]
 export const orderFixtureWrites=[
   `INSERT INTO world_events(id,world_id,status,visibility,summary,effective_at,recorded_at,revision,causality,kind,extensions_json)
     SELECT json_extract(value,'$.id'),json_extract(value,'$.worldId'),json_extract(value,'$.status'),'private','合成顺序',1500,1500,1,
@@ -119,8 +125,76 @@ export async function runEventSemanticsDevice(protectedCandidate,fixture,command
     const revoked=await events.managedEvent(worldId,'order-device-7')
     check(revoked.revision===1&&(await events.audits(worldId,'order-device-7')).entries.length===0,'ORDER_REVOKED_NOOP')
   })
+  const actualEffectAudit=await candidate.withDomains({},async({events})=>{
+    const move=location=>({...fields,kind:'move',action:{instanceId,location}})
+    const a=await events.proposeAcknowledged(move('设备保留甲'),'actual-before-a')
+    await events.commitAcknowledged(worldId,a.id,1)
+    const b=await events.proposeAcknowledged(move('设备撤销乙'),'actual-before-b')
+    await events.commitAcknowledged(worldId,b.id,1)
+    const plan=(await events.openRevocation(worldId,b.id)).plan
+    await events.confirmRevocation(plan,undefined,'actual-before-confirm')
+    const audit=(await events.revocationAudits(worldId,b.id)).entries[0]
+    const entry=(await events.revocationEffectAudit(worldId,b.id,audit.id)).entries[0]
+    check(entry.before==='设备撤销乙'&&entry.after==='设备保留甲','ACTUAL_BEFORE_AFTER')
+    check(entry.ownerRevision===2&&entry.nextOwnerRevision===3&&entry.idempotencyKey.includes('actual-before-confirm'),
+      'ACTUAL_OWNER_COMMAND')
+    await events.confirmRevocation(plan,undefined,'actual-before-confirm')
+    same((await events.revocationEffectAudit(worldId,b.id,audit.id)).entries[0],entry,'ACTUAL_FROZEN_RECEIPT')
+    return {before:entry.before,after:entry.after,ownerRevision:entry.ownerRevision,
+      nextOwnerRevision:entry.nextOwnerRevision,commandBound:true,receiptStable:true}
+  })
+  const errorClassification=await candidate.withDomains({},async({events})=>{
+    const {id}=await events.proposeAcknowledged(fields,'unknown-effect-audit')
+    await events.commitAcknowledged(worldId,id,1)
+    const sql=eventWrites.find(sql=>sql.startsWith('INSERT INTO world_effects('))
+    check(sql,'UNKNOWN_EFFECT_SEED_SQL')
+    await operation.transaction(tx=>tx.execute(sql,[worldId,'device-unknown-effect',id,'instance',instanceId,
+      instanceId,null,'set','future.unsupported','"synthetic"',1]))
+    const plan=(await events.openRevocation(worldId,id)).plan
+    let code
+    try{await events.confirmRevocation(plan,undefined,'unknown-effect-confirm')}
+    catch(error){code=error.code??error.message}
+    check(code==='EVENT_EFFECT_PATH_UNSUPPORTED','EFFECT_ERROR_CLASS_'+code)
+    check((await events.managedEvent(worldId,id)).revision===2&&(await events.revocationAudits(worldId,id)).entries.length===0,
+      'EFFECT_ERROR_ROLLBACK')
+    return {code,rolledBack:true}
+  })
+  const longAudit=await candidate.withDomains({},async({events})=>{
+    const {id}=await events.proposeAcknowledged(fields,'long-effect-audit')
+    // Original synthetic fixture, not a mutation/backfill of an existing audit.
+    let header,after=''
+    do{const page=await events.list(worldId,after);header=page.events.find(row=>row.id===id);after=page.cursor}while(!header&&after)
+    check(header,'LONG_AUDIT_OWNER')
+    const previous={...fields,id,status:'candidate',revision:1,recordedAt:header.recordedAt}
+    const long={path:'long-路径😀\ud800'.repeat(1000),value:'long-值😀\udc00'.repeat(1000),
+      before:{old:'旧😀\ud800'.repeat(1000)},after:{new:'新😀\udc00'.repeat(1000)}}
+    const records=Array.from({length:55},(_,index)=>({id:'device-frozen-'+(55-index),targetType:'instance',
+      targetId:instanceId,operation:'set',ruleVersion:1,...(index===0||index===54?long:{path:'state.location',value:'合成'})}))
+    const auditId='device-long-frozen-audit'
+    await operation.transaction(async tx=>{
+      await tx.execute(longAuditFixtureWrites[0],[worldId,id])
+      await tx.execute(longAuditFixtureWrites[1],[auditId,worldId,id,JSON.stringify(previous),
+        JSON.stringify({...previous,status:'revoked',revision:2}),
+        JSON.stringify({revocationSignature:'device-frozen',ownedEffectCount:55,ownedEffects:records})])
+    })
+    let cursor,ids=[]
+    do{const page=await events.revocationEffectAudit(worldId,id,auditId,cursor,7)
+      check(page.entries.length<=7,'LONG_AUDIT_PAGE_LIMIT');ids.push(...page.entries.map(row=>row.id));cursor=page.cursor
+    }while(cursor)
+    same(ids,records.map(row=>row.id),'LONG_AUDIT_ARRAY_ORDER')
+    let chunks=0
+    for(const field of ['path','value','before','after','snapshot']){
+      let continuation,json=''
+      do{const piece=await events.revocationEffectAuditChunk(worldId,id,auditId,records[0].id,field,continuation)
+        const length=Array.from(piece.part).length;maxChunk=Math.max(maxChunk,length)
+        check(length<=4096,'LONG_AUDIT_CHUNK_LIMIT');chunks++;json+=piece.part;continuation=piece.cursor
+      }while(continuation)
+      same(JSON.parse(json),field==='snapshot'?records[0]:records[0][field],'LONG_AUDIT_'+field)
+    }
+    return {records:55,chunks,fields:['path','value','before','after','snapshot'],arrayOrder:true}
+  })
   check(maxRows<=128&&fullEventReads===0,'EVENT_CONSUMER_BOUNDS_'+JSON.stringify({maxRows,fullEventReads}))
   return {status:'PASS',samples,maxRows,maxChunk,fullEventReads,
-    graph:{nodes:35,shuffled:true,revokedNoop:true,staleWorld:true}}
+    graph:{nodes:35,shuffled:true,revokedNoop:true,staleWorld:true},actualEffectAudit,longAudit,errorClassification}
   })
 }

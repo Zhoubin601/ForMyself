@@ -1359,3 +1359,9 @@ planMessageArchive现有Map<string, Message[]>/逐组件对象数组/归档Set�
 005原序已驱动SQL临时计划，精确模拟纯领域每轮数组扫描；已revoked后代保留、状态审计no-op，记忆和Effects按revoke/uncertain两阶段处理。全世界签名流式覆盖三实体与规范关系。历史action原始JSON按字节扫描为UTF-16索引对象，不跨桥装载完整Event；四路径回退删除。
 
 独立兼容探针旧12项差异清零。check709/402、strict/build和Android15类四路径、乱序图/stale/no-op通过。早期旧TEMP生命周期断言失败与Android误计合法chunk均保留；真实递归索引回归由EXPLAIN定位修复，主机10k宽确认约400秒降17.6秒，不降低规模/deadline。旧Facade和长Effect Audit、最终新树Android综合及生命周期/审查仍待关闭，状态见唯一清单E，不自动PASS。
+
+## 2026-11-13 E检查点证据归档
+
+Repository旧Facade/materializer删除，QA独立Oracle迁移；长Effect Audit按冻结数组分页与4096字符片段，组件只持当前片段。新前后值审计在TEMP保留前值、重放后一次写入，旧审计仍不可变。业务写入与临时计划分别计数并保留原始总数，优化CAS/状态/扩展为一批次调用；TEMP子表补索引消除级联全扫。SQLCipher审计EXPLAIN行数失败经SQLite内快照物化复用修复，未放宽Native256行门槛。
+
+主机714/406/strict/build；同一APK/catalog的1k/10k强停、四路径、provenance、读取、综合177113ms及v4→v5迁移/缺序号拒绝通过。普通APK实际DEX=false、legacy、无合成seed，未安装发布。历史无效夹具和错误前值假设与真实缺陷分开标注，全部失败保留。专用retained Heap/生命周期、普通消息/任务及A–G其他缺口未闭环，E/G4/M4仍BLOCKED，M5 NO；不是MR8两轮全范围审查。

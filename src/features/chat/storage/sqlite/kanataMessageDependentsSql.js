@@ -40,7 +40,6 @@ export const dependentQueries = Object.freeze({
   events: events + ` SELECT e.world_id,e.id,e.status,e.revision FROM affected_events a
     JOIN world_events e ON e.id=a.id JOIN args ON e.world_id=args.world
     WHERE e.status<>'revoked' AND e.id>? ORDER BY e.id LIMIT 50`,
-  eventFallback: 'SELECT id,world_id,status,visibility,summary,effective_at,recorded_at,revision,causality,kind,action_instance_id,action_relationship_id,action_location,replaces_event_id FROM world_events WHERE world_id=? AND id=?',
   replies: messages + ` SELECT ${messageProjection} FROM affected_messages a JOIN messages m ON m.id=a.id
     JOIN args ON m.world_id=args.world AND m.conversation_id=args.conversation
     WHERE m.id<>args.message AND m.id>? ORDER BY m.id LIMIT 128`,
@@ -48,8 +47,6 @@ export const dependentQueries = Object.freeze({
     JOIN args ON f.world_id=args.world WHERE ${effectCursor} ${effectOrder}`,
   eventEffectPaths: `SELECT f.* FROM world_effects f
     WHERE f.world_id=? AND f.event_id=? AND ${effectCursor} ${effectOrder}`,
-  plannedEffectPaths: `SELECT f.* FROM json_each(?) p JOIN world_effects f ON f.world_id=? AND f.event_id=p.value
-    WHERE ${effectCursor} ${effectOrder}`,
   baseline: 'SELECT value_json FROM effect_baselines WHERE ' + effectTarget,
   remainingEffects: `WITH position(at,recorded,event_key,event_id,effect_key,id) AS (VALUES(?,?,?,?,?,?)),
     ordered AS (SELECT f.*,e.effective_at,e.recorded_at,${effectOrderKey('e.id')} AS event_key,${effectOrderKey('f.id')} AS effect_key
@@ -61,9 +58,6 @@ export const dependentQueries = Object.freeze({
         o.event_id<p.event_id OR (o.event_id=p.event_id AND (
           o.effect_key>p.effect_key OR (o.effect_key=p.effect_key AND o.id<p.id)))))
     ORDER BY effective_at,recorded_at,event_key,event_id DESC,effect_key,id DESC LIMIT 128`,
-  eventExtensionChunk: 'SELECT substr(extensions_json,?,4097) AS part FROM world_events WHERE world_id=? AND id=?',
-  eventParticipants: 'SELECT participant_id FROM event_participants WHERE world_id=? AND event_id=? AND participant_id>? ORDER BY participant_id LIMIT 50',
-  eventCauses: 'SELECT cause_event_id FROM event_causes WHERE world_id=? AND event_id=? AND cause_event_id>? ORDER BY cause_event_id LIMIT 50',
   eventSources: 'SELECT message_id,message_revision FROM event_sources WHERE world_id=? AND event_id=? AND message_id>? ORDER BY message_id LIMIT 50',
   eventLifeSources: `SELECT grant_id,instance_id,module_id,grant_revision,fingerprint FROM event_life_sources
     WHERE world_id=? AND event_id=? AND (grant_id,grant_revision,fingerprint)>(?,?,?)
@@ -72,7 +66,6 @@ export const dependentQueries = Object.freeze({
 
 export const dependentWrites = Object.freeze({
   event: "UPDATE world_events SET status='needsReview',revision=revision+1 WHERE world_id=? AND id=? AND revision=?",
-  audit: 'INSERT INTO event_audits(id,world_id,event_id,at,previous_revision,next_revision,previous_json,next_json) VALUES(?,?,?,?,?,?,?,?)',
   eventMemories: events + ` UPDATE memories SET status='stale',revision=revision+1
     WHERE world_id=(SELECT world FROM args) AND status<>'deleted' AND id IN
       (SELECT l.memory_id FROM memory_events l JOIN args ON l.world_id=args.world JOIN affected_events a ON a.id=l.event_id)`,

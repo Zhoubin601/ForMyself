@@ -146,3 +146,40 @@ it('a successful revocation releases the old hidden Effect audit page',async()=>
   expect(wrapper.vm.$.setupState.effectAudit).toBe(null)
   expect(wrapper.vm.$.setupState.audits).toBe(null)
 })
+
+it.each(['detail','audit','unmount'])('closing %s releases a long Effect audit fragment and rejects its late page',async panel=>{
+  const pending=Promise.withResolvers()
+  let lateGuard
+  const model={eventDetail:async()=>({id:'event',status:'revoked',revision:2,summary:'合成事件'}),
+    revocationAudits:async()=>({entries:[{id:'audit',effectCount:1}],cursor:null}),
+    revocationEffectAudit:async()=>({complete:true,total:1,entries:[{id:'effect',valueChunked:true}],cursor:null}),
+    revocationEffectAuditChunk:async(_id,_auditId,_effectId,_field,cursor,guard)=>{
+      if(cursor){lateGuard=guard;return pending.promise}
+      return {part:'第一段',cursor:{offset:4096}}
+    }}
+  wrapper=mount(KanataCandidateEventLedger,{props:{model,eventId:'event'}})
+  await flushPromises()
+  await click('查看撤销审计');await click('查看逐项影响');await click('查看影响值')
+  const state=wrapper.vm.$.setupState
+  expect(state.effectPart.part).toBe('第一段')
+  await click('下一段')
+  if(panel==='unmount'){wrapper.unmount();wrapper=null}
+  else await click(panel==='detail'?'关闭影响详情':'关闭逐项影响')
+  expect(()=>lateGuard()).toThrow(/EXPIRED/)
+  expect(state.effectPart).toBe(null)
+  pending.resolve({part:'迟到明文',cursor:null});await flushPromises()
+  expect(state.effectPart).toBe(null)
+})
+
+it('replaces the displayed Effect fragment instead of accumulating earlier parts',async()=>{
+  const model={eventDetail:async()=>({id:'event',status:'revoked',revision:2,summary:'合成事件'}),
+    revocationAudits:async()=>({entries:[{id:'audit',effectCount:1}],cursor:null}),
+    revocationEffectAudit:async()=>({complete:true,total:1,entries:[{id:'effect',pathChunked:true}],cursor:null}),
+    revocationEffectAuditChunk:async(_id,_auditId,_effectId,_field,cursor)=>cursor
+      ?{part:'B'.repeat(4096),cursor:null}:{part:'A'.repeat(4096),cursor:{offset:4096}}}
+  wrapper=mount(KanataCandidateEventLedger,{props:{model,eventId:'event'}})
+  await flushPromises()
+  await click('查看撤销审计');await click('查看逐项影响');await click('查看路径');await click('下一段')
+  expect(wrapper.vm.$.setupState.effectPart.part).toBe('B'.repeat(4096))
+  expect(wrapper.find('pre').text()).not.toContain('A')
+})

@@ -69,22 +69,6 @@ async function assertHints(tx,{worldId,eventId,eventRevision}) {
   need((await tx.execute(storeEventIntegrity,keys)).affectedRows===1,'KANATA_SQLITE_INTEGRITY_FAILED')
 }
 
-/** Compatibility consumers explicitly materialize one snapshot, with bounded bridge reads.
- * @param {Tx} tx @param {string} worldId @param {string} id @param {string} auditId
- * @param {'previous'|'next'} side @param {number} revision */
-export async function materializeAuditSnapshot(tx,worldId,id,auditId,side,revision) {
-  let offset=0
-  let json=''
-  for(;;){
-    const [row]=await tx.query(auditChunk,[side,side,worldId,id,auditId,null,offset+1,null,offset+1,revision])
-    need(row && typeof row.part==='string','EVENT_JSON_UNAVAILABLE')
-    const chars=Array.from(String(row.part))
-    json+=chars.slice(0,4096).join('')
-    if(chars.length<=4096) return /** @type {Event} */ (JSON.parse(json))
-    offset+=4096
-  }
-}
-
 /** @param {Operation} operation @param {(tx:Tx,worldId:string,id:string,scope:Scope)=>Promise<void>} authorize */
 export function createEventRead(operation, authorize) {
   /** @param {Tx} tx @param {string} worldId @param {string} eventId @param {Scope|null} scope @returns {Promise<Identity>} */

@@ -1,0 +1,128 @@
+Initialized native services in: C:\Users\a3185\.gradle\native
+Initialized jansi services in: C:\Users\a3185\.gradle\native
+Found daemon DaemonInfo{pid=35952, address=[fd82e170-16e0-433c-993f-f1219d73f821 port:54431, addresses:[/127.0.0.1]], state=Idle, lastBusy=1782820321001, context=DefaultDaemonContext[uid=632d76ce-5a82-4b18-a4bf-ecfaccb44ae3,javaHome=C:\Users\a3185\.vscode\extensions\redhat.java-1.54.0-win32-x64\jre\21.0.10-win32-x86_64,javaVersion=21,javaVendor=Eclipse Adoptium,daemonRegistryDir=C:\Users\a3185\.gradle\daemon,pid=35952,idleTimeout=10800000,priority=NORMAL,applyInstrumentationAgent=true,nativeServicesMode=ENABLED,daemonOpts=-Xmx1536m,-Dfile.encoding=UTF-8,-Duser.country=CN,-Duser.language=zh,-Duser.variant]} however its context does not match the desired criteria.
+JVM is incompatible.
+Wanted: DaemonRequestContext{jvmCriteria=C:\Program Files\Microsoft\jdk-21.0.11.10-hotspot (no JDK specified, using current Java home), daemonOpts=[-Xmx1536m, -Dfile.encoding=UTF-8, -Duser.country=CN, -Duser.language=zh, -Duser.variant], applyInstrumentationAgent=true, nativeServicesMode=ENABLED, priority=NORMAL}
+Actual: DefaultDaemonContext[uid=632d76ce-5a82-4b18-a4bf-ecfaccb44ae3,javaHome=C:\Users\a3185\.vscode\extensions\redhat.java-1.54.0-win32-x64\jre\21.0.10-win32-x86_64,javaVersion=21,javaVendor=Eclipse Adoptium,daemonRegistryDir=C:\Users\a3185\.gradle\daemon,pid=35952,idleTimeout=10800000,priority=NORMAL,applyInstrumentationAgent=true,nativeServicesMode=ENABLED,daemonOpts=-Xmx1536m,-Dfile.encoding=UTF-8,-Duser.country=CN,-Duser.language=zh,-Duser.variant]
+
+  Looking for a different daemon...
+Found daemon DaemonInfo{pid=16468, address=[7aa24ee5-98b0-4aa1-a4b8-76300ecf1d57 port:55187, addresses:[/127.0.0.1]], state=Idle, lastBusy=1782980077276, context=DefaultDaemonContext[uid=f55f19de-e542-44d6-974a-e53c3389b2da,javaHome=D:\idea\jdk23,javaVersion=23,javaVendor=Oracle Corporation,daemonRegistryDir=C:\Users\a3185\.gradle\daemon,pid=16468,idleTimeout=10800000,priority=NORMAL,applyInstrumentationAgent=true,nativeServicesMode=ENABLED,daemonOpts=-Xmx1536m,-Dfile.encoding=UTF-8,-Duser.country=CN,-Duser.language=zh,-Duser.variant]} however its context does not match the desired criteria.
+JVM is incompatible.
+Wanted: DaemonRequestContext{jvmCriteria=C:\Program Files\Microsoft\jdk-21.0.11.10-hotspot (no JDK specified, using current Java home), daemonOpts=[-Xmx1536m, -Dfile.encoding=UTF-8, -Duser.country=CN, -Duser.language=zh, -Duser.variant], applyInstrumentationAgent=true, nativeServicesMode=ENABLED, priority=NORMAL}
+Actual: DefaultDaemonContext[uid=f55f19de-e542-44d6-974a-e53c3389b2da,javaHome=D:\idea\jdk23,javaVersion=23,javaVendor=Oracle Corporation,daemonRegistryDir=C:\Users\a3185\.gradle\daemon,pid=16468,idleTimeout=10800000,priority=NORMAL,applyInstrumentationAgent=true,nativeServicesMode=ENABLED,daemonOpts=-Xmx1536m,-Dfile.encoding=UTF-8,-Duser.country=CN,-Duser.language=zh,-Duser.variant]
+
+  Looking for a different daemon...
+Found daemon DaemonInfo{pid=5696, address=[936f16bb-bb5c-4467-a629-ec6889dde61c port:54590, addresses:[/127.0.0.1]], state=Idle, lastBusy=1784317898792, context=DefaultDaemonContext[uid=77153a97-c66b-430d-81dd-6573b6d8f6c6,javaHome=D:\Android Studio\jbr,javaVersion=21,javaVendor=JetBrains s.r.o.,daemonRegistryDir=C:\Users\a3185\.gradle\daemon,pid=5696,idleTimeout=10800000,priority=NORMAL,applyInstrumentationAgent=true,nativeServicesMode=ENABLED,daemonOpts=-Xmx1536m,-Dfile.encoding=UTF-8,-Duser.country=CN,-Duser.language=zh,-Duser.variant]} however its context does not match the desired criteria.
+JVM is incompatible.
+Wanted: DaemonRequestContext{jvmCriteria=C:\Program Files\Microsoft\jdk-21.0.11.10-hotspot (no JDK specified, using current Java home), daemonOpts=[-Xmx1536m, -Dfile.encoding=UTF-8, -Duser.country=CN, -Duser.language=zh, -Duser.variant], applyInstrumentationAgent=true, nativeServicesMode=ENABLED, priority=NORMAL}
+Actual: DefaultDaemonContext[uid=77153a97-c66b-430d-81dd-6573b6d8f6c6,javaHome=D:\Android Studio\jbr,javaVersion=21,javaVendor=JetBrains s.r.o.,daemonRegistryDir=C:\Users\a3185\.gradle\daemon,pid=5696,idleTimeout=10800000,priority=NORMAL,applyInstrumentationAgent=true,nativeServicesMode=ENABLED,daemonOpts=-Xmx1536m,-Dfile.encoding=UTF-8,-Duser.country=CN,-Duser.language=zh,-Duser.variant]
+
+  Looking for a different daemon...
+Found daemon DaemonInfo{pid=39488, address=[b07bda93-1104-43e1-8c52-628df09eab94 port:54642, addresses:[/127.0.0.1]], state=Idle, lastBusy=1785551562406, context=DefaultDaemonContext[uid=f5c650d7-1d1a-4804-a207-58a04ef7f64b,javaHome=C:\Users\a3185\.vscode\extensions\redhat.java-1.55.0-win32-x64\jre\21.0.11-win32-x86_64,javaVersion=21,javaVendor=Eclipse Adoptium,daemonRegistryDir=C:\Users\a3185\.gradle\daemon,pid=39488,idleTimeout=10800000,priority=NORMAL,applyInstrumentationAgent=true,nativeServicesMode=ENABLED,daemonOpts=-Xmx1536m,-Dfile.encoding=UTF-8,-Duser.country=CN,-Duser.language=zh,-Duser.variant]} however its context does not match the desired criteria.
+JVM is incompatible.
+Wanted: DaemonRequestContext{jvmCriteria=C:\Program Files\Microsoft\jdk-21.0.11.10-hotspot (no JDK specified, using current Java home), daemonOpts=[-Xmx1536m, -Dfile.encoding=UTF-8, -Duser.country=CN, -Duser.language=zh, -Duser.variant], applyInstrumentationAgent=true, nativeServicesMode=ENABLED, priority=NORMAL}
+Actual: DefaultDaemonContext[uid=f5c650d7-1d1a-4804-a207-58a04ef7f64b,javaHome=C:\Users\a3185\.vscode\extensions\redhat.java-1.55.0-win32-x64\jre\21.0.11-win32-x86_64,javaVersion=21,javaVendor=Eclipse Adoptium,daemonRegistryDir=C:\Users\a3185\.gradle\daemon,pid=39488,idleTimeout=10800000,priority=NORMAL,applyInstrumentationAgent=true,nativeServicesMode=ENABLED,daemonOpts=-Xmx1536m,-Dfile.encoding=UTF-8,-Duser.country=CN,-Duser.language=zh,-Duser.variant]
+
+  Looking for a different daemon...
+Found daemon DaemonInfo{pid=26512, address=[e962864e-a897-43fc-a781-9736db496e2e port:62795, addresses:[/127.0.0.1]], state=Idle, lastBusy=1790401088378, context=DefaultDaemonContext[uid=259169fb-82d8-47a3-8f3e-d33005c04301,javaHome=C:\Program Files\Microsoft\jdk-21.0.11.10-hotspot,javaVersion=21,javaVendor=Microsoft,daemonRegistryDir=C:\Users\a3185\.gradle\daemon,pid=26512,idleTimeout=10800000,priority=NORMAL,applyInstrumentationAgent=true,nativeServicesMode=ENABLED,daemonOpts=-XX:MaxMetaspaceSize=384m,-XX:+HeapDumpOnOutOfMemoryError,-Xms256m,-Xmx512m,-Dfile.encoding=UTF-8,-Duser.country=CN,-Duser.language=zh,-Duser.variant]} however its context does not match the desired criteria.
+At least one daemon option is different.
+Wanted: DaemonRequestContext{jvmCriteria=C:\Program Files\Microsoft\jdk-21.0.11.10-hotspot (no JDK specified, using current Java home), daemonOpts=[-Xmx1536m, -Dfile.encoding=UTF-8, -Duser.country=CN, -Duser.language=zh, -Duser.variant], applyInstrumentationAgent=true, nativeServicesMode=ENABLED, priority=NORMAL}
+Actual: DefaultDaemonContext[uid=259169fb-82d8-47a3-8f3e-d33005c04301,javaHome=C:\Program Files\Microsoft\jdk-21.0.11.10-hotspot,javaVersion=21,javaVendor=Microsoft,daemonRegistryDir=C:\Users\a3185\.gradle\daemon,pid=26512,idleTimeout=10800000,priority=NORMAL,applyInstrumentationAgent=true,nativeServicesMode=ENABLED,daemonOpts=-XX:MaxMetaspaceSize=384m,-XX:+HeapDumpOnOutOfMemoryError,-Xms256m,-Xmx512m,-Dfile.encoding=UTF-8,-Duser.country=CN,-Duser.language=zh,-Duser.variant]
+
+  Looking for a different daemon...
+The client will now receive all logging from the daemon (pid: 8248). The daemon log file: C:\Users\a3185\.gradle\daemon\8.14.3\daemon-8248.out.log
+Starting 4th build in daemon [uptime: 1 hrs 20 mins 38.562 secs, performance: 100%, GC rate: 0.00/s, heap usage: 0% of 1.5 GiB]
+Using 2 worker leases.
+Now considering [D:\2026Autumn Semester File\GitHub\formyself-app\.worktrees\kanata-m0\android] as hierarchies to watch
+Watching the file system is configured to be enabled if available
+File system watching is active
+Starting Build
+Settings evaluated using settings file 'D:\2026Autumn Semester File\GitHub\formyself-app\.worktrees\kanata-m0\android\settings.gradle'.
+Projects loaded. Root project using build file 'D:\2026Autumn Semester File\GitHub\formyself-app\.worktrees\kanata-m0\android\build.gradle'.
+Included projects: [root project 'android', project ':app', project ':capacitor-android', project ':capacitor-app', project ':capacitor-cordova-android-plugins', project ':capacitor-filesystem', project ':capacitor-local-notifications', project ':capacitor-preferences', project ':capacitor-share', project ':capacitor-status-bar', project ':capgo-capacitor-native-biometric']
+
+> Configure project :
+Evaluating root project 'android' using build file 'D:\2026Autumn Semester File\GitHub\formyself-app\.worktrees\kanata-m0\android\build.gradle'.
+
+> Configure project :app
+Evaluating project ':app' using build file 'D:\2026Autumn Semester File\GitHub\formyself-app\.worktrees\kanata-m0\android\app\build.gradle'.
+Caching disabled for Groovy DSL script compilation (cp_proj) because:
+  Build cache is disabled
+  Not worth caching.
+Compiling build file 'D:\2026Autumn Semester File\GitHub\formyself-app\.worktrees\kanata-m0\android\app\build.gradle' using SubsetScriptTransformer.
+Caching disabled for Groovy DSL script compilation (proj) because:
+  Build cache is disabled
+  Not worth caching.
+Compiling build file 'D:\2026Autumn Semester File\GitHub\formyself-app\.worktrees\kanata-m0\android\app\build.gradle' using BuildScriptTransformer.
+Using default execution profile
+google-services.json not found, google-services plugin not applied. Push Notifications won't work
+WARNING: Using flatDir should be avoided because it doesn't support any meta-data formats.
+
+> Configure project :capacitor-android
+Evaluating project ':capacitor-android' using build file 'D:\2026Autumn Semester File\GitHub\formyself-app\.worktrees\kanata-m0\node_modules\@capacitor\android\capacitor\build.gradle'.
+Using default execution profile
+
+> Configure project :capacitor-app
+Evaluating project ':capacitor-app' using build file 'D:\2026Autumn Semester File\GitHub\formyself-app\.worktrees\kanata-m0\node_modules\@capacitor\app\android\build.gradle'.
+Using default execution profile
+
+> Configure project :capacitor-cordova-android-plugins
+Evaluating project ':capacitor-cordova-android-plugins' using build file 'D:\2026Autumn Semester File\GitHub\formyself-app\.worktrees\kanata-m0\android\capacitor-cordova-android-plugins\build.gradle'.
+Using default execution profile
+WARNING: Using flatDir should be avoided because it doesn't support any meta-data formats.
+
+> Configure project :capacitor-filesystem
+Evaluating project ':capacitor-filesystem' using build file 'D:\2026Autumn Semester File\GitHub\formyself-app\.worktrees\kanata-m0\node_modules\@capacitor\filesystem\android\build.gradle'.
+Using default execution profile
+Build 9a00676c-7b11-4ab7-a4bc-ae893c475890 is started
+Using Kotlin Gradle Plugin gradle813 variant
+
+> Configure project :capacitor-local-notifications
+Evaluating project ':capacitor-local-notifications' using build file 'D:\2026Autumn Semester File\GitHub\formyself-app\.worktrees\kanata-m0\node_modules\@capacitor\local-notifications\android\build.gradle'.
+Using default execution profile
+
+> Configure project :capacitor-preferences
+Evaluating project ':capacitor-preferences' using build file 'D:\2026Autumn Semester File\GitHub\formyself-app\.worktrees\kanata-m0\node_modules\@capacitor\preferences\android\build.gradle'.
+Using default execution profile
+
+> Configure project :capacitor-share
+Evaluating project ':capacitor-share' using build file 'D:\2026Autumn Semester File\GitHub\formyself-app\.worktrees\kanata-m0\node_modules\@capacitor\share\android\build.gradle'.
+Using default execution profile
+
+> Configure project :capacitor-status-bar
+Evaluating project ':capacitor-status-bar' using build file 'D:\2026Autumn Semester File\GitHub\formyself-app\.worktrees\kanata-m0\node_modules\@capacitor\status-bar\android\build.gradle'.
+Using default execution profile
+
+> Configure project :capgo-capacitor-native-biometric
+Evaluating project ':capgo-capacitor-native-biometric' using build file 'D:\2026Autumn Semester File\GitHub\formyself-app\.worktrees\kanata-m0\node_modules\@capgo\capacitor-native-biometric\android\build.gradle'.
+Using default execution profile
+All projects evaluated.
+Task path ':app:generateKanataSqliteCatalog' matched project ':app'
+Task name matched 'generateKanataSqliteCatalog'
+Selected primary task 'generateKanataSqliteCatalog' from project :app
+Tasks to be executed: [task ':app:generateKanataSqliteCatalog']
+Tasks that were excluded: []
+Resolve mutations for :app:generateKanataSqliteCatalog (Thread[#334,included builds,5,main]) started.
+:app:generateKanataSqliteCatalog (Thread[#334,included builds,5,main]) started.
+
+> Task :app:generateKanataSqliteCatalog
+Caching disabled for task ':app:generateKanataSqliteCatalog' because:
+  Build cache is disabled
+  Gradle would require more information to cache this task
+Task ':app:generateKanataSqliteCatalog' is not up-to-date because:
+  Input file property '$8' has been added for task ':app:generateKanataSqliteCatalog'
+Starting process 'command 'node''. Working directory: D:\2026Autumn Semester File\GitHub\formyself-app\.worktrees\kanata-m0 Command: node scripts/build-kanata-sqlite-catalog.mjs D:\2026Autumn Semester File\GitHub\formyself-app\.worktrees\kanata-m0\android\app\build\generated\kanataSqlite\assets --synthetic
+Successfully started process 'command 'node''
+Build 9a00676c-7b11-4ab7-a4bc-ae893c475890 is closed
+
+[Incubating] Problems report is available at: file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata-m0/android/build/reports/problems/problems-report.html
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/8.14.3/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD SUCCESSFUL in 4s
+1 actionable task: 1 executed
+Watched directory hierarchies: [D:\2026Autumn Semester File\GitHub\formyself-app\.worktrees\kanata-m0\android]

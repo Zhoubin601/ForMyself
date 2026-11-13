@@ -1291,3 +1291,5 @@ raw/完整需求清单.txt 4.1/4.4/8.3及最新连续执行v3驱动当前实现�
 2026-11-11 后续来源：用户明确批准 M 隔离候选的 Schema 005 三旁表及八项实施条件，已直接落实到最终清单 E；不再是待批准方案。本次依据真实源码/数据库测试、已核验旧合成 v4 APK与新 v5 APK原地升级、API34/WHPX/SQLCipher4.17.0 实测和原始失败/复测日志。最终 700/402、005 强停/回滚、10k 综合 156,693ms 和普通 APK=false 见同一 QA；raw 原件、真实备份与模型 API 均未使用。
 
 2026-11-12 E消费者来源：用户已确认纯领域kanataEvents.js（Set/数组顺序、完整世界签名、revoked no-op）和历史adapter字段兼容合同。实现以005旁表、原始JSON字节与现有Repository/Runtime为基础；四路径行为用独立historicalAction/historicalEvent及pure-domain Oracle对照。主机709/402、Android API34/SQLCipher4.17.0、失败/复测和逐文件APK/catalog/device SHA见唯一清单E及同QA的event-consumer-fingerprints.json。无新增外部资料，raw未修改，未调用真实模型API或读取用户数据。
+
+2026-11-13收齐E检查点来源：既有M4-R/ER1合同中的完整对象边界、每条Effect前后值/归属/审计/幂等、原序及故障恢复；用户已批准005但未批准真实迁移/生产切换。714/406主机、API34/SQLCipher4.17.0同APK/catalog的六类集成设备场景、真实v4升级及普通APK实际DEX检查见唯一清单E与event-bounded-fingerprints.json。52份压缩原始设备记录保留失败和复测；未引入外部资料，raw只读，未用真实数据/备份/模型API。

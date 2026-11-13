@@ -33,7 +33,7 @@ test('ER1 independent historical action Oracle freezes code units, presence, sca
     '{"action":{"2":"y","10":"x","location":"new","future":3,"instanceId":"actor"}}')
 })
 
-test('ER1 independent adapter Oracle matches frozen historical reads before Facade migration',async t=>{
+test('ER1 bounded business audit matches the frozen independent adapter Oracle',async t=>{
   const h=await eventCompatFixture();t.after(h.close)
   for(const [name,input] of actionCases){
     const {id}=await h.domains.events.proposeAcknowledged(h.fields,'oracle-'+name)
@@ -41,9 +41,6 @@ test('ER1 independent adapter Oracle matches frozen historical reads before Faca
     if(name!=='missing')raw.action=input
     h.db.prepare('UPDATE world_events SET extensions_json=? WHERE world_id=? AND id=?').run(JSON.stringify(raw),h.worldId,id)
     const expected=await historicalEvent(h.tx,h.worldId,id)
-    const actual=(await h.domains.events.legacy.list(h.worldId)).events.find(e=>e.id===id)
-    assert.deepEqual(actual,expected,name)
-    assert.equal(JSON.stringify(actual),JSON.stringify(expected),name+' property order')
     await h.domains.events.commitAcknowledged(h.worldId,id,1)
     const audit=h.db.prepare('SELECT previous_json,next_json FROM event_audits WHERE world_id=? AND event_id=?').get(h.worldId,id)
     assert.deepEqual(JSON.parse(audit.previous_json),expected,name+' commit previous')
@@ -53,8 +50,9 @@ test('ER1 independent adapter Oracle matches frozen historical reads before Faca
   const child=await h.domains.events.proposeAcknowledged({...h.fields,causedByEventIds:[root.id]},'selection-child')
   h.db.prepare("UPDATE world_events SET status='revoked' WHERE world_id=? AND id=?").run(h.worldId,child.id)
   const independent=await historicalSelection(h.tx,h.worldId,root.id)
-  const old=await h.domains.events.legacy.preview(h.worldId,root.id)
-  assert.deepEqual(independent,{revokeIds:old.revokeIds,uncertainIds:old.uncertainIds})
+  const page=await h.domains.events.openRevocation(h.worldId,root.id)
+  assert.deepEqual(independent.revokeIds,page.entries.filter(row=>row.disposition==='revoke').map(row=>row.id))
+  assert.equal(independent.uncertainIds.length,page.plan.uncertainCount)
   assert.deepEqual(independent.revokeIds,[root.id,child.id])
 })
 

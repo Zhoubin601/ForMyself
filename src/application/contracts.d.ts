@@ -10,7 +10,7 @@ export type { KanataReplyProvenance, KanataMessageState, KanataMessageScope, Kan
 export type { KanataSqliteDomains, KanataSqliteDomainOwner, KanataEventAcknowledgement, KanataEventGraphCursor,
   KanataEventReadScope, KanataEventRelationKind, KanataEventRelationCursor, KanataEventReadCursor,
   KanataEventJsonSelection, KanataEventJsonCursor, KanataRelationshipEventCursor, KanataMemorySourceCursor,
-  KanataEventRevocationPlan, KanataEventRevocationCursor, KanataEventRevocationDecision, KanataEventEffectAuditCursor,
+  KanataEventRevocationPlan, KanataEventRevocationCursor, KanataEventRevocationDecision, KanataEventEffectAuditCursor, KanataEventEffectAuditField, KanataEventEffectAuditEntry, KanataEventEffectAuditJsonCursor,
   KanataMemoryConflictPlan, KanataMemoryConflictCursor,
   KanataMemoryPromptProjection, KanataOutgoingMemoryShareCursor } from '../features/chat/storage/sqlite/kanataDomainTypes'
 /** Candidate application event APIs use acknowledgements, pages and compact plans; no legacyEvents facade. */

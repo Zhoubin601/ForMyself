@@ -93,3 +93,11 @@ void domainArrayOrderPage(orderedTransaction, 'events', 'world', -1, 50)
 void domainArrayOrderPage(orderedTransaction, 'messages', 'world')
 // @ts-expect-error Ordinal continuation is numeric, never an entity ID guess.
 void domainArrayOrderPage(orderedTransaction, 'effects', 'world', 'event-id')
+
+// Frozen Effect snapshots expose only bounded pages and JSON fragments.
+declare const effectJsonCursor: import('../../src/application/contracts').KanataEventEffectAuditJsonCursor
+void domains.events.revocationEffectAuditChunk('world','event','audit','effect','before',effectJsonCursor)
+// @ts-expect-error Unknown fields cannot turn the chunk reader into arbitrary JSON traversal.
+void domains.events.revocationEffectAuditChunk('world','event','audit','effect','extensions')
+// @ts-expect-error A page cursor cannot identify a field fragment or offset.
+void domains.events.revocationEffectAuditChunk('world','event','audit','effect','value',effectCursor)

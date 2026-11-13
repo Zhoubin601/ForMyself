@@ -1,0 +1,184 @@
+/data/app/~~8chDghcOUUbmqoDozVYqEQ==/com.yubin.formyself.m2qa-QZRSw6-KR5jB2HO2TmMxzA==/base.apk: 1 file pulled, 0 skipped. 28.4 MB/s (19148951 bytes in 0.643s)
+/data/app/~~jOO-qi16UB5YmHlRjRoR2A==/com.yubin.formyself.m2qa.test-N6WSvf0Wxw1J9aT2_P4DbQ==/base.apk: 1 file pulled, 0 skipped. 12.8 MB/s (598741 bytes in 0.045s)
+▲ [WARNING] Ignoring this import because "src/features/chat/kanataManagement.css" was marked as having no side effects [ignored-bare-import]
+
+    src/features/chat/KanataView.vue:8:7:
+      8 │ import './kanataManagement.css'
+        ╵        ~~~~~~~~~~~~~~~~~~~~~~~~
+
+{"qaBundleSha256":"4e218e3ebf42aef8b0d73cc82e3f8c759a5b0449659054ac5ce9f47faf80d18c"}
+{
+  "eventSemantics": {
+    "status": "PASS",
+    "samples": [
+      {
+        "name": "empty",
+        "writes": [
+          "commit",
+          "revoke",
+          "correction",
+          "message-revision"
+        ]
+      },
+      {
+        "name": "ascii",
+        "writes": [
+          "commit",
+          "revoke",
+          "correction",
+          "message-revision"
+        ]
+      },
+      {
+        "name": "bmp",
+        "writes": [
+          "commit",
+          "revoke",
+          "correction",
+          "message-revision"
+        ]
+      },
+      {
+        "name": "pair",
+        "writes": [
+          "commit",
+          "revoke",
+          "correction",
+          "message-revision"
+        ]
+      },
+      {
+        "name": "high",
+        "writes": [
+          "commit",
+          "revoke",
+          "correction",
+          "message-revision"
+        ]
+      },
+      {
+        "name": "low",
+        "writes": [
+          "commit",
+          "revoke",
+          "correction",
+          "message-revision"
+        ]
+      },
+      {
+        "name": "mixed",
+        "writes": [
+          "commit",
+          "revoke",
+          "correction",
+          "message-revision"
+        ]
+      },
+      {
+        "name": "null",
+        "writes": [
+          "commit",
+          "revoke",
+          "correction",
+          "message-revision"
+        ]
+      },
+      {
+        "name": "array",
+        "writes": [
+          "commit",
+          "revoke",
+          "correction",
+          "message-revision"
+        ]
+      },
+      {
+        "name": "object",
+        "writes": [
+          "commit",
+          "revoke",
+          "correction",
+          "message-revision"
+        ]
+      },
+      {
+        "name": "missing",
+        "writes": [
+          "commit",
+          "revoke",
+          "correction",
+          "message-revision"
+        ]
+      },
+      {
+        "name": "boolean",
+        "writes": [
+          "commit",
+          "revoke",
+          "correction",
+          "message-revision"
+        ]
+      },
+      {
+        "name": "number",
+        "writes": [
+          "commit",
+          "revoke",
+          "correction",
+          "message-revision"
+        ]
+      },
+      {
+        "name": "control",
+        "writes": [
+          "commit",
+          "revoke",
+          "correction",
+          "message-revision"
+        ]
+      },
+      {
+        "name": "large",
+        "writes": [
+          "commit",
+          "revoke",
+          "correction",
+          "message-revision"
+        ]
+      }
+    ],
+    "maxRows": 51,
+    "maxChunk": 4096,
+    "fullEventReads": 0,
+    "graph": {
+      "nodes": 35,
+      "shuffled": true,
+      "revokedNoop": true,
+      "staleWorld": true
+    },
+    "actualEffectAudit": {
+      "before": "设备撤销乙",
+      "after": "设备保留甲",
+      "ownerRevision": 2,
+      "nextOwnerRevision": 3,
+      "commandBound": true,
+      "receiptStable": true
+    },
+    "longAudit": {
+      "records": 55,
+      "chunks": 23,
+      "fields": [
+        "path",
+        "value",
+        "before",
+        "after",
+        "snapshot"
+      ],
+      "arrayOrder": true
+    },
+    "errorClassification": {
+      "code": "EVENT_EFFECT_PATH_UNSUPPORTED",
+      "rolledBack": true
+    }
+  }
+}

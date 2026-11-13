@@ -1,0 +1,16 @@
+(node:26692) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+{
+  "results": [
+    {
+      "mode": "pre-fix-expression",
+      "observed": "NOT NULL constraint failed: kanata_effect_audit_before.before_json",
+      "atomicRollback": true
+    },
+    {
+      "mode": "current",
+      "observed": "EVENT_EFFECT_PATH_UNSUPPORTED:effect",
+      "atomicRollback": true
+    }
+  ]
+}

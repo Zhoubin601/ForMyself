@@ -668,3 +668,13 @@ MR2 已将记忆详情、精确来源及后台任务的回复链授权证明放�
 2026-11-12 消费者更新覆盖上段兼容失败快照：`kanataEventPlanOrder` 用连接内临时表和005 ordinal模拟纯领域 Set/data.events 遍历，成功清空/失败事务回滚；确认阶段按原数组序分别执行 revoke、uncertain，revoked no-op。`kanataEventWorldSignature` 按≤50行keyset及≤4096字符块增量签入完整世界数据与规范事件关系，不构造完整 DTO；raw extension 表示变化也保守失效。`kanataActionSql` 在 SQL 内扫描原 JSON 字节，保留历史 UTF-16 展开；四条写入路径完整 Event 回退已移除。Repository 旧 Facade 尚在，不能宣称 G4 全面有界。
 
 独立兼容探针已从12项失败变为退出0。主机 check 709/402、strict/build通过；既有 Windows runner `-Mode event-semantics` 实测 Android 四路径15类输入、长action、乱序图、revoked no-op和过期预览。旧005证据仅复用不变DDL/约束，最终Android综合/长Effect Audit/生命周期与两轮审查仍待完成；准确指纹、失败与复测见唯一清单E和当前QA，M4仍BLOCKED。
+
+### 2026-11-13 E 有界读取与不可变影响审计检查点
+
+此段覆盖前述“Repository旧Facade尚在”的历史状态：生产源码已移除events.legacy、eventFromRow/loadEvent/materializeAuditSnapshot及旧全量撤销数组。历史对照读取只放tests/helpers及明确的合成QA Oracle，应用Runtime不重新gather。
+
+revocationEffectAudit按冻结数组position分页，cursor绑定world/event/audit及不可变revision/signature；新增revocationEffectAuditChunk读取path/value/before/after/snapshot的JSON片段，每段最多4096字符，cursor另绑定effectId/field/offset。contracts.d.ts、实际类型入口与正负样例同步。Ledger仅持有当前片段，切页、关闭父面板和卸载清理，迟到结果拒绝发布。
+
+撤销的阶段前值保留在连接内TEMP表，重放后一次插入不可变审计，记录owner revision及命令标识；不更新旧审计、不修改001–005。TEMP暂存触发器合并CAS、状态与扩展规范化；父计划删除级联清理，子表具备索引。持久化与TEMP调用分别观测，原始总调用也保留；原128行批次、420秒设备门槛不变。
+
+实际npm run check为714 Node/406 Vue、strict正负及build通过；同一APK/catalog的API34/SQLCipher4.17.0四路径、长审计、provenance/有界读取1k10k、综合177113ms、批次强杀/恢复/幂等、v4→v5迁移及缺序号拒绝通过。普通APK实际DEX激活false、canonical legacy，无合成页面/seed，未安装发布。指纹与失败/复测见唯一清单E和其QA的event-bounded-fingerprints.json。此为内部实施检查点，E/G4/M4仍BLOCKED；普通消息/任务、A–G余项、统一生命周期/retained Heap、最终两轮全范围审查待闭环，M5 NO。

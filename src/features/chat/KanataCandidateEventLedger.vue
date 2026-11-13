@@ -6,6 +6,7 @@ import { registerBackHandler } from '../../services/backNavigation.js'
 const props=defineProps({model:{type:Object,required:true},eventId:{type:String,default:''},archived:Boolean})
 const emit=defineEmits(['close','saved'])
 const event=shallowRef(null),preview=shallowRef(null),audits=shallowRef(null),effectAudit=shallowRef(null)
+const effectPart=shallowRef(null)
 const summary=ref(''),decision=ref(null),error=ref(''),busy=ref(false)
 const kind=ref('note'),visibility=ref('private'),location=ref('')
 const actor=shallowRef(null),relation=shallowRef(null),cause=shallowRef(null),choices=shallowRef(null)
@@ -32,7 +33,8 @@ function closePreview(){
   correction.value=''
   revokeKey=undefined
 }
-function closeEffectAudit(){cancelRequest('effectAudit');effectAudit.value=null}
+function closeEffectPart(){cancelRequest('effectPart');effectPart.value=null}
+function closeEffectAudit(){cancelRequest('effectAudit');closeEffectPart();effectAudit.value=null}
 function closeAudits(){cancelRequest('audit');closeEffectAudit();audits.value=null}
 async function perform(action,publish,scope='ledger'){
   if(busy.value)return
@@ -153,8 +155,13 @@ function loadAudit(cursor){
   void perform(requestGuard=>props.model.revocationAudits(event.value.id,cursor,requestGuard),value=>{audits.value=value},'audit')
 }
 function loadEffectAudit(auditId,cursor){
+  closeEffectPart()
   void perform(requestGuard=>props.model.revocationEffectAudit(event.value.id,auditId,cursor,requestGuard),
     value=>{effectAudit.value={...value,auditId}},'effectAudit')
+}
+function loadEffectPart(effectId,field,cursor){
+  void perform(requestGuard=>props.model.revocationEffectAuditChunk(event.value.id,effectAudit.value.auditId,
+    effectId,field,cursor,requestGuard),value=>{effectPart.value={...value,effectId,field}},'effectPart')
 }
 const unregister=registerBackHandler(()=>{emit('close');return true},{priority:610})
 onBeforeUnmount(()=>{
@@ -164,6 +171,7 @@ onBeforeUnmount(()=>{
   summary.value=location.value=correction.value=error.value=''
   actor.value=relation.value=cause.value=choices.value=null
   event.value=preview.value=audits.value=effectAudit.value=null
+  effectPart.value=null
   decision.value=null
 })
 if(props.eventId)load()
@@ -233,10 +241,23 @@ if(props.eventId)load()
           <ul>
             <li v-for="effect in effectAudit.entries" :key="effect.id">
               {{ effect.targetId }} · {{ effect.path }} · {{ effect.operation }} · {{ JSON.stringify(effect.value) }}
+              <span v-if="Object.hasOwn(effect,'before')"> · 变更前 {{ JSON.stringify(effect.before) }}</span>
+              <span v-if="Object.hasOwn(effect,'after')"> · 变更后 {{ JSON.stringify(effect.after) }}</span>
+              <button v-if="effect.pathChunked" type="button" :disabled="busy" @click="loadEffectPart(effect.id,'path')">查看路径</button>
+              <button v-if="effect.valueChunked" type="button" :disabled="busy" @click="loadEffectPart(effect.id,'value')">查看影响值</button>
+              <button v-if="effect.beforeChunked" type="button" :disabled="busy" @click="loadEffectPart(effect.id,'before')">查看变更前</button>
+              <button v-if="effect.afterChunked" type="button" :disabled="busy" @click="loadEffectPart(effect.id,'after')">查看变更后</button>
+              <button v-if="effect.snapshotChunked" type="button" :disabled="busy" @click="loadEffectPart(effect.id,'snapshot')">查看完整记录</button>
             </li>
           </ul>
           <button v-if="effectAudit.cursor" type="button" :disabled="busy"
             @click="loadEffectAudit(effectAudit.auditId,effectAudit.cursor)">下一页逐项影响</button>
+          <section v-if="effectPart" aria-label="影响审计详情">
+            <pre class="kanata-effect-fragment">{{ effectPart.part }}</pre>
+            <button v-if="effectPart.cursor" type="button" :disabled="busy"
+              @click="loadEffectPart(effectPart.effectId,effectPart.field,effectPart.cursor)">下一段</button>
+            <button type="button" @click="closeEffectPart">关闭影响详情</button>
+          </section>
           <button type="button" @click="closeEffectAudit">关闭逐项影响</button>
         </section>
       </section>
@@ -244,3 +265,7 @@ if(props.eventId)load()
     <button v-else type="button" :disabled="busy" @click="load">重新载入事件</button>
   </section>
 </template>
+
+<style scoped>
+.kanata-effect-fragment{min-inline-size:0;white-space:pre-wrap;overflow-wrap:anywhere;font:inherit}
+</style>

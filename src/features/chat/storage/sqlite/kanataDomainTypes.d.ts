@@ -1,3 +1,4 @@
+import type {JsonValue,WorldEffect} from '../../domain/kanataTypes'
 export type KanataSqliteDomains = ReturnType<typeof import('./kanataSqliteDomains.js').createKanataSqliteDomains>
 export interface KanataSqliteDomainOwner {
   readonly worldId: string
@@ -22,11 +23,28 @@ export interface KanataEventRevocationCursor {
   readonly after: string
 }
 
-export interface KanataEventEffectAuditCursor {
+export type KanataEventEffectAuditField = 'path'|'value'|'before'|'after'|'snapshot'
+export type KanataEventEffectAuditEntry = Omit<WorldEffect,'worldId'|'eventId'|'path'|'value'> & {
+  readonly path?:string;readonly value?:JsonValue;readonly before?:JsonValue;readonly after?:JsonValue
+  readonly pathChunked?:boolean;readonly valueChunked?:boolean;readonly beforeChunked?:boolean
+  readonly afterChunked?:boolean;readonly snapshotChunked?:boolean
+  readonly ownerRevision?:number;readonly nextOwnerRevision?:number;readonly idempotencyKey?:readonly string[]
+}
+export interface KanataEventEffectAuditIdentity {
   readonly worldId: string
   readonly eventId: string
   readonly auditId: string
-  readonly after: string
+  readonly previousRevision:number
+  readonly nextRevision:number
+  readonly signature:string
+}
+export interface KanataEventEffectAuditCursor extends KanataEventEffectAuditIdentity {
+  readonly after:number
+}
+export interface KanataEventEffectAuditJsonCursor extends KanataEventEffectAuditIdentity {
+  readonly effectId:string
+  readonly field:KanataEventEffectAuditField
+  readonly offset:number
 }
 export interface KanataEventGraphCursor {
   readonly worldId: string

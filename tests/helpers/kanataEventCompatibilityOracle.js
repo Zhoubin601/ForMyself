@@ -85,3 +85,26 @@ export const actionCases=[
   ['mixed','x😀界\ud800y\udc00'],['null',null],['array',['😀',null]],
   ['object',{'10':'ten','2':'two',future:null,location:'old'}],['missing',undefined],
 ]
+
+// Deliberately complete synthetic DB reads for test expectations only. These
+// functions are never registered on a Repository, Runtime or device catalog.
+export function testEvent(db,worldId,id){
+  return historicalEvent({query:async(sql,args)=>db.prepare(sql).all(...args)},worldId,id)
+}
+export function testEventAudits(db,worldId,id){
+  return {audits:db.prepare('SELECT * FROM event_audits WHERE world_id=? AND event_id=? ORDER BY id').all(worldId,id)
+    .map(row=>({id:row.id,worldId,eventId:id,at:row.at,previous:JSON.parse(row.previous_json),next:JSON.parse(row.next_json)}))}
+}
+export function testEventEffects(db,worldId,id){
+  return db.prepare('SELECT * FROM world_effects WHERE world_id=? AND event_id=? ORDER BY id').all(worldId,id)
+    .map(row=>({id:row.id,worldId,eventId:id,targetType:row.target_type,targetId:row.target_id,path:row.path,
+      operation:row.operation,value:JSON.parse(row.value_json),ruleVersion:row.rule_version}))
+}
+export function testRelationship(db,worldId,id){
+  const row=db.prepare('SELECT * FROM relationships WHERE world_id=? AND id=?').get(worldId,id)
+  return {...JSON.parse(row.extensions_json),id,worldId,fromId:row.from_id,toId:row.to_id,kind:row.kind,
+    trustBaseline:row.trust_baseline,publicSummary:row.public_summary,dimensionRuleVersion:row.dimension_rule_version,
+    revision:row.revision,dimensions:{trust:row.trust,intimacy:row.intimacy,understanding:row.understanding},
+    sourceEventIds:db.prepare('SELECT event_id FROM relationship_events WHERE world_id=? AND relationship_id=? ORDER BY event_id')
+      .all(worldId,id).map(row=>row.event_id)}
+}

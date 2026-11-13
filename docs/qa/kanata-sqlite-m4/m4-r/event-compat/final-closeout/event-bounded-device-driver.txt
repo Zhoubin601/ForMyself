@@ -1,0 +1,180 @@
+/data/app/~~0AxCPcqqjzhnYmQ32QVnmQ==/com.yubin.formyself.m2qa-Bpw9QsSuc4DCkwXPAnhONA==/base.apk: 1 file pulled, 0 skipped. 33.9 MB/s (19146403 bytes in 0.539s)
+/data/app/~~lVNTnbxHqcOEOfkZNnPhEg==/com.yubin.formyself.m2qa.test-mVNtLCzUVGTSXg3gujeg8A==/base.apk: 1 file pulled, 0 skipped. 35.5 MB/s (598741 bytes in 0.016s)
+▲ [WARNING] Ignoring this import because "src/features/chat/kanataManagement.css" was marked as having no side effects [ignored-bare-import]
+
+    src/features/chat/KanataView.vue:8:7:
+      8 │ import './kanataManagement.css'
+        ╵        ~~~~~~~~~~~~~~~~~~~~~~~~
+
+{"qaBundleSha256":"0056e198108985c02fb26bf4036a860be90109fcc1d0e4016df47b1e23efdb89"}
+{
+  "eventSemantics": {
+    "status": "PASS",
+    "samples": [
+      {
+        "name": "empty",
+        "writes": [
+          "commit",
+          "revoke",
+          "correction",
+          "message-revision"
+        ]
+      },
+      {
+        "name": "ascii",
+        "writes": [
+          "commit",
+          "revoke",
+          "correction",
+          "message-revision"
+        ]
+      },
+      {
+        "name": "bmp",
+        "writes": [
+          "commit",
+          "revoke",
+          "correction",
+          "message-revision"
+        ]
+      },
+      {
+        "name": "pair",
+        "writes": [
+          "commit",
+          "revoke",
+          "correction",
+          "message-revision"
+        ]
+      },
+      {
+        "name": "high",
+        "writes": [
+          "commit",
+          "revoke",
+          "correction",
+          "message-revision"
+        ]
+      },
+      {
+        "name": "low",
+        "writes": [
+          "commit",
+          "revoke",
+          "correction",
+          "message-revision"
+        ]
+      },
+      {
+        "name": "mixed",
+        "writes": [
+          "commit",
+          "revoke",
+          "correction",
+          "message-revision"
+        ]
+      },
+      {
+        "name": "null",
+        "writes": [
+          "commit",
+          "revoke",
+          "correction",
+          "message-revision"
+        ]
+      },
+      {
+        "name": "array",
+        "writes": [
+          "commit",
+          "revoke",
+          "correction",
+          "message-revision"
+        ]
+      },
+      {
+        "name": "object",
+        "writes": [
+          "commit",
+          "revoke",
+          "correction",
+          "message-revision"
+        ]
+      },
+      {
+        "name": "missing",
+        "writes": [
+          "commit",
+          "revoke",
+          "correction",
+          "message-revision"
+        ]
+      },
+      {
+        "name": "boolean",
+        "writes": [
+          "commit",
+          "revoke",
+          "correction",
+          "message-revision"
+        ]
+      },
+      {
+        "name": "number",
+        "writes": [
+          "commit",
+          "revoke",
+          "correction",
+          "message-revision"
+        ]
+      },
+      {
+        "name": "control",
+        "writes": [
+          "commit",
+          "revoke",
+          "correction",
+          "message-revision"
+        ]
+      },
+      {
+        "name": "large",
+        "writes": [
+          "commit",
+          "revoke",
+          "correction",
+          "message-revision"
+        ]
+      }
+    ],
+    "maxRows": 51,
+    "maxChunk": 4096,
+    "fullEventReads": 0,
+    "graph": {
+      "nodes": 35,
+      "shuffled": true,
+      "revokedNoop": true,
+      "staleWorld": true
+    },
+    "actualEffectAudit": {
+      "before": "设备撤销乙",
+      "after": "设备保留甲",
+      "ownerRevision": 2,
+      "nextOwnerRevision": 3,
+      "commandBound": true,
+      "receiptStable": true
+    },
+    "longAudit": {
+      "records": 55,
+      "chunks": 23,
+      "fields": [
+        "path",
+        "value",
+        "before",
+        "after",
+        "snapshot"
+      ],
+      "arrayOrder": true
+    }
+  }
+}

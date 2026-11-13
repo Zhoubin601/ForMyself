@@ -8,7 +8,9 @@ import { assertWritableWorld } from './kanataWorldRepository.js'
 import { assertDomainArrayOrder } from './kanataArrayOrder.js'
 import { eventWorldSignature } from './kanataEventWorldSignature.js'
 import { withEventPlan } from './kanataEventPlanOrder.js'
-import { eventSnapshotSql, eventSnapshotValidSql, eventScalarFieldsSql } from './kanataEventSnapshot.js'
+import { createEffectAuditRead,effectAuditQueries } from './kanataEffectAuditRead.js'
+import {captureEffectAuditBefore,effectTargetJson,stagedAuditPage,anyEffectAuditBefore,anyEffectAuditMemory} from './kanataEffectAuditStorage.js'
+import { eventSnapshotSql, eventSnapshotValidSql } from './kanataEventSnapshot.js'
 
 /** @typedef {import('../../../../platform/storage/kanataSqliteTypes').KanataSqliteOperation} Operation */
 /** @typedef {import('../../../../platform/storage/kanataSqliteTypes').KanataSqliteTransaction} Tx */
@@ -58,21 +60,24 @@ const batchInput = `WITH args(world,changes,signature) AS (VALUES(?,?,?)), p AS 
   SELECT world,signature,json_extract(j.value,'$.id') AS event,json_extract(j.value,'$.auditId') AS id,
     json_extract(j.value,'$.at') AS at,json_extract(j.value,'$.status') AS old_status,
     json_extract(j.value,'$.revision') AS old_revision,json_extract(j.value,'$.next') AS next_status,
-    json_extract(j.value,'$.effectCount') AS effect_count
+    json_extract(j.value,'$.effectCount') AS effect_count,json_extract(j.value,'$.commandId') AS command_id
   FROM args JOIN json_each(args.changes) j
 )`
-const statusUpdate = batchInput + `
-  UPDATE world_events AS e SET status=p.next_status,revision=e.revision+1 FROM p
-  WHERE e.world_id=p.world AND e.id=p.event AND e.revision=p.old_revision AND e.status=p.old_status`
+const stageAudit = batchInput + ` INSERT INTO temp.kanata_event_audit_plan(world,event,id,at,old_revision,old_status,next_status,effect_count,command_id)
+  SELECT world,event,id,at,old_revision,old_status,next_status,effect_count,command_id FROM p`
 // Constrain the lookup to its owner before ordering by ID. SQLCipher can otherwise
 // use the world/ID index for ORDER BY and scan unrelated Effects for each audit.
 const ownedEffects = `(SELECT json_group_array(json_object('id',f.id,'targetType',f.target_type,'targetId',f.target_id,
-    'path',f.path,'operation',f.operation,'value',json(f.value_json),'ruleVersion',f.rule_version))
+    'path',f.path,'operation',f.operation,'value',json(f.value_json),'ruleVersion',f.rule_version,
+    'before',json(b.before_json),'after',json(${effectTargetJson('f.world_id','f.target_id','f.path')}),
+    'ownerRevision',p.old_revision,'nextOwnerRevision',p.old_revision+1,
+    'idempotencyKey',json_array(p.world,p.event,f.id,p.command_id)))
   FROM (SELECT f.* FROM world_effects f INDEXED BY effects_by_event
     JOIN effect_array_order o ON o.world_id=f.world_id AND o.entity_id=f.id
-    WHERE f.world_id=p.world AND f.event_id=p.event ORDER BY o.ordinal) f)`
+    WHERE f.world_id=p.world AND f.event_id=p.event ORDER BY o.ordinal) f
+  JOIN temp.kanata_effect_audit_before b ON b.world_id=f.world_id AND b.event_id=f.event_id AND b.effect_id=f.id)`
 const writeAudit = batchInput + `,
-  snapshot AS (SELECT p.*,e.revision,e.status,${eventSnapshotSql} AS body,${ownedEffects} AS owned_effects
+  snapshot AS MATERIALIZED (SELECT p.*,e.revision,e.status,${eventSnapshotSql} AS body,${ownedEffects} AS owned_effects
     FROM p JOIN world_events e ON e.world_id=p.world AND e.id=p.event AND e.revision=p.old_revision+1 AND e.status=p.next_status
     WHERE ${eventSnapshotValidSql})
   INSERT INTO event_audits(id,world_id,event_id,at,previous_revision,next_revision,previous_json,next_json,extensions_json)
@@ -80,25 +85,13 @@ const writeAudit = batchInput + `,
     json_set(body,'$.status',status,'$.revision',revision),
     json_object('revocationSignature',signature,'ownedEffectCount',effect_count,'ownedEffects',json(owned_effects))
   FROM snapshot WHERE json_array_length(owned_effects)=effect_count`
-const updateExtensions = batchInput + `
-  UPDATE world_events AS e SET extensions_json=(SELECT json_remove(a.next_json,${eventScalarFieldsSql})
-    FROM event_audits a WHERE a.world_id=e.world_id AND a.event_id=e.id AND a.id=p.id)
-  FROM p WHERE e.world_id=p.world AND e.id=p.event AND e.revision=p.old_revision+1 AND e.status=p.next_status`
 const auditHeaders = `SELECT id,at,previous_revision,next_revision,json_extract(next_json,'$.status') AS status,
   json_extract(extensions_json,'$.ownedEffectCount') AS effect_count
   FROM event_audits WHERE world_id=? AND event_id=? AND id>?
   AND json_extract(extensions_json,'$.revocationSignature') IS NOT NULL ORDER BY id LIMIT ?`
-const auditEffectHeader = `SELECT json_type(extensions_json,'$.ownedEffects') AS snapshot_type,
-  json_extract(extensions_json,'$.ownedEffectCount') AS effect_count
-  FROM event_audits WHERE world_id=? AND event_id=? AND id=?
-    AND json_extract(extensions_json,'$.revocationSignature') IS NOT NULL`
-const auditEffectPage = `SELECT json_extract(j.value,'$.id') AS id,j.value AS effect
-  FROM event_audits a JOIN json_each(a.extensions_json,'$.ownedEffects') j
-  WHERE a.world_id=? AND a.event_id=? AND a.id=? AND json_extract(j.value,'$.id')>?
-  ORDER BY id LIMIT ?`
 export const eventRevocationQueries = [root, projected, selectionBatch, effectProof, baselineProof, completedEffects,
-  auditHeaders, auditEffectHeader, auditEffectPage, executionBatch, planCursor]
-export const eventRevocationWrites = [statusUpdate, writeAudit, staleMemories, updateExtensions]
+  auditHeaders, ...effectAuditQueries.slice(0,2), executionBatch, planCursor]
+export const eventRevocationWrites = [stageAudit, writeAudit, staleMemories]
 
 /** @param {Row} row */
 function entry(row) {
@@ -123,6 +116,18 @@ async function snapshot(tx, worldId, eventId) {
     signature=sha256Text(signature+JSON.stringify(row))
   }
   return { worldId,eventId,rootRevision,revokeCount,uncertainCount,signature }
+}
+
+/** Bounded audit metadata only, never complete Events or Effects.
+ * @param {Tx} tx @param {string} worldId @param {string} disposition */
+async function* auditBatches(tx,worldId,disposition){
+  let after=''
+  for(;;){
+    const rows=await tx.query(stagedAuditPage,[worldId,disposition,after])
+    if(rows.length)yield rows
+    if(rows.length<128)return
+    after=String(rows[rows.length-1].exec_key)
+  }
 }
 
 /** @param {Operation} operation @param {{id:()=>string,clock:()=>number}} tools
@@ -156,19 +161,22 @@ export function createEventRevocation(operation,tools,prepareCorrection) {
             else needsReview++
             if(row.status==='revoked')continue
             changes.push({id:row.id,revision:row.revision,status:row.status,next,
-              auditId:tools.id(),at:tools.clock(),effectCount:row.effect_count})
+              auditId:tools.id(),at:tools.clock(),effectCount:row.effect_count,commandId})
           }
           if(changes.length){
             const parameters=[worldId,JSON.stringify(changes),signature]
-            need((await tx.execute(statusUpdate,parameters)).affectedRows===changes.length,'EVENT_REVOKE_PREVIEW_STALE')
-            need((await tx.execute(writeAudit,parameters)).affectedRows===changes.length,'EVENT_REVOKE_AUDIT_CONFLICT')
-            need((await tx.execute(updateExtensions,parameters)).affectedRows===changes.length,'EVENT_REVOKE_AUDIT_CONFLICT')
+            need((await tx.execute(stageAudit,parameters)).affectedRows===changes.length,'EVENT_REVOKE_AUDIT_CONFLICT')
           }
           if(rows.length<128)break
           after=String(rows[rows.length-1].exec_key)
         }
-        await tx.execute(staleMemories,[worldId,disposition])
+        if((await tx.query(anyEffectAuditBefore,[worldId,disposition])).length)await tx.execute(captureEffectAuditBefore,[worldId,disposition])
+        if((await tx.query(anyEffectAuditMemory,[worldId,disposition])).length)await tx.execute(staleMemories,[worldId,disposition])
         await rebuildEventEffects(tx,completedEffects,[worldId,disposition])
+        for await(const rowBatch of auditBatches(tx,worldId,disposition)){
+          const parameters=[worldId,JSON.stringify(rowBatch),signature]
+          need((await tx.execute(writeAudit,parameters)).affectedRows===rowBatch.length,'EVENT_REVOKE_AUDIT_CONFLICT')
+        }
       }
       need(revoked===expected.revoked&&needsReview===expected.needsReview,'EVENT_REVOKE_PREVIEW_STALE')
       return correct?correct():eventId
@@ -199,27 +207,7 @@ export function createEventRevocation(operation,tools,prepareCorrection) {
       const result=await apply(tx,plan,decision,commandId,summary.trim())
       return {id:result.resultId,...result.expected}
     }),
-    /** @param {string} worldId @param {string} eventId @param {string} auditId
-     * @param {import('./kanataDomainTypes').KanataEventEffectAuditCursor} [cursor] @param {number} [limit] */
-    revocationEffectAudit: (worldId, eventId, auditId, cursor, limit=50) => operation.transaction(async tx => {
-      await assertDomainArrayOrder(tx,worldId)
-      validateId(worldId, 'worldId')
-      validateId(eventId, 'eventId')
-      validateId(auditId, 'auditId')
-      if(cursor){
-        validateId(cursor.after,'cursor')
-        need(cursor.worldId===worldId&&cursor.eventId===eventId&&cursor.auditId===auditId,'EVENT_AUDIT_CURSOR_STALE')
-      }
-      const keys=[worldId,eventId,auditId]
-      const [header]=await tx.query(auditEffectHeader,keys)
-      need(header,'EVENT_AUDIT_UNAVAILABLE')
-      const complete=header.snapshot_type==='array'
-      const rows=complete ? await tx.query(auditEffectPage,[...keys,cursor?.after??'',pageLimit(limit)+1]) : []
-      const entries=rows.slice(0,limit).map(row=> /** @type {Omit<import('../../domain/kanataTypes').WorldEffect,'worldId'|'eventId'>} */ (JSON.parse(String(row.effect))))
-      return {entries,complete,total:Number(header.effect_count),cursor:rows.length>limit ? {
-        worldId,eventId,auditId,after:entries[limit-1].id,
-      } : null}
-    }),
+    ...createEffectAuditRead(operation),
     /** @param {string} worldId @param {string} eventId @param {string} [after] @param {number} [limit] */
     revocationAudits: (worldId,eventId,after='',limit=50) => operation.transaction(async tx=>{
       await assertDomainArrayOrder(tx,worldId)

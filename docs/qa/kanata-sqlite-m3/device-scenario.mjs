@@ -62,7 +62,7 @@ export function runM3DeviceScenario(candidate, fixture, failCommitSql) {
     await domains.events.commitAcknowledged(worldId, first.id, 1)
     const independent = await domains.events.proposeAcknowledged(move('乙', 1601), 'second-move')
     await domains.events.commitAcknowledged(worldId, independent.id, 1)
-    await domains.events.legacy.revoke(await domains.events.legacy.preview(worldId, first.id))
+    await domains.events.confirmRevocation((await domains.events.openRevocation(worldId,first.id)).plan,undefined,'m3-first-revoke')
     check((await domains.characters.getInstance(worldId, instance.id)).state.location === '乙', 'EFFECT_OWNERSHIP')
     passed.push('same-path-event-revoke-isolation')
     const attempt = { ...fixture.usageEvents[0], id: 'm3-qa-usage' }

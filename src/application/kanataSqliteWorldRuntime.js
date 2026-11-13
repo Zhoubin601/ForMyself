@@ -237,6 +237,11 @@ export function createKanataSqliteWorldRuntime({ candidate, clock = Date.now, se
         /** @param {string} id @param {string} auditId @param {import('./contracts').KanataEventEffectAuditCursor|undefined} cursor @param {()=>void} guard */
         revocationEffectAudit: (id,auditId,cursor,guard) =>
           run(domains=>domains.events.revocationEffectAudit(worldId,id,auditId,cursor),guard),
+        /** @param {string} id @param {string} auditId @param {string} effectId
+         * @param {import('./contracts').KanataEventEffectAuditField} field
+         * @param {import('./contracts').KanataEventEffectAuditJsonCursor|undefined} cursor @param {()=>void} guard */
+        revocationEffectAuditChunk:(id,auditId,effectId,field,cursor,guard)=>
+          run(domains=>domains.events.revocationEffectAuditChunk(worldId,id,auditId,effectId,field,cursor),guard),
         /** @param {string|undefined} cursor @param {()=>void} guard */
         eventProposalRelations: (cursor,guard) => run(domains=>domains.events.proposalRelations(worldId,cursor),guard),
         /** @param {string|undefined} cursor @param {()=>void} guard */

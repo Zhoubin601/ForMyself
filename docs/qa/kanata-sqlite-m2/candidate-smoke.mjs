@@ -1,8 +1,9 @@
+import { auditOracle,correctionOracle } from '../kanata-sqlite-m4/m4-r/event-compat/final-closeout/bounded-event-oracle.mjs'
 import { runEventSemanticsDevice } from '../kanata-sqlite-m4/m4-r/event-compat/final-closeout/event-semantics-device.mjs'
 import { memoryRows, memoryEdges, memoryWideSources, eventRows, eventEdges, seedFanoutLinks, replayEventRows, replayEffectRows, fanoutAuditInspection, grantOriginActors, grantOrigins, grantMessageTags, seedWideChatSources, chatReplyTagCheck, eventReadEffects, eventReadAudits, eventReadRevision, eventReadShapeEdges, eventReadPublic, seedEventReadShape, chatEventActor, chatEventSource } from '../kanata-sqlite-m4/completion/fixture.mjs'
 import { growthSeedSql } from '../kanata-sqlite-m4/fixture.mjs'
 import { eventRevocationQueries, eventRevocationWrites } from '../../../src/features/chat/storage/sqlite/kanataEventRevocation.js'
-import { eventPlanDdl } from '../../../src/features/chat/storage/sqlite/kanataEventPlanOrder.js'
+import { eventPlanDdl,eventPlanWrites } from '../../../src/features/chat/storage/sqlite/kanataEventPlanOrder.js'
 import { installSchema005Device, schema005AfterExecute, schema005BeforeCommit } from '../kanata-sqlite-m4/m4-r/event-compat/final-closeout/schema005-device.mjs'
 import { eventReadQueries } from '../../../src/features/chat/storage/sqlite/kanataEventRead.js'
 import { eventProofDdl, eventProofWrites } from '../../../src/features/chat/storage/sqlite/kanataEventProof.js'
@@ -50,7 +51,7 @@ let trace
 let eventProfile
 const profileNames = new Map([...eventRevocationQueries, ...eventRevocationWrites].map((sql, index) =>
   [sha256Text(sql), ['root', 'projected', 'selectionBatch', 'effectProof', 'baselineProof', 'completedEffects',
-    'auditHeaders', 'auditEffectHeader', 'auditEffectPage', 'executionBatch', 'planCursor', 'statusUpdate', 'writeAudit', 'staleMemories', 'updateExtensions'][index]]))
+    'auditHeaders', 'auditEffectHeader', 'auditEffectPage', 'executionBatch', 'planCursor', 'stageAudit', 'writeAudit', 'staleMemories'][index]]))
 async function profileBridge(name, command, action) {
   if (!eventProfile) return action(command)
   const label = profileNames.get(command.statement) ?? command.statement ?? name
@@ -1402,13 +1403,17 @@ window.mr1QaFanout = async (password, { commands, scope, verify }, size) => {
       }
     })))
       const plans=await candidate.run({},operation=>operation.transaction(async tx=>{
-        for(const ddl of eventPlanDdl)await tx.execute(ddl)
+        for(const [index,ddl] of eventPlanDdl.entries()){
+          console.info('MR1_PLAN_DDL',JSON.stringify({index,statement:sha256Text(ddl)}))
+          await tx.execute(ddl)
+        }
       const statements=[...eventRevocationQueries.slice(1,6),...eventRevocationWrites]
       const bindings=[[scope.worldId,root,'',51],...Array.from({length:3},()=>[scope.worldId,root,'']),
         [scope.worldId,'signature','','','',''],[scope.worldId,'[]','signature'],[scope.worldId,'[]','signature'],
-        [scope.worldId,'signature'],[scope.worldId,'[]','signature']]
+        [scope.worldId,'signature']]
       const result={}
       for(const [index,sql] of statements.entries()){
+        console.info('MR1_PLAN_QUERY',JSON.stringify({index,statement:sha256Text('EXPLAIN QUERY PLAN '+sql),arity:bindings[index].length}))
         const rows=await tx.query('EXPLAIN QUERY PLAN '+sql,bindings[index])
         result[profileNames.get(sha256Text(sql))]=rows.map(row=>row.detail)
       }
@@ -1545,7 +1550,7 @@ window.m4QaCompletion = async (password, scope, requestedSize) => {
         const proposal=await domains.events.proposeAcknowledged({worldId:scope.worldId,participantIds:[scope.instanceId],
           sourceRefs:[],causedByEventIds:[],visibility:'private',summary:'合成可撤销位置',effectiveAt:20000+size,
           kind:'move',action:{instanceId:scope.instanceId,location:'合成可撤销位置'}},'m4-replay-'+size)
-        return domains.events.legacy.commit(scope.worldId,proposal.id,1)
+        return domains.events.commitAcknowledged(scope.worldId,proposal.id,1)
       })
       const earlier=await candidate.withDomains({},async domains=>(await domains.events.openRevocation(scope.worldId,revocable.id)).plan)
       await candidate.run({},operation=>operation.transaction(async tx=>{
@@ -1560,6 +1565,7 @@ window.m4QaCompletion = async (password, scope, requestedSize) => {
       eventProfile='combined-effect-preview'
       const plan=await candidate.withDomains({},async domains=>(await domains.events.openRevocation(scope.worldId,revocable.id)).plan)
       stage('replay-preview')
+      const beforeTarget=await candidate.withDomains({},domains=>domains.characters.getInstance(scope.worldId,scope.instanceId))
       eventProfile='combined-effect-confirmation'
       trace={queries:0,writes:0,maxRows:0}
       const confirmed=await candidate.withDomains({},domains=>domains.events.confirmRevocation(plan,'keep-independent','replay-confirm-'+size))
@@ -1575,6 +1581,12 @@ window.m4QaCompletion = async (password, scope, requestedSize) => {
       check(audit.entries.length===1&&audit.entries[0].effectCount===1,'M4_EFFECT_AUDIT')
       const owned=await candidate.withDomains({},domains=>domains.events.revocationEffectAudit(scope.worldId,revocable.id,audit.entries[0].id))
       check(owned.complete&&owned.total===1&&owned.entries[0].value==='合成可撤销位置','M4_EFFECT_AUDIT_ENTRY')
+      console.info('MR1_EFFECT_AUDIT',JSON.stringify({size,beforeExpected:beforeTarget.state.location,
+        before:owned.entries[0].before,after:owned.entries[0].after,ownerRevision:owned.entries[0].ownerRevision,
+        nextOwnerRevision:owned.entries[0].nextOwnerRevision,idempotencyKey:owned.entries[0].idempotencyKey}))
+      check(owned.entries[0].before===beforeTarget.state.location&&owned.entries[0].after==='synthetic-location-'+(size-1)
+        &&owned.entries[0].ownerRevision===2&&owned.entries[0].nextOwnerRevision===3
+        &&owned.entries[0].idempotencyKey.includes('replay-confirm-'+size),'M4_EFFECT_BEFORE_AFTER_COMMAND')
       const fanoutPrefix='m4c-fanout-'+size+'-',fanoutRoot=fanoutPrefix+size
       await candidate.run({},operation=>operation.transaction(async tx=>{
         check((await tx.execute(eventRows,[size,fanoutPrefix,scope.worldId])).affectedRows===size+1,'M4_FANOUT_SEED')
@@ -1591,17 +1603,21 @@ window.m4QaCompletion = async (password, scope, requestedSize) => {
       eventProfile='combined-fanout-continuation'
       const second=await candidate.withDomains({},domains=>domains.events.openRevocation(scope.worldId,fanoutRoot,first.cursor))
       check(second.entries[0].id>first.entries.at(-1).id&&second.plan.signature===first.plan.signature,'M4_FANOUT_CONTINUATION')
-      trace={queries:0,writes:0,maxRows:0}
+      let planWrites=0
+      const planStatements=new Set(eventPlanWrites.map(sha256Text))
+      trace={queries:0,writes:0,maxRows:0,observeWrite(command){if(planStatements.has(command.statement))planWrites++}}
       const execute=()=>candidate.withDomains({},domains=>domains.events.confirmRevocation(first.plan,'keep-independent','m4c-fanout-confirm-'+size))
       stage('fanout-continuation')
       eventProfile='combined-fanout-confirmation'
       const fanout=await execute()
       stage('fanout-confirmed')
       eventProfile=undefined
-      const fanoutTrace={...trace,confirmed:fanout.revoked}
+      const fanoutTrace={...trace,confirmed:fanout.revoked,planWrites,persistentWrites:trace.writes-planWrites}
       trace=undefined
+      console.info('MR1_FANOUT_IO',JSON.stringify({size,...fanoutTrace}))
       check(fanout.revoked===size+1&&fanout.needsReview===0&&fanoutTrace.maxRows<=128
-        &&fanoutTrace.writes<=2*Math.ceil((size+1)/128)+3,'M4_FANOUT_EXECUTION')
+        &&fanoutTrace.persistentWrites<=2*Math.ceil((size+1)/128)+1
+        &&fanoutTrace.planWrites<=5&&fanoutTrace.writes<=2*Math.ceil((size+1)/128)+6,'M4_FANOUT_EXECUTION')
       check((await execute()).revoked===size+1,'M4_FANOUT_RETRY')
       const fanoutAudit=await candidate.withDomains({},domains=>domains.events.revocationAudits(scope.worldId,fanoutRoot))
       check(fanoutAudit.entries.length===1&&fanoutAudit.entries[0].status==='revoked','M4_FANOUT_AUDIT')
@@ -1686,15 +1702,16 @@ window.mr2QaEventProvenance = async (password, {commands,scope,sample,commitFaul
       observations.push({size,...observation})
       check(fullDtos===0&&observation.maxRows<=50&&maxTagRows===50&&maxStagedTags===50,'EVENT_PROVENANCE_BOUNDS')
       const snapshot=await candidate.withDomains({},async ({events})=>{
-        const page=await events.legacy.audits(worldId,id)
-        check(page.audits.length===1,'EVENT_AUDIT_COUNT')
-        const {previous,next}=page.audits[0]
+        const audits=await auditOracle(events,worldId,id)
+        check(audits.length===1,'EVENT_AUDIT_COUNT')
+        const {previous,next}=audits[0]
         check(previous.lifeSources.length===size&&next.lifeSources.length===size,'EVENT_TAG_TAIL')
         check(JSON.stringify(previous.sourceRefs)===JSON.stringify(refs)
           &&JSON.stringify(next.future)===JSON.stringify(fields.future)&&next.action.future===null,'EVENT_LEGACY_JSON')
         const grants=next.lifeSources.map(tag=>tag.grantId)
         check(grants[0]==='grant-'+seeds.deniedActor.replace(/\d+$/,'0')&&new Set(grants).size===size,'EVENT_LEGACY_TAG_ORDER')
-        const effects=await events.legacy.effects(worldId,id)
+        const {entries:effects,cursor:effectTail}=await events.effects(worldId,id)
+        check(!effectTail,'EVENT_EFFECT_SINGLE_PAGE')
         check(effects.length===1&&effects[0].value===fields.action.location&&effects[0].eventId===id,'EVENT_EFFECT_OWNER')
         return {count:grants.length,sha256:sha256Text(JSON.stringify(grants))}
       })
@@ -1710,7 +1727,7 @@ window.mr2QaEventProvenance = async (password, {commands,scope,sample,commitFaul
       trace=undefined
       check(fullDtos===0&&correctionIo.maxRows<=128,'EVENT_CORRECTION_BOUNDS')
       await candidate.withDomains({},async ({events})=>{
-        const replacement=(await events.legacy.list(worldId)).events.find(event=>event.id===correction.id)
+        const replacement=await correctionOracle(events,worldId,correction.id)
         check(replacement.replacesEventId===id&&replacement.lifeSources.length===size
           &&JSON.stringify(replacement.sourceRefs)===JSON.stringify(refs),'EVENT_CORRECTION_RELATIONS')
         check((await events.revocationAudits(worldId,id)).entries.length===1,'EVENT_CORRECTION_AUDIT')

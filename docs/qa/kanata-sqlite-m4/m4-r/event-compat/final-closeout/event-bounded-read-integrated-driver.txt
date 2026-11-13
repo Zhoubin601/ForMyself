@@ -1,0 +1,3087 @@
+/data/app/~~ceIdbvNtffA4qItkJd7UeQ==/com.yubin.formyself.m2qa-6eC2gqamJ8o9i27EwhZgOA==/base.apk: 1 file pulled, 0 skipped. 69.2 MB/s (19148951 bytes in 0.264s)
+/data/app/~~5EIVRI_5o4WiaeeOEHuRhQ==/com.yubin.formyself.m2qa.test-3m0bbK_wA9kUKxEgrktGWQ==/base.apk: 1 file pulled, 0 skipped. 62.1 MB/s (598741 bytes in 0.009s)
+▲ [WARNING] Ignoring this import because "src/features/chat/kanataManagement.css" was marked as having no side effects [ignored-bare-import]
+
+    src/features/chat/KanataView.vue:8:7:
+      8 │ import './kanataManagement.css'
+        ╵        ~~~~~~~~~~~~~~~~~~~~~~~~
+
+{"qaBundleSha256":"4e218e3ebf42aef8b0d73cc82e3f8c759a5b0449659054ac5ce9f47faf80d18c"}
+{
+  "size": 1000,
+  "shape": "pages",
+  "inputSha256": "ec94a2f26363491d9dd1c06548f61c60a31de583a9a70e3d18f875d1473787ef",
+  "result": {
+    "health": {
+      "cipher": "4.17.0 community",
+      "journalMode": "wal",
+      "synchronous": 2,
+      "foreignKeys": 1,
+      "cacheSize": -2048,
+      "checkpoint": 1000,
+      "busyTimeout": 5000
+    },
+    "size": 1000,
+    "id": "fe488343-a5fb-4f1a-98a2-2565765cac82",
+    "queries": 436,
+    "maxRows": 51,
+    "elapsedMs": 1528,
+    "fullDtos": 0,
+    "maxPageObjects": 50,
+    "maxChunk": 4096,
+    "profile": {
+      "cbe3781f70cf1a5a5b25f34a850d752f8241ea070434f693ac469d513a371e30": {
+        "queries": 124,
+        "elapsedMs": 202.90000000409782,
+        "maxMs": 4.3999999994412065
+      },
+      "1900ce967d56fca602b63c23f4b2a7899509c7b96d5269083dd58fdcc3a08b1a": {
+        "queries": 6,
+        "elapsedMs": 7.700000001117587,
+        "maxMs": 1.7000000001862645
+      },
+      "3e85d5118fed63f5eff96070642c4a34b1fb5d50f1fc8f099ea0666bb3a3c4d6": {
+        "queries": 6,
+        "elapsedMs": 9.199999999254942,
+        "maxMs": 2.2000000001862645
+      },
+      "8b57a71a64ad16ef517ae5e54c8d8b9b335f01c0b3f7e10bb5a2e11b834a77e2": {
+        "queries": 6,
+        "elapsedMs": 8.599999999627471,
+        "maxMs": 2
+      },
+      "9adca01c0fecfc2d904570e4942f5f02ffd03b7777ac4634d6c3d3c48f54727f": {
+        "queries": 4,
+        "elapsedMs": 6.500000000931323,
+        "maxMs": 2.2000000001862645
+      },
+      "b02d2aeeafb00d414d31fed25f73a5cc187c2b5d7b3b89d8284885674dbb7aa6": {
+        "queries": 8,
+        "elapsedMs": 10.399999998509884,
+        "maxMs": 1.8999999994412065
+      },
+      "03ec3ae6ca5767a27851178c1c724aa1fc3a30d3904bb72da4aeb699c075a64d": {
+        "queries": 8,
+        "elapsedMs": 13.999999999068677,
+        "maxMs": 2.599999999627471
+      },
+      "8b689f4150bd095a1c1dea453d2f478027a807985c63e4253b68ec72efefbc2f": {
+        "queries": 8,
+        "elapsedMs": 30.5,
+        "maxMs": 6.900000000372529
+      },
+      "6ee3e10850aadbc834160bdce3af4f039cd57fda85a14e5f23ff16d934c38be8": {
+        "queries": 8,
+        "elapsedMs": 22.500000001862645,
+        "maxMs": 6
+      },
+      "46fc4fa6b3acff57275895309d742fb9ad14ef25dfff504a257dba32d9a74408": {
+        "queries": 116,
+        "elapsedMs": 174.09999999590218,
+        "maxMs": 3.300000000745058
+      },
+      "c564ef73bc1831586df9f278edd69ed4299f7c3a8e20c5cb4e6dab27a4c34634": {
+        "queries": 25,
+        "elapsedMs": 30.999999999068677,
+        "maxMs": 2
+      },
+      "4492bee238f891eb123b37c5cacc7ff6c54b8040cb4ef1c827b8648e0c64c652": {
+        "queries": 1,
+        "elapsedMs": 32.59999999962747,
+        "maxMs": 32.59999999962747
+      },
+      "3f84e5fcb42cacba0260b7d9622f10d9677208f0e4843f956386e368314e4f84": {
+        "queries": 1,
+        "elapsedMs": 5.400000000372529,
+        "maxMs": 5.400000000372529
+      },
+      "741fcebd0ac94d9d7c45cfc8d366889e9749084d973592a29d6a0fb84ee8c9a6": {
+        "queries": 21,
+        "elapsedMs": 77.30000000353903,
+        "maxMs": 4.599999999627471
+      },
+      "c984523bd21a5b251b435f6f0daa878b35e94194238a8d9776af6fba6ed286af": {
+        "queries": 1,
+        "elapsedMs": 1.7000000001862645,
+        "maxMs": 1.7000000001862645
+      },
+      "f6138665ee31203e815660cbdc0932e461d4bc5abb4b25449e2dd3d98d40c09e": {
+        "queries": 2,
+        "elapsedMs": 5.8999999994412065,
+        "maxMs": 3.2999999998137355
+      },
+      "10a3174aff40dac39cb59c7e7425f8e6ffdf566d95d93de5ed484bfb397dbf64": {
+        "queries": 21,
+        "elapsedMs": 148.90000000130385,
+        "maxMs": 15.5
+      },
+      "48a922da93a086642065dc56e29acd60c91cf89876d3e6a37ad64ca173d3a312": {
+        "queries": 21,
+        "elapsedMs": 116.20000000018626,
+        "maxMs": 9.899999999441206
+      },
+      "1af752fe0f190cd12fe40e85c875b650f72ac51ae6e07256f7b1b0a6422a4a5a": {
+        "queries": 49,
+        "elapsedMs": 105.20000000018626,
+        "maxMs": 8.5
+      }
+    },
+    "afterLock": 0,
+    "tagCount": 1000,
+    "tagHash": "08adb15b029370322be84d6479df2a4251faec7cab66668950b6f63ed7ef7e0f",
+    "effectCount": 1001,
+    "auditCount": 1001,
+    "snapshotCharacters": 200529,
+    "afterClose": {
+      "header": 0,
+      "relation": 0,
+      "effect": 0,
+      "audit": 0,
+      "snapshot": 0
+    },
+    "afterRevoke": 18,
+    "revokedBodyReads": 0,
+    "queryFailure": "KANATA_SQLITE_BRIDGE_FAILED"
+  },
+  "observations": [
+    {
+      "phase": "seed",
+      "heapUsedBytes": 16668712,
+      "pssKiB": 95061,
+      "rssKiB": 238084
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 17243236,
+      "pssKiB": 98265,
+      "rssKiB": 239856
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 10955208,
+      "pssKiB": 98003,
+      "rssKiB": 239576
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 13874472,
+      "pssKiB": 100494,
+      "rssKiB": 242172
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 12416480,
+      "pssKiB": 105790,
+      "rssKiB": 247508
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 15334248,
+      "pssKiB": 101083,
+      "rssKiB": 242928
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 13715220,
+      "pssKiB": 109579,
+      "rssKiB": 251616
+    },
+    {
+      "phase": "read-effects",
+      "heapUsedBytes": 13439432,
+      "pssKiB": 108971,
+      "rssKiB": 251020
+    },
+    {
+      "phase": "read-audits",
+      "heapUsedBytes": 17023440,
+      "pssKiB": 107411,
+      "rssKiB": 249476
+    },
+    {
+      "phase": "faults",
+      "heapUsedBytes": 13784752,
+      "pssKiB": 101855,
+      "rssKiB": 243944
+    },
+    {
+      "phase": "faults",
+      "heapUsedBytes": 16747924,
+      "pssKiB": 103049,
+      "rssKiB": 245316
+    }
+  ]
+}
+{
+  "size": 1000,
+  "shape": "deep",
+  "inputSha256": "94895d2c356fd656a26d761a1d10af02b4b90c6ca70fd7a70ab7f740d2d34d4d",
+  "result": {
+    "size": 1000,
+    "shape": "deep",
+    "queries": 127,
+    "maxRows": 51,
+    "elapsedMs": 635,
+    "graphCount": 1000,
+    "maxPage": 50,
+    "fullDtos": 0,
+    "stale": true,
+    "seedPlans": {
+      "affectedRows": 1000,
+      "before": [
+        "CO-ROUTINE ancestors",
+        "SETUP",
+        "SCAN CONSTANT ROW",
+        "RECURSIVE STEP",
+        "SEARCH c USING COVERING INDEX event_causes_reverse (world_id=?)",
+        "SCAN a",
+        "SCAN ancestors"
+      ],
+      "analyzed": [
+        "CO-ROUTINE ancestors",
+        "SETUP",
+        "SCAN CONSTANT ROW",
+        "RECURSIVE STEP",
+        "SCAN a",
+        "SEARCH c USING COVERING INDEX sqlite_autoindex_event_causes_1 (world_id=? AND event_id=?)",
+        "SCAN ancestors"
+      ],
+      "restored": [
+        "CO-ROUTINE ancestors",
+        "SETUP",
+        "SCAN CONSTANT ROW",
+        "RECURSIVE STEP",
+        "SEARCH c USING COVERING INDEX event_causes_reverse (world_id=?)",
+        "SCAN a",
+        "SCAN ancestors"
+      ]
+    }
+  },
+  "observations": [
+    {
+      "phase": "seed",
+      "heapUsedBytes": 16819624,
+      "pssKiB": 100489,
+      "rssKiB": 242756
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 19612996,
+      "pssKiB": 102457,
+      "rssKiB": 244732
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 15522356,
+      "pssKiB": 102413,
+      "rssKiB": 244688
+    }
+  ]
+}
+{
+  "size": 1000,
+  "shape": "wide",
+  "inputSha256": "94895d2c356fd656a26d761a1d10af02b4b90c6ca70fd7a70ab7f740d2d34d4d",
+  "result": {
+    "size": 1000,
+    "shape": "wide",
+    "queries": 127,
+    "maxRows": 51,
+    "elapsedMs": 523,
+    "graphCount": 1000,
+    "maxPage": 50,
+    "fullDtos": 0,
+    "stale": true,
+    "seedPlans": {
+      "affectedRows": 1000,
+      "before": [
+        "CO-ROUTINE ancestors",
+        "SETUP",
+        "SCAN CONSTANT ROW",
+        "RECURSIVE STEP",
+        "SEARCH c USING COVERING INDEX event_causes_reverse (world_id=?)",
+        "SCAN a",
+        "SCAN ancestors"
+      ],
+      "analyzed": [
+        "CO-ROUTINE ancestors",
+        "SETUP",
+        "SCAN CONSTANT ROW",
+        "RECURSIVE STEP",
+        "SCAN a",
+        "SEARCH c USING COVERING INDEX sqlite_autoindex_event_causes_1 (world_id=? AND event_id=?)",
+        "SCAN ancestors"
+      ],
+      "restored": [
+        "CO-ROUTINE ancestors",
+        "SETUP",
+        "SCAN CONSTANT ROW",
+        "RECURSIVE STEP",
+        "SCAN a",
+        "SCAN c",
+        "SCAN ancestors"
+      ]
+    }
+  },
+  "observations": [
+    {
+      "phase": "seed",
+      "heapUsedBytes": 17223104,
+      "pssKiB": 100601,
+      "rssKiB": 242880
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 19971472,
+      "pssKiB": 102217,
+      "rssKiB": 244496
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 16662164,
+      "pssKiB": 103049,
+      "rssKiB": 245332
+    }
+  ]
+}
+{
+  "size": 1000,
+  "shape": "mixed",
+  "inputSha256": "94895d2c356fd656a26d761a1d10af02b4b90c6ca70fd7a70ab7f740d2d34d4d",
+  "result": {
+    "size": 1000,
+    "shape": "mixed",
+    "queries": 127,
+    "maxRows": 51,
+    "elapsedMs": 550,
+    "graphCount": 1000,
+    "maxPage": 50,
+    "fullDtos": 0,
+    "stale": true,
+    "seedPlans": {
+      "affectedRows": 1000,
+      "before": [
+        "CO-ROUTINE ancestors",
+        "SETUP",
+        "SCAN CONSTANT ROW",
+        "RECURSIVE STEP",
+        "SCAN a",
+        "SEARCH c USING COVERING INDEX sqlite_autoindex_event_causes_1 (world_id=? AND event_id=?)",
+        "SCAN ancestors"
+      ],
+      "analyzed": [
+        "CO-ROUTINE ancestors",
+        "SETUP",
+        "SCAN CONSTANT ROW",
+        "RECURSIVE STEP",
+        "SCAN a",
+        "SEARCH c USING COVERING INDEX sqlite_autoindex_event_causes_1 (world_id=? AND event_id=?)",
+        "SCAN ancestors"
+      ],
+      "restored": [
+        "CO-ROUTINE ancestors",
+        "SETUP",
+        "SCAN CONSTANT ROW",
+        "RECURSIVE STEP",
+        "SCAN a",
+        "SCAN c",
+        "SCAN ancestors"
+      ]
+    }
+  },
+  "observations": [
+    {
+      "phase": "seed",
+      "heapUsedBytes": 17704184,
+      "pssKiB": 100425,
+      "rssKiB": 242712
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 20488552,
+      "pssKiB": 102153,
+      "rssKiB": 244440
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 16328576,
+      "pssKiB": 102357,
+      "rssKiB": 244652
+    }
+  ]
+}
+{
+  "size": 10000,
+  "shape": "pages",
+  "inputSha256": "94895d2c356fd656a26d761a1d10af02b4b90c6ca70fd7a70ab7f740d2d34d4d",
+  "result": {
+    "health": {
+      "cipher": "4.17.0 community",
+      "journalMode": "wal",
+      "synchronous": 2,
+      "foreignKeys": 1,
+      "cacheSize": -2048,
+      "checkpoint": 1000,
+      "busyTimeout": 5000
+    },
+    "size": 10000,
+    "id": "6fa8830a-e6b1-4c3c-bdc8-6808f66d87b2",
+    "queries": 3484,
+    "maxRows": 51,
+    "elapsedMs": 50455,
+    "fullDtos": 0,
+    "maxPageObjects": 50,
+    "maxChunk": 4096,
+    "profile": {
+      "cbe3781f70cf1a5a5b25f34a850d752f8241ea070434f693ac469d513a371e30": {
+        "queries": 1080,
+        "elapsedMs": 17241.199999997392,
+        "maxMs": 37.799999999813735
+      },
+      "1900ce967d56fca602b63c23f4b2a7899509c7b96d5269083dd58fdcc3a08b1a": {
+        "queries": 6,
+        "elapsedMs": 8.799999999813735,
+        "maxMs": 1.7000000001862645
+      },
+      "3e85d5118fed63f5eff96070642c4a34b1fb5d50f1fc8f099ea0666bb3a3c4d6": {
+        "queries": 6,
+        "elapsedMs": 9.200000000186265,
+        "maxMs": 2.7000000001862645
+      },
+      "8b57a71a64ad16ef517ae5e54c8d8b9b335f01c0b3f7e10bb5a2e11b834a77e2": {
+        "queries": 6,
+        "elapsedMs": 8.299999999813735,
+        "maxMs": 2.2999999998137355
+      },
+      "9adca01c0fecfc2d904570e4942f5f02ffd03b7777ac4634d6c3d3c48f54727f": {
+        "queries": 4,
+        "elapsedMs": 15.400000000372529,
+        "maxMs": 4
+      },
+      "b02d2aeeafb00d414d31fed25f73a5cc187c2b5d7b3b89d8284885674dbb7aa6": {
+        "queries": 8,
+        "elapsedMs": 11.700000000186265,
+        "maxMs": 1.8999999994412065
+      },
+      "03ec3ae6ca5767a27851178c1c724aa1fc3a30d3904bb72da4aeb699c075a64d": {
+        "queries": 8,
+        "elapsedMs": 14.400000000372529,
+        "maxMs": 2.2000000001862645
+      },
+      "8b689f4150bd095a1c1dea453d2f478027a807985c63e4253b68ec72efefbc2f": {
+        "queries": 8,
+        "elapsedMs": 421.0000000009313,
+        "maxMs": 54.90000000037253
+      },
+      "6ee3e10850aadbc834160bdce3af4f039cd57fda85a14e5f23ff16d934c38be8": {
+        "queries": 8,
+        "elapsedMs": 250.2999999979511,
+        "maxMs": 61.299999999813735
+      },
+      "46fc4fa6b3acff57275895309d742fb9ad14ef25dfff504a257dba32d9a74408": {
+        "queries": 1072,
+        "elapsedMs": 1856.7000000160187,
+        "maxMs": 8.700000000186265
+      },
+      "c564ef73bc1831586df9f278edd69ed4299f7c3a8e20c5cb4e6dab27a4c34634": {
+        "queries": 205,
+        "elapsedMs": 272.80000000074506,
+        "maxMs": 2.2999999998137355
+      },
+      "4492bee238f891eb123b37c5cacc7ff6c54b8040cb4ef1c827b8648e0c64c652": {
+        "queries": 1,
+        "elapsedMs": 476.70000000018626,
+        "maxMs": 476.70000000018626
+      },
+      "3f84e5fcb42cacba0260b7d9622f10d9677208f0e4843f956386e368314e4f84": {
+        "queries": 1,
+        "elapsedMs": 20.09999999962747,
+        "maxMs": 20.09999999962747
+      },
+      "741fcebd0ac94d9d7c45cfc8d366889e9749084d973592a29d6a0fb84ee8c9a6": {
+        "queries": 201,
+        "elapsedMs": 4479.299999996088,
+        "maxMs": 37.799999999813735
+      },
+      "c984523bd21a5b251b435f6f0daa878b35e94194238a8d9776af6fba6ed286af": {
+        "queries": 1,
+        "elapsedMs": 18.200000000186265,
+        "maxMs": 18.200000000186265
+      },
+      "f6138665ee31203e815660cbdc0932e461d4bc5abb4b25449e2dd3d98d40c09e": {
+        "queries": 2,
+        "elapsedMs": 37,
+        "maxMs": 18.799999999813735
+      },
+      "10a3174aff40dac39cb59c7e7425f8e6ffdf566d95d93de5ed484bfb397dbf64": {
+        "queries": 201,
+        "elapsedMs": 5290.399999995716,
+        "maxMs": 44.40000000037253
+      },
+      "48a922da93a086642065dc56e29acd60c91cf89876d3e6a37ad64ca173d3a312": {
+        "queries": 201,
+        "elapsedMs": 648.1999999945983,
+        "maxMs": 40.40000000037253
+      },
+      "1af752fe0f190cd12fe40e85c875b650f72ac51ae6e07256f7b1b0a6422a4a5a": {
+        "queries": 465,
+        "elapsedMs": 14596.200000001118,
+        "maxMs": 46.59999999962747
+      }
+    },
+    "afterLock": 0,
+    "tagCount": 10000,
+    "tagHash": "54be6389e9b8c1663b610c125d432c7c5ddcd74120d891bf36de7fcdf50c08e6",
+    "effectCount": 10001,
+    "auditCount": 10001,
+    "snapshotCharacters": 1903531,
+    "afterClose": {
+      "header": 0,
+      "relation": 0,
+      "effect": 0,
+      "audit": 0,
+      "snapshot": 0
+    },
+    "afterRevoke": 18,
+    "revokedBodyReads": 0,
+    "queryFailure": "KANATA_SQLITE_BRIDGE_FAILED"
+  },
+  "observations": [
+    {
+      "phase": "seed",
+      "heapUsedBytes": 18248000,
+      "pssKiB": 102304,
+      "rssKiB": 244620
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 20998556,
+      "pssKiB": 102584,
+      "rssKiB": 244960
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 21082596,
+      "pssKiB": 101620,
+      "rssKiB": 243996
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 21101196,
+      "pssKiB": 103884,
+      "rssKiB": 246260
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 18500824,
+      "pssKiB": 103104,
+      "rssKiB": 245480
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 21776452,
+      "pssKiB": 103852,
+      "rssKiB": 246228
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 11566868,
+      "pssKiB": 104292,
+      "rssKiB": 246668
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 12689020,
+      "pssKiB": 104424,
+      "rssKiB": 246800
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 11642788,
+      "pssKiB": 107448,
+      "rssKiB": 249796
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 12724036,
+      "pssKiB": 108404,
+      "rssKiB": 250756
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 15948016,
+      "pssKiB": 106028,
+      "rssKiB": 248380
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 13506028,
+      "pssKiB": 106208,
+      "rssKiB": 248560
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 17136120,
+      "pssKiB": 106364,
+      "rssKiB": 248716
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 15236832,
+      "pssKiB": 106805,
+      "rssKiB": 249128
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 14374268,
+      "pssKiB": 107937,
+      "rssKiB": 250260
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 14721444,
+      "pssKiB": 108793,
+      "rssKiB": 251120
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 18497408,
+      "pssKiB": 123105,
+      "rssKiB": 265432
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 18497532,
+      "pssKiB": 121821,
+      "rssKiB": 264148
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 18501988,
+      "pssKiB": 121813,
+      "rssKiB": 264140
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 18502112,
+      "pssKiB": 121817,
+      "rssKiB": 264144
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 18502236,
+      "pssKiB": 121813,
+      "rssKiB": 264140
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 18502360,
+      "pssKiB": 121817,
+      "rssKiB": 264144
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 18502484,
+      "pssKiB": 121813,
+      "rssKiB": 264140
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 18502608,
+      "pssKiB": 121817,
+      "rssKiB": 264144
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 18502732,
+      "pssKiB": 121813,
+      "rssKiB": 264140
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 18502856,
+      "pssKiB": 121857,
+      "rssKiB": 264184
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 18704776,
+      "pssKiB": 160953,
+      "rssKiB": 303280
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 15117156,
+      "pssKiB": 121369,
+      "rssKiB": 263696
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 18181960,
+      "pssKiB": 121733,
+      "rssKiB": 264060
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 15522976,
+      "pssKiB": 122169,
+      "rssKiB": 264500
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 19407288,
+      "pssKiB": 122193,
+      "rssKiB": 264524
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 17158088,
+      "pssKiB": 122187,
+      "rssKiB": 264492
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 21675256,
+      "pssKiB": 122951,
+      "rssKiB": 265256
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 17685536,
+      "pssKiB": 121319,
+      "rssKiB": 263624
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 19405016,
+      "pssKiB": 120443,
+      "rssKiB": 262748
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 12768340,
+      "pssKiB": 120015,
+      "rssKiB": 262324
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 13431192,
+      "pssKiB": 124119,
+      "rssKiB": 266432
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 15354556,
+      "pssKiB": 124079,
+      "rssKiB": 266396
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 12603548,
+      "pssKiB": 121847,
+      "rssKiB": 264164
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 16081712,
+      "pssKiB": 122011,
+      "rssKiB": 264332
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 13849160,
+      "pssKiB": 119499,
+      "rssKiB": 261820
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 17735992,
+      "pssKiB": 119659,
+      "rssKiB": 261980
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 16521220,
+      "pssKiB": 120907,
+      "rssKiB": 263228
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 17785564,
+      "pssKiB": 118111,
+      "rssKiB": 260436
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 17941280,
+      "pssKiB": 151583,
+      "rssKiB": 293908
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 17952988,
+      "pssKiB": 156919,
+      "rssKiB": 299244
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 17970348,
+      "pssKiB": 156883,
+      "rssKiB": 299208
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 17974632,
+      "pssKiB": 142283,
+      "rssKiB": 284608
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 17974756,
+      "pssKiB": 142283,
+      "rssKiB": 284608
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 17974880,
+      "pssKiB": 142347,
+      "rssKiB": 284672
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 17975004,
+      "pssKiB": 142911,
+      "rssKiB": 285236
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 17975128,
+      "pssKiB": 143475,
+      "rssKiB": 285800
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 17975252,
+      "pssKiB": 144063,
+      "rssKiB": 286388
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 17975376,
+      "pssKiB": 144623,
+      "rssKiB": 286948
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 17975500,
+      "pssKiB": 145211,
+      "rssKiB": 287536
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 20093724,
+      "pssKiB": 115451,
+      "rssKiB": 257780
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 20093848,
+      "pssKiB": 110095,
+      "rssKiB": 252428
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 9735292,
+      "pssKiB": 110107,
+      "rssKiB": 252408
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 9735416,
+      "pssKiB": 110111,
+      "rssKiB": 252412
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 2673976,
+      "pssKiB": 110111,
+      "rssKiB": 252412
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 2666964,
+      "pssKiB": 110115,
+      "rssKiB": 252416
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 2667088,
+      "pssKiB": 110111,
+      "rssKiB": 252412
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 2667212,
+      "pssKiB": 110127,
+      "rssKiB": 252428
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 2667336,
+      "pssKiB": 110123,
+      "rssKiB": 252424
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 2667460,
+      "pssKiB": 110127,
+      "rssKiB": 252428
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 2667584,
+      "pssKiB": 110123,
+      "rssKiB": 252424
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 2667708,
+      "pssKiB": 110127,
+      "rssKiB": 252428
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 2667832,
+      "pssKiB": 109927,
+      "rssKiB": 252228
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 2667956,
+      "pssKiB": 109931,
+      "rssKiB": 252232
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 2668080,
+      "pssKiB": 109927,
+      "rssKiB": 252228
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 2670600,
+      "pssKiB": 109931,
+      "rssKiB": 252232
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 2670724,
+      "pssKiB": 109931,
+      "rssKiB": 252232
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 2670848,
+      "pssKiB": 109935,
+      "rssKiB": 252236
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 2670972,
+      "pssKiB": 109931,
+      "rssKiB": 252232
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 2671096,
+      "pssKiB": 109935,
+      "rssKiB": 252236
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 2671220,
+      "pssKiB": 109931,
+      "rssKiB": 252232
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 2671344,
+      "pssKiB": 109935,
+      "rssKiB": 252236
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 2671468,
+      "pssKiB": 109931,
+      "rssKiB": 252232
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 2674596,
+      "pssKiB": 109935,
+      "rssKiB": 252236
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 2674720,
+      "pssKiB": 109935,
+      "rssKiB": 252236
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 2674844,
+      "pssKiB": 109947,
+      "rssKiB": 252248
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 2674968,
+      "pssKiB": 109943,
+      "rssKiB": 252244
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 2675092,
+      "pssKiB": 109947,
+      "rssKiB": 252248
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 2675216,
+      "pssKiB": 109947,
+      "rssKiB": 252248
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 2675340,
+      "pssKiB": 109951,
+      "rssKiB": 252252
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 3011344,
+      "pssKiB": 112275,
+      "rssKiB": 254576
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 3011468,
+      "pssKiB": 112251,
+      "rssKiB": 254552
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 3011592,
+      "pssKiB": 112251,
+      "rssKiB": 254552
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 3011716,
+      "pssKiB": 112255,
+      "rssKiB": 254556
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 3011840,
+      "pssKiB": 112307,
+      "rssKiB": 254608
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 3011964,
+      "pssKiB": 112319,
+      "rssKiB": 254620
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 3012088,
+      "pssKiB": 112315,
+      "rssKiB": 254616
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 3012212,
+      "pssKiB": 112327,
+      "rssKiB": 254628
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 3012336,
+      "pssKiB": 112331,
+      "rssKiB": 254632
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 3012460,
+      "pssKiB": 112335,
+      "rssKiB": 254636
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 3012584,
+      "pssKiB": 112331,
+      "rssKiB": 254632
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 3012708,
+      "pssKiB": 112335,
+      "rssKiB": 254636
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 3012832,
+      "pssKiB": 112331,
+      "rssKiB": 254632
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 3012956,
+      "pssKiB": 112335,
+      "rssKiB": 254636
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 3013080,
+      "pssKiB": 112331,
+      "rssKiB": 254632
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 3013204,
+      "pssKiB": 112335,
+      "rssKiB": 254636
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 3016288,
+      "pssKiB": 112351,
+      "rssKiB": 254652
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 3126312,
+      "pssKiB": 149307,
+      "rssKiB": 291608
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 3247268,
+      "pssKiB": 159539,
+      "rssKiB": 301840
+    },
+    {
+      "phase": "read-tags",
+      "heapUsedBytes": 3505192,
+      "pssKiB": 154531,
+      "rssKiB": 296832
+    },
+    {
+      "phase": "read-tags",
+      "heapUsedBytes": 4251672,
+      "pssKiB": 154987,
+      "rssKiB": 297288
+    },
+    {
+      "phase": "read-tags",
+      "heapUsedBytes": 5651600,
+      "pssKiB": 116751,
+      "rssKiB": 259052
+    },
+    {
+      "phase": "read-tags",
+      "heapUsedBytes": 6325340,
+      "pssKiB": 116767,
+      "rssKiB": 259068
+    },
+    {
+      "phase": "read-tags",
+      "heapUsedBytes": 7670540,
+      "pssKiB": 116775,
+      "rssKiB": 259080
+    },
+    {
+      "phase": "read-tags",
+      "heapUsedBytes": 9479732,
+      "pssKiB": 116863,
+      "rssKiB": 259168
+    },
+    {
+      "phase": "read-tags",
+      "heapUsedBytes": 10581160,
+      "pssKiB": 116775,
+      "rssKiB": 259080
+    },
+    {
+      "phase": "read-tags",
+      "heapUsedBytes": 4930956,
+      "pssKiB": 116743,
+      "rssKiB": 259048
+    },
+    {
+      "phase": "read-tags",
+      "heapUsedBytes": 6250624,
+      "pssKiB": 116834,
+      "rssKiB": 259168
+    },
+    {
+      "phase": "read-tags",
+      "heapUsedBytes": 7634936,
+      "pssKiB": 116746,
+      "rssKiB": 259080
+    },
+    {
+      "phase": "read-tags",
+      "heapUsedBytes": 6769764,
+      "pssKiB": 116746,
+      "rssKiB": 259080
+    },
+    {
+      "phase": "read-tags",
+      "heapUsedBytes": 11160412,
+      "pssKiB": 116686,
+      "rssKiB": 259020
+    },
+    {
+      "phase": "read-tags",
+      "heapUsedBytes": 8849968,
+      "pssKiB": 116758,
+      "rssKiB": 259092
+    },
+    {
+      "phase": "read-tags",
+      "heapUsedBytes": 12856612,
+      "pssKiB": 116774,
+      "rssKiB": 259108
+    },
+    {
+      "phase": "read-tags",
+      "heapUsedBytes": 4167876,
+      "pssKiB": 116782,
+      "rssKiB": 259116
+    },
+    {
+      "phase": "read-tags",
+      "heapUsedBytes": 8446588,
+      "pssKiB": 116750,
+      "rssKiB": 259088
+    },
+    {
+      "phase": "read-tags",
+      "heapUsedBytes": 6352092,
+      "pssKiB": 116794,
+      "rssKiB": 259132
+    },
+    {
+      "phase": "read-tags",
+      "heapUsedBytes": 10311548,
+      "pssKiB": 116718,
+      "rssKiB": 259056
+    },
+    {
+      "phase": "read-tags",
+      "heapUsedBytes": 9317268,
+      "pssKiB": 116710,
+      "rssKiB": 259068
+    },
+    {
+      "phase": "read-tags",
+      "heapUsedBytes": 12836852,
+      "pssKiB": 116658,
+      "rssKiB": 259020
+    },
+    {
+      "phase": "read-reference",
+      "heapUsedBytes": 9979956,
+      "pssKiB": 116014,
+      "rssKiB": 258376
+    },
+    {
+      "phase": "read-effects",
+      "heapUsedBytes": 11385388,
+      "pssKiB": 116087,
+      "rssKiB": 258480
+    },
+    {
+      "phase": "read-effects",
+      "heapUsedBytes": 12505348,
+      "pssKiB": 116691,
+      "rssKiB": 259084
+    },
+    {
+      "phase": "read-effects",
+      "heapUsedBytes": 13943196,
+      "pssKiB": 116763,
+      "rssKiB": 259156
+    },
+    {
+      "phase": "read-effects",
+      "heapUsedBytes": 10505076,
+      "pssKiB": 116819,
+      "rssKiB": 259212
+    },
+    {
+      "phase": "read-effects",
+      "heapUsedBytes": 11771064,
+      "pssKiB": 116807,
+      "rssKiB": 259200
+    },
+    {
+      "phase": "read-effects",
+      "heapUsedBytes": 13108764,
+      "pssKiB": 116711,
+      "rssKiB": 259104
+    },
+    {
+      "phase": "read-effects",
+      "heapUsedBytes": 14292220,
+      "pssKiB": 116687,
+      "rssKiB": 259080
+    },
+    {
+      "phase": "read-effects",
+      "heapUsedBytes": 15656092,
+      "pssKiB": 116691,
+      "rssKiB": 259088
+    },
+    {
+      "phase": "read-effects",
+      "heapUsedBytes": 13018184,
+      "pssKiB": 116712,
+      "rssKiB": 259096
+    },
+    {
+      "phase": "read-effects",
+      "heapUsedBytes": 14219392,
+      "pssKiB": 116728,
+      "rssKiB": 259112
+    },
+    {
+      "phase": "read-effects",
+      "heapUsedBytes": 15589416,
+      "pssKiB": 116804,
+      "rssKiB": 259188
+    },
+    {
+      "phase": "read-effects",
+      "heapUsedBytes": 16712532,
+      "pssKiB": 116708,
+      "rssKiB": 259092
+    },
+    {
+      "phase": "read-effects",
+      "heapUsedBytes": 3401852,
+      "pssKiB": 116704,
+      "rssKiB": 259088
+    },
+    {
+      "phase": "read-effects",
+      "heapUsedBytes": 4594004,
+      "pssKiB": 116804,
+      "rssKiB": 259188
+    },
+    {
+      "phase": "read-effects",
+      "heapUsedBytes": 5818184,
+      "pssKiB": 116736,
+      "rssKiB": 259124
+    },
+    {
+      "phase": "read-effects",
+      "heapUsedBytes": 7050764,
+      "pssKiB": 116732,
+      "rssKiB": 259120
+    },
+    {
+      "phase": "read-effects",
+      "heapUsedBytes": 8335828,
+      "pssKiB": 116824,
+      "rssKiB": 259212
+    },
+    {
+      "phase": "read-effects",
+      "heapUsedBytes": 9651264,
+      "pssKiB": 116828,
+      "rssKiB": 259216
+    },
+    {
+      "phase": "read-effects",
+      "heapUsedBytes": 6336596,
+      "pssKiB": 116851,
+      "rssKiB": 259244
+    },
+    {
+      "phase": "read-audits",
+      "heapUsedBytes": 7479124,
+      "pssKiB": 111635,
+      "rssKiB": 254028
+    },
+    {
+      "phase": "read-audits",
+      "heapUsedBytes": 9054268,
+      "pssKiB": 112231,
+      "rssKiB": 254624
+    },
+    {
+      "phase": "read-audits",
+      "heapUsedBytes": 10486652,
+      "pssKiB": 112107,
+      "rssKiB": 254500
+    },
+    {
+      "phase": "read-audits",
+      "heapUsedBytes": 8200252,
+      "pssKiB": 112183,
+      "rssKiB": 254576
+    },
+    {
+      "phase": "read-audits",
+      "heapUsedBytes": 9651948,
+      "pssKiB": 112183,
+      "rssKiB": 254580
+    },
+    {
+      "phase": "read-audits",
+      "heapUsedBytes": 11238476,
+      "pssKiB": 112291,
+      "rssKiB": 254688
+    },
+    {
+      "phase": "read-audits",
+      "heapUsedBytes": 12583416,
+      "pssKiB": 112115,
+      "rssKiB": 254512
+    },
+    {
+      "phase": "read-audits",
+      "heapUsedBytes": 9871880,
+      "pssKiB": 112183,
+      "rssKiB": 254580
+    },
+    {
+      "phase": "read-audits",
+      "heapUsedBytes": 11307688,
+      "pssKiB": 112311,
+      "rssKiB": 254708
+    },
+    {
+      "phase": "read-audits",
+      "heapUsedBytes": 12732984,
+      "pssKiB": 112191,
+      "rssKiB": 254588
+    },
+    {
+      "phase": "read-snapshot",
+      "heapUsedBytes": 14242920,
+      "pssKiB": 110115,
+      "rssKiB": 252512
+    },
+    {
+      "phase": "read-snapshot",
+      "heapUsedBytes": 11157628,
+      "pssKiB": 109223,
+      "rssKiB": 251620
+    },
+    {
+      "phase": "read-snapshot",
+      "heapUsedBytes": 12391556,
+      "pssKiB": 109039,
+      "rssKiB": 251436
+    },
+    {
+      "phase": "read-snapshot",
+      "heapUsedBytes": 13584212,
+      "pssKiB": 109043,
+      "rssKiB": 251440
+    },
+    {
+      "phase": "read-snapshot",
+      "heapUsedBytes": 14924148,
+      "pssKiB": 109035,
+      "rssKiB": 251432
+    },
+    {
+      "phase": "read-snapshot",
+      "heapUsedBytes": 10891008,
+      "pssKiB": 109043,
+      "rssKiB": 251440
+    },
+    {
+      "phase": "read-snapshot",
+      "heapUsedBytes": 12067640,
+      "pssKiB": 109043,
+      "rssKiB": 251440
+    },
+    {
+      "phase": "read-snapshot",
+      "heapUsedBytes": 13263972,
+      "pssKiB": 109043,
+      "rssKiB": 251440
+    },
+    {
+      "phase": "read-snapshot",
+      "heapUsedBytes": 14534264,
+      "pssKiB": 109047,
+      "rssKiB": 251444
+    },
+    {
+      "phase": "read-snapshot",
+      "heapUsedBytes": 15852152,
+      "pssKiB": 109087,
+      "rssKiB": 251484
+    },
+    {
+      "phase": "read-snapshot",
+      "heapUsedBytes": 11412236,
+      "pssKiB": 109047,
+      "rssKiB": 251444
+    },
+    {
+      "phase": "read-snapshot",
+      "heapUsedBytes": 12697776,
+      "pssKiB": 109043,
+      "rssKiB": 251440
+    },
+    {
+      "phase": "read-snapshot",
+      "heapUsedBytes": 3276696,
+      "pssKiB": 109055,
+      "rssKiB": 251452
+    },
+    {
+      "phase": "read-snapshot",
+      "heapUsedBytes": 4437532,
+      "pssKiB": 109047,
+      "rssKiB": 251444
+    },
+    {
+      "phase": "read-snapshot",
+      "heapUsedBytes": 5656648,
+      "pssKiB": 109047,
+      "rssKiB": 251444
+    },
+    {
+      "phase": "read-snapshot",
+      "heapUsedBytes": 6840760,
+      "pssKiB": 109067,
+      "rssKiB": 251464
+    },
+    {
+      "phase": "read-snapshot",
+      "heapUsedBytes": 8140824,
+      "pssKiB": 109039,
+      "rssKiB": 251436
+    },
+    {
+      "phase": "read-snapshot",
+      "heapUsedBytes": 9368664,
+      "pssKiB": 109059,
+      "rssKiB": 251456
+    },
+    {
+      "phase": "read-snapshot",
+      "heapUsedBytes": 4164636,
+      "pssKiB": 109043,
+      "rssKiB": 251440
+    },
+    {
+      "phase": "read-snapshot",
+      "heapUsedBytes": 5350104,
+      "pssKiB": 109039,
+      "rssKiB": 251436
+    },
+    {
+      "phase": "read-snapshot",
+      "heapUsedBytes": 6579644,
+      "pssKiB": 109043,
+      "rssKiB": 251444
+    },
+    {
+      "phase": "read-snapshot",
+      "heapUsedBytes": 7933908,
+      "pssKiB": 109103,
+      "rssKiB": 251504
+    },
+    {
+      "phase": "read-snapshot",
+      "heapUsedBytes": 9166624,
+      "pssKiB": 109067,
+      "rssKiB": 251468
+    },
+    {
+      "phase": "read-snapshot",
+      "heapUsedBytes": 4677892,
+      "pssKiB": 109051,
+      "rssKiB": 251452
+    },
+    {
+      "phase": "read-snapshot",
+      "heapUsedBytes": 5894700,
+      "pssKiB": 109047,
+      "rssKiB": 251448
+    },
+    {
+      "phase": "read-snapshot",
+      "heapUsedBytes": 7262476,
+      "pssKiB": 109087,
+      "rssKiB": 251488
+    },
+    {
+      "phase": "read-snapshot",
+      "heapUsedBytes": 8472952,
+      "pssKiB": 109047,
+      "rssKiB": 251448
+    },
+    {
+      "phase": "read-snapshot",
+      "heapUsedBytes": 9708472,
+      "pssKiB": 109027,
+      "rssKiB": 251428
+    },
+    {
+      "phase": "read-snapshot",
+      "heapUsedBytes": 5087748,
+      "pssKiB": 109063,
+      "rssKiB": 251464
+    },
+    {
+      "phase": "read-snapshot",
+      "heapUsedBytes": 6314924,
+      "pssKiB": 109043,
+      "rssKiB": 251444
+    },
+    {
+      "phase": "read-snapshot",
+      "heapUsedBytes": 7541784,
+      "pssKiB": 109043,
+      "rssKiB": 251444
+    },
+    {
+      "phase": "read-snapshot",
+      "heapUsedBytes": 8744908,
+      "pssKiB": 109039,
+      "rssKiB": 251440
+    },
+    {
+      "phase": "read-snapshot",
+      "heapUsedBytes": 9968892,
+      "pssKiB": 109043,
+      "rssKiB": 251444
+    },
+    {
+      "phase": "read-snapshot",
+      "heapUsedBytes": 11193900,
+      "pssKiB": 109043,
+      "rssKiB": 251444
+    },
+    {
+      "phase": "read-snapshot",
+      "heapUsedBytes": 6450028,
+      "pssKiB": 109043,
+      "rssKiB": 251444
+    },
+    {
+      "phase": "read-snapshot",
+      "heapUsedBytes": 7790028,
+      "pssKiB": 109043,
+      "rssKiB": 251444
+    },
+    {
+      "phase": "read-snapshot",
+      "heapUsedBytes": 9057136,
+      "pssKiB": 109075,
+      "rssKiB": 251476
+    },
+    {
+      "phase": "read-snapshot",
+      "heapUsedBytes": 10342024,
+      "pssKiB": 109043,
+      "rssKiB": 251444
+    },
+    {
+      "phase": "read-snapshot",
+      "heapUsedBytes": 11560260,
+      "pssKiB": 108999,
+      "rssKiB": 251400
+    },
+    {
+      "phase": "read-snapshot",
+      "heapUsedBytes": 7143416,
+      "pssKiB": 108995,
+      "rssKiB": 251396
+    },
+    {
+      "phase": "read-snapshot",
+      "heapUsedBytes": 8211960,
+      "pssKiB": 109043,
+      "rssKiB": 251444
+    },
+    {
+      "phase": "read-snapshot",
+      "heapUsedBytes": 9563092,
+      "pssKiB": 109039,
+      "rssKiB": 251440
+    },
+    {
+      "phase": "read-snapshot",
+      "heapUsedBytes": 10826948,
+      "pssKiB": 109035,
+      "rssKiB": 251436
+    },
+    {
+      "phase": "read-snapshot",
+      "heapUsedBytes": 12008336,
+      "pssKiB": 109063,
+      "rssKiB": 251464
+    },
+    {
+      "phase": "read-snapshot",
+      "heapUsedBytes": 7313356,
+      "pssKiB": 109039,
+      "rssKiB": 251440
+    },
+    {
+      "phase": "read-snapshot",
+      "heapUsedBytes": 8644828,
+      "pssKiB": 109039,
+      "rssKiB": 251440
+    },
+    {
+      "phase": "read-snapshot",
+      "heapUsedBytes": 9836408,
+      "pssKiB": 109043,
+      "rssKiB": 251444
+    },
+    {
+      "phase": "read-snapshot",
+      "heapUsedBytes": 11112828,
+      "pssKiB": 109047,
+      "rssKiB": 251448
+    },
+    {
+      "phase": "read-snapshot",
+      "heapUsedBytes": 12347564,
+      "pssKiB": 109039,
+      "rssKiB": 251440
+    },
+    {
+      "phase": "read-snapshot",
+      "heapUsedBytes": 8163344,
+      "pssKiB": 109043,
+      "rssKiB": 251444
+    },
+    {
+      "phase": "read-snapshot",
+      "heapUsedBytes": 9443668,
+      "pssKiB": 109043,
+      "rssKiB": 251444
+    },
+    {
+      "phase": "faults",
+      "heapUsedBytes": 10547616,
+      "pssKiB": 108367,
+      "rssKiB": 250768
+    },
+    {
+      "phase": "faults",
+      "heapUsedBytes": 10904416,
+      "pssKiB": 104259,
+      "rssKiB": 246660
+    },
+    {
+      "phase": "faults",
+      "heapUsedBytes": 10904540,
+      "pssKiB": 104299,
+      "rssKiB": 246700
+    },
+    {
+      "phase": "faults",
+      "heapUsedBytes": 10904664,
+      "pssKiB": 104247,
+      "rssKiB": 246648
+    },
+    {
+      "phase": "faults",
+      "heapUsedBytes": 13675852,
+      "pssKiB": 101291,
+      "rssKiB": 243692
+    },
+    {
+      "phase": "faults",
+      "heapUsedBytes": 13675976,
+      "pssKiB": 100071,
+      "rssKiB": 242472
+    },
+    {
+      "phase": "faults",
+      "heapUsedBytes": 13676100,
+      "pssKiB": 108303,
+      "rssKiB": 250704
+    },
+    {
+      "phase": "faults",
+      "heapUsedBytes": 13676224,
+      "pssKiB": 108215,
+      "rssKiB": 250616
+    }
+  ]
+}
+{
+  "size": 10000,
+  "shape": "deep",
+  "inputSha256": "94895d2c356fd656a26d761a1d10af02b4b90c6ca70fd7a70ab7f740d2d34d4d",
+  "result": {
+    "size": 10000,
+    "shape": "deep",
+    "queries": 1027,
+    "maxRows": 51,
+    "elapsedMs": 22213,
+    "graphCount": 10000,
+    "maxPage": 50,
+    "fullDtos": 0,
+    "stale": true,
+    "seedPlans": {
+      "affectedRows": 10000,
+      "before": [
+        "CO-ROUTINE ancestors",
+        "SETUP",
+        "SCAN CONSTANT ROW",
+        "RECURSIVE STEP",
+        "SCAN a",
+        "SEARCH c USING COVERING INDEX sqlite_autoindex_event_causes_1 (world_id=? AND event_id=?)",
+        "SCAN ancestors"
+      ],
+      "analyzed": [
+        "CO-ROUTINE ancestors",
+        "SETUP",
+        "SCAN CONSTANT ROW",
+        "RECURSIVE STEP",
+        "SCAN a",
+        "SEARCH c USING COVERING INDEX sqlite_autoindex_event_causes_1 (world_id=? AND event_id=?)",
+        "SCAN ancestors"
+      ],
+      "restored": [
+        "CO-ROUTINE ancestors",
+        "SETUP",
+        "SCAN CONSTANT ROW",
+        "RECURSIVE STEP",
+        "SCAN a",
+        "SCAN c",
+        "SCAN ancestors"
+      ]
+    }
+  },
+  "observations": [
+    {
+      "phase": "seed",
+      "heapUsedBytes": 13739348,
+      "pssKiB": 108067,
+      "rssKiB": 250468
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 13743352,
+      "pssKiB": 108123,
+      "rssKiB": 250524
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 13743476,
+      "pssKiB": 100015,
+      "rssKiB": 242416
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 13743600,
+      "pssKiB": 100515,
+      "rssKiB": 242916
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 9752396,
+      "pssKiB": 100411,
+      "rssKiB": 242812
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 9752520,
+      "pssKiB": 100175,
+      "rssKiB": 242576
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 9752644,
+      "pssKiB": 108471,
+      "rssKiB": 250872
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 9752768,
+      "pssKiB": 108311,
+      "rssKiB": 250712
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 9881636,
+      "pssKiB": 111595,
+      "rssKiB": 253996
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 10482824,
+      "pssKiB": 112207,
+      "rssKiB": 254608
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 11319256,
+      "pssKiB": 111203,
+      "rssKiB": 253604
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 12155512,
+      "pssKiB": 111203,
+      "rssKiB": 253604
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 13035740,
+      "pssKiB": 111227,
+      "rssKiB": 253628
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 13917264,
+      "pssKiB": 111215,
+      "rssKiB": 253616
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 14799768,
+      "pssKiB": 111251,
+      "rssKiB": 253652
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 15759236,
+      "pssKiB": 111259,
+      "rssKiB": 253664
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 11152800,
+      "pssKiB": 111211,
+      "rssKiB": 253616
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 12035260,
+      "pssKiB": 111319,
+      "rssKiB": 253724
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 12917756,
+      "pssKiB": 111263,
+      "rssKiB": 253668
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 13925188,
+      "pssKiB": 110215,
+      "rssKiB": 252620
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 14873608,
+      "pssKiB": 110403,
+      "rssKiB": 252808
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 15666828,
+      "pssKiB": 110391,
+      "rssKiB": 252796
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 3107264,
+      "pssKiB": 110399,
+      "rssKiB": 252804
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 3992728,
+      "pssKiB": 110447,
+      "rssKiB": 252852
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 4874860,
+      "pssKiB": 110447,
+      "rssKiB": 252852
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 5757324,
+      "pssKiB": 110427,
+      "rssKiB": 252848
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 6683828,
+      "pssKiB": 110423,
+      "rssKiB": 252848
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 7566264,
+      "pssKiB": 110475,
+      "rssKiB": 252900
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 8492760,
+      "pssKiB": 110535,
+      "rssKiB": 252960
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 9447140,
+      "pssKiB": 110979,
+      "rssKiB": 253404
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 10085720,
+      "pssKiB": 110539,
+      "rssKiB": 252964
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 4436116,
+      "pssKiB": 110531,
+      "rssKiB": 252956
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 4922316,
+      "pssKiB": 110607,
+      "rssKiB": 253032
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 5425188,
+      "pssKiB": 110603,
+      "rssKiB": 253028
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 5937064,
+      "pssKiB": 110531,
+      "rssKiB": 252956
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 6452920,
+      "pssKiB": 110555,
+      "rssKiB": 252980
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 6972304,
+      "pssKiB": 110531,
+      "rssKiB": 252956
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 7488676,
+      "pssKiB": 110531,
+      "rssKiB": 252956
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 7955680,
+      "pssKiB": 110603,
+      "rssKiB": 253028
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 8456248,
+      "pssKiB": 110607,
+      "rssKiB": 253032
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 8983544,
+      "pssKiB": 110611,
+      "rssKiB": 253036
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 9496948,
+      "pssKiB": 110615,
+      "rssKiB": 253040
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 9989336,
+      "pssKiB": 110535,
+      "rssKiB": 252960
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 10509336,
+      "pssKiB": 110535,
+      "rssKiB": 252964
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 6080156,
+      "pssKiB": 110631,
+      "rssKiB": 253060
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 6607152,
+      "pssKiB": 110627,
+      "rssKiB": 253056
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 7116704,
+      "pssKiB": 110539,
+      "rssKiB": 252968
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 7632268,
+      "pssKiB": 110535,
+      "rssKiB": 252964
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 8145116,
+      "pssKiB": 110595,
+      "rssKiB": 253024
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 8656628,
+      "pssKiB": 110535,
+      "rssKiB": 252964
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 9172436,
+      "pssKiB": 110535,
+      "rssKiB": 252964
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 9674568,
+      "pssKiB": 110611,
+      "rssKiB": 253040
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 10183232,
+      "pssKiB": 110539,
+      "rssKiB": 252968
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 10707164,
+      "pssKiB": 110611,
+      "rssKiB": 253040
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 11231344,
+      "pssKiB": 110591,
+      "rssKiB": 253020
+    }
+  ]
+}
+{
+  "size": 10000,
+  "shape": "wide",
+  "inputSha256": "94895d2c356fd656a26d761a1d10af02b4b90c6ca70fd7a70ab7f740d2d34d4d",
+  "result": {
+    "size": 10000,
+    "shape": "wide",
+    "queries": 1027,
+    "maxRows": 51,
+    "elapsedMs": 20289,
+    "graphCount": 10000,
+    "maxPage": 50,
+    "fullDtos": 0,
+    "stale": true,
+    "seedPlans": {
+      "affectedRows": 10000,
+      "before": [
+        "CO-ROUTINE ancestors",
+        "SETUP",
+        "SCAN CONSTANT ROW",
+        "RECURSIVE STEP",
+        "SCAN a",
+        "SEARCH c USING COVERING INDEX sqlite_autoindex_event_causes_1 (world_id=? AND event_id=?)",
+        "SCAN ancestors"
+      ],
+      "analyzed": [
+        "CO-ROUTINE ancestors",
+        "SETUP",
+        "SCAN CONSTANT ROW",
+        "RECURSIVE STEP",
+        "SCAN a",
+        "SEARCH c USING COVERING INDEX sqlite_autoindex_event_causes_1 (world_id=? AND event_id=?)",
+        "SCAN ancestors"
+      ],
+      "restored": [
+        "CO-ROUTINE ancestors",
+        "SETUP",
+        "SCAN CONSTANT ROW",
+        "RECURSIVE STEP",
+        "SCAN a",
+        "SCAN c",
+        "SCAN ancestors"
+      ]
+    }
+  },
+  "observations": [
+    {
+      "phase": "seed",
+      "heapUsedBytes": 11343012,
+      "pssKiB": 100855,
+      "rssKiB": 243284
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 11350448,
+      "pssKiB": 101379,
+      "rssKiB": 243808
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 11350572,
+      "pssKiB": 101419,
+      "rssKiB": 243848
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 11350696,
+      "pssKiB": 101371,
+      "rssKiB": 243800
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 8231476,
+      "pssKiB": 102211,
+      "rssKiB": 244640
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 8235964,
+      "pssKiB": 100271,
+      "rssKiB": 242700
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 8236088,
+      "pssKiB": 101015,
+      "rssKiB": 243444
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 8236212,
+      "pssKiB": 109259,
+      "rssKiB": 251688
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 8236336,
+      "pssKiB": 109555,
+      "rssKiB": 251984
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 8335980,
+      "pssKiB": 110011,
+      "rssKiB": 252440
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 8456500,
+      "pssKiB": 111375,
+      "rssKiB": 253804
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 9330428,
+      "pssKiB": 111763,
+      "rssKiB": 254192
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 10458344,
+      "pssKiB": 111919,
+      "rssKiB": 254348
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 8197144,
+      "pssKiB": 111975,
+      "rssKiB": 254404
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 9422468,
+      "pssKiB": 111975,
+      "rssKiB": 254404
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 10612792,
+      "pssKiB": 111995,
+      "rssKiB": 254424
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 8830864,
+      "pssKiB": 112067,
+      "rssKiB": 254496
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 10162388,
+      "pssKiB": 112083,
+      "rssKiB": 254512
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 11492588,
+      "pssKiB": 111027,
+      "rssKiB": 253456
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 9635516,
+      "pssKiB": 111071,
+      "rssKiB": 253500
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 10834512,
+      "pssKiB": 111163,
+      "rssKiB": 253592
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 11983568,
+      "pssKiB": 111163,
+      "rssKiB": 253592
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 10268040,
+      "pssKiB": 111215,
+      "rssKiB": 253644
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 11569212,
+      "pssKiB": 111275,
+      "rssKiB": 253704
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 9791676,
+      "pssKiB": 111331,
+      "rssKiB": 253760
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 11118720,
+      "pssKiB": 111335,
+      "rssKiB": 253764
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 12044980,
+      "pssKiB": 110863,
+      "rssKiB": 253292
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 12493568,
+      "pssKiB": 110607,
+      "rssKiB": 253036
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 12959424,
+      "pssKiB": 110683,
+      "rssKiB": 253112
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 10652192,
+      "pssKiB": 110671,
+      "rssKiB": 253100
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 11165816,
+      "pssKiB": 110603,
+      "rssKiB": 253032
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 11845384,
+      "pssKiB": 110687,
+      "rssKiB": 253116
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 12355588,
+      "pssKiB": 110679,
+      "rssKiB": 253108
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 12844528,
+      "pssKiB": 110679,
+      "rssKiB": 253108
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 13311196,
+      "pssKiB": 110599,
+      "rssKiB": 253028
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 13799840,
+      "pssKiB": 110675,
+      "rssKiB": 253104
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 14309628,
+      "pssKiB": 110603,
+      "rssKiB": 253032
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 14776208,
+      "pssKiB": 110679,
+      "rssKiB": 253108
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 15264952,
+      "pssKiB": 110663,
+      "rssKiB": 253092
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 15933684,
+      "pssKiB": 110599,
+      "rssKiB": 253028
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 16414856,
+      "pssKiB": 110675,
+      "rssKiB": 253104
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 3018812,
+      "pssKiB": 110603,
+      "rssKiB": 253032
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 3468628,
+      "pssKiB": 110611,
+      "rssKiB": 253044
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 4081492,
+      "pssKiB": 110607,
+      "rssKiB": 253040
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 4542664,
+      "pssKiB": 110611,
+      "rssKiB": 253044
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 5009460,
+      "pssKiB": 110619,
+      "rssKiB": 253052
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 5498516,
+      "pssKiB": 110607,
+      "rssKiB": 253040
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 5965460,
+      "pssKiB": 110687,
+      "rssKiB": 253120
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 6454276,
+      "pssKiB": 110671,
+      "rssKiB": 253108
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 6963728,
+      "pssKiB": 110611,
+      "rssKiB": 253048
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 7454148,
+      "pssKiB": 110643,
+      "rssKiB": 253080
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 7941484,
+      "pssKiB": 110679,
+      "rssKiB": 253116
+    }
+  ]
+}
+{
+  "size": 10000,
+  "shape": "mixed",
+  "inputSha256": "94895d2c356fd656a26d761a1d10af02b4b90c6ca70fd7a70ab7f740d2d34d4d",
+  "result": {
+    "size": 10000,
+    "shape": "mixed",
+    "queries": 1027,
+    "maxRows": 51,
+    "elapsedMs": 30787,
+    "graphCount": 10000,
+    "maxPage": 50,
+    "fullDtos": 0,
+    "stale": true,
+    "seedPlans": {
+      "affectedRows": 10000,
+      "before": [
+        "CO-ROUTINE ancestors",
+        "SETUP",
+        "SCAN CONSTANT ROW",
+        "RECURSIVE STEP",
+        "SCAN a",
+        "SEARCH c USING COVERING INDEX sqlite_autoindex_event_causes_1 (world_id=? AND event_id=?)",
+        "SCAN ancestors"
+      ],
+      "analyzed": [
+        "CO-ROUTINE ancestors",
+        "SETUP",
+        "SCAN CONSTANT ROW",
+        "RECURSIVE STEP",
+        "SCAN a",
+        "SEARCH c USING COVERING INDEX sqlite_autoindex_event_causes_1 (world_id=? AND event_id=?)",
+        "SCAN ancestors"
+      ],
+      "restored": [
+        "CO-ROUTINE ancestors",
+        "SETUP",
+        "SCAN CONSTANT ROW",
+        "RECURSIVE STEP",
+        "SCAN a",
+        "SCAN c",
+        "SCAN ancestors"
+      ]
+    }
+  },
+  "observations": [
+    {
+      "phase": "seed",
+      "heapUsedBytes": 8370624,
+      "pssKiB": 101635,
+      "rssKiB": 244072
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 8376256,
+      "pssKiB": 101715,
+      "rssKiB": 244152
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 8378760,
+      "pssKiB": 101819,
+      "rssKiB": 244256
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 8378884,
+      "pssKiB": 101775,
+      "rssKiB": 244212
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 8379008,
+      "pssKiB": 101771,
+      "rssKiB": 244208
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 4679620,
+      "pssKiB": 102263,
+      "rssKiB": 244700
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 4687512,
+      "pssKiB": 100279,
+      "rssKiB": 242716
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 4687636,
+      "pssKiB": 101039,
+      "rssKiB": 243476
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 4687760,
+      "pssKiB": 109267,
+      "rssKiB": 251704
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 4687884,
+      "pssKiB": 109611,
+      "rssKiB": 252048
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 4688008,
+      "pssKiB": 108991,
+      "rssKiB": 251428
+    },
+    {
+      "phase": "seed",
+      "heapUsedBytes": 4808852,
+      "pssKiB": 108175,
+      "rssKiB": 250612
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 5142400,
+      "pssKiB": 108411,
+      "rssKiB": 250848
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 5639332,
+      "pssKiB": 108707,
+      "rssKiB": 251144
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 6138624,
+      "pssKiB": 108079,
+      "rssKiB": 250516
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 6675708,
+      "pssKiB": 108127,
+      "rssKiB": 250564
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 7169376,
+      "pssKiB": 108079,
+      "rssKiB": 250516
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 7711000,
+      "pssKiB": 108115,
+      "rssKiB": 250552
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 8251900,
+      "pssKiB": 108059,
+      "rssKiB": 250496
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 8790432,
+      "pssKiB": 108071,
+      "rssKiB": 250508
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 9334144,
+      "pssKiB": 108127,
+      "rssKiB": 250564
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 9825300,
+      "pssKiB": 108071,
+      "rssKiB": 250508
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 10409428,
+      "pssKiB": 108127,
+      "rssKiB": 250564
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 5850752,
+      "pssKiB": 108179,
+      "rssKiB": 250616
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 6389608,
+      "pssKiB": 108127,
+      "rssKiB": 250564
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 6077844,
+      "pssKiB": 108179,
+      "rssKiB": 250616
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 6712260,
+      "pssKiB": 108183,
+      "rssKiB": 250620
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 6353516,
+      "pssKiB": 108507,
+      "rssKiB": 250944
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 6573460,
+      "pssKiB": 106351,
+      "rssKiB": 248788
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 7063168,
+      "pssKiB": 106199,
+      "rssKiB": 248636
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 7572040,
+      "pssKiB": 106195,
+      "rssKiB": 248632
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 6448352,
+      "pssKiB": 106183,
+      "rssKiB": 248620
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 6942852,
+      "pssKiB": 106187,
+      "rssKiB": 248624
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 7481392,
+      "pssKiB": 106187,
+      "rssKiB": 248624
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 6728416,
+      "pssKiB": 106187,
+      "rssKiB": 248624
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 7269568,
+      "pssKiB": 106187,
+      "rssKiB": 248624
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 7813916,
+      "pssKiB": 106243,
+      "rssKiB": 248680
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 7078864,
+      "pssKiB": 106243,
+      "rssKiB": 248680
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 7627688,
+      "pssKiB": 106295,
+      "rssKiB": 248732
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 8212716,
+      "pssKiB": 106243,
+      "rssKiB": 248680
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 7284348,
+      "pssKiB": 106295,
+      "rssKiB": 248732
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 7881056,
+      "pssKiB": 106299,
+      "rssKiB": 248740
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 7218676,
+      "pssKiB": 106363,
+      "rssKiB": 248804
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 8041576,
+      "pssKiB": 106631,
+      "rssKiB": 249072
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 7453864,
+      "pssKiB": 106311,
+      "rssKiB": 248752
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 7863856,
+      "pssKiB": 106123,
+      "rssKiB": 248564
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 8228256,
+      "pssKiB": 106099,
+      "rssKiB": 248540
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 8618280,
+      "pssKiB": 106099,
+      "rssKiB": 248540
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 9042432,
+      "pssKiB": 106099,
+      "rssKiB": 248540
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 9431484,
+      "pssKiB": 106111,
+      "rssKiB": 248552
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 9819120,
+      "pssKiB": 106139,
+      "rssKiB": 248580
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 10236904,
+      "pssKiB": 106103,
+      "rssKiB": 248544
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 10641364,
+      "pssKiB": 106119,
+      "rssKiB": 248560
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 8227248,
+      "pssKiB": 106107,
+      "rssKiB": 248548
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 8649400,
+      "pssKiB": 106107,
+      "rssKiB": 248548
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 9035256,
+      "pssKiB": 106115,
+      "rssKiB": 248556
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 9458392,
+      "pssKiB": 106183,
+      "rssKiB": 248624
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 9840768,
+      "pssKiB": 106107,
+      "rssKiB": 248548
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 10240936,
+      "pssKiB": 106107,
+      "rssKiB": 248548
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 10603704,
+      "pssKiB": 106111,
+      "rssKiB": 248552
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 11065448,
+      "pssKiB": 106119,
+      "rssKiB": 248560
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 9075880,
+      "pssKiB": 106123,
+      "rssKiB": 248564
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 9457884,
+      "pssKiB": 106191,
+      "rssKiB": 248632
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 9284460,
+      "pssKiB": 106111,
+      "rssKiB": 248552
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 9664096,
+      "pssKiB": 106119,
+      "rssKiB": 248560
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 9297968,
+      "pssKiB": 106135,
+      "rssKiB": 248576
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 9738652,
+      "pssKiB": 106151,
+      "rssKiB": 248596
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 9437796,
+      "pssKiB": 106147,
+      "rssKiB": 248592
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 9800604,
+      "pssKiB": 106215,
+      "rssKiB": 248660
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 10210316,
+      "pssKiB": 106135,
+      "rssKiB": 248580
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 9834792,
+      "pssKiB": 106131,
+      "rssKiB": 248576
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 10238744,
+      "pssKiB": 106143,
+      "rssKiB": 248588
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 9936468,
+      "pssKiB": 106147,
+      "rssKiB": 248592
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 10386260,
+      "pssKiB": 106143,
+      "rssKiB": 248588
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 10769288,
+      "pssKiB": 106131,
+      "rssKiB": 248576
+    },
+    {
+      "phase": "read",
+      "heapUsedBytes": 11260852,
+      "pssKiB": 106135,
+      "rssKiB": 248580
+    }
+  ]
+}
+{
+  "eventRecovery": {
+    "oldPid": "14292",
+    "newPid": "16151",
+    "before": {
+      "revision": 1,
+      "audits": 0,
+      "effects": 0
+    },
+    "after": {
+      "revision": 2,
+      "audits": 1,
+      "effects": 1
+    }
+  }
+}

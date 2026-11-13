@@ -4,11 +4,10 @@ import { validateId } from '../../domain/kanataValidation.js'
 import { dependentQueries as query, dependentWrites as write, updateEffectValue } from './kanataMessageDependentsSql.js'
 import { eventAuditSupport, writeEventStatusAudit } from './kanataEventSnapshot.js'
 import { messageWrites } from './kanataRepositorySql.js'
-import { extensionObject, requireSqliteValue as need, safeInteger } from './kanataRepositoryValues.js'
+import { requireSqliteValue as need, safeInteger } from './kanataRepositoryValues.js'
 import { assertDomainArrayOrder } from './kanataArrayOrder.js'
 
 /** @typedef {import('../../domain/kanataTypes').Message} Message */
-/** @typedef {import('../../domain/kanataTypes').WorldEvent} Event */
 /** @typedef {import('../../domain/kanataTypes').WorldEffect} Effect */
 /** @typedef {import('./kanataSchemaTypes').KanataSqlRow} Row */
 /** @typedef {import('./kanataSchemaTypes').KanataSqlValue} Value */
@@ -24,77 +23,6 @@ export async function* visitRows(tx, sql, bindings, columns, batchSize = 128) {
     yield* rows
     if (rows.length < batchSize) return
     cursor = columns.map(column => rows[rows.length - 1][column])
-  }
-}
-
-/** @template T @param {AsyncIterable<Row>} rows @param {(row:Row)=>T} project */
-async function gather(rows, project) {
-  /** @type {T[]} */
-  const result = []
-  for await (const row of rows) result.push(project(row))
-  return result
-}
-
-/** Stored order hints may carry future fields, but cannot override normalized links.
- * @template T @param {T[]} actual @param {unknown} hint @param {(value:T)=>string} identity */
-function originalOrder(actual, hint, identity) {
-  if (hint === undefined) return actual
-  need(Array.isArray(hint) && hint.length === actual.length, 'KANATA_SQLITE_INTEGRITY_FAILED')
-  const expected = new Set(actual.map(identity))
-  for (const item of /** @type {T[]} */ (hint)) {
-    need(expected.delete(identity(item)), 'KANATA_SQLITE_INTEGRITY_FAILED')
-  }
-  return /** @type {T[]} */ (hint)
-}
-
-/** Explicit historical materializer. Ordinary readers use header/relation/chunk APIs.
- * @param {Transaction} tx @param {Row} row @returns {Promise<Event>} */
-export async function eventFromRow(tx, row) {
-  await assertDomainArrayOrder(tx,String(row.world_id))
-  const keys = [row.world_id, row.id]
-  let json='',offset=0
-  for(;;){
-    const [chunk]=await tx.query(query.eventExtensionChunk,[offset+1,...keys])
-    need(chunk && typeof chunk.part==='string','KANATA_SQLITE_INTEGRITY_FAILED')
-    const characters=Array.from(String(chunk.part))
-    json+=characters.slice(0,4096).join('')
-    if(characters.length<=4096)break
-    offset+=4096
-  }
-  const extensions = extensionObject(json)
-  const participants = await gather(visitRows(tx, query.eventParticipants, keys, ['participant_id'],50), link => String(link.participant_id))
-  const causes = await gather(visitRows(tx, query.eventCauses, keys, ['cause_event_id'],50), link => String(link.cause_event_id))
-  const sources = await gather(visitRows(tx, query.eventSources, keys, ['message_id'],50), link => ({
-    messageId: String(link.message_id), revision: Number(link.message_revision),
-  }))
-  const life = await gather(visitRows(tx, query.eventLifeSources, keys, ['grant_id', 'grant_revision', 'fingerprint'],50), link => ({
-    grantId: String(link.grant_id), instanceId: String(link.instance_id),
-    moduleId: /** @type {import('../../domain/kanataTypes').LifeModule} */ (link.module_id),
-    revision: Number(link.grant_revision), fingerprint: String(link.fingerprint),
-  }))
-  const action = { ...extensions.action }
-  for (const [key, value] of [['instanceId', row.action_instance_id], ['relationshipId', row.action_relationship_id], ['location', row.action_location]]) {
-    if (value !== null) action[String(key)] = String(value)
-    else delete action[String(key)]
-  }
-  const participantIds = originalOrder(participants, extensions.participantIds, id => id)
-  const causedByEventIds = originalOrder(causes, extensions.causedByEventIds, id => id)
-  const sourceRefs = originalOrder(sources, extensions.sourceRefs, source => JSON.stringify([source.messageId, source.revision]))
-  const lifeSources = originalOrder(life, extensions.lifeSources, source => JSON.stringify([
-    source.grantId, source.instanceId, source.moduleId, source.revision, source.fingerprint,
-  ]))
-  const actionPresent = Object.keys(action).length || Object.hasOwn(extensions, 'action')
-  const lifePresent = lifeSources.length || Object.hasOwn(extensions, 'lifeSources')
-  for (const field of ['action', 'lifeSources', 'causality', 'kind', 'replacesEventId']) delete extensions[field]
-  return {
-    ...extensions, id: String(row.id), worldId: String(row.world_id), participantIds, causedByEventIds, sourceRefs,
-    status: /** @type {Event['status']} */ (row.status), visibility: /** @type {Event['visibility']} */ (row.visibility),
-    summary: String(row.summary), effectiveAt: Number(row.effective_at), recordedAt: Number(row.recorded_at), revision: Number(row.revision),
-    ...(row.causality !== null && { causality: /** @type {Event['causality']} */ (row.causality) }),
-    ...(row.kind !== null && { kind: /** @type {Event['kind']} */ (row.kind) }),
-    ...(row.replaces_event_id !== null && { replacesEventId: String(row.replaces_event_id) }),
-    ...(actionPresent && { action }),
-    ...(lifePresent && { lifeSources }),
   }
 }
 

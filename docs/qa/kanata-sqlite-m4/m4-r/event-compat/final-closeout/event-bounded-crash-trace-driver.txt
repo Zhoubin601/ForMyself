@@ -1,0 +1,83 @@
+/data/app/~~GbSXtVtSgSDBxdVZPQ40Mw==/com.yubin.formyself.m2qa-k4X4l7RVy7iR4rG_jyl3Eg==/base.apk: 1 file pulled, 0 skipped. 32.3 MB/s (19148950 bytes in 0.565s)
+/data/app/~~VAmQDr6ji5-XaK2UktnBIg==/com.yubin.formyself.m2qa.test-0yuPyj7048OsYA9HpjWlYQ==/base.apk: 1 file pulled, 0 skipped. 24.6 MB/s (598741 bytes in 0.023s)
+▲ [WARNING] Ignoring this import because "src/features/chat/kanataManagement.css" was marked as having no side effects [ignored-bare-import]
+
+    src/features/chat/KanataView.vue:8:7:
+      8 │ import './kanataManagement.css'
+        ╵        ~~~~~~~~~~~~~~~~~~~~~~~~
+
+{"qaBundleSha256":"10ecfa12a8251d4c3dd0626ffc4c0e8c2c6997a641e29b2bab461882d9b3fa25"}
+MR1_START {"phase":"seed","name":"begin","arity":0,"parameterChars":0}
+MR1_END {"phase":"seed","name":"begin","elapsedMs":10,"rows":0}
+MR1_START {"phase":"seed","name":"db39b0cccaf3adab54260cfad16b96acc705d584b6ed847e57bed69e6137655c","arity":3,"parameterChars":50}
+MR1_END {"phase":"seed","name":"db39b0cccaf3adab54260cfad16b96acc705d584b6ed847e57bed69e6137655c","elapsedMs":31,"rows":1001}
+MR1_START {"phase":"seed","name":"99892641871a6d90960cc7d38237d094e3a5c3f9a0131bed3e68f2ab117a7901","arity":3,"parameterChars":67}
+MR1_END {"phase":"seed","name":"99892641871a6d90960cc7d38237d094e3a5c3f9a0131bed3e68f2ab117a7901","elapsedMs":20,"rows":7}
+MR1_START {"phase":"seed","name":"c470fec71d8e48766974f3ed64dfda7c85c82e53a1de17f8994e10ceba117b8c","arity":0,"parameterChars":0}
+MR1_END {"phase":"seed","name":"c470fec71d8e48766974f3ed64dfda7c85c82e53a1de17f8994e10ceba117b8c","elapsedMs":10,"rows":0}
+MR1_START {"phase":"seed","name":"99892641871a6d90960cc7d38237d094e3a5c3f9a0131bed3e68f2ab117a7901","arity":3,"parameterChars":67}
+MR1_END {"phase":"seed","name":"99892641871a6d90960cc7d38237d094e3a5c3f9a0131bed3e68f2ab117a7901","elapsedMs":8,"rows":7}
+MR1_START {"phase":"seed","name":"f2bb78b8397db84245cc773d818205982feeda439b212e663d693cb7230b35c1","arity":4,"parameterChars":69}
+MR1_END {"phase":"seed","name":"f2bb78b8397db84245cc773d818205982feeda439b212e663d693cb7230b35c1","elapsedMs":79,"rows":1000}
+MR1_START {"phase":"seed","name":"6b55d3d837819fa02bc1c83d1f511378aee4296f80787a21a77486f4d5b81891","arity":0,"parameterChars":0}
+MR1_END {"phase":"seed","name":"6b55d3d837819fa02bc1c83d1f511378aee4296f80787a21a77486f4d5b81891","elapsedMs":6,"rows":2}
+MR1_START {"phase":"seed","name":"5885acf4a3ff3cc2992af3db614b9fa89e86bb1c5e079e96ca334c6cf4040ad8","arity":0,"parameterChars":0}
+MR1_END {"phase":"seed","name":"5885acf4a3ff3cc2992af3db614b9fa89e86bb1c5e079e96ca334c6cf4040ad8","elapsedMs":13,"rows":0}
+MR1_START {"phase":"seed","name":"99892641871a6d90960cc7d38237d094e3a5c3f9a0131bed3e68f2ab117a7901","arity":3,"parameterChars":67}
+MR1_END {"phase":"seed","name":"99892641871a6d90960cc7d38237d094e3a5c3f9a0131bed3e68f2ab117a7901","elapsedMs":8,"rows":7}
+MR1_SEED_PLAN {"size":1000,"before":["CO-ROUTINE ancestors","SETUP","SCAN CONSTANT ROW","RECURSIVE STEP","SEARCH c USING COVERING INDEX event_causes_reverse (world_id=?)","SCAN a","SCAN ancestors"],"analyzed":["CO-ROUTINE ancestors","SETUP","SCAN CONSTANT ROW","RECURSIVE STEP","SCAN c","SCAN a","SCAN ancestors"],"restored":["CO-ROUTINE ancestors","SETUP","SCAN CONSTANT ROW","RECURSIVE STEP","SEARCH c USING COVERING INDEX event_causes_reverse (world_id=?)","SCAN a","SCAN ancestors"],"affectedRows":1000}
+MR1_START {"phase":"seed","name":"184cc04085a0b1db5e74f2d84b2bd0c462f60552cc9afbef69528152da0c1bf9","arity":6,"parameterChars":139}
+MR1_END {"phase":"seed","name":"184cc04085a0b1db5e74f2d84b2bd0c462f60552cc9afbef69528152da0c1bf9","elapsedMs":47,"rows":1001}
+MR1_START {"phase":"seed","name":"commit","arity":0,"parameterChars":0}
+MR1_END {"phase":"seed","name":"commit","elapsedMs":42,"rows":0}
+MR1_PHASE {"size":1000,"phase":"seed","queries":3,"writes":6,"maxRows":7,"elapsedMs":284}
+MR1_PLAN_DDL {"index":0,"statement":"83403a1c31f81d97f3fb27692a1e9e98fa5e772f0057ef2252756365d93fd9a8"}
+MR1_PLAN_DDL {"index":1,"statement":"e23c637479cefd1bf2941297d10d2b8df4f1c2bd127da53a9d3daf55d96567fc"}
+MR1_PLAN_DDL {"index":2,"statement":"216053d7122cd3047fafeb318310c74c46b780f35d6527338e9e169f7398d797"}
+MR1_PLAN_DDL {"index":3,"statement":"c82394fbdc64494005b0fab66847aaf509232adf1d1884878507c369d9de886b"}
+MR1_PLAN_DDL {"index":4,"statement":"853b05126557006d3555b3011a409797d9c4a6700b83e3d4341c32d1b1a1ecf8"}
+MR1_PLAN_DDL {"index":5,"statement":"854d7ec9c07dc872d91e08cdaac89172182365e661c8f635b5928a17b9c9d08c"}
+MR1_PLAN_DDL {"index":6,"statement":"9f72129b256fce7044749ec791511ab374e22fa1722a1a3bcec1c701073050a3"}
+MR1_PLAN_DDL {"index":7,"statement":"bf8d7a6b08b5a24847c1d33137beff6baf69f47af508f1626fb9b3496e3695c8"}
+MR1_PLAN_DDL {"index":8,"statement":"df2fd0c123ebdbba456390ec8f6c306bafd3cc150393d3e25227bd80282439bc"}
+MR1_PLAN_QUERY {"index":0,"statement":"052c6d78a8ba29fd1f2b35f8b4852ddf2955ba182c24ee1a3148eca2f065916e","arity":4}
+MR1_PLAN_QUERY {"index":1,"statement":"f778d3ee87fa7f6d67462f490313c9b5255062d2486cb032a600fca590a00553","arity":3}
+MR1_PLAN_QUERY {"index":2,"statement":"cd0c03904f0056840fab8d3b7392a6a51f097f4d244092646fab03a0468b542b","arity":3}
+MR1_PLAN_QUERY {"index":3,"statement":"11819f68f035f0fad8471775ef46393e5ac0ca48ca7b16f1e3b3b3f7a06d79f3","arity":3}
+MR1_PLAN_QUERY {"index":4,"statement":"261024d6767c0073b5c0234654e6c016d738ab83419da609813f86c93a5daae1","arity":6}
+MR1_PLAN_QUERY {"index":5,"statement":"7258ed58b84a1cefbf2a8288f3a18893299594ccfcb46384bbf188a96caff3a2","arity":3}
+MR1_PLAN_QUERY {"index":6,"statement":"1f0358dc2dfa9682b7fa3d6886dbcb0a3d2cdf6351eb385cae47ddfe5fa64517","arity":3}
+{
+  "mr1": {
+    "size": 1000,
+    "phases": {
+      "seed": {
+        "queries": 3,
+        "writes": 6,
+        "maxRows": 7,
+        "elapsedMs": 284
+      }
+    },
+    "error": "KANATA_SQLITE_STATEMENT_DENIED"
+  }
+}
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
++ actual - expected
+
++ 'KANATA_SQLITE_STATEMENT_DENIED'
+- undefined
+
+    at file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata-m0/docs/qa/kanata-sqlite-m2/windows-candidate-smoke.mjs:299:14 {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: 'KANATA_SQLITE_STATEMENT_DENIED',
+  expected: undefined,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.14.1

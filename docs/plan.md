@@ -1238,3 +1238,5 @@ MR2-G4 以 8d3b8f768617143312fd800ab05decaa53d6114d 接管。新进展与兼容�
 本次 005 指定验收已通过：主机最终 check 700 Node / 402 Vue，strict/build，通过 Android 最终迁移/恢复专项和候选 1k/10k 综合回归；初版逐行 count 导致的 420 秒超时已按原规模/原 deadline 修复复测，10k 最终 156,693ms。普通 APK 激活仍 false。证据及失败均保存在同一 QA 目录，当前状态以唯一清单 E 的更新为准。继续已有纯领域撤销/action/G4 项，不将 005 PASS 升为 E/G4/M4 PASS。
 
 2026-11-12 同一E推进：原序消费、世界增量签名、revoked no-op、action四路径已完成当前定向主机/设备验证并保留证据；check709/402/strict/build通过。下一步仍在E移除Repository旧Facade与QA完整回读，补长Effect Audit，再按唯一清单进入其余A–G与统一生命周期、最终Android/两轮审查。E/G4/M4继续BLOCKED，M5 NO，不新建编号。
+
+2026-11-13同一E检查点：Facade/materializer移除、长Effect Audit片段与不可变前后值审计，已完成714/406/strict/build及同APK/catalog的专项、provenance、读取、1k10k综合/批次强停和005升级验收，普通APK实际DEX=false。指纹见既有QA的event-bounded-fingerprints.json。继续原清单G4普通消息/任务访问边界，随后A/B/C、D/E/G、F、统一生命周期和最终回归/两轮审查；不创建新编号，M4仍BLOCKED，M5 NO。

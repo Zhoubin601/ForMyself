@@ -31,11 +31,9 @@ try{
   })
   await compare('unrelated event invalidates old and compact preview equally',async()=>{
     const {id}=await events.proposeAcknowledged(fields,'stale-root')
-    const oldBefore=await events.legacy.preview(worldId,id)
     const compact=(await events.openRevocation(worldId,id)).plan
     await events.proposeAcknowledged({...fields,summary:'无关事件'},'unrelated')
-    const oldAfter=await events.legacy.preview(worldId,id)
-    assert.notEqual(oldBefore.signature,oldAfter.signature)
+    assert.notEqual(compact.signature,(await events.openRevocation(worldId,id)).plan.signature)
     await assert.rejects(()=>events.confirmRevocation(compact,'keep-independent','stale-confirm'),/STALE/)
   })
   for(const [name,input] of actionCases){

@@ -1,0 +1,78 @@
+(node:19644) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ M3 only appends to the frozen 001–003 catalog (8.9722ms)
+✔ M3 upgrades a populated v3 and preserves historical application times (67.2757ms)
+✔ M3 world and identity creation are atomic, idempotent and reversibly archived (51.6236ms)
+✔ R5 candidate world creation derives owner and retries after failed commit without duplicates (46.3328ms)
+✔ M4 candidate world settings validate time zone and CAS without touching identity (41.9071ms)
+✔ M3 character version publication is immutable and instance scope stays isolated (45.0374ms)
+✔ M3 lore visibility is checked before projection and associations roll back (45.7322ms)
+✔ R5 role lore preview reuses prompt activation, scope and ranking across SQLite pages (79.1144ms)
+✔ M3 remember, read and share reject before sensitive queries and archived source requires exact revision (50.7156ms)
+✔ MR2 memory detail and source resolution prove every distinct reply-chain grant without projecting tags (454.4447ms)
+ℹ {"size":1000,"queries":25,"projectedTags":0,"bodyReadsAfterRevocation":0}
+ℹ {"size":10000,"queries":25,"projectedTags":0,"bodyReadsAfterRevocation":0}
+✔ R4 candidate share copies exact source metadata without reading body into JS or bypassing the recipient grant (65.2801ms)
+✔ M4 outgoing share withdrawal is scoped, atomic and denies all downstream bodies (46.4125ms)
+✔ R4 conflicts page without body, bind the revisions, and retain discarded memories for review (46.9686ms)
+✔ M4 custom memory merge keeps both exact sources and retries atomically (49.6674ms)
+✔ M4 correcting a confirmed event reuses the frozen scope and rolls back candidate and effects together (72.1734ms)
+✔ M3 revoke retains independent same-path effects and atomically changes causal descendants (76.1377ms)
+✔ R3 folds 1k/10k interleaved same-path Effects in bounded legacy order (4023.3367ms)
+ℹ {"size":1000,"activeEffects":1004,"maxRows":128,"replayQueries":8}
+ℹ {"size":10000,"activeEffects":10004,"maxRows":128,"replayQueries":79}
+✔ R3 bounded confirmation pages freeze owned Effects and explicit/inferred decisions (180.9403ms)
+✔ M4 wide event confirmation covers 1k and 10k exact descendants and rolls back between batches (15756.5485ms)
+ℹ {"size":1000,"confirmed":1001,"maxRows":128,"rollbackAfterFirstBatch":true,"replayedReceipt":true}
+ℹ {"size":10000,"confirmed":10001,"maxRows":128,"rollbackAfterFirstBatch":true,"replayedReceipt":true}
+✔ M4 synthetic wide fixture preserves every edge and restores the runtime planner after seeding (5245.4303ms)
+✔ M3 window writes event, effects, task and watermark atomically, including failed COMMIT (138.8553ms)
+✔ M3 old world owner rejects late data and never sends a new command (86.8315ms)
+✔ M3 a derived reply cannot launder an unrememberable source and deletion redacts the body (87.1212ms)
+✔ M3 private event context reads neither its summary nor another actor’s effects (87.2869ms)
+✔ M3 expired lease cannot complete and duplicate task completion writes one event (82.4697ms)
+✔ M3 usage attempt preserves null measurement and final usage is idempotent (78.0273ms)
+✔ C2 source chain is checked in bounded SQL pages and rejects a historical reply cycle (665.7227ms)
+ℹ {"size":1000,"queries":2,"rows":1}
+ℹ {"size":10000,"queries":2,"rows":1}
+✔ C2 shared memory authorization handles 1k and 10k links without fetching parent bodies (8387.7672ms)
+ℹ {"sharedLinks":1000,"queries":9,"bodies":1}
+ℹ {"sharedLinks":10000,"queries":9,"bodies":1}
+✔ R4 1k and 10k direct and mixed source graphs stay paged and deny stale tails before content (14234.0172ms)
+ℹ {"size":1000,"shape":"wide","queries":28,"maxRows":50,"bodies":1}
+ℹ {"size":1000,"shape":"mixed","queries":29,"maxRows":50,"bodies":1}
+ℹ {"size":10000,"shape":"wide","queries":208,"maxRows":50,"bodies":1}
+ℹ {"size":10000,"shape":"mixed","queries":209,"maxRows":50,"bodies":1}
+✔ C3 new group receipts preserve ordered members and reject a cross-world actor (43.8836ms)
+✔ C3 new group has no access to messages or quotes in a prior group (73.5467ms)
+✔ C2 event ancestry pages merge overlapping paths and bind cursors to direction and root (42.4569ms)
+✔ C3 binding CAS preserves inherit, explicit none and archived selections (36.171ms)
+✔ GROUP-01–05 membership editing uses history, scope, CAS and an atomic receipt (46.5541ms)
+✔ MR2 event write acknowledgements preserve 1k/10k mixed provenance, legacy snapshots and rollback (14093.1869ms)
+ℹ {"size":1000,"maxRows":50,"fullReads":0,"queries":245}
+ℹ {"size":10000,"maxRows":50,"fullReads":0,"queries":1681}
+✔ MR2 rejects duplicate or damaged event relation hints before publishing state (92.9877ms)
+✔ MR2 event reads page 1k/10k relations, Effects and audits without hydrating snapshots (15573.7222ms)
+ℹ {"size":1000,"maxRows":51,"queries":673,"relations":1000}
+ℹ {"size":10000,"maxRows":51,"queries":5378,"relations":10000}
+✔ MR2 historical action oracle preserves UTF-16 object spread and JSON kinds (156.0594ms)
+✔ MR2 relationship header and reverse event pages preserve exact IDs and reject stale cursors (100.9703ms)
+✔ MR2 event read deep, wide and mixed graphs retain all 1k/10k nodes and pure-domain confirmation order (68986.3202ms)
+ℹ {"size":1000,"shape":"deep","nodes":1000,"confirm":1001,"queries":235}
+ℹ {"size":1000,"shape":"wide","nodes":1000,"confirm":2,"queries":187}
+ℹ {"size":1000,"shape":"mixed","nodes":1000,"confirm":2,"queries":227}
+ℹ {"size":10000,"shape":"deep","nodes":10000,"confirm":10001,"queries":2237}
+ℹ {"size":10000,"shape":"wide","nodes":10000,"confirm":2,"queries":1747}
+ℹ {"size":10000,"shape":"mixed","nodes":10000,"confirm":2,"queries":2147}
+✔ MR2 cached event integrity rejects same-revision mutations and rolls back a failed read transaction (92.0232ms)
+✔ MR2 integrity proof invalidates on another SQLite connection commit (152.9998ms)
+✔ MR2 event read keeps the legacy depth limit for unknown extension JSON (125.0669ms)
+✔ MR2 role reads cannot opt into internal shared-memory event privileges (90.3982ms)
+ℹ tests 44
+ℹ suites 0
+ℹ pass 44
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 150285.4915

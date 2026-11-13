@@ -1,0 +1,164 @@
+/data/app/~~FQK0M1y-eigdGAFxsTbIlA==/com.yubin.formyself.m2qa-F4bAtunr-7Z7vrq2bVsYZg==/base.apk: 1 file pulled, 0 skipped. 30.5 MB/s (19017910 bytes in 0.595s)
+/data/app/~~eHOMwwu9_3TY-KC65G4s1A==/com.yubin.formyself.m2qa.test-w9VwxWTnrdooh1yjJY1oJg==/base.apk: 1 file pulled, 0 skipped. 25.8 MB/s (598741 bytes in 0.022s)
+▲ [WARNING] Ignoring this import because "src/features/chat/kanataManagement.css" was marked as having no side effects [ignored-bare-import]
+
+    src/features/chat/KanataView.vue:8:7:
+      8 │ import './kanataManagement.css'
+        ╵        ~~~~~~~~~~~~~~~~~~~~~~~~
+
+{"qaBundleSha256":"4e218e3ebf42aef8b0d73cc82e3f8c759a5b0449659054ac5ce9f47faf80d18c"}
+{
+  "schema005": {
+    "prepared": {
+      "version": 4,
+      "health": {
+        "cipher": "4.17.0 community",
+        "journalMode": "wal",
+        "synchronous": 2,
+        "foreignKeys": 1,
+        "cacheSize": -2048,
+        "checkpoint": 1000,
+        "busyTimeout": 5000
+      },
+      "events": 4,
+      "effects": 3,
+      "baselines": 2
+    }
+  }
+}
+{
+  "schema005": {
+    "fault": "migration-ddl",
+    "result": {
+      "version": 4,
+      "orderTables": 0,
+      "counts": {
+        "n0": 4,
+        "n1": 3,
+        "n2": 2
+      }
+    }
+  }
+}
+{
+  "schema005": {
+    "fault": "migration-commit",
+    "result": {
+      "version": 4,
+      "orderTables": 0,
+      "counts": {
+        "n0": 4,
+        "n1": 3,
+        "n2": 2
+      }
+    }
+  }
+}
+{
+  "schema005": {
+    "migrationKill": {
+      "oldPid": "13218",
+      "newPid": "13353"
+    },
+    "rolledBack": {
+      "version": 4,
+      "orderTables": 0,
+      "counts": {
+        "n0": 4,
+        "n1": 3,
+        "n2": 2
+      }
+    },
+    "upgradeApkSha256": "88d3c4e1a96cf29d352cf52eee4c0f8e2a7191558d66d7f0a29d803d474f2791"
+  }
+}
+{
+  "schema005": {
+    "active": {
+      "health": {
+        "cipher": "4.17.0 community",
+        "journalMode": "wal",
+        "synchronous": 2,
+        "foreignKeys": 1,
+        "cacheSize": -2048,
+        "checkpoint": 1000,
+        "busyTimeout": 5000
+      },
+      "legacy": {
+        "n0": 4,
+        "n1": 3,
+        "n2": 2,
+        "o0": 0,
+        "o1": 0,
+        "o2": 0
+      },
+      "scope": {
+        "worldId": "order-005-world",
+        "instanceId": "order-005-actor-instance"
+      },
+      "eventId": "02feefb8-cd36-4fc7-b547-72ff627b2a78",
+      "committed": {
+        "n0": 1,
+        "n1": 1,
+        "n2": 1,
+        "o0": 1,
+        "o1": 1,
+        "o2": 1
+      },
+      "commitFailure": true,
+      "immutableMutations": 9,
+      "realModelCalls": 0
+    }
+  }
+}
+{
+  "schema005": {
+    "writeKill": {
+      "oldPid": "13353",
+      "newPid": "13467"
+    },
+    "recovered": {
+      "original": {
+        "n0": 2,
+        "n1": 1,
+        "n2": 1,
+        "o0": 2,
+        "o1": 1,
+        "o2": 1
+      },
+      "committed": {
+        "n0": 2,
+        "n1": 3,
+        "n2": 3,
+        "o0": 2,
+        "o1": 3,
+        "o2": 3
+      },
+      "retryIdempotent": true
+    },
+    "coldKill": {
+      "oldPid": "13467",
+      "newPid": "13583"
+    },
+    "cold": {
+      "legacy": {
+        "n0": 4,
+        "n1": 3,
+        "n2": 2,
+        "o0": 0,
+        "o1": 0,
+        "o2": 0
+      },
+      "active": {
+        "n0": 2,
+        "n1": 3,
+        "n2": 3,
+        "o0": 2,
+        "o1": 3,
+        "o2": 3
+      },
+      "coldRejectedMissingOrder": true
+    },
+    "realModelCalls": 0
+  }
+}

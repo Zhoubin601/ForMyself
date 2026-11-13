@@ -82,3 +82,5 @@ M2 Windows 接续已通过（2026-11-09）。[最新验收 v2](../docs/20261109-
 用户已确认 Kanata 采用“工程质量优先，但必须有明确终点”。当前 M4 只按 [最终收口清单](../docs/20261111-kanata-sqlite-m4-final-closeout-ledger-v1.md) 统一推进，不再增加 MR9/ER1-3A 等新工作包。P0 是实际正确性/安全/数据问题，P1 是 M4-R 合同明确要求的强制证据；两者均阻断 M4。只有合同外新需求、无复现依据的理论风险和非必要优化进入 P2。已有 PASS 证据按源码/fixture/设备/APK/catalog 指纹与影响范围复用。M4 必须 G1–G11 全部 PASS；M5 不自动启动，必须等待用户明确授权。当前 M4 BLOCKED、M5 NO，生产 canonical legacy、普通 Android APK SQLite=false、Schema 001–004 冻结。
 
 2026-11-12 接续仍只读M4最终收口清单。005之后的E消费者检查点已实现原序Set遍历/分阶段执行、世界增量签名、revoked no-op及SQL UTF-16 action四路径；主机check709/402和Android定向通过，源码/设备指纹见同一QA的event-consumer-fingerprints.json。旧Facade、长Effect Audit、A–G其余产品与最终综合/生命周期/两轮审查未关闭，E/G4/M4 BLOCKED、M5 NO；继续既有工作，不重问005授权或把切片PASS当M4放行。
+
+2026-11-13接续：仍以M4最终收口清单为唯一索引。E新检查点已移除旧Facade/materializer、提供长Effect Audit分块和不可变阶段前后值审计，主机714/406、同APK/catalog的Android专项/1k10k综合/强停及005升级通过，普通APK实际DEX关闭。完整指纹与失败/修复在既有QA的event-bounded-fingerprints.json；不重跑无影响旧证据，也不将旧APK结果套用到新树。继续G4普通消息/任务及原A–G剩余项；retained Heap、统一生命周期、最终两轮审查未闭环，M4 BLOCKED、M5 NO。005授权持续有效，001–005冻结，生产legacy/default false。

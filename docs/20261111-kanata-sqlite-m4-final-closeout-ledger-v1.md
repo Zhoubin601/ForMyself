@@ -87,10 +87,10 @@ MR5 是 M4-R 内部工作包编号，不是 SQLite 阶段 M5。
 | 既有 ER1 条目 | 当前状态 | 事实 |
 |---|---|---|
 | ER1-0 调用审计 | 完成 | 已区分产品、测试、Android QA 消费者 |
-| ER1-1 无界完整对象边界 | PARTIAL | 无消费者的 Runtime legacyEvents 包装已移除；Repository Facade、QA 调用与真实回退仍在 |
-| ER1-2 历史 action 字段级兼容 | PARTIAL | 四条实际业务写路径已改用 SQL UTF-16 字段处理，主机及 Android 15 类输入通过；旧 Repository Facade 和完整最终矩阵仍待关闭 |
-| ER1-3 纯领域撤销语义 | PARTIAL | 005 原序已用于 Set 遍历、uncertain/执行顺序、全世界增量签名与 revoked no-op；旧兼容探针 12 项差异已清零。仍需移除旧 Facade，完成整合后的 Android 1k/10k 故障/强停及最终矩阵 |
-| ER1-4 生命周期与内存 | PARTIAL / BLOCKED | 组件关闭 guard 和局部状态清理已修；Android 专用生命周期、Heap retained、Pinia/局部状态分类及长 Effect Audit 分块缺证据 |
+| ER1-1 无界完整对象边界 | PARTIAL | Runtime/Repository 旧完整 Facade 与 materializer 已移除，QA 改用有界 API/test-only Oracle；G4 其他普通消息/任务及全调用矩阵仍需关闭 |
+| ER1-2 历史 action 字段级兼容 | 当前字段切片 PASS | 四条实际业务写路径 SQL UTF-16 处理、主机及同一集成 APK 的 Android 15 类输入通过；不代替 ER1 全部验收 |
+| ER1-3 纯领域撤销语义 | 当前撤销切片 PASS | 原序、Set/执行顺序、完整世界增量签名、revoked no-op、两阶段重放与前后值审计通过；集成 Android 1k/10k 批次强杀回滚、恢复与幂等已通过。最终全范围矩阵仍待 MR7/MR8 |
+| ER1-4 生命周期与内存 | PARTIAL / BLOCKED | 长 Effect Audit 分块及关闭/卸载/迟到页面定向通过；Android 专用生命周期、Heap retained、Pinia/局部状态分类仍缺完整证据 |
 | ER1-5 最终回归与两轮审查 | PARTIAL / BLOCKED | 主机 check、既有 Android 综合回归和两轮检查点审查已完成；ER1 完整最终设备矩阵未完成 |
 
 ### 2.4 G1–G11 状态
@@ -253,7 +253,19 @@ MR5 是 M4-R 内部工作包编号，不是 SQLite 阶段 M5。
 - Android API34/SQLCipher4.17.0 四路径 15 类 action、长字段、35 节点乱序图、revoked no-op、无关世界事件使预览失效实测通过；query≤50、chunk≤4096、完整 Event 读取 0，instrumentation 1/1 OK。首轮 QA 误计合法 chunk、早期主机旧临时表读取断言失败均保留；不是产品 PASS。
 - 证据与源码/fixture/APK/catalog/设备指纹见同一 [QA](qa/kanata-sqlite-m4/m4-r/event-compat/final-closeout/README.md) 的 event-consumer-fingerprints.json。旧005专项仅复用其冻结 DDL/约束结论，不替代本轮消费者证据。
 
-本检查点尚未删除旧 Repository Facade/完整 QA 回读，未完成新消费者树的 Android 1k/10k 综合故障/强停、长 Effect Audit 和专用 Heap/生命周期；两轮最终独立审查未运行。E/G4/M4 仍 BLOCKED、M5 NO。继续本节剩余项，不新建工作包。
+本检查点尚未删除旧 Repository Facade/完整 QA 回读，未完成新消费者树的 Android 1k/10k 综合故障/强停、长 Effect Audit 和专用 Heap/生命周期；两轮最终独立审查未运行。此为 9445e28 的历史检查点，后续覆盖见下段。
+
+**2026-11-12 实施与实测、2026-11-13 收齐证据的同一 E 检查点：**
+
+- 生产源码删除 `events.legacy`、旧 preview 全量 ID 数组、`eventFromRow`、`loadEvent`、`materializeAuditSnapshot` 及其回退查询；QA 使用有界 API 或明确隔离的合成 Oracle，不以旧 SQLite ID 排序裁决产品语义。事件上下文也使用005 ordinal，物理 rowid 改变不改变上下文顺序。
+- 冻结 Effect Audit 按原数组位置 keyset 分页，长 path/value/before/after/完整记录每次最多4096字符；普通短记录保持可读。游标绑定 world/event/audit、不可变 revision/signature 和字段；Runtime/实际类型/strict负例同步。页面只保留当前片段，关闭详情/父审计/卸载后清空，拒绝迟到结果。
+- 撤销在同一 BEGIN IMMEDIATE 内用 TEMP 表保留阶段前值、重放后一次写入不可变审计，保存 owner 前后 revision 与命令标识；没有修改或更新已有审计，也没有修改001–005。TEMP触发器把暂存、CAS、状态和扩展规范化合为一次批次调用，临时外键级联清理并有对应索引。
+- 主机 `npm run check` 退出0：714 Node、406 Vue/44文件、strict正负、生产build。1k/10k 确认1001/10001、批次≤128、批间失败回滚及回执重放通过。10k 持久化写入161，仍≤原 `2×批次数+3`；另6次 TEMP 操作，原始总数167明确保留，不隐去临时写入。
+- 同一集成 APK/catalog 的 API34 / SQLCipher4.17.0：15类 action 四路径、长审计、错误分类、provenance、有界读取及深/宽/混合图1k/10k通过；实际事件写入强杀及首批撤销审计写入后强杀恢复通过。综合10k为177,113ms，10001确认、批次128；该无自有Effect扇出场景持久化159/TEMP5/总164，原420秒门槛未提高。
+- 同一候选重新通过真实合成 v4→v5 原地升级、DDL/COMMIT故障、迁移/写入强杀、冷启动及缺序号拒绝。001–005 checksum不变。普通APK重新构建并检查实际DEX：激活false、包名普通、无合成页面/seed，canonical legacy；未安装、未发布。
+- 原始失败保留：缺失前后值；早期无效夹具未提交Effect；有效旧表达式的NOT NULL抢先覆盖错误码；综合前值误假设；暂存增加桥接写入；TEMP级联缺索引；SQLCipher完整EXPLAIN超256行。实际修复分别有回归证据，未跳过计划、提高原生行数或缩小规模。审计快照在SQLite内复用后，主机完整计划247→197行，Android完整计划与强停场景通过。
+
+日志、命令、失败/复测、源码/fixture/APK/catalog/设备指纹见同一[QA目录](qa/kanata-sqlite-m4/m4-r/event-compat/final-closeout/README.md)的 `event-bounded-*`、`effect-audit-*` 和 `event-bounded-fingerprints.json`。旧005证据仅复用冻结结构/历史缺信息反例；受本轮影响的设备消费者全部重测。当前 E/G4/M4 仍 BLOCKED、M5 NO：普通消息兼容 DTO、自治 loadTask、其他 A–G 产品缺口、统一生命周期/retained Heap 和两轮最终全范围审查尚未闭环。继续本清单，不新增工作包。
 
 ### F. 自治、contact/social 与生活角色消费者
 

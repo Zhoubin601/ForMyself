@@ -9,8 +9,10 @@ void domains.memories.readFor({ worldId: 'world-one' }, 'memory-one')
 void domains.memories.resolveSource({ worldId: 'world-one', instanceId: 'actor-one' }, 'memory-one', { messageId: 'message-one' })
 // @ts-expect-error Callers cannot directly update the watermark.
 void domains.autonomy.setWatermark('world-one', 100)
-// @ts-expect-error Effect reversal is driven by a complete preview.
-void domains.events.legacy.revoke({ eventId: 'event-one' })
+// @ts-expect-error Complete event Facades must not reappear on the Repository.
+void domains.events.legacy.list('world-one')
+// @ts-expect-error Effect reversal is driven by a complete scoped preview.
+void domains.events.confirmRevocation({eventId:'event-one'},undefined,'command')
 
 import type { KanataEventJsonSelection, KanataEventRelationCursor } from '../../src/application/contracts'
 declare const relationCursor: KanataEventRelationCursor

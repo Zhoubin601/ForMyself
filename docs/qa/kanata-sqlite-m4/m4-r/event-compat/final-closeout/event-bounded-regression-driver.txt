@@ -1,0 +1,903 @@
+/data/app/~~k6sKtowZe8Xvk4gxitv4cA==/com.yubin.formyself.m2qa-PpnuEUmBZxA1mXjG7AUsoA==/base.apk: 1 file pulled, 0 skipped. 32.1 MB/s (19146403 bytes in 0.569s)
+/data/app/~~CM-RdXk1gp8eJRrgOkovFQ==/com.yubin.formyself.m2qa.test-beZ871_mBSzlOfd3O4GuXA==/base.apk: 1 file pulled, 0 skipped. 30.9 MB/s (598741 bytes in 0.019s)
+▲ [WARNING] Ignoring this import because "src/features/chat/kanataManagement.css" was marked as having no side effects [ignored-bare-import]
+
+    src/features/chat/KanataView.vue:8:7:
+      8 │ import './kanataManagement.css'
+        ╵        ~~~~~~~~~~~~~~~~~~~~~~~~
+
+{"qaBundleSha256":"0056e198108985c02fb26bf4036a860be90109fcc1d0e4016df47b1e23efdb89"}
+{
+  "passed": [
+    "schema-js-bridge-and-synthetic-seed",
+    "repository-batches-keyset-quote-locate-fk-and-conversation",
+    "concurrent-cas-real-commit-failure-and-derived-delete",
+    "close-reopen-wrong-password-replay-and-lease"
+  ],
+  "health": {
+    "cipher": "4.17.0 community",
+    "journalMode": "wal",
+    "synchronous": 2,
+    "foreignKeys": 1,
+    "cacheSize": -2048,
+    "checkpoint": 1000,
+    "busyTimeout": 5000
+  }
+}
+{
+  "envelope": "PASS_M0_V1_CROSS_UNWRAP",
+  "challenge": "PASS_EXPIRED_REJECTED",
+  "background": "PASS_OLD_LEASE_REJECTED",
+  "plaintext": "PASS_NO_PLAINTEXT_HEADER_OR_SYNTHETIC_SECRET_IN_PID_LOGS_AND_PREFERENCES",
+  "sigkill": {
+    "oldPid": "8492",
+    "newPid": "8655",
+    "status": "complete",
+    "revision": 1,
+    "auditAbsent": true
+  }
+}
+{
+  "passed": [
+    "bounded-window-scroll-anchor-quote-and-history",
+    "group-speakers-atomic-bubbles-retry-and-jump",
+    "deferred-reply-persists-and-resumes",
+    "fast-world-switch-late-completion-character-and-lock"
+  ],
+  "controlledModelCalls": 5,
+  "realModelCalls": 0
+}
+{
+  "m4": {
+    "samples": [
+      {
+        "seedRows": 1000,
+        "queries": 198,
+        "writes": 34,
+        "maxRows": 51,
+        "retainedWindow": 100
+      },
+      {
+        "seedRows": 10000,
+        "queries": 198,
+        "writes": 34,
+        "maxRows": 51,
+        "retainedWindow": 100
+      }
+    ],
+    "promptGrowth": [
+      {
+        "size": 1000,
+        "wide": {
+          "queries": 119,
+          "sqlMaxRows": 51,
+          "bodyReads": 1,
+          "pages": 9,
+          "pageObjects": 51
+        },
+        "maxEncodedRefs": 1,
+        "arrayObjects": 0,
+        "noQueriesAfterCancel": 0,
+        "recovered": true,
+        "retainedWindow": 0,
+        "piniaStores": 3,
+        "piniaStateObjects": 25,
+        "heapUsedAtStart": 29400000,
+        "heapUsedHighSample": 29400000
+      },
+      {
+        "size": 10000,
+        "wide": {
+          "queries": 477,
+          "sqlMaxRows": 51,
+          "bodyReads": 1,
+          "pages": 9,
+          "pageObjects": 51
+        },
+        "maxEncodedRefs": 1,
+        "arrayObjects": 0,
+        "noQueriesAfterCancel": 0,
+        "recovered": true,
+        "retainedWindow": 0,
+        "piniaStores": 3,
+        "piniaStateObjects": 25,
+        "heapUsedAtStart": 29400000,
+        "heapUsedHighSample": 29400000
+      }
+    ],
+    "fullGraphCalls": 0,
+    "controlledModelCalls": 7,
+    "realModelCalls": 0,
+    "restoreGate": "PASS",
+    "revocationWhilePending": "PASS"
+  }
+}
+{
+  "m4HistoryArchive": {
+    "archivedCount": 49,
+    "retainedRecent": 200,
+    "quotePreserved": true,
+    "unknownReferenceProtected": true
+  }
+}
+{
+  "m4Workspace": {
+    "passed": [
+      "workspace-directory-scoped-conversation-and-return",
+      "workspace-domain-summaries-grant-and-revoke-invalidation"
+    ],
+    "groupCases": [
+      "GROUP-01",
+      "GROUP-02",
+      "GROUP-03",
+      "GROUP-04",
+      "GROUP-05"
+    ],
+    "groupCommitFailure": "PASS",
+    "softDeletedHistory": "PASS",
+    "eventLedger": "PASS",
+    "memoryManagement": "PASS",
+    "shareWithdrawal": "PASS",
+    "roleLorePreview": "PASS",
+    "createWorld": "PASS",
+    "worldSettings": "PASS"
+  }
+}
+{
+  "m3": [
+    "world-card-lore-scope-and-archive",
+    "memory-archive-source-revision-and-revoke-before-content",
+    "same-path-event-revoke-isolation",
+    "task-event-usage-commit-failure-and-idempotency"
+  ],
+  "ownerSwitch": "PASS"
+}
+{
+  "m3Sigkill": {
+    "oldPid": "8655",
+    "newPid": "8780",
+    "before": 1800000,
+    "absent": true,
+    "eventCount": 1,
+    "after": 3600000
+  }
+}
+MR1_STAGE {"size":1000,"name":"start","elapsedMs":0}
+MR1_STAGE {"size":1000,"name":"deep-chain-seeded","elapsedMs":2526}
+MR1_STAGE {"size":1000,"name":"deep-memory-read","elapsedMs":2643}
+MR1_STAGE {"size":1000,"name":"wide-and-mixed-memory-read","elapsedMs":3844}
+MR1_STAGE {"size":1000,"name":"event-graph-paged","elapsedMs":4541}
+MR1_STAGE {"size":1000,"name":"replay-seeded","elapsedMs":5622}
+MR1_START {"phase":"combined-effect-stale","name":"begin","arity":0,"parameterChars":0}
+MR1_END {"phase":"combined-effect-stale","name":"begin","elapsedMs":6,"rows":0}
+MR1_START {"phase":"combined-effect-stale","name":"e1f064445dc9053e2fc34707cef33bdbe271395e52879801a3f7b49cd4344ea3","arity":1,"parameterChars":30}
+MR1_END {"phase":"combined-effect-stale","name":"e1f064445dc9053e2fc34707cef33bdbe271395e52879801a3f7b49cd4344ea3","elapsedMs":5,"rows":1}
+MR1_START {"phase":"combined-effect-stale","name":"cbe3781f70cf1a5a5b25f34a850d752f8241ea070434f693ac469d513a371e30","arity":1,"parameterChars":30}
+MR1_END {"phase":"combined-effect-stale","name":"cbe3781f70cf1a5a5b25f34a850d752f8241ea070434f693ac469d513a371e30","elapsedMs":6,"rows":0}
+MR1_START {"phase":"combined-effect-stale","name":"8179fdd8eb9ce21a8c6d5fe96c878247365335b6f9dc880e020dadcad3019365","arity":1,"parameterChars":118}
+MR1_END {"phase":"combined-effect-stale","name":"8179fdd8eb9ce21a8c6d5fe96c878247365335b6f9dc880e020dadcad3019365","elapsedMs":4,"rows":0}
+MR1_START {"phase":"combined-effect-stale","name":"cbe3781f70cf1a5a5b25f34a850d752f8241ea070434f693ac469d513a371e30","arity":1,"parameterChars":30}
+MR1_END {"phase":"combined-effect-stale","name":"cbe3781f70cf1a5a5b25f34a850d752f8241ea070434f693ac469d513a371e30","elapsedMs":6,"rows":0}
+MR1_START {"phase":"combined-effect-stale","name":"83403a1c31f81d97f3fb27692a1e9e98fa5e772f0057ef2252756365d93fd9a8","arity":0,"parameterChars":0}
+MR1_END {"phase":"combined-effect-stale","name":"83403a1c31f81d97f3fb27692a1e9e98fa5e772f0057ef2252756365d93fd9a8","elapsedMs":4,"rows":0}
+MR1_START {"phase":"combined-effect-stale","name":"e23c637479cefd1bf2941297d10d2b8df4f1c2bd127da53a9d3daf55d96567fc","arity":0,"parameterChars":0}
+MR1_END {"phase":"combined-effect-stale","name":"e23c637479cefd1bf2941297d10d2b8df4f1c2bd127da53a9d3daf55d96567fc","elapsedMs":4,"rows":0}
+MR1_START {"phase":"combined-effect-stale","name":"216053d7122cd3047fafeb318310c74c46b780f35d6527338e9e169f7398d797","arity":0,"parameterChars":0}
+MR1_END {"phase":"combined-effect-stale","name":"216053d7122cd3047fafeb318310c74c46b780f35d6527338e9e169f7398d797","elapsedMs":4,"rows":0}
+MR1_START {"phase":"combined-effect-stale","name":"c82394fbdc64494005b0fab66847aaf509232adf1d1884878507c369d9de886b","arity":0,"parameterChars":0}
+MR1_END {"phase":"combined-effect-stale","name":"c82394fbdc64494005b0fab66847aaf509232adf1d1884878507c369d9de886b","elapsedMs":4,"rows":0}
+MR1_START {"phase":"combined-effect-stale","name":"8c29aed11bf3e78656ab0ce1203774f617cedffe6fc5af55631c90cd4cb735d2","arity":0,"parameterChars":0}
+MR1_END {"phase":"combined-effect-stale","name":"8c29aed11bf3e78656ab0ce1203774f617cedffe6fc5af55631c90cd4cb735d2","elapsedMs":5,"rows":0}
+MR1_START {"phase":"combined-effect-stale","name":"b6f178f9b55d8b328ea0220f4c91cc4962d6c1d66098b2d4aa0378cf39190c5d","arity":0,"parameterChars":0}
+MR1_END {"phase":"combined-effect-stale","name":"b6f178f9b55d8b328ea0220f4c91cc4962d6c1d66098b2d4aa0378cf39190c5d","elapsedMs":5,"rows":0}
+MR1_START {"phase":"combined-effect-stale","name":"dad9653b2cbe70bf0009e7d157e3a41901ed190846b9dde0a7b5c0d3e79f23d7","arity":0,"parameterChars":0}
+MR1_END {"phase":"combined-effect-stale","name":"dad9653b2cbe70bf0009e7d157e3a41901ed190846b9dde0a7b5c0d3e79f23d7","elapsedMs":3,"rows":0}
+MR1_START {"phase":"combined-effect-stale","name":"8d5fa4e8fdef506c768e864280f7a02c4271683d00ddf47e841999036a7a792b","arity":0,"parameterChars":0}
+MR1_END {"phase":"combined-effect-stale","name":"8d5fa4e8fdef506c768e864280f7a02c4271683d00ddf47e841999036a7a792b","elapsedMs":3,"rows":0}
+MR1_START {"phase":"combined-effect-stale","name":"0a73927829d09bb71fcbe4788bcb57c2a7e1ba76784ee09936aab0b08b36e043","arity":0,"parameterChars":0}
+MR1_END {"phase":"combined-effect-stale","name":"0a73927829d09bb71fcbe4788bcb57c2a7e1ba76784ee09936aab0b08b36e043","elapsedMs":5,"rows":0}
+MR1_START {"phase":"combined-effect-stale","name":"5e930de6b99610d90a26477ebf3e1f97ca0ee1a8a0e561bae2516cceb4e01b01","arity":2,"parameterChars":66}
+MR1_END {"phase":"combined-effect-stale","name":"5e930de6b99610d90a26477ebf3e1f97ca0ee1a8a0e561bae2516cceb4e01b01","elapsedMs":8,"rows":1}
+MR1_START {"phase":"combined-effect-stale","name":"149c9fe34e0d56d8a79d0dd77d704e79d4da244148ca59525f77635dba850056","arity":2,"parameterChars":31}
+MR1_END {"phase":"combined-effect-stale","name":"149c9fe34e0d56d8a79d0dd77d704e79d4da244148ca59525f77635dba850056","elapsedMs":9,"rows":0}
+MR1_START {"phase":"combined-effect-stale","name":"0689c2b5d7a6f59069bb66416958be18471c7729ef944a31dec7b7388f97f29b","arity":2,"parameterChars":66}
+MR1_END {"phase":"combined-effect-stale","name":"0689c2b5d7a6f59069bb66416958be18471c7729ef944a31dec7b7388f97f29b","elapsedMs":5,"rows":0}
+MR1_START {"phase":"combined-effect-stale","name":"cbe3781f70cf1a5a5b25f34a850d752f8241ea070434f693ac469d513a371e30","arity":1,"parameterChars":30}
+MR1_END {"phase":"combined-effect-stale","name":"cbe3781f70cf1a5a5b25f34a850d752f8241ea070434f693ac469d513a371e30","elapsedMs":8,"rows":0}
+MR1_START {"phase":"combined-effect-stale","name":"root","arity":2,"parameterChars":66}
+MR1_END {"phase":"combined-effect-stale","name":"root","elapsedMs":12,"rows":1}
+MR1_START {"phase":"combined-effect-stale","name":"cbe3781f70cf1a5a5b25f34a850d752f8241ea070434f693ac469d513a371e30","arity":1,"parameterChars":30}
+MR1_END {"phase":"combined-effect-stale","name":"cbe3781f70cf1a5a5b25f34a850d752f8241ea070434f693ac469d513a371e30","elapsedMs":3,"rows":0}
+MR1_START {"phase":"combined-effect-stale","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":32}
+MR1_END {"phase":"combined-effect-stale","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":17,"rows":50}
+MR1_START {"phase":"combined-effect-stale","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":32}
+MR1_END {"phase":"combined-effect-stale","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":11,"rows":50}
+MR1_START {"phase":"combined-effect-stale","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":32}
+MR1_END {"phase":"combined-effect-stale","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":10,"rows":50}
+MR1_START {"phase":"combined-effect-stale","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-stale","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":9,"rows":50}
+MR1_START {"phase":"combined-effect-stale","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-stale","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":24,"rows":50}
+MR1_START {"phase":"combined-effect-stale","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-stale","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":9,"rows":50}
+MR1_START {"phase":"combined-effect-stale","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-stale","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":12,"rows":50}
+MR1_START {"phase":"combined-effect-stale","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-stale","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":16,"rows":50}
+MR1_START {"phase":"combined-effect-stale","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-stale","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":13,"rows":50}
+MR1_START {"phase":"combined-effect-stale","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-stale","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":14,"rows":50}
+MR1_START {"phase":"combined-effect-stale","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-stale","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":17,"rows":50}
+MR1_START {"phase":"combined-effect-stale","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-stale","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":15,"rows":50}
+MR1_START {"phase":"combined-effect-stale","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-stale","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":16,"rows":50}
+MR1_START {"phase":"combined-effect-stale","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-stale","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":20,"rows":50}
+MR1_START {"phase":"combined-effect-stale","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-stale","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":18,"rows":50}
+MR1_START {"phase":"combined-effect-stale","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-stale","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":11,"rows":50}
+MR1_START {"phase":"combined-effect-stale","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-stale","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":18,"rows":50}
+MR1_START {"phase":"combined-effect-stale","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-stale","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":9,"rows":50}
+MR1_START {"phase":"combined-effect-stale","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-stale","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":22,"rows":50}
+MR1_START {"phase":"combined-effect-stale","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-stale","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":15,"rows":50}
+MR1_START {"phase":"combined-effect-stale","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-stale","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":20,"rows":50}
+MR1_START {"phase":"combined-effect-stale","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":34}
+MR1_END {"phase":"combined-effect-stale","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":20,"rows":50}
+MR1_START {"phase":"combined-effect-stale","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":34}
+MR1_END {"phase":"combined-effect-stale","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":11,"rows":50}
+MR1_START {"phase":"combined-effect-stale","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":34}
+MR1_END {"phase":"combined-effect-stale","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":11,"rows":50}
+MR1_START {"phase":"combined-effect-stale","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":34}
+MR1_END {"phase":"combined-effect-stale","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":10,"rows":50}
+MR1_START {"phase":"combined-effect-stale","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":34}
+MR1_END {"phase":"combined-effect-stale","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":8,"rows":50}
+MR1_START {"phase":"combined-effect-stale","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":34}
+MR1_END {"phase":"combined-effect-stale","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":10,"rows":50}
+MR1_START {"phase":"combined-effect-stale","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":34}
+MR1_END {"phase":"combined-effect-stale","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":10,"rows":50}
+MR1_START {"phase":"combined-effect-stale","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":34}
+MR1_END {"phase":"combined-effect-stale","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":14,"rows":50}
+MR1_START {"phase":"combined-effect-stale","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":34}
+MR1_END {"phase":"combined-effect-stale","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":11,"rows":50}
+MR1_START {"phase":"combined-effect-stale","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":34}
+MR1_END {"phase":"combined-effect-stale","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":12,"rows":50}
+MR1_START {"phase":"combined-effect-stale","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":34}
+MR1_END {"phase":"combined-effect-stale","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":11,"rows":50}
+MR1_START {"phase":"combined-effect-stale","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":34}
+MR1_END {"phase":"combined-effect-stale","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":9,"rows":50}
+MR1_START {"phase":"combined-effect-stale","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":34}
+MR1_END {"phase":"combined-effect-stale","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":10,"rows":50}
+MR1_START {"phase":"combined-effect-stale","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":34}
+MR1_END {"phase":"combined-effect-stale","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":10,"rows":50}
+MR1_START {"phase":"combined-effect-stale","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":34}
+MR1_END {"phase":"combined-effect-stale","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":12,"rows":50}
+MR1_START {"phase":"combined-effect-stale","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":34}
+MR1_END {"phase":"combined-effect-stale","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":10,"rows":50}
+MR1_START {"phase":"combined-effect-stale","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":34}
+MR1_END {"phase":"combined-effect-stale","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":12,"rows":50}
+MR1_START {"phase":"combined-effect-stale","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":34}
+MR1_END {"phase":"combined-effect-stale","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":10,"rows":50}
+MR1_START {"phase":"combined-effect-stale","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":34}
+MR1_END {"phase":"combined-effect-stale","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":6,"rows":50}
+MR1_START {"phase":"combined-effect-stale","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":34}
+MR1_END {"phase":"combined-effect-stale","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":6,"rows":12}
+MR1_START {"phase":"combined-effect-stale","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","arity":2,"parameterChars":32}
+MR1_END {"phase":"combined-effect-stale","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","elapsedMs":22,"rows":50}
+MR1_START {"phase":"combined-effect-stale","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","arity":2,"parameterChars":32}
+MR1_END {"phase":"combined-effect-stale","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","elapsedMs":12,"rows":50}
+MR1_START {"phase":"combined-effect-stale","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","arity":2,"parameterChars":32}
+MR1_END {"phase":"combined-effect-stale","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","elapsedMs":11,"rows":50}
+MR1_START {"phase":"combined-effect-stale","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-stale","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","elapsedMs":12,"rows":50}
+MR1_START {"phase":"combined-effect-stale","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-stale","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","elapsedMs":13,"rows":50}
+MR1_START {"phase":"combined-effect-stale","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-stale","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","elapsedMs":11,"rows":50}
+MR1_START {"phase":"combined-effect-stale","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-stale","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","elapsedMs":10,"rows":50}
+MR1_START {"phase":"combined-effect-stale","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-stale","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","elapsedMs":16,"rows":50}
+MR1_START {"phase":"combined-effect-stale","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-stale","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","elapsedMs":18,"rows":50}
+MR1_START {"phase":"combined-effect-stale","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-stale","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","elapsedMs":23,"rows":50}
+MR1_START {"phase":"combined-effect-stale","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-stale","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","elapsedMs":10,"rows":50}
+MR1_START {"phase":"combined-effect-stale","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-stale","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","elapsedMs":16,"rows":50}
+MR1_START {"phase":"combined-effect-stale","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-stale","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","elapsedMs":12,"rows":50}
+MR1_START {"phase":"combined-effect-stale","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-stale","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","elapsedMs":10,"rows":50}
+MR1_START {"phase":"combined-effect-stale","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-stale","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","elapsedMs":10,"rows":50}
+MR1_START {"phase":"combined-effect-stale","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-stale","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","elapsedMs":11,"rows":50}
+MR1_START {"phase":"combined-effect-stale","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-stale","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","elapsedMs":11,"rows":50}
+MR1_START {"phase":"combined-effect-stale","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-stale","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","elapsedMs":21,"rows":50}
+MR1_START {"phase":"combined-effect-stale","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-stale","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","elapsedMs":13,"rows":50}
+MR1_START {"phase":"combined-effect-stale","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-stale","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","elapsedMs":13,"rows":50}
+MR1_START {"phase":"combined-effect-stale","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-stale","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","elapsedMs":12,"rows":12}
+MR1_START {"phase":"combined-effect-stale","name":"e7f6ffce30c9cd75eb99deb470f6110f296135fc3905f2f1f4286898f839e6ec","arity":2,"parameterChars":32}
+MR1_END {"phase":"combined-effect-stale","name":"e7f6ffce30c9cd75eb99deb470f6110f296135fc3905f2f1f4286898f839e6ec","elapsedMs":13,"rows":4}
+MR1_START {"phase":"combined-effect-stale","name":"40cc5486e57b2b0e6c684f32b1363cee780f10f88085b27cfd34141b33341d90","arity":3,"parameterChars":32}
+MR1_END {"phase":"combined-effect-stale","name":"40cc5486e57b2b0e6c684f32b1363cee780f10f88085b27cfd34141b33341d90","elapsedMs":7,"rows":11}
+MR1_START {"phase":"combined-effect-stale","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","arity":3,"parameterChars":32}
+MR1_END {"phase":"combined-effect-stale","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","elapsedMs":11,"rows":50}
+MR1_START {"phase":"combined-effect-stale","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","arity":3,"parameterChars":49}
+MR1_END {"phase":"combined-effect-stale","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","elapsedMs":14,"rows":50}
+MR1_START {"phase":"combined-effect-stale","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","arity":3,"parameterChars":50}
+MR1_END {"phase":"combined-effect-stale","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","elapsedMs":11,"rows":50}
+MR1_START {"phase":"combined-effect-stale","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","arity":3,"parameterChars":51}
+MR1_END {"phase":"combined-effect-stale","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","elapsedMs":9,"rows":50}
+MR1_START {"phase":"combined-effect-stale","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","arity":3,"parameterChars":51}
+MR1_END {"phase":"combined-effect-stale","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","elapsedMs":10,"rows":50}
+MR1_START {"phase":"combined-effect-stale","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","arity":3,"parameterChars":51}
+MR1_END {"phase":"combined-effect-stale","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","elapsedMs":9,"rows":50}
+MR1_START {"phase":"combined-effect-stale","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","arity":3,"parameterChars":51}
+MR1_END {"phase":"combined-effect-stale","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","elapsedMs":10,"rows":50}
+MR1_START {"phase":"combined-effect-stale","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","arity":3,"parameterChars":51}
+MR1_END {"phase":"combined-effect-stale","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","elapsedMs":8,"rows":50}
+MR1_START {"phase":"combined-effect-stale","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","arity":3,"parameterChars":51}
+MR1_END {"phase":"combined-effect-stale","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","elapsedMs":10,"rows":50}
+MR1_START {"phase":"combined-effect-stale","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","arity":3,"parameterChars":51}
+MR1_END {"phase":"combined-effect-stale","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","elapsedMs":16,"rows":50}
+MR1_START {"phase":"combined-effect-stale","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","arity":3,"parameterChars":51}
+MR1_END {"phase":"combined-effect-stale","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","elapsedMs":11,"rows":50}
+MR1_START {"phase":"combined-effect-stale","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","arity":3,"parameterChars":51}
+MR1_END {"phase":"combined-effect-stale","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","elapsedMs":10,"rows":50}
+MR1_START {"phase":"combined-effect-stale","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","arity":3,"parameterChars":51}
+MR1_END {"phase":"combined-effect-stale","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","elapsedMs":10,"rows":50}
+MR1_START {"phase":"combined-effect-stale","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","arity":3,"parameterChars":51}
+MR1_END {"phase":"combined-effect-stale","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","elapsedMs":10,"rows":50}
+MR1_START {"phase":"combined-effect-stale","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","arity":3,"parameterChars":51}
+MR1_END {"phase":"combined-effect-stale","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","elapsedMs":7,"rows":50}
+MR1_START {"phase":"combined-effect-stale","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","arity":3,"parameterChars":51}
+MR1_END {"phase":"combined-effect-stale","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","elapsedMs":11,"rows":50}
+MR1_START {"phase":"combined-effect-stale","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","arity":3,"parameterChars":51}
+MR1_END {"phase":"combined-effect-stale","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","elapsedMs":9,"rows":50}
+MR1_START {"phase":"combined-effect-stale","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","arity":3,"parameterChars":51}
+MR1_END {"phase":"combined-effect-stale","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","elapsedMs":12,"rows":50}
+MR1_START {"phase":"combined-effect-stale","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","arity":3,"parameterChars":51}
+MR1_END {"phase":"combined-effect-stale","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","elapsedMs":8,"rows":50}
+MR1_START {"phase":"combined-effect-stale","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","arity":3,"parameterChars":51}
+MR1_END {"phase":"combined-effect-stale","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","elapsedMs":15,"rows":50}
+MR1_START {"phase":"combined-effect-stale","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","arity":3,"parameterChars":52}
+MR1_END {"phase":"combined-effect-stale","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","elapsedMs":7,"rows":2}
+MR1_START {"phase":"combined-effect-stale","name":"3bf60b07bfd10f9896e2184cced316acfb3c9855e257c862fbe57137186c99fb","arity":3,"parameterChars":32}
+MR1_END {"phase":"combined-effect-stale","name":"3bf60b07bfd10f9896e2184cced316acfb3c9855e257c862fbe57137186c99fb","elapsedMs":8,"rows":1}
+MR1_START {"phase":"combined-effect-stale","name":"378bbba5a000356815e65d579d67134dea33bfa0b6a54151ec9200ca484d84ae","arity":5,"parameterChars":33}
+MR1_END {"phase":"combined-effect-stale","name":"378bbba5a000356815e65d579d67134dea33bfa0b6a54151ec9200ca484d84ae","elapsedMs":5,"rows":1}
+MR1_START {"phase":"combined-effect-stale","name":"selectionBatch","arity":3,"parameterChars":66}
+MR1_END {"phase":"combined-effect-stale","name":"selectionBatch","elapsedMs":7,"rows":1}
+MR1_STAGE {"size":1000,"name":"replay-stale-rejected","elapsedMs":7095}
+MR1_START {"phase":"combined-effect-preview","name":"begin","arity":0,"parameterChars":0}
+MR1_END {"phase":"combined-effect-preview","name":"begin","elapsedMs":5,"rows":0}
+MR1_START {"phase":"combined-effect-preview","name":"cbe3781f70cf1a5a5b25f34a850d752f8241ea070434f693ac469d513a371e30","arity":1,"parameterChars":30}
+MR1_END {"phase":"combined-effect-preview","name":"cbe3781f70cf1a5a5b25f34a850d752f8241ea070434f693ac469d513a371e30","elapsedMs":6,"rows":0}
+MR1_START {"phase":"combined-effect-preview","name":"83403a1c31f81d97f3fb27692a1e9e98fa5e772f0057ef2252756365d93fd9a8","arity":0,"parameterChars":0}
+MR1_END {"phase":"combined-effect-preview","name":"83403a1c31f81d97f3fb27692a1e9e98fa5e772f0057ef2252756365d93fd9a8","elapsedMs":6,"rows":0}
+MR1_START {"phase":"combined-effect-preview","name":"e23c637479cefd1bf2941297d10d2b8df4f1c2bd127da53a9d3daf55d96567fc","arity":0,"parameterChars":0}
+MR1_END {"phase":"combined-effect-preview","name":"e23c637479cefd1bf2941297d10d2b8df4f1c2bd127da53a9d3daf55d96567fc","elapsedMs":4,"rows":0}
+MR1_START {"phase":"combined-effect-preview","name":"216053d7122cd3047fafeb318310c74c46b780f35d6527338e9e169f7398d797","arity":0,"parameterChars":0}
+MR1_END {"phase":"combined-effect-preview","name":"216053d7122cd3047fafeb318310c74c46b780f35d6527338e9e169f7398d797","elapsedMs":5,"rows":0}
+MR1_START {"phase":"combined-effect-preview","name":"c82394fbdc64494005b0fab66847aaf509232adf1d1884878507c369d9de886b","arity":0,"parameterChars":0}
+MR1_END {"phase":"combined-effect-preview","name":"c82394fbdc64494005b0fab66847aaf509232adf1d1884878507c369d9de886b","elapsedMs":5,"rows":0}
+MR1_START {"phase":"combined-effect-preview","name":"8c29aed11bf3e78656ab0ce1203774f617cedffe6fc5af55631c90cd4cb735d2","arity":0,"parameterChars":0}
+MR1_END {"phase":"combined-effect-preview","name":"8c29aed11bf3e78656ab0ce1203774f617cedffe6fc5af55631c90cd4cb735d2","elapsedMs":4,"rows":0}
+MR1_START {"phase":"combined-effect-preview","name":"b6f178f9b55d8b328ea0220f4c91cc4962d6c1d66098b2d4aa0378cf39190c5d","arity":0,"parameterChars":0}
+MR1_END {"phase":"combined-effect-preview","name":"b6f178f9b55d8b328ea0220f4c91cc4962d6c1d66098b2d4aa0378cf39190c5d","elapsedMs":4,"rows":0}
+MR1_START {"phase":"combined-effect-preview","name":"dad9653b2cbe70bf0009e7d157e3a41901ed190846b9dde0a7b5c0d3e79f23d7","arity":0,"parameterChars":0}
+MR1_END {"phase":"combined-effect-preview","name":"dad9653b2cbe70bf0009e7d157e3a41901ed190846b9dde0a7b5c0d3e79f23d7","elapsedMs":4,"rows":0}
+MR1_START {"phase":"combined-effect-preview","name":"8d5fa4e8fdef506c768e864280f7a02c4271683d00ddf47e841999036a7a792b","arity":0,"parameterChars":0}
+MR1_END {"phase":"combined-effect-preview","name":"8d5fa4e8fdef506c768e864280f7a02c4271683d00ddf47e841999036a7a792b","elapsedMs":7,"rows":0}
+MR1_START {"phase":"combined-effect-preview","name":"0a73927829d09bb71fcbe4788bcb57c2a7e1ba76784ee09936aab0b08b36e043","arity":0,"parameterChars":0}
+MR1_END {"phase":"combined-effect-preview","name":"0a73927829d09bb71fcbe4788bcb57c2a7e1ba76784ee09936aab0b08b36e043","elapsedMs":7,"rows":0}
+MR1_START {"phase":"combined-effect-preview","name":"5e930de6b99610d90a26477ebf3e1f97ca0ee1a8a0e561bae2516cceb4e01b01","arity":2,"parameterChars":66}
+MR1_END {"phase":"combined-effect-preview","name":"5e930de6b99610d90a26477ebf3e1f97ca0ee1a8a0e561bae2516cceb4e01b01","elapsedMs":6,"rows":1}
+MR1_START {"phase":"combined-effect-preview","name":"149c9fe34e0d56d8a79d0dd77d704e79d4da244148ca59525f77635dba850056","arity":2,"parameterChars":31}
+MR1_END {"phase":"combined-effect-preview","name":"149c9fe34e0d56d8a79d0dd77d704e79d4da244148ca59525f77635dba850056","elapsedMs":7,"rows":0}
+MR1_START {"phase":"combined-effect-preview","name":"0689c2b5d7a6f59069bb66416958be18471c7729ef944a31dec7b7388f97f29b","arity":2,"parameterChars":66}
+MR1_END {"phase":"combined-effect-preview","name":"0689c2b5d7a6f59069bb66416958be18471c7729ef944a31dec7b7388f97f29b","elapsedMs":15,"rows":0}
+MR1_START {"phase":"combined-effect-preview","name":"cbe3781f70cf1a5a5b25f34a850d752f8241ea070434f693ac469d513a371e30","arity":1,"parameterChars":30}
+MR1_END {"phase":"combined-effect-preview","name":"cbe3781f70cf1a5a5b25f34a850d752f8241ea070434f693ac469d513a371e30","elapsedMs":11,"rows":0}
+MR1_START {"phase":"combined-effect-preview","name":"root","arity":2,"parameterChars":66}
+MR1_END {"phase":"combined-effect-preview","name":"root","elapsedMs":10,"rows":1}
+MR1_START {"phase":"combined-effect-preview","name":"cbe3781f70cf1a5a5b25f34a850d752f8241ea070434f693ac469d513a371e30","arity":1,"parameterChars":30}
+MR1_END {"phase":"combined-effect-preview","name":"cbe3781f70cf1a5a5b25f34a850d752f8241ea070434f693ac469d513a371e30","elapsedMs":10,"rows":0}
+MR1_START {"phase":"combined-effect-preview","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":32}
+MR1_END {"phase":"combined-effect-preview","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":17,"rows":50}
+MR1_START {"phase":"combined-effect-preview","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":32}
+MR1_END {"phase":"combined-effect-preview","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":13,"rows":50}
+MR1_START {"phase":"combined-effect-preview","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":32}
+MR1_END {"phase":"combined-effect-preview","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":21,"rows":50}
+MR1_START {"phase":"combined-effect-preview","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-preview","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":22,"rows":50}
+MR1_START {"phase":"combined-effect-preview","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-preview","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":12,"rows":50}
+MR1_START {"phase":"combined-effect-preview","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-preview","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":20,"rows":50}
+MR1_START {"phase":"combined-effect-preview","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-preview","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":13,"rows":50}
+MR1_START {"phase":"combined-effect-preview","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-preview","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":24,"rows":50}
+MR1_START {"phase":"combined-effect-preview","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-preview","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":15,"rows":50}
+MR1_START {"phase":"combined-effect-preview","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-preview","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":17,"rows":50}
+MR1_START {"phase":"combined-effect-preview","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-preview","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":12,"rows":50}
+MR1_START {"phase":"combined-effect-preview","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-preview","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":18,"rows":50}
+MR1_START {"phase":"combined-effect-preview","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-preview","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":13,"rows":50}
+MR1_START {"phase":"combined-effect-preview","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-preview","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":10,"rows":50}
+MR1_START {"phase":"combined-effect-preview","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-preview","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":12,"rows":50}
+MR1_START {"phase":"combined-effect-preview","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-preview","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":11,"rows":50}
+MR1_START {"phase":"combined-effect-preview","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-preview","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":9,"rows":50}
+MR1_START {"phase":"combined-effect-preview","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-preview","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":15,"rows":50}
+MR1_START {"phase":"combined-effect-preview","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-preview","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":11,"rows":50}
+MR1_START {"phase":"combined-effect-preview","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-preview","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":9,"rows":50}
+MR1_START {"phase":"combined-effect-preview","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-preview","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":13,"rows":50}
+MR1_START {"phase":"combined-effect-preview","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":34}
+MR1_END {"phase":"combined-effect-preview","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":10,"rows":50}
+MR1_START {"phase":"combined-effect-preview","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":34}
+MR1_END {"phase":"combined-effect-preview","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":12,"rows":50}
+MR1_START {"phase":"combined-effect-preview","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":34}
+MR1_END {"phase":"combined-effect-preview","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":10,"rows":50}
+MR1_START {"phase":"combined-effect-preview","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":34}
+MR1_END {"phase":"combined-effect-preview","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":10,"rows":50}
+MR1_START {"phase":"combined-effect-preview","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":34}
+MR1_END {"phase":"combined-effect-preview","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":10,"rows":50}
+MR1_START {"phase":"combined-effect-preview","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":34}
+MR1_END {"phase":"combined-effect-preview","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":10,"rows":50}
+MR1_START {"phase":"combined-effect-preview","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":34}
+MR1_END {"phase":"combined-effect-preview","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":13,"rows":50}
+MR1_START {"phase":"combined-effect-preview","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":34}
+MR1_END {"phase":"combined-effect-preview","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":12,"rows":50}
+MR1_START {"phase":"combined-effect-preview","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":34}
+MR1_END {"phase":"combined-effect-preview","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":17,"rows":50}
+MR1_START {"phase":"combined-effect-preview","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":34}
+MR1_END {"phase":"combined-effect-preview","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":6,"rows":50}
+MR1_START {"phase":"combined-effect-preview","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":34}
+MR1_END {"phase":"combined-effect-preview","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":16,"rows":50}
+MR1_START {"phase":"combined-effect-preview","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":34}
+MR1_END {"phase":"combined-effect-preview","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":20,"rows":50}
+MR1_START {"phase":"combined-effect-preview","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":34}
+MR1_END {"phase":"combined-effect-preview","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":12,"rows":50}
+MR1_START {"phase":"combined-effect-preview","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":34}
+MR1_END {"phase":"combined-effect-preview","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":17,"rows":50}
+MR1_START {"phase":"combined-effect-preview","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":34}
+MR1_END {"phase":"combined-effect-preview","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":15,"rows":50}
+MR1_START {"phase":"combined-effect-preview","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":34}
+MR1_END {"phase":"combined-effect-preview","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":19,"rows":50}
+MR1_START {"phase":"combined-effect-preview","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":34}
+MR1_END {"phase":"combined-effect-preview","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":13,"rows":50}
+MR1_START {"phase":"combined-effect-preview","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":34}
+MR1_END {"phase":"combined-effect-preview","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":13,"rows":50}
+MR1_START {"phase":"combined-effect-preview","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":34}
+MR1_END {"phase":"combined-effect-preview","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":12,"rows":50}
+MR1_START {"phase":"combined-effect-preview","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":34}
+MR1_END {"phase":"combined-effect-preview","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":7,"rows":12}
+MR1_START {"phase":"combined-effect-preview","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","arity":2,"parameterChars":32}
+MR1_END {"phase":"combined-effect-preview","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","elapsedMs":21,"rows":50}
+MR1_START {"phase":"combined-effect-preview","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","arity":2,"parameterChars":32}
+MR1_END {"phase":"combined-effect-preview","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","elapsedMs":14,"rows":50}
+MR1_START {"phase":"combined-effect-preview","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","arity":2,"parameterChars":32}
+MR1_END {"phase":"combined-effect-preview","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","elapsedMs":12,"rows":50}
+MR1_START {"phase":"combined-effect-preview","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-preview","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","elapsedMs":12,"rows":50}
+MR1_START {"phase":"combined-effect-preview","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-preview","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","elapsedMs":10,"rows":50}
+MR1_START {"phase":"combined-effect-preview","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-preview","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","elapsedMs":7,"rows":50}
+MR1_START {"phase":"combined-effect-preview","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-preview","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","elapsedMs":17,"rows":50}
+MR1_START {"phase":"combined-effect-preview","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-preview","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","elapsedMs":15,"rows":50}
+MR1_START {"phase":"combined-effect-preview","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-preview","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","elapsedMs":12,"rows":50}
+MR1_START {"phase":"combined-effect-preview","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-preview","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","elapsedMs":6,"rows":50}
+MR1_START {"phase":"combined-effect-preview","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-preview","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","elapsedMs":15,"rows":50}
+MR1_START {"phase":"combined-effect-preview","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-preview","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","elapsedMs":15,"rows":50}
+MR1_START {"phase":"combined-effect-preview","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-preview","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","elapsedMs":22,"rows":50}
+MR1_START {"phase":"combined-effect-preview","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-preview","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","elapsedMs":12,"rows":50}
+MR1_START {"phase":"combined-effect-preview","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-preview","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","elapsedMs":23,"rows":50}
+MR1_START {"phase":"combined-effect-preview","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-preview","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","elapsedMs":14,"rows":50}
+MR1_START {"phase":"combined-effect-preview","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-preview","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","elapsedMs":11,"rows":50}
+MR1_START {"phase":"combined-effect-preview","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-preview","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","elapsedMs":15,"rows":50}
+MR1_START {"phase":"combined-effect-preview","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-preview","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","elapsedMs":9,"rows":50}
+MR1_START {"phase":"combined-effect-preview","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-preview","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","elapsedMs":11,"rows":50}
+MR1_START {"phase":"combined-effect-preview","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-preview","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","elapsedMs":9,"rows":12}
+MR1_START {"phase":"combined-effect-preview","name":"e7f6ffce30c9cd75eb99deb470f6110f296135fc3905f2f1f4286898f839e6ec","arity":2,"parameterChars":32}
+MR1_END {"phase":"combined-effect-preview","name":"e7f6ffce30c9cd75eb99deb470f6110f296135fc3905f2f1f4286898f839e6ec","elapsedMs":9,"rows":4}
+MR1_START {"phase":"combined-effect-preview","name":"40cc5486e57b2b0e6c684f32b1363cee780f10f88085b27cfd34141b33341d90","arity":3,"parameterChars":32}
+MR1_END {"phase":"combined-effect-preview","name":"40cc5486e57b2b0e6c684f32b1363cee780f10f88085b27cfd34141b33341d90","elapsedMs":7,"rows":11}
+MR1_START {"phase":"combined-effect-preview","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","arity":3,"parameterChars":32}
+MR1_END {"phase":"combined-effect-preview","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","elapsedMs":8,"rows":50}
+MR1_START {"phase":"combined-effect-preview","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","arity":3,"parameterChars":49}
+MR1_END {"phase":"combined-effect-preview","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","elapsedMs":8,"rows":50}
+MR1_START {"phase":"combined-effect-preview","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","arity":3,"parameterChars":50}
+MR1_END {"phase":"combined-effect-preview","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","elapsedMs":14,"rows":50}
+MR1_START {"phase":"combined-effect-preview","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","arity":3,"parameterChars":51}
+MR1_END {"phase":"combined-effect-preview","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","elapsedMs":16,"rows":50}
+MR1_START {"phase":"combined-effect-preview","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","arity":3,"parameterChars":51}
+MR1_END {"phase":"combined-effect-preview","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","elapsedMs":10,"rows":50}
+MR1_START {"phase":"combined-effect-preview","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","arity":3,"parameterChars":51}
+MR1_END {"phase":"combined-effect-preview","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","elapsedMs":8,"rows":50}
+MR1_START {"phase":"combined-effect-preview","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","arity":3,"parameterChars":51}
+MR1_END {"phase":"combined-effect-preview","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","elapsedMs":11,"rows":50}
+MR1_START {"phase":"combined-effect-preview","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","arity":3,"parameterChars":51}
+MR1_END {"phase":"combined-effect-preview","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","elapsedMs":15,"rows":50}
+MR1_START {"phase":"combined-effect-preview","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","arity":3,"parameterChars":51}
+MR1_END {"phase":"combined-effect-preview","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","elapsedMs":23,"rows":50}
+MR1_START {"phase":"combined-effect-preview","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","arity":3,"parameterChars":51}
+MR1_END {"phase":"combined-effect-preview","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","elapsedMs":16,"rows":50}
+MR1_START {"phase":"combined-effect-preview","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","arity":3,"parameterChars":51}
+MR1_END {"phase":"combined-effect-preview","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","elapsedMs":14,"rows":50}
+MR1_START {"phase":"combined-effect-preview","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","arity":3,"parameterChars":51}
+MR1_END {"phase":"combined-effect-preview","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","elapsedMs":10,"rows":50}
+MR1_START {"phase":"combined-effect-preview","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","arity":3,"parameterChars":51}
+MR1_END {"phase":"combined-effect-preview","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","elapsedMs":8,"rows":50}
+MR1_START {"phase":"combined-effect-preview","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","arity":3,"parameterChars":51}
+MR1_END {"phase":"combined-effect-preview","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","elapsedMs":11,"rows":50}
+MR1_START {"phase":"combined-effect-preview","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","arity":3,"parameterChars":51}
+MR1_END {"phase":"combined-effect-preview","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","elapsedMs":7,"rows":50}
+MR1_START {"phase":"combined-effect-preview","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","arity":3,"parameterChars":51}
+MR1_END {"phase":"combined-effect-preview","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","elapsedMs":9,"rows":50}
+MR1_START {"phase":"combined-effect-preview","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","arity":3,"parameterChars":51}
+MR1_END {"phase":"combined-effect-preview","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","elapsedMs":15,"rows":50}
+MR1_START {"phase":"combined-effect-preview","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","arity":3,"parameterChars":51}
+MR1_END {"phase":"combined-effect-preview","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","elapsedMs":11,"rows":50}
+MR1_START {"phase":"combined-effect-preview","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","arity":3,"parameterChars":51}
+MR1_END {"phase":"combined-effect-preview","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","elapsedMs":19,"rows":50}
+MR1_START {"phase":"combined-effect-preview","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","arity":3,"parameterChars":51}
+MR1_END {"phase":"combined-effect-preview","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","elapsedMs":12,"rows":50}
+MR1_START {"phase":"combined-effect-preview","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","arity":3,"parameterChars":52}
+MR1_END {"phase":"combined-effect-preview","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","elapsedMs":12,"rows":2}
+MR1_START {"phase":"combined-effect-preview","name":"3bf60b07bfd10f9896e2184cced316acfb3c9855e257c862fbe57137186c99fb","arity":3,"parameterChars":32}
+MR1_END {"phase":"combined-effect-preview","name":"3bf60b07bfd10f9896e2184cced316acfb3c9855e257c862fbe57137186c99fb","elapsedMs":9,"rows":1}
+MR1_START {"phase":"combined-effect-preview","name":"378bbba5a000356815e65d579d67134dea33bfa0b6a54151ec9200ca484d84ae","arity":5,"parameterChars":33}
+MR1_END {"phase":"combined-effect-preview","name":"378bbba5a000356815e65d579d67134dea33bfa0b6a54151ec9200ca484d84ae","elapsedMs":5,"rows":1}
+MR1_START {"phase":"combined-effect-preview","name":"selectionBatch","arity":3,"parameterChars":66}
+MR1_END {"phase":"combined-effect-preview","name":"selectionBatch","elapsedMs":8,"rows":1}
+MR1_START {"phase":"combined-effect-preview","name":"projected","arity":4,"parameterChars":68}
+MR1_END {"phase":"combined-effect-preview","name":"projected","elapsedMs":5,"rows":1}
+MR1_START {"phase":"combined-effect-preview","name":"dad9653b2cbe70bf0009e7d157e3a41901ed190846b9dde0a7b5c0d3e79f23d7","arity":0,"parameterChars":0}
+MR1_END {"phase":"combined-effect-preview","name":"dad9653b2cbe70bf0009e7d157e3a41901ed190846b9dde0a7b5c0d3e79f23d7","elapsedMs":6,"rows":1}
+MR1_START {"phase":"combined-effect-preview","name":"8d5fa4e8fdef506c768e864280f7a02c4271683d00ddf47e841999036a7a792b","arity":0,"parameterChars":0}
+MR1_END {"phase":"combined-effect-preview","name":"8d5fa4e8fdef506c768e864280f7a02c4271683d00ddf47e841999036a7a792b","elapsedMs":5,"rows":0}
+MR1_START {"phase":"combined-effect-preview","name":"0a73927829d09bb71fcbe4788bcb57c2a7e1ba76784ee09936aab0b08b36e043","arity":0,"parameterChars":0}
+MR1_END {"phase":"combined-effect-preview","name":"0a73927829d09bb71fcbe4788bcb57c2a7e1ba76784ee09936aab0b08b36e043","elapsedMs":6,"rows":0}
+MR1_START {"phase":"combined-effect-preview","name":"commit","arity":0,"parameterChars":0}
+MR1_END {"phase":"combined-effect-preview","name":"commit","elapsedMs":5,"rows":0}
+MR1_STAGE {"size":1000,"name":"replay-preview","elapsedMs":8646}
+MR1_START {"phase":"combined-effect-confirmation","name":"begin","arity":0,"parameterChars":0}
+MR1_END {"phase":"combined-effect-confirmation","name":"begin","elapsedMs":9,"rows":0}
+MR1_START {"phase":"combined-effect-confirmation","name":"e1f064445dc9053e2fc34707cef33bdbe271395e52879801a3f7b49cd4344ea3","arity":1,"parameterChars":30}
+MR1_END {"phase":"combined-effect-confirmation","name":"e1f064445dc9053e2fc34707cef33bdbe271395e52879801a3f7b49cd4344ea3","elapsedMs":6,"rows":1}
+MR1_START {"phase":"combined-effect-confirmation","name":"cbe3781f70cf1a5a5b25f34a850d752f8241ea070434f693ac469d513a371e30","arity":1,"parameterChars":30}
+MR1_END {"phase":"combined-effect-confirmation","name":"cbe3781f70cf1a5a5b25f34a850d752f8241ea070434f693ac469d513a371e30","elapsedMs":4,"rows":0}
+MR1_START {"phase":"combined-effect-confirmation","name":"8179fdd8eb9ce21a8c6d5fe96c878247365335b6f9dc880e020dadcad3019365","arity":1,"parameterChars":120}
+MR1_END {"phase":"combined-effect-confirmation","name":"8179fdd8eb9ce21a8c6d5fe96c878247365335b6f9dc880e020dadcad3019365","elapsedMs":18,"rows":0}
+MR1_START {"phase":"combined-effect-confirmation","name":"cbe3781f70cf1a5a5b25f34a850d752f8241ea070434f693ac469d513a371e30","arity":1,"parameterChars":30}
+MR1_END {"phase":"combined-effect-confirmation","name":"cbe3781f70cf1a5a5b25f34a850d752f8241ea070434f693ac469d513a371e30","elapsedMs":6,"rows":0}
+MR1_START {"phase":"combined-effect-confirmation","name":"83403a1c31f81d97f3fb27692a1e9e98fa5e772f0057ef2252756365d93fd9a8","arity":0,"parameterChars":0}
+MR1_END {"phase":"combined-effect-confirmation","name":"83403a1c31f81d97f3fb27692a1e9e98fa5e772f0057ef2252756365d93fd9a8","elapsedMs":9,"rows":0}
+MR1_START {"phase":"combined-effect-confirmation","name":"e23c637479cefd1bf2941297d10d2b8df4f1c2bd127da53a9d3daf55d96567fc","arity":0,"parameterChars":0}
+MR1_END {"phase":"combined-effect-confirmation","name":"e23c637479cefd1bf2941297d10d2b8df4f1c2bd127da53a9d3daf55d96567fc","elapsedMs":7,"rows":0}
+MR1_START {"phase":"combined-effect-confirmation","name":"216053d7122cd3047fafeb318310c74c46b780f35d6527338e9e169f7398d797","arity":0,"parameterChars":0}
+MR1_END {"phase":"combined-effect-confirmation","name":"216053d7122cd3047fafeb318310c74c46b780f35d6527338e9e169f7398d797","elapsedMs":4,"rows":0}
+MR1_START {"phase":"combined-effect-confirmation","name":"c82394fbdc64494005b0fab66847aaf509232adf1d1884878507c369d9de886b","arity":0,"parameterChars":0}
+MR1_END {"phase":"combined-effect-confirmation","name":"c82394fbdc64494005b0fab66847aaf509232adf1d1884878507c369d9de886b","elapsedMs":7,"rows":0}
+MR1_START {"phase":"combined-effect-confirmation","name":"8c29aed11bf3e78656ab0ce1203774f617cedffe6fc5af55631c90cd4cb735d2","arity":0,"parameterChars":0}
+MR1_END {"phase":"combined-effect-confirmation","name":"8c29aed11bf3e78656ab0ce1203774f617cedffe6fc5af55631c90cd4cb735d2","elapsedMs":5,"rows":0}
+MR1_START {"phase":"combined-effect-confirmation","name":"b6f178f9b55d8b328ea0220f4c91cc4962d6c1d66098b2d4aa0378cf39190c5d","arity":0,"parameterChars":0}
+MR1_END {"phase":"combined-effect-confirmation","name":"b6f178f9b55d8b328ea0220f4c91cc4962d6c1d66098b2d4aa0378cf39190c5d","elapsedMs":7,"rows":0}
+MR1_START {"phase":"combined-effect-confirmation","name":"dad9653b2cbe70bf0009e7d157e3a41901ed190846b9dde0a7b5c0d3e79f23d7","arity":0,"parameterChars":0}
+MR1_END {"phase":"combined-effect-confirmation","name":"dad9653b2cbe70bf0009e7d157e3a41901ed190846b9dde0a7b5c0d3e79f23d7","elapsedMs":9,"rows":0}
+MR1_START {"phase":"combined-effect-confirmation","name":"8d5fa4e8fdef506c768e864280f7a02c4271683d00ddf47e841999036a7a792b","arity":0,"parameterChars":0}
+MR1_END {"phase":"combined-effect-confirmation","name":"8d5fa4e8fdef506c768e864280f7a02c4271683d00ddf47e841999036a7a792b","elapsedMs":5,"rows":0}
+MR1_START {"phase":"combined-effect-confirmation","name":"0a73927829d09bb71fcbe4788bcb57c2a7e1ba76784ee09936aab0b08b36e043","arity":0,"parameterChars":0}
+MR1_END {"phase":"combined-effect-confirmation","name":"0a73927829d09bb71fcbe4788bcb57c2a7e1ba76784ee09936aab0b08b36e043","elapsedMs":6,"rows":0}
+MR1_START {"phase":"combined-effect-confirmation","name":"5e930de6b99610d90a26477ebf3e1f97ca0ee1a8a0e561bae2516cceb4e01b01","arity":2,"parameterChars":66}
+MR1_END {"phase":"combined-effect-confirmation","name":"5e930de6b99610d90a26477ebf3e1f97ca0ee1a8a0e561bae2516cceb4e01b01","elapsedMs":17,"rows":1}
+MR1_START {"phase":"combined-effect-confirmation","name":"149c9fe34e0d56d8a79d0dd77d704e79d4da244148ca59525f77635dba850056","arity":2,"parameterChars":31}
+MR1_END {"phase":"combined-effect-confirmation","name":"149c9fe34e0d56d8a79d0dd77d704e79d4da244148ca59525f77635dba850056","elapsedMs":8,"rows":0}
+MR1_START {"phase":"combined-effect-confirmation","name":"0689c2b5d7a6f59069bb66416958be18471c7729ef944a31dec7b7388f97f29b","arity":2,"parameterChars":66}
+MR1_END {"phase":"combined-effect-confirmation","name":"0689c2b5d7a6f59069bb66416958be18471c7729ef944a31dec7b7388f97f29b","elapsedMs":12,"rows":0}
+MR1_START {"phase":"combined-effect-confirmation","name":"cbe3781f70cf1a5a5b25f34a850d752f8241ea070434f693ac469d513a371e30","arity":1,"parameterChars":30}
+MR1_END {"phase":"combined-effect-confirmation","name":"cbe3781f70cf1a5a5b25f34a850d752f8241ea070434f693ac469d513a371e30","elapsedMs":7,"rows":0}
+MR1_START {"phase":"combined-effect-confirmation","name":"root","arity":2,"parameterChars":66}
+MR1_END {"phase":"combined-effect-confirmation","name":"root","elapsedMs":11,"rows":1}
+MR1_START {"phase":"combined-effect-confirmation","name":"cbe3781f70cf1a5a5b25f34a850d752f8241ea070434f693ac469d513a371e30","arity":1,"parameterChars":30}
+MR1_END {"phase":"combined-effect-confirmation","name":"cbe3781f70cf1a5a5b25f34a850d752f8241ea070434f693ac469d513a371e30","elapsedMs":12,"rows":0}
+MR1_START {"phase":"combined-effect-confirmation","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":32}
+MR1_END {"phase":"combined-effect-confirmation","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":26,"rows":50}
+MR1_START {"phase":"combined-effect-confirmation","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":32}
+MR1_END {"phase":"combined-effect-confirmation","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":17,"rows":50}
+MR1_START {"phase":"combined-effect-confirmation","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":32}
+MR1_END {"phase":"combined-effect-confirmation","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":11,"rows":50}
+MR1_START {"phase":"combined-effect-confirmation","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-confirmation","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":28,"rows":50}
+MR1_START {"phase":"combined-effect-confirmation","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-confirmation","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":16,"rows":50}
+MR1_START {"phase":"combined-effect-confirmation","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-confirmation","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":16,"rows":50}
+MR1_START {"phase":"combined-effect-confirmation","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-confirmation","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":12,"rows":50}
+MR1_START {"phase":"combined-effect-confirmation","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-confirmation","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":11,"rows":50}
+MR1_START {"phase":"combined-effect-confirmation","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-confirmation","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":10,"rows":50}
+MR1_START {"phase":"combined-effect-confirmation","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-confirmation","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":10,"rows":50}
+MR1_START {"phase":"combined-effect-confirmation","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-confirmation","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":9,"rows":50}
+MR1_START {"phase":"combined-effect-confirmation","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-confirmation","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":11,"rows":50}
+MR1_START {"phase":"combined-effect-confirmation","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-confirmation","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":10,"rows":50}
+MR1_START {"phase":"combined-effect-confirmation","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-confirmation","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":10,"rows":50}
+MR1_START {"phase":"combined-effect-confirmation","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-confirmation","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":14,"rows":50}
+MR1_START {"phase":"combined-effect-confirmation","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-confirmation","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":13,"rows":50}
+MR1_START {"phase":"combined-effect-confirmation","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-confirmation","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":16,"rows":50}
+MR1_START {"phase":"combined-effect-confirmation","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-confirmation","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":13,"rows":50}
+MR1_START {"phase":"combined-effect-confirmation","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-confirmation","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":11,"rows":50}
+MR1_START {"phase":"combined-effect-confirmation","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-confirmation","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":18,"rows":50}
+MR1_START {"phase":"combined-effect-confirmation","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-confirmation","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":16,"rows":50}
+MR1_START {"phase":"combined-effect-confirmation","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":34}
+MR1_END {"phase":"combined-effect-confirmation","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":12,"rows":50}
+MR1_START {"phase":"combined-effect-confirmation","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":34}
+MR1_END {"phase":"combined-effect-confirmation","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":13,"rows":50}
+MR1_START {"phase":"combined-effect-confirmation","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":34}
+MR1_END {"phase":"combined-effect-confirmation","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":11,"rows":50}
+MR1_START {"phase":"combined-effect-confirmation","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":34}
+MR1_END {"phase":"combined-effect-confirmation","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":11,"rows":50}
+MR1_START {"phase":"combined-effect-confirmation","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":34}
+MR1_END {"phase":"combined-effect-confirmation","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":15,"rows":50}
+MR1_START {"phase":"combined-effect-confirmation","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":34}
+MR1_END {"phase":"combined-effect-confirmation","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":13,"rows":50}
+MR1_START {"phase":"combined-effect-confirmation","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":34}
+MR1_END {"phase":"combined-effect-confirmation","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":17,"rows":50}
+MR1_START {"phase":"combined-effect-confirmation","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":34}
+MR1_END {"phase":"combined-effect-confirmation","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":14,"rows":50}
+MR1_START {"phase":"combined-effect-confirmation","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":34}
+MR1_END {"phase":"combined-effect-confirmation","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":18,"rows":50}
+MR1_START {"phase":"combined-effect-confirmation","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":34}
+MR1_END {"phase":"combined-effect-confirmation","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":13,"rows":50}
+MR1_START {"phase":"combined-effect-confirmation","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":34}
+MR1_END {"phase":"combined-effect-confirmation","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":15,"rows":50}
+MR1_START {"phase":"combined-effect-confirmation","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":34}
+MR1_END {"phase":"combined-effect-confirmation","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":28,"rows":50}
+MR1_START {"phase":"combined-effect-confirmation","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":34}
+MR1_END {"phase":"combined-effect-confirmation","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":13,"rows":50}
+MR1_START {"phase":"combined-effect-confirmation","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":34}
+MR1_END {"phase":"combined-effect-confirmation","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":13,"rows":50}
+MR1_START {"phase":"combined-effect-confirmation","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":34}
+MR1_END {"phase":"combined-effect-confirmation","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":16,"rows":50}
+MR1_START {"phase":"combined-effect-confirmation","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":34}
+MR1_END {"phase":"combined-effect-confirmation","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":11,"rows":50}
+MR1_START {"phase":"combined-effect-confirmation","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":34}
+MR1_END {"phase":"combined-effect-confirmation","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":22,"rows":50}
+MR1_START {"phase":"combined-effect-confirmation","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":34}
+MR1_END {"phase":"combined-effect-confirmation","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":13,"rows":50}
+MR1_START {"phase":"combined-effect-confirmation","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":34}
+MR1_END {"phase":"combined-effect-confirmation","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":10,"rows":50}
+MR1_START {"phase":"combined-effect-confirmation","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","arity":2,"parameterChars":34}
+MR1_END {"phase":"combined-effect-confirmation","name":"6b852579bbb7421d1d8c42645e42ec8e519b38f66aedd050ca536c4fbdd55447","elapsedMs":12,"rows":12}
+MR1_START {"phase":"combined-effect-confirmation","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","arity":2,"parameterChars":32}
+MR1_END {"phase":"combined-effect-confirmation","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","elapsedMs":25,"rows":50}
+MR1_START {"phase":"combined-effect-confirmation","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","arity":2,"parameterChars":32}
+MR1_END {"phase":"combined-effect-confirmation","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","elapsedMs":20,"rows":50}
+MR1_START {"phase":"combined-effect-confirmation","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","arity":2,"parameterChars":32}
+MR1_END {"phase":"combined-effect-confirmation","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","elapsedMs":13,"rows":50}
+MR1_START {"phase":"combined-effect-confirmation","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-confirmation","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","elapsedMs":14,"rows":50}
+MR1_START {"phase":"combined-effect-confirmation","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-confirmation","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","elapsedMs":20,"rows":50}
+MR1_START {"phase":"combined-effect-confirmation","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-confirmation","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","elapsedMs":12,"rows":50}
+MR1_START {"phase":"combined-effect-confirmation","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-confirmation","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","elapsedMs":18,"rows":50}
+MR1_START {"phase":"combined-effect-confirmation","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-confirmation","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","elapsedMs":15,"rows":50}
+MR1_START {"phase":"combined-effect-confirmation","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-confirmation","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","elapsedMs":10,"rows":50}
+MR1_START {"phase":"combined-effect-confirmation","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-confirmation","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","elapsedMs":15,"rows":50}
+MR1_START {"phase":"combined-effect-confirmation","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-confirmation","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","elapsedMs":11,"rows":50}
+MR1_START {"phase":"combined-effect-confirmation","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-confirmation","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","elapsedMs":13,"rows":50}
+MR1_START {"phase":"combined-effect-confirmation","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-confirmation","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","elapsedMs":14,"rows":50}
+MR1_START {"phase":"combined-effect-confirmation","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-confirmation","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","elapsedMs":15,"rows":50}
+MR1_START {"phase":"combined-effect-confirmation","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-confirmation","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","elapsedMs":23,"rows":50}
+MR1_START {"phase":"combined-effect-confirmation","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-confirmation","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","elapsedMs":14,"rows":50}
+MR1_START {"phase":"combined-effect-confirmation","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-confirmation","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","elapsedMs":16,"rows":50}
+MR1_START {"phase":"combined-effect-confirmation","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-confirmation","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","elapsedMs":13,"rows":50}
+MR1_START {"phase":"combined-effect-confirmation","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-confirmation","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","elapsedMs":12,"rows":50}
+MR1_START {"phase":"combined-effect-confirmation","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-confirmation","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","elapsedMs":11,"rows":50}
+MR1_START {"phase":"combined-effect-confirmation","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","arity":2,"parameterChars":33}
+MR1_END {"phase":"combined-effect-confirmation","name":"a6991b3ebd85aa81a281771358014ebcdc8cc6458aa3f0f94c1c8142ab4d403e","elapsedMs":7,"rows":12}
+MR1_START {"phase":"combined-effect-confirmation","name":"e7f6ffce30c9cd75eb99deb470f6110f296135fc3905f2f1f4286898f839e6ec","arity":2,"parameterChars":32}
+MR1_END {"phase":"combined-effect-confirmation","name":"e7f6ffce30c9cd75eb99deb470f6110f296135fc3905f2f1f4286898f839e6ec","elapsedMs":7,"rows":4}
+MR1_START {"phase":"combined-effect-confirmation","name":"40cc5486e57b2b0e6c684f32b1363cee780f10f88085b27cfd34141b33341d90","arity":3,"parameterChars":32}
+MR1_END {"phase":"combined-effect-confirmation","name":"40cc5486e57b2b0e6c684f32b1363cee780f10f88085b27cfd34141b33341d90","elapsedMs":5,"rows":11}
+MR1_START {"phase":"combined-effect-confirmation","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","arity":3,"parameterChars":32}
+MR1_END {"phase":"combined-effect-confirmation","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","elapsedMs":15,"rows":50}
+MR1_START {"phase":"combined-effect-confirmation","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","arity":3,"parameterChars":49}
+MR1_END {"phase":"combined-effect-confirmation","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","elapsedMs":22,"rows":50}
+MR1_START {"phase":"combined-effect-confirmation","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","arity":3,"parameterChars":50}
+MR1_END {"phase":"combined-effect-confirmation","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","elapsedMs":12,"rows":50}
+MR1_START {"phase":"combined-effect-confirmation","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","arity":3,"parameterChars":51}
+MR1_END {"phase":"combined-effect-confirmation","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","elapsedMs":11,"rows":50}
+MR1_START {"phase":"combined-effect-confirmation","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","arity":3,"parameterChars":51}
+MR1_END {"phase":"combined-effect-confirmation","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","elapsedMs":11,"rows":50}
+MR1_START {"phase":"combined-effect-confirmation","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","arity":3,"parameterChars":51}
+MR1_END {"phase":"combined-effect-confirmation","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","elapsedMs":8,"rows":50}
+MR1_START {"phase":"combined-effect-confirmation","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","arity":3,"parameterChars":51}
+MR1_END {"phase":"combined-effect-confirmation","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","elapsedMs":11,"rows":50}
+MR1_START {"phase":"combined-effect-confirmation","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","arity":3,"parameterChars":51}
+MR1_END {"phase":"combined-effect-confirmation","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","elapsedMs":15,"rows":50}
+MR1_START {"phase":"combined-effect-confirmation","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","arity":3,"parameterChars":51}
+MR1_END {"phase":"combined-effect-confirmation","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","elapsedMs":11,"rows":50}
+MR1_START {"phase":"combined-effect-confirmation","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","arity":3,"parameterChars":51}
+MR1_END {"phase":"combined-effect-confirmation","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","elapsedMs":9,"rows":50}
+MR1_START {"phase":"combined-effect-confirmation","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","arity":3,"parameterChars":51}
+MR1_END {"phase":"combined-effect-confirmation","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","elapsedMs":11,"rows":50}
+MR1_START {"phase":"combined-effect-confirmation","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","arity":3,"parameterChars":51}
+MR1_END {"phase":"combined-effect-confirmation","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","elapsedMs":12,"rows":50}
+MR1_START {"phase":"combined-effect-confirmation","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","arity":3,"parameterChars":51}
+MR1_END {"phase":"combined-effect-confirmation","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","elapsedMs":13,"rows":50}
+MR1_START {"phase":"combined-effect-confirmation","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","arity":3,"parameterChars":51}
+MR1_END {"phase":"combined-effect-confirmation","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","elapsedMs":10,"rows":50}
+MR1_START {"phase":"combined-effect-confirmation","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","arity":3,"parameterChars":51}
+MR1_END {"phase":"combined-effect-confirmation","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","elapsedMs":10,"rows":50}
+MR1_START {"phase":"combined-effect-confirmation","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","arity":3,"parameterChars":51}
+MR1_END {"phase":"combined-effect-confirmation","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","elapsedMs":15,"rows":50}
+MR1_START {"phase":"combined-effect-confirmation","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","arity":3,"parameterChars":51}
+MR1_END {"phase":"combined-effect-confirmation","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","elapsedMs":16,"rows":50}
+MR1_START {"phase":"combined-effect-confirmation","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","arity":3,"parameterChars":51}
+MR1_END {"phase":"combined-effect-confirmation","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","elapsedMs":14,"rows":50}
+MR1_START {"phase":"combined-effect-confirmation","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","arity":3,"parameterChars":51}
+MR1_END {"phase":"combined-effect-confirmation","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","elapsedMs":7,"rows":50}
+MR1_START {"phase":"combined-effect-confirmation","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","arity":3,"parameterChars":51}
+MR1_END {"phase":"combined-effect-confirmation","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","elapsedMs":9,"rows":50}
+MR1_START {"phase":"combined-effect-confirmation","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","arity":3,"parameterChars":52}
+MR1_END {"phase":"combined-effect-confirmation","name":"14493dfe80397165427ca24823ebc23d1e57c03d582868a9c2d5da772a20d4db","elapsedMs":8,"rows":2}
+MR1_START {"phase":"combined-effect-confirmation","name":"3bf60b07bfd10f9896e2184cced316acfb3c9855e257c862fbe57137186c99fb","arity":3,"parameterChars":32}
+MR1_END {"phase":"combined-effect-confirmation","name":"3bf60b07bfd10f9896e2184cced316acfb3c9855e257c862fbe57137186c99fb","elapsedMs":6,"rows":1}
+MR1_START {"phase":"combined-effect-confirmation","name":"378bbba5a000356815e65d579d67134dea33bfa0b6a54151ec9200ca484d84ae","arity":5,"parameterChars":33}
+MR1_END {"phase":"combined-effect-confirmation","name":"378bbba5a000356815e65d579d67134dea33bfa0b6a54151ec9200ca484d84ae","elapsedMs":7,"rows":1}
+MR1_START {"phase":"combined-effect-confirmation","name":"selectionBatch","arity":3,"parameterChars":66}
+MR1_END {"phase":"combined-effect-confirmation","name":"selectionBatch","elapsedMs":7,"rows":1}
+MR1_START {"phase":"combined-effect-confirmation","name":"executionBatch","arity":4,"parameterChars":72}
+MR1_END {"phase":"combined-effect-confirmation","name":"executionBatch","elapsedMs":9,"rows":1}
+MR1_START {"phase":"combined-effect-confirmation","name":"statusUpdate","arity":3,"parameterChars":310}
+MR1_END {"phase":"combined-effect-confirmation","name":"statusUpdate","elapsedMs":6,"rows":1}
+MR1_START {"phase":"combined-effect-confirmation","name":"stageAudit","arity":3,"parameterChars":310}
+MR1_END {"phase":"combined-effect-confirmation","name":"stageAudit","elapsedMs":6,"rows":1}
+MR1_START {"phase":"combined-effect-confirmation","name":"50aff460e198e577032d4f6543adb74ee5a6912e534b3746df7e1ce59bcd6acf","arity":2,"parameterChars":36}
+MR1_END {"phase":"combined-effect-confirmation","name":"50aff460e198e577032d4f6543adb74ee5a6912e534b3746df7e1ce59bcd6acf","elapsedMs":6,"rows":1}
+MR1_START {"phase":"combined-effect-confirmation","name":"staleMemories","arity":2,"parameterChars":36}
+MR1_END {"phase":"combined-effect-confirmation","name":"staleMemories","elapsedMs":4,"rows":0}
+MR1_START {"phase":"combined-effect-confirmation","name":"cbe3781f70cf1a5a5b25f34a850d752f8241ea070434f693ac469d513a371e30","arity":1,"parameterChars":30}
+MR1_END {"phase":"combined-effect-confirmation","name":"cbe3781f70cf1a5a5b25f34a850d752f8241ea070434f693ac469d513a371e30","elapsedMs":3,"rows":0}
+MR1_START {"phase":"combined-effect-confirmation","name":"completedEffects","arity":6,"parameterChars":36}
+MR1_END {"phase":"combined-effect-confirmation","name":"completedEffects","elapsedMs":3,"rows":1}
+MR1_START {"phase":"combined-effect-confirmation","name":"4975075cae7d4b06d33753910490d62a1d86c0e0861ad4c3bb2c2635b319b967","arity":4,"parameterChars":85}
+MR1_END {"phase":"combined-effect-confirmation","name":"4975075cae7d4b06d33753910490d62a1d86c0e0861ad4c3bb2c2635b319b967","elapsedMs":6,"rows":1}
+MR1_START {"phase":"combined-effect-confirmation","name":"22baf9a94ae223c7c54970e116d373be199276ad2fd42be512a153d7c081078b","arity":10,"parameterChars":89}
+MR1_END {"phase":"combined-effect-confirmation","name":"22baf9a94ae223c7c54970e116d373be199276ad2fd42be512a153d7c081078b","elapsedMs":79,"rows":128}
+MR1_START {"phase":"combined-effect-confirmation","name":"22baf9a94ae223c7c54970e116d373be199276ad2fd42be512a153d7c081078b","arity":10,"parameterChars":205}
+MR1_END {"phase":"combined-effect-confirmation","name":"22baf9a94ae223c7c54970e116d373be199276ad2fd42be512a153d7c081078b","elapsedMs":46,"rows":128}
+MR1_START {"phase":"combined-effect-confirmation","name":"22baf9a94ae223c7c54970e116d373be199276ad2fd42be512a153d7c081078b","arity":10,"parameterChars":205}
+MR1_END {"phase":"combined-effect-confirmation","name":"22baf9a94ae223c7c54970e116d373be199276ad2fd42be512a153d7c081078b","elapsedMs":38,"rows":128}
+MR1_START {"phase":"combined-effect-confirmation","name":"22baf9a94ae223c7c54970e116d373be199276ad2fd42be512a153d7c081078b","arity":10,"parameterChars":205}
+MR1_END {"phase":"combined-effect-confirmation","name":"22baf9a94ae223c7c54970e116d373be199276ad2fd42be512a153d7c081078b","elapsedMs":49,"rows":128}
+MR1_START {"phase":"combined-effect-confirmation","name":"22baf9a94ae223c7c54970e116d373be199276ad2fd42be512a153d7c081078b","arity":10,"parameterChars":205}
+MR1_END {"phase":"combined-effect-confirmation","name":"22baf9a94ae223c7c54970e116d373be199276ad2fd42be512a153d7c081078b","elapsedMs":55,"rows":128}
+MR1_START {"phase":"combined-effect-confirmation","name":"22baf9a94ae223c7c54970e116d373be199276ad2fd42be512a153d7c081078b","arity":10,"parameterChars":205}
+MR1_END {"phase":"combined-effect-confirmation","name":"22baf9a94ae223c7c54970e116d373be199276ad2fd42be512a153d7c081078b","elapsedMs":60,"rows":128}
+MR1_START {"phase":"combined-effect-confirmation","name":"22baf9a94ae223c7c54970e116d373be199276ad2fd42be512a153d7c081078b","arity":10,"parameterChars":205}
+MR1_END {"phase":"combined-effect-confirmation","name":"22baf9a94ae223c7c54970e116d373be199276ad2fd42be512a153d7c081078b","elapsedMs":44,"rows":128}
+MR1_START {"phase":"combined-effect-confirmation","name":"22baf9a94ae223c7c54970e116d373be199276ad2fd42be512a153d7c081078b","arity":10,"parameterChars":205}
+MR1_END {"phase":"combined-effect-confirmation","name":"22baf9a94ae223c7c54970e116d373be199276ad2fd42be512a153d7c081078b","elapsedMs":40,"rows":106}
+MR1_START {"phase":"combined-effect-confirmation","name":"c28fe8340d6f3047dafbe9f3b56ba5b8aed717e19ee2e4120b54a628d90ee107","arity":3,"parameterChars":85}
+MR1_END {"phase":"combined-effect-confirmation","name":"c28fe8340d6f3047dafbe9f3b56ba5b8aed717e19ee2e4120b54a628d90ee107","elapsedMs":9,"rows":1}
+MR1_START {"phase":"combined-effect-confirmation","name":"74bbe16a3393d0f5f9f0660a3a89e074415222880ef1a7d5c68cd42ad363807c","arity":2,"parameterChars":63}
+MR1_END {"phase":"combined-effect-confirmation","name":"74bbe16a3393d0f5f9f0660a3a89e074415222880ef1a7d5c68cd42ad363807c","elapsedMs":10,"rows":1}
+MR1_START {"phase":"combined-effect-confirmation","name":"00255b3d85419289b074cb54b9e248ef68f467cd50e659c5cbd99febf8ab46f2","arity":3,"parameterChars":36}
+MR1_END {"phase":"combined-effect-confirmation","name":"00255b3d85419289b074cb54b9e248ef68f467cd50e659c5cbd99febf8ab46f2","elapsedMs":15,"rows":1}
+MR1_START {"phase":"combined-effect-confirmation","name":"writeAudit","arity":3,"parameterChars":342}
+MR1_END {"phase":"combined-effect-confirmation","name":"writeAudit","elapsedMs":29,"rows":1}
+MR1_START {"phase":"combined-effect-confirmation","name":"updateExtensions","arity":3,"parameterChars":342}
+MR1_END {"phase":"combined-effect-confirmation","name":"updateExtensions","elapsedMs":10,"rows":1}
+MR1_START {"phase":"combined-effect-confirmation","name":"dad9653b2cbe70bf0009e7d157e3a41901ed190846b9dde0a7b5c0d3e79f23d7","arity":0,"parameterChars":0}
+MR1_END {"phase":"combined-effect-confirmation","name":"dad9653b2cbe70bf0009e7d157e3a41901ed190846b9dde0a7b5c0d3e79f23d7","elapsedMs":3,"rows":1}
+MR1_START {"phase":"combined-effect-confirmation","name":"8d5fa4e8fdef506c768e864280f7a02c4271683d00ddf47e841999036a7a792b","arity":0,"parameterChars":0}
+MR1_END {"phase":"combined-effect-confirmation","name":"8d5fa4e8fdef506c768e864280f7a02c4271683d00ddf47e841999036a7a792b","elapsedMs":3,"rows":1}
+MR1_START {"phase":"combined-effect-confirmation","name":"0a73927829d09bb71fcbe4788bcb57c2a7e1ba76784ee09936aab0b08b36e043","arity":0,"parameterChars":0}
+MR1_END {"phase":"combined-effect-confirmation","name":"0a73927829d09bb71fcbe4788bcb57c2a7e1ba76784ee09936aab0b08b36e043","elapsedMs":2,"rows":1}
+MR1_START {"phase":"combined-effect-confirmation","name":"eb0ad0955753ec6e8cf4b9d10a4161c5114711ad122582a8974f0c73e6402355","arity":3,"parameterChars":220}
+MR1_END {"phase":"combined-effect-confirmation","name":"eb0ad0955753ec6e8cf4b9d10a4161c5114711ad122582a8974f0c73e6402355","elapsedMs":6,"rows":1}
+MR1_START {"phase":"combined-effect-confirmation","name":"commit","arity":0,"parameterChars":0}
+MR1_END {"phase":"combined-effect-confirmation","name":"commit","elapsedMs":15,"rows":0}
+MR1_STAGE {"size":1000,"name":"replay-confirmed","elapsedMs":10793}
+{
+  "m4Completion": {
+    "error": "M4_EFFECT_BEFORE_AFTER_COMMAND",
+    "samples": []
+  }
+}
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
++ actual - expected
+
++ 'M4_EFFECT_BEFORE_AFTER_COMMAND'
+- undefined
+
+    at file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata-m0/docs/qa/kanata-sqlite-m2/windows-candidate-smoke.mjs:472:18 {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: 'M4_EFFECT_BEFORE_AFTER_COMMAND',
+  expected: undefined,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.14.1

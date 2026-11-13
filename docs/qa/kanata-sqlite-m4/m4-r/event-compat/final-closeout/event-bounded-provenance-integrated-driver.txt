@@ -1,0 +1,98 @@
+/data/app/~~MatxgXEmqlpZwZER24x1jA==/com.yubin.formyself.m2qa-vqMjdNWLcQyDyTpz7qePKg==/base.apk: 1 file pulled, 0 skipped. 57.2 MB/s (19148951 bytes in 0.319s)
+/data/app/~~N5DdiXZU8DLXGknhgOBgOw==/com.yubin.formyself.m2qa.test-Gt02ELSxxBUftHLw30Wp4w==/base.apk: 1 file pulled, 0 skipped. 63.6 MB/s (598741 bytes in 0.009s)
+▲ [WARNING] Ignoring this import because "src/features/chat/kanataManagement.css" was marked as having no side effects [ignored-bare-import]
+
+    src/features/chat/KanataView.vue:8:7:
+      8 │ import './kanataManagement.css'
+        ╵        ~~~~~~~~~~~~~~~~~~~~~~~~
+
+{"qaBundleSha256":"4e218e3ebf42aef8b0d73cc82e3f8c759a5b0449659054ac5ce9f47faf80d18c"}
+{
+  "dataSha256": "0ea4455d962ccbc92913001c3d561fb927aca5a137b3b2e5ee30f9cdbfbe9fe3",
+  "mr2EventProof": {
+    "health": {
+      "cipher": "4.17.0 community",
+      "journalMode": "wal",
+      "synchronous": 2,
+      "foreignKeys": 1,
+      "cacheSize": -2048,
+      "checkpoint": 1000,
+      "busyTimeout": 5000
+    },
+    "results": [
+      {
+        "size": 1000,
+        "queries": 246,
+        "writes": 193,
+        "maxRows": 50,
+        "maxTagRows": 50,
+        "maxStagedTags": 50,
+        "fullDtos": 0,
+        "heapStart": 26000000,
+        "heapSample": 26000000,
+        "elapsedMs": 1818,
+        "correctionIo": {
+          "queries": 173,
+          "writes": 78,
+          "maxRows": 50,
+          "fullDtos": 0
+        },
+        "snapshot": {
+          "count": 1000,
+          "sha256": "2875f09a2c80333688738f4b834bd56c60c924841e3bbb2b0c45ebcd47995122"
+        },
+        "deniedBodyReads": 0,
+        "cancellation": {
+          "queries": 0,
+          "writes": 0
+        },
+        "commitFailure": true,
+        "idempotentReplay": true
+      },
+      {
+        "size": 10000,
+        "queries": 1682,
+        "writes": 1631,
+        "maxRows": 50,
+        "maxTagRows": 50,
+        "maxStagedTags": 50,
+        "fullDtos": 0,
+        "heapStart": 26000000,
+        "heapSample": 26000000,
+        "elapsedMs": 38301,
+        "correctionIo": {
+          "queries": 1488,
+          "writes": 618,
+          "maxRows": 50,
+          "fullDtos": 0
+        },
+        "snapshot": {
+          "count": 10000,
+          "sha256": "1ccce9a2931ea213a5032e10ea3d5f75b0862c116b6809f63e4d702e55b13e00"
+        },
+        "deniedBodyReads": 0,
+        "commitFailure": true,
+        "idempotentReplay": true
+      }
+    ],
+    "realModelCalls": 0
+  }
+}
+{"eventMeminfoBeforeCrash":"Applications Memory Usage (in Kilobytes):\r\nUptime: 8021467 Realtime: 8021467\r\n\r\n** MEMINFO in pid 13863 [com.yubin.formyself.m2qa] **\r\n                   Pss  Private  Private     Swap      Rss     Heap     Heap     Heap\r\n                 Total    Dirty    Clean    Dirty    Total     Size    Alloc     Free\r\n                ------   ------   ------   ------   ------   ------   ------   ------\r\n  Native Heap    30323    30244        0        0    33492    63732    22024    37921\r\n  Dalvik Heap     5810     5596        0        0    13608    10159     5080     5079\r\n Dalvik Other     2699     2328        0        0     3692                           \r\n        Stack     1652     1652        0        0     1660                           \r\n       Ashmem      259      172        0        0      884                           \r\n    Other dev      194      172       20        0      508                           \r\n     .so mmap     3695      464      696        0    39632                           \r\n    .jar mmap     3069        0      332        0    37860                           \r\n    .apk mmap    30693      476    12364        0    62420                           \r\n    .ttf mmap      192        0        0        0      764                           \r\n    .dex mmap       62        4        0        0     1004                           \r\n    .oat mmap       48        0        0        0     1652                           \r\n    .art mmap     6354     5764        0        0    27068                           \r\n   Other mmap     1356        8      312        0     3624                           \r\n      Unknown    19179    19172        0        0    19748                           \r\n        TOTAL   105585    66052    13724        0   247616    73891    27104    43000\r\n \r\n App Summary\r\n                       Pss(KB)                        Rss(KB)\r\n                        ------                         ------\r\n           Java Heap:    11360                          40676\r\n         Native Heap:    30244                          33492\r\n                Code:    14360                         144084\r\n               Stack:     1652                           1660\r\n            Graphics:        0                              0\r\n       Private Other:    22160\r\n              System:    25809\r\n             Unknown:                                   27704\r\n \r\n           TOTAL PSS:   105585            TOTAL RSS:   247616      TOTAL SWAP (KB):        0\r\n \r\n Objects\r\n               Views:        9         ViewRootImpl:        1\r\n         AppContexts:        6           Activities:        1\r\n              Assets:       24        AssetManagers:        0\r\n       Local Binders:       53        Proxy Binders:       44\r\n       Parcel memory:       10         Parcel count:       40\r\n    Death Recipients:        2             WebViews:        1\r\n \r\n SQL\r\n         MEMORY_USED:        0\r\n  PAGECACHE_OVERFLOW:        0          MALLOC_SIZE:        0"}
+{
+  "eventRecovery": {
+    "oldPid": "13863",
+    "newPid": "14030",
+    "before": {
+      "revision": 1,
+      "audits": 0,
+      "effects": 0
+    },
+    "after": {
+      "revision": 2,
+      "audits": 1,
+      "effects": 1
+    }
+  }
+}
+{"eventMeminfoAfterCrash":"Applications Memory Usage (in Kilobytes):\r\nUptime: 8029906 Realtime: 8029906\r\n\r\n** MEMINFO in pid 14030 [com.yubin.formyself.m2qa] **\r\n                   Pss  Private  Private     Swap      Rss     Heap     Heap     Heap\r\n                 Total    Dirty    Clean    Dirty    Total     Size    Alloc     Free\r\n                ------   ------   ------   ------   ------   ------   ------   ------\r\n  Native Heap    39478    39388        0        0    42692    34548    23000     7333\r\n  Dalvik Heap    13256    13024        0        0    21068    10277     5139     5138\r\n Dalvik Other     2161     2080        0        0     2848                           \r\n        Stack     1732     1732        0        0     1740                           \r\n       Ashmem      263      172        0        0      892                           \r\n    Other dev       22        0       20        0      336                           \r\n     .so mmap     3720      460      736        0    39372                           \r\n    .jar mmap     3070        0      332        0    37544                           \r\n    .apk mmap    31054      476    12648        0    64868                           \r\n    .ttf mmap      192        0        0        0      764                           \r\n    .dex mmap       62        4        0        0     1004                           \r\n    .oat mmap       48        0        0        0     1652                           \r\n    .art mmap     6320     5712        0        0    26920                           \r\n   Other mmap     1584      176      372        0     3852                           \r\n      Unknown    19798    19792        0        0    20368                           \r\n        TOTAL   122760    83016    14108        0   265920    44825    28139    12471\r\n \r\n App Summary\r\n                       Pss(KB)                        Rss(KB)\r\n                        ------                         ------\r\n           Java Heap:    18736                          47988\r\n         Native Heap:    39388                          42692\r\n                Code:    14656                         145332\r\n               Stack:     1732                           1740\r\n            Graphics:        0                              0\r\n       Private Other:    22612\r\n              System:    25636\r\n             Unknown:                                   28168\r\n \r\n           TOTAL PSS:   122760            TOTAL RSS:   265920      TOTAL SWAP (KB):        0\r\n \r\n Objects\r\n               Views:        9         ViewRootImpl:        1\r\n         AppContexts:        9           Activities:        1\r\n              Assets:       25        AssetManagers:        0\r\n       Local Binders:       51        Proxy Binders:       58\r\n       Parcel memory:       10         Parcel count:       39\r\n    Death Recipients:        4             WebViews:        1\r\n \r\n SQL\r\n         MEMORY_USED:        0\r\n  PAGECACHE_OVERFLOW:        0          MALLOC_SIZE:        0"}
