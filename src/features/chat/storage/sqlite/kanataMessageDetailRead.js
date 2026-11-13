@@ -1,5 +1,5 @@
 // @ts-check
-import { validateId } from '../../domain/kanataValidation.js'
+import { validateId, cloneKanataJson } from '../../domain/kanataValidation.js'
 import { messageSnapshotSql, assertMessageSnapshot } from './kanataMessageSnapshot.js'
 import { equalDto, pageLimit, requireSqliteValue as need, safeInteger, scopeBindings, validId } from './kanataRepositoryValues.js'
 
@@ -41,7 +41,9 @@ export function createMessageDetailRead(operation) {
     /** Normalized links are a fixed record page. The exact original hint array
      * (order, duplicates and unknown fields) remains available via JSON chunks.
      * @param {Scope} scope @param {string} id @param {SourceCursor} [cursor] @param {number} [limit] */
-    sourcePage:(scope,id,cursor,limit=50)=>operation.transaction(async tx=>{
+    sourcePage:(scope,id,cursor,limit=50)=>{
+      scope=cloneKanataJson(scope);cursor=cursor?cloneKanataJson(cursor):undefined
+      return operation.transaction(async tx=>{
       const current=await identity(tx,scope,id)
       assertIdentity(current,cursor)
       if(cursor) need(cursor.kind==='sources' && validId(cursor.grantId) && safeInteger(cursor.grantRevision,1)
@@ -53,9 +55,12 @@ export function createMessageDetailRead(operation) {
         revision:Number(row.grant_revision),fingerprint:String(row.fingerprint)})),
       cursor:rows.length>limit ? {...current,kind:/** @type {const} */('sources'),grantId:String(last.grant_id),
         grantRevision:Number(last.grant_revision),fingerprint:String(last.fingerprint)} : null}
-    }),
+      })
+    },
     /** @param {Scope} scope @param {string} id @param {Selection} selection @param {JsonCursor} [cursor] */
-    jsonChunk:(scope,id,selection,cursor)=>operation.transaction(async tx=>{
+    jsonChunk:(scope,id,selection,cursor)=>{
+      scope=cloneKanataJson(scope);selection=cloneKanataJson(selection);cursor=cursor?cloneKanataJson(cursor):undefined
+      return operation.transaction(async tx=>{
       need(selection && ['snapshot','extensions','audit'].includes(selection.kind),'KANATA_MESSAGE_CURSOR_INVALID')
       const selected=selection.kind==='audit' ? {kind:selection.kind,auditId:selection.auditId,side:selection.side} : {kind:selection.kind}
       if(selection.kind==='audit') {
@@ -65,7 +70,7 @@ export function createMessageDetailRead(operation) {
       const current=await identity(tx,scope,id)
       assertIdentity(current,cursor)
       if(cursor) need(cursor.kind==='json' && equalDto(cursor.selection,selected)
-        && safeInteger(cursor.offset),'KANATA_MESSAGE_CURSOR_INVALID')
+        && safeInteger(cursor.offset) && safeInteger(cursor.offset+4097),'KANATA_MESSAGE_CURSOR_INVALID')
       const offset=cursor?.offset??0
       const keys=[current.worldId,current.conversationId,id,current.revision]
       const [row]=selection.kind==='audit' ? await tx.query(auditChunk,[selection.side,offset+1,...keys,selection.auditId])
@@ -75,6 +80,7 @@ export function createMessageDetailRead(operation) {
       return {fragment:points.slice(0,4096).join(''),cursor:points.length>4096 ? {
         ...current,kind:/** @type {const} */('json'),selection:selected,offset:offset+4096,
       } : null}
-    }),
+      })
+    },
   }
 }

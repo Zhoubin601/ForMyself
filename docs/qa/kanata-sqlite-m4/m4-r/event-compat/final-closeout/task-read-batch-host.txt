@@ -1,0 +1,20 @@
+(node:51948) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+{"size":1000,"sources":1001,"events":1001,"maxRows":51,"maxText":4097,"completeDtos":0}
+{"size":10000,"sources":10001,"events":10001,"maxRows":51,"maxText":4097,"completeDtos":0}
+✔ G4 task 1000 sources/results stay in bounded headers, keysets and incremental signatures (140.2487ms)
+✔ G4 task 10000 sources/results stay in bounded headers, keysets and incremental signatures (729.4583ms)
+✔ G4 task continuations bind task, world, relation, field and all same-revision stored data (57.5313ms)
+✔ G4 task list cursor scope, owner cancellation and failed read COMMIT preserve source rows and retry (44.1042ms)
+✔ G4 task proof detects external commits and failed cache writes never alter task data (79.2089ms)
+✔ G3 task enqueue and finish own caller input before Native transaction acquisition (44.664ms)
+✔ G4 task 1000 source claim checks the denied tail and returns no gathered DTO on retry or finish (102.0153ms)
+✔ G4 task 10000 source claim checks the denied tail and returns no gathered DTO on retry or finish (1110.7116ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 8
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2503.1332

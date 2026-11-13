@@ -1,6 +1,21 @@
 import type { KanataSqliteDomains } from '../../src/application/contracts'
 
 declare const domains: KanataSqliteDomains
+void domains.autonomy.listTasks('world-one').then(page=>{
+  const header:import('../../src/application/contracts').KanataTaskHeader|undefined=page.tasks[0]
+  void header?.sourceCount
+  // @ts-expect-error A task header cannot expose an entire source graph.
+  void header?.sourceRefs
+  // @ts-expect-error Result members require their bounded API.
+  void header?.resultEventIds
+})
+void domains.autonomy.taskSources('world-one','task')
+void domains.autonomy.taskResults('world-one','task','events')
+void domains.autonomy.taskJsonChunk('world-one','task','metadata')
+// @ts-expect-error Task list continuations are bound to their world.
+void domains.autonomy.listTasks('world-one','unscoped-after-id')
+// @ts-expect-error Arbitrary JSON paths are not public task field selectors.
+void domains.autonomy.taskJsonChunk('world-one','task','$.private')
 void domains.worlds.archive('world-one', 1, true)
 void domains.memories.resolveSource({ worldId: 'world-one', instanceId: 'actor-one' }, 'memory-one', { messageId: 'message-one', revision: 1 })
 // @ts-expect-error Context proof requires an instance identity.

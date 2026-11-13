@@ -158,3 +158,31 @@ E/G4/M4仍BLOCKED、M5 NO。未完成旧Facade/QA完整回读移除、长Effect 
 message-bounded-fingerprints.json收录逐文件源/fixture、各轮实际QA bundle SHA、安装APK、catalog、设备和冻结001–005 checksum，源码aggregate `e3f92d8affc2dc3b1dcea9e8342aae77ad03d26e5347f6bcdbe7806633931a9e`，44份设备原始日志以压缩/原始双SHA保存。Growth轮仍是FAIL_WORKSPACE_TIMEOUT；只复用其已完成且未受后续UI等待/环境preflight影响的growth/archive切片，其产品源码、fixture、APK/catalog和设备范围一致，独立QA bundle差异明确保留。较早005升级证据不改标为新APK的迁移实测。当前仍E/G4/M4 BLOCKED、M5 NO，后续从唯一清单F/G4继续，不新开任务编号。
 
 首轮message-bounded-check、message-device-environment和message-recovery-component-retest三份原始文本含EOF空行/空PID尾空格，故以同名`.txt.gz`无损保留，未改写原日志。解压原SHA分别为`1d4173e043c549ccbc24a1a8bed7f690579da337d8f6ff664a06e25f806a7387`、`b87ecd50b62215567ab5f5f4eaa6af2ec0b16066ca6e4aa5ed49dadeb17413e2`、`1fdcbbfcd4879740e90975516c3283f6ee480d7bd759acda5ae2406539abcb0f`；只移除了本轮新建且已核对解压字节的原文本副本。
+
+## F/G4 任务有界读取检查点（2026-11-13，继续原条目）
+
+`task-bounded-before*`为原listTasks实际返回1001条完整来源的失败。`kanataTaskRead`改为固定头、50条keyset来源/结果、4096码点原始JSON块；结果事件用005的ordinal。全任务物理字段及规范成员按块/页增量签名，TEMP单槽证明只在total_changes/data_version均匹配时复用，不缓存完整对象，不新增持久表。
+
+| 证据 | 实际结果 |
+|---|---|
+| task-read-fixture-before* | FAIL，夹具期望103遗漏原有1条结果记忆，enqueue复制了非空resultMemoryIds；修正测试输入/期望，未据此修改产品 |
+| task-read-host* / expanded* | 首批4项/扩展7项通过；1k/10k全部来源/事件、104记忆、深70层metadata/未知扩展/NUL长key保持，末项无权限时拒绝 |
+| message-input-alias-before* | FAIL，调用后修改scope导致读取已变更世界；入口持有scope/selection/cursor后，消息13项通过（task-read-message-regression-final*） |
+| task-read-message-regression* | 首轮FAIL为测试错把原有lifeSources前缀当成syntheticExtra；改为与独立存储原JSON片段精确比较，最终13/13 |
+| task-read-validation-before* | FAIL，任务头/列表漏掉旧扩展校验，及enqueue等待Native前未持有输入副本；修复并加入finish租约/输出别名反例 |
+| task-read-host-final* | 当时6/8，两项旧断言把新增头/列表校验计入分页签名生成次数；分离计数后仍严格断言后续全部页只生成一次证明 |
+| task-read-check* | 首轮退出0为728 Node/406组件；发生上述新增边界修复后重新完整执行final，退出0为729 Node/406组件44文件、strict正负类型和生产build |
+
+Android本轮task-read正在隔离API34/SQLCipher4.17.0运行；未将旧APK结果算作新候选PASS。此处为内部实施证据，不是新增工作包或最终MR8审查；M4仍BLOCKED、M5 NO。
+
+首轮`task-read-device`最终退出1：420秒超时，卡在10k末项权限扫描，原始日志和`task-read-device-attempt1-inputs.json`冻结该轮源码/APK/catalog。之后仅在原F/G4内改为50个来源根的SQLite证明，异常页用原逐条算法保持错误优先级。`task-read-proof-host`、`-final`先因测试尝试降低既有grant revision、移动不可变消息conversation而失败；保留历史约束，改用各会话独立合成消息及合法revision推进，未改历史Schema。`task-read-proof-host-verified`9项通过，1152权限组合与原算法相等。
+
+`task-read-proof-plan-before`实际EXPLAIN为SCAN task_sources/临时排序且断言失败；调整连接次序后`task-read-proof-index-host`9项通过，确认world/task/message_id索引范围。整轮Android追加同样的实际EXPLAIN断言；来源数量、权限尾页、420秒原门槛均不变。`task-read-proof-check`是索引修正前启动的全套730/406通过检查，不能冒充最终树证据；最终以修正后独立启动的`task-read-integration-check`为准。
+
+当前最终结果：`task-read-integration-check`退出0，730 Node/406 Vue（44文件）/strict正负/生产构建；`task-read-device-final`退出0，1k6571ms/10k48063ms，均逐页读全1000/10000来源与原序事件结果，各8块保留原始metadata/extensions/NUL长key。最大SQL51行/4097码点含lookahead，complete DTO=0；实际SQLCipher EXPLAIN确认world/task/message_id范围索引。末项权限拒绝、真实COMMIT回滚、11个任务三权限/角色场景（当前实际grant revision，不用旧revision掩盖拒绝）和SIGKILL冷开running→failed/10000来源/幂等重试通过。真实模型调用0。
+
+`task-read-device-proof`先整轮通过；随后增加权限断言的`task-read-device-permissions`在非法非成员任务创建时被历史TASK_SPEAKER_DENIED拒绝，整轮仍FAIL，不据此改Schema。改用合法无会话任务，11场景主机先通过（task-read-permissions-host），最终Android同APK已全部通过。新QA只增加合成断言，Gradle重新生成catalog后实际APK SHA仍为`d5a3b33a7e8f9701f28109267f91af0b0c0af943331f212c241fc2c9ab9dab59`；各轮bundle差异分别保留。基础回归和普通APK门禁仍在收集，不是MR7/MR8最终全范围PASS。
+
+本检查点最终补齐：`task-read-regression`全模式退出0，M2会话/COMMIT/故障、M3窗口事件/Effects/任务/水位及其强杀恢复、未来Schema和坏库存只读拒绝通过。`task-read-default-gate`退出0，普通包实际DEX=false、canonical legacy、24条专用fixture SQL缺席，catalog666条；普通APK未安装、未发布。`task-read-fingerprints.json`源码aggregate `db06433147345099254d79f316978933640fbd572719473f12adc16f8302db4f`，候选catalog `39cce147eee990ed02f0f61d8d9861cb4bbda1ceab9316cb67147d78802e5999`，记录25份设备原始日志的压缩/原始SHA、所有成功/失败退出码、每轮QA bundle、fixture、APK及001–005冻结checksum。首轮超时的独立输入快照仍保留，普通APK只读核验、未装入设备。旧事件/消息/005结果只保留原冻结范围，不伪装成本APK的新迁移或全矩阵PASS；最终MR7/MR8仍未完成，F/G4/M4仍BLOCKED、M5 NO。
+
+task-read-fixture-before、task-read-host-final、task-read-message-regression三份本轮新建原始日志含测试诊断尾空格，以同名`.txt.gz`无损归档；解压逐字节核对后只移除本轮原文本副本，没有编辑失败内容。原始/压缩SHA列在task-read-raw-log-archives.json；对应exit文件及上述真实失败说明保留。

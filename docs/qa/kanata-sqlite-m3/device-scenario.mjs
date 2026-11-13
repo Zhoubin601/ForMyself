@@ -83,7 +83,8 @@ export function runM3DeviceScenario(candidate, fixture, failCommitSql) {
     await rejects(() => fault.autonomy.completeWindow(plan, 1800000), 'KANATA_SQLITE_TRANSACTION_FAILED')
     check((await domains.worlds.get(worldId)).world.lastSimulatedAt === plan.from, 'WATERMARK_ROLLBACK')
     const completed = await domains.autonomy.completeWindow(plan, 1800000)
-    check(completed.resultEventIds.length === 2 && (await domains.autonomy.completeWindow(plan, 1800000)).id === completed.id, 'WINDOW_IDEMPOTENCY')
+    check(completed.resultEventCount === 2 && (await domains.autonomy.taskResults(worldId,completed.id,'events')).ids.length===2
+      && (await domains.autonomy.completeWindow(plan, 1800000)).id === completed.id, 'WINDOW_IDEMPOTENCY')
     passed.push('task-event-usage-commit-failure-and-idempotency')
     return { passed, next: await domains.autonomy.plan(worldId, 3600000) }
   })

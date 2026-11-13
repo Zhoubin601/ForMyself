@@ -1,7 +1,7 @@
 param(
     [Parameter(Mandatory)] [string] $ManifestPath,
     [Parameter(Mandatory)] [string] $EvidenceDirectory,
-    [ValidateSet('repository','full','mr1-fanout','mr1-verify','mr2-grants','mr2-chat-provenance','mr2-event-provenance','mr2-event-read','array-order','event-semantics','message-bounded','workspace')] [string] $Mode = 'full',
+    [ValidateSet('repository','full','mr1-fanout','mr1-verify','mr2-grants','mr2-chat-provenance','mr2-event-provenance','mr2-event-read','array-order','event-semantics','message-bounded','task-read','workspace')] [string] $Mode = 'full',
     [switch] $M4Growth,
     [switch] $M4Completion
 )

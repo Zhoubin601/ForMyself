@@ -1,0 +1,16 @@
+(node:5516) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+{"size":1000,"sources":1001,"events":1001,"maxRows":51,"maxText":4097,"completeDtos":0}
+{"size":10000,"sources":10001,"events":10001,"maxRows":51,"maxText":4097,"completeDtos":0}
+✔ G4 task 1000 sources/results stay in bounded headers, keysets and incremental signatures (152.5681ms)
+✔ G4 task 10000 sources/results stay in bounded headers, keysets and incremental signatures (742.554ms)
+✔ G4 task continuations bind task, world, relation, field and all same-revision stored data (60.0943ms)
+✔ G4 task list cursor scope, owner cancellation and failed read COMMIT preserve source rows and retry (44.6574ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1264.6465

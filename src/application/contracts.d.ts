@@ -9,6 +9,8 @@ export type { KanataReplyProvenance, KanataMessageWriteReceipt, KanataMessageSta
   KanataMessageSourceCursor, KanataMessageJsonSelection, KanataMessageJsonCursor, KanataReplyExpectation,
   KanataChatContextState, KanataDeferredReply } from '../features/chat/storage/sqlite/kanataRepositoryTypes'
 export type { KanataSqliteDomains, KanataSqliteDomainOwner, KanataEventAcknowledgement, KanataEventGraphCursor,
+  KanataTaskHeader, KanataTaskListCursor, KanataTaskReadIdentity, KanataTaskRelationKind,
+  KanataTaskRelationCursor, KanataTaskJsonField, KanataTaskJsonCursor, KanataTaskReadRepository,
   KanataEventReadScope, KanataEventRelationKind, KanataEventRelationCursor, KanataEventReadCursor,
   KanataEventJsonSelection, KanataEventJsonCursor, KanataRelationshipEventCursor, KanataMemorySourceCursor,
   KanataEventRevocationPlan, KanataEventRevocationCursor, KanataEventRevocationDecision, KanataEventEffectAuditCursor, KanataEventEffectAuditField, KanataEventEffectAuditEntry, KanataEventEffectAuditJsonCursor,

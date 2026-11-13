@@ -1,0 +1,35 @@
+(node:39984) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+{"size":1000,"sources":1001,"events":1001,"maxRows":51,"maxText":4097,"completeDtos":0}
+{"size":10000,"sources":10001,"events":10001,"maxRows":51,"maxText":4097,"completeDtos":0}
+✔ G4 task 1000 sources/results stay in bounded headers, keysets and incremental signatures (146.7918ms)
+✔ G4 task 10000 sources/results stay in bounded headers, keysets and incremental signatures (745.6485ms)
+✔ G4 task continuations bind task, world, relation, field and all same-revision stored data (57.8237ms)
+✔ G4 task list cursor scope, owner cancellation and failed read COMMIT preserve source rows and retry (47.0002ms)
+✔ G4 task proof detects external commits and failed cache writes never alter task data (79.5706ms)
+✔ G3 task enqueue and finish own caller input before Native transaction acquisition (45.8483ms)
+✔ G4 task 1000 source claim checks the denied tail and returns no gathered DTO on retry or finish (100.7586ms)
+✔ G4 task 10000 source claim checks the denied tail and returns no gathered DTO on retry or finish (1141.5159ms)
+✖ G6 stored task range proof matches the original ordered source checks for private/group grants and stale chains (525.3918ms)
+ℹ tests 9
+ℹ suites 0
+ℹ pass 8
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3119.1162
+
+✖ failing tests:
+
+test at tests\kanataSqliteTaskRead.test.js:266:1
+✖ G6 stored task range proof matches the original ordered source checks for private/group grants and stale chains (525.3918ms)
+  Error: KANATA_MESSAGE_IDENTITY_IMMUTABLE
+      at TestContext.<anonymous> (file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata-m0/tests/kanataSqliteTaskRead.test.js:301:75)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    code: 'ERR_SQLITE_ERROR',
+    errcode: 1811,
+    errstr: 'constraint failed'
+  }

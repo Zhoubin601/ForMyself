@@ -1,6 +1,7 @@
 import { auditOracle,correctionOracle } from '../kanata-sqlite-m4/m4-r/event-compat/final-closeout/bounded-event-oracle.mjs'
 import { runEventSemanticsDevice } from '../kanata-sqlite-m4/m4-r/event-compat/final-closeout/event-semantics-device.mjs'
 import { runMessageBoundedDevice,armMessageCrash,recoverMessageCrash,messageCrashState } from '../kanata-sqlite-m4/m4-r/event-compat/final-closeout/message-bounded-device.mjs'
+import {runTaskReadDevice,armTaskCrash,recoverTaskCrash,taskCrashState} from '../kanata-sqlite-m4/m4-r/event-compat/final-closeout/task-read-device.mjs'
 import { memoryRows, memoryEdges, memoryWideSources, eventRows, eventEdges, seedFanoutLinks, replayEventRows, replayEffectRows, fanoutAuditInspection, grantOriginActors, grantOrigins, grantMessageTags, seedWideChatSources, chatReplyTagCheck, eventReadEffects, eventReadAudits, eventReadRevision, eventReadShapeEdges, eventReadPublic, seedEventReadShape, chatEventActor, chatEventSource } from '../kanata-sqlite-m4/completion/fixture.mjs'
 import { growthSeedSql } from '../kanata-sqlite-m4/fixture.mjs'
 import { eventRevocationQueries, eventRevocationWrites } from '../../../src/features/chat/storage/sqlite/kanataEventRevocation.js'
@@ -191,7 +192,7 @@ window.m3QaReopenWindow = async (password, plan) => {
       const tasks = await domains.autonomy.listTasks(plan.worldId)
       const absent = !tasks.tasks.some(task => task.idempotencyKey === plan.idempotencyKey)
       const committed = await domains.autonomy.completeWindow(plan, 3600000)
-      return { before: before.world.lastSimulatedAt, absent, eventCount: committed.resultEventIds.length,
+      return { before: before.world.lastSimulatedAt, absent, eventCount: committed.resultEventCount,
         after: (await domains.worlds.get(plan.worldId)).world.lastSimulatedAt }
     })
   } finally { auth.expireSession(); await candidate.release() }
@@ -2041,6 +2042,21 @@ window.mr2QaEventReadShape = async (password,{scope,sample},size,shape) => {
 window.eventSemanticsQa = async(password,fixture,commands)=>{
   session(password)
   try{return await runEventSemanticsDevice(candidate,fixture,commands)}
+  catch(error){return {error:error.code??error.message,stack:error.stack}}
+  finally{auth.expireSession();await candidate.release()}
+}
+
+window.taskReadQa=async(password,fixture,commands,commitFault)=>{
+  session(password)
+  try{return await runTaskReadDevice(candidate,fixture,commands,commitFault)}
+  catch(error){return {error:error.code??error.message,stack:error.stack,phase:window.taskReadPhase}}
+  finally{auth.expireSession();await candidate.release()}
+}
+window.taskReadArm=(password,worldId)=>{session(password);return armTaskCrash(candidate,worldId)}
+window.taskReadState=taskCrashState
+window.taskReadRecover=async(password,worldId)=>{
+  session(password)
+  try{return await recoverTaskCrash(candidate,worldId)}
   catch(error){return {error:error.code??error.message,stack:error.stack}}
   finally{auth.expireSession();await candidate.release()}
 }

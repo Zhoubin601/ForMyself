@@ -17,6 +17,7 @@ def generateKanataSqliteCatalog = tasks.register('generateKanataSqliteCatalog', 
         inputs.file new File(kanataRepository, 'docs/qa/kanata-sqlite-m4/m4-r/event-compat/final-closeout/schema005-device.mjs')
         inputs.file new File(kanataRepository, 'docs/qa/kanata-sqlite-m4/m4-r/event-compat/final-closeout/event-semantics-device.mjs')
         inputs.file new File(kanataRepository, 'docs/qa/kanata-sqlite-m4/m4-r/event-compat/final-closeout/message-bounded-device.mjs')
+        inputs.file new File(kanataRepository, 'docs/qa/kanata-sqlite-m4/m4-r/event-compat/final-closeout/task-read-device.mjs')
         inputs.dir new File(kanataRepository, 'src/features/chat/presets')
         args '--synthetic'
     }

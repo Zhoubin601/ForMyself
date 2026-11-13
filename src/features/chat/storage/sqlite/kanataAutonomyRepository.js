@@ -11,8 +11,10 @@ import { commitEvent, insertEvent } from './kanataEventRepository.js'
 import { saveMemory } from './kanataMemoryRepository.js'
 import { visitRows } from './kanataMessageDependents.js'
 import { conversationAccess, grantTable, hasSourceGrants, requireSourceGrants, sourceConversation } from './kanataProvenance.js'
-import { equalDto, nonemptyText, pageLimit, requireSqliteValue as need, safeInteger } from './kanataRepositoryValues.js'
+import { equalDto, nonemptyText, requireSqliteValue as need, safeInteger } from './kanataRepositoryValues.js'
 import { assertWritableWorld, readWorld, worldTable } from './kanataWorldRepository.js'
+import {createTaskRead,readTaskHeader,assertTaskExtensions} from './kanataTaskRead.js'
+import {checkStoredTaskSources} from './kanataTaskSourceProof.js'
 
 /** @typedef {import('../../domain/kanataTypes').BackgroundTask} Task */
 /** @typedef {import('../../domain/kanataTypes').WorldEvent} Event */
@@ -41,11 +43,7 @@ const schedule = /** @type {ReturnType<typeof domainTable<Schedule>>} */ (domain
   location: 'location', activity: 'activity', resting: 'resting:flag', revision: 'revision',
 }, ['world_id', 'id'], ['days']))
 const findTask = `SELECT id FROM background_tasks WHERE world_id=? AND kind=? AND idempotency_key=?`
-const listTask = `SELECT id FROM background_tasks WHERE world_id=? AND id>? ORDER BY id LIMIT ?`
-const taskSources = 'SELECT message_id,message_revision FROM task_sources WHERE world_id=? AND task_id=? AND message_id>? ORDER BY message_id LIMIT 50'
 const taskSourceMember = 'SELECT 1 FROM task_sources WHERE world_id=? AND task_id=? AND message_id=? AND message_revision=?'
-const taskEvents = 'SELECT event_id FROM task_result_events WHERE world_id=? AND task_id=? AND event_id>? ORDER BY event_id LIMIT 128'
-const taskMemories = 'SELECT memory_id FROM task_result_memories WHERE world_id=? AND task_id=? AND memory_id>? ORDER BY memory_id LIMIT 128'
 const taskSource = 'INSERT INTO task_sources(world_id,task_id,message_id,message_revision) VALUES(?,?,?,?)'
 const taskEvent = 'INSERT INTO task_result_events(world_id,task_id,event_id) VALUES(?,?,?)'
 const taskMemory = 'INSERT INTO task_result_memories(world_id,task_id,memory_id) VALUES(?,?,?)'
@@ -79,32 +77,15 @@ const grantsForActor = `SELECT ${grantTable.stored} FROM life_grants WHERE world
 const grantsByWorld = `SELECT ${grantTable.stored} FROM life_grants WHERE world_id=? AND id>? ORDER BY id LIMIT 128`
 const staleGrantMemories = `UPDATE memories SET status='stale',revision=revision+1 WHERE world_id=? AND status<>'deleted'
   AND id IN (SELECT memory_id FROM memory_life_sources WHERE world_id=? AND grant_id=?)`
-export const autonomyQueries = [task.get, findTask, listTask, taskSources, taskSourceMember, taskEvents, taskMemories, worldActors, worldSchedules, scheduleDays, policy.get, grantsByWorld, busyActor, grantsForActor, enabledCount, enabledActors, actorLocation, activeSchedule]
+export const autonomyQueries = [findTask, taskSourceMember, worldActors, worldSchedules, scheduleDays, policy.get, grantsByWorld, busyActor, grantsForActor, enabledCount, enabledActors, actorLocation, activeSchedule]
 export const autonomyWrites = [...task.writeStatements, ...policy.writeStatements, schedule.writeStatements[0], ...grantTable.writeStatements,
   taskSource, taskEvent, taskMemory, taskPerson, claim, finish, changeActorActivity, addDay, clearDays, clearSchedules, cancelContact, advanceWatermark, staleGrantMemories]
 
 /** @param {Tx} tx @param {string} worldId @param {string} id */
 async function readTaskFields(tx, worldId, id) {
-  const { metadata, notificationId: _notificationId, windowTaskId: _windowTaskId, ...fields } =
-    found(await task.read(tx, [worldId, id]), 'KANATA_TASK_UNAVAILABLE')
-  return { ...metadata, ...fields }
-}
-
-/** @param {Tx} tx @param {string} worldId @param {string} id */
-async function* visitTaskSources(tx, worldId, id) {
-  for await (const row of visitRows(tx, taskSources, [worldId, id], ['message_id'], 50)) {
-    yield { messageId: String(row.message_id), revision: Number(row.message_revision) }
-  }
-}
-
-/** @param {Tx} tx @param {string} worldId @param {string} id @returns {Promise<Task>} */
-async function loadTask(tx, worldId, id) {
-  const fields = await readTaskFields(tx, worldId, id)
-  const sourceRefs = [], resultEventIds = [], resultMemoryIds = []
-  for await (const ref of visitTaskSources(tx, worldId, id)) sourceRefs.push(ref)
-  for await (const row of visitRows(tx, taskEvents, [worldId, id], ['event_id'])) resultEventIds.push(String(row.event_id))
-  for await (const row of visitRows(tx, taskMemories, [worldId, id], ['memory_id'])) resultMemoryIds.push(String(row.memory_id))
-  return { ...fields, sourceRefs, resultEventIds, ...(resultMemoryIds.length && { resultMemoryIds }) }
+  const fields=found(await readTaskHeader(tx,worldId,id),'KANATA_TASK_UNAVAILABLE')
+  await assertTaskExtensions(tx,worldId,id)
+  return fields
 }
 
 /** @param {Tx} tx @param {Task} dto */
@@ -182,6 +163,7 @@ async function requireTaskSourceMembers(tx, worldId, id, refs) {
 /** @param {Operation} operation @param {Tools} tools */
 export function createKanataAutonomyRepository(operation, tools) {
   return {
+    ...createTaskRead(operation),
     /** @param {string} worldId @param {number} now */
     plan: (worldId, now) => operation.transaction(tx => readWindowPlan(tx, worldId, now)),
     /** @param {Plan} plan @param {number} now */
@@ -205,7 +187,7 @@ export function createKanataAutonomyRepository(operation, tools) {
         await writeOne(tx, advanceWatermark, [plan.end, plan.worldId, plan.worldRevision, plan.from])
         return id
       })
-      return loadTask(tx, plan.worldId, id)
+      return found(await readTaskHeader(tx,plan.worldId,id),'KANATA_TASK_UNAVAILABLE')
     }),
     /** @param {string} worldId @param {number} revision
      * @param {Parameters<typeof import('../../autonomy/kanataAutonomy.js').configureKanataAutonomy>[3]} fields @param {number} now */
@@ -256,17 +238,10 @@ export function createKanataAutonomyRepository(operation, tools) {
       await worldTable.replace(tx, { ...world, ...flags, identityId: identity.id, revision: revision + 1, lastSimulatedAt }, [worldId], revision)
       if (!flags.proactiveEnabled) await tx.execute(cancelContact, [worldId])
     }),
-    /** @param {string} worldId @param {string} afterId @param {number} limit */
-    listTasks: (worldId, afterId = '', limit = 50) => operation.transaction(async tx => {
-      validateId(worldId, 'worldId')
-      const rows = await tx.query(listTask, [worldId, afterId, pageLimit(limit) + 1])
-      const tasks = []
-      for (const row of rows.slice(0, limit)) tasks.push(await loadTask(tx, worldId, String(row.id)))
-      return { tasks, cursor: rows.length > limit ? String(rows[limit - 1].id) : null }
-    }),
     /** @param {Task} value */
-    enqueue: value => operation.transaction(async tx => {
+    enqueue: value => {
       const dto = cloneKanataJson(value)
+      return operation.transaction(async tx => {
       await assertWritableWorld(tx, dto.worldId)
       need(dto.kind !== 'reply' && !dto.simulationWindow && dto.state === 'pending' && dto.attempt === 0 && dto.leaseUntil === 0
         && !dto.resultEventIds.length && !dto.resultMemoryIds?.length, 'KANATA_TASK_INVALID')
@@ -276,22 +251,25 @@ export function createKanataAutonomyRepository(operation, tools) {
         await createTask(tx, dto)
         return dto.id
       })
-      return loadTask(tx, dto.worldId, id)
-    }),
+      return found(await readTaskHeader(tx,dto.worldId,id),'KANATA_TASK_UNAVAILABLE')
+      })
+    },
     /** @param {string} worldId @param {string} id @param {number} now @param {number} leaseUntil */
     claim: (worldId, id, now, leaseUntil) => operation.transaction(async tx => {
       await assertWritableWorld(tx, worldId)
       const current = await readTaskFields(tx, worldId, id)
       need(current.kind !== 'reply' && safeInteger(now) && safeInteger(leaseUntil) && leaseUntil > now && now >= current.notBefore
         && (current.state === 'pending' || current.state === 'failed' || (current.state === 'running' && current.leaseUntil <= now)), 'KANATA_TASK_LEASE_CONFLICT')
-      await checkTaskSources(tx, current, visitTaskSources(tx, worldId, id))
+      await checkStoredTaskSources(tx,current,refs=>checkTaskSources(tx,current,refs))
       await writeOne(tx, claim, [leaseUntil, worldId, id, current.state, current.attempt, current.leaseUntil])
-      return loadTask(tx, worldId, id)
+      return found(await readTaskHeader(tx,worldId,id),'KANATA_TASK_UNAVAILABLE')
     }),
     /** @param {string} worldId @param {string} id @param {Lease} lease
      * @param {{status:'failed',errorCode:string}|{status:'succeeded',events:Omit<Event,'id'|'status'|'revision'|'recordedAt'|'worldId'>[],
      * memories?:import('../../domain/kanataTypes').Memory[]}} result */
-    finish: (worldId, id, lease, result) => operation.transaction(async tx => {
+    finish: (worldId, id, lease, result) => {
+      lease=cloneKanataJson(lease);result=cloneKanataJson(result)
+      return operation.transaction(async tx => {
       await assertWritableWorld(tx, worldId)
       await executeOnce(tx, ['task:finish', worldId, id, String(lease.attempt)], { lease, result }, async () => {
         const current = await readTaskFields(tx, worldId, id)
@@ -299,7 +277,7 @@ export function createKanataAutonomyRepository(operation, tools) {
         need(current.kind !== 'reply' && current.state === 'running' && current.attempt === lease.attempt
           && current.leaseUntil === lease.leaseUntil && lease.leaseUntil > now, 'KANATA_TASK_LEASE_CONFLICT')
         if (result.status === 'succeeded') {
-          await checkTaskSources(tx, current, visitTaskSources(tx, worldId, id))
+          await checkStoredTaskSources(tx,current,refs=>checkTaskSources(tx,current,refs))
           for (const fields of result.events) {
             await requireTaskSourceMembers(tx, worldId, id, fields.sourceRefs)
             const event = await insertEvent(tx, { ...fields, worldId, id: tools.id(), revision: 1, status: 'candidate', recordedAt: now })
@@ -318,8 +296,9 @@ export function createKanataAutonomyRepository(operation, tools) {
         await writeOne(tx, finish, [result.status, result.status === 'failed' ? result.errorCode : null, worldId, id, lease.attempt, lease.leaseUntil])
         return id
       })
-      return loadTask(tx, worldId, id)
-    }),
+      return found(await readTaskHeader(tx,worldId,id),'KANATA_TASK_UNAVAILABLE')
+      })
+    },
     /** @param {string} worldId @param {readonly string[]} speakers @param {number} now @param {string} timeZone */
     anySpeakerBusy: (worldId, speakers, now, timeZone) => operation.transaction(async tx => {
       need(speakers.length <= 8, 'KANATA_SPEAKER_LIMIT_INVALID')

@@ -1,0 +1,62 @@
+(node:4724) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+{
+  "hostOnly": true,
+  "permissions": [
+    {
+      "name": "private-owner-no-share",
+      "result": "allowed",
+      "tagRevision": 2
+    },
+    {
+      "name": "private-owner-read-denied",
+      "result": "LIFE_PERMISSION_DENIED",
+      "tagRevision": 3
+    },
+    {
+      "name": "private-owner-remember-denied",
+      "result": "LIFE_PERMISSION_DENIED",
+      "tagRevision": 4
+    },
+    {
+      "name": "proactive-only-read",
+      "result": "allowed",
+      "tagRevision": 4
+    },
+    {
+      "name": "group-origin-share-denied",
+      "result": "LIFE_PERMISSION_DENIED",
+      "tagRevision": 5
+    },
+    {
+      "name": "group-origin-allowed",
+      "result": "allowed",
+      "tagRevision": 6
+    },
+    {
+      "name": "group-receiver-allowed",
+      "result": "allowed",
+      "tagRevision": 6
+    },
+    {
+      "name": "group-receiver-remember-denied-parent-chain",
+      "result": "LIFE_PERMISSION_DENIED",
+      "tagRevision": 6
+    },
+    {
+      "name": "group-receiver-share-denied",
+      "result": "LIFE_PERMISSION_DENIED",
+      "tagRevision": 6
+    },
+    {
+      "name": "group-receiver-read-denied",
+      "result": "LIFE_PERMISSION_DENIED",
+      "tagRevision": 6
+    },
+    {
+      "name": "private-non-member",
+      "result": "TASK_SOURCE_SCOPE",
+      "tagRevision": 6
+    }
+  ]
+}

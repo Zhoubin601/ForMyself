@@ -75,7 +75,7 @@ M4 的目标是完成 SQLite 隔离候选的业务访问模型重构：候选业
 | MR2 G4 provenance | BLOCKED | 普通聊天、事件/消息来源和旧兼容入口仍有未闭环边界 |
 | MR3 A/B/C 管理闭环 | NOT RUN / PARTIAL | 世界复制、角色实例/文件导入、世界书完整管理未全部闭环 |
 | MR4 D/E/G 管理闭环 | NOT RUN / PARTIAL | 记忆跨组处理、事件语义/兼容、历史扩展引用保护未全部闭环 |
-| MR5 F 真实消费者与后台任务 | NOT RUN | 自治调度、contact/social 和生活模块消费者未闭环 |
+| MR5 F 真实消费者与后台任务 | PARTIAL | 任务有界访问与权限/故障主机及Android切片通过；自治调度、contact/social 和生活模块真实消费者未闭环 |
 | MR6 跨页面生命周期、权限与故障 | BLOCKED | 部分组件与 Runtime 已验证；完整页面、权限、内存矩阵缺失 |
 | MR7 最终全量回归与 Android 验收 | BLOCKED | 已接线场景有实测；完整 A–G 最终候选矩阵未完成 |
 | MR8 两轮全范围审查与交付 | BLOCKED | 有检查点审查；最终集成树两轮全范围审查未完成 |
@@ -269,7 +269,7 @@ MR5 是 M4-R 内部工作包编号，不是 SQLite 阶段 M5。
 
 ### F. 自治、contact/social 与生活角色消费者
 
-**当前状态：NOT RUN / PARTIAL。**
+**当前状态：PARTIAL；任务有界访问切片 PASS，真实消费者未闭环。**
 
 仍需关闭：
 
@@ -284,6 +284,16 @@ MR5 是 M4-R 内部工作包编号，不是 SQLite 阶段 M5。
 **关闭证据：** 真实消费者 UI/Runtime/Repository/SQL 链路、1k/10k 自治来源、lease 过期恢复、幂等水位、权限撤销和 Android 生命周期回归；真实模型 API 请求为 0。
 
 2026-11-13 原 F/G4 缺口复现：`verify-task-bounds.mjs` 只在内存合成库追加1000条消息来源，实际 `listTasks` 单次SQL最多50行，但返回任务含1001条完整sourceRefs。`task-bounded-before.txt`/exit=1记录源码指纹与真实断言失败，证明loadTask在页后重新gather；不是新增需求或新的工作包。任务实现尚未修改，后续沿本条目改为有界元数据/来源/结果访问并迁移既有消费者。
+
+2026-11-13 后续实施（原F/G4，设备验收进行中）：已删除loadTask完整对象旁路。头/列表/写回执固定标量与计数；taskSources/taskResults使用50条keyset页，事件结果直接消费005的原始ordinal；metadata/未知扩展/长key和errorCode走4096码点块，不自动截断或覆盖。所有物理任务字段及规范成员生成增量SHA，TEMP缓存绑定同连接total_changes和data_version；同revision字段/成员变化及其他连接提交使旧游标失效。claim/finish仍遍历完整来源验证权限、lease/CAS和成员关系，既有水位/幂等/回滚语义保留。未新增持久Schema，001–005冻结。
+
+最终主机`task-read-check-final`退出0：729 Node、406 Vue（44文件）、strict正负类型和生产build。任务1k/10k全部来源/事件/记忆结果与长JSON测试通过，SQL最多51行/4097码点、无完整DTO；跨连接提交、故障缓存写入、真实COMMIT、拒绝末项与重试均通过。边界复核的真实反例见`task-read-validation-before*`（任务头/列表坏扩展校验遗漏、等待原生事务前未持有输入副本）与`message-input-alias-before*`（消息scope/selection/cursor别名），已修复并加入行为/类型回归。`task-read-host-final*`当时两项失败是新增头校验使旧测试计数从1变3；测试改为独立记录头校验，仍要求后续全部页只生成一次证明；最终全量通过。该检查点不等于F/G4通过：真实contact/social/生活消费者及全生命周期等仍未闭环，Android本轮验证尚在进行。
+
+同日首轮Android `task-read-device`实际退出1：1k读/写阶段已完成、10k来源/事件结果/原始JSON均已读完，但10k权限末项仍逐来源往返桥，420秒超时；未计整轮PASS。原源码/fixture/APK/catalog指纹冻结于`task-read-device-attempt1-inputs.json`，原日志保留。随后改为SQLite内每页50个根的完整reply chain/角色/三权限证明，仅返count/next/异常标记；异常页继续原顺序逐条验证，保留错误优先级。`task-read-proof-plan-before`退出1证明首版批量SQL仍SCAN task_sources；调整scope连接顺序后，定向测试确认world/task/message_id索引范围，并在Android加入相同EXPLAIN断言。`task-read-proof-index-host`为9/9，1152种私聊/群聊/三权限与原算法对照（102允许/1050拒绝）、过期及环链优先级通过；10k授权定向约0.54秒。不增加timeout，不删除末项、不放宽授权、不修改001–005。索引修正后的完整`task-read-integration-check`和新Android候选仍待本轮实际结果。
+
+**当前覆盖上述进行中状态：** `task-read-integration-check`退出0为730 Node/406 Vue/44文件、strict正负、生产build。同一候选APK `d5a3b33a7e8f9701f28109267f91af0b0c0af943331f212c241fc2c9ab9dab59`在API34/SQLCipher4.17.0的`task-read-device-final`退出0，1k6571ms/10k48063ms，来源/结果均逐页读全，未知扩展和70层metadata/NUL长key精确保留；SQL最多51行/4097码点（含lookahead），无完整DTO，实际EXPLAIN为world/task/message_id索引范围。末项无权限拒绝、真实COMMIT回滚、11个角色/三权限场景（使用实际当前grant revision，含派生父链与非成员）及进程强杀冷开恢复/幂等通过，真实模型调用0。中间`task-read-device-proof`整轮通过；追加权限首轮`task-read-device-permissions`因非法夹具先触发既有TASK_SPEAKER_DENIED而退出1，改用合法无会话任务验证非成员，不改Schema；该失败没有改标PASS。基础自治窗口/水位/生命周期回归及普通APK门禁仍在本检查点完成中。F/G4/M4仍BLOCKED，不能据任务切片推断真实contact/social/生活消费者闭环。
+
+本任务切片最终收齐：`task-read-regression`基础全模式退出0，包括M2故障/COMMIT/会话与租约、M3窗口的事件/Effects/任务/水位原子性、M3强停冷开水位恢复、未来Schema/异常库存只读拒绝。普通APK实际DEX激活=false、canonical legacy、24条合成专用SQL未打包，catalog666条；APK `b1c5d5a2883988adaa9584bd7a935e9bf1b8b5df9b4ae81ff0bf7e00eb600452`只构建只读核验，未安装/发布。候选catalog `39cce147eee990ed02f0f61d8d9861cb4bbda1ceab9316cb67147d78802e5999`；`task-read-fingerprints.json`源码aggregate `db06433147345099254d79f316978933640fbd572719473f12adc16f8302db4f`，绑定fixture、各轮bundle、APK/catalog、设备与冻结001–005，25份原始设备日志按压缩/原始双SHA保存。旧005迁移、事件和消息证据只在原冻结范围复用，不改标为本APK新升级/全场景通过。此为原F/G4的内部实施检查点；两轮最终全范围MR8未运行，M4仍BLOCKED/M5 NO。下一步继续G4普通消息长字段预算及原A–G/统一生命周期，不再重复已删除的loadTask工作。
 
 ### G. 历史整理与引用保护
 
@@ -329,6 +339,7 @@ MR5 是 M4-R 内部工作包编号，不是 SQLite 阶段 M5。
 | 修订/删除与派生失效 | runtime.reviseMessage → readForUpdate → reviseMessageDependents → TEMP旧快照/实体CAS/审计 | 根与派生回复不桥接完整DTO；保留Effects重放、记忆/任务失效、旧审计脱敏和事务失败语义 |
 | 来源/未知扩展/历史审计检查 | sourcePage / jsonChunk（Repository owner scope） | 规范链接页50；原始hint/未知字段仅4096码点片段；完整合成对照仅test sink，当前无普通产品导出消费者 |
 | 旧完整消息兼容入口 | messageFromRow/provenanceFromRow/完整投影与无消费者provenance() | 已删除；不保留隐式full选项。QA只需状态的调用已用transcript/回执；主机完整字段对照改用明确test sink |
+| 自治窗口/后台任务回执 | kanataSqliteWorldRuntime → autonomy.completeWindow；enqueue/claim/finish → 固定KanataTaskHeader | 旧loadTask已删除；来源/结果50页、原始JSON4096块；claim/成功finish每50根证明授权，异常页保留原逐条错误语义；真实F消费者其余范围仍未闭环 |
 
 首轮check为718 Node通过、405/406组件通过（旧P7全备恢复5秒超时），不计完整check PASS；原门槛单独复测28/28通过。新SQL幂等比较的历史大整数JSON用例曾误判ID_CONFLICT，`message-numeric-before*`保留真实失败，数值比较统一到JS double语义后定向12/12通过。完整check重新执行中，未增加超时、跳过样例或改Schema。
 
@@ -336,7 +347,7 @@ MR5 是 M4-R 内部工作包编号，不是 SQLite 阶段 M5。
 
 旧P7超时、QA浏览器node:crypto导入、Oracle对象键顺序、AVD SystemUI缺失/keyguard sleep token、工作区驱动未等按钮enabled等失败及复测均保留，详见同QA README。SystemUI只通过同一隔离AVD的reboot恢复，无wipe；生产门禁/驱动未修改。runner新增真实SystemUI/Activity前台检查，原超时和数据规模均未放宽。普通APK实际DEX=false、canonical legacy、17条专用合成SQL未打包，APK `8bbc0c1e1d86e13d499915c1f1d00c0a6c58448a9933d9b7e28746f415d2c08b`仅构建检查、未安装发布。
 
-`message-bounded-fingerprints.json`保存源码/fixture、各轮QA bundle、APK/catalog、设备和001–005 checksum，44份原始设备记录以压缩及原始双SHA归档；源码aggregate `e3f92d8affc2dc3b1dcea9e8342aae77ad03d26e5347f6bcdbe7806633931a9e`。005旧证据只保持其冻结结构范围，不套用为新APK升级实测。**G4/M4仍BLOCKED、M5 NO**：原F/loadTask实际1001来源gather未修复，普通消息长正文预算、A–G其他能力、专用retained Heap/统一生命周期、最终MR7和两轮MR8全范围审查仍待闭环；继续本清单。
+`message-bounded-fingerprints.json`保存源码/fixture、各轮QA bundle、APK/catalog、设备和001–005 checksum，44份原始设备记录以压缩及原始双SHA归档；源码aggregate `e3f92d8affc2dc3b1dcea9e8342aae77ad03d26e5347f6bcdbe7806633931a9e`。005旧证据只保持其冻结结构范围，不套用为新APK升级实测。后续F/loadTask的实际1001来源gather已经本节F任务切片修复，主机/Android实测见F与同QA目录task-read证据。**G4/M4仍BLOCKED、M5 NO**：普通消息长正文预算、A–G其他能力、专用retained Heap/统一生命周期、最终MR7和两轮MR8全范围审查仍待闭环；继续本清单。
 
 ## 5. 横向最终验收合同
 

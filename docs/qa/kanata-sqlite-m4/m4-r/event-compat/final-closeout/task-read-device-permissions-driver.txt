@@ -1,0 +1,51 @@
+/data/app/~~KkfhrinjhpTle-2DAZcYRg==/com.yubin.formyself.m2qa-Z0WTCNnwj-nFoHI8iwXGqg==/base.apk: 1 file pulled, 0 skipped. 35.4 MB/s (19162047 bytes in 0.517s)
+/data/app/~~mDNwr5fXEPx9JwNgGy9Ikg==/com.yubin.formyself.m2qa.test-_ebqsPhJpVyd5Y1tv0PDKQ==/base.apk: 1 file pulled, 0 skipped. 25.0 MB/s (598741 bytes in 0.023s)
+▲ [WARNING] Ignoring this import because "src/features/chat/kanataManagement.css" was marked as having no side effects [ignored-bare-import]
+
+    src/features/chat/KanataView.vue:8:7:
+      8 │ import './kanataManagement.css'
+        ╵        ~~~~~~~~~~~~~~~~~~~~~~~~
+
+{"qaBundleSha256":"def032c121357f509165031bb9164314c53521afc9470717b5ade008ae5761d0"}
+{"taskReadPhase":null}
+{"taskReadPhase":{"size":1000,"phase":"sources","elapsedMs":383}}
+{"taskReadPhase":{"size":1000,"phase":"events","elapsedMs":2033}}
+{"taskReadPhase":{"size":1000,"phase":"chunks","elapsedMs":3173}}
+{"taskReadPhase":{"size":1000,"phase":"denied-tail","elapsedMs":4670}}
+{"taskReadPhase":{"size":1000,"phase":"claim","elapsedMs":6068}}
+{"taskReadPhase":{"size":10000,"phase":"prepare","elapsedMs":0}}
+{"taskReadPhase":{"size":10000,"phase":"sources","elapsedMs":1765}}
+{"taskReadPhase":{"size":10000,"phase":"events","elapsedMs":14450}}
+{"taskReadPhase":{"size":10000,"phase":"chunks","elapsedMs":22417}}
+{"taskReadPhase":{"size":10000,"phase":"denied-tail","elapsedMs":25747}}
+{"taskReadPhase":{"size":10000,"phase":"claim","elapsedMs":28723}}
+{"taskReadPhase":{"phase":"permission-matrix"}}
+{
+  "taskRead": {
+    "error": "KANATA_SQLITE_TRANSACTION_FAILED",
+    "stack": "Error: KANATA_SQLITE_TRANSACTION_FAILED\n    at sqliteError (blob:https://localhost/12079a42-deb9-46e3-b09a-12b784a6c93f:63669:24)\n    at native (blob:https://localhost/12079a42-deb9-46e3-b09a-12b784a6c93f:63679:11)\n    at async statement (blob:https://localhost/12079a42-deb9-46e3-b09a-12b784a6c93f:63728:25)\n    at async Object.execute (blob:https://localhost/12079a42-deb9-46e3-b09a-12b784a6c93f:65470:35)\n    at async writeOne (blob:https://localhost/12079a42-deb9-46e3-b09a-12b784a6c93f:57209:23)\n    at async createTask (blob:https://localhost/12079a42-deb9-46e3-b09a-12b784a6c93f:61364:3)\n    at async blob:https://localhost/12079a42-deb9-46e3-b09a-12b784a6c93f:61528:11\n    at async executeOnce (blob:https://localhost/12079a42-deb9-46e3-b09a-12b784a6c93f:57226:15)\n    at async blob:https://localhost/12079a42-deb9-46e3-b09a-12b784a6c93f:61526:21\n    at async blob:https://localhost/12079a42-deb9-46e3-b09a-12b784a6c93f:65461:30",
+    "phase": {
+      "phase": "permission-matrix"
+    }
+  }
+}
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
++ actual - expected
+
++ undefined
+- 'PASS'
+
+    at file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata-m0/docs/qa/kanata-sqlite-m2/windows-candidate-smoke.mjs:142:12 {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: undefined,
+  expected: 'PASS',
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.14.1

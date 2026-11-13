@@ -598,7 +598,8 @@ test('M3 window writes event, effects, task and watermark atomically, including 
   assert.deepEqual(counts(), before)
   assert.equal((await domains.worlds.get(scope.worldId)).world.lastSimulatedAt, 1000)
   const done = await domains.autonomy.completeWindow(plan, state.now)
-  assert.equal(done.resultEventIds.length, 2)
+  assert.equal(done.resultEventCount, 2)
+  assert.equal((await domains.autonomy.taskResults(scope.worldId,done.id,'events')).ids.length,2)
   assert.equal((await domains.autonomy.completeWindow(plan, state.now)).id, done.id)
   assert.equal((await domains.worlds.get(scope.worldId)).world.lastSimulatedAt, plan.end)
   assert.equal(counts()[0], before[0] + 2)
@@ -679,8 +680,11 @@ test('M3 expired lease cannot complete and duplicate task completion writes one 
   await assert.rejects(domains.autonomy.finish(scope.worldId, pending.id, one, result), /TASK_LEASE_CONFLICT/)
   const lease = { attempt: two.attempt, leaseUntil: two.leaseUntil }
   const committed = await domains.autonomy.finish(scope.worldId, pending.id, lease, result)
-  assert.equal(committed.resultEventIds.length, 1)
-  assert.deepEqual((await domains.autonomy.finish(scope.worldId, pending.id, lease, result)).resultEventIds, committed.resultEventIds)
+  assert.equal(committed.resultEventCount, 1)
+  const resultIds=(await domains.autonomy.taskResults(scope.worldId,committed.id,'events')).ids
+  assert.equal(resultIds.length,1)
+  const replay=await domains.autonomy.finish(scope.worldId,pending.id,lease,result)
+  assert.deepEqual((await domains.autonomy.taskResults(scope.worldId,replay.id,'events')).ids,resultIds)
 })
 
 test('M3 usage attempt preserves null measurement and final usage is idempotent', async t => {

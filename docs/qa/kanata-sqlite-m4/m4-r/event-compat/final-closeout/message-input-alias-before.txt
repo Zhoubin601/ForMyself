@@ -1,0 +1,28 @@
+(node:48848) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✖ G3 message detail owns selection, scope and cursor before asynchronous transaction work (77.1096ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 318.3132
+
+✖ failing tests:
+
+test at tests\kanataSqliteRepository.test.js:297:1
+✖ G3 message detail owns selection, scope and cursor before asynchronous transaction work (77.1096ms)
+  Error: KANATA_SQLITE_INTEGRITY_FAILED
+      at requireSqliteValue (file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata-m0/src/features/chat/storage/sqlite/kanataRepositoryValues.js:6:39)
+      at assertMessageSnapshot (file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata-m0/src/features/chat/storage/sqlite/kanataMessageSnapshot.js:77:3)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async identity (file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata-m0/src/features/chat/storage/sqlite/kanataMessageDetailRead.js:29:3)
+      at async file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata-m0/src/features/chat/storage/sqlite/kanataMessageDetailRead.js:65:21
+      at async Object.transaction (file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata-m0/tests/kanataSqliteRepository.test.js:47:23)
+      at async TestContext.<anonymous> (file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata-m0/tests/kanataSqliteRepository.test.js:304:15)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:358:3) {
+    code: 'KANATA_SQLITE_INTEGRITY_FAILED'
+  }

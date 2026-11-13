@@ -1,0 +1,22 @@
+(node:44144) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+{"size":1000,"sources":1001,"events":1001,"maxRows":51,"maxText":4097,"completeDtos":0}
+{"size":10000,"sources":10001,"events":10001,"maxRows":51,"maxText":4097,"completeDtos":0}
+{"permissionCases":1152,"allowed":102,"denied":1050,"staleAndCyclePriority":true}
+✔ G4 task 1000 sources/results stay in bounded headers, keysets and incremental signatures (150.7123ms)
+✔ G4 task 10000 sources/results stay in bounded headers, keysets and incremental signatures (730.2975ms)
+✔ G4 task continuations bind task, world, relation, field and all same-revision stored data (56.9598ms)
+✔ G4 task list cursor scope, owner cancellation and failed read COMMIT preserve source rows and retry (44.298ms)
+✔ G4 task proof detects external commits and failed cache writes never alter task data (77.1453ms)
+✔ G3 task enqueue and finish own caller input before Native transaction acquisition (46.1635ms)
+✔ G4 task 1000 source claim checks the denied tail and returns no gathered DTO on retry or finish (105.7279ms)
+✔ G4 task 10000 source claim checks the denied tail and returns no gathered DTO on retry or finish (1111.1724ms)
+✔ G6 stored task range proof matches the original ordered source checks for private/group grants and stale chains (1460.8335ms)
+ℹ tests 9
+ℹ suites 0
+ℹ pass 9
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 4005.1425

@@ -1,0 +1,31 @@
+/data/app/~~3GxxIDxZuQ-_5fjIfL15Sw==/com.yubin.formyself.m2qa-SUQ3l3pK1JG934I34qMKoQ==/base.apk: 1 file pulled, 0 skipped. 28.8 MB/s (19041358 bytes in 0.632s)
+/data/app/~~ThI425JftZAGZdBvaPuuGg==/com.yubin.formyself.m2qa.test-iGFJs19oVQhfQ4SDogr7Dw==/base.apk: 1 file pulled, 0 skipped. 34.1 MB/s (598741 bytes in 0.017s)
+▲ [WARNING] Ignoring this import because "src/features/chat/kanataManagement.css" was marked as having no side effects [ignored-bare-import]
+
+    src/features/chat/KanataView.vue:8:7:
+      8 │ import './kanataManagement.css'
+        ╵        ~~~~~~~~~~~~~~~~~~~~~~~~
+
+{"qaBundleSha256":"6410ea43eba78cb2f01f6ac72bf7c1cc1c6c9d2678fa6a170180d7d0f27ba616"}
+{"taskReadPhase":null}
+{"taskReadPhase":{"size":1000,"phase":"prepare","elapsedMs":0}}
+{"taskReadPhase":{"size":1000,"phase":"sources","elapsedMs":460}}
+{"taskReadPhase":{"size":1000,"phase":"events","elapsedMs":1962}}
+{"taskReadPhase":{"size":1000,"phase":"chunks","elapsedMs":3039}}
+{"taskReadPhase":{"size":1000,"phase":"denied-tail","elapsedMs":4405}}
+{"taskReadPhase":{"size":1000,"phase":"claim","elapsedMs":21652}}
+{"taskReadPhase":{"size":10000,"phase":"prepare","elapsedMs":0}}
+{"taskReadPhase":{"size":10000,"phase":"sources","elapsedMs":1999}}
+{"taskReadPhase":{"size":10000,"phase":"events","elapsedMs":15078}}
+{"taskReadPhase":{"size":10000,"phase":"chunks","elapsedMs":29337}}
+{"taskReadPhase":{"size":10000,"phase":"denied-tail","elapsedMs":37715}}
+file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata-m0/docs/qa/kanata-sqlite-m2/windows-candidate-smoke.mjs:68
+      reject(new Error('CDP_EVALUATION_TIMEOUT'))
+             ^
+
+Error: CDP_EVALUATION_TIMEOUT
+    at Timeout._onTimeout (file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata-m0/docs/qa/kanata-sqlite-m2/windows-candidate-smoke.mjs:68:14)
+    at listOnTimeout (node:internal/timers:605:17)
+    at process.processTimers (node:internal/timers:541:7)
+
+Node.js v24.14.1

@@ -128,6 +128,35 @@ try {
     const result=await evaluate(`window.m4QaWorkspaceOnly(${password},${JSON.stringify(fixture)},${JSON.stringify(m2FixtureCommands(fixture))},${JSON.stringify(input)})`)
     console.log(JSON.stringify({m4Workspace:result},null,2))
     assert.equal(result.error,undefined);assert.equal(result.passed.length,2)
+  }else if(process.argv.includes('--task-read')){
+    const fixture=m2Fixture(),worldId=fixture.messages[0].worldId
+    let finished=false,last=''
+    const pending=evaluate(`window.taskReadQa(${password},${JSON.stringify(fixture)},${JSON.stringify(m2FixtureCommands(fixture))},${JSON.stringify(fixtureWrites.deferredCommit)})`,420000).finally(()=>{finished=true})
+    const observe=async()=>{while(!finished){await delay(1000);if(finished)break
+      const phase=await evaluate('window.taskReadPhase??null',5000).catch(()=>null)
+      const text=JSON.stringify(phase)
+      if(text!==last){last=text;console.log(JSON.stringify({taskReadPhase:phase}))}
+    }}
+    const [result]=await Promise.all([pending,observe()])
+    console.log(JSON.stringify({taskRead:result},null,2))
+    assert.equal(result.status,'PASS');assert.match(result.health.cipher,/^4\.17\.0/)
+    assert.equal(await evaluate(`window.taskReadArm(${password},${JSON.stringify(worldId)})`),'armed')
+    let state
+    for(let i=0;i<80;i++){
+      state=await evaluate('window.taskReadState()')
+      if(state!=='idle')break
+      await delay(100)
+    }
+    assert.equal(state,'task-finish-uncommitted')
+    const oldPid=pid
+    adb('shell','run-as',packageName,'kill','-9',oldPid)
+    await delay(300);assert.equal(adb('shell','pidof '+packageName+' || true'),'')
+    detach();adb('shell','am','start','-W','-n',packageName+'/com.yubin.formyself.MainActivity')
+    await delay(600);evaluate=await attach();assert.notEqual(pid,oldPid)
+    assert.equal(await initialize(evaluate),true)
+    const recovery=await evaluate(`window.taskReadRecover(${password},${JSON.stringify(worldId)})`)
+    console.log(JSON.stringify({taskCrashRecovery:{oldPid,newPid:pid,...recovery}},null,2))
+    assert.deepEqual(recovery,{before:'running',after:'failed',sourceCount:10000,idempotentRetry:true})
   }else if(process.argv.includes('--message-bounded')){
     const fixture=m2Fixture(),{worldId,conversationId}=fixture.messages[0],scope={worldId,conversationId}
     let finished=false,last=''

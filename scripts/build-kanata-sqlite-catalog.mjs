@@ -32,6 +32,8 @@ import { eventSnapshotQueries, eventSnapshotWrites, eventIntegrityDdl } from '..
 import { eventProofDdl, eventProofQueries, eventProofWrites } from '../src/features/chat/storage/sqlite/kanataEventProof.js'
 import { eventQueries, eventWrites } from '../src/features/chat/storage/sqlite/kanataEventRepository.js'
 import { autonomyQueries, autonomyWrites } from '../src/features/chat/storage/sqlite/kanataAutonomyRepository.js'
+import {taskReadDdl,taskReadQueries,taskReadWrites} from '../src/features/chat/storage/sqlite/kanataTaskRead.js'
+import {taskSourceProofQueries} from '../src/features/chat/storage/sqlite/kanataTaskSourceProof.js'
 import { usageQueries, usageWrites } from '../src/features/chat/storage/sqlite/kanataUsageRepository.js'
 
 import { chatViewQueries } from '../src/features/chat/storage/sqlite/kanataChatViewRepository.js'
@@ -64,8 +66,9 @@ add('ddl', 'schema', [
   schema.setApplicationId,
   ...KANATA_SCHEMA_MIGRATIONS.flatMap(migration => [...migration.statements, schema.setVersion(migration.version)]),
 ])
-add('ddl', 'business', [...eventPlanDdl, ...replyProofDdl, ...eventProofDdl, ...eventIntegrityDdl,...messageSnapshotDdl])
+add('ddl', 'business', [...eventPlanDdl, ...replyProofDdl, ...eventProofDdl, ...eventIntegrityDdl,...messageSnapshotDdl,...taskReadDdl])
 add('query', 'business', eventProofQueries)
+add('query','business',taskSourceProofQueries)
 add('write', 'business', eventProofWrites)
 add('query', 'business', [...replyProofQueries,...messageSnapshotQueries,...messageDetailQueries])
 add('write', 'business', [...replyProofWrites,...messageSnapshotWrites])
@@ -73,11 +76,14 @@ add('query', 'business', [...Object.values(messageQueries), ...Object.values(con
   ...Object.values(deferredReplyQueries), ...historyArchiveQueries])
 add('write', 'business', [...Object.values(messageWrites), ...Object.values(conversationWrites),
   ...Object.values(dependentWrites), ...Object.values(updateEffectValue), ...Object.values(deferredReplyWrites), ...historyArchiveWrites])
-add('query', 'business', [...eventPlanQueries, ...effectAuditStorageQueries, ...effectAuditQueries, ...arrayOrderQueries, ...eventWorldSignatureQueries, receiptQuery, ...worldQueries, ...characterQueries, ...lorebookQueries, ...provenanceQueries,
+add('query', 'business', [...taskReadQueries, ...eventPlanQueries, ...effectAuditStorageQueries, ...effectAuditQueries, ...arrayOrderQueries, ...eventWorldSignatureQueries, receiptQuery, ...worldQueries, ...characterQueries, ...lorebookQueries, ...provenanceQueries,
   ...memoryQueries, ...eventReadQueries, ...eventSnapshotQueries, ...eventQueries, ...eventRevocationQueries, ...autonomyQueries, ...usageQueries, ...chatViewQueries, ...managementViewQueries, ...bindingQueries])
-add('write', 'business', [...effectAuditStorageWrites, ...eventPlanWrites, receiptWrite, ...worldWrites, ...characterWrites, ...lorebookWrites, ...memoryWrites,
+add('write', 'business', [...taskReadWrites, ...effectAuditStorageWrites, ...eventPlanWrites, receiptWrite, ...worldWrites, ...characterWrites, ...lorebookWrites, ...memoryWrites,
   ...eventSnapshotWrites, ...eventWrites, ...eventRevocationWrites, ...autonomyWrites, ...usageWrites, ...bindingWrites])
 if (process.argv.includes('--synthetic')) {
+  const {taskFixtureWrites,taskProofPlanQuery}=await import('../docs/qa/kanata-sqlite-m4/m4-r/event-compat/final-closeout/task-read-device.mjs')
+  add('query','business',[taskProofPlanQuery])
+  add('write','business',taskFixtureWrites)
   const {messageAuditSummary,messageAuditCount,messageFixtureWrites}=await import('../docs/qa/kanata-sqlite-m4/m4-r/event-compat/final-closeout/message-bounded-device.mjs')
   add('query','business',[messageAuditSummary,messageAuditCount])
   add('write','business',messageFixtureWrites)

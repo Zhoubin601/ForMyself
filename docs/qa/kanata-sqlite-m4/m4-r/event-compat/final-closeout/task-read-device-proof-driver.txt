@@ -1,0 +1,75 @@
+/data/app/~~v79gTiJyq6f2a-ukcKRo2g==/com.yubin.formyself.m2qa-1Ft0TTTt0n_fZZap-_nVnw==/base.apk: 1 file pulled, 0 skipped. 29.5 MB/s (19162047 bytes in 0.619s)
+/data/app/~~NSHhQLotf4w-1r7bVqqP2w==/com.yubin.formyself.m2qa.test-quazjWE_MxpKOKmLqZ7RIw==/base.apk: 1 file pulled, 0 skipped. 35.4 MB/s (598741 bytes in 0.016s)
+▲ [WARNING] Ignoring this import because "src/features/chat/kanataManagement.css" was marked as having no side effects [ignored-bare-import]
+
+    src/features/chat/KanataView.vue:8:7:
+      8 │ import './kanataManagement.css'
+        ╵        ~~~~~~~~~~~~~~~~~~~~~~~~
+
+{"qaBundleSha256":"15dc5316eb5e209bbada8e82c700b036f82337d81738a4899132aac927889460"}
+{"taskReadPhase":null}
+{"taskReadPhase":{"size":1000,"phase":"sources","elapsedMs":321}}
+{"taskReadPhase":{"size":1000,"phase":"events","elapsedMs":1930}}
+{"taskReadPhase":{"size":1000,"phase":"chunks","elapsedMs":2920}}
+{"taskReadPhase":{"size":1000,"phase":"denied-tail","elapsedMs":4212}}
+{"taskReadPhase":{"size":1000,"phase":"claim","elapsedMs":5428}}
+{"taskReadPhase":{"size":10000,"phase":"prepare","elapsedMs":0}}
+{"taskReadPhase":{"size":10000,"phase":"sources","elapsedMs":2091}}
+{"taskReadPhase":{"size":10000,"phase":"events","elapsedMs":14696}}
+{"taskReadPhase":{"size":10000,"phase":"chunks","elapsedMs":30304}}
+{"taskReadPhase":{"size":10000,"phase":"denied-tail","elapsedMs":38198}}
+{"taskReadPhase":{"size":10000,"phase":"claim","elapsedMs":43600}}
+{
+  "taskRead": {
+    "status": "PASS",
+    "health": {
+      "cipher": "4.17.0 community",
+      "journalMode": "wal",
+      "synchronous": 2,
+      "foreignKeys": 1,
+      "cacheSize": -2048,
+      "checkpoint": 1000,
+      "busyTimeout": 5000
+    },
+    "proofIndex": [
+      "SEARCH task_sources USING INDEX sqlite_autoindex_task_sources_1 (world_id=? AND task_id=? AND message_id>?)"
+    ],
+    "results": [
+      {
+        "size": 1000,
+        "sources": 1000,
+        "events": 1000,
+        "chunks": 8,
+        "maxRows": 51,
+        "maxText": 4097,
+        "fullDtos": 0,
+        "deniedTail": true,
+        "realCommitRollback": true,
+        "elapsedMs": 6617
+      },
+      {
+        "size": 10000,
+        "sources": 10000,
+        "events": 10000,
+        "chunks": 8,
+        "maxRows": 51,
+        "maxText": 4097,
+        "fullDtos": 0,
+        "deniedTail": true,
+        "realCommitRollback": true,
+        "elapsedMs": 50070
+      }
+    ],
+    "realModelCalls": 0
+  }
+}
+{
+  "taskCrashRecovery": {
+    "oldPid": "7805",
+    "newPid": "7948",
+    "before": "running",
+    "after": "failed",
+    "sourceCount": 10000,
+    "idempotentRetry": true
+  }
+}

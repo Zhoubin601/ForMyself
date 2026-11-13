@@ -1,8 +1,39 @@
-import type {JsonValue,WorldEffect} from '../../domain/kanataTypes'
+import type {JsonValue,WorldEffect,BackgroundTask,SourceRef} from '../../domain/kanataTypes'
 export type KanataSqliteDomains = ReturnType<typeof import('./kanataSqliteDomains.js').createKanataSqliteDomains>
 export interface KanataSqliteDomainOwner {
   readonly worldId: string
   assertCurrent(): void
+}
+
+export type KanataTaskHeader = Readonly<Pick<BackgroundTask,'id'|'worldId'|'kind'|'state'|'sourceRevision'|'attempt'|
+  'notBefore'|'leaseUntil'|'conversationId'|'instanceId'>> & {
+  readonly idempotencyKey:string|null;readonly idempotencyKeyChunked?:true
+  readonly errorCode?:string|null;readonly errorCodeChunked?:true
+  readonly sourceCount:number;readonly resultEventCount:number;readonly resultMemoryCount:number;readonly participantCount:number
+  readonly hasSimulationWindow:boolean;readonly hasSocial:boolean;readonly hasContact:boolean;readonly hasDeferredReply:boolean
+}
+export interface KanataTaskListCursor {readonly worldId:string;readonly afterId:string}
+export interface KanataTaskReadIdentity {readonly worldId:string;readonly taskId:string;readonly signature:string}
+export type KanataTaskRelationKind='sources'|'events'|'memories'|'participants'
+export interface KanataTaskRelationCursor extends KanataTaskReadIdentity {
+  readonly kind:KanataTaskRelationKind;readonly afterId:string;readonly afterOrdinal:number
+}
+export type KanataTaskJsonField='metadata'|'extensions'|'idempotencyKey'|'errorCode'
+export interface KanataTaskJsonCursor extends KanataTaskReadIdentity {
+  readonly field:KanataTaskJsonField;readonly offset:number
+}
+export interface KanataTaskReadRepository {
+  taskHeader(worldId:string,id:string):Promise<KanataTaskHeader|null>
+  listTasks(worldId:string,cursor?:KanataTaskListCursor,limit?:number):Promise<{tasks:readonly KanataTaskHeader[];cursor:KanataTaskListCursor|null}>
+  taskSources(worldId:string,id:string,cursor?:KanataTaskRelationCursor,limit?:number):Promise<{
+    entries:readonly SourceRef[];cursor:KanataTaskRelationCursor|null
+  }>
+  taskResults(worldId:string,id:string,kind:'events'|'memories'|'participants',cursor?:KanataTaskRelationCursor,limit?:number):Promise<{
+    ids:readonly string[];cursor:KanataTaskRelationCursor|null
+  }>
+  taskJsonChunk(worldId:string,id:string,field:KanataTaskJsonField,cursor?:KanataTaskJsonCursor):Promise<{
+    part:string;cursor:KanataTaskJsonCursor|null
+  }>
 }
 
 export interface KanataEventAcknowledgement {

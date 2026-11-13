@@ -58,8 +58,10 @@ import {orderFixtureWrites,longAuditFixtureWrites}
   from './docs/qa/kanata-sqlite-m4/m4-r/event-compat/final-closeout/event-semantics-device.mjs';
 import {messageAuditSummary,messageAuditCount,messageFixtureWrites}
   from './docs/qa/kanata-sqlite-m4/m4-r/event-compat/final-closeout/message-bounded-device.mjs';
+import {taskFixtureWrites,taskProofPlanQuery}
+  from './docs/qa/kanata-sqlite-m4/m4-r/event-compat/final-closeout/task-read-device.mjs';
 console.log(JSON.stringify([growthSeedSql,eventRows,memoryRows,eventEdges,eventFanout,replayEventRows,
-  replayEffectRows,grantOriginActors,...orderFixtureWrites,...longAuditFixtureWrites,messageAuditSummary,messageAuditCount,...messageFixtureWrites]));
+  replayEffectRows,grantOriginActors,...orderFixtureWrites,...longAuditFixtureWrites,messageAuditSummary,messageAuditCount,...messageFixtureWrites,...taskFixtureWrites,taskProofPlanQuery]));
 """] ).decode('utf-8'))
 registered = {entry['sql'] for entry in catalog['statements'].values()}
 assert not registered.intersection(fixture_sql), 'Synthetic fixture SQL is packaged'

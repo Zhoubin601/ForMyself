@@ -1,0 +1,3 @@
+(node:35264) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+{"probe":"G4 existing task DTO boundary","autonomySourceSha256":"17edb37bd541e401db3b7a6e557a01042a9d8e1e1ccd2793f298c0f2ffc65b85","sourceRows":1001,"maxSqlRows":1,"returnedSourceRefs":0,"completeSourceArray":false}

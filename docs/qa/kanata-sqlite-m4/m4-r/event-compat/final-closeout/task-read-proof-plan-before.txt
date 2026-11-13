@@ -1,0 +1,254 @@
+(node:37440) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+[
+  {
+    "id": 3,
+    "parent": 0,
+    "notused": 0,
+    "detail": "MATERIALIZE roots"
+  },
+  {
+    "id": 6,
+    "parent": 3,
+    "notused": 0,
+    "detail": "MATERIALIZE scope"
+  },
+  {
+    "id": 8,
+    "parent": 6,
+    "notused": 0,
+    "detail": "SCAN CONSTANT ROW"
+  },
+  {
+    "id": 23,
+    "parent": 3,
+    "notused": 216,
+    "detail": "SCAN task_sources"
+  },
+  {
+    "id": 27,
+    "parent": 3,
+    "notused": 16,
+    "detail": "SCAN scope"
+  },
+  {
+    "id": 51,
+    "parent": 3,
+    "notused": 0,
+    "detail": "USE TEMP B-TREE FOR ORDER BY"
+  },
+  {
+    "id": 61,
+    "parent": 0,
+    "notused": 72,
+    "detail": "SCAN roots"
+  },
+  {
+    "id": 73,
+    "parent": 0,
+    "notused": 0,
+    "detail": "SCALAR SUBQUERY 12"
+  },
+  {
+    "id": 82,
+    "parent": 73,
+    "notused": 216,
+    "detail": "SCAN r"
+  },
+  {
+    "id": 84,
+    "parent": 73,
+    "notused": 216,
+    "detail": "SCAN scope"
+  },
+  {
+    "id": 86,
+    "parent": 73,
+    "notused": 46,
+    "detail": "SEARCH root USING INDEX sqlite_autoindex_messages_3 (world_id=? AND id=?) LEFT-JOIN"
+  },
+  {
+    "id": 105,
+    "parent": 73,
+    "notused": 0,
+    "detail": "CORRELATED SCALAR SUBQUERY 6"
+  },
+  {
+    "id": 109,
+    "parent": 105,
+    "notused": 0,
+    "detail": "MATERIALIZE chain"
+  },
+  {
+    "id": 114,
+    "parent": 109,
+    "notused": 0,
+    "detail": "SETUP"
+  },
+  {
+    "id": 117,
+    "parent": 114,
+    "notused": 216,
+    "detail": "SCAN roots"
+  },
+  {
+    "id": 138,
+    "parent": 109,
+    "notused": 0,
+    "detail": "RECURSIVE STEP"
+  },
+  {
+    "id": 143,
+    "parent": 138,
+    "notused": 216,
+    "detail": "SCAN link"
+  },
+  {
+    "id": 144,
+    "parent": 138,
+    "notused": 46,
+    "detail": "SEARCH m USING INDEX sqlite_autoindex_messages_1 (id=?)"
+  },
+  {
+    "id": 152,
+    "parent": 138,
+    "notused": 216,
+    "detail": "SCAN scope"
+  },
+  {
+    "id": 185,
+    "parent": 105,
+    "notused": 57,
+    "detail": "SEARCH link USING AUTOMATIC COVERING INDEX (root_id=?)"
+  },
+  {
+    "id": 190,
+    "parent": 105,
+    "notused": 46,
+    "detail": "SEARCH m USING INDEX sqlite_autoindex_messages_3 (world_id=? AND id=?) LEFT-JOIN"
+  },
+  {
+    "id": 223,
+    "parent": 73,
+    "notused": 0,
+    "detail": "CORRELATED SCALAR SUBQUERY 7"
+  },
+  {
+    "id": 239,
+    "parent": 223,
+    "notused": 53,
+    "detail": "SEARCH link USING AUTOMATIC COVERING INDEX (root_id=?)"
+  },
+  {
+    "id": 244,
+    "parent": 223,
+    "notused": 46,
+    "detail": "SEARCH m USING INDEX sqlite_autoindex_messages_3 (world_id=? AND id=?)"
+  },
+  {
+    "id": 263,
+    "parent": 73,
+    "notused": 0,
+    "detail": "CORRELATED SCALAR SUBQUERY 8"
+  },
+  {
+    "id": 268,
+    "parent": 263,
+    "notused": 39,
+    "detail": "SEARCH p USING INDEX sqlite_autoindex_conversation_participants_1 (world_id=? AND conversation_id=? AND participant_id=?)"
+  },
+  {
+    "id": 288,
+    "parent": 73,
+    "notused": 0,
+    "detail": "CORRELATED SCALAR SUBQUERY 9"
+  },
+  {
+    "id": 303,
+    "parent": 288,
+    "notused": 53,
+    "detail": "SEARCH link USING AUTOMATIC COVERING INDEX (root_id=?)"
+  },
+  {
+    "id": 308,
+    "parent": 288,
+    "notused": 55,
+    "detail": "SEARCH s USING COVERING INDEX sqlite_autoindex_message_life_sources_1 (world_id=? AND message_id=?)"
+  },
+  {
+    "id": 325,
+    "parent": 73,
+    "notused": 0,
+    "detail": "CORRELATED SCALAR SUBQUERY 11"
+  },
+  {
+    "id": 351,
+    "parent": 325,
+    "notused": 53,
+    "detail": "SEARCH link USING AUTOMATIC COVERING INDEX (root_id=?)"
+  },
+  {
+    "id": 356,
+    "parent": 325,
+    "notused": 46,
+    "detail": "SEARCH root USING INDEX sqlite_autoindex_messages_1 (id=?)"
+  },
+  {
+    "id": 365,
+    "parent": 325,
+    "notused": 47,
+    "detail": "SEARCH c USING INDEX sqlite_autoindex_conversations_1 (id=?)"
+  },
+  {
+    "id": 370,
+    "parent": 325,
+    "notused": 62,
+    "detail": "SEARCH s USING INDEX sqlite_autoindex_message_life_sources_1 (world_id=? AND message_id=?)"
+  },
+  {
+    "id": 387,
+    "parent": 325,
+    "notused": 53,
+    "detail": "SEARCH r USING AUTOMATIC COVERING INDEX (message_id=?)"
+  },
+  {
+    "id": 395,
+    "parent": 325,
+    "notused": 216,
+    "detail": "SCAN scope"
+  },
+  {
+    "id": 404,
+    "parent": 325,
+    "notused": 0,
+    "detail": "CORRELATED SCALAR SUBQUERY 10"
+  },
+  {
+    "id": 411,
+    "parent": 404,
+    "notused": 47,
+    "detail": "SEARCH origin USING INDEX sqlite_autoindex_life_grants_3 (world_id=? AND id=? AND instance_id=? AND module_id=?)"
+  },
+  {
+    "id": 439,
+    "parent": 404,
+    "notused": 47,
+    "detail": "SEARCH receiver USING INDEX sqlite_autoindex_life_grants_2 (world_id=? AND instance_id=? AND module_id=?)"
+  }
+]
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: The 50-root range must use the scoped task_sources index
+    at file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata-m0/[eval1]:11:1
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5) {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: false,
+  expected: true,
+  operator: '==',
+  diff: 'simple'
+}
+
+Node.js v24.14.1

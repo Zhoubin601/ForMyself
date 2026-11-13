@@ -294,6 +294,26 @@ test('G4 message detail pages and JSON chunks preserve unknown data, bind scope/
   await assert.rejects(messages.jsonChunk(scope,input.id,{kind:'audit',auditId:audit.id,side:'next'},current.cursor),/CURSOR_INVALID/)
 })
 
+test('G3 message detail owns selection, scope and cursor before asynchronous transaction work',async t=>{
+  const {fixture,scope,messages,db}=await setup(t)
+  const input={...fixture.messages[0],id:'detail-owned-input',syntheticExtra:{text:'x'.repeat(10000)}}
+  await messages.insert(input)
+  const selected={kind:'extensions'},ownedScope={...scope}
+  const pending=messages.jsonChunk(ownedScope,input.id,selected)
+  selected.kind='snapshot';ownedScope.worldId='changed-world';ownedScope.conversationId='changed-conversation'
+  const first=await pending
+  const expected=db.prepare('SELECT extensions_json FROM messages WHERE id=?').get(input.id).extensions_json
+  assert.equal(first.fragment,Array.from(expected).slice(0,4096).join(''))
+  assert.equal(first.cursor.worldId,scope.worldId)
+  assert.deepEqual(first.cursor.selection,{kind:'extensions'})
+  const after=structuredClone(first.cursor)
+  const next=messages.jsonChunk(scope,input.id,{kind:'extensions'},after)
+  after.offset=0;after.selection.kind='snapshot'
+  const second=await next
+  assert.equal(second.cursor.offset,8192)
+  assert.deepEqual(second.cursor.selection,{kind:'extensions'})
+})
+
 test('G4 invalid historical message hints/extensions and unexpected staging fail closed without cleanup', async t=>{
   const {fixture,scope,messages,db}=await setup(t)
   const root=fixture.messages[0]

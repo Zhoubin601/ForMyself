@@ -683,6 +683,12 @@ revocationEffectAudit按冻结数组position分页，cursor绑定world/event/aud
 
 消息Repository的get/recent/older/locate/latest/replies/historyForSpeaker固定返回KanataTranscriptMessage，不再接受projection参数或提供完整provenance()回退；其lifeSources和未知扩展继续保存在SQLite。sourcePage按规范链接复合keyset返回≤50条，原始hint顺序、同一链接的不同扩展记录及未知字段通过jsonChunk的snapshot/extensions/audit选择读取；每块≤4096 Unicode码点、原生lookahead≤4097。游标绑定world/conversation/message/revision及选择，审计选择另含auditId和previous/next。完整重构只能在明确测试/导出sink中，不得在普通Runtime或Repository内循环gather。消息正文自身的长字段预算仍须按唯一清单继续闭环，不据此宣称全字段有界。
 
+自治任务的taskHeader/listTasks和enqueue/claim/finish/completeWindow回执为KanataTaskHeader：固定标量、来源/结果/参与者计数和metadata能力标志，不返回sourceRefs/resultEventIds/resultMemoryIds或完整metadata/extensions。taskSources与taskResults使用≤50条keyset页（原生lookahead≤51），事件结果按005已记录ordinal展示；不从ID/时间/rowid推断历史数组。taskJsonChunk只接受metadata/extensions/idempotencyKey/errorCode，每块≤4096 Unicode码点。超长key/errorCode返回null及chunked标志，不截断原值；SQL预算检查使用json_quote长度，包含NUL的尾部不可绕过。读取保留旧extensions对象深度/有限数校验，metadata保留旧独立JSON解析范围，不对既有深层metadata新增同样限制。
+
+任务continuation绑定world/task/关系或字段及全部任务物理字段和规范成员的增量SHA；按4096码点和50行生成，不重构完整DTO。TEMP单槽证明只在同一连接total_changes与data_version都未变化时复用，跨连接提交使旧游标失效；不新增持久Schema。列表游标包含worldId/afterId。消息详情scope/selection/cursor及任务enqueue/finish输入在等待事务前持有副本，避免调用方修改改变执行范围。普通Runtime不得通过循环这些API恢复旧loadTask；明确测试sink除外。定向验证为tests/kanataSqliteTaskRead.test.js、tests/kanataSqliteRepository.test.js；隔离Android runner新增task-read模式，继续遵守现有manifest/包名/实际前台门禁。
+
+存储任务claim/成功finish的来源授权每次在SQLite内证明50个根及各自完整reply chain：范围、revision/status/deleted、非环末根、角色成员和read/remember/share使用原provenance谓词；只返回count/next key/异常标记。异常页继续按原消息ID次序执行逐条检查，保留原错误优先级。enqueue的显式输入校验仍使用原路径，不把旧来源页gather回任务对象。首轮Android逐条扫描实际420秒失败已保留；主机1152种私聊/群聊/发起者/接收者权限组合与原算法对照通过，不因性能更改降低任何权限要求。
+
 revise/setStatus返回KanataMessageWriteReceipt（仅id/revision）。事务内以单槽TEMP暂存精确旧快照，实体CAS后插入审计并删除本次暂存，保持既有next_revision约束和删除脱敏；根消息及派生回复均不读取完整来源/扩展。失败由原BEGIN IMMEDIATE回滚，未知遗留stage不自动清理。输入幂等比较在SQLite JSON树内保留数组顺序/类型/缺失字段、忽略对象键顺序；没有新永久Schema。contracts、实际类型和strict正负例同步；主机/Android命令及真实结论见唯一清单G4与当前QA，未据内部切片提升M4。
 
 定向命令为`node --test tests/kanataSqliteRepository.test.js`（12项）；完整`npm run check`720 Node/406 Vue、strict正负及build通过。既有Windows白名单runner增加`-Mode message-bounded`及`-Mode workspace`选择器，并检查SystemUI和真实Activity RESUMED；新命令等待实际前台及可点击UI，不重试/吞掉旧会话失败。API34/SQLCipher4.17.0同APK/catalog的1k/10k、回滚/强停/冷开、宽来源回复、事件四路径、工作区和基础综合均有实际证据，普通APK实际DEX=false/legacy。失败与范围复用写入唯一清单G4及message-bounded-fingerprints.json，不代表G4/M4最终PASS；旧任务DTO、长正文与全生命周期仍待继续。

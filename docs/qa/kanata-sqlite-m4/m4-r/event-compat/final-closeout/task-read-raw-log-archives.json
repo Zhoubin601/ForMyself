@@ -1,0 +1,14 @@
+{
+  "task-read-fixture-before.txt.gz": {
+    "sha256": "efb5d7c66eac67243cf70f13afa3e16fc1a4d3171a60daeee811ed40d6c6640d",
+    "uncompressedSha256": "822234866f9605e485706474fba7059e95a52c9bf25684a40a703b82266ff653"
+  },
+  "task-read-host-final.txt.gz": {
+    "sha256": "7232fabfcfe6d7817ce65ea32a25624c10681487d78f6aef5fdec3a013faf273",
+    "uncompressedSha256": "0f4f23d52a77c79c0b6e670e938e4e06a87ce3fc4ffb050e101c749228478cba"
+  },
+  "task-read-message-regression.txt.gz": {
+    "sha256": "248ea2f3764b071c979b2419481884d3b0dcb9a0b849e4a5e0d96b4a24e52515",
+    "uncompressedSha256": "e6ab7dea4274c0bd47001440bb552b94b8b25bcfe8382afe40727b1e04f25133"
+  }
+}

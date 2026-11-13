@@ -1,0 +1,35 @@
+(node:27888) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+{"size":1000,"sources":1001,"events":1001,"maxRows":51,"maxText":4097,"completeDtos":0}
+{"size":10000,"sources":10001,"events":10001,"maxRows":51,"maxText":4097,"completeDtos":0}
+✔ G4 task 1000 sources/results stay in bounded headers, keysets and incremental signatures (144.1962ms)
+✔ G4 task 10000 sources/results stay in bounded headers, keysets and incremental signatures (729.7743ms)
+✔ G4 task continuations bind task, world, relation, field and all same-revision stored data (56.1128ms)
+✔ G4 task list cursor scope, owner cancellation and failed read COMMIT preserve source rows and retry (42.8293ms)
+✔ G4 task proof detects external commits and failed cache writes never alter task data (84.5296ms)
+✔ G3 task enqueue and finish own caller input before Native transaction acquisition (45.5397ms)
+✔ G4 task 1000 source claim checks the denied tail and returns no gathered DTO on retry or finish (155.9694ms)
+✔ G4 task 10000 source claim checks the denied tail and returns no gathered DTO on retry or finish (1202.8387ms)
+✖ G6 stored task range proof matches the original ordered source checks for private/group grants and stale chains (41.479ms)
+ℹ tests 9
+ℹ suites 0
+ℹ pass 8
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2701.1516
+
+✖ failing tests:
+
+test at tests\kanataSqliteTaskRead.test.js:266:1
+✖ G6 stored task range proof matches the original ordered source checks for private/group grants and stale chains (41.479ms)
+  Error: KANATA_REVISION_REGRESSION
+      at TestContext.<anonymous> (file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata-m0/tests/kanataSqliteTaskRead.test.js:280:62)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    code: 'ERR_SQLITE_ERROR',
+    errcode: 1811,
+    errstr: 'constraint failed'
+  }
