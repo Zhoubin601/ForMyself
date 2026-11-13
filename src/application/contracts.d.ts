@@ -4,8 +4,9 @@ export type {KanataSqlValue, KanataSqlRow, KanataSchemaTransaction, KanataSchema
 export type KanataSchemaMigrator = typeof import('../features/chat/storage/sqlite/kanataSchemaMigrator.js').migrateKanataSchema
 export type { KanataSqliteWriteResult, KanataSqliteTransaction, KanataSqliteHealth,
   KanataSqliteOperation, KanataSqliteContext, KanataSqliteDriver } from '../platform/storage/kanataSqliteTypes'
-export type { KanataReplyProvenance, KanataMessageState, KanataMessageScope, KanataMessageCursor, KanataMessagePage, KanataMessageRepository, KanataHistoryCursor, KanataHistoryPage, KanataHistoryArchivePlan,
-  KanataConversationRepository, KanataGroupMemberEdit, KanataMessageProvenance, KanataReplyExpectation,
+export type { KanataReplyProvenance, KanataMessageWriteReceipt, KanataMessageState, KanataMessageScope, KanataMessageCursor, KanataMessagePage, KanataMessageRepository, KanataHistoryCursor, KanataHistoryPage, KanataHistoryArchivePlan,
+  KanataConversationRepository, KanataGroupMemberEdit, KanataTranscriptMessage, KanataMessageDetailIdentity,
+  KanataMessageSourceCursor, KanataMessageJsonSelection, KanataMessageJsonCursor, KanataReplyExpectation,
   KanataChatContextState, KanataDeferredReply } from '../features/chat/storage/sqlite/kanataRepositoryTypes'
 export type { KanataSqliteDomains, KanataSqliteDomainOwner, KanataEventAcknowledgement, KanataEventGraphCursor,
   KanataEventReadScope, KanataEventRelationKind, KanataEventRelationCursor, KanataEventReadCursor,

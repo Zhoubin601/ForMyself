@@ -1,0 +1,24 @@
+(node:45532) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+{"scenario":"ordinary-message-revise","count":1000,"maxRows":2,"maxText":37}
+{"scenario":"ordinary-message-revise","count":10000,"maxRows":2,"maxText":37}
+✔ M2 bulk boundaries, duplicate identity, quote and fixed-size scoped keyset pages (241.8718ms)
+✔ M2 edit and delete match the domain transaction, including both memory invalidations and exact redaction (84.3948ms)
+✔ G4 ordinary revise keeps 1000 message provenance records inside SQLite and preserves full audit semantics (286.6904ms)
+✔ G4 ordinary revise keeps 10000 message provenance records inside SQLite and preserves full audit semantics (5975.9087ms)
+✔ M2 no partial derived changes on uncertainty, any write fault or actual COMMIT failure (767.6544ms)
+✔ M2 conversation create/update preserve participant order and observable CAS (208.4751ms)
+✔ M2 sources keep distinct extension records without duplicating normalized grant links (184.2713ms)
+✔ G4 message detail pages and JSON chunks preserve unknown data, bind scope/revision/selection and release transaction staging (810.5121ms)
+✔ G4 invalid historical message hints/extensions and unexpected staging fail closed without cleanup (224.2316ms)
+✔ G4 SQLite message snapshot validation keeps legacy Unicode whitespace and embedded NUL semantics (135.8575ms)
+✔ G4 message idempotency retains JavaScript JSON numeric equality for historical unknown fields (1499.3669ms)
+✔ M2 scoped deferred reply recovers due work and refuses a stale or cancelled source (1944.6932ms)
+ℹ tests 12
+ℹ suites 0
+ℹ pass 12
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 12792.9351

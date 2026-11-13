@@ -1,0 +1,153 @@
+/data/app/~~o62GuB557-W591qsDmOHig==/com.yubin.formyself.m2qa-KFneyJH_dl9xrQYrzVGpvw==/base.apk: 1 file pulled, 0 skipped. 28.4 MB/s (19039414 bytes in 0.638s)
+/data/app/~~JMacaZfkQ9JJ_SiVI7yPBg==/com.yubin.formyself.m2qa.test-WKZekjl68KHkS3U2T73-cw==/base.apk: 1 file pulled, 0 skipped. 32.5 MB/s (598741 bytes in 0.018s)
+▲ [WARNING] Ignoring this import because "src/features/chat/kanataManagement.css" was marked as having no side effects [ignored-bare-import]
+
+    src/features/chat/KanataView.vue:8:7:
+      8 │ import './kanataManagement.css'
+        ╵        ~~~~~~~~~~~~~~~~~~~~~~~~
+
+{"qaBundleSha256":"59e105b4bb73199f9814976213aebb303d500f5be00c813f8e050da85076a4b3"}
+{"initialForeground":[{"available":true,"generation":1},{"available":true,"generation":1}]}
+{
+  "passed": [
+    "schema-js-bridge-and-synthetic-seed",
+    "repository-batches-keyset-quote-locate-fk-and-conversation",
+    "concurrent-cas-real-commit-failure-and-derived-delete",
+    "close-reopen-wrong-password-replay-and-lease"
+  ],
+  "health": {
+    "cipher": "4.17.0 community",
+    "journalMode": "wal",
+    "synchronous": 2,
+    "foreignKeys": 1,
+    "cacheSize": -2048,
+    "checkpoint": 1000,
+    "busyTimeout": 5000
+  }
+}
+{"resumedForeground":[{"available":true,"generation":9},{"available":true,"generation":9}]}
+{
+  "envelope": "PASS_M0_V1_CROSS_UNWRAP",
+  "challenge": "PASS_EXPIRED_REJECTED",
+  "background": "PASS_OLD_LEASE_REJECTED",
+  "plaintext": "PASS_NO_PLAINTEXT_HEADER_OR_SYNTHETIC_SECRET_IN_PID_LOGS_AND_PREFERENCES",
+  "sigkill": {
+    "oldPid": "4501",
+    "newPid": "4695",
+    "status": "complete",
+    "revision": 1,
+    "auditAbsent": true
+  }
+}
+{
+  "passed": [
+    "bounded-window-scroll-anchor-quote-and-history",
+    "group-speakers-atomic-bubbles-retry-and-jump",
+    "deferred-reply-persists-and-resumes",
+    "fast-world-switch-late-completion-character-and-lock"
+  ],
+  "controlledModelCalls": 5,
+  "realModelCalls": 0
+}
+{
+  "m4": {
+    "samples": [
+      {
+        "seedRows": 1000,
+        "queries": 210,
+        "writes": 48,
+        "maxRows": 51,
+        "retainedWindow": 100
+      },
+      {
+        "seedRows": 10000,
+        "queries": 210,
+        "writes": 48,
+        "maxRows": 51,
+        "retainedWindow": 100
+      }
+    ],
+    "promptGrowth": [
+      {
+        "size": 1000,
+        "wide": {
+          "queries": 119,
+          "sqlMaxRows": 51,
+          "bodyReads": 1,
+          "pages": 9,
+          "pageObjects": 51
+        },
+        "maxEncodedRefs": 1,
+        "arrayObjects": 0,
+        "noQueriesAfterCancel": 0,
+        "recovered": true,
+        "retainedWindow": 0,
+        "piniaStores": 3,
+        "piniaStateObjects": 25,
+        "heapUsedAtStart": 33100000,
+        "heapUsedHighSample": 33100000
+      },
+      {
+        "size": 10000,
+        "wide": {
+          "queries": 477,
+          "sqlMaxRows": 51,
+          "bodyReads": 1,
+          "pages": 9,
+          "pageObjects": 51
+        },
+        "maxEncodedRefs": 1,
+        "arrayObjects": 0,
+        "noQueriesAfterCancel": 0,
+        "recovered": true,
+        "retainedWindow": 0,
+        "piniaStores": 3,
+        "piniaStateObjects": 25,
+        "heapUsedAtStart": 33100000,
+        "heapUsedHighSample": 33100000
+      }
+    ],
+    "fullGraphCalls": 0,
+    "controlledModelCalls": 7,
+    "realModelCalls": 0,
+    "restoreGate": "PASS",
+    "revocationWhilePending": "PASS"
+  }
+}
+{
+  "m4HistoryArchive": {
+    "archivedCount": 49,
+    "retainedRecent": 200,
+    "quotePreserved": true,
+    "unknownReferenceProtected": true
+  }
+}
+{
+  "m4Workspace": {
+    "error": "M4_WORKSPACE_TIMEOUT",
+    "passed": [
+      "workspace-directory-scoped-conversation-and-return"
+    ],
+    "stage": "lore-open"
+  }
+}
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
++ actual - expected
+
++ 'M4_WORKSPACE_TIMEOUT'
+- undefined
+
+    at file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata-m0/docs/qa/kanata-sqlite-m2/windows-candidate-smoke.mjs:476:16 {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: 'M4_WORKSPACE_TIMEOUT',
+  expected: undefined,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.14.1

@@ -5,9 +5,19 @@ declare const view: KanataChatViewModel
 declare const repository: KanataConversationRepository
 declare const scope: KanataMessageScope
 declare const messageRepository: import('../../src/application/contracts').KanataMessageRepository
-void messageRepository.historyForSpeaker(scope,'actor',10,'transcript')
-// @ts-expect-error Only the fixed light projection may bypass compatibility DTO decoding.
-void messageRepository.historyForSpeaker(scope,'actor',10,'raw')
+void messageRepository.historyForSpeaker(scope,'actor',10)
+// @ts-expect-error There is no full DTO projection fallback.
+void messageRepository.historyForSpeaker(scope,'actor',10,'full')
+void messageRepository.get(scope,'message').then(message=>{
+  // @ts-expect-error Normal transcript reads do not carry a complete provenance array.
+  void message?.lifeSources
+})
+void messageRepository.sourcePage(scope,'message')
+void messageRepository.jsonChunk(scope,'message',{kind:'audit',auditId:'audit',side:'previous'})
+// @ts-expect-error An audit chunk requires both the immutable audit ID and side.
+void messageRepository.jsonChunk(scope,'message',{kind:'audit'})
+// @ts-expect-error The complete provenance DTO API has been retired.
+void messageRepository.provenance(scope.worldId,'message')
 declare const sourcePlan: import('../../src/application/contracts').KanataReplyProvenance
 // @ts-expect-error Frozen roots must carry revisions, including event roots.
 const badSourcePlan: typeof sourcePlan = { ...sourcePlan, events: [{ id: 'event' }] }

@@ -132,3 +132,29 @@ E/G4/M4仍BLOCKED、M5 NO。未完成旧Facade/QA完整回读移除、长Effect 
 - crash-final/crash-trace：Native完整审计EXPLAIN超过原256行而STATEMENT_DENIED。未跳过计划或提高Native上限；快照CTE在SQLite内物化复用后主机计划247→197行，增加计划预算行为回归，集成Native完整计划和强停均通过。
 
 较早event-bounded-check/final-check、各build/device/regression的历史PASS与FAIL均保留，不套用到集成候选；当前通过以integrated系列和指纹为准。Gradle补充事件语义夹具输入声明，catalog输入重验日志保留。旧005仅复用不变结构/缺信息反例，受影响消费者已重跑。没有最终两轮全范围审查；当前E/G4/M4 BLOCKED，M5 NO，继续唯一清单中的普通消息/任务和其余A–G。
+
+## 2026-11-13 同一 G4 条目的普通消息检查点
+
+`0339683` 后的实际旧失败见 `message-bounded-before.txt`：普通revise及派生回复停用会读取完整lifeSources/未知扩展，1k/10k均失败。改为SQLite内快照/幂等JSON树比较、事务内单槽TEMP旧快照→实体CAS→审计→清理本次stage；回执仅id/revision。普通读固定transcript，无完整DTO fallback；精确来源/原始扩展与审计使用50条页/4096 Unicode码点块。完整重构仅用于明确test sink，未进入应用运行时。
+
+| 证据 | 实际结果 |
+|---|---|
+| message-bounded-host-final* | 12/12定向通过，纯领域完整审计、未知扩展、标签原序/同链接不同记录、逐写入故障、真实COMMIT、游标/坏数据/遗留stage不清理；1k/10k实际修订最大2行/37字符 |
+| message-bounded-check* | 首轮718 Node通过、旧P7组件1项5秒超时；不计整套PASS。原门槛单独重测28/28，通过；final退出0为720 Node、406 Vue/44文件、strict正负和生产build。没有增加timeout或删负例 |
+| message-numeric-before* | 新SQL比较曾将历史9007199254740993误判ID冲突，真实退出1；改为JS double语义后定向通过 |
+| message-bounded-device-oracle* | API34/SQLCipher4.17.0，退出0：1k20页/51块/11186ms；10k200页/457块/370590ms，原420秒门槛不变；每页输出≤50、原生lookahead≤51、普通文本最大64码点、块≤4096 |
+| 同一消息设备专项的故障 | stage/审计/清理失败、真实COMMIT回滚；实际SIGKILL未提交事务后冷开revision3/audit2，重试4/3、旧revision再次提交拒绝；真实模型调用0 |
+
+首轮设备QA在bundle编译前因间接node:crypto依赖失败（device）；移除浏览器端fixture模块导入，改由驱动传固定COMMIT故障SQL。下一轮（device-retest）用JSON.stringify比较不同对象键顺序，误报EXTENSIONS；预期标签按夹具声明的键构造，数组原序、尾项、未知字段和文本仍精确比较，device-oracle完整通过。这两次不作为产品缺陷证据或设备PASS。
+
+综合回归的regression/ready/trace系列保留真实失败：Native拒绝SESSION_CHANGED/CHALLENGE_INVALID，进一步取得SystemUI PID缺失、keyguard sleep token、Activity STOPPED/isSleeping=true及黑屏截图（message-device-*）。同一AVD仅reboot，无wipe/数据清理，指纹一致，SystemUI和RESUMED恢复；生产Native/JS门禁与驱动未修改。runner增加SystemUI/真实Activity前台检查，测试侧等待实际Candidate状态而不重试错误命令。reboot系列随后通过原挑战/后台旧租约/secret检查/SIGKILL，以及1k/10k聊天增长、取消/恢复/撤权和历史归档；在世界书驱动点击禁用的新建按钮处超时，未将整轮计PASS。该10秒门槛保持，单独工作区复测与余下回归进行中。
+
+原任务缺口的真实基线是 `verify-task-bounds.mjs` 与 `task-bounded-before*`：最大SQL页50行，但listTasks返回1001条sourceRefs。该失败仍未修复，故普通消息切片通过也不能提升F/G4/M4或M5。新APK/catalog完整指纹、普通APK门禁和受影响设备结论见下段；没有MR8最终两轮全范围审查。
+
+后续收齐：workspace定向、regression-final完整基础回归、chat宽来源回复、events四路径均退出0；原disabled按钮的等待修复保持10秒，未改变产品代码。普通APK构建/只读DEX核验退出0：package=com.yubin.formyself、canonical=legacy、实际KANATA_M2_SYNTHETIC=false、17条专用合成SQL与合成页面均未打包，未安装发布。
+
+候选APK `f538e0b6ed3bcbf11dfc4fe0abcd4be876cfe6d5b3c44ea234c90fe811b19312`，catalog `1211724b100a7ffbb4db00b0e81857f9d6221af4b5d27fcea8d6e9e3789fdf3e`，test APK仍为`db7f4d2142b82575d5d846f47d9f11e42799e0a4ab020f1a20d55054e4cb203e`。普通APK `8bbc0c1e1d86e13d499915c1f1d00c0a6c58448a9933d9b7e28746f415d2c08b`，catalog `c97540a0835c9c511a24c7c5143591fce2606bdc41814b8b4b7029a9b494e370`。
+
+message-bounded-fingerprints.json收录逐文件源/fixture、各轮实际QA bundle SHA、安装APK、catalog、设备和冻结001–005 checksum，源码aggregate `e3f92d8affc2dc3b1dcea9e8342aae77ad03d26e5347f6bcdbe7806633931a9e`，44份设备原始日志以压缩/原始双SHA保存。Growth轮仍是FAIL_WORKSPACE_TIMEOUT；只复用其已完成且未受后续UI等待/环境preflight影响的growth/archive切片，其产品源码、fixture、APK/catalog和设备范围一致，独立QA bundle差异明确保留。较早005升级证据不改标为新APK的迁移实测。当前仍E/G4/M4 BLOCKED、M5 NO，后续从唯一清单F/G4继续，不新开任务编号。
+
+首轮message-bounded-check、message-device-environment和message-recovery-component-retest三份原始文本含EOF空行/空PID尾空格，故以同名`.txt.gz`无损保留，未改写原日志。解压原SHA分别为`1d4173e043c549ccbc24a1a8bed7f690579da337d8f6ff664a06e25f806a7387`、`b87ecd50b62215567ab5f5f4eaa6af2ec0b16066ca6e4aa5ed49dadeb17413e2`、`1fdcbbfcd4879740e90975516c3283f6ee480d7bd759acda5ae2406539abcb0f`；只移除了本轮新建且已核对解压字节的原文本副本。

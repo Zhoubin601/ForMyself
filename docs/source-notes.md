@@ -1293,3 +1293,5 @@ raw/完整需求清单.txt 4.1/4.4/8.3及最新连续执行v3驱动当前实现�
 2026-11-12 E消费者来源：用户已确认纯领域kanataEvents.js（Set/数组顺序、完整世界签名、revoked no-op）和历史adapter字段兼容合同。实现以005旁表、原始JSON字节与现有Repository/Runtime为基础；四路径行为用独立historicalAction/historicalEvent及pure-domain Oracle对照。主机709/402、Android API34/SQLCipher4.17.0、失败/复测和逐文件APK/catalog/device SHA见唯一清单E及同QA的event-consumer-fingerprints.json。无新增外部资料，raw未修改，未调用真实模型API或读取用户数据。
 
 2026-11-13收齐E检查点来源：既有M4-R/ER1合同中的完整对象边界、每条Effect前后值/归属/审计/幂等、原序及故障恢复；用户已批准005但未批准真实迁移/生产切换。714/406主机、API34/SQLCipher4.17.0同APK/catalog的六类集成设备场景、真实v4升级及普通APK实际DEX检查见唯一清单E与event-bounded-fingerprints.json。52份压缩原始设备记录保留失败和复测；未引入外部资料，raw只读，未用真实数据/备份/模型API。
+
+2026-11-13 G4消息来源：唯一清单G4/M4-R完整对象边界、kanataMessageRepository/MessageDependents/RepositorySql、纯领域reviseKanataMessage与既有M2审计/删除合同。实际1k/10k旧修订跨桥失败和新定向10项证据在同一QA的message-bounded-before/host日志；没有新增产品需求、外部资料或任务编号。测试仅合成来源/未知字段，原始raw与真实资料未使用；完整check和设备结论以随后实际日志为准。

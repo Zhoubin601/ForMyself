@@ -1,5 +1,6 @@
 import { auditOracle,correctionOracle } from '../kanata-sqlite-m4/m4-r/event-compat/final-closeout/bounded-event-oracle.mjs'
 import { runEventSemanticsDevice } from '../kanata-sqlite-m4/m4-r/event-compat/final-closeout/event-semantics-device.mjs'
+import { runMessageBoundedDevice,armMessageCrash,recoverMessageCrash,messageCrashState } from '../kanata-sqlite-m4/m4-r/event-compat/final-closeout/message-bounded-device.mjs'
 import { memoryRows, memoryEdges, memoryWideSources, eventRows, eventEdges, seedFanoutLinks, replayEventRows, replayEffectRows, fanoutAuditInspection, grantOriginActors, grantOrigins, grantMessageTags, seedWideChatSources, chatReplyTagCheck, eventReadEffects, eventReadAudits, eventReadRevision, eventReadShapeEdges, eventReadPublic, seedEventReadShape, chatEventActor, chatEventSource } from '../kanata-sqlite-m4/completion/fixture.mjs'
 import { growthSeedSql } from '../kanata-sqlite-m4/fixture.mjs'
 import { eventRevocationQueries, eventRevocationWrites } from '../../../src/features/chat/storage/sqlite/kanataEventRevocation.js'
@@ -70,9 +71,20 @@ let replyCommitFault
 let suspendCommit = false
 let fanoutCrashArmed = false
 let crashState = 'idle'
+async function lifecycleBridge(name,action){
+  const record=phase=>{
+    if(!window.m2QaBridgeLifecycle)return
+    window.m2QaBridgeLifecycle.push({name,phase,at:Math.round(performance.now()),available:candidate.isAvailable(),generation:candidate.generation.value})
+    if(window.m2QaBridgeLifecycle.length>64)window.m2QaBridgeLifecycle.shift()
+  }
+  record('start')
+  try{const result=await action();record('done');return result}
+  catch(error){record(error.code??error.message);throw error}
+}
 const candidate = createKanataSqliteCandidate({
   syntheticOnly: true, auth, access, bridge: {
-    prepare: bridge.prepare, unlock: bridge.unlock, begin: options => profileBridge("begin", options, bridge.begin),
+    prepare:options=>lifecycleBridge('prepare',()=>bridge.prepare(options)),
+    unlock:options=>lifecycleBridge('unlock',()=>bridge.unlock(options)),begin: options => profileBridge("begin", options, bridge.begin),
     async execute(command) {
       if (trace) {
         trace.writes++
@@ -120,7 +132,7 @@ const candidate = createKanataSqliteCandidate({
       }
       return result
     },
-    close: bridge.close, health: bridge.health, rollback: bridge.rollback, completeOpen: bridge.completeOpen,
+    close:()=>lifecycleBridge('close',()=>bridge.close()),health: bridge.health, rollback: bridge.rollback, completeOpen: bridge.completeOpen,
     commit: async options => {
       await schema005BeforeCommit(options,bridge)
       if (!suspendCommit) return profileBridge("commit", options, bridge.commit)
@@ -197,6 +209,7 @@ async function rejects(action, code) {
 }
 
 window.m2QaScenario = async (password, { commands, inspection, deferredCommit, sample, group }) => {
+  window.m2QaBridgeLifecycle=[]
   const passed = []
   auth.savedMasterPwd = password
   auth.isLocked = false
@@ -258,7 +271,8 @@ window.m2QaScenario = async (password, { commands, inspection, deferredCommit, s
       const messages = createKanataMessageRepository(operation, tools)
       check((await messages.get(scope, sample.id)).revision === sample.revision, 'COMMIT_ROLLBACK')
       const changed = await messages.revise(scope, sample.id, sample.revision, { content: '', deleted: true })
-      check(changed.deleted === true && await messages.quote(scope, sample.id) === null, 'DELETE')
+      check(changed.id === sample.id && changed.revision === sample.revision+1
+        && (await messages.get(scope,sample.id)).deleted === true && await messages.quote(scope, sample.id) === null, 'DELETE')
       check((await messages.get(scope, 'message-two')).status === 'stopped', 'REPLY_INVALIDATION')
       const query = sql => operation.transaction(tx => tx.query(sql, [scope.worldId]))
       const audit = (await query(inspection.messages)).find(row => row.id === 'message-audit-one')
@@ -290,11 +304,15 @@ window.m2QaScenario = async (password, { commands, inspection, deferredCommit, s
     passed.push('close-reopen-wrong-password-replay-and-lease')
     return { passed, health }
   } catch (failure) {
-    return { passed, error: failure.code ?? failure.message }
+    return { passed, error: failure.code ?? failure.message,stack:failure.stack,lifecycle:window.m2QaBridgeLifecycle }
   } finally { auth.expireSession() }
 }
 
 const session = password => { auth.savedMasterPwd = password; auth.isLocked = false }
+window.m2QaForegroundState=password=>{
+  session(password)
+  return {available:candidate.isAvailable(),generation:candidate.generation.value}
+}
 installSchema005Device({ candidate, bridge, auth, session })
 
 window.m2QaArmCrash = (password, scope) => {
@@ -303,7 +321,10 @@ window.m2QaArmCrash = (password, scope) => {
     const repository = createKanataMessageRepository(operation, tools)
     suspendCommit = true
     await repository.setStatus(scope, 'm2-android-123', 1, 'stopped')
-  }).catch(failure => { crashState = failure.code ?? failure.message })
+  }).catch(failure => {
+    crashState = failure.code ?? failure.message
+    window.m2QaCrashDiagnostic={code:crashState,stack:failure.stack,available:candidate.isAvailable(),generation:candidate.generation.value}
+  })
 }
 window.m2QaCrashState = () => crashState
 
@@ -828,7 +849,7 @@ window.m4QaWorkspace = async (password, { worldId, worldName, conversationId, ac
       button('保存世界身份').click()
       await settle(() => !button('保存世界身份'))
       button('世界书').click()
-      await settle(() => Boolean(button('新建世界书设定')))
+      await settle(() => Boolean(button('新建世界书设定') && !button('新建世界书设定').disabled))
       stage = 'lore-open'
       button('新建世界书设定').click()
       await settle(() => Boolean(button('保存世界书条目')))
@@ -2021,5 +2042,33 @@ window.eventSemanticsQa = async(password,fixture,commands)=>{
   session(password)
   try{return await runEventSemanticsDevice(candidate,fixture,commands)}
   catch(error){return {error:error.code??error.message,stack:error.stack}}
+  finally{auth.expireSession();await candidate.release()}
+}
+
+window.messageBoundedQa=async(password,fixture,commands,commitFault)=>{
+  session(password)
+  try{return await runMessageBoundedDevice(candidate,fixture,commands,commitFault)}
+  catch(error){return {error:error.code??error.message,stack:error.stack,phase:window.messageBoundedPhase}}
+  finally{auth.expireSession();await candidate.release()}
+}
+window.messageBoundedArm=(password,scope)=>{session(password);return armMessageCrash(candidate,scope)}
+window.messageBoundedState=messageCrashState
+window.messageBoundedRecover=async(password,scope)=>{
+  session(password)
+  try{return await recoverMessageCrash(candidate,scope)}
+  catch(error){return {error:error.code??error.message,stack:error.stack}}
+  finally{auth.expireSession();await candidate.release()}
+}
+
+window.m4QaWorkspaceOnly=async(password,fixture,commands,input)=>{
+  session(password)
+  try{
+    await candidate.run({create:true},operation=>operation.transaction(async tx=>{
+      for(const {sql,parameters}of commands)await tx.execute(sql,parameters)
+      const sample=fixture.messages[0]
+      await tx.execute(growthSeedSql,[60,'workspace-only',sample.worldId,sample.conversationId,sample.senderId])
+    }))
+    return await window.m4QaWorkspace(password,input)
+  }catch(error){return {error:error.code??error.message}}
   finally{auth.expireSession();await candidate.release()}
 }

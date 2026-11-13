@@ -207,7 +207,7 @@ export function createKanataSqliteChatRuntime({ candidate, completion, auth, lif
         if (!world || world.world.archived) throw new Error('CONVERSATION_UNAVAILABLE')
         const { identity } = world
         const latest = await messages.latestState(scope, 'user')
-        const retry = options.retryMessageId ? await messages.get(scope, options.retryMessageId, 'transcript') : null
+        const retry = options.retryMessageId ? await messages.get(scope, options.retryMessageId) : null
         if (options.retryMessageId) requireCurrent(retry && latest?.id === retry.id
           && retry.senderId === identity.id && !retry.deleted && retry.status === 'complete', 'RETRY_SOURCE_UNAVAILABLE')
         const text = retry?.content ?? String(options.text ?? '').trim()
@@ -326,7 +326,7 @@ export function createKanataSqliteChatRuntime({ candidate, completion, auth, lif
         const savedPolicy = await domains.memories.policy(scope.worldId)
         const memoryPolicies = savedPolicy ? [savedPolicy] : []
         const policy = kanataMemoryPolicy({ memoryPolicies }, scope.worldId)
-        const history = [...await messages.historyForSpeaker(scope, instanceId, policy.recentMessages, 'transcript')].reverse()
+        const history = [...await messages.historyForSpeaker(scope, instanceId, policy.recentMessages)].reverse()
         const world = await domains.worlds.get(scope.worldId)
         if (!world || world.world.archived) throw new Error('CONVERSATION_UNAVAILABLE')
         const group = conversation.type === 'group'

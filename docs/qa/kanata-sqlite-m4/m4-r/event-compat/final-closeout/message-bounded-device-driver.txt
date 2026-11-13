@@ -1,0 +1,37 @@
+/data/app/~~hQeQehPiXAamBRnA1ipVyg==/com.yubin.formyself.m2qa-PqovgO6pj04rO7RCxuqrAg==/base.apk: 1 file pulled, 0 skipped. 16.0 MB/s (19039414 bytes in 1.137s)
+/data/app/~~4AojDuyucJnTWsKHjAmcgg==/com.yubin.formyself.m2qa.test-pqC9WqbOwfthskuv5Ofo_g==/base.apk: 1 file pulled, 0 skipped. 6.0 MB/s (598741 bytes in 0.096s)
+X [ERROR] Could not resolve "node:crypto"
+
+    tests/helpers/kanataSqliteFixture.js:2:25:
+      2 │ import {createHash} from 'node:crypto'
+        ╵                          ~~~~~~~~~~~~~
+
+  The package "node:crypto" wasn't found on the file system but is built into node. Are you trying to bundle for node? You can use "platform: 'node'" to do that, which will remove this error.
+
+▲ [WARNING] Ignoring this import because "src/features/chat/kanataManagement.css" was marked as having no side effects [ignored-bare-import]
+
+    src/features/chat/KanataView.vue:8:7:
+      8 │ import './kanataManagement.css'
+        ╵        ~~~~~~~~~~~~~~~~~~~~~~~~
+
+D:\2026Autumn Semester File\GitHub\formyself-app\.worktrees\kanata-m0\node_modules\esbuild\lib\main.js:1752
+  let error = new Error(text);
+              ^
+
+Error: Build failed with 1 error:
+tests/helpers/kanataSqliteFixture.js:2:25: ERROR: Could not resolve "node:crypto"
+    at failureErrorWithLog (D:\2026Autumn Semester File\GitHub\formyself-app\.worktrees\kanata-m0\node_modules\esbuild\lib\main.js:1752:15)
+    at D:\2026Autumn Semester File\GitHub\formyself-app\.worktrees\kanata-m0\node_modules\esbuild\lib\main.js:1211:25
+    at runOnEndCallbacks (D:\2026Autumn Semester File\GitHub\formyself-app\.worktrees\kanata-m0\node_modules\esbuild\lib\main.js:1592:45)
+    at buildResponseToResult (D:\2026Autumn Semester File\GitHub\formyself-app\.worktrees\kanata-m0\node_modules\esbuild\lib\main.js:1209:7)
+    at D:\2026Autumn Semester File\GitHub\formyself-app\.worktrees\kanata-m0\node_modules\esbuild\lib\main.js:1236:16
+    at responseCallbacks.<computed> (D:\2026Autumn Semester File\GitHub\formyself-app\.worktrees\kanata-m0\node_modules\esbuild\lib\main.js:886:9)
+    at handleIncomingPacket (D:\2026Autumn Semester File\GitHub\formyself-app\.worktrees\kanata-m0\node_modules\esbuild\lib\main.js:941:12)
+    at Socket.readFromStdout (D:\2026Autumn Semester File\GitHub\formyself-app\.worktrees\kanata-m0\node_modules\esbuild\lib\main.js:864:7)
+    at Socket.emit (node:events:508:28)
+    at addChunk (node:internal/streams/readable:563:12) {
+  errors: [Getter/Setter],
+  warnings: [Getter/Setter]
+}
+
+Node.js v24.14.1

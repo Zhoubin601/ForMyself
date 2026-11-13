@@ -1,0 +1,33 @@
+/data/app/~~H5UAkqYpdfDRsMxtzDY_tA==/com.yubin.formyself.m2qa-KYfN0r5M0uMRO446zOurLA==/base.apk: 1 file pulled, 0 skipped. 27.2 MB/s (19039414 bytes in 0.666s)
+/data/app/~~xl6niC5g7nZ3f665OCGmTg==/com.yubin.formyself.m2qa.test-QkHpZCcGOFh-IsPUkISijg==/base.apk: 1 file pulled, 0 skipped. 19.6 MB/s (598741 bytes in 0.029s)
+▲ [WARNING] Ignoring this import because "src/features/chat/kanataManagement.css" was marked as having no side effects [ignored-bare-import]
+
+    src/features/chat/KanataView.vue:8:7:
+      8 │ import './kanataManagement.css'
+        ╵        ~~~~~~~~~~~~~~~~~~~~~~~~
+
+{"qaBundleSha256":"580659f5f8f5a8fce263e9f720ced941732848d4cc307a5b3f1edd81507a5104"}
+{
+  "passed": [],
+  "error": "KANATA_SQLITE_CHALLENGE_INVALID"
+}
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
++ actual - expected
+
++ 'KANATA_SQLITE_CHALLENGE_INVALID'
+- undefined
+
+    at file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata-m0/docs/qa/kanata-sqlite-m2/windows-candidate-smoke.mjs:365:12 {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: 'KANATA_SQLITE_CHALLENGE_INVALID',
+  expected: undefined,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.14.1

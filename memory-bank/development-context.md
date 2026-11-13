@@ -84,3 +84,5 @@ M2 Windows 接续已通过（2026-11-09）。[最新验收 v2](../docs/20261109-
 2026-11-12 接续仍只读M4最终收口清单。005之后的E消费者检查点已实现原序Set遍历/分阶段执行、世界增量签名、revoked no-op及SQL UTF-16 action四路径；主机check709/402和Android定向通过，源码/设备指纹见同一QA的event-consumer-fingerprints.json。旧Facade、长Effect Audit、A–G其余产品与最终综合/生命周期/两轮审查未关闭，E/G4/M4 BLOCKED、M5 NO；继续既有工作，不重问005授权或把切片PASS当M4放行。
 
 2026-11-13接续：仍以M4最终收口清单为唯一索引。E新检查点已移除旧Facade/materializer、提供长Effect Audit分块和不可变阶段前后值审计，主机714/406、同APK/catalog的Android专项/1k10k综合/强停及005升级通过，普通APK实际DEX关闭。完整指纹与失败/修复在既有QA的event-bounded-fingerprints.json；不重跑无影响旧证据，也不将旧APK结果套用到新树。继续G4普通消息/任务及原A–G剩余项；retained Heap、统一生命周期、最终两轮审查未闭环，M4 BLOCKED、M5 NO。005授权持续有效，001–005冻结，生产legacy/default false。
+
+2026-11-13后续消息切片：普通消息完整DTO/无消费者provenance回退移除；修订/回复停用审计和幂等在SQLite内处理，来源50条页/原始JSON4096码点块。check720/406、同候选APK的API34/SQLCipher4.17.0消息1k10k（370590ms）、真实COMMIT/强停/冷开、宽回复、事件四路径、工作区及基础综合通过；普通APK实际DEX=false，未安装发布。新指纹message-bounded-fingerprints.json与唯一清单G4为准，失败与已通过的Growth切片单独保留。AVD曾SystemUI缺失/黑屏，已同AVDreboot恢复、无wipe、指纹不变。下一步原F/G4的loadTask有实际1001条sourceRefs gather失败，继续任务有界元数据/来源/结果及普通消息长字段；其余A–G、统一生命周期/retained Heap、最终MR7/两轮MR8未完成，M4仍BLOCKED、M5 NO。不重复申请005或自动开始M5。

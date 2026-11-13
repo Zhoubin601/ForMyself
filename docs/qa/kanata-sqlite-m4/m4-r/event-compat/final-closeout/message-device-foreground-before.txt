@@ -1,0 +1,4 @@
+    isSleeping=true
+      state=STOPPED delayedResume=false finishing=false
+      isSleeping=true
+        state=STOPPED delayedResume=false finishing=false

@@ -1,7 +1,7 @@
 param(
     [Parameter(Mandatory)] [string] $ManifestPath,
     [Parameter(Mandatory)] [string] $EvidenceDirectory,
-    [ValidateSet('repository','full','mr1-fanout','mr1-verify','mr2-grants','mr2-chat-provenance','mr2-event-provenance','mr2-event-read','array-order','event-semantics')] [string] $Mode = 'full',
+    [ValidateSet('repository','full','mr1-fanout','mr1-verify','mr2-grants','mr2-chat-provenance','mr2-event-provenance','mr2-event-read','array-order','event-semantics','message-bounded','workspace')] [string] $Mode = 'full',
     [switch] $M4Growth,
     [switch] $M4Completion
 )
@@ -30,6 +30,8 @@ if ((& $adb -s $serial emu avd name)[0].Trim() -ne $manifest.avdName -or
 $allowed = @("package:$app", "package:$app.test", 'package:com.formyself.qa.m2probe')
 $apps = & $adb -s $serial shell pm list packages -3
 if ($LASTEXITCODE -ne 0 -or ($apps | Where-Object { $_ -notin $allowed })) { throw 'Unexpected AVD packages' }
+$systemUi = & $adb -s $serial shell pidof com.android.systemui
+if ($LASTEXITCODE -ne 0 -or $systemUi -notmatch '^\d+$') { throw 'Synthetic SystemUI is unavailable; no device scenario has run' }
 New-Item -ItemType Directory -Path $evidence | Out-Null
 
 foreach ($spec in @(
@@ -64,6 +66,17 @@ if ((& $adb -s $serial shell pm clear $app) -ne 'Success') { throw 'Synthetic re
 if ($LASTEXITCODE -ne 0 -or (Get-Content -Raw "$evidence/instrumentation.txt") -notmatch 'OK \(1 test\)') { throw 'Instrumentation failed' }
 & $adb -s $serial shell am start -W -n "$app/com.yubin.formyself.MainActivity" > "$evidence/launch.txt"
 if ($LASTEXITCODE -ne 0 -or (Get-Content -Raw "$evidence/launch.txt") -notmatch 'Status: ok') { throw 'QA launch failed' }
+$resumed = $false
+for ($foregroundAttempt = 0; $foregroundAttempt -lt 50; $foregroundAttempt++) {
+    $activity = & $adb -s $serial shell dumpsys activity activities
+    if ($LASTEXITCODE -eq 0 -and ($activity -match "(?:mResumedActivity|topResumedActivity).*$([regex]::Escape($app))/com\.yubin\.formyself\.MainActivity")) {
+        $resumed = $true
+        break
+    }
+    Start-Sleep -Milliseconds 100
+}
+$activity | Select-String 'mResumedActivity|topResumedActivity|isSleeping=true|state=STOPPED' | Select-Object -First 8 > "$evidence/foreground-check.txt"
+if (-not $resumed) { throw 'Synthetic Activity is not resumed; no business scenario has run' }
 $scenarioArgs = @($manifestPath, "--$Mode")
 if ($M4Growth) { $scenarioArgs += '--m4-growth' }
 if ($M4Completion) { $scenarioArgs += '--m4-completion' }

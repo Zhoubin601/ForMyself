@@ -350,7 +350,7 @@ test('MR2 wide chat keeps ordered legacy tags and rolls back its SQL work set', 
     await messages.insert(source)
     const seeds = await operation.transaction(tx => seedWideChatSources(tx, scope, source.id, size))
     reads.length = 0
-    const history = [...await messages.historyForSpeaker(scope, instanceId, 12, 'transcript')].reverse()
+    const history = [...await messages.historyForSpeaker(scope, instanceId, 12)].reverse()
     assert.ok(history.some(row => row.id === source.id))
     assert.ok(history.every(row => row.lifeSources === undefined))
     const memory = await domains.memories.readPrompt(scope, seeds.memoryId, 4000)
@@ -375,7 +375,7 @@ test('MR2 wide chat keeps ordered legacy tags and rolls back its SQL work set', 
     assert.deepEqual({...order}, { tags:2*size+2,links:size+1,ordered_matches:2*size+2 })
     assert.ok(reads.every(row => row.rows<=51))
     await domains.autonomy.setGrant(worldId, seeds.deniedActor, 'todo', 1, { read:false, remember:false, share:false })
-    const current = await messages.historyForSpeaker(scope, instanceId, 12, 'transcript')
+    const current = await messages.historyForSpeaker(scope, instanceId, 12)
     assert.ok(current.every(row => row.id !== reply.id && row.id !== source.id))
     await assert.rejects(append(), /KANATA_MESSAGE_REPLY_STALE/)
     t.diagnostic(JSON.stringify({ size, tags:order.tags, normalized:order.links, rollback:true, afterRevocation:'excluded' }))

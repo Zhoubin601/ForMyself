@@ -1,0 +1,72 @@
+/data/app/~~XOJQvKbN9mBcTlUu1taAsQ==/com.yubin.formyself.m2qa-EvMw0MoLWVFeoR-tpPQhww==/base.apk: 1 file pulled, 0 skipped. 19.6 MB/s (19039414 bytes in 0.924s)
+/data/app/~~hR9xlgfcHCKiYJxUl5YCTQ==/com.yubin.formyself.m2qa.test-ajhldzeipSxExE3rBtChRw==/base.apk: 1 file pulled, 0 skipped. 21.0 MB/s (598741 bytes in 0.027s)
+▲ [WARNING] Ignoring this import because "src/features/chat/kanataManagement.css" was marked as having no side effects [ignored-bare-import]
+
+    src/features/chat/KanataView.vue:8:7:
+      8 │ import './kanataManagement.css'
+        ╵        ~~~~~~~~~~~~~~~~~~~~~~~~
+
+{"qaBundleSha256":"59e105b4bb73199f9814976213aebb303d500f5be00c813f8e050da85076a4b3"}
+{"initialForeground":[{"available":true,"generation":1},{"available":true,"generation":1}]}
+{
+  "passed": [],
+  "error": "KANATA_SQLITE_CHALLENGE_INVALID",
+  "stack": "Error: KANATA_SQLITE_CHALLENGE_INVALID\n    at sqliteError (blob:https://localhost/0f0de22f-6601-450e-8f40-93487856d3f3:63135:24)\n    at native (blob:https://localhost/0f0de22f-6601-450e-8f40-93487856d3f3:63145:11)\n    at async Object.open (blob:https://localhost/0f0de22f-6601-450e-8f40-93487856d3f3:63289:33)\n    at async blob:https://localhost/0f0de22f-6601-450e-8f40-93487856d3f3:64913:26\n    at async performOperation (blob:https://localhost/0f0de22f-6601-450e-8f40-93487856d3f3:22488:18)",
+  "lifecycle": [
+    {
+      "name": "prepare",
+      "phase": "start",
+      "at": 3795,
+      "available": true,
+      "generation": 1
+    },
+    {
+      "name": "prepare",
+      "phase": "KANATA_SQLITE_CHALLENGE_INVALID",
+      "at": 3802,
+      "available": true,
+      "generation": 1
+    },
+    {
+      "name": "close",
+      "phase": "start",
+      "at": 3803,
+      "available": true,
+      "generation": 1
+    },
+    {
+      "name": "close",
+      "phase": "done",
+      "at": 3810,
+      "available": true,
+      "generation": 1
+    },
+    {
+      "name": "close",
+      "phase": "start",
+      "at": 3815,
+      "available": true,
+      "generation": 2
+    }
+  ]
+}
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
++ actual - expected
+
++ 'KANATA_SQLITE_CHALLENGE_INVALID'
+- undefined
+
+    at file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata-m0/docs/qa/kanata-sqlite-m2/windows-candidate-smoke.mjs:379:12 {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: 'KANATA_SQLITE_CHALLENGE_INVALID',
+  expected: undefined,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.14.1

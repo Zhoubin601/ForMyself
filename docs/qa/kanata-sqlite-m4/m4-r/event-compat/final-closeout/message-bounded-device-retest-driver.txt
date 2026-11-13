@@ -1,0 +1,35 @@
+/data/app/~~A_DLU0OdmE0m6AWtlGuJ-Q==/com.yubin.formyself.m2qa-rdHKuanAq43d-SDx62V4Zg==/base.apk: 1 file pulled, 0 skipped. 33.8 MB/s (19039414 bytes in 0.537s)
+/data/app/~~DhuUG4YXBRnhrUSW2VM8eQ==/com.yubin.formyself.m2qa.test-EJZ_mwfj49hNXsSt7jE3zA==/base.apk: 1 file pulled, 0 skipped. 26.6 MB/s (598741 bytes in 0.021s)
+▲ [WARNING] Ignoring this import because "src/features/chat/kanataManagement.css" was marked as having no side effects [ignored-bare-import]
+
+    src/features/chat/KanataView.vue:8:7:
+      8 │ import './kanataManagement.css'
+        ╵        ~~~~~~~~~~~~~~~~~~~~~~~~
+
+{"qaBundleSha256":"3a6a0761845226c12a824544e45d2a47c3da8b4ce0f8d939b048914a0bcbd6be"}
+{
+  "messageBounded": {
+    "error": "MESSAGE_EXACT_EXTENSIONS",
+    "stack": "Error: MESSAGE_EXACT_EXTENSIONS\n    at check2 (blob:https://localhost/4b6c6605-2ec3-4aaf-a122-ef9b9bca4ae8:62780:25)\n    at blob:https://localhost/4b6c6605-2ec3-4aaf-a122-ef9b9bca4ae8:62879:7\n    at async blob:https://localhost/4b6c6605-2ec3-4aaf-a122-ef9b9bca4ae8:64935:23\n    at async performOperation (blob:https://localhost/4b6c6605-2ec3-4aaf-a122-ef9b9bca4ae8:22488:18)"
+  }
+}
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
++ actual - expected
+
++ undefined
+- 'PASS'
+
+    at file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata-m0/docs/qa/kanata-sqlite-m2/windows-candidate-smoke.mjs:128:12 {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: undefined,
+  expected: 'PASS',
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.14.1

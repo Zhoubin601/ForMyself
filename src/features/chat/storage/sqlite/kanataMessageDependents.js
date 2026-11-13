@@ -6,6 +6,7 @@ import { eventAuditSupport, writeEventStatusAudit } from './kanataEventSnapshot.
 import { messageWrites } from './kanataRepositorySql.js'
 import { requireSqliteValue as need, safeInteger } from './kanataRepositoryValues.js'
 import { assertDomainArrayOrder } from './kanataArrayOrder.js'
+import { assertMessageSnapshot, auditMessageChange } from './kanataMessageSnapshot.js'
 
 /** @typedef {import('../../domain/kanataTypes').Message} Message */
 /** @typedef {import('../../domain/kanataTypes').WorldEffect} Effect */
@@ -81,10 +82,9 @@ export async function rebuildEventEffects(tx, sql, bindings) {
   if (previous) await finish(previous)
 }
 
-/** @param {Transaction} tx @param {Message} message @param {Tools} tools
- * @param {() => Promise<void>} revise
- * @param {{ decode(row:Row):Message, audit(tx:Transaction, previous:Message, next:Message, tools:Tools):Promise<void> }} messages */
-export async function reviseMessageDependents(tx, message, tools, revise, messages) {
+/** @param {Transaction} tx @param {Pick<Message,'worldId'|'conversationId'|'id'>} message @param {Tools} tools
+ * @param {() => Promise<void>} revise */
+export async function reviseMessageDependents(tx, message, tools, revise) {
   await assertDomainArrayOrder(tx,message.worldId)
   const scope = [message.worldId, message.conversationId, message.id]
   need((await tx.query(query.uncertain, scope)).length === 0, 'EVENT_DEPENDENCY_UNCERTAIN')
@@ -102,10 +102,10 @@ export async function reviseMessageDependents(tx, message, tools, revise, messag
   await rebuildEventEffects(tx, query.affectedEffects, scope)
   await revise()
   for await (const row of visitRows(tx, query.replies, scope, ['id'])) {
-    const previous = messages.decode(row)
-    const next = { ...previous, status: /** @type {const} */ ('stopped'), revision: previous.revision + 1 }
-    await changeOne(tx, messageWrites.status, [next.status, previous.worldId, previous.conversationId, previous.id, previous.revision])
-    await messages.audit(tx, previous, next, tools)
+    const previous = { worldId: String(row.world_id), conversationId: String(row.conversation_id), id: String(row.id), revision: Number(row.revision) }
+    await assertMessageSnapshot(tx,previous)
+    await auditMessageChange(tx,previous,{status:'stopped'},tools,()=>
+      changeOne(tx, messageWrites.status, ['stopped',previous.worldId,previous.conversationId,previous.id,previous.revision]))
   }
   await tx.execute(write.messageMemories, scope)
   await tx.execute(write.tasks, scope)

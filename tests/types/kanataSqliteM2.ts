@@ -14,6 +14,14 @@ const conversations = createKanataConversationRepository(operation)
 const scope: KanataMessageScope = { worldId: 'world', conversationId: 'conversation' }
 const cursor: KanataMessageCursor = { ...scope, version: 1, createdAt: 0, id: 'anchor' }
 void messages.older(scope, cursor)
+void messages.revise(scope,'message',1,{content:'edited',deleted:false}).then(receipt=>{
+  const result: import('../../src/application/contracts').KanataMessageWriteReceipt = receipt
+  void result.revision
+  // @ts-expect-error Ordinary write receipts must not expose full provenance or opaque extensions.
+  void result.lifeSources
+  // @ts-expect-error A write receipt does not carry a message body.
+  void result.content
+})
 void conversations.get(scope)
 void operation.transaction(async transaction => {
   const result: number = (await transaction.execute('known write', [1, null, 'bound'])).affectedRows

@@ -1,0 +1,46 @@
+/data/app/~~3svEPmDGCz0xyWPeDFn2IQ==/com.yubin.formyself.m2qa-z68iQQFP8COwbrGLO_h_Ow==/base.apk: 1 file pulled, 0 skipped. 14.5 MB/s (19039414 bytes in 1.252s)
+/data/app/~~zFE_fziBeLhtyCNJJUsWSA==/com.yubin.formyself.m2qa.test-9Qbz7dnQbS8l6WYb7DsDTQ==/base.apk: 1 file pulled, 0 skipped. 22.0 MB/s (598741 bytes in 0.026s)
+▲ [WARNING] Ignoring this import because "src/features/chat/kanataManagement.css" was marked as having no side effects [ignored-bare-import]
+
+    src/features/chat/KanataView.vue:8:7:
+      8 │ import './kanataManagement.css'
+        ╵        ~~~~~~~~~~~~~~~~~~~~~~~~
+
+{"qaBundleSha256":"35ba484ff58391834763fd20241ac26e4cd32507f0f9f78f554abbd9d5763792"}
+{
+  "passed": [
+    "schema-js-bridge-and-synthetic-seed",
+    "repository-batches-keyset-quote-locate-fk-and-conversation",
+    "concurrent-cas-real-commit-failure-and-derived-delete",
+    "close-reopen-wrong-password-replay-and-lease"
+  ],
+  "health": {
+    "cipher": "4.17.0 community",
+    "journalMode": "wal",
+    "synchronous": 2,
+    "foreignKeys": 1,
+    "cacheSize": -2048,
+    "checkpoint": 1000,
+    "busyTimeout": 5000
+  }
+}
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
++ actual - expected
+
++ 'KANATA_SQLITE_SESSION_CHANGED'
+- 'uncommitted-write-and-audit'
+
+    at file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata-m0/docs/qa/kanata-sqlite-m2/windows-candidate-smoke.mjs:402:14 {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: 'KANATA_SQLITE_SESSION_CHANGED',
+  expected: 'uncommitted-write-and-audit',
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.14.1

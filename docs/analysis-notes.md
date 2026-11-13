@@ -1365,3 +1365,5 @@ planMessageArchive现有Map<string, Message[]>/逐组件对象数组/归档Set�
 Repository旧Facade/materializer删除，QA独立Oracle迁移；长Effect Audit按冻结数组分页与4096字符片段，组件只持当前片段。新前后值审计在TEMP保留前值、重放后一次写入，旧审计仍不可变。业务写入与临时计划分别计数并保留原始总数，优化CAS/状态/扩展为一批次调用；TEMP子表补索引消除级联全扫。SQLCipher审计EXPLAIN行数失败经SQLite内快照物化复用修复，未放宽Native256行门槛。
 
 主机714/406/strict/build；同一APK/catalog的1k/10k强停、四路径、provenance、读取、综合177113ms及v4→v5迁移/缺序号拒绝通过。普通APK实际DEX=false、legacy、无合成seed，未安装发布。历史无效夹具和错误前值假设与真实缺陷分开标注，全部失败保留。专用retained Heap/生命周期、普通消息/任务及A–G其他缺口未闭环，E/G4/M4仍BLOCKED，M5 NO；不是MR8两轮全范围审查。
+
+2026-11-13 G4消息实施：普通修订及回复停用真实读取完整标签/未知扩展，1k/10k均复现。SQLite审计必须遵守既有next_revision≤live revision触发器；初版先插审计被拒，改为单槽TEMP暂存→实体CAS→审计→删除自身暂存，均在现有BEGIN IMMEDIATE中。普通读取移除完整DTO回退，幂等输入按SQL JSON树比较；专用来源页/JSON块保留精确原字段，完整重构只在测试sink。定向10项通过，故障/COMMIT/损坏输入/遗留TEMP保持fail closed。没有修改001–005或永久DDL。check和API34设备专项进行中，不提前提升G4。

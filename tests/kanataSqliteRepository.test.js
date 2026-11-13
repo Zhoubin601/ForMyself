@@ -9,6 +9,19 @@ import { createKanataDeferredReplyRepository } from '../src/features/chat/storag
 import { reviseKanataMessage } from '../src/features/chat/experience/kanataEvents.js'
 import { auditInspection, fixtureWrites, m2Fixture, m2FixtureCommands } from './helpers/kanataSqliteM2Fixture.js'
 
+// Test-only reconstruction sink. Product reads retain one page/chunk and must
+// never rebuild a complete compatibility DTO this way.
+async function testMessageSnapshot(messages,scope,id,selection={kind:'snapshot'}) {
+  let cursor, text=''
+  do {
+    const page=await messages.jsonChunk(scope,id,selection,cursor)
+    assert(Array.from(page.fragment).length<=4096)
+    text+=page.fragment
+    cursor=page.cursor??undefined
+  } while(cursor)
+  return JSON.parse(text)
+}
+
 async function setup(t) {
   const db = new DatabaseSync(':memory:')
   db.exec('PRAGMA foreign_keys=ON')
@@ -17,7 +30,8 @@ async function setup(t) {
   const tx = {
     async query(sql, parameters = []) {
       const rows = db.prepare(sql).all(...parameters)
-      state.queries.push({ sql, rows: rows.length })
+      state.queries.push({ sql, rows: rows.length, maxText: Math.max(0, ...rows.flatMap(row =>
+        Object.values(row).filter(value => typeof value === 'string').map(value => value.length))) })
       return rows
     },
     async execute(sql, parameters = []) {
@@ -97,8 +111,8 @@ test('M2 edit and delete match the domain transaction, including both memory inv
     id: () => 'pure-audit-' + ++nextAudit, clock: () => 1300,
   })
   await messages.revise(scope, root.id, root.revision, change)
-  assert.deepEqual(await messages.get(scope, root.id), expected.messages[0])
-  assert.deepEqual(await messages.get(scope, 'message-two'), expected.messages[1])
+  assert.deepEqual(await testMessageSnapshot(messages,scope,root.id), expected.messages[0])
+  assert.deepEqual(await testMessageSnapshot(messages,scope,'message-two'), expected.messages[1])
   assert.equal(await messages.quote(scope, root.id), null)
   for (const row of await tx.query(auditInspection.eventRows, [scope.worldId])) {
     const event = expected.events.find(item => item.id === row.id)
@@ -135,6 +149,49 @@ test('M2 edit and delete match the domain transaction, including both memory inv
     assert.deepEqual(next, expected.events.find(event => event.id === next.id))
   }
   await assert.rejects(messages.setStatus(scope, root.id, root.revision, 'stopped'), /REVISION_CONFLICT/)
+})
+
+for (const count of [1000, 10000]) test(`G4 ordinary revise keeps ${count} message provenance records inside SQLite and preserves full audit semantics`, async t => {
+  const { db, fixture, state, messages, scope } = await setup(t)
+  const tag = fixture.messages[0].lifeSources[0]
+  const links = db.prepare('INSERT OR IGNORE INTO message_life_sources(world_id,message_id,grant_id,instance_id,module_id,grant_revision,fingerprint) VALUES(?,?,?,?,?,?,?)')
+  const extend = db.prepare('UPDATE messages SET extensions_json=? WHERE id=?')
+  for (const message of fixture.messages.filter(item => item.worldId === scope.worldId)) {
+    const tags = Array.from({ length: count }, (_, i) => ({ ...tag, fingerprint: (i + 1).toString(16).padStart(64, '0') })).reverse()
+    tags.push(...message.lifeSources ?? [])
+    // Distinct extension records may share one normalized link. Their original
+    // array order and unknown fields remain part of the compatibility contract.
+    tags.push({ ...tags[0], unknown: 'same link, different record' })
+    message.lifeSources = tags
+    message.syntheticExtra = { opaque: '合成扩展'.repeat(count), nested: ['retain', null, false] }
+    for (const source of tags) links.run(message.worldId, message.id, source.grantId, source.instanceId, source.moduleId, source.revision, source.fingerprint)
+    extend.run(JSON.stringify({ lifeSources: tags, syntheticExtra: message.syntheticExtra }), message.id)
+  }
+  const root = fixture.messages[0]
+  state.queries.length = 0
+  for (const message of [(await messages.get(scope,root.id)),...(await messages.recent(scope)).messages,
+    ...(await messages.replies(scope,root.id)).messages,(await messages.latest(scope,'user'))].filter(Boolean)) {
+    assert.equal(Object.hasOwn(message,'lifeSources'),false)
+    assert.equal(Object.hasOwn(message,'syntheticExtra'),false)
+  }
+  assert.equal(await messages.insert(root),'existing')
+  await assert.rejects(messages.insert({...root,lifeSources:[...root.lifeSources].reverse()}),/ID_CONFLICT/)
+  assert(state.queries.every(query=>query.maxText<=4096),'ordinary reads and idempotency must not bridge complete source objects')
+  const expected = reviseKanataMessage(fixture, root.id, root.revision, { content: '有界修订', deleted: false }, {
+    id: (() => { let n = 0; return () => 'oracle-' + ++n })(), clock: () => 1300,
+  })
+  state.queries.length = 0
+  const result = await messages.revise(scope, root.id, root.revision, { content: '有界修订', deleted: false })
+  assert(state.queries.every(query => query.maxText <= 4096), 'ordinary revise must not bridge full provenance or opaque extensions')
+  assert.deepEqual(result, { id: root.id, revision: root.revision + 1 })
+  const actual = db.prepare("SELECT previous_json,next_json FROM message_audits WHERE id LIKE 'm2-audit-%' ORDER BY message_id").all()
+  const audits = expected.messageAudits.filter(item => item.id.startsWith('oracle-')).sort((a, b) => a.messageId.localeCompare(b.messageId))
+  assert.equal(actual.length, audits.length)
+  for (let i = 0; i < audits.length; i++) {
+    assert.deepEqual(JSON.parse(actual[i].previous_json), audits[i].previous)
+    assert.deepEqual(JSON.parse(actual[i].next_json), audits[i].next)
+  }
+  console.log(JSON.stringify({ scenario: 'ordinary-message-revise', count, maxRows: Math.max(...state.queries.map(q => q.rows)), maxText: Math.max(...state.queries.map(q => q.maxText)) }))
 })
 
 test('M2 no partial derived changes on uncertainty, any write fault or actual COMMIT failure', async t => {
@@ -190,9 +247,103 @@ test('M2 sources keep distinct extension records without duplicating normalized 
     ...fixture.messages[0], id: 'life-ext', revision: 1, lifeSources: [{ ...first, extra: 'A' }, { ...first, extra: 'B' }],
   }
   assert.equal(await messages.insert(input), 'inserted')
-  assert.deepEqual(await messages.get(scope, input.id), input)
+  assert.deepEqual(await testMessageSnapshot(messages,scope,input.id), input)
   assert.equal(db.prepare('SELECT count(*) AS n FROM message_life_sources WHERE message_id=?').get(input.id).n, 1)
   assert.equal(await messages.insert(input), 'existing')
+})
+
+test('G4 message detail pages and JSON chunks preserve unknown data, bind scope/revision/selection and release transaction staging', async t => {
+  const { fixture, scope, messages, db, state } = await setup(t)
+  const tag=fixture.messages[0].lifeSources[0]
+  const input={...fixture.messages[0],id:'detail-long',revision:1,
+    lifeSources:Array.from({length:103},(_,i)=>({...tag,fingerprint:i.toString(16).padStart(64,'0')})).reverse(),
+    syntheticExtra:{raw:'x😀界\ud800\udc00\u0000'.repeat(3000),object:{z:1,a:['one',false,null]}}}
+  await messages.insert(input)
+  state.queries.length=0
+  let cursor,seen=0,previous=''
+  do {
+    const page=await messages.sourcePage(scope,input.id,cursor)
+    assert(page.rows.length<=50)
+    for(const row of page.rows){assert(row.fingerprint>previous);previous=row.fingerprint;seen++}
+    cursor=page.cursor??undefined
+  }while(cursor)
+  assert.equal(seen,103)
+  const first=await messages.sourcePage(scope,input.id)
+  await assert.rejects(messages.sourcePage({...scope,conversationId:'missing'},input.id,first.cursor),/UNAVAILABLE/)
+  await assert.rejects(messages.sourcePage(scope,fixture.messages[0].id,first.cursor),/CURSOR_INVALID/)
+  await assert.rejects(messages.sourcePage(scope,input.id,{...first.cursor,grantRevision:-1}),/CURSOR_INVALID/)
+  await assert.rejects(messages.sourcePage(scope,input.id,undefined,51),/LIMIT_INVALID/)
+  assert.deepEqual(await testMessageSnapshot(messages,scope,input.id),input)
+  const head=await messages.jsonChunk(scope,input.id,{kind:'extensions'})
+  assert(head.cursor)
+  await assert.rejects(messages.jsonChunk(scope,input.id,{kind:'snapshot'},head.cursor),/CURSOR_INVALID/)
+  await assert.rejects(messages.jsonChunk(scope,input.id,{kind:'extensions'},{...head.cursor,offset:-1}),/CURSOR_INVALID/)
+  assert(state.queries.every(q=>q.rows<=51 && q.maxText<=8194)) // 4097 Unicode code points, at most two UTF-16 units each.
+  const receipt=await messages.setStatus(scope,input.id,1,'stopped')
+  assert.deepEqual(receipt,{id:input.id,revision:2})
+  await assert.rejects(messages.jsonChunk(scope,input.id,{kind:'extensions'},head.cursor),/CURSOR_INVALID/)
+  await assert.rejects(messages.sourcePage(scope,input.id,first.cursor),/CURSOR_INVALID/)
+  const audit=db.prepare('SELECT id FROM message_audits WHERE message_id=?').get(input.id)
+  assert.deepEqual(await testMessageSnapshot(messages,scope,input.id,{kind:'audit',auditId:audit.id,side:'previous'}),input)
+  assert.deepEqual(await testMessageSnapshot(messages,scope,input.id,{kind:'audit',auditId:audit.id,side:'next'}),{...input,status:'stopped',revision:2})
+  assert.equal(db.prepare('SELECT count(*) AS n FROM temp.kanata_message_audit_stage').get().n,0)
+  const reordered={...input,syntheticExtra:{object:{a:['one',false,null],z:1},raw:input.syntheticExtra.raw},status:'stopped',revision:2}
+  assert.equal(await messages.insert(reordered),'existing')
+  await assert.rejects(messages.insert({...reordered,syntheticExtra:{...reordered.syntheticExtra,object:{a:['one',false],z:1}}}),/ID_CONFLICT/)
+  const current=await messages.jsonChunk(scope,input.id,{kind:'audit',auditId:audit.id,side:'previous'})
+  await assert.rejects(messages.jsonChunk(scope,input.id,{kind:'audit',auditId:audit.id,side:'next'},current.cursor),/CURSOR_INVALID/)
+})
+
+test('G4 invalid historical message hints/extensions and unexpected staging fail closed without cleanup', async t=>{
+  const {fixture,scope,messages,db}=await setup(t)
+  const root=fixture.messages[0]
+  const original=db.prepare('SELECT extensions_json FROM messages WHERE id=?').get(root.id).extensions_json
+  for(const raw of [JSON.stringify({lifeSources:[{...root.lifeSources[0],fingerprint:'b'.repeat(64)}]}),
+    '{"nested":'+ '['.repeat(65)+'0'+']'.repeat(65)+'}', '{"future":1e999}']) {
+    db.prepare('UPDATE messages SET extensions_json=? WHERE id=?').run(raw,root.id)
+    const before=db.prepare('SELECT count(*) AS n FROM message_audits').get().n
+    await assert.rejects(messages.setStatus(scope,root.id,root.revision,'stopped'),/INTEGRITY_FAILED/)
+    assert.equal(db.prepare('SELECT count(*) AS n FROM message_audits').get().n,before)
+    assert.equal(db.prepare('SELECT extensions_json FROM messages WHERE id=?').get(root.id).extensions_json,raw)
+  }
+  db.prepare('UPDATE messages SET extensions_json=? WHERE id=?').run(original,root.id)
+  await messages.setStatus(scope,root.id,root.revision,'stopped')
+  db.exec("INSERT INTO temp.kanata_message_audit_stage VALUES(1,'unknown-world','unknown-conversation','unknown-message',1,'{}')")
+  const before=JSON.stringify(db.prepare('SELECT * FROM message_audits ORDER BY id').all())
+  await assert.rejects(messages.setStatus(scope,root.id,root.revision+1,'complete'),/UNIQUE constraint/)
+  assert.equal(JSON.stringify(db.prepare('SELECT * FROM message_audits ORDER BY id').all()),before)
+  assert.equal(db.prepare('SELECT world_id FROM temp.kanata_message_audit_stage').get().world_id,'unknown-world')
+  assert.equal((await messages.state(scope,root.id)).revision,root.revision+1)
+})
+
+test('G4 SQLite message snapshot validation keeps legacy Unicode whitespace and embedded NUL semantics',async t=>{
+  const {fixture,scope,messages,db}=await setup(t)
+  const base=fixture.messages[0]
+  for(const [i,content]of ['\u0000tail','\u00a0x\u2000','\u2000\ufeff',''].entries()){
+    const input={...base,id:'message-whitespace-'+i,revision:1,content:'temporary',deleted:true}
+    await messages.insert(input)
+    db.prepare('UPDATE messages SET content=?,revision=2 WHERE id=?').run(content,input.id)
+    if(content.trim()){
+      await messages.setStatus(scope,input.id,2,'stopped')
+      const snapshot=await testMessageSnapshot(messages,scope,input.id)
+      assert.equal(snapshot.content,content)
+    }else{
+      await assert.rejects(messages.setStatus(scope,input.id,2,'stopped'),/KANATA_MESSAGE_INVALID/)
+      assert.equal((await messages.state(scope,input.id)).revision,2)
+    }
+  }
+})
+
+test('G4 message idempotency retains JavaScript JSON numeric equality for historical unknown fields',async t=>{
+  const {fixture,scope,messages,db}=await setup(t)
+  const {lifeSources:_sources,syntheticExtra:_extra,...base}=fixture.messages[0]
+  const input={...base,id:'message-numeric-json',revision:1}
+  await messages.insert(input)
+  const raw='{"large":9007199254740993,"same":1.0,"zero":-0}'
+  db.prepare('UPDATE messages SET extensions_json=? WHERE id=?').run(raw,input.id)
+  assert.equal(await messages.insert({...input,...JSON.parse(raw)}),'existing')
+  assert.deepEqual(await testMessageSnapshot(messages,scope,input.id),{...input,...JSON.parse(raw)})
+  await assert.rejects(messages.insert({...input,...JSON.parse(raw),large:9007199254740994}),/ID_CONFLICT/)
 })
 
 test('M2 scoped deferred reply recovers due work and refuses a stale or cancelled source', async t => {

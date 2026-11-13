@@ -67,7 +67,7 @@ export function useKanataMessageWindow({ owner, read }) {
       return false
     } finally { if (target === request && version === generation) loading.value = false }
   }
-  const recent = () => load((repository, scope) => repository.recent(scope, undefined, 'transcript'), 'replace')
+  const recent = () => load((repository, scope) => repository.recent(scope), 'replace')
   /** @param {string} conversationId */
   const activate = async conversationId => {
     reset()
@@ -76,10 +76,10 @@ export function useKanataMessageWindow({ owner, read }) {
   }
   const older = async () => {
     const next = cursor.value
-    return next ? load((repository, scope) => repository.older(scope, next, undefined, 'transcript'), 'prepend') : false
+    return next ? load((repository, scope) => repository.older(scope, next), 'prepend') : false
   }
   /** @param {string} id */
-  const locate = id => load((repository, scope) => repository.locate(scope, id, undefined, 'transcript'), 'locate')
+  const locate = id => load((repository, scope) => repository.locate(scope, id), 'locate')
   /** @param {string} id */
   const showQuote = async id => {
     const target = request, version = generation, selection = ++quoteGeneration

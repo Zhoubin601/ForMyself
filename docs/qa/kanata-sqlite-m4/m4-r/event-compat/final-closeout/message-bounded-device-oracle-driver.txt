@@ -1,0 +1,88 @@
+/data/app/~~YYyS0N1fBL8vs4-a4BfteA==/com.yubin.formyself.m2qa-AqtvqV_L0yUB6PRrl2Uj_g==/base.apk: 1 file pulled, 0 skipped. 17.5 MB/s (19039414 bytes in 1.037s)
+/data/app/~~Phdj8zFR6UAtjdoomOJCfA==/com.yubin.formyself.m2qa.test--PcMrCbP3OIpmyyHgN10ow==/base.apk: 1 file pulled, 0 skipped. 26.1 MB/s (598741 bytes in 0.022s)
+▲ [WARNING] Ignoring this import because "src/features/chat/kanataManagement.css" was marked as having no side effects [ignored-bare-import]
+
+    src/features/chat/KanataView.vue:8:7:
+      8 │ import './kanataManagement.css'
+        ╵        ~~~~~~~~~~~~~~~~~~~~~~~~
+
+{"qaBundleSha256":"35ba484ff58391834763fd20241ac26e4cd32507f0f9f78f554abbd9d5763792"}
+{"messagePhase":null}
+{"messagePhase":{"size":1000,"phase":"prepare","elapsedMs":0}}
+{"messagePhase":{"size":1000,"phase":"source-pages","elapsedMs":1638}}
+{"messagePhase":{"size":1000,"phase":"chunks","elapsedMs":4304}}
+{"messagePhase":{"size":1000,"phase":"revise","elapsedMs":10052}}
+{"messagePhase":{"size":10000,"phase":"prepare","elapsedMs":0}}
+{"messagePhase":{"size":10000,"phase":"source-pages","elapsedMs":8506}}
+{"messagePhase":{"size":10000,"phase":"source-pages","elapsedMs":36395,"pages":50}}
+{"messagePhase":{"size":10000,"phase":"source-pages","elapsedMs":63564,"pages":100}}
+{"messagePhase":{"size":10000,"phase":"source-pages","elapsedMs":91398,"pages":150}}
+{"messagePhase":{"size":10000,"phase":"chunks","elapsedMs":119035}}
+{"messagePhase":{"size":10000,"phase":"chunks","elapsedMs":142971,"chunks":50}}
+{"messagePhase":{"size":10000,"phase":"chunks","elapsedMs":169397,"chunks":100}}
+{"messagePhase":{"size":10000,"phase":"chunks","elapsedMs":194969,"chunks":150}}
+{"messagePhase":{"size":10000,"phase":"chunks","elapsedMs":219175,"chunks":200}}
+{"messagePhase":{"size":10000,"phase":"chunks","elapsedMs":242124,"chunks":250}}
+{"messagePhase":{"size":10000,"phase":"chunks","elapsedMs":273443,"chunks":300}}
+{"messagePhase":{"size":10000,"phase":"chunks","elapsedMs":304520,"chunks":350}}
+{"messagePhase":{"size":10000,"phase":"chunks","elapsedMs":333629,"chunks":400}}
+{"messagePhase":{"size":10000,"phase":"chunks","elapsedMs":360190,"chunks":450}}
+{"messagePhase":{"size":10000,"phase":"revise","elapsedMs":364879}}
+{
+  "messageBounded": {
+    "status": "PASS",
+    "health": {
+      "cipher": "4.17.0 community",
+      "journalMode": "wal",
+      "synchronous": 2,
+      "foreignKeys": 1,
+      "cacheSize": -2048,
+      "checkpoint": 1000,
+      "busyTimeout": 5000
+    },
+    "results": [
+      {
+        "size": 1000,
+        "pages": 20,
+        "links": 1000,
+        "chunks": 51,
+        "maxChunk": 4096,
+        "maxRows": 51,
+        "maxText": 64,
+        "elapsedMs": 11186,
+        "stageRollback": true,
+        "realCommitRollback": true,
+        "exactAudits": true
+      },
+      {
+        "size": 10000,
+        "pages": 200,
+        "links": 10000,
+        "chunks": 457,
+        "maxChunk": 4096,
+        "maxRows": 51,
+        "maxText": 64,
+        "elapsedMs": 370590,
+        "stageRollback": true,
+        "realCommitRollback": true,
+        "exactAudits": true
+      }
+    ],
+    "realModelCalls": 0
+  }
+}
+{
+  "messageCrashRecovery": {
+    "oldPid": "6582",
+    "newPid": "6723",
+    "before": {
+      "revision": 3,
+      "audits": 2
+    },
+    "after": {
+      "revision": 4,
+      "audits": 3
+    },
+    "staleRetryRejected": true
+  }
+}

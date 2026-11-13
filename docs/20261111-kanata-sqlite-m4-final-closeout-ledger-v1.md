@@ -283,6 +283,8 @@ MR5 是 M4-R 内部工作包编号，不是 SQLite 阶段 M5。
 
 **关闭证据：** 真实消费者 UI/Runtime/Repository/SQL 链路、1k/10k 自治来源、lease 过期恢复、幂等水位、权限撤销和 Android 生命周期回归；真实模型 API 请求为 0。
 
+2026-11-13 原 F/G4 缺口复现：`verify-task-bounds.mjs` 只在内存合成库追加1000条消息来源，实际 `listTasks` 单次SQL最多50行，但返回任务含1001条完整sourceRefs。`task-bounded-before.txt`/exit=1记录源码指纹与真实断言失败，证明loadTask在页后重新gather；不是新增需求或新的工作包。任务实现尚未修改，后续沿本条目改为有界元数据/来源/结果访问并迁移既有消费者。
+
 ### G. 历史整理与引用保护
 
 **当前状态：PARTIAL。**
@@ -313,6 +315,28 @@ MR5 是 M4-R 内部工作包编号，不是 SQLite 阶段 M5。
 - 保留顺序、去重、预算拒绝和错误分类；不静默丢弃尾部引用或缩小用户确认集合。
 
 **关闭证据：** 完整调用图、1k/10k 不同授权与关系形状、单页/桥接上限、跨桥完整来源 DTO 计数为 0、撤权后正文读取为 0、取消/关闭后新增查询为 0、provider JSON 与旧语义逐项匹配。
+
+2026-11-13 同一 G4 条目推进（尚未完成设备验收）：`0339683` 后，普通消息 revise 的 1k/10k 合成来源与长未知扩展用例均真实复现完整 DTO 跨桥，保存在既有 QA 的 `message-bounded-before.txt`。修订/状态/回复停用改为事务内单槽 TEMP 快照与 SQLite 审计，回执只含 id/revision；完整 get/recent/older/replies/latest/history 默认 DTO 与无消费者 provenance() 已移除，全部普通读取固定 transcript。输入幂等比较在 SQLite 中按 JSON 树执行，保留数组顺序、类型、缺失字段和未知扩展，不返回存储 DTO。来源页≤50、精确快照/扩展/历史审计 JSON 块≤4096 Unicode 码点，scope/revision/selection 变化拒绝游标。主机定向10项通过，1k/10k实际修订最长跨桥文本37字符/最多2行；纯领域审计、原始标签顺序/扩展记录、每步写入/真实COMMIT失败及损坏数据/意外暂存不清理的负例通过。完整check与同一隔离Android实测正在进行，未复用旧APK结果。普通消息正文自身长字段预算、自治loadTask、完整调用矩阵及其他A–G/生命周期/最终审查仍待关闭，G4/M4保持BLOCKED。
+
+本次消息调用覆盖（不代替 A–G 全局 G1）：
+
+| 入口 | 当前真实链路 | 边界与剩余验收 |
+|---|---|---|
+| 当前窗口/向前翻页/定位 | KanataConversationView → useKanataMessageWindow → recent/older/locate → 固定 transcript SQL | 不带来源/扩展；原50页/100窗口保持；长正文自身预算仍待闭环 |
+| 用户发送/重试 | kanataSqliteChatRuntime → turn.persist / messages.get / latestState | 新源消息输入无历史来源图；重试读固定投影；原CAS/落库门禁保留 |
+| 私聊/群聊/character 提示词历史 | kanataSqliteChatRuntime → historyForSpeaker → transcriptForSpeaker + assertTranscriptHints | 来源/receiver read-share 与回复revision在SQL筛选；原近期预算和提示词字节合同保持 |
+| 回复持久化与恢复 | insertReplyBatch → withReplyProvenance → TEMP有序标签及规范链接 | 保序与精确标签不在JS重新汇总；existing回复比较只排除由proof负责的lifeSources，未知扩展仍校验 |
+| 修订/删除与派生失效 | runtime.reviseMessage → readForUpdate → reviseMessageDependents → TEMP旧快照/实体CAS/审计 | 根与派生回复不桥接完整DTO；保留Effects重放、记忆/任务失效、旧审计脱敏和事务失败语义 |
+| 来源/未知扩展/历史审计检查 | sourcePage / jsonChunk（Repository owner scope） | 规范链接页50；原始hint/未知字段仅4096码点片段；完整合成对照仅test sink，当前无普通产品导出消费者 |
+| 旧完整消息兼容入口 | messageFromRow/provenanceFromRow/完整投影与无消费者provenance() | 已删除；不保留隐式full选项。QA只需状态的调用已用transcript/回执；主机完整字段对照改用明确test sink |
+
+首轮check为718 Node通过、405/406组件通过（旧P7全备恢复5秒超时），不计完整check PASS；原门槛单独复测28/28通过。新SQL幂等比较的历史大整数JSON用例曾误判ID_CONFLICT，`message-numeric-before*`保留真实失败，数值比较统一到JS double语义后定向12/12通过。完整check重新执行中，未增加超时、跳过样例或改Schema。
+
+**2026-11-13 消息切片检查点已收齐：** `message-bounded-check-final`退出0，720 Node / 406 Vue（44文件）/ strict正负 / 生产build通过。同一候选APK `f538e0b6ed3bcbf11dfc4fe0abcd4be876cfe6d5b3c44ea234c90fe811b19312`、catalog `1211724b100a7ffbb4db00b0e81857f9d6221af4b5d27fcea8d6e9e3789fdf3e`在API34/SQLCipher4.17.0完成消息1k/10k全部来源页/JSON块、精确审计、stage/真实COMMIT回滚、SIGKILL冷开和CAS重试；10k为370590ms，原420秒门槛保持。宽来源回复、事件四路径/乱序图/长影响审计、工作区定向和完整基础回归退出0。综合Growth轮的聊天1k/10k、取消/恢复/撤权及归档已通过，但该整轮在世界书点击禁用按钮处失败，只按未受后续QA等待条件影响的切片复用；没有将失败整轮改标PASS。
+
+旧P7超时、QA浏览器node:crypto导入、Oracle对象键顺序、AVD SystemUI缺失/keyguard sleep token、工作区驱动未等按钮enabled等失败及复测均保留，详见同QA README。SystemUI只通过同一隔离AVD的reboot恢复，无wipe；生产门禁/驱动未修改。runner新增真实SystemUI/Activity前台检查，原超时和数据规模均未放宽。普通APK实际DEX=false、canonical legacy、17条专用合成SQL未打包，APK `8bbc0c1e1d86e13d499915c1f1d00c0a6c58448a9933d9b7e28746f415d2c08b`仅构建检查、未安装发布。
+
+`message-bounded-fingerprints.json`保存源码/fixture、各轮QA bundle、APK/catalog、设备和001–005 checksum，44份原始设备记录以压缩及原始双SHA归档；源码aggregate `e3f92d8affc2dc3b1dcea9e8342aae77ad03d26e5347f6bcdbe7806633931a9e`。005旧证据只保持其冻结结构范围，不套用为新APK升级实测。**G4/M4仍BLOCKED、M5 NO**：原F/loadTask实际1001来源gather未修复，普通消息长正文预算、A–G其他能力、专用retained Heap/统一生命周期、最终MR7和两轮MR8全范围审查仍待闭环；继续本清单。
 
 ## 5. 横向最终验收合同
 

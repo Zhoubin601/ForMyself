@@ -1240,3 +1240,5 @@ MR2-G4 以 8d3b8f768617143312fd800ab05decaa53d6114d 接管。新进展与兼容�
 2026-11-12 同一E推进：原序消费、世界增量签名、revoked no-op、action四路径已完成当前定向主机/设备验证并保留证据；check709/402/strict/build通过。下一步仍在E移除Repository旧Facade与QA完整回读，补长Effect Audit，再按唯一清单进入其余A–G与统一生命周期、最终Android/两轮审查。E/G4/M4继续BLOCKED，M5 NO，不新建编号。
 
 2026-11-13同一E检查点：Facade/materializer移除、长Effect Audit片段与不可变前后值审计，已完成714/406/strict/build及同APK/catalog的专项、provenance、读取、1k10k综合/批次强停和005升级验收，普通APK实际DEX=false。指纹见既有QA的event-bounded-fingerprints.json。继续原清单G4普通消息/任务访问边界，随后A/B/C、D/E/G、F、统一生命周期和最终回归/两轮审查；不创建新编号，M4仍BLOCKED，M5 NO。
+
+2026-11-13消息切片已保留代码、720/406/strict/build、同APK/catalog的API34消息1k/10k与强停/回滚/冷开、宽回复、事件四路径、工作区及基础综合证据；失败、Growth切片范围复用和普通APK实际DEX=false见唯一清单G4与message-bounded-fingerprints.json。继续现有F/G4的loadTask元数据/来源/结果有界化（1001条sourceRefs真实失败已记录），再处理消息长字段、A/B/C及原D/E/G/F余项；最终统一生命周期/retained Heap/MR7/两轮MR8尚未开始，不把内部切片当M4 PASS。

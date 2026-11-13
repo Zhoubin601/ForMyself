@@ -2,15 +2,16 @@
 import { normalizeArchiveQuery } from '../messageArchiveCore.js'
 import { cloneKanataJson, validateId } from '../../domain/kanataValidation.js'
 import { conversationQueries, messageQueries as query, messageWrites as write } from './kanataRepositorySql.js'
-import { equalDto, extensionObject, nonemptyText, pageLimit, requireSqliteValue as need, safeInteger, scopeBindings, validId } from './kanataRepositoryValues.js'
+import { equalDto, nonemptyText, pageLimit, requireSqliteValue as need, safeInteger, scopeBindings, validId } from './kanataRepositoryValues.js'
 import { createKanataHistoryArchive } from './kanataHistoryArchive.js'
 import { reviseMessageDependents } from './kanataMessageDependents.js'
 import { assertTranscriptHints, withReplyProvenance } from './kanataReplyProvenance.js'
+import { assertMessageSnapshot, auditMessageChange, prepareMessageAudit, equalStoredMessage } from './kanataMessageSnapshot.js'
+import { createMessageDetailRead } from './kanataMessageDetailRead.js'
 
 /** @typedef {import('../../domain/kanataTypes').Message} Message */
 /** @typedef {import('./kanataRepositoryTypes').KanataMessageScope} Scope */
 /** @typedef {import('./kanataRepositoryTypes').KanataMessageCursor} Cursor */
-/** @typedef {import('./kanataRepositoryTypes').KanataMessageProvenance} Provenance */
 /** @typedef {import('./kanataSchemaTypes').KanataSqlRow} Row */
 /** @typedef {import('../../../../platform/storage/kanataSqliteTypes').KanataSqliteTransaction} Transaction */
 /** @typedef {{ id: () => string, clock: () => number }} Tools */
@@ -51,22 +52,10 @@ function validateMessage(message) {
   }
 }
 
-/** @param {Row} row @returns {Message} */
-export function messageFromRow(row) {
-  const extensions = extensionObject(row.extensions_json)
-  for (const field of messageFields) delete extensions[field]
-  /** @type {NonNullable<Message['lifeSources']>} */
-  const links = JSON.parse(String(row.life_sources))
-  const lifeSources = /** @type {Message['lifeSources']} */ (extensions.lifeSources ?? (links.length ? links : undefined))
-  delete extensions.lifeSources
-  if (lifeSources !== undefined) {
-    need(Array.isArray(lifeSources), 'KANATA_SQLITE_INTEGRITY_FAILED')
-    const expected = new Set(links.map(lifeLinkKey))
-    const declared = new Set(lifeSources.map(lifeLinkKey))
-    need(expected.size === declared.size && [...declared].every(key => expected.has(key)), 'KANATA_SQLITE_INTEGRITY_FAILED')
-  }
+/** @param {Row} row @returns {import('./kanataRepositoryTypes').KanataTranscriptMessage} */
+function transcriptFromRow(row) {
   const message = {
-    ...extensions, id: String(row.id), worldId: String(row.world_id), conversationId: String(row.conversation_id),
+    id: String(row.id), worldId: String(row.world_id), conversationId: String(row.conversation_id),
     role: /** @type {Message['role']} */ (row.role), senderType: /** @type {Message['senderType']} */ (row.sender_type),
     senderId: String(row.sender_id), senderNameSnapshot: String(row.sender_name_snapshot), content: String(row.content),
     createdAt: Number(row.created_at), revision: Number(row.revision), status: /** @type {Message['status']} */ (row.status),
@@ -74,7 +63,6 @@ export function messageFromRow(row) {
     ...(row.deleted !== null && { deleted: row.deleted === 1 }),
     ...(row.reply_to_message_id !== null && { replyToMessageId: String(row.reply_to_message_id) }),
     ...(row.reply_to_revision !== null && { replyToRevision: Number(row.reply_to_revision) }),
-    ...(lifeSources !== undefined && { lifeSources }),
   }
   validateMessage(message)
   return message
@@ -84,19 +72,6 @@ export function messageFromRow(row) {
 function messageState(row) {
   return { id: String(row.id), revision: Number(row.revision), createdAt: Number(row.created_at),
     status: /** @type {Message['status']} */ (row.status), deleted: row.deleted === 1, senderId: String(row.sender_id) }
-}
-
-/** @param {Row} row @returns {Provenance} */
-function provenanceFromRow(row) {
-  const sources = JSON.parse(String(row.life_sources))
-  return {
-    id: String(row.id), worldId: String(row.world_id), conversationId: String(row.conversation_id),
-    revision: Number(row.revision), status: /** @type {Message['status']} */ (row.status),
-    ...(row.deleted !== null && { deleted: row.deleted === 1 }),
-    ...(row.reply_to_message_id !== null && { replyToMessageId: String(row.reply_to_message_id) }),
-    ...(row.reply_to_revision !== null && { replyToRevision: Number(row.reply_to_revision) }),
-    ...(sources.length && { lifeSources: sources }),
-  }
 }
 
 /** @param {Transaction} tx @param {string} sql @param {string[]} bindings @param {readonly string[]} ids */
@@ -110,19 +85,19 @@ async function readContextRows(tx, sql, bindings, ids) {
   return rows
 }
 
-/** @param {Transaction} tx @param {Scope} scope @param {string} id @param {'transcript'|'reply-base'} [projection] */
-async function readMessage(tx, scope, id, projection) {
+/** @param {Transaction} tx @param {Scope} scope @param {string} id */
+async function readMessage(tx, scope, id) {
   validateId(id, 'messageId')
-  const sql = projection === 'transcript' ? query.getTranscript : projection === 'reply-base' ? query.getReplyBase : query.get
-  const [row] = await tx.query(sql, [...scopeBindings(scope), id])
-  return row ? messageFromRow(row) : null
+  const [row] = await tx.query(query.getTranscript, [...scopeBindings(scope), id])
+  return row ? transcriptFromRow(row) : null
 }
 
 /** @param {Transaction} tx @param {Message} message @param {'reply-base'} [projection] */
 async function insertMessage(tx, message, projection) {
-  const prior = await readMessage(tx, message, message.id, projection)
+  const [prior] = await tx.query(query.state,[...scopeBindings(message),message.id])
   if (prior) {
-    need(equalDto(prior, message), 'KANATA_MESSAGE_ID_CONFLICT')
+    await assertMessageSnapshot(tx,{...message,revision:Number(prior.revision)})
+    need(await equalStoredMessage(tx,message,Number(prior.revision),projection==='reply-base'), 'KANATA_MESSAGE_ID_CONFLICT')
     return /** @type {const} */ ('existing')
   }
   need((await tx.query(query.identity, [message.id])).length === 0, 'KANATA_MESSAGE_ID_CONFLICT')
@@ -157,7 +132,7 @@ function cursorBindings(scope, cursor) {
 
 /** @param {readonly Row[]} rows @param {number} limit */
 function page(rows, limit) {
-  const messages = rows.slice(0, limit).map(messageFromRow)
+  const messages = rows.slice(0, limit).map(transcriptFromRow)
   const last = messages.at(-1)
   const hasMore = rows.length > limit
   return {
@@ -168,24 +143,17 @@ function page(rows, limit) {
   }
 }
 
-/** @param {Transaction} tx @param {Message} previous @param {Message} next @param {Tools} tools */
-export async function addMessageAudit(tx, previous, next, tools) {
-  const id = tools.id(), at = tools.clock()
-  validateId(id, 'auditId')
-  need(safeInteger(at), 'KANATA_MESSAGE_AUDIT_INVALID')
-  const result = await tx.execute(write.audit, [
-    id, previous.worldId, previous.id, at, previous.revision, next.revision, JSON.stringify(previous), JSON.stringify(next),
-  ])
-  need(result.affectedRows === 1, 'KANATA_MESSAGE_AUDIT_INVALID')
-}
-
 /** @param {Transaction} tx @param {Scope} scope @param {string} id @param {number} expectedRevision */
 async function readForUpdate(tx, scope, id, expectedRevision) {
   need(safeInteger(expectedRevision, 1), revisionConflict)
-  const previous = await readMessage(tx, scope, id)
+  validateId(id, 'messageId')
+  const [row] = await tx.query(query.state, [...scopeBindings(scope),id])
+  const previous = row ? { ...scope, ...messageState(row) } : null
   if (!previous || previous.revision !== expectedRevision) throw new Error(revisionConflict)
   const [world] = await tx.query(query.world, [previous.worldId])
   need(world && world.archived !== 1, 'KANATA_MESSAGE_WORLD_UNAVAILABLE')
+  await assertMessageSnapshot(tx,previous)
+  await prepareMessageAudit(tx)
   return previous
 }
 
@@ -195,6 +163,7 @@ export function createKanataMessageRepository(operation, tools) {
   const run = operation.transaction
   return {
     ...createKanataHistoryArchive(operation),
+    ...createMessageDetailRead(operation),
     async insert(message) {
       const dto = cloneKanataJson(message)
       validateMessage(dto)
@@ -211,10 +180,10 @@ export function createKanataMessageRepository(operation, tools) {
         return results
       })
     },
-    recent: (scope, limit = 50, projection) => run(async tx => page(await tx.query(projection === 'transcript' ? query.recentTranscript : query.recent, [
+    recent: (scope, limit = 50) => run(async tx => page(await tx.query(query.recentTranscript, [
       ...scopeBindings(scope), pageLimit(limit) + 1,
     ]), limit)),
-    older: (scope, cursor, limit = 50, projection) => run(async tx => page(await tx.query(projection === 'transcript' ? query.olderTranscript : query.older, [
+    older: (scope, cursor, limit = 50) => run(async tx => page(await tx.query(query.olderTranscript, [
       ...scopeBindings(scope), ...cursorBindings(scope, cursor), pageLimit(limit) + 1,
     ]), limit)),
     searchHistory: (scope, text, cursor) => run(async tx => {
@@ -241,16 +210,15 @@ export function createKanataMessageRepository(operation, tools) {
       }
       return { messages, cursor: before ?? null }
     }),
-    locate: (scope, id, limit = 50, projection) => run(async tx => {
+    locate: (scope, id, limit = 50) => run(async tx => {
       pageLimit(limit)
       validateId(id, 'messageId')
       const keys = scopeBindings(scope)
       const [anchor] = await tx.query(query.transcriptAnchor, [...keys, id])
       if (!anchor) return null
-      const sql = projection === 'transcript' ? query.startingAtTranscript : query.startingAt
-      return page(await tx.query(sql, [...keys, anchor.created_at, anchor.id, limit + 1]), limit)
+      return page(await tx.query(query.startingAtTranscript, [...keys, anchor.created_at, anchor.id, limit + 1]), limit)
     }),
-    get: (scope, id, projection) => run(tx => readMessage(tx, scope, id, projection)),
+    get: (scope, id) => run(tx => readMessage(tx, scope, id)),
     state: (scope, id) => run(async tx => {
       validateId(id, 'messageId')
       const [row] = await tx.query(query.state, [...scopeBindings(scope), id])
@@ -268,22 +236,22 @@ export function createKanataMessageRepository(operation, tools) {
       return row ? { id: String(row.id), revision: Number(row.revision), senderNameSnapshot: String(row.sender_name_snapshot), content: String(row.content) } : null
     }),
     count: scope => run(async tx => Number((await tx.query(query.count, scopeBindings(scope)))[0].count)),
-    latest: (scope, role, projection) => run(async tx => {
+    latest: (scope, role) => run(async tx => {
       need(role === 'user' || role === 'assistant', 'KANATA_MESSAGE_INVALID')
-      const [row] = await tx.query(projection === 'transcript' ? query.latestTranscript : query.latest, [...scopeBindings(scope), role])
-      return row ? messageFromRow(row) : null
+      const [row] = await tx.query(query.latestTranscript, [...scopeBindings(scope), role])
+      return row ? transcriptFromRow(row) : null
     }),
     completedReplies: (scope, id) => run(async tx => {
       validateId(id, 'messageId')
       const rows = await tx.query(query.completedReplies, [...scopeBindings(scope), id, 32])
       return rows.map(row => ({ id: String(row.id), revision: Number(row.revision), senderId: String(row.sender_id) }))
     }),
-    historyForSpeaker: (scope, speaker, limit, projection) => run(async tx => {
+    historyForSpeaker: (scope, speaker, limit) => run(async tx => {
       validateId(speaker, 'speakerId')
-      const rows = await tx.query(projection === 'transcript' ? query.transcriptForSpeaker : query.historyForSpeaker,
+      const rows = await tx.query(query.transcriptForSpeaker,
         [...scopeBindings(scope), speaker, pageLimit(limit)])
-      const messages = rows.map(messageFromRow)
-      if (projection === 'transcript') await assertTranscriptHints(tx, scope, messages.map(({ id, revision }) => ({ id, revision })))
+      const messages = rows.map(transcriptFromRow)
+      await assertTranscriptHints(tx, scope, messages.map(({ id, revision }) => ({ id, revision })))
       return messages
     }),
     contextState: (scope, speaker, ids) => run(async tx => {
@@ -314,12 +282,6 @@ export function createKanataMessageRepository(operation, tools) {
           dimensions: { trust: Number(item.trust), intimacy: Number(item.intimacy), understanding: Number(item.understanding) },
         })),
       }
-    }),
-    provenance: (worldId, id) => run(async tx => {
-      validateId(worldId, 'worldId')
-      validateId(id, 'messageId')
-      const [row] = await tx.query(query.provenance, [worldId, id])
-      return row ? provenanceFromRow(row) : null
     }),
     replies: (scope, id, cursor, limit = 50) => run(async tx => {
       validateId(id, 'messageId')
@@ -376,24 +338,25 @@ export function createKanataMessageRepository(operation, tools) {
     setStatus: (scope, id, expectedRevision, status) => run(async tx => {
       need(['complete', 'stopped'].includes(status), 'KANATA_MESSAGE_INVALID')
       const previous = await readForUpdate(tx, scope, id, expectedRevision)
-      const result = await tx.execute(write.status, [status, previous.worldId, previous.conversationId, id, expectedRevision])
-      need(result.affectedRows === 1, revisionConflict)
-      const next = { ...previous, status, revision: expectedRevision + 1 }
-      await addMessageAudit(tx, previous, next, tools)
-      return next
+      await auditMessageChange(tx,previous,{status},tools,async()=>{
+        const result = await tx.execute(write.status, [status, previous.worldId, previous.conversationId, id, expectedRevision])
+        need(result.affectedRows === 1, revisionConflict)
+      })
+      return { id, revision: expectedRevision + 1 }
     }),
     revise: (scope, id, expectedRevision, { content, deleted }) => run(async tx => {
       need(typeof deleted === 'boolean' && typeof content === 'string' && content.length <= 64000
         && (deleted || nonemptyText(content)), 'KANATA_MESSAGE_INVALID')
       const previous = await readForUpdate(tx, scope, id, expectedRevision)
-      const next = { ...previous, content: deleted ? deletedContent : content, deleted, revision: expectedRevision + 1 }
+      const change = { content: deleted ? deletedContent : content, deleted }
       await reviseMessageDependents(tx, previous, tools, async () => {
-        const result = await tx.execute(write.revise, [next.content, Number(deleted), previous.worldId, previous.conversationId, id, expectedRevision])
-        need(result.affectedRows === 1, revisionConflict)
-        if (deleted) await tx.execute(write.redact, [previous.worldId, id])
-        await addMessageAudit(tx, deleted ? { ...previous, content: deletedContent, deleted: true } : previous, next, tools)
-      }, { decode: messageFromRow, audit: addMessageAudit })
-      return next
+        await auditMessageChange(tx,previous,change,tools,async()=>{
+          const result = await tx.execute(write.revise, [change.content, Number(deleted), previous.worldId, previous.conversationId, id, expectedRevision])
+          need(result.affectedRows === 1, revisionConflict)
+          if (deleted) await tx.execute(write.redact, [previous.worldId, id])
+        })
+      })
+      return { id, revision: expectedRevision + 1 }
     }),
   }
 }

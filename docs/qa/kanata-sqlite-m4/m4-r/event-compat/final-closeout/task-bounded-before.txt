@@ -1,0 +1,22 @@
+(node:47672) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+{"probe":"G4 existing task DTO boundary","autonomySourceSha256":"e8200a27b38071860356cde231f486b4f134f876e08446e9352b922ab0b68d3b","sourceRows":1001,"maxSqlRows":50,"returnedSourceRefs":1001,"completeSourceArray":true}
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: A task list must not gather all source pages into a complete DTO
+
+true !== false
+
+    at file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata-m0/docs/qa/kanata-sqlite-m4/m4-r/event-compat/final-closeout/verify-task-bounds.mjs:37:10
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5) {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: true,
+  expected: false,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.14.1

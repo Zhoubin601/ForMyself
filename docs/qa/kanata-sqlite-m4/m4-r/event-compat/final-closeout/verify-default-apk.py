@@ -56,8 +56,10 @@ import {eventRows,memoryRows,eventEdges,eventFanout,replayEventRows,replayEffect
   from './docs/qa/kanata-sqlite-m4/completion/fixture.mjs';
 import {orderFixtureWrites,longAuditFixtureWrites}
   from './docs/qa/kanata-sqlite-m4/m4-r/event-compat/final-closeout/event-semantics-device.mjs';
+import {messageAuditSummary,messageAuditCount,messageFixtureWrites}
+  from './docs/qa/kanata-sqlite-m4/m4-r/event-compat/final-closeout/message-bounded-device.mjs';
 console.log(JSON.stringify([growthSeedSql,eventRows,memoryRows,eventEdges,eventFanout,replayEventRows,
-  replayEffectRows,grantOriginActors,...orderFixtureWrites,...longAuditFixtureWrites]));
+  replayEffectRows,grantOriginActors,...orderFixtureWrites,...longAuditFixtureWrites,messageAuditSummary,messageAuditCount,...messageFixtureWrites]));
 """] ).decode('utf-8'))
 registered = {entry['sql'] for entry in catalog['statements'].values()}
 assert not registered.intersection(fixture_sql), 'Synthetic fixture SQL is packaged'
@@ -72,7 +74,8 @@ report = {'package': 'com.yubin.formyself', 'canonical': canonical, 'syntheticAc
           'syntheticFixtureStatementsChecked': len(fixture_sql), 'schemaVersion': 5,
           'catalogEntries': len(catalog['statements']), 'catalogSha256': hashlib.sha256(catalog_bytes).hexdigest(),
           'apkSha256': hashlib.sha256(apk.read_bytes()).hexdigest(), 'installed': False, 'published': False}
-destination = Path(__file__).resolve().parent / 'event-bounded-default-gate.json'
+destination = Path(sys.argv[2]).resolve() if len(sys.argv) > 2 else Path(__file__).resolve().parent / 'event-bounded-default-gate.json'
+assert destination.parent == Path(__file__).resolve().parent, 'Evidence must stay in the current QA directory'
 with destination.open('x', encoding='utf-8', newline='\n') as handle:
     json.dump(report, handle, ensure_ascii=False, indent=2)
     handle.write('\n')

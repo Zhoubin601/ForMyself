@@ -678,3 +678,11 @@ revocationEffectAudit按冻结数组position分页，cursor绑定world/event/aud
 撤销的阶段前值保留在连接内TEMP表，重放后一次插入不可变审计，记录owner revision及命令标识；不更新旧审计、不修改001–005。TEMP暂存触发器合并CAS、状态与扩展规范化；父计划删除级联清理，子表具备索引。持久化与TEMP调用分别观测，原始总调用也保留；原128行批次、420秒设备门槛不变。
 
 实际npm run check为714 Node/406 Vue、strict正负及build通过；同一APK/catalog的API34/SQLCipher4.17.0四路径、长审计、provenance/有界读取1k10k、综合177113ms、批次强杀/恢复/幂等、v4→v5迁移及缺序号拒绝通过。普通APK实际DEX激活false、canonical legacy，无合成页面/seed，未安装发布。指纹与失败/复测见唯一清单E和其QA的event-bounded-fingerprints.json。此为内部实施检查点，E/G4/M4仍BLOCKED；普通消息/任务、A–G余项、统一生命周期/retained Heap、最终两轮全范围审查待闭环，M5 NO。
+
+### 2026-11-13 G4 普通消息接口切片检查点
+
+消息Repository的get/recent/older/locate/latest/replies/historyForSpeaker固定返回KanataTranscriptMessage，不再接受projection参数或提供完整provenance()回退；其lifeSources和未知扩展继续保存在SQLite。sourcePage按规范链接复合keyset返回≤50条，原始hint顺序、同一链接的不同扩展记录及未知字段通过jsonChunk的snapshot/extensions/audit选择读取；每块≤4096 Unicode码点、原生lookahead≤4097。游标绑定world/conversation/message/revision及选择，审计选择另含auditId和previous/next。完整重构只能在明确测试/导出sink中，不得在普通Runtime或Repository内循环gather。消息正文自身的长字段预算仍须按唯一清单继续闭环，不据此宣称全字段有界。
+
+revise/setStatus返回KanataMessageWriteReceipt（仅id/revision）。事务内以单槽TEMP暂存精确旧快照，实体CAS后插入审计并删除本次暂存，保持既有next_revision约束和删除脱敏；根消息及派生回复均不读取完整来源/扩展。失败由原BEGIN IMMEDIATE回滚，未知遗留stage不自动清理。输入幂等比较在SQLite JSON树内保留数组顺序/类型/缺失字段、忽略对象键顺序；没有新永久Schema。contracts、实际类型和strict正负例同步；主机/Android命令及真实结论见唯一清单G4与当前QA，未据内部切片提升M4。
+
+定向命令为`node --test tests/kanataSqliteRepository.test.js`（12项）；完整`npm run check`720 Node/406 Vue、strict正负及build通过。既有Windows白名单runner增加`-Mode message-bounded`及`-Mode workspace`选择器，并检查SystemUI和真实Activity RESUMED；新命令等待实际前台及可点击UI，不重试/吞掉旧会话失败。API34/SQLCipher4.17.0同APK/catalog的1k/10k、回滚/强停/冷开、宽来源回复、事件四路径、工作区和基础综合均有实际证据，普通APK实际DEX=false/legacy。失败与范围复用写入唯一清单G4及message-bounded-fingerprints.json，不代表G4/M4最终PASS；旧任务DTO、长正文与全生命周期仍待继续。

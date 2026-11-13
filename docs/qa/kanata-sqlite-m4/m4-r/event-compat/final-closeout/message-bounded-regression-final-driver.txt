@@ -1,0 +1,74 @@
+/data/app/~~V5PKLXjpOUa_3TmywCuGXQ==/com.yubin.formyself.m2qa-TZthk7qysBy_s5WrA2DjEA==/base.apk: 1 file pulled, 0 skipped. 30.8 MB/s (19039414 bytes in 0.590s)
+/data/app/~~ZnsqacaNdZLfaC_KmeWuEA==/com.yubin.formyself.m2qa.test-qa2kWqaTAYiMRZ0cUo37LA==/base.apk: 1 file pulled, 0 skipped. 21.4 MB/s (598741 bytes in 0.027s)
+▲ [WARNING] Ignoring this import because "src/features/chat/kanataManagement.css" was marked as having no side effects [ignored-bare-import]
+
+    src/features/chat/KanataView.vue:8:7:
+      8 │ import './kanataManagement.css'
+        ╵        ~~~~~~~~~~~~~~~~~~~~~~~~
+
+{"qaBundleSha256":"fbf44f33d730fd83e5cb1f069387f5785ab172bab570c77f3772445812d299b3"}
+{"initialForeground":[{"available":true,"generation":1},{"available":true,"generation":1}]}
+{
+  "passed": [
+    "schema-js-bridge-and-synthetic-seed",
+    "repository-batches-keyset-quote-locate-fk-and-conversation",
+    "concurrent-cas-real-commit-failure-and-derived-delete",
+    "close-reopen-wrong-password-replay-and-lease"
+  ],
+  "health": {
+    "cipher": "4.17.0 community",
+    "journalMode": "wal",
+    "synchronous": 2,
+    "foreignKeys": 1,
+    "cacheSize": -2048,
+    "checkpoint": 1000,
+    "busyTimeout": 5000
+  }
+}
+{"resumedForeground":[{"available":true,"generation":9},{"available":true,"generation":9}]}
+{
+  "envelope": "PASS_M0_V1_CROSS_UNWRAP",
+  "challenge": "PASS_EXPIRED_REJECTED",
+  "background": "PASS_OLD_LEASE_REJECTED",
+  "plaintext": "PASS_NO_PLAINTEXT_HEADER_OR_SYNTHETIC_SECRET_IN_PID_LOGS_AND_PREFERENCES",
+  "sigkill": {
+    "oldPid": "5360",
+    "newPid": "5553",
+    "status": "complete",
+    "revision": 1,
+    "auditAbsent": true
+  }
+}
+{
+  "passed": [
+    "bounded-window-scroll-anchor-quote-and-history",
+    "group-speakers-atomic-bubbles-retry-and-jump",
+    "deferred-reply-persists-and-resumes",
+    "fast-world-switch-late-completion-character-and-lock"
+  ],
+  "controlledModelCalls": 5,
+  "realModelCalls": 0
+}
+{
+  "m3": [
+    "world-card-lore-scope-and-archive",
+    "memory-archive-source-revision-and-revoke-before-content",
+    "same-path-event-revoke-isolation",
+    "task-event-usage-commit-failure-and-idempotency"
+  ],
+  "ownerSwitch": "PASS"
+}
+{
+  "m3Sigkill": {
+    "oldPid": "5553",
+    "newPid": "5674",
+    "before": 1800000,
+    "absent": true,
+    "eventCount": 1,
+    "after": 3600000
+  }
+}
+{
+  "inventory": "PASS_INCOMPLETE_AND_LEGACY_REJECTED",
+  "futureSchema": "PASS_READ_ONLY_REJECTION"
+}

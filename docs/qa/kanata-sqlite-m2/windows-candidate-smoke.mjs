@@ -121,7 +121,43 @@ try {
   let password
   try { password = JSON.stringify(bytes.toString('base64')) }
   finally { bytes.fill(0) }
-  if(process.argv.includes('--event-semantics')){
+  if(process.argv.includes('--workspace')){
+    const fixture=m2Fixture(),sample=fixture.messages[0]
+    const input={worldId:sample.worldId,conversationId:sample.conversationId,worldName:fixture.worlds.find(row=>row.id===sample.worldId).name,
+      actorId:fixture.instances.find(row=>row.worldId===sample.worldId).id}
+    const result=await evaluate(`window.m4QaWorkspaceOnly(${password},${JSON.stringify(fixture)},${JSON.stringify(m2FixtureCommands(fixture))},${JSON.stringify(input)})`)
+    console.log(JSON.stringify({m4Workspace:result},null,2))
+    assert.equal(result.error,undefined);assert.equal(result.passed.length,2)
+  }else if(process.argv.includes('--message-bounded')){
+    const fixture=m2Fixture(),{worldId,conversationId}=fixture.messages[0],scope={worldId,conversationId}
+    let finished=false,last=''
+    const pending=evaluate(`window.messageBoundedQa(${password},${JSON.stringify(fixture)},${JSON.stringify(m2FixtureCommands(fixture))},${JSON.stringify(fixtureWrites.deferredCommit)})`,420000).finally(()=>{finished=true})
+    const observe=async()=>{while(!finished){await delay(1000);if(finished)break
+      const phase=await evaluate('window.messageBoundedPhase??null',5000).catch(()=>null)
+      const text=JSON.stringify(phase)
+      if(text!==last){last=text;console.log(JSON.stringify({messagePhase:phase}))}
+    }}
+    const [result]=await Promise.all([pending,observe()])
+    console.log(JSON.stringify({messageBounded:result},null,2))
+    assert.equal(result.status,'PASS');assert.match(result.health.cipher,/^4\.17\.0/)
+    assert.equal(await evaluate(`window.messageBoundedArm(${password},${JSON.stringify(scope)})`),'armed')
+    let state
+    for(let i=0;i<80;i++){
+      state=await evaluate('window.messageBoundedState()')
+      if(state!=='idle')break
+      await delay(100)
+    }
+    assert.equal(state,'message-audit-uncommitted')
+    const oldPid=pid
+    adb('shell','run-as',packageName,'kill','-9',oldPid)
+    await delay(300);assert.equal(adb('shell','pidof '+packageName+' || true'),'')
+    detach();adb('shell','am','start','-W','-n',packageName+'/com.yubin.formyself.MainActivity')
+    await delay(600);evaluate=await attach();assert.notEqual(pid,oldPid)
+    assert.equal(await initialize(evaluate),true)
+    const recovery=await evaluate(`window.messageBoundedRecover(${password},${JSON.stringify(scope)})`)
+    console.log(JSON.stringify({messageCrashRecovery:{oldPid,newPid:pid,...recovery}},null,2))
+    assert.deepEqual(recovery,{before:{revision:3,audits:2},after:{revision:4,audits:3},staleRetryRejected:true})
+  }else if(process.argv.includes('--event-semantics')){
     const fixture=m2Fixture()
     const result=await evaluate(`window.eventSemanticsQa(${password},${JSON.stringify(fixture)},${JSON.stringify(m2FixtureCommands(fixture))})`,240000)
     console.log(JSON.stringify({eventSemantics:result},null,2))
@@ -326,6 +362,20 @@ try {
       assert.equal(recovered.confirmed.revoked,size+1)
     }
   } else if (process.argv.includes('--repository') || process.argv.includes('--full')) {
+    async function waitForeground(label){
+      const states=[]
+      let previousGeneration
+      for(let attempt=0;attempt<50;attempt++){
+        const state=await evaluate(`window.m2QaForegroundState(${password})`)
+        states.push(state)
+        if(state.available&&state.generation===previousGeneration){console.log(JSON.stringify({[label]:states}));return}
+        previousGeneration=state.available?state.generation:undefined
+        await delay(100)
+      }
+      console.log(JSON.stringify({[label]:states}))
+      assert.fail('New command requires the actual stable Candidate foreground state')
+    }
+    await waitForeground('initialForeground')
     const fixture = m2Fixture()
     const input = {
       commands: m2FixtureCommands(fixture), inspection: auditInspection, deferredCommit: fixtureWrites.deferredCommit,
@@ -362,6 +412,7 @@ try {
       await delay(1200)
       adb('shell', 'am', 'start', '-W', '-n', packageName + '/com.yubin.formyself.MainActivity')
       assert.equal(await evaluate("window.m2QaChallenge('revoked')"), 'background-lease-rejected')
+      await waitForeground('resumedForeground')
       const oldPid = pid
       await evaluate(`window.m2QaArmCrash(${password}, ${JSON.stringify(scope)})`)
       let armed
@@ -370,6 +421,7 @@ try {
         if (armed !== 'idle') break
         await delay(100)
       }
+      if(armed!=='uncommitted-write-and-audit')console.log(JSON.stringify({crashDiagnostic:await evaluate('window.m2QaCrashDiagnostic??null')}))
       assert.equal(armed, 'uncommitted-write-and-audit')
       adb('shell', 'run-as', packageName, 'kill', '-9', oldPid)
       await delay(300)

@@ -1,0 +1,18 @@
+/data/app/~~TNU6aH9pUalLx6id8RgOPQ==/com.yubin.formyself.m2qa-avrl-jB3cdOOqaKKemmdqg==/base.apk: 1 file pulled, 0 skipped. 32.2 MB/s (19039414 bytes in 0.563s)
+/data/app/~~vrlxfpB4FqIsbMx_ZqRvrw==/com.yubin.formyself.m2qa.test-Sfe6sJXcpDWw_mM0vCjW9A==/base.apk: 1 file pulled, 0 skipped. 28.0 MB/s (598741 bytes in 0.020s)
+▲ [WARNING] Ignoring this import because "src/features/chat/kanataManagement.css" was marked as having no side effects [ignored-bare-import]
+
+    src/features/chat/KanataView.vue:8:7:
+      8 │ import './kanataManagement.css'
+        ╵        ~~~~~~~~~~~~~~~~~~~~~~~~
+
+{"qaBundleSha256":"fbf44f33d730fd83e5cb1f069387f5785ab172bab570c77f3772445812d299b3"}
+{
+  "m4Workspace": {
+    "passed": [
+      "workspace-directory-scoped-conversation-and-return",
+      "workspace-domain-summaries-grant-and-revoke-invalidation"
+    ],
+    "groupCases": []
+  }
+}

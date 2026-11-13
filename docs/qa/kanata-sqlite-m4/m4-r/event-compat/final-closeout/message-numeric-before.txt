@@ -1,0 +1,26 @@
+(node:35960) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✖ G4 message idempotency retains JavaScript JSON numeric equality for historical unknown fields (107.8756ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 505.6374
+
+✖ failing tests:
+
+test at tests\kanataSqliteRepository.test.js:337:1
+✖ G4 message idempotency retains JavaScript JSON numeric equality for historical unknown fields (107.8756ms)
+  Error: KANATA_MESSAGE_ID_CONFLICT
+      at requireSqliteValue (file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata-m0/src/features/chat/storage/sqlite/kanataRepositoryValues.js:6:39)
+      at insertMessage (file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata-m0/src/features/chat/storage/sqlite/kanataMessageRepository.js:100:5)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async transaction (file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata-m0/tests/kanataSqliteRepository.test.js:47:23)
+      at async TestContext.<anonymous> (file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata-m0/tests/kanataSqliteRepository.test.js:344:16)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:358:3) {
+    code: 'KANATA_MESSAGE_ID_CONFLICT'
+  }
