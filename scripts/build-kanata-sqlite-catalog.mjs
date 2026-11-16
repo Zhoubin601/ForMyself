@@ -87,6 +87,8 @@ if (process.argv.includes('--synthetic')) {
   const {messageAuditSummary,messageAuditCount,messageFixtureWrites}=await import('../docs/qa/kanata-sqlite-m4/m4-r/event-compat/final-closeout/message-bounded-device.mjs')
   add('query','business',[messageAuditSummary,messageAuditCount])
   add('write','business',messageFixtureWrites)
+  const {messageTextAppendSql}=await import('../docs/qa/kanata-sqlite-m4/m4-r/event-compat/final-closeout/message-text-device.mjs')
+  add('write','business',[messageTextAppendSql])
   const {actionFixtureWrite,orderFixtureWrites,longAuditFixtureWrites}=await import('../docs/qa/kanata-sqlite-m4/m4-r/event-compat/final-closeout/event-semantics-device.mjs')
   add('write','business',[actionFixtureWrite,...orderFixtureWrites,...longAuditFixtureWrites])
   const { orderLegacyCounts, orderCounts, orderSchemaOrphan, orderBusinessOrphan, orderMutations } =

@@ -1,6 +1,7 @@
 import { auditOracle,correctionOracle } from '../kanata-sqlite-m4/m4-r/event-compat/final-closeout/bounded-event-oracle.mjs'
 import { runEventSemanticsDevice } from '../kanata-sqlite-m4/m4-r/event-compat/final-closeout/event-semantics-device.mjs'
 import { runMessageBoundedDevice,armMessageCrash,recoverMessageCrash,messageCrashState } from '../kanata-sqlite-m4/m4-r/event-compat/final-closeout/message-bounded-device.mjs'
+import { runMessageTextDevice,verifyMessageTextColdReopen } from '../kanata-sqlite-m4/m4-r/event-compat/final-closeout/message-text-device.mjs'
 import {runTaskReadDevice,armTaskCrash,recoverTaskCrash,taskCrashState} from '../kanata-sqlite-m4/m4-r/event-compat/final-closeout/task-read-device.mjs'
 import { memoryRows, memoryEdges, memoryWideSources, eventRows, eventEdges, seedFanoutLinks, replayEventRows, replayEffectRows, fanoutAuditInspection, grantOriginActors, grantOrigins, grantMessageTags, seedWideChatSources, chatReplyTagCheck, eventReadEffects, eventReadAudits, eventReadRevision, eventReadShapeEdges, eventReadPublic, seedEventReadShape, chatEventActor, chatEventSource } from '../kanata-sqlite-m4/completion/fixture.mjs'
 import { growthSeedSql } from '../kanata-sqlite-m4/fixture.mjs'
@@ -15,7 +16,7 @@ import { sha256Text } from '../../../src/shared/crypto/sha256Text.js'
 import { restoreState } from '../../../src/platform/storage/restoreState.js'
 import { runM3DeviceScenario } from '../kanata-sqlite-m3/device-scenario.mjs'
 import { createPinia, setActivePinia } from 'pinia'
-import { createApp, h, nextTick, ref } from 'vue'
+import { createApp, h, nextTick, reactive, ref } from 'vue'
 import { registerPlugin } from '@capacitor/core'
 import { useAuthStore } from '../../../src/stores/auth.js'
 import { createProtectedAccessStore } from '../../../src/stores/protectedAccess.js'
@@ -50,6 +51,7 @@ const registry = createProtectedModuleRegistry([{
 const access = createProtectedAccessStore(registry, 'm2QaAccess')()
 const bridge = registerPlugin('KanataSqlite')
 let trace
+let queryIntercept
 let eventProfile
 const profileNames = new Map([...eventRevocationQueries, ...eventRevocationWrites].map((sql, index) =>
   [sha256Text(sql), ['root', 'projected', 'selectionBatch', 'effectProof', 'baselineProof', 'completedEffects',
@@ -117,6 +119,7 @@ const candidate = createKanataSqliteCandidate({
     },
     async query(command) {
       if(trace?.failQuery===command.statement)throw new Error('EVENT_READ_QUERY_INJECTED')
+      if(queryIntercept)await queryIntercept(command)
       const started=performance.now()
       const result = await profileBridge("query", command, bridge.query)
       if (trace) {
@@ -2072,6 +2075,23 @@ window.messageBoundedState=messageCrashState
 window.messageBoundedRecover=async(password,scope)=>{
   session(password)
   try{return await recoverMessageCrash(candidate,scope)}
+  catch(error){return {error:error.code??error.message,stack:error.stack}}
+  finally{auth.expireSession();await candidate.release()}
+}
+
+window.messageTextQa=async(password,fixture,commands)=>{
+  session(password)
+  try{return await runMessageTextDevice({
+    candidate,auth,pinia,createApp,h,nextTick,ref,reactive,KanataConversationView,AppFeedbackHost,
+    setTrace:value=>{trace=value},
+    setQueryIntercept:value=>{queryIntercept=value},
+  },fixture,commands)}
+  catch(error){return {error:error.code??error.message,stack:error.stack}}
+  finally{queryIntercept=undefined;trace=undefined;auth.expireSession();await candidate.release()}
+}
+window.messageTextColdReopen=async(password,fixture)=>{
+  session(password)
+  try{return await verifyMessageTextColdReopen(candidate,fixture)}
   catch(error){return {error:error.code??error.message,stack:error.stack}}
   finally{auth.expireSession();await candidate.release()}
 }

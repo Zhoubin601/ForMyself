@@ -1,0 +1,52 @@
+﻿powershell : /data/app/~~Tr2tG6P5wAdRoFnjrNjUTg==/com.yubin.formyself.m2qa-EyWiBle7NtXxKx84zuExEA==/base.apk: 1 file pu
+lled, 0 skipped. 32.0 MB/s (19045558 bytes in 0.567s)
+At line:7 char:11
++ $output = powershell -NoProfile -ExecutionPolicy Bypass -File docs/qa ...
++           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (/data/app/~~Tr2...ytes in 0.567s):String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+/data/app/~~G0H8RCVUkF-FVETFzFQM_w==/com.yubin.formyself.m2qa.test-QjkKbP2CCU8ZuOWwSnn-XA==/base.apk: 1 file pulled, 0 
+skipped. 31.3 MB/s (583140 bytes in 0.018s)
+node : ▲ [WARNING] Ignoring this import because "src/features/chat/kanataManagement.css" was marked as having no side e
+ffects [ignored-bare-import]
+At D:\2026Autumn Semester File\GitHub\formyself-app\.worktrees\kanata-m0\docs\qa\kanata-sqlite-m2\run-windows-candidate
+.ps1:84 char:1
++ node docs/qa/kanata-sqlite-m2/windows-candidate-smoke.mjs @scenarioAr ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (▲ [WARNING] Ign...ed-bare-import]:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+    src/features/chat/KanataView.vue:8:7:
+      8 │ import './kanataManagement.css'
+        ╵        ~~~~~~~~~~~~~~~~~~~~~~~~
+
+{"qaBundleSha256":"7541787181bf505ea6cf4be9638fa83fe51c84e1b8605680c7fbc71ac51b72ac"}
+{
+  "messageText": {
+    "error": "PANEL_LAST_FRAGMENT_BOUND",
+    "stack": "Error: PANEL_LAST_FRAGMENT_BOUND\n    at check3 (blob:https://localhost/c734c3ea-1754-46d2-8bed-ea8fbc0d8993:64420:25)\n    at runMessageTextDevice (blob:https://localhost/c734c3ea-1754-46d2-8bed-ea8fbc0d8993:64763:7)\n    at async window.messageTextQa (blob:https://localhost/c734c3ea-1754-46d2-8bed-ea8fbc0d8993:73478:12)"
+  }
+}
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
++ actual - expected
+
++ undefined
+- 'PASS'
+
+    at file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata-m0/docs/qa/kanata-sqlite-m2/windo
+ws-candidate-smoke.mjs:193:12 {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: undefined,
+  expected: 'PASS',
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.14.1

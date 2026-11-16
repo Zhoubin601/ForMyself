@@ -186,6 +186,20 @@ try {
     const recovery=await evaluate(`window.messageBoundedRecover(${password},${JSON.stringify(scope)})`)
     console.log(JSON.stringify({messageCrashRecovery:{oldPid,newPid:pid,...recovery}},null,2))
     assert.deepEqual(recovery,{before:{revision:3,audits:2},after:{revision:4,audits:3},staleRetryRejected:true})
+  }else if(process.argv.includes('--message-text')){
+    const fixture=m2Fixture()
+    const result=await evaluate(`window.messageTextQa(${password},${JSON.stringify(fixture)},${JSON.stringify(m2FixtureCommands(fixture))})`,420000)
+    console.log(JSON.stringify({messageText:result},null,2))
+    assert.equal(result.status,'PASS');assert.match(result.health.cipher,/^4\.17\.0/)
+    const oldPid=pid
+    adb('shell','run-as',packageName,'kill','-9',oldPid)
+    await delay(300);assert.equal(adb('shell','pidof '+packageName+' || true'),'')
+    detach();adb('shell','am','start','-W','-n',packageName+'/com.yubin.formyself.MainActivity')
+    await delay(600);evaluate=await attach();assert.notEqual(pid,oldPid)
+    assert.equal(await initialize(evaluate),true)
+    const cold=await evaluate(`window.messageTextColdReopen(${password},${JSON.stringify(fixture)})`)
+    console.log(JSON.stringify({messageTextColdReopen:{oldPid,newPid:pid,...cold}},null,2))
+    assert.deepEqual(cold,{coldReopen64kLength:64000,coldReopenNulMatched:true})
   }else if(process.argv.includes('--event-semantics')){
     const fixture=m2Fixture()
     const result=await evaluate(`window.eventSemanticsQa(${password},${JSON.stringify(fixture)},${JSON.stringify(m2FixtureCommands(fixture))})`,240000)

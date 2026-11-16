@@ -1,7 +1,7 @@
 param(
     [Parameter(Mandatory)] [string] $ManifestPath,
     [Parameter(Mandatory)] [string] $EvidenceDirectory,
-    [ValidateSet('repository','full','mr1-fanout','mr1-verify','mr2-grants','mr2-chat-provenance','mr2-event-provenance','mr2-event-read','array-order','event-semantics','message-bounded','task-read','workspace')] [string] $Mode = 'full',
+    [ValidateSet('repository','full','mr1-fanout','mr1-verify','mr2-grants','mr2-chat-provenance','mr2-event-provenance','mr2-event-read','array-order','event-semantics','message-bounded','message-text','task-read','workspace')] [string] $Mode = 'full',
     [switch] $M4Growth,
     [switch] $M4Completion
 )
@@ -80,7 +80,10 @@ if (-not $resumed) { throw 'Synthetic Activity is not resumed; no business scena
 $scenarioArgs = @($manifestPath, "--$Mode")
 if ($M4Growth) { $scenarioArgs += '--m4-growth' }
 if ($M4Completion) { $scenarioArgs += '--m4-completion' }
+$ErrorActionPreference = 'Continue'
 node docs/qa/kanata-sqlite-m2/windows-candidate-smoke.mjs @scenarioArgs *> "$evidence/result.txt"
+$code = $LASTEXITCODE
+$ErrorActionPreference = 'Stop'
 $code = $LASTEXITCODE
 & $adb -s $serial logcat -d -v threadtime > "$evidence/logcat.txt"
 Get-Content -LiteralPath "$evidence/result.txt"

@@ -1,0 +1,52 @@
+﻿powershell : /data/app/~~F-C2UG2g5wgYq9454ICDww==/com.yubin.formyself.m2qa-4wqo-QsaCpAg0PKgp81sag==/base.apk: 1 file pu
+lled, 0 skipped. 32.2 MB/s (19045558 bytes in 0.564s)
+At line:7 char:11
++ $output = powershell -NoProfile -ExecutionPolicy Bypass -File docs/qa ...
++           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (/data/app/~~F-C...ytes in 0.564s):String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+/data/app/~~EJx5pSCbMDTjIv5D7yENMQ==/com.yubin.formyself.m2qa.test-KL4xxUEELH7uyTH91TrHcw==/base.apk: 1 file pulled, 0 
+skipped. 23.4 MB/s (583140 bytes in 0.024s)
+node : ▲ [WARNING] Ignoring this import because "src/features/chat/kanataManagement.css" was marked as having no side e
+ffects [ignored-bare-import]
+At D:\2026Autumn Semester File\GitHub\formyself-app\.worktrees\kanata-m0\docs\qa\kanata-sqlite-m2\run-windows-candidate
+.ps1:84 char:1
++ node docs/qa/kanata-sqlite-m2/windows-candidate-smoke.mjs @scenarioAr ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (▲ [WARNING] Ign...ed-bare-import]:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+    src/features/chat/KanataView.vue:8:7:
+      8 │ import './kanataManagement.css'
+        ╵        ~~~~~~~~~~~~~~~~~~~~~~~~
+
+{"qaBundleSha256":"8eb3264ec81591f8391877328276f6820ace5167f6129ec820b4eaed085dc2ee"}
+{
+  "messageText": {
+    "error": "UI_MOUNT_TIMEOUT",
+    "stack": "Error: UI_MOUNT_TIMEOUT\n    at settle (blob:https://localhost/044848ba-2272-46fb-acef-aee77cd81001:64434:45)\n    at async runMessageTextDevice (blob:https://localhost/044848ba-2272-46fb-acef-aee77cd81001:64742:7)\n    at async window.messageTextQa (blob:https://localhost/044848ba-2272-46fb-acef-aee77cd81001:73464:12)"
+  }
+}
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
++ actual - expected
+
++ undefined
+- 'PASS'
+
+    at file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata-m0/docs/qa/kanata-sqlite-m2/windo
+ws-candidate-smoke.mjs:193:12 {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: undefined,
+  expected: 'PASS',
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.14.1

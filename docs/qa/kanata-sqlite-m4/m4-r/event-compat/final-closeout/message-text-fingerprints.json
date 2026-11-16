@@ -1,0 +1,76 @@
+﻿{
+    "baseCommit":  "ebec33ba97b3f9eb053643beaf75d054cac83f15",
+    "device":  {
+                   "avd":  "kanata_m2_api34",
+                   "serial":  "emulator-5582",
+                   "api":  34,
+                   "fingerprint":  "google/sdk_gphone64_x86_64/emu64xa:14/UE1A.230829.050/12077443:userdebug/dev-keys",
+                   "sqlcipher":  "4.17.0"
+               },
+    "ordinaryGate":  {
+                         "package":  "com.yubin.formyself",
+                         "canonical":  "legacy",
+                         "syntheticActivation":  false,
+                         "activationEvidence":  "Packaged DEX BuildConfig.KANATA_M2_SYNTHETIC=false",
+                         "syntheticPageAbsent":  true,
+                         "syntheticStatementsAbsent":  true,
+                         "syntheticFixtureStatementsChecked":  25,
+                         "schemaVersion":  5,
+                         "catalogEntries":  669,
+                         "catalogSha256":  "6811ce40d67030debb76d7b16bd4bf68586d4bb6d35e0d3ce129afa09751f9e8",
+                         "apkSha256":  "dc9193cca449cd084f5bf6fb66efab8621e3e9555d27173d1238ee75152607d0",
+                         "installed":  false,
+                         "published":  false
+                     },
+    "retest14DriverSha256":  "9d0bfcfc1597372120d5cbf5cf99d736972137ea2fcc9726848d605ada4a4524",
+    "retest14Artifacts":  {
+                              "com.yubin.formyself.m2qa.test-install.txt":  {
+                                                                                "sha256":  "4dbdc95cc34f134cec3335a1cb220862b88ecce0d65412b9bd88908c08194dc9",
+                                                                                "size":  78
+                                                                            },
+                              "com.yubin.formyself.m2qa-install.txt":  {
+                                                                           "sha256":  "4dbdc95cc34f134cec3335a1cb220862b88ecce0d65412b9bd88908c08194dc9",
+                                                                           "size":  78
+                                                                       },
+                              "com.yubin.formyself.m2qa.test-badging.txt":  {
+                                                                                "sha256":  "3690acec15ee7b77b3b028b3a2b9c86e6d1eb760b1f071ca65dce76a010bd798",
+                                                                                "size":  1382
+                                                                            },
+                              "apk-sha256.txt":  {
+                                                     "sha256":  "ce10c6305ccfa7d81573957055d46ae0a920c05e202836fc47bc882059a95fc0",
+                                                     "size":  376
+                                                 },
+                              "launch.txt":  {
+                                                 "sha256":  "413ddc834f17f7f37c66cf833cf6c3d57dfba9fb638cb446b58bbf1136190052",
+                                                 "size":  456
+                                             },
+                              "com.yubin.formyself.m2qa-badging.txt":  {
+                                                                           "sha256":  "c64d18c6643d2a773dbf75e963cdfa005114d6d176a77c213c053f39c5e9ab73",
+                                                                           "size":  10998
+                                                                       },
+                              "com.yubin.formyself.m2qa-base.apk":  {
+                                                                        "sha256":  "a44433d20e91eb24e69dd5f03ec7c8e675b54e96940212410ca6a939ae59f02c",
+                                                                        "size":  19045558
+                                                                    },
+                              "foreground-check.txt":  {
+                                                           "sha256":  "ecdd56f621b6f39850fc2a3e9fcdc75c1ac0f3335949f2546fe41fd2b0575461",
+                                                           "size":  242
+                                                       },
+                              "com.yubin.formyself.m2qa.test-base.apk":  {
+                                                                             "sha256":  "d77d0207c0c778c42e93779bd16ceeabfaade152d01b6d500ac91e6e92e9923a",
+                                                                             "size":  583140
+                                                                         },
+                              "instrumentation.txt":  {
+                                                          "sha256":  "7e402c31dcfca6ed1ee557881868eb49007fef1238dda77d4dd8140891d23fe6",
+                                                          "size":  1614
+                                                      },
+                              "result.txt":  {
+                                                 "sha256":  "62bf509d122d25554cf8ab6231f89f9d81aabad0ce14ac60841f41b65140b198",
+                                                 "size":  4756
+                                             },
+                              "logcat.txt":  {
+                                                 "sha256":  "377273c94914c725a53cba58bcfa78e800abea0d698d0d213587f481576219d0",
+                                                 "size":  803570
+                                             }
+                          }
+}

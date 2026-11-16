@@ -1,0 +1,101 @@
+﻿powershell : /data/app/~~QVJBjQwtI6kRXNDW0snvjA==/com.yubin.formyself.m2qa-Cd2PUR10f3cz2ni1zS60pw==/base.apk: 1 file pu
+lled, 0 skipped. 35.3 MB/s (19045558 bytes in 0.515s)
+At line:7 char:11
++ $output = powershell -NoProfile -ExecutionPolicy Bypass -File docs/qa ...
++           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (/data/app/~~QVJ...ytes in 0.515s):String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+/data/app/~~TAv-kXIEA8QEvkl50n7fFA==/com.yubin.formyself.m2qa.test-KIuBk4c1B6MY20qjZ10JiA==/base.apk: 1 file pulled, 0 
+skipped. 28.5 MB/s (583140 bytes in 0.019s)
+node : ▲ [WARNING] Ignoring this import because "src/features/chat/kanataManagement.css" was marked as having no side e
+ffects [ignored-bare-import]
+At D:\2026Autumn Semester File\GitHub\formyself-app\.worktrees\kanata-m0\docs\qa\kanata-sqlite-m2\run-windows-candidate
+.ps1:84 char:1
++ node docs/qa/kanata-sqlite-m2/windows-candidate-smoke.mjs @scenarioAr ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (▲ [WARNING] Ign...ed-bare-import]:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+    src/features/chat/KanataView.vue:8:7:
+      8 │ import './kanataManagement.css'
+        ╵        ~~~~~~~~~~~~~~~~~~~~~~~~
+
+{"qaBundleSha256":"5142436e256cc88975cdfaa42406e44b92171adf889dc0ecd64b11a9c02b943b"}
+{
+  "messageText": {
+    "status": "PASS",
+    "health": {
+      "cipher": "4.17.0 community",
+      "journalMode": "wal",
+      "synchronous": 2,
+      "foreignKeys": 1,
+      "cacheSize": -2048,
+      "checkpoint": 1000,
+      "busyTimeout": 5000
+    },
+    "verifiedChunks": [
+      {
+        "id": "mt-preview-0",
+        "field": "content",
+        "chunks": 3,
+        "utf16": 4102
+      },
+      {
+        "id": "mt-preview-0",
+        "field": "senderName",
+        "chunks": 5,
+        "utf16": 4002
+      },
+      {
+        "id": "mt-preview-1",
+        "field": "content",
+        "chunks": 1,
+        "utf16": 6
+      },
+      {
+        "id": "mt-preview-1",
+        "field": "senderName",
+        "chunks": 5,
+        "utf16": 4002
+      },
+      {
+        "id": "mt-preview-2",
+        "field": "content",
+        "chunks": 3,
+        "utf16": 4099
+      },
+      {
+        "id": "mt-preview-2",
+        "field": "senderName",
+        "chunks": 5,
+        "utf16": 4002
+      },
+      {
+        "id": "mt-preview-3",
+        "field": "content",
+        "chunks": 94,
+        "utf16": 64000
+      },
+      {
+        "id": "mt-preview-3",
+        "field": "senderName",
+        "chunks": 5,
+        "utf16": 4002
+      }
+    ],
+    "textQueries": 4,
+    "realModelCalls": 0,
+    "maxRows": 3,
+    "maxText": 4097
+  }
+}
+{
+  "messageTextColdReopen": {
+    "oldPid": "10743",
+    "newPid": "10927",
+    "coldReopen64kLength": 64000,
+    "coldReopenNulMatched": true
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "package": "com.yubin.formyself",
+  "canonical": "legacy",
+  "syntheticActivation": false,
+  "activationEvidence": "Packaged DEX BuildConfig.KANATA_M2_SYNTHETIC=false",
+  "syntheticPageAbsent": true,
+  "syntheticStatementsAbsent": true,
+  "syntheticFixtureStatementsChecked": 25,
+  "schemaVersion": 5,
+  "catalogEntries": 669,
+  "catalogSha256": "6811ce40d67030debb76d7b16bd4bf68586d4bb6d35e0d3ce129afa09751f9e8",
+  "apkSha256": "dc9193cca449cd084f5bf6fb66efab8621e3e9555d27173d1238ee75152607d0",
+  "installed": false,
+  "published": false
+}

@@ -1,0 +1,52 @@
+﻿powershell : /data/app/~~SliY4Juv_xC8GazzFLXgNQ==/com.yubin.formyself.m2qa-_kvXaUhm1QjlYv53Sa1GEA==/base.apk: 1 file pu
+lled, 0 skipped. 30.6 MB/s (19045558 bytes in 0.593s)
+At line:7 char:11
++ $output = powershell -NoProfile -ExecutionPolicy Bypass -File docs/qa ...
++           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (/data/app/~~Sli...ytes in 0.593s):String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+/data/app/~~LmYccjNomZXNA0WPMtW_gg==/com.yubin.formyself.m2qa.test-JGrFcLhApUh-X6hgg5vNeg==/base.apk: 1 file pulled, 0 
+skipped. 21.0 MB/s (583140 bytes in 0.026s)
+node : ▲ [WARNING] Ignoring this import because "src/features/chat/kanataManagement.css" was marked as having no side e
+ffects [ignored-bare-import]
+At D:\2026Autumn Semester File\GitHub\formyself-app\.worktrees\kanata-m0\docs\qa\kanata-sqlite-m2\run-windows-candidate
+.ps1:84 char:1
++ node docs/qa/kanata-sqlite-m2/windows-candidate-smoke.mjs @scenarioAr ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (▲ [WARNING] Ign...ed-bare-import]:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+    src/features/chat/KanataView.vue:8:7:
+      8 │ import './kanataManagement.css'
+        ╵        ~~~~~~~~~~~~~~~~~~~~~~~~
+
+{"qaBundleSha256":"c4f5bf855c1886e59b0826cdde2e8ae2ca2b40727cd6db5e4ccbdff367afedf3"}
+{
+  "messageText": {
+    "error": "UI_MOUNT_TIMEOUT:text=:html=<!---->:vueErr=TypeError: Cannot read properties of null (reading 'value')\n    at ComputedRefImpl.fn (blob:https://localhost/9bcad2e2-3f3a-4488-8746-14e3fb5be5c2:56020:87)\n    at refreshComputed (blob:https://localhost/9bcad2e2-3f3a-4488-8746-14e3fb5be5c2:9260:29)\n    at get value [as value] (blob:https://localhost/9bcad2e2-3f3a-4488-8746-14e3fb5be5c2:10876:9)\n    at Proxy.<anonymous> (blob:https://localhost/9bcad2e2-3f3a-4488-8746-14e3fb5be5c2:56386:28)\n    at renderComponentRoot (blob:https://localhost/9bcad2e2-3f3a-4488-8746-14e3fb5be5c2:12814:16)\n    at ReactiveEffect.componentUpdateFn [as fn] (blob:https://localhost/9bcad2e2-3f3a-4488-8746-14e3fb5be5c2:14046:46)\n    at ReactiveEffect.run (blob:https://localhost/9bcad2e2-3f3a-4488-8746-14e3fb5be5c2:10303:23)\n    at setupRenderEffect (blob:https://localhost/9bcad2e2-3f3a-4488-8746-14e3fb5be5c2:14181:5)\n    at mountComponent (blob:https://localhost/9bcad2e2-3f3a-4488-8746-14e3fb5be5c2:13953:7)\n    at processComponent (blob:https://localhost/9bcad2e2-3f3a-4488-8746-14e3fb5be5c2:13905:9)\nTypeError: Cannot read properties of undefined (reading 'length')\n    at Proxy.<anonymous> (blob:https://localhost/9bcad2e2-3f3a-4488-8746-14e3fb5be5c2:56386:34)\n    at renderComponentRoot (blob:https://localhost/9bcad2e2-3f3a-4488-8746-14e3fb5be5c2:12814:16)\n    at ReactiveEffect.componentUpdateFn [as fn] (blob:https://localhost/9bcad2e2-3f3a-4488-8746-14e3fb5be5c2:14124:26)\n    at ReactiveEffect.run (blob:https://localhost/9bcad2e2-3f3a-4488-8746-14e3fb5be5c2:10303:23)\n    at ReactiveEffect.runIfDirty (blob:https://localhost/9bcad2e2-3f3a-4488-8746-14e3fb5be5c2:10341:16)\n    at callWithErrorHandling (blob:https://localhost/9bcad2e2-3f3a-4488-8746-14e3fb5be5c2:10899:33)\n    at flushJobs (blob:https://localhost/9bcad2e2-3f3a-4488-8746-14e3fb5be5c2:11098:9)\n:isAvail=true",
+    "stack": "Error: UI_MOUNT_TIMEOUT:text=:html=<!---->:vueErr=TypeError: Cannot read properties of null (reading 'value')\n    at ComputedRefImpl.fn (blob:https://localhost/9bcad2e2-3f3a-4488-8746-14e3fb5be5c2:56020:87)\n    at refreshComputed (blob:https://localhost/9bcad2e2-3f3a-4488-8746-14e3fb5be5c2:9260:29)\n    at get value [as value] (blob:https://localhost/9bcad2e2-3f3a-4488-8746-14e3fb5be5c2:10876:9)\n    at Proxy.<anonymous> (blob:https://localhost/9bcad2e2-3f3a-4488-8746-14e3fb5be5c2:56386:28)\n    at renderComponentRoot (blob:https://localhost/9bcad2e2-3f3a-4488-8746-14e3fb5be5c2:12814:16)\n    at ReactiveEffect.componentUpdateFn [as fn] (blob:https://localhost/9bcad2e2-3f3a-4488-8746-14e3fb5be5c2:14046:46)\n    at ReactiveEffect.run (blob:https://localhost/9bcad2e2-3f3a-4488-8746-14e3fb5be5c2:10303:23)\n    at setupRenderEffect (blob:https://localhost/9bcad2e2-3f3a-4488-8746-14e3fb5be5c2:14181:5)\n    at mountComponent (blob:https://localhost/9bcad2e2-3f3a-4488-8746-14e3fb5be5c2:13953:7)\n    at processComponent (blob:https://localhost/9bcad2e2-3f3a-4488-8746-14e3fb5be5c2:13905:9)\nTypeError: Cannot read properties of undefined (reading 'length')\n    at Proxy.<anonymous> (blob:https://localhost/9bcad2e2-3f3a-4488-8746-14e3fb5be5c2:56386:34)\n    at renderComponentRoot (blob:https://localhost/9bcad2e2-3f3a-4488-8746-14e3fb5be5c2:12814:16)\n    at ReactiveEffect.componentUpdateFn [as fn] (blob:https://localhost/9bcad2e2-3f3a-4488-8746-14e3fb5be5c2:14124:26)\n    at ReactiveEffect.run (blob:https://localhost/9bcad2e2-3f3a-4488-8746-14e3fb5be5c2:10303:23)\n    at ReactiveEffect.runIfDirty (blob:https://localhost/9bcad2e2-3f3a-4488-8746-14e3fb5be5c2:10341:16)\n    at callWithErrorHandling (blob:https://localhost/9bcad2e2-3f3a-4488-8746-14e3fb5be5c2:10899:33)\n    at flushJobs (blob:https://localhost/9bcad2e2-3f3a-4488-8746-14e3fb5be5c2:11098:9)\n:isAvail=true\n    at runMessageTextDevice (blob:https://localhost/9bcad2e2-3f3a-4488-8746-14e3fb5be5c2:64749:15)\n    at async window.messageTextQa (blob:https://localhost/9bcad2e2-3f3a-4488-8746-14e3fb5be5c2:73472:12)"
+  }
+}
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
++ actual - expected
+
++ undefined
+- 'PASS'
+
+    at file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata-m0/docs/qa/kanata-sqlite-m2/windo
+ws-candidate-smoke.mjs:193:12 {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: undefined,
+  expected: 'PASS',
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.14.1
