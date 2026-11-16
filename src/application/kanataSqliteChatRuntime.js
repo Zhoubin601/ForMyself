@@ -207,9 +207,10 @@ export function createKanataSqliteChatRuntime({ candidate, completion, auth, lif
         if (!world || world.world.archived) throw new Error('CONVERSATION_UNAVAILABLE')
         const { identity } = world
         const latest = await messages.latestState(scope, 'user')
-        const retry = options.retryMessageId ? await messages.get(scope, options.retryMessageId) : null
-        if (options.retryMessageId) requireCurrent(retry && latest?.id === retry.id
-          && retry.senderId === identity.id && !retry.deleted && retry.status === 'complete', 'RETRY_SOURCE_UNAVAILABLE')
+        const retryState = options.retryMessageId ? await messages.state(scope, options.retryMessageId) : null
+        if (options.retryMessageId) requireCurrent(retryState && latest?.id === retryState.id
+          && retryState.senderId === identity.id && !retryState.deleted && retryState.status === 'complete', 'RETRY_SOURCE_UNAVAILABLE')
+        const retry = retryState ? await messages.retrySource(scope,retryState.id) : null
         const text = retry?.content ?? String(options.text ?? '').trim()
         requireCurrent(text && text.length <= 8000, 'INVALID_MESSAGE')
         const previousSpeaker = await messages.latestState(scope, 'assistant')

@@ -10,6 +10,7 @@ import { resolveKanataCharacter } from './domain/kanataManagementCore.js'
 import { estimateKanataCost, KANATA_PRICE_SOURCE, KANATA_PRICE_VERSION } from './domain/kanataUsage.js'
 import KanataHistoryPanel from './KanataHistoryPanel.vue'
 import KanataCandidateHistoryPanel from './KanataCandidateHistoryPanel.vue'
+import KanataMessageTextPanel from './KanataMessageTextPanel.vue'
 import {useKanataBubbleReveal} from './useKanataBubbleReveal.js'
 import {kanataReplyLimits} from './domain/groupReplyLimits.js'
 const props=defineProps({conversationId:{type:String,required:true},candidate:{type:Object,default:null}})
@@ -19,6 +20,10 @@ const runtime=props.candidate?.runtime??createKanataChatRuntime()
 const snapshot=computed(()=>store?.snapshot)
 const candidateView=props.candidate?.runtime.createViewModel()??null
 const messageWindow=candidateView?.window??null
+let textOpener=null
+const openMessageText=(message,field,event)=>{textOpener=event.currentTarget;void messageWindow?.openText(message,field)}
+const closeMessageText=()=>{messageWindow?.closeText();if(textOpener?.isConnected)textOpener.focus({preventScroll:true});textOpener=null}
+onBeforeUnmount(()=>{textOpener=null})
 const overview=computed(()=>candidateView?.overview.value)
 const hasMoreMembers=computed(()=>overview.value?.members.cursor!=null)
 const draft=ref(''),busy=ref(false),error=ref(''),preview=ref(null),replyDelay=ref('activity'),stream=ref(true),timeline=ref(null)
@@ -96,6 +101,7 @@ const reloadCandidate=()=>{
 }
 if(candidateView){
   const clearScope=()=>{
+    textOpener=null
     scrollOwner++;stop();preview.value=null;revisionDraft.value=null;groupLimitsDraft.value=null;timingDraft.value=null
     draft.value='';busy.value=false;anchorBusy.value=false;error.value='';notice.value=''
     groupConfigError.value='';timingError.value=''
@@ -188,9 +194,20 @@ const saveGroupLimits=async()=>{
   finally{if(mounted&&owner===scrollOwner)busy.value=false}
 }
 const retry=()=>{stop();if(lastUser.value)void send({retryMessageId:lastUser.value.id})}
+const startRevision=async message=>{
+  if(busy.value||blocked.value||messageWindow?.editing?.value)return
+  const owner=scrollOwner;error.value=''
+  if(!messageWindow){revisionDraft.value={id:message.id,revision:message.revision,content:message.content};return}
+  messageWindow.closeText();textOpener=null
+  const result=await messageWindow.editableText(message)
+  if(!mounted||owner!==scrollOwner)return
+  if(result)revisionDraft.value=result
+  else if(messageWindow.editError.value)error.value=messageWindow.editError.value==='KANATA_MESSAGE_EDIT_BUDGET_EXCEEDED'
+    ?'原文超过 64000 字符的修订上限，请先分段查看。本次没有修改原文。':'原文未能完整载入，请重新读取后再修订。'
+}
 const saveRevision=async()=>{if(!revisionDraft.value||busy.value||blocked.value)return;const value=revisionDraft.value,owner=scrollOwner;try{await runtime.reviseMessage(value.id,value.revision,{content:value.content,deleted:false});if(mounted&&owner===scrollOwner){revisionDraft.value=null;await refreshAfterRevision()}}catch{if(mounted&&owner===scrollOwner)error.value='原文修订未完成。请核对版本、待复核事件或保存状态；不明确的因果关系需要先处理。'}}
 const removeMessage=async message=>{const owner=scrollOwner;const accepted=await appConfirm('删除这条原文及其版本正文，保留来源标识。相关回复会停用，记忆与事件会标为过期或待复核；它们的正文及旧备份不会一起删除。',{sensitive:true,owner:dialogOwner,title:'删除原文并核对派生影响',confirmText:'删除这条原文',destructive:true});if(mounted&&owner===scrollOwner&&accepted===true)try{await runtime.reviseMessage(message.id,message.revision,{content:'',deleted:true});if(mounted&&owner===scrollOwner)await refreshAfterRevision()}catch{if(mounted&&owner===scrollOwner)error.value='无法安全删除：请先处理不明确的历史依赖或重试保存，原资料未被当作成功清理。'}}
-const unregister=registerBackHandler(()=>{if(timingDraft.value){timingDraft.value=null;return true}if(groupLimitsDraft.value){groupLimitsDraft.value=null;return true}if(revisionDraft.value){revisionDraft.value=null;return true}if(historyOpen.value){historyOpen.value=false;return true}emit('close');return true},{priority:610,isActive:()=>true})
+const unregister=registerBackHandler(()=>{if(messageWindow?.detail?.value){closeMessageText();return true}if(messageWindow?.editing?.value){messageWindow.cancelEdit();return true}if(timingDraft.value){timingDraft.value=null;return true}if(groupLimitsDraft.value){groupLimitsDraft.value=null;return true}if(revisionDraft.value){revisionDraft.value=null;return true}if(historyOpen.value){historyOpen.value=false;return true}emit('close');return true},{priority:610,isActive:()=>true})
 onBeforeUnmount(()=>{mounted=false;stop();candidateView?.dispose();preview.value=null;revisionDraft.value=null;groupLimitsDraft.value=null;timingDraft.value=null;draft.value='';void Promise.resolve(runtime.dispose()).catch(()=>{});unregister();cancelOwnedFeedbackDialog(dialogOwner)})
 </script>
 
@@ -243,16 +260,20 @@ onBeforeUnmount(()=>{mounted=false;stop();candidateView?.dispose();preview.value
       <p v-if="!messages.length&&(!messageWindow||windowReady)" class="kanata-help">这里还没有聊天。从你想说的话开始。</p>
       <article v-for="message in visibleMessages" :key="message.id" class="kanata-chat-message" :class="{'is-user':message.role==='user'}" :data-message-id="message.id" :data-sender-id="message.senderId" :data-batch-id="message.batchId" :tabindex="messageWindow?-1:undefined">
         <strong>{{ message.senderNameSnapshot }}</strong><span v-if="message.deleted" class="kanata-badge">原文已删除</span><span v-else-if="message.status==='stopped'" class="kanata-badge">来源修订后已停用</span>
+        <button v-if="messageWindow&&message.senderNameChunked" type="button" @click="openMessageText(message,'senderName',$event)">分段查看名称</button>
         <button v-if="messageWindow&&message.replyToMessageId" type="button" @click="jumpToMessage(message.replyToMessageId)">跳到引用的原消息</button>
         <p class="kanata-text">{{ message.content }}</p><time :datetime="new Date(message.createdAt).toISOString()">{{ new Date(message.createdAt).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) }}</time>
+        <p v-if="messageWindow&&message.contentChunked" class="kanata-help">正文较长，当前显示开头。<button type="button" @click="openMessageText(message,'content',$event)">分段阅读原文</button></p>
         <div v-if="!message.deleted" class="kanata-actions">
           <button v-if="messageWindow&&message.status==='complete'&&conversation?.type!=='character'" type="button" :disabled="busy||blocked" @click="messageWindow.showQuote(message.id)">引用回复</button>
-          <button type="button" :disabled="busy||blocked" @click="revisionDraft={id:message.id,revision:message.revision,content:message.content}">修订这条原文</button><button type="button" :disabled="busy||blocked" @click="removeMessage(message)">删除这条原文</button>
+          <button type="button" :disabled="busy||blocked||messageWindow?.editing?.value" @click="startRevision(message)">修订这条原文</button><button type="button" :disabled="busy||blocked" @click="removeMessage(message)">删除这条原文</button>
         </div>
       </article>
       <p v-if="waitingCount" class="kanata-help" role="status">{{ name(nextSenderId) }} · 正在输入 <button type="button" @click="showAll">立即显示全部回复</button></p>
       <article v-if="preview" class="kanata-chat-message kanata-preview-message"><strong>{{ preview.name || name(preview.instanceId) }} · 正在输入</strong><p class="kanata-text">{{ preview.content }}</p><span class="kanata-help">尚未保存的预览</span></article>
     </div>
+    <KanataMessageTextPanel v-if="messageWindow?.detail?.value" :text="messageWindow" @close="closeMessageText" />
+    <p v-if="messageWindow?.editing?.value" role="status">正在载入可编辑的完整原文… <button type="button" @click="messageWindow.cancelEdit()">取消读取原文</button></p>
     <form v-if="revisionDraft" class="kanata-form" @submit.prevent="saveRevision"><label>修订原文<textarea v-model="revisionDraft.content" rows="4" maxlength="64000" required></textarea></label><p class="kanata-help">旧版本可追溯，相关派生内容会停用，不会被当成新事实。</p><div class="kanata-actions"><button type="submit" :disabled="blocked||busy">保存原文修订</button><button type="button" @click="revisionDraft=null">取消原文修订</button></div></form>
     <div v-if="conversation?.type==='group'" class="kanata-actions"><button v-for="member in members" :key="member.id" type="button" :disabled="busy||blocked" @click="draft+=`@${name(member.id)} `">@{{ name(member.id) }}</button><button v-if="hasMoreMembers" type="button" :disabled="candidateView.membersLoading.value" @click="candidateView.loadMembers(overview.members.cursor)">更多成员</button><button v-if="candidateView && overview.members.after >= 0" type="button" :disabled="candidateView.membersLoading.value" @click="candidateView.loadMembers(-1)">首组成员</button></div>
     <form v-if="!messageWindow||conversation?.type!=='character'" class="kanata-form" @submit.prevent="submit">

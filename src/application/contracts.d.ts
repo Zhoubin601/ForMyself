@@ -5,8 +5,8 @@ export type KanataSchemaMigrator = typeof import('../features/chat/storage/sqlit
 export type { KanataSqliteWriteResult, KanataSqliteTransaction, KanataSqliteHealth,
   KanataSqliteOperation, KanataSqliteContext, KanataSqliteDriver } from '../platform/storage/kanataSqliteTypes'
 export type { KanataReplyProvenance, KanataMessageWriteReceipt, KanataMessageState, KanataMessageScope, KanataMessageCursor, KanataMessagePage, KanataMessageRepository, KanataHistoryCursor, KanataHistoryPage, KanataHistoryArchivePlan,
-  KanataConversationRepository, KanataGroupMemberEdit, KanataTranscriptMessage, KanataMessageDetailIdentity,
-  KanataMessageSourceCursor, KanataMessageJsonSelection, KanataMessageJsonCursor, KanataReplyExpectation,
+  KanataConversationRepository, KanataGroupMemberEdit, KanataTranscriptMessage, KanataMessagePreview, KanataMessageDetailIdentity,
+  KanataMessageSourceCursor, KanataMessageJsonSelection, KanataMessageJsonCursor, KanataMessageTextCursor, KanataReplyExpectation,
   KanataChatContextState, KanataDeferredReply } from '../features/chat/storage/sqlite/kanataRepositoryTypes'
 export type { KanataSqliteDomains, KanataSqliteDomainOwner, KanataEventAcknowledgement, KanataEventGraphCursor,
   KanataTaskHeader, KanataTaskListCursor, KanataTaskReadIdentity, KanataTaskRelationKind,

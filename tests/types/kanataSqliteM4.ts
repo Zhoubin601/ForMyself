@@ -13,6 +13,16 @@ void messageRepository.get(scope,'message').then(message=>{
   void message?.lifeSources
 })
 void messageRepository.sourcePage(scope,'message')
+void messageRepository.textChunk(scope,'message','content')
+void messageRepository.retrySource(scope,'message')
+// @ts-expect-error Retry has a fixed 8000-unit source contract, no full option.
+void messageRepository.retrySource(scope,'message','full')
+declare const textCursor:import('../../src/application/contracts').KanataMessageTextCursor
+void messageRepository.textChunk(scope,'message','senderName',textCursor)
+// @ts-expect-error Text chunks accept only the two scalar display fields.
+void messageRepository.textChunk(scope,'message','extensions')
+// @ts-expect-error A text cursor must bind message identity, revision and scope.
+void messageRepository.textChunk(scope,'message','content',{offset:4096})
 void messageRepository.jsonChunk(scope,'message',{kind:'audit',auditId:'audit',side:'previous'})
 // @ts-expect-error An audit chunk requires both the immutable audit ID and side.
 void messageRepository.jsonChunk(scope,'message',{kind:'audit'})

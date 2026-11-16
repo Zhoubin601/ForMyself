@@ -14,6 +14,7 @@ import { migrateKanataSchema } from '../src/features/chat/storage/sqlite/kanataS
 import { kanataSchemaAdapter } from '../src/features/chat/storage/sqlite/kanataSchemaAdapter.js'
 import { m2Fixture, m2FixtureCommands } from './helpers/kanataSqliteM2Fixture.js'
 import { resolveKanataCharacter } from '../src/features/chat/domain/kanataManagementCore.js'
+import {messageQueries} from '../src/features/chat/storage/sqlite/kanataRepositorySql.js'
 
 async function setup(t) {
   const db = new DatabaseSync(':memory:')
@@ -70,6 +71,53 @@ test('M4 chat metadata reads a scoped light projection without projecting cards 
   assert.ok(reads.every(read => !read.keys.some(key => /json|extensions/.test(key))))
   assert.equal(await repository.load({ ...scope, worldId: alternate.id }), null)
   await assert.rejects(repository.members(scope, -2), /CURSOR_INVALID/)
+})
+
+test('G4 long prompt history activates tail keywords unchanged and reply CAS projects only identities',async t=>{
+  const {operation,fixture,reads}=await setup(t)
+  let sequence=0,maxRows=0,maxText=0,calls=0
+  const tools={id:()=>`long-prompt-${++sequence}`,clock:()=>1800000}
+  const observed={transaction:action=>operation.transaction(tx=>action({execute:tx.execute,query:async(sql,args)=>{
+    const rows=await tx.query(sql,args);maxRows=Math.max(maxRows,rows.length)
+    for(const row of rows)for(const value of Object.values(row))if(typeof value==='string')maxText=Math.max(maxText,Array.from(value).length)
+    return rows
+  }}))}
+  const domains=createKanataSqliteDomains(observed,tools),messages=createKanataMessageRepository(observed,tools)
+  const conversations=createKanataConversationRepository(observed),deferred=createKanataDeferredReplyRepository(observed)
+  const scope={worldId:fixture.messages[0].worldId,conversationId:fixture.messages[0].conversationId}
+  const {replyToMessageId:_reply,replyToRevision:_revision,...base}=fixture.messages[1]
+  const long={...base,id:'long-prompt-history',revision:1,createdAt:80000,lifeSources:[],
+    content:'甲'.repeat(63994)+'尾部激活词',senderNameSnapshot:'名'.repeat(6000)}
+  await messages.insert(long)
+  await domains.lorebook.save({id:'long-prompt-lore',worldId:scope.worldId,scope:'world',ownerId:scope.worldId,
+    keys:['尾部激活词'],content:'长消息尾部世界书命中',priority:20,activationRule:'keyword',visibility:'public',
+    sourceTag:'synthetic',revision:1,enabled:true,knownBy:[]},null)
+  let tail=Promise.resolve()
+  const run=(request,action)=>{
+    const result=tail.then(async()=>{request.assertOwner?.();const value=await action();request.assertOwner?.();return value})
+    tail=result.catch(()=>{});return result
+  }
+  const generation=shallowRef(0)
+  const candidate={generation,isAvailable:()=>true,release:async()=>{generation.value++},
+    withRepositories:(request,work)=>run(request,()=>work(messages,conversations,deferred,domains)),
+    withDomains:(request,work)=>run(request,()=>work(domains))}
+  const runtime=createKanataSqliteChatRuntime({candidate,auth:{sessionRevision:1,isLocked:false},...tools,
+    completion:async options=>{
+      calls++;assert(options.messages[0].content.includes('长消息尾部世界书命中'))
+      assert(options.messages.some(row=>row.content.includes('普通继续')))
+      assert(!options.messages.some(row=>row.content===long.content));return {content:'合成回复'}
+    }})
+  try{
+    runtime.activate(scope);reads.length=0;maxRows=maxText=0
+    await runtime.send(scope.conversationId,{text:'普通继续',timing:'immediate'})
+    assert.equal(calls,1);assert(maxRows<=51&&maxText<=4097)
+    const writes=reads.filter(row=>row.sql===messageQueries.transcriptForAppend)
+    assert(writes.length>0);assert(writes.every(row=>row.keys.join() === 'id,revision'))
+    reads.length=0
+    await assert.rejects(runtime.send(scope.conversationId,{retryMessageId:long.id,timing:'immediate'}),/RETRY_SOURCE_UNAVAILABLE/)
+    assert(reads.filter(row=>row.parameters.includes(long.id)).every(row=>!row.keys.some(key=>/content|part/.test(key))))
+    assert.equal(calls,1)
+  }finally{await runtime.dispose()}
 })
 
 test('M4 cost buckets match exact ranked greedy selection across mixed costs and ties', () => {

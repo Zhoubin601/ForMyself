@@ -52,19 +52,24 @@ function validateMessage(message) {
   }
 }
 
-/** @param {Row} row @returns {import('./kanataRepositoryTypes').KanataTranscriptMessage} */
+/** @param {Row} row @returns {import('./kanataRepositoryTypes').KanataMessagePreview} */
 function transcriptFromRow(row) {
   const message = {
     id: String(row.id), worldId: String(row.world_id), conversationId: String(row.conversation_id),
     role: /** @type {Message['role']} */ (row.role), senderType: /** @type {Message['senderType']} */ (row.sender_type),
-    senderId: String(row.sender_id), senderNameSnapshot: String(row.sender_name_snapshot), content: String(row.content),
+    senderId: String(row.sender_id),
+    senderNameSnapshot:String(row.sender_name_snapshot),
+    content:row.content_json===undefined?String(row.content):JSON.parse(String(row.content_json)),
     createdAt: Number(row.created_at), revision: Number(row.revision), status: /** @type {Message['status']} */ (row.status),
     turnId: String(row.turn_id), batchId: String(row.batch_id),
     ...(row.deleted !== null && { deleted: row.deleted === 1 }),
     ...(row.reply_to_message_id !== null && { replyToMessageId: String(row.reply_to_message_id) }),
     ...(row.reply_to_revision !== null && { replyToRevision: Number(row.reply_to_revision) }),
+    ...(row.content_chunked===1&&{contentChunked:/** @type {const} */(true)}),
+    ...(row.name_chunked===1&&{senderNameChunked:/** @type {const} */(true)}),
   }
-  validateMessage(message)
+  validateMessage({...message,content:message.contentChunked?'[分段正文]':message.content,
+    senderNameSnapshot:message.senderNameChunked?'[分段名称]':message.senderNameSnapshot})
   return message
 }
 
@@ -143,6 +148,37 @@ function page(rows, limit) {
   }
 }
 
+/** Search and explicitly bounded prompt input keep one scalar at a time,
+ * bounded by the unchanged Native binding cap (262144 UTF-16 units).
+ * A field beyond that existing input contract fails explicitly; its stored
+ * bytes remain available via the uncapped, bounded-chunk detail API.
+ * @param {Transaction} tx @param {Scope} scope @param {Row} row @param {'content'|'senderName'} field */
+async function scalarText(tx,scope,row,field){
+  const body=field==='content'
+  if(row[body?'content_chunked':'name_chunked']!==1)return String(row[body?'content':'sender_name_snapshot'])
+  need(Number(row[body?'content_bytes':'name_bytes'])<=262144*4,'KANATA_MESSAGE_TEXT_BUDGET_EXCEEDED')
+  let text='',offset=0
+  try{
+    for(;;){
+      const [part]=await tx.query(query.scalarTextChunk,[field,offset+1,...scopeBindings(scope),String(row.id),Number(row.revision)])
+      need(part&&typeof part.part==='string','KANATA_MESSAGE_UNAVAILABLE')
+      const points=Array.from(String(part.part))
+      text+=points.slice(0,4096).join('');offset+=4096
+      need(text.length<=262144*6+2,'KANATA_MESSAGE_TEXT_BUDGET_EXCEEDED')
+      if(points.length<=4096)break
+    }
+    const value=JSON.parse(text)
+    need(typeof value==='string'&&value.length<=262144,'KANATA_MESSAGE_TEXT_BUDGET_EXCEEDED')
+    return value
+  }finally{text=''}
+}
+
+/** @param {Row} row */
+function previewFlags(row){
+  return {...(row.content_chunked===1&&{contentChunked:/** @type {const} */(true)}),
+    ...(row.name_chunked===1&&{senderNameChunked:/** @type {const} */(true)})}
+}
+
 /** @param {Transaction} tx @param {Scope} scope @param {string} id @param {number} expectedRevision */
 async function readForUpdate(tx, scope, id, expectedRevision) {
   need(safeInteger(expectedRevision, 1), revisionConflict)
@@ -202,8 +238,8 @@ export function createKanataMessageRepository(operation, tools) {
         for (const [index, row] of rows.slice(0, 50).entries()) {
           const id = String(row.id), createdAt = Number(row.created_at), content = String(row.content)
           before = { version: 1, worldId: scope.worldId, conversationId: scope.conversationId, id, createdAt, query: normalized }
-          if (!normalizeArchiveQuery(content).includes(normalized)) continue
-          messages.push({ id, createdAt, content, revision: Number(row.revision), senderNameSnapshot: String(row.sender_name_snapshot) })
+          if (normalized&&!normalizeArchiveQuery(await scalarText(tx,scope,row,'content')).includes(normalized)) continue
+          messages.push({ id, createdAt, content, revision: Number(row.revision), senderNameSnapshot: String(row.sender_name_snapshot),...previewFlags(row) })
           if (messages.length === 50) return { messages, cursor: index + 1 < rows.length ? before : null }
         }
         if (rows.length <= 50) return { messages, cursor: null }
@@ -219,6 +255,15 @@ export function createKanataMessageRepository(operation, tools) {
       return page(await tx.query(query.startingAtTranscript, [...keys, anchor.created_at, anchor.id, limit + 1]), limit)
     }),
     get: (scope, id) => run(tx => readMessage(tx, scope, id)),
+    retrySource:(scope,id)=>run(async tx=>{
+      validateId(id,'messageId')
+      const [row]=await tx.query(query.retrySource,[...scopeBindings(scope),id])
+      if(!row)return null
+      need(row.content_json!==null,'INVALID_MESSAGE')
+      const message=transcriptFromRow({...row,content_chunked:0})
+      need(message.content.length<=8000,'INVALID_MESSAGE')
+      return message
+    }),
     state: (scope, id) => run(async tx => {
       validateId(id, 'messageId')
       const [row] = await tx.query(query.state, [...scopeBindings(scope), id])
@@ -233,7 +278,7 @@ export function createKanataMessageRepository(operation, tools) {
     quote: (scope, id) => run(async tx => {
       validateId(id, 'messageId')
       const [row] = await tx.query(query.quote, [...scopeBindings(scope), id])
-      return row ? { id: String(row.id), revision: Number(row.revision), senderNameSnapshot: String(row.sender_name_snapshot), content: String(row.content) } : null
+      return row ? { id: String(row.id), revision: Number(row.revision), senderNameSnapshot: String(row.sender_name_snapshot), content: String(row.content),...previewFlags(row) } : null
     }),
     count: scope => run(async tx => Number((await tx.query(query.count, scopeBindings(scope)))[0].count)),
     latest: (scope, role) => run(async tx => {
@@ -250,8 +295,15 @@ export function createKanataMessageRepository(operation, tools) {
       validateId(speaker, 'speakerId')
       const rows = await tx.query(query.transcriptForSpeaker,
         [...scopeBindings(scope), speaker, pageLimit(limit)])
-      const messages = rows.map(transcriptFromRow)
-      await assertTranscriptHints(tx, scope, messages.map(({ id, revision }) => ({ id, revision })))
+      await assertTranscriptHints(tx,scope,rows.map(row=>({id:String(row.id),revision:Number(row.revision)})))
+      const messages=[]
+      // One fixed recent-history page, at most 50. Each of its two text fields
+      // retains the existing Native input ceiling; wire chunks stay at 4096.
+      // Full provenance/extensions or an unbounded set of pages is never read.
+      for(const row of rows)messages.push(transcriptFromRow({...row,
+        content:await scalarText(tx,scope,row,'content'),sender_name_snapshot:await scalarText(tx,scope,row,'senderName'),
+        content_chunked:0,name_chunked:0,
+      }))
       return messages
     }),
     contextState: (scope, speaker, ids) => run(async tx => {

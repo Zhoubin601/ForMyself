@@ -21,26 +21,30 @@ export interface KanataHistoryArchivePlan extends KanataMessageScope {
   readonly signature: string
 }
 export interface KanataHistoryPage {
-  readonly messages: readonly Pick<Message, 'id' | 'content' | 'senderNameSnapshot' | 'createdAt' | 'revision'>[]
+  readonly messages: readonly Pick<KanataMessagePreview, 'id' | 'content' | 'senderNameSnapshot' | 'createdAt' | 'revision'|'contentChunked'|'senderNameChunked'>[]
   readonly cursor: KanataHistoryCursor | null
 }
 export interface KanataMessagePage {
-  readonly messages: readonly KanataTranscriptMessage[]
+  readonly messages: readonly KanataMessagePreview[]
   readonly cursor: KanataMessageCursor | null
   readonly hasMore: boolean
 }
 
 export type KanataTranscriptMessage = Omit<Message,'lifeSources'>
+export type KanataMessagePreview = KanataTranscriptMessage & {readonly contentChunked?:true;readonly senderNameChunked?:true}
 export interface KanataMessageDetailIdentity extends KanataMessageScope {
   readonly id: string; readonly revision: number
 }
 export interface KanataMessageSourceCursor extends KanataMessageDetailIdentity {
   readonly kind: 'sources'; readonly grantId: string; readonly grantRevision: number; readonly fingerprint: string
 }
-export type KanataMessageJsonSelection = {readonly kind:'snapshot'|'extensions'} |
+export type KanataMessageJsonSelection = {readonly kind:'snapshot'|'extensions'|'content'|'senderName'} |
   {readonly kind:'audit';readonly auditId:string;readonly side:'previous'|'next'}
 export interface KanataMessageJsonCursor extends KanataMessageDetailIdentity {
   readonly kind:'json'; readonly selection:KanataMessageJsonSelection; readonly offset:number
+}
+export interface KanataMessageTextCursor extends KanataMessageDetailIdentity {
+  readonly kind:'text';readonly field:'content'|'senderName';readonly offset:number
 }
 
 export interface KanataReplyExpectation {
@@ -86,12 +90,13 @@ export interface KanataMessageRepository {
   confirmArchive(scope: KanataMessageScope, plan: KanataHistoryArchivePlan, commandId: string): Promise<{archivedCount: number}>
   searchHistory(scope: KanataMessageScope, text: string, cursor?: KanataHistoryCursor): Promise<KanataHistoryPage>
   locate(scope: KanataMessageScope, id: string, limit?: number): Promise<KanataMessagePage | null>
-  get(scope: KanataMessageScope, id: string): Promise<KanataTranscriptMessage | null>
+  get(scope: KanataMessageScope, id: string): Promise<KanataMessagePreview | null>
+  retrySource(scope:KanataMessageScope,id:string):Promise<KanataMessagePreview|null>
   state(scope: KanataMessageScope, id: string): Promise<KanataMessageState | null>
   latestState(scope: KanataMessageScope, role?: Message['role']): Promise<KanataMessageState | null>
-  quote(scope: KanataMessageScope, id: string): Promise<Pick<Message, 'id' | 'content' | 'senderNameSnapshot' | 'revision'> | null>
+  quote(scope: KanataMessageScope, id: string): Promise<Pick<KanataMessagePreview, 'id' | 'content' | 'senderNameSnapshot' | 'revision'|'contentChunked'|'senderNameChunked'> | null>
   count(scope: KanataMessageScope): Promise<number>
-  latest(scope: KanataMessageScope, role: Message['role']): Promise<KanataTranscriptMessage | null>
+  latest(scope: KanataMessageScope, role: Message['role']): Promise<KanataMessagePreview | null>
   historyForSpeaker(scope: KanataMessageScope, speakerId: string, limit: number): Promise<readonly KanataTranscriptMessage[]>
   contextState(scope: KanataMessageScope, speakerId: string, ids: {
     events: readonly string[]; memories: readonly string[]; relationships: readonly string[]
@@ -101,6 +106,9 @@ export interface KanataMessageRepository {
   }>
   jsonChunk(scope:KanataMessageScope,id:string,selection:KanataMessageJsonSelection,cursor?:KanataMessageJsonCursor): Promise<{
     fragment:string;cursor:KanataMessageJsonCursor|null
+  }>
+  textChunk(scope:KanataMessageScope,id:string,field:'content'|'senderName',cursor?:KanataMessageTextCursor):Promise<{
+    fragment:string;cursor:KanataMessageTextCursor|null
   }>
   replies(scope: KanataMessageScope, id: string, cursor?: KanataMessageCursor, limit?: number): Promise<KanataMessagePage>
   completedReplies(scope: KanataMessageScope, id: string): Promise<readonly Pick<Message, 'id' | 'revision' | 'senderId'>[]>

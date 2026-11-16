@@ -186,3 +186,22 @@ Android本轮task-read正在隔离API34/SQLCipher4.17.0运行；未将旧APK结�
 本检查点最终补齐：`task-read-regression`全模式退出0，M2会话/COMMIT/故障、M3窗口事件/Effects/任务/水位及其强杀恢复、未来Schema和坏库存只读拒绝通过。`task-read-default-gate`退出0，普通包实际DEX=false、canonical legacy、24条专用fixture SQL缺席，catalog666条；普通APK未安装、未发布。`task-read-fingerprints.json`源码aggregate `db06433147345099254d79f316978933640fbd572719473f12adc16f8302db4f`，候选catalog `39cce147eee990ed02f0f61d8d9861cb4bbda1ceab9316cb67147d78802e5999`，记录25份设备原始日志的压缩/原始SHA、所有成功/失败退出码、每轮QA bundle、fixture、APK及001–005冻结checksum。首轮超时的独立输入快照仍保留，普通APK只读核验、未装入设备。旧事件/消息/005结果只保留原冻结范围，不伪装成本APK的新迁移或全矩阵PASS；最终MR7/MR8仍未完成，F/G4/M4仍BLOCKED、M5 NO。
 
 task-read-fixture-before、task-read-host-final、task-read-message-regression三份本轮新建原始日志含测试诊断尾空格，以同名`.txt.gz`无损归档；解压逐字节核对后只移除本轮原文本副本，没有编辑失败内容。原始/压缩SHA列在task-read-raw-log-archives.json；对应exit文件及上述真实失败说明保留。
+
+## G2/G4 长文本主机检查点（2026-11-16收尾推送）
+
+原始资料来自唯一清单G2/G4、既有Native参数上限与消息读写合同，以及当前源码、合成fixture、主机/组件实际测试。`message-text-before`记录合法64k正文/名称在窗口/引用/搜索中整字段跨桥。当前已接入显式preview、NUL安全原文块、单片段面板和完整原文修订加载；重试不使用显示片段，提示词保留完整近期标量与原最终预算，写入复核仅id/revision。
+
+| 证据 | 实际结果 |
+|---|---|
+| message-text-before | FAIL：3类显示读取最长64000码点；4096为沿用详情块的显示实现预算，不是新增任务 |
+| message-text-preview-tests / retest | 初期非法NUL开头名称/未推进revision的夹具失败；随后复现完整业务文本返回丢失NUL尾部，保留原失败 |
+| message-text-preview-tests-nul-fixed及后续定向 | NUL尾部、Unicode与emoji边界、精确NFKC跨块搜索、旧游标和Native输入边界拒绝通过 |
+| message-text-ui-types | 初轮unknown错误未收窄，未关闭strict；显式收窄后正负类型通过 |
+| message-text-prompt-oracle-tests / retest | 初轮UTF-16长度与码点混用的断言失败，分开观测后通过；长历史尾部世界书命中、提示词预算及CAS身份投影通过 |
+| message-text-directed-host / types | 27项定向与strict正负通过；已包含在完整check中，不累计两套测试数 |
+| message-text-lifecycle-tests | 25项组件通过，含单片段、焦点、关闭/卸载/取消与迟到明文拒绝、完整64000单位修订草稿 |
+| message-text-check | 退出0：735 Node、411组件/45文件、strict正负与生产build；源码在该检查完成后未再修改，本次复用匹配主机证据 |
+
+本次按用户指示收尾推送，没有执行新长文本APK的Android验收、普通APK实际DEX复核或MR8两轮独立全范围审查。较早Task/消息/事件/005设备证据只保留原冻结范围；不能标为本代码的设备PASS。生产legacy/default false、001–005冻结源码保持，无真实模型/用户数据/备份操作或M5启动。M4仍BLOCKED，M5 NO。
+
+本轮新建`message-text-*.txt`原始输出（exit文件除外）无损压缩为同名`.txt.gz`；解压逐字节核对后仅移除本轮原文本副本，不编辑失败记录。`message-text-host-evidence.json`记录每份压缩/原始SHA、源码/fixture指纹、既有check退出码和未运行项；退出码仍单独保留。

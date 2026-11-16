@@ -3,11 +3,21 @@ const anchor = ' AND (created_at,id)<(?,?)'
 const descending = ' ORDER BY created_at DESC,id DESC LIMIT ?'
 // All ordinary message reads use the fixed transcript. Provenance and opaque
 // extensions have separate bounded detail APIs; there is no full DTO fallback.
-const transcriptProjection = `m.id,m.world_id,m.conversation_id,m.role,m.sender_type,m.sender_id,m.sender_name_snapshot,
+const transcriptFields = `m.id,m.world_id,m.conversation_id,m.role,m.sender_type,m.sender_id,m.sender_name_snapshot,
   m.content,m.created_at,m.revision,m.status,m.turn_id,m.batch_id,m.deleted,m.reply_to_message_id,m.reply_to_revision`
+const previewProjection=transcriptFields
+  .replace('m.sender_name_snapshot','substr(m.sender_name_snapshot,1,256) AS sender_name_snapshot')
+  .replace('m.content,','substr(m.content,1,4096) AS content,')
+  + `,length(m.content)>4096 OR instr(m.content,char(0))>0 AS content_chunked,
+    length(m.sender_name_snapshot)>256 OR instr(m.sender_name_snapshot,char(0))>0 AS name_chunked`
+const promptProjection=previewProjection+`,length(CAST(m.content AS BLOB)) AS content_bytes,
+  length(CAST(m.sender_name_snapshot AS BLOB)) AS name_bytes`
 const messageState = 'SELECT id,revision,created_at,status,deleted,sender_id FROM messages WHERE ' + scope
-const transcript = 'SELECT ' + transcriptProjection + ' FROM messages m WHERE ' + scope
-const history = 'SELECT id,content,sender_name_snapshot,created_at,revision FROM messages WHERE ' + scope + ' AND coalesce(deleted,0)=0'
+const displayTranscript='SELECT '+previewProjection+' FROM messages m WHERE '+scope
+const historyColumns=`id,substr(content,1,4096) AS content,substr(sender_name_snapshot,1,256) AS sender_name_snapshot,created_at,revision,
+  length(content)>4096 OR instr(content,char(0))>0 AS content_chunked,
+  length(sender_name_snapshot)>256 OR instr(sender_name_snapshot,char(0))>0 AS name_chunked,length(CAST(content AS BLOB)) AS content_bytes`
+const history='SELECT '+historyColumns+' FROM messages WHERE '+scope+' AND coalesce(deleted,0)=0'
 const conversationColumns = 'id,world_id,type,title,mode,revision,last_read_at,max_speakers,max_messages,reply_timing_enabled,reply_wait_ms,extensions_json'
 
 /** @param {string} projection */
@@ -36,33 +46,38 @@ const speakerHistory = projection => `WITH args(world,conversation,speaker) AS (
       ) ORDER BY m.created_at DESC,m.id DESC LIMIT ?`
 
 export const messageQueries = Object.freeze({
-  replies: transcript + ' AND reply_to_message_id=?' + descending,
+  replies: displayTranscript + ' AND reply_to_message_id=?' + descending,
   history: history + descending,
   olderHistory: history + anchor + descending,
   completedReplies: 'SELECT id,revision,sender_id FROM messages WHERE ' + scope
     + " AND reply_to_message_id=? AND role='assistant' AND status='complete' AND coalesce(deleted,0)=0" + descending,
-  olderReplies: transcript + ' AND reply_to_message_id=?' + anchor + descending,
+  olderReplies: displayTranscript + ' AND reply_to_message_id=?' + anchor + descending,
   state: messageState + ' AND id=?',
   latestState: messageState + ' AND role=? ORDER BY created_at DESC,id DESC LIMIT 1',
   newestState: messageState + ' ORDER BY created_at DESC,id DESC LIMIT 1',
-  latestTranscript: transcript + ' AND role=? ORDER BY created_at DESC,id DESC LIMIT 1',
+  latestTranscript: displayTranscript + ' AND role=? ORDER BY created_at DESC,id DESC LIMIT 1',
   transcriptAnchor: 'SELECT id,created_at FROM messages WHERE ' + scope + ' AND id=?',
-  getTranscript: transcript + ' AND id=?',
-  recentTranscript: transcript + descending,
-  olderTranscript: transcript + anchor + descending,
-  startingAtTranscript: transcript + ' AND (created_at,id)<=(?,?)' + descending,
+  getTranscript: displayTranscript + ' AND id=?',
+  retrySource:'SELECT '+previewProjection.replace('substr(m.content,1,4096) AS content',
+    'CASE WHEN length(CAST(m.content AS BLOB))<=32000 THEN json_quote(m.content) END AS content_json')
+    +' FROM messages m WHERE '+scope+' AND id=?',
+  recentTranscript: displayTranscript + descending,
+  olderTranscript: displayTranscript + anchor + descending,
+  startingAtTranscript: displayTranscript + ' AND (created_at,id)<=(?,?)' + descending,
   speakerRevision: 'SELECT revision FROM character_instances WHERE world_id=? AND id=?',
   speakerState: 'SELECT revision,mood,energy,location FROM character_instances WHERE world_id=? AND id=?',
   eventState: 'SELECT id,status,revision FROM world_events WHERE world_id=? AND id IN (SELECT value FROM json_each(?)) LIMIT 128',
   memoryState: 'SELECT id,status,revision FROM memories WHERE world_id=? AND id IN (SELECT value FROM json_each(?)) LIMIT 128',
   relationshipState: `SELECT id,trust,intimacy,understanding,revision FROM relationships
     WHERE world_id=? AND from_id=? AND id IN (SELECT value FROM json_each(?)) LIMIT 128`,
-  transcriptForSpeaker: speakerHistory(transcriptProjection),
-  transcriptForAppend: speakerHistory(transcriptProjection)
+  transcriptForSpeaker: speakerHistory(promptProjection),
+  transcriptForAppend: speakerHistory('m.id,m.revision')
     .replace('args(world,conversation,speaker) AS (VALUES(?,?,?))', 'args(world,conversation,speaker,batch) AS (VALUES(?,?,?,?))')
     .replace("WHERE m.status='complete'", "WHERE NOT EXISTS (SELECT 1 FROM json_each(args.batch) j WHERE j.value=m.id) AND m.status='complete'"),
   count: 'SELECT count(*) AS count FROM messages WHERE ' + scope,
-  quote: 'SELECT id,content,sender_name_snapshot,revision FROM messages WHERE ' + scope + ' AND id=? AND coalesce(deleted,0)=0',
+  quote: 'SELECT '+historyColumns+' FROM messages WHERE '+scope+' AND id=? AND coalesce(deleted,0)=0',
+  scalarTextChunk:`SELECT substr(CASE ? WHEN 'content' THEN json_quote(content) ELSE json_quote(sender_name_snapshot) END,?,4097) AS part
+    FROM messages WHERE `+scope+' AND id=? AND revision=?',
   identity: 'SELECT table_name FROM entity_ids WHERE id=?',
   world: 'SELECT archived FROM worlds WHERE id=?',
 })

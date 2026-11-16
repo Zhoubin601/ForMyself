@@ -349,6 +349,16 @@ MR5 是 M4-R 内部工作包编号，不是 SQLite 阶段 M5。
 
 `message-bounded-fingerprints.json`保存源码/fixture、各轮QA bundle、APK/catalog、设备和001–005 checksum，44份原始设备记录以压缩及原始双SHA归档；源码aggregate `e3f92d8affc2dc3b1dcea9e8342aae77ad03d26e5347f6bcdbe7806633931a9e`。005旧证据只保持其冻结结构范围，不套用为新APK升级实测。后续F/loadTask的实际1001来源gather已经本节F任务切片修复，主机/Android实测见F与同QA目录task-read证据。**G4/M4仍BLOCKED、M5 NO**：普通消息长正文预算、A–G其他能力、专用retained Heap/统一生命周期、最终MR7和两轮MR8全范围审查仍待闭环；继续本清单。
 
+**2026-11-13 `728165e`后的同条目实施中：** 已普通推送任务切片；随后`message-text-before`用合法64k正文/名称复现窗口、引用、搜索均整字段跨桥（单SQL虽仅1–3行，最长文本64000）。`verify-message-text-bounds.mjs`记录真实源码SHA，4096为沿用详情块预算的显示实现选择，不新建验收任务。现显示/get/latest/定位/回复/历史返回正文≤4096码点、名称≤256码点的显式preview及chunked标志；原文未截断/覆盖，新增textChunk使用UTF-8边界、NUL安全传输，每次跨桥≤4096个十六进制字符，单页只保留当前人类可读片段。游标绑定scope/message/revision/字段/字节边界，跨字段/过期/半字符偏移拒绝。
+
+新反例`message-text-preview-tests-retest`还证明旧完整业务文本返回丢失NUL尾部；现按字段JSON块保持精确标量，未知扩展和来源不进入DTO。搜索保持完整字段NFKC匹配、原32页扫描预算；单字段暂存沿用现有Native参数上限262144 UTF-16单位（驱动冻结约束，不是新增导入/迁移许可），超出此输入合同明确失败、数据不变、原文仍可逐块读。提示词只读取一页≤50条的固定标量投影，长字段按4096码点块补齐且各自受相同Native上限约束；关键字/原近期排序及最终contextBudget不变，禁止用显示片段替代提示词。回复落库复核只读id/revision；重试先校验来源身份，再读取原有8000 UTF-16单位以内的精确正文。显式修订草稿仍受原64000单位上限，必须读完原文才可提交；取消/关闭/卸载/Scope变化丢弃缓冲和迟到结果。
+
+当前定向主机27项、组件25项、strict正负类型通过，覆盖64k长字段、NUL、emoji边界、NFKC跨块、Native边界拒绝、旧游标、完整修订/取消、尾部世界书关键词激活及写入身份投影。初期非法NUL开头名称/未推进revision夹具失败均保留，未放宽历史约束；有一项测试把UTF-16长度误当码点，分开观测maxPoints/maxText后通过。完整check、同一新APK的Android原文/UI/取消/强停及普通APK门禁仍未执行；不复用`728165e`之前APK来宣称当前新代码设备PASS。G4/M4继续BLOCKED，M5 NO。
+
+**2026-11-16 按用户“直接收尾推送远端”交付当前检查点：** 中断后的源码和fixture未再修改，核对既有`message-text-check`退出0：735 Node、411 Vue（45文件）、strict正负类型与生产build全部通过；复用的是该完整检查的原始主机记录，不重跑未变源码的同套检查。长文本预览/逐段阅读、精确搜索、完整原文修订加载与取消、有界重试/提示词传输已接入；NUL尾部、UTF-8边界和提示词尾部关键词反例已修复并保留失败/复测。此次仅收文档、证据指纹和普通M提交推送，未把新代码安装到Android，未发布APK。此前任务/事件/005的Android结果继续冻结在各自匹配源码/APK/catalog/fixture/设备范围，不是本轮长文本设备PASS。
+
+当前全局状态不变：A/B/C/D/F/G为PARTIAL，E为BLOCKED；G1–G9、G11 BLOCKED，G10既有生产边界保持、最终APK复核待执行。新长文本Android验收、其余A–G、统一生命周期/retained Heap、MR7与两轮独立MR8全范围审查仍未完成。canonical legacy、普通APK激活源码默认false、001–005未改，不接触真实资料/备份、不调用真实模型、不启动M5/M6/M7、不合并Kanata/main。**M4不是PASS；M5仍NO。** 主机源/fixture及原始日志的压缩/原始SHA见同QA目录`message-text-host-evidence.json`，详细命令和限制见既有QA README。
+
 ## 5. 横向最终验收合同
 
 以下 G1–G11 是 M4 最终门禁。A–G 的工作必须映射到这些门禁，不能重复建立第二份标准。

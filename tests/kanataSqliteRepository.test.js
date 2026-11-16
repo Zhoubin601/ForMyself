@@ -31,7 +31,8 @@ async function setup(t) {
     async query(sql, parameters = []) {
       const rows = db.prepare(sql).all(...parameters)
       state.queries.push({ sql, rows: rows.length, maxText: Math.max(0, ...rows.flatMap(row =>
-        Object.values(row).filter(value => typeof value === 'string').map(value => value.length))) })
+        Object.values(row).filter(value => typeof value === 'string').map(value => value.length))),
+      maxPoints:Math.max(0,...rows.flatMap(row=>Object.values(row).filter(value=>typeof value==='string').map(value=>Array.from(value).length))) })
       return rows
     },
     async execute(sql, parameters = []) {
@@ -382,4 +383,92 @@ test('M2 scoped deferred reply recovers due work and refuses a stale or cancelle
   assert.equal(await deferred.claim(scope, 1800), null)
   assert.deepEqual({ ...db.prepare('SELECT state,error_code FROM background_tasks WHERE id=?').get(task.id) },
     { state: 'cancelled', error_code: 'SOURCE_REVISED' })
+})
+
+test('G2 display text previews are explicit and raw chunks preserve Unicode, NUL and exact names without DTO gather',async t=>{
+  const {messages,fixture,scope,state}=await setup(t)
+  for(const [index,content]of ['x'.repeat(4094)+'😀界\u0000tail','头\u0000合成尾部','e'.repeat(4095)+'e\u0301合成',
+    '甲'.repeat(63998)+'合成'].entries()){
+    const input={...fixture.messages[0],id:'text-preview-'+index,revision:1,createdAt:1800000+index,content,
+      senderNameSnapshot:'名\u0000'+'姓名😀'.repeat(1000),lifeSources:[]}
+    await messages.insert(input)
+    state.queries.length=0
+    for(const value of [(await messages.recent(scope)).messages.find(row=>row.id===input.id),await messages.quote(scope,input.id)]){
+      assert(value.contentChunked);assert(value.senderNameChunked)
+      assert(Array.from(value.content).length<=4096);assert(Array.from(value.senderNameSnapshot).length<=256)
+    }
+    for(const field of ['content','senderName']){
+      let cursor,text='',chunks=0
+      do{const page=await messages.textChunk(scope,input.id,field,cursor)
+        assert(new TextEncoder().encode(page.fragment).length<=4096)
+        text+=page.fragment;cursor=page.cursor??undefined;chunks++
+      }while(cursor)
+      assert.equal(text,field==='content'?content:input.senderNameSnapshot);assert(chunks>0)
+    }
+    assert(state.queries.every(row=>row.rows<=51&&row.maxPoints<=4097&&row.maxText<=8194))
+    assert((await messages.get(scope,input.id)).contentChunked)
+    const speaker=fixture.instances.find(row=>row.worldId===scope.worldId).id
+    assert.equal((await messages.historyForSpeaker(scope,speaker,10)).find(row=>row.id===input.id).content,content)
+  }
+  const id='text-preview-0',head=await messages.textChunk(scope,id,'content')
+  assert(head.cursor)
+  await assert.rejects(messages.textChunk(scope,id,'senderName',head.cursor),/CURSOR_INVALID/)
+  await assert.rejects(messages.textChunk(scope,id,'content',{...head.cursor,offset:4095}),/CURSOR_INVALID/) // inside emoji UTF-8.
+  await messages.setStatus(scope,id,1,'stopped')
+  await assert.rejects(messages.textChunk(scope,id,'content',head.cursor),/CURSOR_INVALID/)
+})
+
+test('G2 historical search matches the entire bounded scalar after NFKC and never returns a long field',async t=>{
+  const {messages,fixture,scope,state,db}=await setup(t)
+  const input={...fixture.messages[0],id:'search-text-bound',revision:1,createdAt:1800000,
+    content:'甲'.repeat(4095)+'e\u0301'+'甲'.repeat(6000)+'\u0000ＴＡＩＬ合成',senderNameSnapshot:'名'.repeat(5000)}
+  await messages.insert(input)
+  state.queries.length=0
+  for(const query of ['é','tail合成','\u0000tail']){
+    const found=(await messages.searchHistory(scope,query)).messages.find(row=>row.id===input.id)
+    assert(found);assert(found.contentChunked);assert(found.senderNameChunked)
+    assert.equal(Array.from(found.content).length,4096)
+  }
+  assert(state.queries.every(row=>row.rows<=51&&row.maxText<=4097))
+  const boundary='甲'.repeat(262140)+'ＴＡＩＬ'
+  db.prepare('UPDATE messages SET content=?,revision=revision+1 WHERE id=?').run(boundary,input.id)
+  assert((await messages.searchHistory(scope,'tail')).messages.some(row=>row.id===input.id))
+  const beyond=boundary+'甲'
+  db.prepare('UPDATE messages SET content=?,revision=revision+1 WHERE id=?').run(beyond,input.id)
+  await assert.rejects(messages.searchHistory(scope,'tail'),/TEXT_BUDGET_EXCEEDED/)
+  assert.equal(db.prepare('SELECT content FROM messages WHERE id=?').get(input.id).content,beyond)
+  assert((await messages.searchHistory(scope,'')).messages.some(row=>row.id===input.id)) // browsing is not a scalar reconstruction sink.
+})
+
+test('G2 retry reads the exact original source within the existing 8000 UTF-16-unit limit',async t=>{
+  const {messages,fixture,scope,state}=await setup(t)
+  const content='甲'.repeat(7994)+'😀\u0000尾部文'
+  assert.equal(content.length,8000)
+  const input={...fixture.messages[0],id:'retry-text-bound',revision:1,content,senderNameSnapshot:'名'.repeat(9000),lifeSources:[]}
+  await messages.insert(input)
+  state.queries.length=0
+  const source=await messages.retrySource(scope,input.id)
+  assert.equal(source.content,content);assert.equal(source.contentChunked,undefined)
+  assert.equal(source.senderNameSnapshot.length,256);assert.equal(source.senderNameChunked,true)
+  assert((await messages.get(scope,input.id)).contentChunked)
+  assert(state.queries.every(row=>row.rows<=1&&row.maxText<=32002))
+  await messages.revise(scope,input.id,1,{content:content+'甲',deleted:false})
+  await assert.rejects(messages.retrySource(scope,input.id),/INVALID_MESSAGE/)
+  assert.equal(await messages.retrySource(scope,'missing-source'),null)
+})
+
+test('G4 prompt history preserves full selected scalars through bounded chunks and keeps the Native input ceiling',async t=>{
+  const {messages,fixture,scope,state,db}=await setup(t)
+  const input={...fixture.messages[0],id:'prompt-text-bound',revision:1,createdAt:1800000,lifeSources:[],
+    content:'甲'.repeat(262140)+'ＴＡＩＬ',senderNameSnapshot:'名\u0000'+'😀'.repeat(6000)}
+  await messages.insert(input)
+  state.queries.length=0
+  const speaker=fixture.instances.find(row=>row.worldId===scope.worldId).id
+  const history=await messages.historyForSpeaker(scope,speaker,10),entry=history.find(row=>row.id===input.id)
+  assert.equal(entry.content,input.content);assert.equal(entry.senderNameSnapshot,input.senderNameSnapshot)
+  assert.equal(entry.contentChunked,undefined);assert.equal(entry.senderNameChunked,undefined)
+  assert(state.queries.every(row=>row.rows<=50&&row.maxPoints<=4097&&row.maxText<=8194))
+  db.prepare('UPDATE messages SET content=?,revision=revision+1 WHERE id=?').run(input.content+'甲',input.id)
+  await assert.rejects(messages.historyForSpeaker(scope,speaker,10),/TEXT_BUDGET_EXCEEDED/)
+  assert.equal((await messages.get(scope,input.id)).contentChunked,true)
 })

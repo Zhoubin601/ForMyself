@@ -1,11 +1,12 @@
 // @ts-check
 import { computed, shallowRef } from 'vue'
+import {useKanataMessageText} from './useKanataMessageText.js'
 
 /** @typedef {import('./storage/sqlite/kanataRepositoryTypes').KanataMessageScope} Scope */
 /** @typedef {import('./storage/sqlite/kanataRepositoryTypes').KanataMessageCursor} Cursor */
 /** @typedef {import('./storage/sqlite/kanataRepositoryTypes').KanataMessagePage} Page */
-/** @typedef {import('./domain/kanataTypes').Message} Message */
-/** @typedef {Pick<Message, 'id'|'content'|'senderNameSnapshot'|'revision'>} Quote */
+/** @typedef {import('./storage/sqlite/kanataRepositoryTypes').KanataMessagePreview} Message */
+/** @typedef {Awaited<ReturnType<Repository['quote']>>} Quote */
 /** @typedef {import('./storage/sqlite/kanataRepositoryTypes').KanataMessageRepository} Repository */
 /** @typedef {{scope:Scope, assertOwner():void}} Request */
 
@@ -24,8 +25,10 @@ export function useKanataMessageWindow({ owner, read }) {
   let request = null
   let generation = 0
   let quoteGeneration = 0
+  const text=useKanataMessageText({owner:()=>request,read,current:target=>current(target,generation)})
 
   function reset() {
+    text.reset()
     generation++
     quoteGeneration++
     request = null
@@ -52,6 +55,8 @@ export function useKanataMessageWindow({ owner, read }) {
       const page = await read(target, repository => query(repository, target.scope))
       if (!current(target, version)) return false
       if (!page) { error.value = 'MESSAGE_UNAVAILABLE'; return false }
+      const detail=text.detail.value
+      if(detail&&page.messages.some(message=>message.id===detail.id&&message.revision!==detail.revision))text.closeText()
       const chronological = [...page.messages].reverse()
       if (action === 'prepend') {
         const included = new Set(chronological.map(message => message.id))
@@ -98,6 +103,7 @@ export function useKanataMessageWindow({ owner, read }) {
     return false
   }
   return {
+    ...text,
     messages, ready, loading, error, browsing, newMessages, quote, activate, reset, recent, older, locate, showQuote,
     hasMore: computed(() => cursor.value !== null),
     clearQuote() { quoteGeneration++; quote.value = null },

@@ -95,6 +95,7 @@ async function archive(confirm){
       <article v-for="message in [...page.messages].reverse()" :key="message.id" class="kanata-chat-message">
         <strong>{{ message.senderNameSnapshot }}</strong>
         <p class="kanata-text">{{ message.content }}</p>
+        <p v-if="message.contentChunked||message.senderNameChunked" class="kanata-help">正文或名称较长，可在对话中定位后分段查看。</p>
         <time :datetime="new Date(message.createdAt).toISOString()">{{ new Date(message.createdAt).toLocaleString() }}</time>
         <button type="button" @click="emit('locate',message.id)">在对话中定位</button>
       </article>
