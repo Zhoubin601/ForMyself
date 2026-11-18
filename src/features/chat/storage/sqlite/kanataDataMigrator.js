@@ -229,7 +229,7 @@ async function preflight(operation, fingerprint, collections, data, assertCurren
         idFor(fingerprint, MANIFEST_COLLECTION), KANATA_SCHEMA_VERSION, fingerprint, MANIFEST_COLLECTION, '{}', manifest,
       ])
       assertCurrent()
-      return { resumed: false, names }
+      return { alreadyComplete: false }
     }
     need(journal.every(row => row.source_fingerprint === fingerprint), 'KANATA_MIGRATION_SOURCE_CHANGED')
     need(journal.every(row => Number(row.target_schema_version) === KANATA_SCHEMA_VERSION), 'KANATA_MIGRATION_SCHEMA_VERSION_UNSUPPORTED')
@@ -250,7 +250,7 @@ async function preflight(operation, fingerprint, collections, data, assertCurren
         && equalJson(rowExtra.targetTables, TARGET_TABLES_BY_COLLECTION[collection.name]),
       'KANATA_MIGRATION_PLAN_MISMATCH')
     }
-    return { resumed: true, names }
+    return { alreadyComplete: manifestRow.state === 'complete' }
   })
 }
 
@@ -448,7 +448,7 @@ export function createKanataDataMigrator({ operation, source, syntheticOnly, bat
       if (descriptors.length) collections.splice(activeIndex, 0,
         createArchiveMessagesCollection(descriptors, source, password, current))
       const existing = await preflight(operation, fingerprint, collections, data, current)
-      let previousComplete = existing.resumed
+      let previousComplete = existing.alreadyComplete
       for (const collection of collections) {
         const [row] = await operation.transaction(tx => tx.query(JOURNAL_SELECT, [idFor(fingerprint, collection.name)]))
         if (row?.state === 'complete') continue

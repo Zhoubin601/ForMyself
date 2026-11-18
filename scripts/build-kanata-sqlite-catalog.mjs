@@ -113,6 +113,13 @@ if (process.argv.includes('--synthetic')) {
   add('write', 'business', [...m2FixtureCommands().map(command => command.sql), ...Object.values(fixtureWrites)])
   add('ddl', 'business', [futureSchema])
 }
+if (process.argv.includes('--m5-synthetic')) {
+  if (!process.argv.includes('--synthetic')) throw new Error('M5 requires the isolated synthetic catalog')
+  const { m5Catalog } = await import('../docs/qa/kanata-sqlite-m5/catalog.mjs')
+  const migration = await m5Catalog()
+  add('query', 'business', migration.queries)
+  add('write', 'business', migration.writes)
+}
 await mkdir(output, { recursive: true })
 await writeFile(join(output, 'kanata-sqlite-catalog.json'), JSON.stringify({
   applicationId: KANATA_SCHEMA_APPLICATION_ID,

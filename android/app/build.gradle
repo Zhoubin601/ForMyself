@@ -1,6 +1,10 @@
 apply plugin: 'com.android.application'
 
 def kanataM2Synthetic = providers.gradleProperty('kanataM2Synthetic').map { it == 'true' }.orElse(false)
+def kanataM5Synthetic = providers.gradleProperty('kanataM5Synthetic').map { it == 'true' }.orElse(false)
+if (kanataM5Synthetic.get() && !kanataM2Synthetic.get()) {
+    throw new GradleException('M5 catalog is only allowed in the isolated QA build')
+}
 def kanataCatalog = layout.buildDirectory.dir('generated/kanataSqlite/assets')
 def kanataRepository = rootProject.projectDir.parentFile
 def generateKanataSqliteCatalog = tasks.register('generateKanataSqliteCatalog', Exec) {
@@ -8,6 +12,7 @@ def generateKanataSqliteCatalog = tasks.register('generateKanataSqliteCatalog', 
     inputs.file new File(kanataRepository, 'scripts/build-kanata-sqlite-catalog.mjs')
     inputs.dir new File(kanataRepository, 'src/features/chat/storage/sqlite')
     inputs.property 'syntheticOnly', kanataM2Synthetic
+    inputs.property 'm5Synthetic', kanataM5Synthetic
     outputs.dir kanataCatalog
     commandLine 'node', 'scripts/build-kanata-sqlite-catalog.mjs', kanataCatalog.get().asFile.absolutePath
     if (kanataM2Synthetic.get()) {
@@ -21,6 +26,11 @@ def generateKanataSqliteCatalog = tasks.register('generateKanataSqliteCatalog', 
         inputs.file new File(kanataRepository, 'docs/qa/kanata-sqlite-m4/m4-r/event-compat/final-closeout/task-read-device.mjs')
         inputs.dir new File(kanataRepository, 'src/features/chat/presets')
         args '--synthetic'
+    }
+    if (kanataM5Synthetic.get()) {
+        inputs.files(['catalog.mjs', 'fixture.mjs']
+            .collect { new File(kanataRepository, "docs/qa/kanata-sqlite-m5/$it") })
+        args '--m5-synthetic'
     }
 }
 
@@ -50,6 +60,9 @@ android {
         }
         main.assets.srcDir kanataCatalog
         androidTest.assets.srcDirs += ["../../tests/fixtures"]
+        if (kanataM5Synthetic.get()) {
+            androidTest.java.srcDir new File(kanataRepository, 'docs/qa/kanata-sqlite-m5/androidTest')
+        }
     }
 
     buildTypes {
@@ -63,6 +76,12 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
+    }
+}
+
+androidComponents {
+    beforeVariants(selector().withBuildType('release')) { variant ->
+        if (kanataM5Synthetic.get()) variant.enable = false
     }
 }
 

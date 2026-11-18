@@ -12,12 +12,18 @@ import { kanataSqliteFixture } from './helpers/kanataSqliteFixture.js'
 function targetHarness(t) {
   const db = new DatabaseSync(':memory:')
   db.exec('PRAGMA foreign_keys=ON; PRAGMA busy_timeout=50')
-  const control = { failMessageAt: 0, messageInserts: 0 }
+  const control = { failMessageAt: 0, messageInserts: 0, failFinalVerification: false }
   const operation = {
     async transaction(action) {
       db.exec('BEGIN IMMEDIATE')
       const tx = {
-        query: async (sql, parameters = []) => db.prepare(sql).all(...parameters),
+        query: async (sql, parameters = []) => {
+          if (control.failFinalVerification && sql.includes('FROM data_migrations ORDER BY collection')) {
+            control.failFinalVerification = false
+            throw new Error('synthetic final verification interruption')
+          }
+          return db.prepare(sql).all(...parameters)
+        },
         execute: async (sql, parameters = []) => {
           if (sql.startsWith('INSERT INTO messages(')) {
             control.messageInserts++
@@ -196,6 +202,20 @@ test('M5-02 failed batch rolls back every row and resumes from the last committe
   assert.equal(count(target.db, 'archived_message_marks'), 3)
   assert.ok(target.db.prepare('SELECT state FROM data_migrations').all().every(row => row.state === 'complete'))
   assert.equal(JSON.stringify(fixture.data), fixture.before)
+})
+
+test('M5 resumes incomplete final verification before reporting an already-complete import', async t => {
+  const target = targetHarness(t)
+  await migrateSchema(target.operation)
+  const { source } = syntheticSource()
+  const migrator = createKanataDataMigrator({ operation: target.operation, source, syntheticOnly: true, batchSize: 2 })
+  target.control.failFinalVerification = true
+  await assert.rejects(migrator.migrate('synthetic-only-password'), /synthetic final verification interruption/)
+  assert.equal(count(target.db, 'messages'), 5)
+  assert.equal(target.db.prepare("SELECT state FROM data_migrations WHERE collection='__manifest__'").get().state, 'failed')
+  assert.equal((await migrator.migrate('synthetic-only-password')).status, 'complete')
+  assert.equal((await migrator.migrate('synthetic-only-password')).status, 'already-complete')
+  assert.equal(count(target.db, 'messages'), 5)
 })
 
 test('M5-03a pending or failed encrypted source snapshots are rejected before target journal creation', async t => {

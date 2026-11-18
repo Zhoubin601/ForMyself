@@ -1,10 +1,10 @@
-import assert from 'node:assert/strict'
 import { createKanataRepository, KANATA_RECOVERY_KEY } from '../../src/features/chat/storage/kanataRepository.js'
 import { KANATA_ARCHIVE_DIRECTORY } from '../../src/features/chat/storage/messageArchiveRepository.js'
 import { archiveFilesystem } from './kanataArchiveFixture.js'
 
 const directory = 'M5_SYNTHETIC_MEMORY'
 const readOperations = new Set(['stat', 'readFile', 'readdir'])
+const requireSource = (condition, code) => { if (!condition) throw new Error(code) }
 
 export const archivePath = descriptor => KANATA_ARCHIVE_DIRECTORY + '/' + descriptor.key + '.enc'
 
@@ -17,17 +17,17 @@ export function kanataSqliteEncryptedLegacySource() {
   const injectedFilesystem = Object.fromEntries(Object.entries(filesystem).map(([method, invoke]) => [
     method, async options => {
       filesystemCalls.push(method)
-      assert.equal(options.directory, directory)
-      assert.ok(!sealed || readOperations.has(method), 'source filesystem mutation: ' + method)
-      if (sealed && method === 'readdir') assert.equal(options.path, KANATA_ARCHIVE_DIRECTORY)
+      requireSource(options.directory === directory, 'M5_SOURCE_WRONG_DIRECTORY')
+      requireSource(!sealed || readOperations.has(method), 'M5_SOURCE_FILESYSTEM_MUTATION')
+      if (sealed && method === 'readdir') requireSource(options.path === KANATA_ARCHIVE_DIRECTORY, 'M5_SOURCE_UNEXPECTED_LIST')
       return invoke(options)
     },
   ]))
   const injectedJournal = Object.fromEntries(Object.entries(journal).map(([method, invoke]) => [
     method, async options => {
       journalCalls.push(method)
-      assert.equal(options.key, KANATA_RECOVERY_KEY)
-      assert.ok(!sealed || method === 'get', 'source journal mutation: ' + method)
+      requireSource(options.key === KANATA_RECOVERY_KEY, 'M5_SOURCE_WRONG_JOURNAL')
+      requireSource(!sealed || method === 'get', 'M5_SOURCE_JOURNAL_MUTATION')
       return invoke(options)
     },
   ]))
@@ -54,7 +54,9 @@ export function kanataSqliteEncryptedLegacySource() {
     readArchive,
   }
   const snapshotBytes = () => ({
-    files: [...files].map(([path, value]) => [path, Buffer.from(value, 'utf8')]),
+    // Files in this driver are UTF-8 strings, and ciphertext is ASCII. Exact
+    // string equality proves byte equality without duplicating the fixture bytes.
+    files: [...files],
     journal: values.get(KANATA_RECOVERY_KEY) ?? null,
   })
   return {
@@ -65,11 +67,16 @@ export function kanataSqliteEncryptedLegacySource() {
       filesystemCalls.length = 0
       journalCalls.length = 0
       sealed = true
-      t.after(() => {
-        assert.deepEqual(snapshotBytes(), before)
-        assert.ok(filesystemCalls.every(method => readOperations.has(method)))
-        assert.ok(journalCalls.every(method => method === 'get'))
-      })
+      const assertReadOnly = () => {
+        const after = snapshotBytes()
+        requireSource(after.journal === before.journal && after.files.length === before.files.length
+          && after.files.every(([path, value], i) => path === before.files[i][0] && value === before.files[i][1]),
+        'M5_SOURCE_BYTES_CHANGED')
+        requireSource(filesystemCalls.every(method => readOperations.has(method)), 'M5_SOURCE_FILESYSTEM_MUTATION')
+        requireSource(journalCalls.every(method => method === 'get'), 'M5_SOURCE_JOURNAL_MUTATION')
+      }
+      t?.after(assertReadOnly)
+      return assertReadOnly
     },
   }
 }
