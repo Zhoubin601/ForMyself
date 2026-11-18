@@ -1,9 +1,17 @@
 # Kanata SQLite M5 Synthetic Acceptance
 
-- Status: **PENDING AUTOMATED RUN**
+- Status: **BLOCKED — latest Web CI failed; M5 is not accepted**
 - Baseline: `9bfff0867b4024d8d3a2aea2787ac2493164810b`
 - Branch: `m5/json-archive-migration`
 - Scope: synthetic fixture only; no real user data.
+
+## Latest CI checkpoint (2026-11-18)
+
+- Implementation checkpoint: `6a858948ce95c6e9de938c0e19e7eaa2e5bef307`
+- [GitHub Actions run 44266119902](https://github.com/Zhoubin601/ForMyself/actions/runs/44266119902): Web job failed in `npm run check`; Android job was skipped by the M5 branch-only workflow guard.
+- Failures: M5-01 count mismatch; M5-02 resume count mismatch; M5-04 failure journal remained `pending`; coordinator test imported a symbol from the old module path.
+- Do not mark M5 PASS until these failures are fixed and the full check passes.
+- Next task: [M5-05 encrypted legacy source integration](../../20261118-kanata-sqlite-m5-05-encrypted-source-integration-task-v1.md).
 
 ## Test cases
 
