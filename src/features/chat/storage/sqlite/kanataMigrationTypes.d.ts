@@ -29,7 +29,7 @@ export interface KanataDataMigrationRequest {
   }) => Promise<void> | void
   readonly assertCurrent?: () => void
 }
-export interface KanataDataMigrator {
+export interface KanataMigrationCoordinator {
   run(request: KanataDataMigrationRequest): Promise<{
     state: 'complete'
     sourceFingerprint: string
@@ -38,11 +38,11 @@ export interface KanataDataMigrator {
     resumed: boolean
   }>
 }
-export declare function createKanataDataMigrator(options: {
+export declare function createKanataMigrationCoordinator(options: {
   operation: KanataSqliteOperation
   targetSchemaVersion?: number
   batchSize?: number
-}): KanataDataMigrator
+}): KanataMigrationCoordinator
 export declare function kanataMigrationSourceFingerprint(
   mainCiphertextFingerprint: string,
   archives?: readonly {

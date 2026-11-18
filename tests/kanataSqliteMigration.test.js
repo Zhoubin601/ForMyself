@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import { schemaHarness } from './helpers/kanataSqliteHarness.js'
 import { migrateKanataSchema } from '../src/features/chat/storage/sqlite/kanataSchemaMigrator.js'
 import {
-  createKanataDataMigrator,
+  createKanataMigrationCoordinator,
   kanataMigrationSourceFingerprint,
 } from '../src/features/chat/storage/sqlite/kanataDataMigrator.js'
 
@@ -59,7 +59,7 @@ test('M5 每批数据写入与 journal cursor 同事务提交；失败批次整�
   const { h, operation } = await setup(t)
   const values = Array.from({ length: 5 }, (_, index) => ({ id: index + 1, value: 'synthetic-' + (index + 1) }))
   const state = { failOn: 4 }
-  const migrator = createKanataDataMigrator({ operation, batchSize: 2 })
+  const migrator = createKanataMigrationCoordinator({ operation, batchSize: 2 })
   const request = {
     syntheticOnly: true,
     sourceFingerprint: 'a'.repeat(64),
@@ -89,7 +89,7 @@ test('M5 每批数据写入与 journal cursor 同事务提交；失败批次整�
 
 test('M5 拒绝源指纹变化、非合成运行和超过上限的批次', async t => {
   const { operation } = await setup(t)
-  const migrator = createKanataDataMigrator({ operation, batchSize: 2 })
+  const migrator = createKanataMigrationCoordinator({ operation, batchSize: 2 })
   const values = [{ id: 1, value: 'synthetic' }]
   const source = collection(values)
   const request = { syntheticOnly: true, sourceFingerprint: 'b'.repeat(64), collections: [source], verify: verifyAll }
@@ -98,13 +98,13 @@ test('M5 拒绝源指纹变化、非合成运行和超过上限的批次', async
     error => error.code === 'KANATA_MIGRATION_SOURCE_CHANGED')
   await assert.rejects(migrator.run({ ...request, syntheticOnly: false }),
     error => error.code === 'KANATA_MIGRATION_SYNTHETIC_ONLY')
-  assert.throws(() => createKanataDataMigrator({ operation, batchSize: 129 }),
+  assert.throws(() => createKanataMigrationCoordinator({ operation, batchSize: 129 }),
     error => error.code === 'KANATA_MIGRATION_BATCH_SIZE_INVALID')
 })
 
 test('M5 拒绝空的非终止页与未完成的目标 Schema', async t => {
   const { operation } = await setup(t)
-  const migrator = createKanataDataMigrator({ operation, batchSize: 2 })
+  const migrator = createKanataMigrationCoordinator({ operation, batchSize: 2 })
   const broken = {
     name: 'broken',
     expectedCount: 1,
@@ -121,7 +121,7 @@ test('M5 拒绝空的非终止页与未完成的目标 Schema', async t => {
 
   const h = schemaHarness()
   t.after(h.close)
-  const notMigrated = createKanataDataMigrator({ operation: operationFor(h) })
+  const notMigrated = createKanataMigrationCoordinator({ operation: operationFor(h) })
   await assert.rejects(notMigrated.run({
     syntheticOnly: true,
     sourceFingerprint: 'e'.repeat(64),

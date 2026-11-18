@@ -92,3 +92,12 @@ M2 Windows 接续已通过（2026-11-09）。[最新验收 v2](../docs/20261109-
 2026-11-16用户要求直接收尾推送当前M检查点：长消息/名称显式preview与NUL安全分段阅读、完整修订草稿加载/取消、有界重试/提示词传输已接入，既有完整check735 Node/411组件45文件、strict正负/build通过，源码与该主机证据匹配。唯一清单G4和QA message-text-host-evidence.json记录源/fixture与失败/修复/复测。当前长文本代码未执行Android验收和最终MR8两轮全范围审查，旧APK结果不改标新代码PASS；A–G其余产品、统一生命周期/retained Heap、MR7未闭环。M4仍BLOCKED，M5 NO；生产legacy/default false、001–005冻结，无真实数据/模型或APK发布。实际提交和远端SHA以Git为准。
 
 2026-11-18 **Kanata SQLite M4 收口完成（M4 PASS；M5 放行建议 YES，待用户明确授权后方可开启）**：以 [最终收口清单](../docs/20261111-kanata-sqlite-m4-final-closeout-ledger-v1.md) 为唯一入口完成 A–G、MR0–MR8、G1–G11 全部闭环及 MR8 两轮独立全范围审查（Round 1 发现 5 P0 + 2 P1 已全部修复，Round 2 复审 0 P0 / 0 P1、4 项 P2 不阻断进入后续计划）。最终主机 `npm run check` 退出 0（ESLint 0 error / 61 warnings、743 Node、420 Vitest/45 文件、`vue-tsc` + `contracts` TS、生产构建）；隔离 Android API 34 / SQLCipher 4.17.0（`kanata_m2_api34` / `emulator-5582`）串行通过 `m4-closeout`、`full -M4Growth -M4Completion` 等全部 11 项合成场景及 5 类原生 Instrumentation（`OK (13 tests)`）；普通 APK（`com.yubin.formyself`）验证 `canonical=legacy`、`BuildConfig.KANATA_M2_SYNTHETIC=false`、catalog `723` 条（25 条合成 SQL 缺席）、未安装未发布；Schema 001–005 冻结校验和全匹配。真实用户数据与旧备份 0 触碰、真实模型 API 请求 0、未启动 M5/M6/M7、未合并 Kanata/main。完整证据、指纹与失败保留见 [final-m4 验收报告](../docs/qa/kanata-sqlite-m4/final-m4/README.md)。
+
+
+## 2026-11-18 M5 已获明确授权并启动
+
+用户明确授权以远端 M 分支提交 `9bfff0867b4024d8d3a2aea2787ac2493164810b` 为唯一开发基线启动 M5。分支上已有先行提交 `724e96fb35c7167c9394a8a4631f4ce1c0cb533b`（通用 synthetic-only journal coordinator）及后续 CI 隔离记录；后续工作在其上追加，保留已有 coordinator 和测试，不覆盖历史证据。M4 PASS 及最终验收记录保持不变。
+
+本轮新增/扩展：`kanataMigrationCoordinator.js` 保留通用事务协调器；`kanataDataMigrationRows.js` 提供 KanataData 关系映射；`kanataDataMigrator.js` 提供端到端合成数据导入、manifest-aware journal、归档页校验、归档标记、life-source、未知字段保真、目标逐表哈希和 FK/integrity 复核；另有 `tests/kanataSqliteDataMigration.test.js`。端到端工厂要求显式 `syntheticOnly=true`，snapshot 要求 `status=ready/recovered=false/hasPendingSave=false/saveError=''`。本阶段没有 legacy Repository 读取适配器，只有注入式合成 source；两个协调器使用不同 journal ID 方案，不得在同一候选库混用。
+
+当前 M5 分支的 Quality workflow 已跳过 Android APK job，只运行 Web/npm check，避免本分支组装或上传 APK。生产仍为 `canonical=legacy`，普通 APK SQLite 激活位仍为 `false`。本轮禁止真实用户数据、生产 Store 接线、canonical 切换、旧 JSON/备份/归档清理、APK 发布、合并 main 和真实模型 API。M5 尚未验收，等待本次分支 Web CI 与合成测试全部通过后再记录结果；即使 M5 PASS，也不自动授权生产迁移。

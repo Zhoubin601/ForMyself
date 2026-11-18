@@ -350,3 +350,12 @@ M7 PASS 后，生成新的交接记录，至少包含：
 M4-R MR0/MR1 已在 [当前 QA](qa/kanata-sqlite-m4/m4-r/README.md) 记录。API 34 / SQLCipher 4.17.0 的 10k 宽事件确认与强停恢复通过。继续 MR2 provenance 及后续门禁。M4 BLOCKED，M5 NO。
 
 [M4-R 验收 v5 检查点](20261110-kanata-sqlite-m4-r-acceptance-v5.md)记录 MR2 定向成果和后续未闭环条件。G1–G11 仍按唯一执行任务书验收。
+
+
+## 2026-11-18 M5 启动记录（用户明确授权）
+
+用户指定远端 M 分支提交 `9bfff0867b4024d8d3a2aea2787ac2493164810b` 为唯一开发基线并明确授权启动 M5。当前在隔离分支 `m5/json-archive-migration` 继续开发；分支已有的通用 synthetic-only journal coordinator 与 CI 证据保持不变。
+
+本轮只允许迁移器开发与合成数据验收。端到端导入器只接受 `syntheticOnly=true` 和注入式合成 source snapshot，不提供真实 Repository 读取适配器；候选 SQLite 必须为 Schema 005、正确 application_id、foreign_keys=ON 且为空。Quality workflow 在本分支跳过 Android APK job，只运行 Web/npm check。
+
+本授权不包含真实用户数据读取/迁移、生产 Store 接线、canonical 切换、普通 APK SQLite 激活位修改、旧 JSON/备份/归档清理、APK 发布或合并 main。M5 当前开发中、尚未验收；只有本次合成测试与分支 Web CI 全部通过后才可记录 M5 迁移器开发 PASS。生产仍 canonical=legacy、普通 APK SQLite 激活位 false。

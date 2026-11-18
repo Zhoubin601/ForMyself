@@ -42,3 +42,12 @@ node --test tests/kanataSqliteMigration.test.js
 - 该通用 Android job 并非 M5 SQLCipher 迁移验收。M5 专项 Android API 34 / SQLCipher 4.17.0 验收仍未运行。
 - 原有 workflow 在首次触发时自动构建并上传临时 Debug APK artifact；未创建 GitHub Release。为避免后续 M5 分支提交再次运行该旧 Android job，已在本分支将其设为跳过，Web 质量检查仍保留。首次运行产生的 artifact 尚未删除。
 - 运行链接：https://github.com/Zhoubin601/ForMyself/actions/runs/44263764005
+
+
+## 端到端合成数据导入器切片（2026-11-18）
+
+先行的通用协调器已保留并迁至 `src/features/chat/storage/sqlite/kanataMigrationCoordinator.js`；原有 `tests/kanataSqliteMigration.test.js` 继续验证其事务级 journal / cursor / rollback / resume 契约。端到端行映射与导入逻辑放在 `kanataDataMigrationRows.js`、`kanataDataMigrator.js`，合成验收位于 `tests/kanataSqliteDataMigration.test.js`。
+
+端到端入口工厂要求显式 `syntheticOnly=true`，source snapshot 必须声明 `status=ready`、`recovered=false`、`hasPendingSave=false`、`saveError=''`。当前阶段没有 legacy Repository 读取适配器，也没有生产 Store 接线；测试仅通过注入的合成 source 和内存 SQLite operation 执行。端到端导入器使用 manifest-aware journal ID，通用协调器使用固定 coordinator ID，二者不可在同一个候选库混用。
+
+端到端实现覆盖活动消息与历史归档页、归档标记、life-source 关系、未知扩展字段、依赖关系导入、目标表行数/列值哈希、application_id、foreign key 与 integrity 检查。仍须等待本次分支 Web CI（Android job 已按分支条件跳过）和全部合成测试通过后，才能判定 M5 迁移器开发验收；本文件不宣称 M5 PASS。
