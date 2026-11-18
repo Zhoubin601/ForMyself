@@ -75,3 +75,12 @@
 - 合成测试：`tests/kanataSqliteDataMigration.test.js`。
 - QA 记录：[M5 synthetic acceptance](qa/kanata-sqlite-m5/README.md)。
 - 本文档作为 M5 工作边界；M4 最终验收与历史失败证据保持不变。
+
+
+## 7. 下一步任务入口（2026-11-18）
+
+当前端到端导入器仍使用注入式合成 source，尚未经过真实 Kanata 加密主文件和加密归档 Repository 读取链路。下一步任务为 [M5-05：加密旧源读取链路合成集成验收](20261118-kanata-sqlite-m5-05-encrypted-source-integration-task-v1.md)。
+
+M5-05 接管时先修复最新 CI 回归，再通过内存文件系统 fixture 调用现有 `createKanataRepository` / archive repository / 加解密函数；不创建生产 source adapter，不访问真实用户数据或真实文件系统。
+
+实现基线检查点：`6a858948ce95c6e9de938c0e19e7eaa2e5bef307`。该检查点的最新 Web CI 运行 `44266119902` 失败，具体失败项和验收要求以 M5-05 任务书为准。M5 仍为开发中，不能标记 PASS。
