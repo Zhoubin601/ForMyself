@@ -1,5 +1,6 @@
 // @ts-check
 import { cloneKanataJson, validateId } from '../../domain/kanataValidation.js'
+import { normalizeCharacterCard } from '../../cards/characterCardImport.js'
 import { domainTable, executeOnce, found, writeOne } from './kanataDomainRows.js'
 import { nonemptyText, pageLimit, requireSqliteValue as need, safeInteger } from './kanataRepositoryValues.js'
 import { assertWritableWorld } from './kanataWorldRepository.js'
@@ -17,7 +18,7 @@ const entries = /** @type {ReturnType<typeof domainTable<StoredEntry>>} */ (doma
   activation_rule: 'activationRule', visibility: 'visibility', source_tag: 'sourceTag', revision: 'revision',
   enabled: 'enabled:flag', case_sensitive: 'caseSensitive:flag',
 }, ['world_id', 'id'], ['knownBy']))
-const knownBy = 'SELECT participant_id FROM lorebook_known_by WHERE world_id=? AND entry_id=? ORDER BY participant_id'
+const knownBy = 'SELECT participant_id FROM lorebook_known_by WHERE world_id=? AND entry_id=? AND participant_id>? ORDER BY participant_id LIMIT 50'
 const list = `SELECT ${entries.stored} FROM lorebook_entries WHERE world_id=? AND id>? ORDER BY id LIMIT ?`
 const visible = `WITH scope(world,actor,after_id) AS (VALUES(?,?,?))
   SELECT l.* FROM scope JOIN worlds w ON w.id=scope.world AND coalesce(w.archived,0)=0
@@ -32,16 +33,55 @@ const visible = `WITH scope(world,actor,after_id) AS (VALUES(?,?,?))
 const promptVisible = visible.replace('SELECT l.*', 'SELECT l.id,l.content,l.priority,l.revision,l.activation_rule,l.keys_json,l.secondary_keys_json,l.case_sensitive')
   .replace('WHERE coalesce(l.enabled,1)=1 AND (', 'WHERE coalesce(l.enabled,1)=1 AND length(CAST(l.content AS BLOB))<=3992 AND (')
 const duplicate = 'SELECT id FROM lorebook_entries WHERE world_id=? AND owner_id=? AND content=? LIMIT 1'
+const instanceVersion = 'SELECT card_id,card_version_id FROM character_instances WHERE world_id=? AND id=?'
+const cardLoreBook = `SELECT json_extract(raw_data_json,'$.spec') AS spec,json_extract(raw_data_json,'$.spec_version') AS spec_version,
+  json_extract(raw_data_json,'$.name') AS name,json_extract(definition_json,'$.name') AS def_name,
+  coalesce(json_extract(raw_data_json,'$.data.character_book'),json_extract(raw_data_json,'$.character_book')) AS book_json
+  FROM card_versions WHERE card_id=? AND id=?`
+const cardLoreConflict = `SELECT id FROM lorebook_entries WHERE world_id=? AND owner_id=? AND (
+  source_tag=? OR content=? OR EXISTS (SELECT 1 FROM json_each(keys_json) k WHERE k.value IN (SELECT value FROM json_each(?)))
+) LIMIT 1`
 const link = 'INSERT INTO lorebook_known_by(world_id,entry_id,participant_id) VALUES(?,?,?)'
 const unlink = 'DELETE FROM lorebook_known_by WHERE world_id=? AND entry_id=?'
 const remove = 'DELETE FROM lorebook_entries WHERE world_id=? AND id=? AND revision=?'
-export const lorebookQueries = [entries.get, knownBy, list, visible, promptVisible, duplicate]
+export const lorebookQueries = [entries.get, knownBy, list, visible, promptVisible, duplicate, instanceVersion, cardLoreBook, cardLoreConflict]
 export const lorebookWrites = [...entries.writeStatements, link, unlink, remove]
 
 /** @param {Tx} tx @param {StoredEntry} dto */
 async function withReaders(tx, { ownerInstanceId: _ownerInstanceId, ...dto }) {
-  const readers = await tx.query(knownBy, [dto.worldId, dto.id])
-  return { ...dto, knownBy: readers.map(reader => String(reader.participant_id)) }
+  const known = []
+  for (let after = ''; ;) {
+    const readers = await tx.query(knownBy, [dto.worldId, dto.id, after])
+    for (const reader of readers) known.push(String(reader.participant_id))
+    if (readers.length < 50) break
+    after = known[known.length - 1]
+  }
+  return { ...dto, knownBy: known }
+}
+
+/** @param {Tx} tx @param {string} worldId @param {string} instanceId */
+async function collectCardLore(tx, worldId, instanceId) {
+  validateId(worldId, 'worldId')
+  validateId(instanceId, 'instanceId')
+  const [inst] = await tx.query(instanceVersion, [worldId, instanceId])
+  const owner = found(inst, 'INSTANCE_NOT_FOUND')
+  const cardId = String(owner.card_id), versionId = String(owner.card_version_id)
+  const [ver] = await tx.query(cardLoreBook, [cardId, versionId])
+  const row = found(ver, 'ORPHAN_CARD_VERSION')
+  if (!row.book_json || (!row.spec && !row.name)) return []
+  const book = JSON.parse(String(row.book_json))
+  const name = String(row.name || row.def_name || '角色')
+  const syntheticRaw = row.spec
+    ? { spec: String(row.spec), spec_version: String(row.spec_version ?? (row.spec === 'chara_card_v3' ? '3.0' : '2.0')), data: { name, character_book: book } }
+    : { name, character_book: book }
+  const items = normalizeCharacterCard(syntheticRaw).lorebook
+  const candidates = []
+  for (const entry of items) {
+    const sourceTag = 'card:' + versionId + ':' + entry.key
+    const [existing] = await tx.query(cardLoreConflict, [worldId, instanceId, sourceTag, entry.content, JSON.stringify(entry.keys)])
+    candidates.push({ ...entry, worldId, instanceId, sourceTag, ...(existing ? { conflictId: String(existing.id) } : {}) })
+  }
+  return candidates
 }
 /** @param {Entry} input */
 function validate(input) {
@@ -125,6 +165,37 @@ export function createKanataLorebookRepository(operation) {
         await writeOne(tx, remove, [worldId, id, expectedRevision])
         return id
       })
+    }),
+    /** @param {string} worldId @param {string} instanceId */
+    previewCardLore: (worldId, instanceId) => operation.transaction(tx => collectCardLore(tx, worldId, instanceId)),
+    /** @param {string} worldId @param {string} instanceId @param {{skipConflicts:boolean,commandId:string,idFactory:(kind:string,key:string)=>string}} options */
+    attachCardLore: (worldId, instanceId, options) => operation.transaction(async tx => {
+      validateId(worldId, 'worldId')
+      validateId(instanceId, 'instanceId')
+      validateId(options.commandId, 'commandId')
+      await assertWritableWorld(tx, worldId)
+      let created = /** @type {string[]} */ ([])
+      await executeOnce(tx, ['lore:attach-card', worldId, instanceId, options.commandId],
+        { skipConflicts: Boolean(options.skipConflicts) }, async () => {
+          const candidates = await collectCardLore(tx, worldId, instanceId)
+          need(!candidates.some(item => item.conflictId) || options.skipConflicts === true, 'LORE_CONFLICT_REQUIRES_DECISION')
+          for (const candidate of candidates.filter(item => !item.conflictId)) {
+            const id = options.idFactory('lore', JSON.stringify([instanceId, candidate.sourceTag]))
+            validateId(id, 'loreId')
+            const content = candidate.content || '（未提供条目内容；保持停用）'
+            const stored = /** @type {StoredEntry} */ ({
+              id, worldId, scope: 'character', ownerId: instanceId, ownerInstanceId: instanceId,
+              keys: candidate.keys, secondaryKeys: candidate.secondaryKeys, content, priority: candidate.priority,
+              activationRule: candidate.activationRule, visibility: 'private', knownBy: [instanceId],
+              sourceTag: candidate.sourceTag, revision: 1, enabled: candidate.enabled, caseSensitive: candidate.caseSensitive,
+            })
+            await entries.create(tx, stored)
+            await writeOne(tx, link, [worldId, id, instanceId])
+            created.push(id)
+          }
+          return created[0] ?? instanceId
+        })
+      return { created }
     }),
   }
 }

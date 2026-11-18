@@ -98,7 +98,7 @@ async function readMessage(tx, scope, id) {
 }
 
 /** @param {Transaction} tx @param {Message} message @param {'reply-base'} [projection] */
-async function insertMessage(tx, message, projection) {
+export async function insertMessage(tx, message, projection) {
   const [prior] = await tx.query(query.state,[...scopeBindings(message),message.id])
   if (prior) {
     await assertMessageSnapshot(tx,{...message,revision:Number(prior.revision)})

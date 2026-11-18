@@ -21,7 +21,7 @@ import { replyProofDdl, replyProofQueries, replyProofWrites } from '../src/featu
 import { messageSnapshotQueries, messageSnapshotWrites, messageSnapshotDdl } from '../src/features/chat/storage/sqlite/kanataMessageSnapshot.js'
 import { messageDetailQueries } from '../src/features/chat/storage/sqlite/kanataMessageDetailRead.js'
 import { receiptQuery, receiptWrite } from '../src/features/chat/storage/sqlite/kanataDomainRows.js'
-import { worldQueries, worldWrites } from '../src/features/chat/storage/sqlite/kanataWorldRepository.js'
+import { worldCopyDdl, worldQueries, worldWrites } from '../src/features/chat/storage/sqlite/kanataWorldRepository.js'
 import { characterQueries, characterWrites } from '../src/features/chat/storage/sqlite/kanataCharacterRepository.js'
 import { lorebookQueries, lorebookWrites } from '../src/features/chat/storage/sqlite/kanataLorebookRepository.js'
 import { provenanceQueries } from '../src/features/chat/storage/sqlite/kanataProvenance.js'
@@ -66,7 +66,7 @@ add('ddl', 'schema', [
   schema.setApplicationId,
   ...KANATA_SCHEMA_MIGRATIONS.flatMap(migration => [...migration.statements, schema.setVersion(migration.version)]),
 ])
-add('ddl', 'business', [...eventPlanDdl, ...replyProofDdl, ...eventProofDdl, ...eventIntegrityDdl,...messageSnapshotDdl,...taskReadDdl])
+add('ddl', 'business', [...eventPlanDdl, ...replyProofDdl, ...eventProofDdl, ...eventIntegrityDdl,...messageSnapshotDdl,...taskReadDdl, ...worldCopyDdl])
 add('query', 'business', eventProofQueries)
 add('query','business',taskSourceProofQueries)
 add('write', 'business', eventProofWrites)

@@ -1301,3 +1301,619 @@ test('MR2 role reads cannot opt into internal shared-memory event privileges',as
   await assert.rejects(()=>events.jsonChunk(worldId,id,{kind:'summary'},injected),/EVENT_CONTEXT_DENIED/)
   await assert.rejects(()=>events.relations(worldId,id,'participantIds',injected),/EVENT_CONTEXT_DENIED/)
 })
+
+test('MR3 A world copy copies static structures only and stays isolated from history',async t=>{
+  const {grantOriginActors}=await import('../docs/qa/kanata-sqlite-m4/completion/fixture.mjs')
+  const {operation,db,domains,scope,messages}=await setup(t)
+  const {worldId,instanceId}=scope
+  await operation.transaction(tx=>tx.execute(grantOriginActors,[0,'copy-mate-',worldId,instanceId]))
+  const actors=db.prepare('SELECT id FROM character_instances WHERE world_id=? ORDER BY id').all(worldId).map(r=>String(r.id))
+  const secondActor='copy-mate-0'
+  assert.ok(actors.includes(secondActor))
+  await domains.characters.updateInstance(worldId,instanceId,1,{name:'复制测试称呼',summary:'覆盖简介'})
+  await domains.conversations.create({id:'char-chat-src',worldId,type:'character',title:'不应复制的角色会话',
+    participantIds:[instanceId,secondActor],mode:'daily',revision:1,lastReadAt:50})
+  await domains.lorebook.save({id:'lore-char-src',worldId,scope:'character',ownerId:instanceId,keys:['秘密线索'],
+    content:'仅主角知晓的静态设定',priority:40,activationRule:'keyword',visibility:'private',knownBy:[instanceId],
+    sourceTag:'manual',revision:1,enabled:true},null)
+  await domains.events.createRelationship({id:'rel-teammate-clean',worldId,fromId:instanceId,toId:secondActor,
+    kind:'teammate',trustBaseline:'new',publicSummary:'同伴关系',dimensions:{trust:0.4,intimacy:0.2,understanding:0.5},
+    sourceEventIds:[],dimensionRuleVersion:1,revision:1})
+  const todoGrant=await domains.autonomy.getGrant(worldId,instanceId,'todo')
+  await domains.autonomy.setGrant(worldId,instanceId,'todo',todoGrant?.revision??null,{read:true,remember:true,share:false})
+  let copySeq=0
+  const copied=await domains.worlds.copy(worldId,'新篇章',{
+    key:'copy-world-cmd',now:1900000,timeZone:'Asia/Shanghai',idFactory:kind=>`cp-${kind}-${++copySeq}`,
+  })
+  assert.equal(copied.world.name,'新篇章')
+  assert.equal(copied.world.archived,false)
+  assert.equal(copied.world.autonomyEnabled,false)
+  assert.equal(copied.world.revision,1)
+  const again=await domains.worlds.copy(worldId,'新篇章',{
+    key:'copy-world-cmd',now:1900000,timeZone:'Asia/Shanghai',idFactory:kind=>`dup-${kind}-${++copySeq}`,
+  })
+  assert.equal(again.world.id,copied.world.id)
+  const copiedActors=await domains.characters.listInstances(copied.world.id)
+  assert.equal(copiedActors.instances.length,actors.length)
+  assert.equal(copiedActors.instances.find(i=>i.overrides.name==='复制测试称呼')?.state.mood,'平静')
+  const copiedConvs=await domains.conversations.list(copied.world.id)
+  assert.equal(copiedConvs.conversations.some(c=>c.type==='character'),false)
+  assert.equal(copiedConvs.conversations.every(c=>c.lastReadAt===0&&c.revision===1),true)
+  const copiedLore=await domains.lorebook.list(copied.world.id)
+  assert.equal(copiedLore.entries.some(e=>e.content==='仅主角知晓的静态设定'&&e.ownerId!==instanceId),true)
+  const copiedRels=db.prepare('SELECT kind,trust,intimacy,understanding,revision FROM relationships WHERE world_id=?').all(copied.world.id)
+  assert.equal(copiedRels.some(r=>r.kind==='teammate'&&r.trust===0&&r.intimacy===0&&r.understanding===0&&r.revision===1),true)
+  for(const table of ['messages','memories','world_events','world_effects','background_tasks','life_grants','usage_events']){
+    assert.equal(db.prepare(`SELECT count(*) AS n FROM ${table} WHERE world_id=?`).get(copied.world.id).n,0)
+  }
+  assert.equal((await messages.recent({worldId:copied.world.id,conversationId:copiedConvs.conversations[0].id})).messages.length,0)
+})
+
+test('MR3 B card publish previewSync sync and attachCardLore keep overrides and skip conflicts',async t=>{
+  const {parseCharacterCardFile}=await import('../src/features/chat/cards/characterCardImport.js')
+  const {db,domains,scope}=await setup(t)
+  const {worldId}=scope
+  const rawCard={
+    spec:'chara_card_v3',spec_version:'3.0',
+    data:{
+      name:'白子候补',description:'阿拜多斯旧卡描述',personality:'冷静认真',mes_example:'',scenario:'',
+      first_mes:'早上好',extensions:{'kanata.speechStyle':'简短冷静','kanata.vendorExt':{opaque:42}},
+      character_book:{entries:[{keys:['单车','环校'],content:'喜欢清晨骑车绕校训练',enabled:true,priority:30}]},
+    },
+  }
+  const bytes=new TextEncoder().encode(JSON.stringify(rawCard))
+  const parsed=await parseCharacterCardFile({name:'shiroko-test.json',type:'application/json',size:bytes.length,arrayBuffer:async()=>bytes.buffer})
+  const imported=await domains.characters.importCard(parsed,{key:'card-imp-1',now:1800000,timeZone:'UTC',idFactory:k=>`${k}-imp-1`})
+  const instActive=await domains.characters.addInstance(worldId,imported.card.id,{key:'inst-add-1',now:1800000,timeZone:'UTC',idFactory:k=>`${k}-act-1`})
+  await domains.characters.updateInstance(worldId,instActive.id,1,{name:'世界内覆盖名'})
+  const world2=db.prepare('SELECT id,revision FROM worlds WHERE id<>?').get(worldId)
+  const instArchived=await domains.characters.addInstance(String(world2.id),imported.card.id,{key:'inst-add-2',now:1800000,timeZone:'UTC',idFactory:k=>`${k}-arch-1`})
+  await domains.worlds.archive(String(world2.id),Number(world2.revision),true)
+  const updatedDef={...imported.version.definition,name:'白子候补v2',summary:'更新后的全局摘要'}
+  const v2=await domains.characters.publish(imported.card.id,updatedDef,imported.version.id,{key:'card-pub-1',now:1800100,timeZone:'UTC',idFactory:k=>`${k}-pub-v2`})
+  assert.equal(v2.revision,2)
+  assert.equal(v2.rawData.data.extensions['kanata.vendorExt'].opaque,42)
+  const syncPage=await domains.characters.previewSync(imported.card.id)
+  assert.equal(syncPage.entries.length,1)
+  assert.equal(syncPage.entries[0].instanceId,instActive.id)
+  assert.ok(syncPage.entries[0].fields.includes('summary'))
+  assert.deepEqual(syncPage.entries[0].retainedOverrides,['name'])
+  await domains.characters.sync(imported.card.id,syncPage.entries)
+  const detail=await domains.characters.readInstanceDetail(worldId,instActive.id)
+  assert.equal(detail.instance.cardVersionId,v2.id)
+  assert.equal(detail.resolved.name,'世界内覆盖名')
+  assert.equal(detail.resolved.summary,'更新后的全局摘要')
+  assert.equal((await domains.characters.getInstance(String(world2.id),instArchived.id)).cardVersionId,imported.version.id)
+  const loreCandidates=await domains.lorebook.previewCardLore(worldId,instActive.id)
+  assert.equal(loreCandidates.length,1)
+  await domains.lorebook.attachCardLore(worldId,instActive.id,{skipConflicts:false,commandId:'lore-att-1',idFactory:k=>`${k}-cl-1`})
+  await assert.rejects(()=>domains.lorebook.attachCardLore(worldId,instActive.id,{skipConflicts:false,commandId:'lore-att-2',idFactory:k=>`${k}-cl-2`}),/LORE_CONFLICT_REQUIRES_DECISION/)
+  const skipped=await domains.lorebook.attachCardLore(worldId,instActive.id,{skipConflicts:true,commandId:'lore-att-3',idFactory:k=>`${k}-cl-3`})
+  assert.deepEqual(skipped.created,[])
+})
+
+test('MR3 C lorebook supports wide knownBy readers beyond 50 within bounded SQL pages',async t=>{
+  const {grantOriginActors}=await import('../docs/qa/kanata-sqlite-m4/completion/fixture.mjs')
+  const {operation,domains,scope,state}=await setup(t)
+  const {worldId,instanceId}=scope
+  await operation.transaction(tx=>tx.execute(grantOriginActors,[63,'wide-lore-',worldId,instanceId]))
+  const readers=[instanceId,...Array.from({length:64},(_,i)=>`wide-lore-${i}`)]
+  let maxRows=0
+  state.observeRows=(_sql,count)=>{maxRows=Math.max(maxRows,count)}
+  const saved=await domains.lorebook.save({
+    id:'wide-known-lore',worldId,scope:'character',ownerId:instanceId,keys:['广域线索'],content:'跨超限知情者设定',
+    priority:55,activationRule:'keyword',visibility:'private',knownBy:readers,sourceTag:'synthetic',revision:1,enabled:true,
+  },null)
+  assert.equal(saved.knownBy.length,65)
+  assert.ok(maxRows<=51)
+  const page=await domains.lorebook.list(worldId)
+  assert.equal(page.entries.find(e=>e.id==='wide-known-lore')?.knownBy.length,65)
+})
+
+test('MR4 D/E/G memory policy, descendant share revocation, all event kinds and opaque ref protection',async t=>{
+  const {db,domains,scope,messages}=await setup(t)
+  const {worldId,instanceId,conversationId}=scope
+  const actors=db.prepare('SELECT id FROM character_instances WHERE world_id=? ORDER BY id').all(worldId).map(r=>String(r.id))
+  const actorB=actors.find(id=>id!==instanceId), actorC='mr4-actor-c-0'
+  assert.ok(actorB)
+  const {grantOriginActors}=await import('../docs/qa/kanata-sqlite-m4/completion/fixture.mjs')
+  await db.prepare(grantOriginActors).run(0,'mr4-actor-c-',worldId,instanceId)
+  const priorPolicy=await domains.memories.policy(worldId)
+  const policy=await domains.memories.savePolicy(worldId,priorPolicy?.revision??null,{
+    strategy:'custom',enabled:true,recentMessages:8,summarizeAfter:20,extractAfter:6,contextBudget:16000,
+  },'policy-cmd-1')
+  assert.equal(policy.revision,(priorPolicy?.revision??0)+1)
+  await assert.rejects(()=>domains.memories.savePolicy(worldId,null,{
+    strategy:'standard',enabled:true,recentMessages:12,summarizeAfter:24,extractAfter:8,contextBudget:24000,
+  },'policy-cmd-stale'),/MEMORY_POLICY_CONFLICT/)
+  const gA=await domains.autonomy.getGrant(worldId,instanceId,'todo')
+  await domains.autonomy.setGrant(worldId,instanceId,'todo',gA?.revision??null,{read:true,remember:true,share:true})
+  await domains.autonomy.setGrant(worldId,actorB,'todo',null,{read:true,remember:true,share:true})
+  await domains.autonomy.setGrant(worldId,actorC,'todo',null,{read:true,remember:true,share:true})
+  const worldInfo=await domains.worlds.get(worldId)
+  await messages.insert({
+    id:'mr4-src-msg',worldId,conversationId,role:'user',senderType:'user',senderId:worldInfo.identity.id,
+    senderNameSnapshot:worldInfo.identity.displayName,content:'分享来源消息',createdAt:1800050,revision:1,
+    status:'complete',turnId:'mr4-turn',batchId:'mr4-turn',lifeSources:[],
+  })
+  const m1=await domains.memories.save({
+    id:'mr4-root-mem',worldId,ownerType:'character',ownerId:instanceId,layer:'L3',key:'分享链',content:'根记忆内容',
+    sourceRefs:[{messageId:'mr4-src-msg',revision:1}],status:'active',revision:1,visibility:'private',knownBy:[instanceId],confidence:'confirmed',
+  },null)
+  assert.equal(m1.status,'active')
+  const s1=await domains.memories.shareManaged({worldId,instanceId},'mr4-root-mem',1,actorB,'share-ab')
+  const s2=await domains.memories.shareManaged({worldId,instanceId:actorB},s1.id,1,actorC,'share-bc')
+  assert.equal((await domains.memories.readFor({worldId,instanceId:actorC},s2.id)).content,'根记忆内容')
+  await domains.memories.withdrawShare({worldId,instanceId},'mr4-root-mem',s1.id,1,'withdraw-ab')
+  await assert.rejects(()=>domains.memories.readFor({worldId,instanceId:actorB},s1.id),/MEMORY_UNAVAILABLE|CONTEXT_DENIED/)
+  await assert.rejects(()=>domains.memories.readFor({worldId,instanceId:actorC},s2.id),/MEMORY_UNAVAILABLE|CONTEXT_DENIED/)
+  await assert.rejects(()=>domains.memories.save({
+    id:'mr4-orphan-mem',worldId,ownerType:'character',ownerId:instanceId,layer:'L3',key:'孤儿',content:'无源',
+    sourceRefs:[{messageId:'missing-msg',revision:1}],status:'active',revision:1,visibility:'private',knownBy:[instanceId],
+  },null),/KANATA_SOURCE_STALE|INVALID/)
+
+  // All 6 event kinds
+  const rel=db.prepare('SELECT id,from_id,to_id FROM relationships WHERE world_id=? AND from_id=? LIMIT 1').get(worldId,instanceId)
+  assert.ok(rel)
+  for(const [idx,kind] of ['note','promise','support','conflict','rest','move'].entries()){
+    const useRel=kind==='support'||kind==='conflict'
+    const action=useRel?{relationshipId:String(rel.id)}:kind==='move'?{instanceId,location:`地点-${idx}`}:{instanceId}
+    const {id}=await domains.events.proposeAcknowledged({
+      worldId,participantIds:useRel?[String(rel.from_id),String(rel.to_id)]:[instanceId,actorB],sourceRefs:[],causedByEventIds:[],visibility:'public',
+      summary:`规则事件-${kind}`,effectiveAt:1800100+idx,causality:'explicit',kind,action,
+    },`mr4-ev-${kind}`)
+    await domains.events.commitAcknowledged(worldId,id,1)
+  }
+
+  // Opaque unknown extension reference protects old message from archiving
+  const worldRow=await domains.worlds.get(worldId)
+  const batchMsgs=Array.from({length:60},(_,i)=>({
+    id:`arch-msg-${i}`,worldId,conversationId,role:'user',senderType:'user',senderId:worldRow.identity.id,
+    senderNameSnapshot:'旅人',content:`历史归档消息-${i}`,createdAt:1900000+i,revision:1,status:'complete',
+    turnId:`arch-turn-${i}`,batchId:`arch-turn-${i}`,
+  }))
+  await messages.insertBatch(batchMsgs)
+  db.prepare('UPDATE character_instances SET extensions_json=? WHERE world_id=? AND id=?')
+    .run(JSON.stringify({vendorUnknown:{nested:[null,{target:'arch-msg-0'}]}}),worldId,instanceId)
+  const plan=await messages.previewArchive({worldId,conversationId},50)
+  const confirmed=await messages.confirmArchive({worldId,conversationId},plan,'archive-cmd-1')
+  assert.equal(confirmed.archivedCount,plan.count)
+  const archIds=new Set(db.prepare('SELECT message_id FROM archived_message_marks WHERE world_id=? AND conversation_id=?').all(worldId,conversationId).map(r=>String(r.message_id)))
+  assert.equal(archIds.has('arch-msg-0'),false)
+  assert.equal(archIds.has('arch-msg-1'),true)
+})
+
+test('MR5 F SQLite autonomy, contact, social and life companion consumers enforce grants and abort guards',async t=>{
+  const {createKanataSqliteAutonomyRuntime}=await import('../src/application/kanataSqliteAutonomyRuntime.js')
+  const {createKanataSqliteLifeCompanion}=await import('../src/application/kanataSqliteLifeCompanion.js')
+  const {db,operation,domains,scope,state}=await setup(t)
+  const {worldId,instanceId}=scope
+  const actors=db.prepare('SELECT id FROM character_instances WHERE world_id=? ORDER BY id').all(worldId).map(r=>String(r.id))
+  const actorB=actors.find(id=>id!==instanceId)
+  assert.ok(actorB)
+  const world2=db.prepare('SELECT id FROM worlds WHERE id<>?').get(worldId)
+  const candidate={withDomains:(_opts,work)=>operation.transaction(tx=>work(createKanataSqliteDomains(operation,{clock:()=>state.now,id:()=>`f-${Math.random().toString(36).slice(2,10)}`}))),
+    isAvailable:()=>true}
+  // Fix: createKanataSqliteDomains expects Operation, pass operation cleanly
+  candidate.withDomains=(opts,work)=>{opts.assertOwner?.();return work(domains)}
+
+  // World autonomy + schedule + advance + social
+  state.now=Date.UTC(2026,10,16,2,0,0) // Monday 10:00 Asia/Shanghai
+  const autoRuntime=createKanataSqliteAutonomyRuntime({
+    candidate,auth:{sessionRevision:1},clock:()=>state.now,
+    completion:async({messages})=>({content:'合成角色台词-'+messages.length}),
+    notify:async()=>({status:'scheduled'}),
+  })
+  const worldCtl=autoRuntime.select(worldId)
+  const cfg=await worldCtl.readConfig()
+  await worldCtl.setActivity({autonomyEnabled:true,proactiveEnabled:true,notificationsEnabled:true},cfg.world.revision)
+  const cfg2=await worldCtl.readConfig()
+  await worldCtl.configure({
+    policy:{worldId,revision:cfg2.policy.revision,dailyDialogueLimit:2,maxCatchUpHours:6,freedom:'standard',quietStartMinute:0,quietEndMinute:0,socialChannel:'private'},
+    instanceFlags:[{id:instanceId,autonomyEnabled:true,proactiveEnabled:true},{id:actorB,autonomyEnabled:true,proactiveEnabled:true}],
+    schedules:[
+      {id:'sched-a',worldId,instanceId,days:[1],startMinute:0,endMinute:1439,location:'图书馆',activity:'看书',resting:false,revision:1},
+      {id:'sched-b',worldId,instanceId:actorB,days:[1],startMinute:0,endMinute:1439,location:'图书馆',activity:'整理档案',resting:false,revision:1},
+    ],
+  },cfg2.world.revision)
+  state.now+=35*60000
+  const adv=await worldCtl.advance()
+  assert.equal(adv.windows,1)
+  const soc=await worldCtl.runSocial()
+  assert.equal(soc.status,'succeeded')
+  assert.ok(soc.eventId)
+
+  // Contact: idle >= 6h
+  state.now+=7*3600000
+  const planned=await domains.autonomy.planContact(worldId,state.now)
+  assert.ok(planned&&planned.hasContact)
+  state.now+=125000
+  const contactRes=await worldCtl.runContact()
+  assert.equal(contactRes.status,'succeeded')
+  assert.equal(contactRes.message.role,'assistant')
+
+  // AbortSignal-ignored rejection guard for social
+  state.now+=35*60000
+  await worldCtl.advance()
+  const lateCancelRuntime=createKanataSqliteAutonomyRuntime({
+    candidate,auth:{sessionRevision:1},clock:()=>state.now,
+    completion:async()=>{autoRuntime.cancel();lateCancelRuntime.cancel();return {content:'绝不可写入的迟到结果'}},
+  })
+  await assert.rejects(()=>lateCancelRuntime.select(worldId).runSocial(),/ABORTED|EXPIRED/)
+
+  // Life Companion exact binding + grant checks
+  let readerCalls=0
+  const companion=createKanataSqliteLifeCompanion({
+    candidate,auth:{sessionRevision:1,isLocked:false},clock:()=>state.now,
+    readers:{todo:async()=>{readerCalls++;return {todayItems:[{id:'t1',title:'合成待办'}]}}},
+    completion:async()=>({content:'合成生活陪伴回应'}),
+  })
+  assert.equal((await companion.request('todo','看看待办')).status,'unselected')
+  const curBinding=await domains.roleBindings.read()
+  await domains.roleBindings.set('todo',{worldId,instanceId},curBinding.revision)
+  const g0=await domains.autonomy.getGrant(worldId,instanceId,'todo')
+  await domains.autonomy.setGrant(worldId,instanceId,'todo',g0?.revision??null,{read:false,remember:false,share:false})
+  assert.equal((await companion.request('todo','无权请求')).status,'permission-required')
+  assert.equal(readerCalls,0)
+  const g1=await domains.autonomy.getGrant(worldId,instanceId,'todo')
+  await domains.autonomy.setGrant(worldId,instanceId,'todo',g1?.revision??null,{read:true,remember:true,share:false})
+  const ok=await companion.request('todo','整理今天待办')
+  assert.equal(ok.status,'succeeded')
+  assert.equal(ok.text,'合成生活陪伴回应')
+  // Archived world -> unavailable without name fallback
+  const curW=await domains.worlds.get(worldId)
+  await domains.worlds.archive(worldId,curW.world.revision,true)
+  assert.equal((await companion.request('todo','归档后不应匹配同名角色')).status,'unavailable')
+  // Unrelated world unaffected
+  assert.ok(world2)
+  autoRuntime.dispose();companion.dispose()
+})
+
+test('MR6 faults, corrupt cursors, session lock and abort-signal-ignored companion completions fail closed',async t=>{
+  const {createKanataSqliteLifeCompanion}=await import('../src/application/kanataSqliteLifeCompanion.js')
+  const {createKanataSqliteAutonomyRuntime}=await import('../src/application/kanataSqliteAutonomyRuntime.js')
+  const {domains,scope,state}=await setup(t)
+  const {worldId,instanceId,conversationId}=scope
+  const auth={sessionRevision:1,isLocked:false}
+  const candidate={withDomains:async(opts,work)=>{opts.assertOwner?.();return work(domains)},isAvailable:()=>!auth.isLocked}
+  const binding=await domains.roleBindings.read()
+  await domains.roleBindings.set('todo',{worldId,instanceId},binding.revision)
+  const g0=await domains.autonomy.getGrant(worldId,instanceId,'todo')
+  await domains.autonomy.setGrant(worldId,instanceId,'todo',g0?.revision??null,{read:true,remember:true,share:false})
+  const convId=await domains.autonomy.actorPrivateConversation(worldId,instanceId)
+  // Oversized L3 memories so readPrompt stops gracefully instead of throwing CONTEXT_BUDGET_EXCEEDED
+  for(let i=0;i<10;i++){
+    await domains.memories.save({
+      id:`mr6-big-mem-${i}`,worldId,ownerType:'character',ownerId:instanceId,layer:'L3',
+      key:`big-${i}`,content:'巨'.repeat(3000),sourceRefs:[],status:'active',revision:1,visibility:'private',knownBy:[instanceId],
+      confidence:'confirmed',conversationId:convId,
+    },null)
+  }
+  const beforeCount=await domains.memories.listManaged(worldId).then(p=>p.entries.length)
+  // AbortSignal-ignored companion completion drops late write
+  const late=createKanataSqliteLifeCompanion({
+    candidate,auth,clock:()=>state.now,
+    readers:{todo:async()=>({todayItems:[]})},
+    completion:async()=>{late.cancel();return {content:'绝不保存的生活记忆'}},
+  })
+  await assert.rejects(()=>late.request('todo','预算与取消测试'),/EXPIRED|ABORTED/)
+  // Lock / session expiry in-flight drops late write
+  const lockDrop=createKanataSqliteLifeCompanion({
+    candidate,auth,clock:()=>state.now,
+    readers:{todo:async()=>({todayItems:[]})},
+    completion:async()=>{auth.isLocked=true;auth.sessionRevision++;return {content:'锁屏迟到结果'}},
+  })
+  await assert.rejects(()=>lockDrop.request('todo','锁屏测试'),/EXPIRED/)
+  auth.isLocked=false
+  // Grant revision bumped while completion in-flight rejects write
+  const grantDrop=createKanataSqliteLifeCompanion({
+    candidate,auth,clock:()=>state.now,
+    readers:{todo:async()=>({todayItems:[]})},
+    completion:async()=>{
+      const cur=await domains.autonomy.getGrant(worldId,instanceId,'todo')
+      await domains.autonomy.setGrant(worldId,instanceId,'todo',cur.revision,{read:false,remember:false,share:false})
+      return {content:'撤权迟到结果'}
+    },
+  })
+  await assert.rejects(()=>grantDrop.request('todo','撤权测试'),/LIFE_PERMISSION_REVISED/)
+  const afterCount=await domains.memories.listManaged(worldId).then(p=>p.entries.length)
+  assert.equal(afterCount,beforeCount)
+  // Corrupt cursor rejection
+  await assert.rejects(()=>domains.lorebook.list(worldId,{bad:'cursor'}),/INVALID|CURSOR/)
+  await assert.rejects(()=>domains.memories.listManaged(worldId,{bad:'cursor'}),/INVALID|CURSOR/)
+  // Contact / autonomy after dispose throws EXPIRED
+  const auto=createKanataSqliteAutonomyRuntime({candidate,auth,clock:()=>state.now,completion:async()=>({content:'x'})})
+  const ctl=auto.select(worldId)
+  auto.dispose()
+  await assert.rejects(()=>ctl.readConfig(),/EXPIRED/)
+  late.dispose();lockDrop.dispose();grantDrop.dispose()
+})
+
+test('MR8 parity: cross-module life memory isolation, social/contact context parity and allowPrompt',async t=>{
+  const {createKanataSqliteLifeCompanion}=await import('../src/application/kanataSqliteLifeCompanion.js')
+  const {createKanataSqliteAutonomyRuntime}=await import('../src/application/kanataSqliteAutonomyRuntime.js')
+  const {db,domains,messages,scope,state}=await setup(t)
+  const {worldId,instanceId}=scope
+  const actors=db.prepare('SELECT id FROM character_instances WHERE world_id=? ORDER BY id').all(worldId).map(r=>String(r.id))
+  const actorB=actors.find(id=>id!==instanceId)
+  assert.ok(actorB)
+  const auth={sessionRevision:1,isLocked:true}
+  let accessCalls=0,allowUnlock=false
+  const candidate={
+    withDomains:async(opts,work)=>{opts.assertOwner?.();return work(domains)},
+    withRepositories:async(opts,work)=>{opts.assertOwner?.();return work(messages)},
+    ensureAccess:async()=>{accessCalls++;if(!allowUnlock)return false;auth.isLocked=false;return true},
+    isAvailable:()=>true,
+  }
+  const binding=await domains.roleBindings.read()
+  await domains.roleBindings.set('todo',{worldId,instanceId},binding.revision)
+  const b2=await domains.roleBindings.read()
+  await domains.roleBindings.set('mood',{worldId,instanceId},b2.revision)
+  const gt=await domains.autonomy.getGrant(worldId,instanceId,'todo')
+  await domains.autonomy.setGrant(worldId,instanceId,'todo',gt?.revision??null,{read:true,remember:true,share:false})
+  const gm=await domains.autonomy.getGrant(worldId,instanceId,'mood')
+  await domains.autonomy.setGrant(worldId,instanceId,'mood',gm?.revision??null,{read:true,remember:true,share:false})
+  const convId=await domains.autonomy.actorPrivateConversation(worldId,instanceId)
+  // Seed private history
+  const identity=(await domains.worlds.get(worldId)).identity
+  await messages.insert({id:'mr8-hist-1',worldId,conversationId:convId,role:'user',senderType:'user',senderId:identity.id,senderNameSnapshot:identity.displayName,content:'私聊历史旧句-不可丢失',createdAt:state.now-5000,revision:1,status:'complete',turnId:'t-hist-1',batchId:'t-hist-1'})
+
+  // 1) allowPrompt=false & allowPrompt=true when locked
+  const seenPrompts=[]
+  const companion=createKanataSqliteLifeCompanion({
+    candidate,auth,clock:()=>state.now,
+    readers:{
+      todo:async()=>({todayItems:[{id:'t1',title:'整理待办'}]}),
+      mood:async()=>({recent:[{id:'m1',label:'平静'}]}),
+    },
+    completion:async({messages:reqMsgs})=>{
+      seenPrompts.push(reqMsgs.map(m=>String(m.content)).join('\n'))
+      return {content:'生活独有秘密-TODO-ONLY'}
+    },
+  })
+  assert.equal((await companion.request('todo','静默请求',{allowPrompt:false})).status,'requires-unlock')
+  assert.equal(accessCalls,0)
+  assert.equal((await companion.request('todo','取消解锁',{allowPrompt:true})).status,'cancelled')
+  assert.equal(accessCalls,1)
+  allowUnlock=true
+  const resTodo=await companion.request('todo','确认解锁并生成',{allowPrompt:true})
+  assert.equal(resTodo.status,'succeeded')
+  assert.match(seenPrompts.at(-1),/私聊历史旧句-不可丢失/)
+  // Activate todo candidate memory, then verify mood request does NOT receive todo life memory while still succeeding
+  const todoMem=(await domains.memories.listManaged(worldId)).entries.find(m=>m.key.startsWith('life:todo:'))
+  assert.ok(todoMem)
+  db.prepare('UPDATE memories SET status=?, revision=revision+1 WHERE id=?').run('active',todoMem.id)
+  const resMood=await companion.request('mood','心情回应',{allowPrompt:true})
+  assert.equal(resMood.status,'succeeded')
+  assert.doesNotMatch(seenPrompts.at(-1),/生活独有秘密-TODO-ONLY/)
+  companion.dispose()
+
+  // 2) Social: shared memories + cross-recipient filtered history + task_sources + schedule invalidation
+  state.now=Date.UTC(2026,10,16,3,0,0)
+  const cfg=await domains.autonomy.readConfig(worldId)
+  await domains.autonomy.setActivity(worldId,cfg.world.revision,{autonomyEnabled:true,proactiveEnabled:true,notificationsEnabled:true},state.now)
+  const cfg2=await domains.autonomy.readConfig(worldId)
+  await domains.autonomy.configure(worldId,cfg2.world.revision,{
+    policy:{...cfg2.policy,dailyDialogueLimit:3,maxCatchUpHours:6,freedom:'standard',quietStartMinute:23*60,quietEndMinute:23*60+30,socialChannel:'private'},
+    instanceFlags:[{id:instanceId,autonomyEnabled:true,proactiveEnabled:true},{id:actorB,autonomyEnabled:true,proactiveEnabled:true}],
+    schedules:[
+      {id:'mr8-s1',worldId,instanceId,days:[1],startMinute:0,endMinute:1439,location:'咖啡馆',activity:'看书',resting:false,revision:1},
+      {id:'mr8-s2',worldId,instanceId:actorB,days:[1],startMinute:0,endMinute:1439,location:'咖啡馆',activity:'写作',resting:false,revision:1},
+    ],
+  },state.now)
+  state.now+=35*60000
+  const win1=await domains.autonomy.plan(worldId,state.now)
+  await domains.autonomy.completeWindow(win1,state.now)
+  const plan1=await domains.autonomy.planSocial(worldId,state.now)
+  assert.ok(plan1)
+  const cfg3=await domains.autonomy.readConfig(worldId)
+  await domains.autonomy.configure(worldId,cfg3.world.revision,{
+    policy:{...cfg3.policy},
+    instanceFlags:[{id:instanceId,autonomyEnabled:true,proactiveEnabled:true},{id:actorB,autonomyEnabled:true,proactiveEnabled:true}],
+    schedules:[
+      {id:'mr8-s1',worldId,instanceId,days:[1],startMinute:0,endMinute:1439,location:'书店',activity:'翻阅',resting:false,revision:2},
+      {id:'mr8-s2',worldId,instanceId:actorB,days:[1],startMinute:0,endMinute:1439,location:'书店',activity:'采购',resting:false,revision:2},
+    ],
+  },state.now)
+  state.now+=35*60000
+  const win2=await domains.autonomy.plan(worldId,state.now)
+  await domains.autonomy.completeWindow(win2,state.now)
+  const plan2=await domains.autonomy.planSocial(worldId,state.now)
+  assert.ok(plan2)
+  assert.notEqual(plan2.signature,plan1.signature)
+  await domains.memories.save({
+    id:'mr8-shared-mem',worldId,ownerType:'character',ownerId:instanceId,layer:'L2',
+    key:'shared-cafe',content:'两人共享咖啡馆旧事',sourceRefs:[],status:'active',revision:1,
+    visibility:'participants',knownBy:[instanceId,actorB],confidence:'confirmed',
+  },null)
+  await domains.memories.save({
+    id:'mr8-secret-mem',worldId,ownerType:'character',ownerId:instanceId,layer:'L2',
+    key:'only-a-secret',content:'绝对私有秘密-禁止给B',sourceRefs:[],status:'active',revision:1,
+    visibility:'private',knownBy:[instanceId],confidence:'confirmed',
+  },null)
+  let notifyThrows=false,notifyCount=0
+  const socialPrompts=[]
+  const auto=createKanataSqliteAutonomyRuntime({
+    candidate,auth,clock:()=>state.now,
+    completion:async({messages:reqMsgs})=>{socialPrompts.push(reqMsgs.map(m=>String(m.content)).join('\n'));return {content:'合成交流语句'}},
+    notify:async()=>{notifyCount++;if(notifyThrows)throw new Error('NOTIFY_DENIED');return {status:'scheduled'}},
+  })
+  const ctl=auto.select(worldId)
+  await ctl.advance()
+  const socialOut=await ctl.runSocial()
+  assert.equal(socialOut.status,'succeeded')
+  assert.match(socialPrompts.join('\n'),/两人共享咖啡馆旧事/)
+  assert.doesNotMatch(socialPrompts.join('\n'),/绝对私有秘密-禁止给B/)
+  assert.ok(db.prepare('SELECT COUNT(*) AS c FROM task_sources').get().c>=1)
+
+  // 3) runContact: notify failure -> notificationState='failed' while runContact succeeds; quiet hours skip notify; abort marks failed
+  state.now+=7*3600000
+  await domains.autonomy.planContact(worldId,state.now)
+  state.now+=125000
+  notifyThrows=true
+  const c1=await ctl.runContact()
+  assert.equal(c1.status,'succeeded')
+  assert.equal(db.prepare("SELECT json_extract(metadata_json,'$.contact.notificationState') AS ns FROM background_tasks WHERE world_id=? AND kind='proactive' ORDER BY rowid DESC LIMIT 1").get(worldId).ns,'failed')
+  // Quiet window crossing mid-completion: completeContact rejects with CONTACT_EXPIRED & skips notify & calls failTask
+  notifyThrows=false
+  const beforeQuietNotify=notifyCount
+  const cCross=createKanataSqliteAutonomyRuntime({
+    candidate,auth,clock:()=>state.now,
+    completion:async()=>{state.now=Date.UTC(2026,10,19,15,10,0);return {content:'跨入免打扰完成'}},
+    notify:async()=>{notifyCount++;return {status:'scheduled'}},
+  })
+  state.now=Date.UTC(2026,10,19,14,57,0)
+  const crossPlan=await domains.autonomy.planContact(worldId,state.now)
+  assert.ok(crossPlan&&crossPlan.hasContact)
+  state.now+=130000
+  await assert.rejects(()=>cCross.select(worldId).runContact(),/CONTACT_EXPIRED/)
+  assert.equal(notifyCount,beforeQuietNotify)
+  cCross.dispose()
+
+  // Abort mid-contact calls failTask so no running leak remains
+  state.now=Date.UTC(2026,10,20,4,0,0)
+  await domains.autonomy.planContact(worldId,state.now)
+  state.now+=125000
+  const abortRuntime=createKanataSqliteAutonomyRuntime({
+    candidate,auth,clock:()=>state.now,
+    completion:async()=>{abortRuntime.cancel();return {content:'绝不提交'}},
+  })
+  await assert.rejects(()=>abortRuntime.select(worldId).runContact(),/ABORTED|EXPIRED/)
+  assert.equal(db.prepare("SELECT COUNT(*) AS c FROM background_tasks WHERE world_id=? AND kind='proactive' AND state='running'").get(worldId).c,0)
+  assert.equal(db.prepare("SELECT state,error_code FROM background_tasks WHERE world_id=? AND kind='proactive' ORDER BY rowid DESC LIMIT 1").get(worldId).state,'failed')
+  abortRuntime.dispose();auto.dispose()
+})
+
+test('MR8 Round 1 remediations: home/reports aggregate grants, event+memory lineage provenance, stale check, and large >300KB PNG card chunking',async t=>{
+  const {createKanataSqliteLifeCompanion}=await import('../src/application/kanataSqliteLifeCompanion.js')
+  const {createKanataSqliteAutonomyRuntime}=await import('../src/application/kanataSqliteAutonomyRuntime.js')
+  const {createKanataCharacterRepository}=await import('../src/features/chat/storage/sqlite/kanataCharacterRepository.js')
+  const {parseCharacterCardBytes}=await import('../src/features/chat/cards/characterCardImport.js')
+  const {db,domains,messages,scope,state,operation}=await setup(t)
+  const {worldId,instanceId}=scope
+  const actors=db.prepare('SELECT id FROM character_instances WHERE world_id=? ORDER BY id').all(worldId).map(r=>String(r.id))
+  const actorB=actors.find(id=>id!==instanceId)
+  assert.ok(actorB)
+  const auth={sessionRevision:1,isLocked:false}
+  const candidate={
+    withDomains:async(opts,work)=>{opts.assertOwner?.();return work(domains)},
+    withRepositories:async(opts,work)=>{opts.assertOwner?.();return work(messages)},
+    isAvailable:()=>true,
+  }
+
+  // 1) 'home' & 'reports' aggregate reading across child grants, and remember=true on 'home' skips persistence safely when child remember=false
+  const rb=await domains.roleBindings.read()
+  await domains.roleBindings.set('home',{worldId,instanceId},rb.revision)
+  const gHome=await domains.autonomy.getGrant(worldId,instanceId,'home')
+  await domains.autonomy.setGrant(worldId,instanceId,'home',gHome?.revision??null,{read:true,remember:true,share:false})
+  const gTodo=await domains.autonomy.getGrant(worldId,instanceId,'todo')
+  await domains.autonomy.setGrant(worldId,instanceId,'todo',gTodo?.revision??null,{read:true,remember:false,share:false})
+  const seenHome=[]
+  const companion=createKanataSqliteLifeCompanion({
+    candidate,auth,clock:()=>state.now,
+    readers:{
+      todo:async()=>({todayItems:[{id:'h-t1',title:'首页聚合待办条目'}]}),
+      mood:async()=>({recent:[{id:'h-m1',label:'未授权心情'}]}),
+    },
+    completion:async({messages:reqMsgs})=>{
+      seenHome.push(reqMsgs.map(m=>String(m.content)).join('\n'))
+      return {content:'首页聚合合法回应'}
+    },
+  })
+  const memCountBefore=(await domains.memories.listManaged(worldId)).entries.length
+  const homeRes=await companion.request('home','今日总结')
+  assert.equal(homeRes.status,'succeeded')
+  assert.match(seenHome.at(-1),/首页聚合合法回应|首页聚合待办条目/)
+  assert.doesNotMatch(seenHome.at(-1),/未授权心情/)
+  assert.equal((await domains.memories.listManaged(worldId)).entries.length,memCountBefore)
+  await assert.rejects(()=>companion.request('home','   '),/INVALID_LIFE_TASK/)
+  companion.dispose()
+
+  // 2) runSocial reads event lifeSources via relations + preserves shared memory lifeSources into message_life_sources & event_life_sources, plus STALE_CONTEXT guard
+  state.now=Date.UTC(2026,10,16,4,0,0)
+  await domains.autonomy.setGrant(worldId,instanceId,'todo',(await domains.autonomy.getGrant(worldId,instanceId,'todo')).revision,{read:true,remember:true,share:true})
+  await domains.autonomy.setGrant(worldId,actorB,'todo',(await domains.autonomy.getGrant(worldId,actorB,'todo'))?.revision??null,{read:true,remember:true,share:true})
+  const curGrantA=await domains.autonomy.getGrant(worldId,instanceId,'todo')
+  const lifeSrcA={grantId:curGrantA.id,revision:curGrantA.revision,moduleId:'todo',instanceId,fingerprint:'a'.repeat(64)}
+  const sharedMem=await domains.memories.save({
+    id:'mr8-r1-shared-mem',worldId,ownerType:'character',ownerId:instanceId,layer:'L2',
+    key:'shared-todo-origin',content:'共享带源记忆内容',sourceRefs:[],status:'active',revision:1,
+    visibility:'participants',knownBy:[instanceId,actorB],confidence:'confirmed',lifeSources:[lifeSrcA],
+  },null)
+  assert.ok(sharedMem.id)
+  const evRes=await domains.events.proposeAcknowledged({
+    worldId,participantIds:[instanceId,actorB],sourceRefs:[],causedByEventIds:[],visibility:'public',
+    summary:'双方公开共同事件-含来源',effectiveAt:state.now-1000,causality:'explicit',kind:'note',
+    action:{instanceId},lifeSources:[lifeSrcA],
+  },'mr8-r1-ev-1')
+  await domains.events.commitAcknowledged(worldId,evRes.id,1)
+  const cfg=await domains.autonomy.readConfig(worldId)
+  await domains.autonomy.setActivity(worldId,cfg.world.revision,{autonomyEnabled:true,proactiveEnabled:true,notificationsEnabled:true},state.now)
+  const cfg2=await domains.autonomy.readConfig(worldId)
+  await domains.autonomy.configure(worldId,cfg2.world.revision,{
+    policy:{...cfg2.policy,dailyDialogueLimit:3,maxCatchUpHours:6,freedom:'standard',quietStartMinute:23*60,quietEndMinute:23*60+30,socialChannel:'private'},
+    instanceFlags:[{id:instanceId,autonomyEnabled:true,proactiveEnabled:true},{id:actorB,autonomyEnabled:true,proactiveEnabled:true}],
+    schedules:[
+      {id:'r1-s1',worldId,instanceId,days:[1],startMinute:0,endMinute:1439,location:'观景台',activity:'看云',resting:false,revision:1},
+      {id:'r1-s2',worldId,instanceId:actorB,days:[1],startMinute:0,endMinute:1439,location:'观景台',activity:'写生',resting:false,revision:1},
+    ],
+  },state.now)
+  const auto=createKanataSqliteAutonomyRuntime({
+    candidate,auth,clock:()=>state.now,
+    completion:async()=>({content:'带事件与记忆来源的社交回应'}),
+  })
+  const ctl=auto.select(worldId)
+  state.now+=35*60000
+  await ctl.advance()
+  const socRes=await ctl.runSocial()
+  assert.equal(socRes.status,'succeeded')
+  assert.ok(db.prepare('SELECT COUNT(*) AS c FROM event_life_sources WHERE world_id=? AND event_id=? AND module_id=?').get(worldId,socRes.eventId,'todo').c>=1)
+  const socialMsg=db.prepare('SELECT id FROM messages WHERE world_id=? AND turn_id=? LIMIT 1').get(worldId,socRes.task.id)
+  assert.ok(socialMsg)
+  assert.ok(db.prepare('SELECT COUNT(*) AS c FROM message_life_sources WHERE world_id=? AND message_id=? AND module_id=?').get(worldId,socialMsg.id,'todo').c>=1)
+
+  // Stale context rejection in runSocial when lorebook changes mid-completion
+  state.now+=35*60000
+  await ctl.advance()
+  const staleAuto=createKanataSqliteAutonomyRuntime({
+    candidate,auth,clock:()=>state.now,
+    completion:async()=>{
+      await domains.lorebook.save({
+        id:'mr8-r1-stale-lore',worldId,scope:'world',ownerId:worldId,keys:['观景台'],
+        content:'并发期间新增设定',activationRule:'keyword',visibility:'public',enabled:true,priority:50,revision:1,sourceTag:'stale',knownBy:[],
+      },null)
+      return {content:'应当因上下文过期被拒绝'}
+    },
+  })
+  await assert.rejects(()=>staleAuto.select(worldId).runSocial(),/STALE_CONTEXT/)
+  staleAuto.dispose();auto.dispose()
+
+  // 3) P0-4: Large >300KB PNG / JSON card succeeds through strict 262,144-char SQL parameter boundary and reads back intact
+  const boundedOp={
+    transaction:run=>operation.transaction(tx=>run({
+      query:(sql,params=[])=>{
+        for(const p of params)if(typeof p==='string'&&p.length>262144)throw Object.assign(new Error('KANATA_SQLITE_STATEMENT_DENIED'),{code:'KANATA_SQLITE_STATEMENT_DENIED'})
+        return tx.query(sql,params)
+      },
+      execute:(sql,params=[])=>{
+        assert.ok(params.length<=256)
+        for(const p of params)if(typeof p==='string'&&p.length>262144)throw Object.assign(new Error('KANATA_SQLITE_STATEMENT_DENIED'),{code:'KANATA_SQLITE_STATEMENT_DENIED'})
+        return tx.execute(sql,params)
+      },
+    })),
+  }
+  const bigCardRepo=createKanataCharacterRepository(boundedOp)
+  const largeJsonBytes=new TextEncoder().encode(JSON.stringify({
+    spec:'chara_card_v3',spec_version:'3.0',
+    data:{name:'大扩展测试卡',description:'简介',personality:'沉稳',mes_example:'简短',extensions:{blob:'x'.repeat(290000)}},
+  }))
+  const parsedLarge=parseCharacterCardBytes(largeJsonBytes,{fileName:'large-v3.json'})
+  let bigSeq=0
+  const importedLarge=await bigCardRepo.importCard(parsedLarge,{key:'mr8-big-card-1',now:state.now,idFactory:k=>`big-${k}-${++bigSeq}`})
+  assert.equal(importedLarge.version.rawData.data.extensions.blob.length,290000)
+  // Re-import deduplicates without exceeding 262,144 param limit
+  const dedupLarge=await bigCardRepo.importCard(parsedLarge,{key:'mr8-big-card-2',now:state.now,idFactory:k=>`big-${k}-${++bigSeq}`})
+  assert.equal(dedupLarge.card.id,importedLarge.card.id)
+})
+
+

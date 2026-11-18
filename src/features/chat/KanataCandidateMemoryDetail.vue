@@ -150,7 +150,13 @@ function remove(){
     }
   },()=>emit('removed'))
 }
-const unregister=registerBackHandler(()=>{emit('close');return true},{priority:610})
+const unregister=registerBackHandler(()=>{
+  if(conflicts.value){conflicts.value=null}
+  else if(outgoingShares.value){outgoingShares.value=null}
+  else if(sharing.value){sharing.value=false;recipient.value=null}
+  else emit('close')
+  return true
+},{priority:610})
 onBeforeUnmount(()=>{
   generation++
   unregister()

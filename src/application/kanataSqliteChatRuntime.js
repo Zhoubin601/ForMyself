@@ -130,7 +130,7 @@ export function createKanataSqliteChatRuntime({ candidate, completion, auth, lif
     clear()
     if (scope && isAvailable()) schedulePoll(0)
   }
-  const stopInvalidation = watch(candidate.generation, clear, { flush: 'sync' })
+  const stopInvalidation = watch([candidate.generation, ...(candidate.grantVersion ? [candidate.grantVersion] : [])], clear, { flush: 'sync' })
   const stopAvailability = watch(candidate.isAvailable, available => {
     if (available && selected) schedulePoll(0)
   })

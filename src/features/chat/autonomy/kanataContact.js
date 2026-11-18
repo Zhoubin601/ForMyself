@@ -4,7 +4,7 @@ import {kanataLocalTime,kanataAutonomyPolicy} from './kanataAutonomy.js'
 import {buildKanataConversationContext} from '../domain/kanataConversation.js'
 import {renderKanataCharacter} from '../lorebook/kanataLorebook.js'
 /** @typedef {import('../domain/kanataTypes').KanataData} Data */
-/** @param {Data} data @param {string} worldId @param {number} now */
+/** @param {Pick<Data, 'worlds' | 'autonomyPolicies'>} data @param {string} worldId @param {number} now */
 export function kanataQuietTime(data,worldId,now) {
   const world=data.worlds.find(w=>w.id===worldId);if(!world)return true
   const {quietStartMinute:start,quietEndMinute:end}=kanataAutonomyPolicy(data,worldId),{minute}=kanataLocalTime(now,world.timeZone)

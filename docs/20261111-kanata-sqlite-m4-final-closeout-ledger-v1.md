@@ -3,7 +3,8 @@
 **日期：** 2026-11-11（北京时间）  
 **仓库 / 分支：** Zhoubin601/ForMyself / M  
 **制定基线：** 5095b8ec537b1af182f7dbb091671c63aa917c6e  
-**当前结论：** M4 BLOCKED；M5 NO。  
+**当前结论：** **M4 PASS**（`A–G`、`MR0–MR8`、`G1–G11` 全部 PASS）；**M5 放行建议：YES（等待用户明确授权，尚未开始 M5）**。  
+**最终验收报告：** [final-m4/README.md](qa/kanata-sqlite-m4/final-m4/README.md)  
 **本文件性质：** 已确认 M4-R 合同的统一状态清单和唯一当前执行索引，不是新阶段、新需求或新的 MR/ER 工作包。
 
 > 本文件由用户确认“工程质量优先，但必须有明确终点”后建立。它合并现有 M4、M4-R、MR0–MR8、ER1、A–G 和 G1–G11 的状态，不增加新的验收要求。历史任务书、验收报告和 QA 日志全部保留，不重写历史结果。
@@ -70,15 +71,15 @@ M4 的目标是完成 SQLite 隔离候选的业务访问模型重构：候选业
 
 | 现有工作包 | 当前状态 | 说明 |
 |---|---|---|
-| MR0 接管与证据盘点 | PASS（需启动时轻量复核 HEAD/工作区/设备） | 历史基线、设备白名单和 A–G 矩阵已有证据 |
-| MR1 Android 10k 宽事件确认 | PASS | 1k/10k 综合确认、逐项 Effects 审计、强停恢复和幂等已有 Android 证据 |
-| MR2 G4 provenance | BLOCKED | 普通聊天、事件/消息来源和旧兼容入口仍有未闭环边界 |
-| MR3 A/B/C 管理闭环 | NOT RUN / PARTIAL | 世界复制、角色实例/文件导入、世界书完整管理未全部闭环 |
-| MR4 D/E/G 管理闭环 | NOT RUN / PARTIAL | 记忆跨组处理、事件语义/兼容、历史扩展引用保护未全部闭环 |
-| MR5 F 真实消费者与后台任务 | PARTIAL | 任务有界访问与权限/故障主机及Android切片通过；自治调度、contact/social 和生活模块真实消费者未闭环 |
-| MR6 跨页面生命周期、权限与故障 | BLOCKED | 部分组件与 Runtime 已验证；完整页面、权限、内存矩阵缺失 |
-| MR7 最终全量回归与 Android 验收 | BLOCKED | 已接线场景有实测；完整 A–G 最终候选矩阵未完成 |
-| MR8 两轮全范围审查与交付 | BLOCKED | 有检查点审查；最终集成树两轮全范围审查未完成 |
+| MR0 接管与证据盘点 | PASS | `ebec33ba` → `a2b20e0b` → 收口集成树接管与 `kanata_m2_api34` 隔离包核验 |
+| MR1 Android 10k 宽事件确认 | PASS | `full -M4Growth -M4Completion` 1k/10k 综合确认、逐项审计与强停恢复通过 |
+| MR2 G4 provenance | PASS | `mr2-grants`/`chat-provenance`/`event-provenance`/`event-read`/`message-bounded`/`message-text`/`task-read` 全通过，`fullDtos=0` |
+| MR3 A/B/C 管理闭环 | PASS | 世界静态复制/`GROUP-01..05`、大尺寸（275k/290k）角色卡导入同步、世界书 1017 条/65 知情分页通过 |
+| MR4 D/E/G 管理闭环 | PASS | 记忆冲突合并与撤回 0 正文读取、6 类事件/005 原序/纯领域撤销/4 路径 action/长 Audit、历史扩展保护通过 |
+| MR5 F 真实消费者与后台任务 | PASS | `ActivityPanel`、autonomy `social`/`contact`、`LifeCompanion`（`'home'` 聚合与隔离）及 `task-read` 通过 |
+| MR6 跨页面生命周期、权限与故障 | PASS | 取消/关闭/卸载/锁屏/租约失效/迟到拦截/COMMIT 回滚与 `domNodesAfterUnmount=0` 通过 |
+| MR7 最终全量回归与 Android 验收 | PASS | 主机 `npm run check`、11 项串行 Android 场景、5 类 Instrumentation（13 tests）、普通 APK 与 Schema 001–005 通过 |
+| MR8 两轮全范围审查与交付 | PASS | Round 1（`b1df8d7b`）5 P0 + 2 P1 全部修复；Round 2（`b31d7f2c`）0 P0 / 0 P1、4 项 P2 |
 
 MR5 是 M4-R 内部工作包编号，不是 SQLite 阶段 M5。
 
@@ -95,21 +96,21 @@ MR5 是 M4-R 内部工作包编号，不是 SQLite 阶段 M5。
 
 ### 2.4 G1–G11 状态
 
-最新完整 M4-R 报告中，G1–G9 与 G11 均为 BLOCKED；G10 为 PASS。其后 ER1 验收 v4 又确认事件兼容、原始领域顺序和专用生命周期仍未闭环，因此不能据旧报告把全局门禁提升为 PASS。
+2026-11-18 最终集成候选完成全部 A–G 实施、MR7 全量主机/Android/Instrumentation/普通 APK 门禁与 MR8 两轮独立全范围审查，G1–G11 全部 **PASS**（详见 [final-m4/README.md](qa/kanata-sqlite-m4/final-m4/README.md)）：
 
 | 门禁 | 当前状态 | 最终关闭条件 |
 |---|---|---|
-| G1 调用覆盖 | BLOCKED | A–G 所有当前范围内真实操作都有 UI→Runtime→Repository→SQL 链路，无未分类入口 |
-| G2 状态有界 | BLOCKED | 列表、详情、草稿、来源、Effects、导入 payload、Store/ViewModel 与跨桥数据均有明确预算和实际观测 |
-| G3 Repository | BLOCKED | scope、owner、ID、keyset、count、CAS、continuation、事务、幂等和错误语义均有对应实测 |
-| G4 普通聊天无全图 | BLOCKED | 普通聊天、管理、事件/消息 provenance 和兼容入口无随数据增长的完整对象图，且旧语义不变 |
-| G5 领域正确 | BLOCKED | A–G 当前范围内业务闭环和既定产品语义通过 |
-| G6 权限与租约 | BLOCKED | read/remember/share、撤权、锁屏、后台、解绑、取消、owner/revision 变化和迟到结果通过 |
-| G7 错误与故障 | BLOCKED | 错密、版本拒绝、查询/事务/COMMIT 失败、强停重开、恢复 fail closed 与幂等通过 |
-| G8 UI/AI | BLOCKED | 当前范围内新增页面和真实消费者实际运行；provider 合成，真实模型 API 请求为 0 |
-| G9 全项目 | BLOCKED | 最终代码树 npm run check、strict 正负类型、构建和强制 Android SQLCipher JS E2E 通过 |
-| G10 兼容边界 | PASS（最终树复核） | canonical legacy、普通 APK SQLite=false、Schema 001–004 checksum 不变、未提前实施 M5/M6/M7 |
-| G11 证据审计 | BLOCKED | 最终树两轮全范围审查、失败/修复/复测、命令退出码及源码/设备/数据指纹完整 |
+| G1 调用覆盖 | **PASS** | A–G 所有当前范围内真实操作均有 UI→Runtime→Repository→SQL 链路；测试内未注册裸 SQL 已清理 |
+| G2 状态有界 | **PASS** | 分页 `<=51`、正文/JSON/Audit 块 `<=4096/4097`、提示词来源编码 `=1`、`domNodesAfterUnmount=0` 与 Heap/PSS 采样观测完整 |
+| G3 Repository | **PASS** | scope、owner、ID、keyset、count、CAS、continuation、事务、幂等、大字段分块与错误语义实测通过 |
+| G4 普通聊天无全图 | **PASS** | 普通聊天、管理、事件/消息/任务 provenance 与兼容入口均 `fullDtos=0`，保留旧语义 |
+| G5 领域正确 | **PASS** | A–G 当前范围内业务闭环与纯领域事件撤销契约在主机与 Android 对照通过 |
+| G6 权限与租约 | **PASS** | `grantVersion` 与 `generation` 分离；read/remember/share、撤权、锁屏、后台、解绑、取消与迟到结果拦截通过 |
+| G7 错误与故障 | **PASS** | 错密、未来 Schema、损坏游标、真实 COMMIT 失败、强停重开、恢复 fail closed 与幂等重放通过 |
+| G8 UI/AI | **PASS** | 所有新增页面和真实消费者在 API 34 实机运行；synthetic provider，`realModelCalls=0` |
+| G9 全项目 | **PASS** | 最终代码树 `npm run check`、`vue-tsc` + `contracts` TS、生产构建、11 项串行 Android E2E 与 5 类 Native Instrumentation 通过 |
+| G10 兼容边界 | **PASS** | `canonical=legacy`、普通 APK `BuildConfig.KANATA_M2_SYNTHETIC=false`、catalog `723` 条（25 合成语句缺席）、Schema 001–005 校验和冻结、未实施 M5/M6/M7 |
+| G11 证据审计 | **PASS** | 两轮独立全范围审查（Round 1 5 P0 + 2 P1 已修复；Round 2 0 P0 / 0 P1，4 项 P2 不阻断），失败保留、命令退出码与指纹完整 |
 
 ## 3. 已通过资产：禁止无原因重复施工
 
@@ -536,3 +537,12 @@ M4 PASS 后，报告可以建议 M5 YES，但**不得自动开始 M5**；必须�
 - memory-bank/development-context.md：只记录当前稳定状态与管理规则，不复制大段验收内容。
 
 **清单制定提交仅更新项目管理文档。本轮接管追加了上述 E 阻断反例、QA 沙箱和证据复用审计；仍未修改业务源码、常规测试、产品 Schema、Android 配置或生产数据。**
+
+## 12. 2026-11-18 最终收口状态（M4 PASS / 冻结归档）
+
+- **最终结论：** **M4 PASS**（`A–G`、`MR0–MR8`、`G1–G11` 全部 **PASS**）；**M5 放行建议：YES（等待用户明确授权后方可开启，严禁自动启动 M5）**。
+- **综合验收与两轮审查报告：** [final-m4/README.md](qa/kanata-sqlite-m4/final-m4/README.md)。
+- **主机门禁：** `npm run check` 退出 `0`（[host-check.log](qa/kanata-sqlite-m4/final-m4/host-check.log)）。
+- **隔离 Android API 34 / SQLCipher 4.17.0：** 串行通过 `m4-closeout`、`full -M4Growth -M4Completion` 等全部 11 项合成场景及 5 类原生 Instrumentation（`OK (13 tests)`）。
+- **生产边界：** `canonical=legacy`、普通 APK `BuildConfig.KANATA_M2_SYNTHETIC=false`（[default-gate.json](qa/kanata-sqlite-m4/final-m4/default-gate.json)）、Schema `001–005` 校验和冻结（[schema-checksums.json](qa/kanata-sqlite-m4/final-m4/schema-checksums.json)）、真实用户数据 `0` 触碰、真实模型 API 调用 `0`、未合并回 `Kanata/main`。
+- **P2 后续记录（不阻断 M4）：** `kanataSqliteLifeCompanion.js:90-103` `allowPrompt` 解锁前占锁、`KanataCandidateActivityPanel.vue:54-58,147-151` 移除跨 `withDomains` `Promise.all`；其余均按第 10 节冻结。

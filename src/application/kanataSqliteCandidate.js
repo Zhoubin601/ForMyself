@@ -1,6 +1,7 @@
 // @ts-check
 import { computed, shallowRef, watch } from 'vue'
 import { App } from '@capacitor/app'
+import { isNativeActivityGuardActive } from '../services/nativeActivityGuard.js'
 import { assertOrdinaryWriteAllowed, restoreState } from '../platform/storage/restoreState.js'
 import { deriveKanataSqliteKek } from '../platform/security/kanataSqliteKek.js'
 import { createAndroidKanataSqliteDriver } from '../platform/storage/androidKanataSqliteDriver.js'
@@ -12,6 +13,8 @@ import { createKanataDeferredReplyRepository } from '../features/chat/storage/sq
 
 import { createKanataChatViewRepository } from '../features/chat/storage/sqlite/kanataChatViewRepository.js'
 import { createKanataSqliteWorldRuntime } from './kanataSqliteWorldRuntime.js'
+import { createKanataSqliteAutonomyRuntime } from './kanataSqliteAutonomyRuntime.js'
+import { createKanataSqliteLifeCompanion } from './kanataSqliteLifeCompanion.js'
 import { createKanataSqliteDomains } from '../features/chat/storage/sqlite/kanataSqliteDomains.js'
 
 /** Production stays on the existing protected legacy repository. */
@@ -20,7 +23,7 @@ export const kanataCanonicalStorage = 'legacy'
 /** Explicit synthetic composition, outside the production startup and recovery paths.
  * @param {{
  *  syntheticOnly: true,
- *  access: Pick<ReturnType<typeof import('../stores/protectedAccess.js').useProtectedAccessStore>, 'runOperation'>,
+ *  access: Pick<ReturnType<typeof import('../stores/protectedAccess.js').useProtectedAccessStore>, 'runOperation'> & { ensureModule?: (id: 'chat') => Promise<boolean> },
  *  auth: Pick<ReturnType<typeof import('../stores/auth.js').useAuthStore>, 'sessionRevision' | 'isLocked'>,
  *  bridge?: import('../platform/storage/kanataSqliteTypes').KanataSqliteBridge,
  * }} options */
@@ -33,6 +36,7 @@ export function createKanataSqliteCandidate({ syntheticOnly, access, auth, bridg
     },
   })
   const generation = shallowRef(0)
+  const grantVersion = shallowRef(0)
   const foreground = shallowRef(true)
   let disposed = false
 
@@ -41,12 +45,18 @@ export function createKanataSqliteCandidate({ syntheticOnly, access, auth, bridg
   const release = () => {
     connection = undefined
     generation.value++
+    grantVersion.value++
     return driver.release()
   }
+  const onGrantChanged = async () => {
+    grantVersion.value++
+  }
+  const consumerGeneration = computed(() => generation.value + grantVersion.value)
   const stop = watch(() => [auth.sessionRevision, auth.isLocked, restoreState.blocked, restoreState.busy], () => {
     void release().catch(() => {})
   }, { flush: 'sync' })
   const appListener = App.addListener('appStateChange', ({ isActive }) => {
+    if (!isActive && isNativeActivityGuardActive()) return
     if (foreground.value === isActive) return
     foreground.value = isActive
     if (!isActive) void release().catch(() => {})
@@ -168,12 +178,25 @@ export function createKanataSqliteCandidate({ syntheticOnly, access, auth, bridg
     withDomains,
     isAvailable,
     generation: computed(() => generation.value),
+    grantVersion: computed(() => grantVersion.value),
     /** @param {import('../features/chat/storage/sqlite/kanataRepositoryTypes').KanataMessageScope & {assertOwner():void}} request */
     loadConversationView: request => run(request, operation => createKanataChatViewRepository(operation).load(request)),
     /** @param {import('../features/chat/storage/sqlite/kanataRepositoryTypes').KanataMessageScope & {assertOwner():void}} request @param {number} cursor */
     readConversationMembers: (request, cursor) => run(request, operation => createKanataChatViewRepository(operation).members(request, cursor)),
     /** @param {()=>number} [clock] */
-    createWorldRuntime: clock => createKanataSqliteWorldRuntime({ candidate: { withDomains }, clock, sessionGeneration: () => generation.value, isAvailable, onGrantChanged: release }),
+    createWorldRuntime: clock => createKanataSqliteWorldRuntime({ candidate: { withDomains }, clock, sessionGeneration: () => generation.value, isAvailable, onGrantChanged }),
+    /** @param {Omit<Parameters<typeof createKanataSqliteAutonomyRuntime>[0],'candidate'>} options */
+    createAutonomyRuntime: options => createKanataSqliteAutonomyRuntime({
+      ...options, candidate: { withDomains, withRepositories, isAvailable, generation: consumerGeneration },
+    }),
+    /** @param {Omit<Parameters<typeof createKanataSqliteLifeCompanion>[0],'candidate'>} options */
+    createLifeCompanion: options => createKanataSqliteLifeCompanion({
+      ...options,
+      candidate: {
+        withDomains, withRepositories, isAvailable, generation: consumerGeneration,
+        ensureAccess: async () => (typeof access.ensureModule === 'function' ? Boolean(await access.ensureModule('chat')) : false),
+      },
+    }),
     release,
     async dispose() {
       disposed = true

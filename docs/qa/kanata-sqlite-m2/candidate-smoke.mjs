@@ -2,6 +2,7 @@ import { auditOracle,correctionOracle } from '../kanata-sqlite-m4/m4-r/event-com
 import { runEventSemanticsDevice } from '../kanata-sqlite-m4/m4-r/event-compat/final-closeout/event-semantics-device.mjs'
 import { runMessageBoundedDevice,armMessageCrash,recoverMessageCrash,messageCrashState } from '../kanata-sqlite-m4/m4-r/event-compat/final-closeout/message-bounded-device.mjs'
 import { runMessageTextDevice,verifyMessageTextColdReopen } from '../kanata-sqlite-m4/m4-r/event-compat/final-closeout/message-text-device.mjs'
+import { runM4CloseoutDevice } from '../kanata-sqlite-m4/m4-r/event-compat/final-closeout/m4-closeout-device.mjs'
 import {runTaskReadDevice,armTaskCrash,recoverTaskCrash,taskCrashState} from '../kanata-sqlite-m4/m4-r/event-compat/final-closeout/task-read-device.mjs'
 import { memoryRows, memoryEdges, memoryWideSources, eventRows, eventEdges, seedFanoutLinks, replayEventRows, replayEffectRows, fanoutAuditInspection, grantOriginActors, grantOrigins, grantMessageTags, seedWideChatSources, chatReplyTagCheck, eventReadEffects, eventReadAudits, eventReadRevision, eventReadShapeEdges, eventReadPublic, seedEventReadShape, chatEventActor, chatEventSource } from '../kanata-sqlite-m4/completion/fixture.mjs'
 import { growthSeedSql } from '../kanata-sqlite-m4/fixture.mjs'
@@ -25,8 +26,11 @@ import { createKanataSqliteCandidate } from '../../../src/application/kanataSqli
 import { createKanataMessageRepository } from '../../../src/features/chat/storage/sqlite/kanataMessageRepository.js'
 import { deriveKanataSqliteKek } from '../../../src/platform/security/kanataSqliteKek.js'
 import { createKanataSqliteChatRuntime } from '../../../src/application/kanataSqliteChatRuntime.js'
+import { createKanataSqliteAutonomyRuntime } from '../../../src/application/kanataSqliteAutonomyRuntime.js'
+import { createKanataSqliteLifeCompanion } from '../../../src/application/kanataSqliteLifeCompanion.js'
 import { resolveKanataCharacter } from '../../../src/features/chat/domain/kanataManagementCore.js'
 import AppFeedbackHost from '../../../src/components/AppFeedbackHost.vue'
+import KanataLifeCompanion from '../../../src/components/KanataLifeCompanion.vue'
 import KanataCandidateHistoryPanel from '../../../src/features/chat/KanataCandidateHistoryPanel.vue'
 import KanataCandidateWorkspace from '../../../src/features/chat/KanataCandidateWorkspace.vue'
 import KanataConversationView from '../../../src/features/chat/KanataConversationView.vue'
@@ -71,6 +75,7 @@ async function profileBridge(name, command, action) {
 let groupCommitFault
 let eventCommitFault
 let replyCommitFault
+let closeoutCommitFault
 let suspendCommit = false
 let fanoutCrashArmed = false
 let crashState = 'idle'
@@ -139,6 +144,11 @@ const candidate = createKanataSqliteCandidate({
     close:()=>lifecycleBridge('close',()=>bridge.close()),health: bridge.health, rollback: bridge.rollback, completeOpen: bridge.completeOpen,
     commit: async options => {
       await schema005BeforeCommit(options,bridge)
+      if (closeoutCommitFault) {
+        const statement = closeoutCommitFault
+        closeoutCommitFault = undefined
+        await bridge.execute({ ...options, statement, parameters: ['m4-closeout-orphan', 'absent-card', 1, '{}', '{}', 'synthetic'] })
+      }
       if (!suspendCommit) return profileBridge("commit", options, bridge.commit)
       crashState = 'uncommitted-write-and-audit'
       return new Promise(() => {})
@@ -878,19 +888,17 @@ window.m4QaWorkspace = async (password, { worldId, worldName, conversationId, ac
     entry(actorId).click()
     await settle(() => Boolean(container.querySelector('[data-module="mood"] input')))
     container.querySelector('[data-module="mood"] input').click()
-    await settle(() => !container.querySelector('fieldset') && Boolean(button(worldName)))
+    await nextTick()
+    await settle(() => !container.querySelector('[role="status"]') && !container.querySelector('fieldset')?.disabled && container.querySelector('[data-module="mood"] input')?.checked === true)
     const grant = await candidate.withDomains({}, domains => domains.autonomy.getGrant(worldId, actorId, 'mood'))
     check(grant?.read === true, 'M4_WORKSPACE_GRANT_CAS')
-    button(worldName).click()
-    await settle(() => Boolean(button('角色与授权')))
-    button('角色与授权').click()
-    await settle(() => Boolean(entry(actorId)))
-    entry(actorId).click()
-    await settle(() => container.querySelector('[data-module="mood"] input')?.checked === true)
     container.querySelector('[data-module="mood"] input').click()
-    await settle(() => !container.querySelector('fieldset') && Boolean(button(worldName)))
+    await nextTick()
+    await settle(() => !container.querySelector('[role="status"]') && !container.querySelector('fieldset')?.disabled && container.querySelector('[data-module="mood"] input')?.checked === false)
     const revoked = await candidate.withDomains({}, domains => domains.autonomy.getGrant(worldId, actorId, 'mood'))
     check(revoked?.read === false && revoked.revision > grant.revision, 'M4_WORKSPACE_REVOKE_CAS')
+    button('返回世界列表').click()
+    await settle(() => Boolean(button('生活角色绑定')))
     stage = 'global-binding'
     button('生活角色绑定').click()
     await settle(() => Boolean(container.querySelector('[aria-label="候选生活角色绑定"]') && button(worldName)))
@@ -1124,11 +1132,11 @@ window.m4QaWorkspace = async (password, { worldId, worldName, conversationId, ac
       revoke().click()
       await settle(()=>Boolean(dialogButton('撤回此分享')))
       dialogButton('撤回此分享').click()
-      await settle(()=>!memoryPanel()&&Boolean(button(worldName)))
+      await settle(()=>Boolean(memoryPanel()?.textContent.includes('没有有效的分享副本。'))&&!revoke())
       await rejects(()=>candidate.withDomains({},domains=>domains.memories.readDetailFor({worldId,instanceId:c},copy.id)),
         'KANATA_MEMORY_CONTEXT_DENIED')
-      button(worldName).click()
-      await settle(()=>Boolean(button('世界书')&&!button('世界书').disabled))
+      button('关闭记忆详情').click()
+      await settle(()=>!memoryPanel()&&Boolean(button('世界书')&&!button('世界书').disabled))
 
       stage='R5-role-lore-preview'
       await candidate.withDomains({},domains=>domains.lorebook.save({id:'qa-role-lore',worldId,scope:'world',ownerId:worldId,
@@ -2107,4 +2115,17 @@ window.m4QaWorkspaceOnly=async(password,fixture,commands,input)=>{
     return await window.m4QaWorkspace(password,input)
   }catch(error){return {error:error.code??error.message}}
   finally{auth.expireSession();await candidate.release()}
+}
+
+window.m4CloseoutQa=async(password,fixture,commands,deferredCommitSql)=>{
+  session(password)
+  try{return await runM4CloseoutDevice({
+    candidate,auth,pinia,createApp,h,nextTick,
+    KanataCandidateWorkspace,KanataLifeCompanion,AppFeedbackHost,
+    createKanataSqliteAutonomyRuntime,createKanataSqliteLifeCompanion,createKanataSqliteChatRuntime,
+    setTrace:value=>{trace=value},
+    setDeferredFault:value=>{closeoutCommitFault=value===null?undefined:sha256Text(deferredCommitSql)},
+  },fixture,commands,{grantOriginActors})}
+  catch(error){return {error:error.code??error.message,stack:error.stack}}
+  finally{closeoutCommitFault=undefined;trace=undefined;auth.expireSession();await candidate.release()}
 }

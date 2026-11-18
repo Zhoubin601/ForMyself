@@ -1,7 +1,7 @@
 // @ts-check
 import {onActivated,onDeactivated,onBeforeUnmount,ref} from 'vue'
 /** @param {import('../features/chat/domain/kanataTypes').LifeModule} moduleId */
-export function useKanataLifeCompanion(moduleId) {
+export function useKanataLifeCompanion(moduleId, candidate = undefined) {
   const text=ref(''),speaker=ref(''),busy=ref(false),error=ref('')
   let disposed=false,active=true,sequence=0,runtime=/** @type {ReturnType<typeof import('../application/kanataLifeCompanion.js').createKanataLifeCompanion>|null} */(null)
   const clear=()=>{text.value='';speaker.value=''}
@@ -11,7 +11,7 @@ export function useKanataLifeCompanion(moduleId) {
     const requestId=++sequence
     busy.value=true;error.value=''
     try{
-      if(!runtime){const {createKanataLifeCompanion}=await import('../application/kanataLifeCompanion.js');if(disposed||!active||requestId!==sequence)return'';runtime=createKanataLifeCompanion({onRelease:clear})}
+      if(!runtime){if(candidate?.create){runtime=candidate.create({onRelease:clear})}else{const {createKanataLifeCompanion}=await import('../application/kanataLifeCompanion.js');if(disposed||!active||requestId!==sequence)return'';runtime=createKanataLifeCompanion({onRelease:clear})}}
       const target=runtime
       // Authentication is allowed to advance a session only for this explicit click.
       const result=await target.request(moduleId,task,{allowPrompt})

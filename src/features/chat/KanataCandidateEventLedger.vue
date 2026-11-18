@@ -163,7 +163,15 @@ function loadEffectPart(effectId,field,cursor){
   void perform(requestGuard=>props.model.revocationEffectAuditChunk(event.value.id,effectAudit.value.auditId,
     effectId,field,cursor,requestGuard),value=>{effectPart.value={...value,effectId,field}},'effectPart')
 }
-const unregister=registerBackHandler(()=>{emit('close');return true},{priority:610})
+const unregister=registerBackHandler(()=>{
+  if(effectPart.value)closeEffectPart()
+  else if(effectAudit.value)closeEffectAudit()
+  else if(audits.value)closeAudits()
+  else if(preview.value){preview.value=null;decision.value=null}
+  else if(choices.value){choices.value=null}
+  else emit('close')
+  return true
+},{priority:610})
 onBeforeUnmount(()=>{
   active=false
   unregister()

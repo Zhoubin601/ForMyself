@@ -1,6 +1,7 @@
 <script setup>
 import { onBeforeUnmount, ref } from 'vue'
 import { appConfirm, cancelOwnedFeedbackDialog } from '../../services/uiFeedback.js'
+import { registerBackHandler } from '../../services/backNavigation.js'
 
 const props = defineProps({ world: {type:Object,required:true}, model: {type:Object,required:true}, entryId: {type:String,default:''} })
 const emit = defineEmits(['close','saved'])
@@ -75,7 +76,12 @@ async function remove() {
   if (!active || confirmed !== true) return
   void perform(() => props.model.deleteLore(current.id,current.revision,assertRequest), () => emit('saved'))
 }
-onBeforeUnmount(() => { active=false; draft.value=actors.value=preview.value=previewActor.value=null; keywords.value=secondaryKeys.value=previewText.value=''; cancelOwnedFeedbackDialog(dialog) })
+const unregister = registerBackHandler(() => {
+  if (preview.value || previewActor.value) { preview.value = previewActor.value = null; previewText.value = '' }
+  else emit('close')
+  return true
+}, { priority: 615 })
+onBeforeUnmount(() => { active=false; unregister(); draft.value=actors.value=preview.value=previewActor.value=null; keywords.value=secondaryKeys.value=previewText.value=''; cancelOwnedFeedbackDialog(dialog) })
 load()
 </script>
 

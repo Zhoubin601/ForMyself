@@ -82,9 +82,9 @@ const baselineInsert = `INSERT INTO effect_baselines(world_id,id,target_type,tar
 const relationLink = 'INSERT INTO relationship_events(world_id,relationship_id,event_id) VALUES(?,?,?)'
 const outgoing = `SELECT id,from_id,to_id,kind,public_summary FROM relationships
   WHERE world_id=? AND from_id=? AND id>? ORDER BY id LIMIT 50`
-const managedEventRelations = `SELECT id,from_id,to_id,kind,public_summary FROM relationships
+const managedEventRelations = `SELECT id,from_id,to_id,kind,substr(public_summary,1,120) AS public_summary FROM relationships
   WHERE world_id=? AND id>? ORDER BY id LIMIT 51`
-const managedEventCauses = `SELECT id,summary FROM world_events
+const managedEventCauses = `SELECT id,substr(summary,1,120) AS summary FROM world_events
   WHERE world_id=? AND status='committed' AND id>? ORDER BY id LIMIT 51`
 const relationDimensions = 'SELECT trust,intimacy,understanding FROM relationships WHERE world_id=? AND id=?'
 const relationEvents = 'SELECT event_id FROM relationship_events WHERE world_id=? AND relationship_id=? AND event_id>? ORDER BY event_id LIMIT ?'

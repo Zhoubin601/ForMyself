@@ -128,6 +128,15 @@ try {
     const result=await evaluate(`window.m4QaWorkspaceOnly(${password},${JSON.stringify(fixture)},${JSON.stringify(m2FixtureCommands(fixture))},${JSON.stringify(input)})`)
     console.log(JSON.stringify({m4Workspace:result},null,2))
     assert.equal(result.error,undefined);assert.equal(result.passed.length,2)
+  }else if(process.argv.includes('--m4-closeout')){
+    const fixture=m2Fixture()
+    const result=await evaluate(`window.m4CloseoutQa(${password},${JSON.stringify(fixture)},${JSON.stringify(m2FixtureCommands(fixture))},${JSON.stringify(fixtureWrites.deferredCommit)})`,420000)
+    const meminfo=adb('shell','dumpsys','meminfo',packageName).split(/\r?\n/).filter(l=>/TOTAL PSS:|TOTAL RSS:|TOTAL:|Native Heap|Dalvik Heap|WebView/i.test(l))
+    console.log(JSON.stringify({m4Closeout:result,androidMeminfo:meminfo},null,2))
+    assert.equal(result.error,undefined)
+    assert.equal(result.status,'PASS')
+    assert.match(result.health.cipher,/^4\.17\.0/)
+    assert.equal(result.realModelCalls,0)
   }else if(process.argv.includes('--task-read')){
     const fixture=m2Fixture(),worldId=fixture.messages[0].worldId
     let finished=false,last=''

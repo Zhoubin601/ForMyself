@@ -3,7 +3,7 @@
 **制定日期：** 2026-11-10（北京时间）  
 **仓库 / 分支：** Zhoubin601/ForMyself / M（仅 M）  
 **接管基线：** d1737e7d598a14ec3f3ef1febd0bf8be050edbe2  
-**阶段状态：** M4 BLOCKED；M5 NO  
+**阶段状态：** **M4 PASS**（已于 2026-11-18 完成全范围验收与两轮独立审查，详见 [最终清单](20261111-kanata-sqlite-m4-final-closeout-ledger-v1.md) 与 [final-m4 验收报告](qa/kanata-sqlite-m4/final-m4/README.md)）；**M5 放行建议：YES（待用户明确授权，尚未启动）**  
 **执行环境：** Windows 本地 Codex、WHPX、Android API 34 合成 AVD、SQLCipher 4.17.0  
 **任务性质：** M4 最终缺口收敛与全范围验收；不扩展产品需求，不重做已通过切片，不开始 M5。
 

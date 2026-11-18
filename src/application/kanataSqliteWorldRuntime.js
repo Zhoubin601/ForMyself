@@ -37,6 +37,22 @@ export function createKanataSqliteWorldRuntime({ candidate, clock = Date.now, se
       assertOwner()
       return result.world.id
     },
+    /** @param {string} sourceWorldId @param {string} name
+     * @param {Omit<Parameters<Domains['worlds']['copy']>[2],'idFactory'>} options @param {()=>void} [guard] */
+    async copyWorld(sourceWorldId, name, options, guard = () => {}) {
+      const session = sessionGeneration(), selectedGeneration = generation
+      const assertOwner = () => {
+        guard()
+        if (disposed || !isAvailable() || sessionGeneration() !== session || selectedGeneration !== generation) {
+          throw new Error('KANATA_WORLD_OWNER_EXPIRED')
+        }
+      }
+      assertOwner()
+      const result = await candidate.withDomains({ assertOwner }, domains =>
+        domains.worlds.copy(sourceWorldId, name, { ...options, idFactory: kind => kind + '-' + crypto.randomUUID() }))
+      assertOwner()
+      return result.world.id
+    },
     openCards() {
       const session = sessionGeneration()
       let active = true
@@ -67,6 +83,10 @@ export function createKanataSqliteWorldRuntime({ candidate, clock = Date.now, se
           (await domains.characters.publish(id, definition, expected, options(key))).id),
         /** @param {string} id @param {string} expected @param {boolean} archived @param {()=>void} guard */
         archive: (id, expected, archived, guard) => run(guard, domains => domains.characters.archiveCard(id, expected, archived, !archived)),
+        /** @param {string} id @param {string|undefined} cursor @param {()=>void} guard */
+        previewSync: (id, cursor, guard) => run(guard, domains => domains.characters.previewSync(id, cursor)),
+        /** @param {string} id @param {Parameters<Domains['characters']['sync']>[1]} selected @param {()=>void} guard */
+        sync: (id, selected, guard) => run(guard, domains => domains.characters.sync(id, selected)),
         dispose() { active = false },
       }
     },
@@ -138,9 +158,9 @@ export function createKanataSqliteWorldRuntime({ candidate, clock = Date.now, se
         /** @param {string} actor @param {()=>void} [assertRequest] */
         grants: (actor, assertRequest) => run(domains => domains.autonomy.grantsForActor(worldId, actor), assertRequest),
         /** @param {string} actor @param {Parameters<Domains['autonomy']['setGrant']>[2]} moduleId
-         * @param {number|null} revision @param {Parameters<Domains['autonomy']['setGrant']>[4]} flags */
-        async setGrant(actor, moduleId, revision, flags) {
-          const saved = await run(domains => domains.autonomy.setGrant(worldId, actor, moduleId, revision, flags))
+         * @param {number|null} revision @param {Parameters<Domains['autonomy']['setGrant']>[4]} flags @param {()=>void} [assertRequest] */
+        async setGrant(actor, moduleId, revision, flags, assertRequest) {
+          const saved = await run(domains => domains.autonomy.setGrant(worldId, actor, moduleId, revision, flags), assertRequest)
           if (saved.revision !== revision) await onGrantChanged()
           return saved
         },
@@ -199,6 +219,25 @@ export function createKanataSqliteWorldRuntime({ candidate, clock = Date.now, se
         updateWorldSettings: (revision,fields,guard) => run(domains=>domains.worlds.updateSettings(worldId,revision,fields),guard),
         /** @param {boolean} archived @param {number} revision */
         archive: (archived, revision) => run(domains => domains.worlds.archive(worldId, revision, archived)),
+        /** @param {string|undefined} cursor @param {()=>void} [guard] */
+        availableCards: (cursor, guard) => run(domains => domains.characters.summaries(cursor), guard),
+        /** @param {string} cardId @param {string} key @param {()=>void} [guard] */
+        addCharacter: (cardId, key, guard) => run(domains => domains.characters.addInstance(worldId, cardId, {
+          key, now: clock(), timeZone: 'UTC', idFactory: kind => kind + '-' + crypto.randomUUID(),
+        }), guard),
+        /** @param {string} instanceId @param {()=>void} [guard] */
+        instanceDetail: (instanceId, guard) => run(domains => domains.characters.readInstanceDetail(worldId, instanceId), guard),
+        /** @param {string} instanceId @param {number} revision @param {Parameters<Domains['characters']['updateInstance']>[3]} overrides
+         * @param {()=>void} [guard] */
+        updateInstance: (instanceId, revision, overrides, guard) =>
+          run(domains => domains.characters.updateInstance(worldId, instanceId, revision, overrides), guard),
+        /** @param {string} instanceId @param {()=>void} [guard] */
+        previewCardLore: (instanceId, guard) => run(domains => domains.lorebook.previewCardLore(worldId, instanceId), guard),
+        /** @param {string} instanceId @param {boolean} skipConflicts @param {string} commandId @param {()=>void} [guard] */
+        attachCardLore: (instanceId, skipConflicts, commandId, guard) => run(domains =>
+          domains.lorebook.attachCardLore(worldId, instanceId, {
+            skipConflicts, commandId, idFactory: kind => kind + '-' + crypto.randomUUID(),
+          }), guard),
         /** @param {Parameters<Domains['autonomy']['configure']>[2]} fields @param {number} revision */
         configure: (fields, revision) => run(domains => domains.autonomy.configure(worldId, revision, fields, clock())),
         /** @param {Parameters<Domains['autonomy']['setActivity']>[2]} flags @param {number} revision */
@@ -272,11 +311,17 @@ export function createKanataSqliteWorldRuntime({ candidate, clock = Date.now, se
          * @param {(import('./contracts').KanataEventJsonCursor & {owner:string})|undefined} cursor @param {()=>void} guard */
         eventJsonChunk: (id,selection,scope,cursor,guard) => run(async domains=>
           ownEventPage(await domains.events.jsonChunk(worldId,id,selection,scope,checkEventCursor(cursor))),guard),
-        /** @param {Parameters<Domains['memories']['save']>[0]} memory @param {number|null} revision */
-        saveMemory: (memory, revision) => run(domains => {
+        /** @param {Parameters<Domains['memories']['save']>[0]} memory @param {number|null} revision @param {()=>void} [guard] */
+        saveMemory: (memory, revision, guard) => run(domains => {
           if (memory.worldId !== worldId) throw new Error('KANATA_WORLD_OWNER_EXPIRED')
           return domains.memories.save(memory, revision)
-        }),
+        }, guard),
+        /** @param {()=>void} [guard] */
+        memoryPolicy: guard => run(domains => domains.memories.policy(worldId), guard),
+        /** @param {number|null} revision @param {Parameters<Domains['memories']['savePolicy']>[2]} fields
+         * @param {string} commandId @param {()=>void} [guard] */
+        saveMemoryPolicy: (revision, fields, commandId, guard) =>
+          run(domains => domains.memories.savePolicy(worldId, revision, fields, commandId), guard),
         /** @param {string} instanceId @param {string} id @param {number} revision @param {string} recipientId
          * @param {string} key @param {()=>void} guard */
         shareManagedMemory: (instanceId,id,revision,recipientId,key,guard) =>

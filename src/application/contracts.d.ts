@@ -144,6 +144,8 @@ export type KanataLifeCompanion = ReturnType<typeof import('./kanataLifeCompanio
 export type KanataLifeReaders = Parameters<typeof import('./kanataLifeContext.js').collectKanataLifeContext>[2]
 export type {AutonomyPolicy,VirtualSchedule} from '../features/chat/domain/kanataTypes'
 export type KanataSqliteWorldRuntime = ReturnType<typeof import('./kanataSqliteWorldRuntime.js').createKanataSqliteWorldRuntime>
+export type KanataSqliteAutonomyRuntime = ReturnType<typeof import('./kanataSqliteAutonomyRuntime.js').createKanataSqliteAutonomyRuntime>
+export type KanataSqliteLifeCompanion = ReturnType<typeof import('./kanataSqliteLifeCompanion.js').createKanataSqliteLifeCompanion>
 export type KanataWorldRuntime = ReturnType<typeof import('./kanataWorldRuntime.js').createKanataWorldRuntime>
 export type KanataSocialRuntime = ReturnType<typeof import('./kanataSocialRuntime.js').createKanataSocialRuntime>
 export type KanataContactRuntime = ReturnType<typeof import('./kanataContactRuntime.js').createKanataContactRuntime>

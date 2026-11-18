@@ -1,0 +1,11 @@
+﻿{
+    "builtAt":  "2026-11-17T15:55:58.6313993+08:00",
+    "headSha":  "a2b20e0b38df89f1b062c75df7f76108b84068ca",
+    "candidateApkPath":  "android\\app\\build\\outputs\\apk\\debug\\app-debug.apk",
+    "candidateApkSha256":  "927f448730cb8664c68c98f582d7673ac0d9cd4159768f9c8e381acd80d89d4a",
+    "testApkPath":  "android\\app\\build\\outputs\\apk\\androidTest\\debug\\app-debug-androidTest.apk",
+    "testApkSha256":  "d77d0207c0c778c42e93779bd16ceeabfaade152d01b6d500ac91e6e92e9923a",
+    "candidateCatalogPath":  "android\\app\\build\\generated\\kanataSqlite\\assets\\kanata-sqlite-catalog.json",
+    "candidateCatalogSha256":  "fa2c517cf190fa3815ff1b0391943fb7b077ac2a15c760fabac0ce386de1b87d",
+    "candidateCatalogTotalStatements":  823
+}

@@ -1,4 +1,4 @@
-> **2026-11-11 当前唯一 M4 执行入口：[M4 最终收口清单](20261111-kanata-sqlite-m4-final-closeout-ledger-v1.md)。** 用户已确认“工程质量优先，但必须有明确终点”。M4 BLOCKED、M5 NO；不再新增 MR/ER 子任务，不降低 G1–G11。历史任务书和报告保留为技术合同与证据，按指纹复用已通过资产。
+> **2026-11-18 当前唯一 M4 收口与冻结索引：[M4 最终收口清单](20261111-kanata-sqlite-m4-final-closeout-ledger-v1.md) 及 [final-m4 综合验收报告](qa/kanata-sqlite-m4/final-m4/README.md)。** `A–G`、`MR0–MR8`、`G1–G11` 已全部 PASS（**M4 PASS**）；M5 放行建议 **YES（待用户明确授权后开启，严禁自动启动）**。生产 `canonical=legacy`、普通 APK `KANATA_M2_SYNTHETIC=false`、Schema `001–005` 校验和冻结。
 
 # 执行计划
 
@@ -1242,3 +1242,5 @@ MR2-G4 以 8d3b8f768617143312fd800ab05decaa53d6114d 接管。新进展与兼容�
 2026-11-13同一E检查点：Facade/materializer移除、长Effect Audit片段与不可变前后值审计，已完成714/406/strict/build及同APK/catalog的专项、provenance、读取、1k10k综合/批次强停和005升级验收，普通APK实际DEX=false。指纹见既有QA的event-bounded-fingerprints.json。继续原清单G4普通消息/任务访问边界，随后A/B/C、D/E/G、F、统一生命周期和最终回归/两轮审查；不创建新编号，M4仍BLOCKED，M5 NO。
 
 2026-11-13消息切片已保留代码、720/406/strict/build、同APK/catalog的API34消息1k/10k与强停/回滚/冷开、宽回复、事件四路径、工作区及基础综合证据；失败、Growth切片范围复用和普通APK实际DEX=false见唯一清单G4与message-bounded-fingerprints.json。继续现有F/G4的loadTask元数据/来源/结果有界化（1001条sourceRefs真实失败已记录），再处理消息长字段、A/B/C及原D/E/G/F余项；最终统一生命周期/retained Heap/MR7/两轮MR8尚未开始，不把内部切片当M4 PASS。
+
+2026-11-18 **Kanata SQLite M4 最终收口（M4 PASS；M5 放行建议 YES，待用户明确授权后方可开启）**：按 [M4 最终收口清单 v1](20261111-kanata-sqlite-m4-final-closeout-ledger-v1.md) 完成 `A–G`、`MR0–MR8` 与 `G1–G11` 全部闭环及 MR8 两轮独立全范围审查，详细命令、退出码、指纹与失败/复测归档见 [final-m4 综合验收报告](qa/kanata-sqlite-m4/final-m4/README.md)。Round 1（`b1df8d7b`）发现的 5 P0 + 2 P1 及实机 `KANATA_SQLITE_TRANSACTION_BUSY`（`kanataSqliteAutonomyRuntime.js` 3 处 `Promise.all` 改为严格顺序执行）全部修复，Round 2（`b31d7f2c`）复审 0 P0 / 0 P1。主机 `npm run check`（743 Node / 420 Vitest / strict TS / Vite build）、Android API 34 / SQLCipher 4.17.0 串行 11 项场景、5 类 Native Instrumentation（`OK (13 tests)`）、普通 APK 门禁（`com.yubin.formyself`、`canonical=legacy`、`BuildConfig.KANATA_M2_SYNTHETIC=false`、`723` 条目录、25 条合成语句缺席、未安装未发布）及 Schema 001–005 冻结校验和全部通过；真实用户数据 `0` 触碰、真实模型 API 请求 `0`、未合并回 `Kanata/main`。**P2 后续待办（不阻断 M4，进入后续计划）：**（1）`kanataSqliteLifeCompanion.js:90-103` 在 `allowPrompt` 等待 `ensureAccess()` 异步期间预占单飞互斥锁；（2）`KanataCandidateActivityPanel.vue:54-58,147-151` 取消跨 `withDomains` `Promise.all` 以消除对宿主操作队列的依赖。M4 已冻结；M5 仍需等待用户明确授权后方可启动。
