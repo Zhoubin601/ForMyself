@@ -151,9 +151,9 @@ function createArchiveMessagesCollection(descriptors, source, password, current)
       if (archiveIndex >= ordered.length) return { items: [], nextCursor: { archiveIndex, messageOffset: 0 }, done: true }
       const descriptor = ordered[archiveIndex]
       if (cachedIndex !== archiveIndex || !cachedPage) {
-        assertCurrent()
-        const pageMessages = await source.readArchive(descriptor, password, assertCurrent)
-        assertCurrent()
+        current()
+        const pageMessages = await source.readArchive(descriptor, password, current)
+        current()
         need(Array.isArray(pageMessages) && pageMessages.length === descriptor.messages.length
           && pageMessages.length > 0 && pageMessages.length <= MAX_ARCHIVE_PAGE_SIZE, 'KANATA_MIGRATION_ARCHIVE_PAGE_INVALID')
         cachedPage = validateArchivePage({
