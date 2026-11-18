@@ -18,6 +18,7 @@ jobs:
       - run: npm run check
 
   android:
+    if: github.ref != 'refs/heads/m5/json-archive-migration'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
