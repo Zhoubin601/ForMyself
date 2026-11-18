@@ -269,7 +269,7 @@ async function updateFailed(operation, fingerprint, collection, error) {
 
 async function migrateCollection(operation, fingerprint, collection, assertCurrent, batchSize) {
   const id = idFor(fingerprint, collection.name)
-  let journal = await operation.transaction(async tx => {
+  const journal = await operation.transaction(async tx => {
     const [row] = await tx.query(JOURNAL_SELECT, [id])
     need(row && row.source_fingerprint === fingerprint && Number(row.target_schema_version) === KANATA_SCHEMA_VERSION,
       'KANATA_MIGRATION_JOURNAL_MISSING')
@@ -314,7 +314,9 @@ async function migrateCollection(operation, fingerprint, collection, assertCurre
         } else throw fail('KANATA_MIGRATION_COMMAND_INVALID')
       }
       const nextCount = Number(current.imported_count) + batch.items.length
-      need(Number.isSafeInteger(nextCount) && nextCount <= collection.expectedCount, 'KANATA_MIGRATION_COUNT_MISMATCH')
+      need(Number.isSafeInteger(nextCount) && (batch.done
+        ? nextCount === collection.expectedCount : nextCount <= collection.expectedCount),
+      'KANATA_MIGRATION_COUNT_MISMATCH')
       const nextState = batch.done ? 'complete' : 'running'
       const updated = await tx.execute(JOURNAL_UPDATE, [
         JSON.stringify(batch.nextCursor), nextCount, nextState, String(current.extensions_json), id,
@@ -328,11 +330,7 @@ async function migrateCollection(operation, fingerprint, collection, assertCurre
     })
     assertCurrent()
     cursor = batch.nextCursor
-    if (batch.done) {
-      journal = { ...journal, state: 'complete', imported_count: Number(journal.imported_count) + batch.items.length }
-      need(Number(journal.imported_count) === collection.expectedCount, 'KANATA_MIGRATION_COUNT_MISMATCH')
-      return
-    }
+    if (batch.done) return
   }
 }
 

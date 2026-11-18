@@ -5,7 +5,7 @@ import { migrateKanataSchema } from '../src/features/chat/storage/sqlite/kanataS
 import {
   createKanataMigrationCoordinator,
   kanataMigrationSourceFingerprint,
-} from '../src/features/chat/storage/sqlite/kanataDataMigrator.js'
+} from '../src/features/chat/storage/sqlite/kanataMigrationCoordinator.js'
 
 function operationFor(h) {
   return {
