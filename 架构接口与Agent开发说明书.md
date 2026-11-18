@@ -1,5 +1,7 @@
 # ForMyself 架构接口与 Agent 开发规范
 
+2026-11-18 M5 原生合成验收入口为 [M5-06 QA](docs/qa/kanata-sqlite-m5/m5-06-android-v1.md)。M5 固定语句目录仅在明确设置 `-PkanataM2Synthetic=true -PkanataM5Synthetic=true` 的隔离 Debug 构建启用。实际导入器仍需要合成授权和注入源。重启后由 manifest 是否完成最终验证以及各集合状态共同确定 `complete` 与 `already-complete`。验收以记录中的精确 SHA 和结果为准。
+
 2026-11-18 M5 合成迁移检查点。端到端导入器只接收 `syntheticOnly: true` 和 `KanataDataMigrationSource`。归档预检回调 `inspectArchives(descriptors, password, assertCurrent)` 在初始化目标 journal 前执行。加密旧源桥接仅在测试目录，通过内存 Repository 验证实际格式。累计计数、批次数据和游标在同一事务复核，取消时回滚未提交批次。接口、定向命令和验收门禁见 [M5-05 任务书](docs/20261118-kanata-sqlite-m5-05-encrypted-source-integration-task-v1.md)及 [M5 QA](docs/qa/kanata-sqlite-m5/README.md)。
 
 2026-11-02后续P7切片（仍待容量复测）：原生页读写保持每批<=4；只有纯退休键批次允许<=64，整批预检/结算、失败不启动后批，无正文进入大批次。`ArchiveFilesystemDriver.deleteArchiveKeys?`由平台适配器显式own capability提供，原Capacitor Proxy的未知方法不可当能力；无能力仍用原4页路径。退休排除新主/备仍引用的内容键。恢复JSON采用碎片缓冲合并再8Ki字符切片，保持相同字节/严格属性与256MiB预算；验证复用只限`ownImmutableKanataData`执行完整校验→递归冻结→完整校验后登记的私有WeakSet身份，未知输入/浅冻结/自报标记不走捷径，普通clone仍完整复制，WeakSet不强留明文。预备实测和异常/自查记录见[P7最终收口](docs/20261102-kanata-p7-final-closure-v1.md)，不把本节当放行。

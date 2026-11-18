@@ -1,6 +1,6 @@
 # Kanata SQLite M5-06：Android SQLCipher 合成验收任务书 v1
 
-- 状态：**PLANNED — NOT AUTHORIZED FOR EXECUTION**
+- 状态：**BLOCKED — 同 SHA 的 Web CI 与独立复核待完成**
 - 日期：2026-11-18
 - 授权基线：M5 用户授权基线 `9bfff0867b4024d8d3a2aea2787ac2493164810b`
 - 当前工作分支：`m5/json-archive-migration`
@@ -100,4 +100,11 @@ M5-06 PASS 仍不自动代表 M5 整体 PASS；M5 总体验收还需对 M5-01～
 
 ## 6. 授权状态
 
-本文件只定义下一阶段计划。**当前没有 M5-06 执行授权。** 开始任何 Android 构建、模拟器、instrumentation 或原生 SQLCipher 验收前，必须由用户明确确认本任务书的范围。
+2026-11-18 用户明确授权按本任务书执行，包括必要修改、隔离构建、模拟器、instrumentation 和验收提交。其他范围仍需单独授权。
+
+## 7. 执行记录（2026-11-18）
+
+- 执行基线 `3ff66376776f46659dfc91bcbd34b9a43abfcb5e`。本地实现与原生验收 SHA 为 `a781563d25e1dab66f2f18046df5b80032e09a78`。
+- Windows 新建的 API 34 Android 14 模拟器执行实际 SQLCipher 4.17.0。独立 QA 包通过实际 WebView、固定语句目录、原生事务和 M5 导入器组合。合成数据由内存 Repository 用现有格式加密。
+- 原生加密和释放、55 条端到端导入、四个强杀恢复点、1k/10k/100k 容量均通过。测试仅使用合成数据，同一 fixture 的文件和 recovery journal 值在导入前后保持不变。见 [M5-06 QA 记录](qa/kanata-sqlite-m5/m5-06-android-v1.md)。
+- 本轮完整本地 `npm run check` 已通过。最新远端 Web CI 对应规划提交，尚无实现 SHA 的远端运行，也未进行独立人员复核。M5-06 暂列 **BLOCKED**，M5 整体仍待最终审查。

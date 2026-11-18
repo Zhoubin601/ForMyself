@@ -1,0 +1,497 @@
+{
+  "baseline": "3ff66376776f46659dfc91bcbd34b9a43abfcb5e",
+  "implementation": "a781563d25e1dab66f2f18046df5b80032e09a78",
+  "date": "2026-11-18",
+  "status": "BLOCKED",
+  "localAndroid": "PASS",
+  "pending": [
+    "Independent reviewer",
+    "GitHub Web CI on the M5-06 implementation SHA has not run"
+  ],
+  "environment": {
+    "seed": "m5-06-v1",
+    "android": "14",
+    "api": 34,
+    "emulator": "kanata_m2_api34",
+    "serial": "emulator-5582",
+    "webView": "Current WebView package (name, version): (com.google.android.webview, 113.0.5672.136)",
+    "catalogSha256": "f8c4c1b519c6c9889e58b9a421f641e63cb8253a46a386005b760c87c9246b7d",
+    "host": "Windows/WHPX",
+    "node": "24.14.1",
+    "npm": "11.11.0",
+    "runtime": "emulator",
+    "systemImage": "android-34/google_apis/x86_64 rev 14",
+    "sqlCipher": "4.17.0 community",
+    "sqlCipherArtifact": "net.zetetic:sqlcipher-android:4.17.0@aar"
+  },
+  "fingerprints": {
+    "installedApks": {
+      "com.yubin.formyself.m2qa": "a0268c3be2c7d2f760005a385104ee5b0c5b964efd9f80599a9d982b8dfd8aae",
+      "com.yubin.formyself.m2qa.test": "76fc15734b35eb11f607b14e0b26c63f06c1aa5a7ca78d6d1e0a867b6c2f6b25"
+    },
+    "qaWebViewBundle": "927d01ec080f267c7d679e511a6cb1e01aee369545a9f9c09a5197282af8ae4d",
+    "nativePlugin": "6fddf4685866f257616e3b9c26abc714e546759b2c5cc25e3fe0773986270223",
+    "schemaJournal": [
+      {
+        "version": 1,
+        "name": "kanata-core",
+        "checksum": "76a3464b65c48dd33ebe80a51af1327696e67be2790384e2883ad6b5447ab0a2"
+      },
+      {
+        "version": 2,
+        "name": "kanata-access-indexes",
+        "checksum": "545360d8561fe05514846ad935fd7acc37b6ed073440f3a04a3fda0943cddab2"
+      },
+      {
+        "version": 3,
+        "name": "kanata-audit-and-application-time",
+        "checksum": "1a48f88ae4507086b8ab0c364cc213f228dcc7f50f71e2c03c66f7b2c8cdd8e1"
+      },
+      {
+        "version": 4,
+        "name": "kanata-domain-commands",
+        "checksum": "e1546c3456c50b286249b1e8e7a3af5bb85cabbfd5e305726499bb52a6619d68"
+      },
+      {
+        "version": 5,
+        "name": "kanata-domain-array-order",
+        "checksum": "10db9e4533df23fd0b82cd054e19703601001292a147c0ef38187a2c420840be"
+      }
+    ],
+    "ordinaryCount": 723,
+    "qaCount": 953,
+    "ordinarySha256": "1886d13e6baff8a2431637ee76fcf44b7d846fcf3a3ec1f3d10bdd19ea870714"
+  },
+  "host": {
+    "directed": {
+      "exit": 0,
+      "passed": 42,
+      "failed": 0,
+      "skipped": 0
+    },
+    "check": {
+      "exit": 0,
+      "nodePassed": 785,
+      "vitestPassed": 420,
+      "vitestFiles": 45,
+      "eslintErrors": 0,
+      "eslintWarnings": 61,
+      "typechecks": "PASS",
+      "build": "PASS"
+    }
+  },
+  "isolatedBuild": {
+    "exit": 0,
+    "flags": [
+      "-PkanataM2Synthetic=true",
+      "-PkanataM5Synthetic=true"
+    ],
+    "packagedScope": "debug-only"
+  },
+  "instrumentation": {
+    "exit": 0,
+    "passed": 2,
+    "cases": [
+      "KanataM5CipherTest.encryptedBytesKeyRejectionAndRelease",
+      "KanataSqliteTransactionTest.failedCommitCanRollbackOnPrimaryWriter"
+    ]
+  },
+  "smoke": {
+    "smoke": "PASS",
+    "fingerprint": "c12fbf0371e483260745afb310ee6fb2e01b427d971193e740533afb0e02cfc9",
+    "counts": {
+      "dataset_metadata": 1,
+      "entity_ids": 179,
+      "participants": 12,
+      "worlds": 2,
+      "world_identities": 2,
+      "character_cards": 5,
+      "card_versions": 5,
+      "character_instances": 10,
+      "conversations": 12,
+      "conversation_participants": 32,
+      "messages": 55,
+      "lorebook_entries": 26,
+      "lorebook_known_by": 10,
+      "memories": 1,
+      "memory_known_by": 1,
+      "memory_sources": 1,
+      "memory_events": 1,
+      "memory_links": 0,
+      "relationships": 50,
+      "relationship_events": 0,
+      "world_events": 1,
+      "event_participants": 1,
+      "event_causes": 0,
+      "event_sources": 1,
+      "world_effects": 1,
+      "effect_baselines": 1,
+      "background_tasks": 1,
+      "task_sources": 1,
+      "task_result_events": 1,
+      "task_result_memories": 1,
+      "task_social_participants": 0,
+      "life_grants": 1,
+      "message_life_sources": 4,
+      "memory_life_sources": 1,
+      "event_life_sources": 1,
+      "preset_applications": 2,
+      "usage_events": 1,
+      "virtual_schedules": 1,
+      "virtual_schedule_days": 2,
+      "memory_policies": 1,
+      "autonomy_policies": 1,
+      "role_binding_state": 1,
+      "role_bindings": 3,
+      "message_audits": 1,
+      "event_audits": 1,
+      "event_array_order": 1,
+      "effect_array_order": 1,
+      "baseline_array_order": 1,
+      "domain_command_receipts": 0,
+      "archived_message_marks": 53
+    },
+    "verifiedTableDigestSha256": "70ddaf1ef944fbdac0da75a11a64550570b49a53b0a2c89ef2cb5ad4b618b626",
+    "health": {
+      "cipher": "4.17.0 community",
+      "journalMode": "wal",
+      "synchronous": 2,
+      "foreignKeys": 1,
+      "cacheSize": -2048,
+      "checkpoint": 1000,
+      "busyTimeout": 5000
+    },
+    "sourceUnchanged": true,
+    "leaseRevoked": true,
+    "idempotent": true
+  },
+  "interruptions": [
+    {
+      "fault": "before-first-commit",
+      "oldPid": "9084",
+      "newPid": "9205",
+      "before": {
+        "manifest": "pending",
+        "dataset": 0,
+        "archive": {
+          "cursor_json": {
+            "archiveIndex": 0,
+            "messageOffset": 0
+          },
+          "imported_count": 0,
+          "state": "pending"
+        },
+        "messages": 0,
+        "marks": 0,
+        "lifeSources": 0
+      },
+      "status": "complete",
+      "repeated": "already-complete",
+      "sourceUnchangedBeforeKill": true,
+      "sourceUnchangedAfterRecovery": true,
+      "fingerprint": "244349c090fdaafecd6ba8068ec31e40413b0440e5ac4d689c61e8304e2f413e"
+    },
+    {
+      "fault": "during-batch",
+      "oldPid": "9336",
+      "newPid": "9456",
+      "before": {
+        "manifest": "running",
+        "dataset": 1,
+        "archive": {
+          "cursor_json": {
+            "archiveIndex": 0,
+            "messageOffset": 0
+          },
+          "imported_count": 0,
+          "state": "pending"
+        },
+        "messages": 0,
+        "marks": 0,
+        "lifeSources": 0
+      },
+      "status": "complete",
+      "repeated": "already-complete",
+      "sourceUnchangedBeforeKill": true,
+      "sourceUnchangedAfterRecovery": true,
+      "fingerprint": "9f403605a2901b16c4ea77e25a246ad09788520c2e38f40bb9a057b4c7375870"
+    },
+    {
+      "fault": "after-batch-commit",
+      "oldPid": "9594",
+      "newPid": "9715",
+      "before": {
+        "manifest": "running",
+        "dataset": 1,
+        "archive": {
+          "cursor_json": {
+            "archiveIndex": 1,
+            "messageOffset": 0
+          },
+          "imported_count": 50,
+          "state": "running"
+        },
+        "messages": 50,
+        "marks": 50,
+        "lifeSources": 3
+      },
+      "status": "complete",
+      "repeated": "already-complete",
+      "sourceUnchangedBeforeKill": true,
+      "sourceUnchangedAfterRecovery": true,
+      "fingerprint": "5caa12169bd38f06b5ef7d5176fb4a6899a85a423c42d264104cb041849964cb"
+    },
+    {
+      "fault": "before-verification",
+      "oldPid": "9848",
+      "newPid": "9968",
+      "before": {
+        "manifest": "running",
+        "dataset": 1,
+        "archive": {
+          "cursor_json": {
+            "archiveIndex": 2,
+            "messageOffset": 0
+          },
+          "imported_count": 53,
+          "state": "complete"
+        },
+        "messages": 55,
+        "marks": 53,
+        "lifeSources": 4
+      },
+      "status": "complete",
+      "repeated": "already-complete",
+      "sourceUnchangedBeforeKill": true,
+      "sourceUnchangedAfterRecovery": true,
+      "fingerprint": "a37985ea90b2e0d2412e34d3f5d67e7b58fa5b757b7d9215eba45d5472239ac3"
+    }
+  ],
+  "negative": [
+    {
+      "negative": "corrupt-page",
+      "code": "KANATA_ARCHIVE_VERIFY_FAILED",
+      "before": {
+        "manifest": null,
+        "dataset": 0,
+        "archive": null,
+        "messages": 0,
+        "marks": 0,
+        "lifeSources": 0
+      },
+      "after": {
+        "manifest": null,
+        "dataset": 0,
+        "archive": null,
+        "messages": 0,
+        "marks": 0,
+        "lifeSources": 0
+      }
+    },
+    {
+      "negative": "recovered",
+      "code": "KANATA_MIGRATION_SOURCE_RECOVERY_REQUIRED",
+      "before": {
+        "manifest": null,
+        "dataset": 0,
+        "archive": null,
+        "messages": 0,
+        "marks": 0,
+        "lifeSources": 0
+      },
+      "after": {
+        "manifest": null,
+        "dataset": 0,
+        "archive": null,
+        "messages": 0,
+        "marks": 0,
+        "lifeSources": 0
+      }
+    },
+    {
+      "negative": "occupied",
+      "code": "KANATA_MIGRATION_TARGET_NOT_EMPTY",
+      "before": {
+        "manifest": null,
+        "dataset": 1,
+        "archive": null,
+        "messages": 0,
+        "marks": 0,
+        "lifeSources": 0
+      },
+      "after": {
+        "manifest": null,
+        "dataset": 1,
+        "archive": null,
+        "messages": 0,
+        "marks": 0,
+        "lifeSources": 0
+      }
+    },
+    {
+      "wrongKey": "KANATA_SQLITE_UNLOCK_FAILED",
+      "changedSource": "KANATA_MIGRATION_SOURCE_CHANGED"
+    }
+  ],
+  "capacity": [
+    {
+      "capacity": 1000,
+      "before": {
+        "manifest": null,
+        "dataset": 0,
+        "archive": null,
+        "messages": 0,
+        "marks": 0,
+        "lifeSources": 0
+      },
+      "totalMs": 8997.5,
+      "messageBatches": 21,
+      "maxBatch": 50,
+      "writes": 2356,
+      "health": {
+        "cipher": "4.17.0 community",
+        "journalMode": "wal",
+        "synchronous": 2,
+        "foreignKeys": 1,
+        "cacheSize": -2048,
+        "checkpoint": 1000,
+        "busyTimeout": 5000
+      },
+      "sourceUnchanged": true,
+      "leaseRevoked": true,
+      "fixtureMs": 264.7540000000008,
+      "fixtureSha256": "d3fdc80f43f2bb34fe1a7dfc369b90b402a9682718c893224dc3e0afd4506e03",
+      "fingerprint": "8983ebec1d854666830936e6838819c33cd2bb57e7be759ae4bc706014fb70ce",
+      "sqlTableCount": 50,
+      "recentMs": 5.899999999906868,
+      "olderMs": 6.400000000023283,
+      "integrity": "ok",
+      "foreignKeyViolations": 0,
+      "dbBytes": 2105344,
+      "peakRssBytes": 423247872,
+      "peak": {
+        "appRssKiB": 245168,
+        "rendererRssKiB": 168160,
+        "rendererCount": 1
+      },
+      "samples": 10,
+      "messageBatchTimingMs": {
+        "min": 20.70000000006985,
+        "max": 358.9000000000233,
+        "mean": 254.36666666667
+      },
+      "primaryCiphertextSha256": "c2dc81b2e94abd192ac572178827ecfc5f941c5f20f3ee497a874dd700075a72"
+    },
+    {
+      "capacity": 10000,
+      "before": {
+        "manifest": null,
+        "dataset": 0,
+        "archive": null,
+        "messages": 0,
+        "marks": 0,
+        "lifeSources": 0
+      },
+      "totalMs": 42131.39999999991,
+      "messageBatches": 201,
+      "maxBatch": 50,
+      "writes": 20716,
+      "health": {
+        "cipher": "4.17.0 community",
+        "journalMode": "wal",
+        "synchronous": 2,
+        "foreignKeys": 1,
+        "cacheSize": -2048,
+        "checkpoint": 1000,
+        "busyTimeout": 5000
+      },
+      "sourceUnchanged": true,
+      "leaseRevoked": true,
+      "fixtureMs": 1424.3510000000024,
+      "fixtureSha256": "68776fc5cdc9334944dbcc4b971ad0973ed39b5a2a5787a089241c3b2dab5d55",
+      "fingerprint": "57769944b586c5559a9e460689c879204dbcdf864795d89b86437c10c7f0dbd8",
+      "sqlTableCount": 50,
+      "recentMs": 1.6999999999534339,
+      "olderMs": 2.199999999953434,
+      "integrity": "ok",
+      "foreignKeyViolations": 0,
+      "dbBytes": 12288000,
+      "peakRssBytes": 430948352,
+      "peak": {
+        "appRssKiB": 246324,
+        "rendererRssKiB": 174524,
+        "rendererCount": 1
+      },
+      "samples": 43,
+      "messageBatchTimingMs": {
+        "min": 13.600000000093132,
+        "max": 270.10000000009313,
+        "mean": 177.30945273631585
+      },
+      "primaryCiphertextSha256": "600bccdf153dc858080d80073bc258b553070a1b10036f2b4fa6f7eb714e7ca4"
+    },
+    {
+      "capacity": 100000,
+      "before": {
+        "manifest": null,
+        "dataset": 0,
+        "archive": null,
+        "messages": 0,
+        "marks": 0,
+        "lifeSources": 0
+      },
+      "totalMs": 373359.29999999993,
+      "messageBatches": 2001,
+      "maxBatch": 50,
+      "writes": 204316,
+      "health": {
+        "cipher": "4.17.0 community",
+        "journalMode": "wal",
+        "synchronous": 2,
+        "foreignKeys": 1,
+        "cacheSize": -2048,
+        "checkpoint": 1000,
+        "busyTimeout": 5000
+      },
+      "sourceUnchanged": true,
+      "leaseRevoked": true,
+      "fixtureMs": 7426.8002,
+      "fixtureSha256": "a98270abd4179bf831565b84974352412a641de386a92bbe9c8c0da52e1dd774",
+      "fingerprint": "ef07f6b348a7299141a3a2b7d190794d8072766a6e114493ed5ce5bf28e0780f",
+      "sqlTableCount": 50,
+      "recentMs": 1.3000000000465661,
+      "olderMs": 1,
+      "integrity": "ok",
+      "foreignKeyViolations": 0,
+      "dbBytes": 115249152,
+      "peakRssBytes": 595898368,
+      "peak": {
+        "appRssKiB": 214324,
+        "rendererRssKiB": 367608,
+        "rendererCount": 1
+      },
+      "samples": 362,
+      "messageBatchTimingMs": {
+        "min": 18.199999999953434,
+        "max": 303.69999999995343,
+        "mean": 168.2438280859571
+      },
+      "primaryCiphertextSha256": "2cdaa54f711e8424fbcb5b686ab92b9ab6b672f8b1c7d228e41312b5abb9cf62"
+    }
+  ],
+  "githubActions": {
+    "baseline": {
+      "run": 44280547214,
+      "web": "success",
+      "android": "skipped",
+      "url": "https://github.com/Zhoubin601/ForMyself/actions/runs/44280547214"
+    },
+    "implementation": "NOT RUN"
+  },
+  "cleanup": {
+    "qaAppStopped": true,
+    "isolatedEmulatorStopped": true,
+    "temporaryQaIndexRemoved": true,
+    "apkPublished": false
+  }
+}

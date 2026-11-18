@@ -74,4 +74,4 @@ Native SQLCipher, Android/device interruption and capacity checks, and productio
 - Web job ran `npm run check`; the run is tied to the exact implementation SHA above. Android was intentionally not built or run.
 - Remote branch head verified as `838635ac6084ecd7e9a02b383c5e79789a8eb472`.
 - This closes the same-SHA CI blocker in M5-05. It does **not** establish native SQLCipher/device interruption/capacity acceptance, production integration, real-data migration, canonical switch, cleanup, or APK release.
-- Next planning candidate: M5-06 isolated Android SQLCipher synthetic acceptance. It requires a separate explicit execution authorization before any Android build/emulator/instrumentation work.
+- M5-06 was separately authorized on 2026-11-18. See the [M5-06 Android SQLCipher execution record](m5-06-android-v1.md) for the tested implementation SHA, local evidence, and outstanding acceptance gates.
