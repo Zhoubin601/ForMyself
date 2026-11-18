@@ -1,6 +1,6 @@
 # Kanata SQLite M5 Synthetic Acceptance
 
-- Status: **M5 is not accepted. M5-05 local synthetic checks passed; matching Web CI is pending.**
+- Status: **M5-05 PASS (local synthetic acceptance + matching Web CI). M5 overall remains OPEN / NOT ACCEPTED.**
 - Baseline: `9bfff0867b4024d8d3a2aea2787ac2493164810b`
 - Branch: `m5/json-archive-migration`
 - Scope: synthetic fixture only; no real user data.
@@ -12,7 +12,7 @@
 - Failures: M5-01 count mismatch; M5-02 resume count mismatch; M5-04 failure journal remained `pending`; coordinator test imported a symbol from the old module path.
 - The same command on the planning commit `26b5028e7a5bd3ed4bfcc7f3208f8e21efb091d6` reproduced all four failures (3 passed, 4 failed). The import error counted as one failed test file.
 - The regression fix is `d963a31b561da8af7596089dd6be8eaba4d07155`. The encrypted source integration and final local test evidence correspond to `8ee4f4bf521ef44a1e3271bc253cf7e5d8d24883`.
-- GitHub Web CI for the final implementation SHA was not run. The older failed run remains historical evidence and cannot satisfy the [M5-05 acceptance gate](../../20261118-kanata-sqlite-m5-05-encrypted-source-integration-task-v1.md).
+- Matching GitHub Web CI for the final implementation SHA passed in [Quality run 44279607211](https://github.com/Zhoubin601/ForMyself/actions/runs/44279607211). The older failed run remains historical evidence only.
 
 ## Test cases
 
@@ -64,3 +64,14 @@ Successful imports verify row counts across all 50 migration tables and exact bo
 6. No production Store wiring, storage switch, legacy-file cleanup, APK release, or real-data operation occurs.
 
 Native SQLCipher, Android/device interruption and capacity checks, and production integration were outside this run. Same-SHA Web CI remains required for the M5-05 task gate. M5 overall remains open.
+
+
+## M5-05 remote CI closeout (2026-11-18)
+
+- **Result: PASS for M5-05 only.** The pushed branch head and CI head both equal `838635ac6084ecd7e9a02b383c5e79789a8eb472`.
+- Push: `26b5028..838635a m5/json-archive-migration -> m5/json-archive-migration`.
+- [GitHub Actions Quality run 44279607211](https://github.com/Zhoubin601/ForMyself/actions/runs/44279607211): completed with conclusion `success`; Web job `success`; Android job `skipped` by the M5 branch policy.
+- Web job ran `npm run check`; the run is tied to the exact implementation SHA above. Android was intentionally not built or run.
+- Remote branch head verified as `838635ac6084ecd7e9a02b383c5e79789a8eb472`.
+- This closes the same-SHA CI blocker in M5-05. It does **not** establish native SQLCipher/device interruption/capacity acceptance, production integration, real-data migration, canonical switch, cleanup, or APK release.
+- Next planning candidate: M5-06 isolated Android SQLCipher synthetic acceptance. It requires a separate explicit execution authorization before any Android build/emulator/instrumentation work.
