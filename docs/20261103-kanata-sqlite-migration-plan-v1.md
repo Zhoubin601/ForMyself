@@ -14,8 +14,8 @@
 - [x] 2026-11-07 M1-R 补充加固完成，追加003并保留001/002校验和。新审计、映射、外键与回归见[M1-R记录](20261107-kanata-sqlite-m1-r-audit-v1.md)；此项不改写原M1验收。
 - [x] M2 Windows/WHPX 候选 PASS（2026-11-09）。真实 API 34 WebView 通过 SQLCipher 原生桥、M1 升级器、消息/会话 Repository、派生删除和 UI 故障场景。生产继续 legacy。见[验收 v2](20261109-kanata-sqlite-m2-acceptance-v2.md)、[QA](qa/kanata-sqlite-m2/README.md)和[Linux 历史检查点](20261107-kanata-sqlite-m2-acceptance-v1.md)。
 - [x] M3 的隔离 SQLite 候选完成六域 Repository、004 与受保护的应用接线。世界采用可逆归档，事件撤销保留批量确认和独立 Effects。见 [M3 验收](20261109-kanata-sqlite-m3-acceptance-v1.md)及 [QA](qa/kanata-sqlite-m3/README.md)。生产继续 legacy，M4–M7 按原阶段边界单独验收。
-- [ ] M4 当前收尾见 [M4-R 最终收尾任务书 v1](20261110-kanata-sqlite-m4-r-closeout-task-v1.md) · [验收 v4](20261110-kanata-sqlite-m4-acceptance-v4.md) · [closeout QA](qa/kanata-sqlite-m4/closeout/README.md)。M4 BLOCKED，M5 NO。
-- [ ] M4 历史：[原完整任务书](20261109-kanata-sqlite-m4-task-v1.md)、[阶段验收 v1](20261109-kanata-sqlite-m4-acceptance-v1.md)与 [补齐任务书](20261109-kanata-sqlite-m4-completion-task-v1.md)。已通过切片保留；完整管理交互、深层来源/事件图有界性及 G1/G2/G3/G5/G6/G11 仍待关闭。M4 整体 BLOCKED，M5 NO。生产 canonical 为 legacy，普通 Android SQLite 激活位 false。
+- [x] M4 最终收口 PASS（2026-11-18）：A–G、MR0–MR8、G1–G11 全部通过；以 [M4 最终收口清单](20261111-kanata-sqlite-m4-final-closeout-ledger-v1.md) 和 [最终 QA 报告](qa/kanata-sqlite-m4/final-m4/README.md) 为权威证据。历史任务书与 BLOCKED 检查点保留为历史记录，不再代表当前状态。
+- [x] M5 已获用户明确授权并在隔离分支启动：授权基线为 `9bfff0867b4024d8d3a2aea2787ac2493164810b`，当前实现分支为 `m5/json-archive-migration`。当前阶段只允许迁移器开发和合成数据验收；生产 canonical 仍为 legacy，普通 Android SQLite 激活位仍为 false。当前 M5 任务见 [M5 迁移器任务单](20261118-kanata-sqlite-m5-migration-task-v1.md)、[M5 QA](qa/kanata-sqlite-m5/README.md)；下一步为 [M5-05 加密旧源读取链路合成集成验收](20261118-kanata-sqlite-m5-05-encrypted-source-integration-task-v1.md)。M5 尚未 PASS，最新 Web CI 有阻塞项。
 - [ ] Kanata 原 P7 当前仍为 No-Go；在 M 合并前，Kanata 分支保持为 M 的稳定基线，不在 Kanata 上并行实施 SQLite 改造。
 - [ ] M 完成并通过独立验收后，才允许合并回 Kanata；合并之后继续 P7，不重置或跳过原 P7 门禁。
 
