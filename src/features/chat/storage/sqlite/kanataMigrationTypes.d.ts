@@ -1,5 +1,20 @@
-import type { JsonValue } from '../../domain/kanataTypes'
+import type { JsonValue, Message, MessageArchiveDescriptor } from '../../domain/kanataTypes'
+import type { KanataReadResult } from '../kanataRepositoryTypes'
 import type { KanataSqliteOperation, KanataSqliteTransaction } from '../../../../platform/storage/kanataSqliteTypes'
+
+/** Injected source for the isolated M5 importer. It does not expose persistence or cleanup. */
+export interface KanataDataMigrationSource {
+  read(password: string): Promise<KanataReadResult & { hasPendingSave: boolean; saveError: string }>
+  inspectArchives?(descriptors: MessageArchiveDescriptor[], password: string, assertCurrent: () => void): Promise<void>
+  readArchive?(descriptor: MessageArchiveDescriptor, password: string, assertCurrent: () => void): Promise<Message[]>
+}
+export interface KanataDataMigratorOptions {
+  operation: KanataSqliteOperation
+  source: KanataDataMigrationSource
+  syntheticOnly: true
+  batchSize?: number
+  assertCurrent?: () => void
+}
 
 export interface KanataMigrationBatch<T> {
   readonly items: readonly T[]

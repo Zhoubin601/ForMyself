@@ -193,7 +193,7 @@ async function tableCount(tx, table) {
   return Number(rows[0].count)
 }
 
-async function preflight(operation, fingerprint, collections, data) {
+async function preflight(operation, fingerprint, collections, data, assertCurrent) {
   const names = [...collections.map(collection => collection.name), MANIFEST_COLLECTION]
   need(new Set(names).size === names.length, 'KANATA_MIGRATION_PLAN_DUPLICATE')
   for (const collection of collections) {
@@ -228,6 +228,7 @@ async function preflight(operation, fingerprint, collections, data) {
       await tx.execute('INSERT INTO data_migrations(id,target_schema_version,source_fingerprint,collection,cursor_json,imported_count,state,extensions_json) VALUES(?,?,?,?,?,0,\'pending\',?)', [
         idFor(fingerprint, MANIFEST_COLLECTION), KANATA_SCHEMA_VERSION, fingerprint, MANIFEST_COLLECTION, '{}', manifest,
       ])
+      assertCurrent()
       return { resumed: false, names }
     }
     need(journal.every(row => row.source_fingerprint === fingerprint), 'KANATA_MIGRATION_SOURCE_CHANGED')
@@ -327,6 +328,7 @@ async function migrateCollection(operation, fingerprint, collection, assertCurre
         batch.items.length, JSON.stringify(manifest), manifestId, fingerprint,
       ])
       need(manifestUpdated.affectedRows === 1, 'KANATA_MIGRATION_JOURNAL_MISSING')
+      assertCurrent()
     })
     assertCurrent()
     cursor = batch.nextCursor
@@ -359,7 +361,7 @@ async function verifyTableDigest(tx, table, stat) {
   return { count, digest }
 }
 
-async function verifyTarget(operation, fingerprint, collections, data) {
+async function verifyTarget(operation, fingerprint, collections, data, assertCurrent) {
   return operation.transaction(async tx => {
     const [manifestRow] = await tx.query(JOURNAL_SELECT, [idFor(fingerprint, MANIFEST_COLLECTION)])
     need(manifestRow && manifestRow.source_fingerprint === fingerprint, 'KANATA_MIGRATION_JOURNAL_MISSING')
@@ -398,22 +400,19 @@ async function verifyTarget(operation, fingerprint, collections, data) {
     need((await tx.query('PRAGMA foreign_key_check')).length === 0, 'KANATA_MIGRATION_FOREIGN_KEY_VIOLATION')
     const integrity = await tx.query('PRAGMA integrity_check')
     need(integrity.length === 1 && integrity[0].integrity_check === 'ok', 'KANATA_MIGRATION_INTEGRITY_FAILED')
-    const [currentManifest] = await tx.query(JOURNAL_SELECT, [idFor(fingerprint, MANIFEST_COLLECTION)])
-    const extra = parseObject(currentManifest.extensions_json)
-    const updated = await tx.execute('UPDATE data_migrations SET state=\'complete\',extensions_json=? WHERE id=? AND source_fingerprint=?', [
-      JSON.stringify(extra), idFor(fingerprint, MANIFEST_COLLECTION), fingerprint,
-    ])
-    need(updated.affectedRows === 1, 'KANATA_MIGRATION_JOURNAL_MISSING')
+    assertCurrent()
+    if (manifestRow.state !== 'complete') {
+      const updated = await tx.execute('UPDATE data_migrations SET state=\'complete\' WHERE id=? AND source_fingerprint=?', [
+        idFor(fingerprint, MANIFEST_COLLECTION), fingerprint,
+      ])
+      need(updated.affectedRows === 1, 'KANATA_MIGRATION_JOURNAL_MISSING')
+      assertCurrent()
+    }
     return { verifiedTableCount: KANATA_MIGRATION_TABLES.length, tableResults }
   })
 }
 
-/**
- * @param {{operation:import('../../../../platform/storage/kanataSqliteTypes').KanataSqliteOperation,
- * source:{read:(password:string)=>Promise<any>,inspectArchives?:(descriptors:any[])=>Promise<any>,
- * readArchive?:(descriptor:any,password:string,assertCurrent:()=>void)=>Promise<any[]>},
- * syntheticOnly?:boolean,batchSize?:number,assertCurrent?:()=>void}} options
- */
+/** @param {import('./kanataMigrationTypes').KanataDataMigratorOptions} options */
 export function createKanataDataMigrator({ operation, source, syntheticOnly, batchSize = 50, assertCurrent = () => {} }) {
   need(syntheticOnly === true, 'KANATA_MIGRATION_SYNTHETIC_ONLY')
   need(operation && typeof operation.transaction === 'function', 'KANATA_MIGRATION_TARGET_INVALID')
@@ -438,16 +437,17 @@ export function createKanataDataMigrator({ operation, source, syntheticOnly, bat
         need(typeof source.inspectArchives === 'function' && typeof source.readArchive === 'function',
           'KANATA_MIGRATION_ARCHIVE_SOURCE_REQUIRED')
         current()
-        await source.inspectArchives(descriptors)
+        await source.inspectArchives(descriptors, password, current)
         current()
       }
       const fingerprint = sourceFingerprint(snapshot.fingerprint, data)
+      /** @type {(ReturnType<typeof createKanataDataMigrationCollections>[number] | ReturnType<typeof createArchiveMessagesCollection>)[]} */
       const collections = createKanataDataMigrationCollections(data)
       const activeIndex = collections.findIndex(collection => collection.name === 'messages.active')
       need(activeIndex >= 0, 'KANATA_MIGRATION_PLAN_INVALID')
       if (descriptors.length) collections.splice(activeIndex, 0,
         createArchiveMessagesCollection(descriptors, source, password, current))
-      const existing = await preflight(operation, fingerprint, collections, data)
+      const existing = await preflight(operation, fingerprint, collections, data, current)
       let previousComplete = existing.resumed
       for (const collection of collections) {
         const [row] = await operation.transaction(tx => tx.query(JOURNAL_SELECT, [idFor(fingerprint, collection.name)]))
@@ -461,7 +461,7 @@ export function createKanataDataMigrator({ operation, source, syntheticOnly, bat
       }
       try {
         current()
-        const verification = await verifyTarget(operation, fingerprint, collections, data)
+        const verification = await verifyTarget(operation, fingerprint, collections, data, current)
         current()
         return {
           status: previousComplete ? 'already-complete' : 'complete',

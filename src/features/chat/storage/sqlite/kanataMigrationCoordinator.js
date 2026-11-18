@@ -183,7 +183,7 @@ export function createKanataMigrationCoordinator({ operation, targetSchemaVersio
       assertCurrent()
       await assertTargetSchema(tx, targetSchemaVersion)
       const rows = await tx.query('SELECT id,source_fingerprint,target_schema_version FROM data_migrations ORDER BY id LIMIT 1025')
-      if (rows.length > expectedJournalIds.size || rows.some(row => !expectedJournalIds.has(row.id))) {
+      if (rows.length > expectedJournalIds.size || rows.some(row => typeof row.id !== 'string' || !expectedJournalIds.has(row.id))) {
         throw fail('KANATA_MIGRATION_PLAN_MISMATCH')
       }
       if (rows.some(row => row.source_fingerprint !== sourceFingerprint)) {

@@ -2,6 +2,7 @@ import type { Component } from 'vue'
 export type {KanataSqlValue, KanataSqlRow, KanataSchemaTransaction, KanataSchemaConnection,
   KanataSchemaMigration, KanataSchemaResult, KanataSchemaMigrationOptions} from '../features/chat/storage/sqlite/kanataSchemaTypes'
 export type KanataSchemaMigrator = typeof import('../features/chat/storage/sqlite/kanataSchemaMigrator.js').migrateKanataSchema
+export type { KanataDataMigrationSource, KanataDataMigratorOptions } from '../features/chat/storage/sqlite/kanataMigrationTypes'
 export type { KanataSqliteWriteResult, KanataSqliteTransaction, KanataSqliteHealth,
   KanataSqliteOperation, KanataSqliteContext, KanataSqliteDriver } from '../platform/storage/kanataSqliteTypes'
 export type { KanataReplyProvenance, KanataMessageWriteReceipt, KanataMessageState, KanataMessageScope, KanataMessageCursor, KanataMessagePage, KanataMessageRepository, KanataHistoryCursor, KanataHistoryPage, KanataHistoryArchivePlan,

@@ -202,19 +202,21 @@ test('M5-03a pending or failed encrypted source snapshots are rejected before ta
   const target = targetHarness(t)
   await migrateSchema(target.operation)
   const fixture = syntheticSource()
-  const source = {
-    async read() {
-      return {
-        status: 'ready', data: fixture.data, fingerprint: sha256Text('pending-source'),
-        recovered: false, hasPendingSave: true, saveError: '',
-      }
-    },
+  for (const flags of [{ hasPendingSave: true, saveError: '' }, { hasPendingSave: false, saveError: 'KANATA_SAVE_FAILED' }]) {
+    const source = {
+      async read() {
+        return {
+          status: 'ready', data: fixture.data, fingerprint: sha256Text('pending-source'),
+          recovered: false, ...flags,
+        }
+      },
+    }
+    const migrator = createKanataDataMigrator({
+      operation: target.operation, source, syntheticOnly: true,
+    })
+    await assert.rejects(migrator.migrate('synthetic-only-password'), code('KANATA_MIGRATION_SOURCE_PENDING_SAVE'))
+    assert.equal(count(target.db, 'data_migrations'), 0)
   }
-  const migrator = createKanataDataMigrator({
-    operation: target.operation, source, syntheticOnly: true,
-  })
-  await assert.rejects(migrator.migrate('synthetic-only-password'), code('KANATA_MIGRATION_SOURCE_PENDING_SAVE'))
-  assert.equal(count(target.db, 'data_migrations'), 0)
 })
 
 test('M5-03 recovered/missing sources and non-empty targets fail closed before import', async t => {
