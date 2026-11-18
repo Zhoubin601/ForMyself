@@ -84,3 +84,5 @@
 M5-05 接管时先修复最新 CI 回归，再通过内存文件系统 fixture 调用现有 `createKanataRepository` / archive repository / 加解密函数；不创建生产 source adapter，不访问真实用户数据或真实文件系统。
 
 实现基线检查点：`6a858948ce95c6e9de938c0e19e7eaa2e5bef307`。该检查点的最新 Web CI 运行 `44266119902` 失败，具体失败项和验收要求以 M5-05 任务书为准。M5 仍为开发中，不能标记 PASS。
+
+本地执行已修复上述回归并串起加密读取链路，证据及对应实现 SHA 见 [M5 QA](qa/kanata-sqlite-m5/README.md)。M5-05 仍待同实现的 Web CI 证据，生产适配和切换仍需另行授权。

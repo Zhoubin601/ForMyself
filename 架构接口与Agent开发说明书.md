@@ -1,5 +1,7 @@
 # ForMyself 架构接口与 Agent 开发规范
 
+2026-11-18 M5 合成迁移检查点。端到端导入器只接收 `syntheticOnly: true` 和 `KanataDataMigrationSource`。归档预检回调 `inspectArchives(descriptors, password, assertCurrent)` 在初始化目标 journal 前执行。加密旧源桥接仅在测试目录，通过内存 Repository 验证实际格式。累计计数、批次数据和游标在同一事务复核，取消时回滚未提交批次。接口、定向命令和验收门禁见 [M5-05 任务书](docs/20261118-kanata-sqlite-m5-05-encrypted-source-integration-task-v1.md)及 [M5 QA](docs/qa/kanata-sqlite-m5/README.md)。
+
 2026-11-02后续P7切片（仍待容量复测）：原生页读写保持每批<=4；只有纯退休键批次允许<=64，整批预检/结算、失败不启动后批，无正文进入大批次。`ArchiveFilesystemDriver.deleteArchiveKeys?`由平台适配器显式own capability提供，原Capacitor Proxy的未知方法不可当能力；无能力仍用原4页路径。退休排除新主/备仍引用的内容键。恢复JSON采用碎片缓冲合并再8Ki字符切片，保持相同字节/严格属性与256MiB预算；验证复用只限`ownImmutableKanataData`执行完整校验→递归冻结→完整校验后登记的私有WeakSet身份，未知输入/浅冻结/自报标记不走捷径，普通clone仍完整复制，WeakSet不强留明文。预备实测和异常/自查记录见[P7最终收口](docs/20261102-kanata-p7-final-closure-v1.md)，不把本节当放行。
 
 2026-11-02有界原生归档I/O：`platform/storage/archiveFileBatch`仅为生产Native/Data原Filesystem代理固定hash命名空间，每批<=4个密文读写删、最多一批在途，完整结算/错误无降级；超256KiB页预先选择原单文件路径。`MainActivity`注册`ArchiveFileBatchPlugin`，固定内部目录、整批预检canonical路径/非目录/无symlink/有效加密文本和写入hash，写后fsync；JS仍逐项hash/解密/索引与精确读回。主头/日志/备份格式/其他模块I/O与权限/恢复写门禁不变。契约为`ArchiveFileCommand/Result/BatchDriver`，strict正负例实际导入；新`ArchiveFileBatchTest`只在目标App cache的新随机合成子目录做文件行为，不使用其files目录。已有合成资料的本地驱动采用`adb install -r -t`及`am instrument -w -r`；不得以Gradle connected任务默认保留已安装数据（本轮发现其自动卸载，失败/恢复/CAS新世代证据见[执行记录](docs/20261102-kanata-p7-final-closure-v1.md)）。未经实测不得宣称P7通过。
