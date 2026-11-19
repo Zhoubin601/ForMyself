@@ -7,6 +7,7 @@
 关联 Run 1：GitHub Actions Quality #44478200157 (https://github.com/Zhoubin601/ForMyself/actions/runs/44478200157)  
 关联 Run 2：GitHub Actions Quality #44486632381 (https://github.com/Zhoubin601/ForMyself/actions/runs/44486632381)  
 关联 Run 3：GitHub Actions Quality #44532274999 (https://github.com/Zhoubin601/ForMyself/actions/runs/44532274999)  
+关联 Run 4：GitHub Actions Quality #44536848111 (https://github.com/Zhoubin601/ForMyself/actions/runs/44536848111)  
 
 ---
 
@@ -23,9 +24,10 @@
 - 但紧随其后的 `npm run test:e2e:android`（`docs/qa/architecture-20261026/native/verify.mjs:203`）在第 203 行发生等待超时：
   `TimeoutError: page.waitForSelector: Timeout 120000ms exceeded. waiting for locator('.chat-composer textarea') to be visible`
 
-在提交 `821a5e1` 尝试适配彼方准备流程后触发的 Run #44532274999 中：
+在后续排查与适配过程中（Run #44532274999 与 Run #44536848111）：
 - Instrumentation 测试持续 100% 通过。
-- 但由于测试在未提供完整 AI/Mock 回复服务的环境下对 `KanataSetupView` 执行了不完整的初始化交互并触发消息发送，导致后续第 258 行 `createFullBackupSnapshot` 中的 `assertKanataJson(parts)` 抛出校验异常 `KanataValidationError: INVALID_JSON_VALUE:data`。
+- 但在执行第 235 行 `await loadRuntime(page)` 时，抛出深层校验异常：
+  `KanataValidationError: INVALID_JSON_VALUE:data at S (kanataStore-*.js) -> i -> C -> w -> G (fullBackupRuntime-*.js:8485) -> eval (<anonymous>:1:248)`
 
 ---
 
@@ -36,12 +38,19 @@
 - **CI 环境矛盾**：标准 CI 流程使用常规 Debug 构建（无 `-PkanataM2Synthetic=true`），包名保持为生产正式包名 `com.yubin.formyself`，`BuildConfig.KANATA_M2_SYNTHETIC` 为 `false`。
 - **事实依据**：两项测试使用 `context.getCacheDir()` 生成随机独立 SQLite 数据库并在 `finally` 块中清理，并不依赖真实业务 DB 或 `.m2qa` 后缀独有能力。
 
-### 2. WebView Playwright (`verify.mjs`) 聊天选择器超时与备份快照契约问题
+### 2. WebView Playwright (`verify.mjs`) 聊天选择器超时问题
 - **历史成因**：`verify.mjs` 是 2026-10-26 针对 P6 架构编写的端到端自动化验收脚本。在 P6 阶段，`moduleRegistry.get('chat')` 对应的是 `src/features/chat/ChatView.vue`，其中包含 `.chat-composer textarea`。
 - **架构演进**：在后续 Kanata 架构重构中，`moduleRegistry.js` 中的 `chat` 模块视图已切换为 `KanataView.vue`，受保护 Store 切换为 `useKanataStore`（`protectedModules.js` 中 `chat` 解析为 `useKanataStore`），且 `tests/chatViewResources.test.js` 有强契约断言 `assert.notEqual(moduleRegistry.get('chat').name, 'ChatView')`。
 - **矛盾点**：在空数据冷启动下，切换到 `chat` 路由展示的是 `KanataView`（未初始化状态展示 `KanataSetupView`，准备就绪后展示 `KanataWorldManager`），页面不存在 `.chat-composer textarea`。
-- **最小且纯净适配方案**：
-  端到端验收脚本在验证受保护模块按需加载、原生页面截屏（`native-chat.png`）、切后台敏感情报清空（`kanataStore.snapshot === null`）、前台重认证、改密后冷启动状态恢复以及全备份快照与回滚机制时，无需在缺乏 AI 服务的模拟器中强行推进彼方世界准备；自适应等待当前 KanataView 容器挂载并截图，保持受保护状态在纯净、规范的基线状态下完成全备份事务崩溃回滚与持久提交的端到端断言。
+- **自适应方案**：自适应等待当前 KanataView 容器（`.kanata-setup, .kanata-manager, .kanata-frame`）挂载并截图，保持受保护状态在纯净、规范的基线状态下完成后续全备份事务崩溃回滚与持久提交的端到端断言。
+
+### 3. `verify.mjs` 中 `loadRuntime` 动态导入工厂查找盲区
+- **历史成因**：2026-10-26 编写的 `verify.mjs:147` 采用盲搜逻辑：
+  `Object.values(module).find(x => typeof x === 'function')()`
+  在当时 P6 架构下，`fullBackupRuntime-*.js` chunk 仅导出了单个工厂函数 `createFullBackupRuntime`。
+- **架构演进与 Vite 代码分割重构**：随着 Kanata M1/M2/M3 的演进，`fullBackupRuntime` chunk 内部共享导入了来自 `kanataBackup.js` 的辅助函数（如 `readKanataChatBackupSnapshot`、`normalizeFullBackupSnapshot` 等），被 Vite 导出为 `a`、`i`、`r`、`t` 等。
+- **矛盾点**：`Object.values(module)` 返回的导出的首个函数是 `a`（即 `readKanataChatBackupSnapshot`）。盲调 `a()` 时无实参（`undefined`），直接触发内部断言 `assertKanataJson(undefined)`，抛出 `KanataValidationError: INVALID_JSON_VALUE:data`，导致 `window.__qaRuntime` 根本未初始化即崩溃。
+- **修复方案**：`loadRuntime` 针对性查找返回有效运行时实例（具备 `typeof res.createFullBackupSnapshot === 'function'`）的工厂函数，免疫 Vite 代码分割与重命名变化。
 
 ---
 
@@ -63,6 +72,7 @@
 5. **最小且一致修复方案**：
    - **Instrumentation**：保留正式包名 `com.yubin.formyself`，修改两处测试断言以同时支持标准构建与合成 QA 构建，且保证包名与标志位一致。
    - **WebView Playwright**：
+     - 在 `loadRuntime` 中精确定位真正的 `createFullBackupRuntime` 工厂函数（通过校验其返回的运行时对象具备 `createFullBackupSnapshot` 能力），彻底消除盲调导致的 `KanataValidationError`。
      - 在 `captureNative` 中将 `native-chat.png` 的 selector 支持当前视图容器（`.chat-composer textarea, .kanata-setup, .kanata-manager, .kanata-frame`），并使用 `.first().waitFor({state:'visible'})` 避免 strict mode violation。
      - 在进入 `chat` 时，自适应识别当前是旧版 `ChatView` 还是当前 `KanataView`：
        - 若为旧版 `ChatView`，维持原有对话流程；
@@ -93,6 +103,6 @@
 2. **Android 编译验证**：
    - `gradlew testDebugUnitTest assembleDebug assembleDebugAndroidTest compileDebugAndroidTestJavaWithJavac`：BUILD SUCCESSFUL。
 3. **Instrumentation 测试验证**：
-   - GitHub Actions Run #44486632381 实测：`:app:connectedDebugAndroidTest` 14 个测试全过，1 个跳过（`TodoWidgetHarness.launcherFixture`），0 个失败。原失败的两个测试均通过。
+   - GitHub Actions Run #44486632381 / #44532274999 / #44536848111 实测：`:app:connectedDebugAndroidTest` 14 个测试全过，1 个跳过（`TodoWidgetHarness.launcherFixture`），0 个失败。原失败的两个测试持续稳定通过。
 4. **WebView Playwright 语法与静态校验**：
    - `node --check docs/qa/architecture-20261026/native/verify.mjs` 通过。

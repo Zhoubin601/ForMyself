@@ -144,7 +144,7 @@ const verifyProtectedIdentity = async page => {
   await input.fill(password)
   await tapButton(page,'验证')
 }
-const loadRuntime = page => evaluate(page, `const module=await import('/assets/${runtimeAsset}'); window.__qaRuntime=Object.values(module).find(x=>typeof x==='function')(); return true;`)
+const loadRuntime = page => evaluate(page, `const mod=await import('/assets/${runtimeAsset}'); const candidates=[mod.createFullBackupRuntime,mod.n?.createFullBackupRuntime,...Object.values(mod),...Object.values(mod.n||{})]; let runtime=null; for(const fn of candidates){ if(typeof fn!=='function')continue; try{ const res=fn(); if(res&&typeof res.createFullBackupSnapshot==='function'){ runtime=res; break; } }catch{} } if(!runtime)throw Error('Missing createFullBackupRuntime factory'); window.__qaRuntime=runtime; return true;`)
 try {
   for (const name of ['playwright-results.json','playwright-attempt.json','playwright-progress.json','playwright-failure.png','native-home.png','native-chat.png','native-vault.png','android-display-failure.png']) await rm(resolve(directory,name),{force:true})
   results.deviceSerial = device.serial()
