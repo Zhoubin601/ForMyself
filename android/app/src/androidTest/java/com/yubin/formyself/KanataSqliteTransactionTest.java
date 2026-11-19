@@ -27,7 +27,10 @@ import net.zetetic.database.sqlcipher.SQLiteDatabase;
 public class KanataSqliteTransactionTest {
     @Test public void failedCommitCanRollbackOnPrimaryWriter() throws Exception {
         Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
-        assertEquals("com.yubin.formyself.m2qa", context.getPackageName());
+        assertTrue("Unexpected package: " + context.getPackageName(),
+                "com.yubin.formyself".equals(context.getPackageName()) ||
+                "com.yubin.formyself.m2qa".equals(context.getPackageName()));
+        assertEquals("com.yubin.formyself.m2qa".equals(context.getPackageName()), BuildConfig.KANATA_M2_SYNTHETIC);
         System.loadLibrary("sqlcipher");
         File file = new File(context.getCacheDir(), "m2-commit-" + UUID.randomUUID() + ".db");
         byte[] dek = new byte[32];

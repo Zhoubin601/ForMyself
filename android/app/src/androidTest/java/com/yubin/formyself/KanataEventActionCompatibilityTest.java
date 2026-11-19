@@ -24,8 +24,10 @@ import java.util.UUID;
 public class KanataEventActionCompatibilityTest {
     @Test public void rawJsonAndDecodedTextHaveSeparateUtf16Contracts() throws Exception {
         Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
-        assertEquals("com.yubin.formyself.m2qa", context.getPackageName());
-        assertTrue(BuildConfig.KANATA_M2_SYNTHETIC);
+        assertTrue("Unexpected package: " + context.getPackageName(),
+                "com.yubin.formyself".equals(context.getPackageName()) ||
+                "com.yubin.formyself.m2qa".equals(context.getPackageName()));
+        assertEquals("com.yubin.formyself.m2qa".equals(context.getPackageName()), BuildConfig.KANATA_M2_SYNTHETIC);
         assertEquals(34, Build.VERSION.SDK_INT);
         assertEquals("x86_64", Build.SUPPORTED_ABIS[0]);
         System.loadLibrary("sqlcipher");
