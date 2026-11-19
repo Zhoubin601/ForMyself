@@ -99,9 +99,9 @@ const tapButton = async (page, name) => {
   await bounded(device.input.tap(point),'Native button touch '+name,30000)
 }
 const captureNative = async name => {
-  const selector={'native-vault.png':'.vault-view','native-chat.png':'.chat-composer textarea','native-home.png':'.home-dashboard'}[name]
+  const selector={'native-vault.png':'.vault-view','native-chat.png':'.chat-composer textarea, .kanata-form textarea, .kanata-manager, .kanata-frame, .kanata-setup','native-home.png':'.home-dashboard'}[name]
   if(!selector)throw Error('Unknown screenshot view: '+name)
-  await pageForCapture().locator(selector).waitFor({state:'visible'})
+  await pageForCapture().locator(selector).first().waitFor({state:'visible'})
   if(name==='native-home.png'){
     results.homeReducedMotionLayout=await pageForCapture().locator(selector).evaluate(element=>{
       const panels=Array.from(element.children).filter(el=>el.getClientRects().length).map(el=>({box:el.getBoundingClientRect(),style:getComputedStyle(el)}))
@@ -200,9 +200,38 @@ try {
   await checkpoint('Vault create checked')
   await captureNative('native-vault.png')
   await evaluate(page,"stores.get('settings').switchView('chat'); return true;")
-  await page.waitForSelector('.chat-composer textarea')
-  await page.locator('.chat-composer textarea').fill('合成原生测试消息'); await tapButton(page,'发送消息')
-  await waitState(page,"const m=stores.get('chat').messages,index=m.findLastIndex(x=>x.role==='user'&&x.content==='合成原生测试消息');return index>=0&&m.slice(index+1).some(x=>x.role==='assistant'&&x.status==='complete'&&x.content.includes('合成回复：原生验证'))")
+  const chatComposer = page.locator('.chat-composer textarea')
+  const kanataSetup = page.locator('.kanata-setup')
+  const kanataManager = page.locator('.kanata-manager')
+  await chatComposer.or(kanataSetup).or(kanataManager).first().waitFor({ state: 'visible' })
+  if (await chatComposer.isVisible()) {
+    await chatComposer.fill('合成原生测试消息'); await tapButton(page,'发送消息')
+    await waitState(page,"const m=stores.get('chat').messages,index=m.findLastIndex(x=>x.role==='user'&&x.content==='合成原生测试消息');return index>=0&&m.slice(index+1).some(x=>x.role==='assistant'&&x.status==='complete'&&x.content.includes('合成回复：原生验证'))")
+  } else {
+    if (await kanataSetup.isVisible()) {
+      const startButton = page.getByRole('button', { name: /开始准备彼方|验证并重试准备/ })
+      await startButton.waitFor({ state: 'visible' })
+      await tapButton(page, await startButton.innerText())
+      const confirmButton = page.getByRole('button', { name: '确认清理并准备' })
+      await confirmButton.waitFor({ state: 'visible' })
+      await tapButton(page, '确认清理并准备')
+      await page.locator('.kanata-manager').waitFor({ state: 'visible' })
+    }
+    const convButton = page.locator('.kanata-conversation-list button').first()
+    await convButton.waitFor({ state: 'visible' })
+    await tapButton(page, await convButton.innerText())
+    const composer = page.locator('.kanata-form textarea')
+    await composer.waitFor({ state: 'visible' })
+    await composer.fill('合成原生测试消息')
+    await tapButton(page, '发送消息')
+    await waitState(page, `
+      const k = stores.get('kanata');
+      if (!k || !k.snapshot) return false;
+      const m = k.snapshot.messages || [];
+      return m.some(x => x.content === '合成原生测试消息') &&
+             m.some(x => x.role === 'assistant' && x.content.includes('合成回复：原生验证'));
+    `, { timeout: 30000 })
+  }
   results.chatSendReply = true; await captureNative('native-chat.png')
   await checkpoint('Chat checked')
   const taskId = await evaluate(page,"await stores.get('todo').add({title:'合成深链待办',startDate:'2026-10-26',recurrence:{type:'none'}});return stores.get('todo').snapshot.tasks.find(t=>t.title==='合成深链待办').id;")
@@ -217,14 +246,14 @@ try {
   await evaluate(page,"stores.get('settings').autoLockDelaySeconds=0;return true;")
   results.backgroundTrigger='Separate QaBackgroundActivity in instrumentation APK; actual Android task switch'
   await shell('am start -n com.yubin.formyself.test/com.yubin.formyself.QaBackgroundActivity')
-  await waitState(page,"return Object.values(stores.get('protectedAccess').status).every(x=>x==='idle')&&!stores.get('auth').savedMasterPwd&&stores.get('chat').messages.length===0",{polling:500})
+  await waitState(page,"return Object.values(stores.get('protectedAccess').status).every(x=>x==='idle')&&!stores.get('auth').savedMasterPwd&&(!stores.get('chat')||stores.get('chat').messages.length===0)&&(!stores.get('kanata')||stores.get('kanata').snapshot===null)",{polling:500})
   await checkpoint('Sensitive state released while backgrounded')
   await shell(`am start -n ${pkg}/.MainActivity`)
-  await waitState(page,"return Object.values(stores.get('protectedAccess').status).every(x=>x==='idle')&&!stores.get('auth').savedMasterPwd&&stores.get('chat').messages.length===0",{polling:500})
-  results.backgroundReleasesSensitiveData = await evaluate(page,"return !stores.get('auth').isLocked&&!stores.get('auth').savedMasterPwd&&stores.get('chat').messages.length===0;")
+  await waitState(page,"return Object.values(stores.get('protectedAccess').status).every(x=>x==='idle')&&!stores.get('auth').savedMasterPwd&&(!stores.get('chat')||stores.get('chat').messages.length===0)&&(!stores.get('kanata')||stores.get('kanata').snapshot===null)",{polling:500})
+  results.backgroundReleasesSensitiveData = await evaluate(page,"return !stores.get('auth').isLocked&&!stores.get('auth').savedMasterPwd&&(!stores.get('chat')||stores.get('chat').messages.length===0)&&(!stores.get('kanata')||stores.get('kanata').snapshot===null);")
   await evaluate(page,"stores.get('settings').switchView('chat');return true;")
   await verifyProtectedIdentity(page)
-  await page.waitForSelector('.chat-composer textarea')
+  await page.locator('.chat-composer textarea, .kanata-form textarea, .kanata-manager, .kanata-frame').first().waitFor({ state: 'visible' })
   await checkpoint('Background release and reauthentication checked')
   await loadRuntime(page)
   await evaluate(page,`await stores.get('protectedAccess').ensureModules(); const target=window.__qaRuntime.createFullBackupSnapshot();target.data.weight=[{id:'native-partial',date:'2026-10-26',weight:60}];
@@ -272,8 +301,8 @@ try {
   page = await coldStart(); await waitReady(page)
   await evaluate(page,"stores.get('settings').switchView('chat');return true;")
   await verifyProtectedIdentity(page)
-  await page.waitForSelector('.chat-composer textarea')
-  results.passwordChangeColdStartPreservesChat = await evaluate(page,"return stores.get('chat').messages.some(m=>m.role==='user'&&m.content==='合成原生测试消息');")
+  await page.locator('.chat-composer textarea, .kanata-form textarea, .kanata-manager, .kanata-frame').first().waitFor({ state: 'visible' })
+  results.passwordChangeColdStartPreservesChat = await evaluate(page,"return (stores.get('chat')?.messages || stores.get('kanata')?.snapshot?.messages || []).some(m=>m.role==='user'&&m.content==='合成原生测试消息');")
   results.apiKeyAfterPasswordChange = await evaluate(page,"return stores.get('settings').aiApiKey==='synthetic-native-key-only';")
   await evaluate(page,"stores.get('settings').switchView('passwords');return true;")
   await waitState(page,"return stores.get('protectedAccess').status.passwords==='ready'")
