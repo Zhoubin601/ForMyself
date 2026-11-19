@@ -44,7 +44,7 @@ const evaluate = (page, body) => bounded(page.evaluate(`(async () => { const sto
 const waitState = (page, body, options) => waitForStoreState(page,storeExpression,body,options)
 const waitReady = page => waitState(page,"return ['settings','weight','debt','mood','schedule','todo'].every(k=>stores.get(k)?.isDataLoaded)")
 const waitRestoreIdle = async page => {
-  await bounded(page.evaluate(async (primary, fallback) => {
+  await bounded(page.evaluate(async ({ primary, fallback }) => {
     let entry = await import('/assets/' + (primary || fallback))
     let state = Object.values(entry).find(x => x && Object.hasOwn(x, 'blocked') && Object.hasOwn(x, 'busy') && Object.hasOwn(x, 'syncError'))
     if (!state && fallback) {
@@ -53,7 +53,7 @@ const waitRestoreIdle = async page => {
     }
     if (!state) throw Error('Missing actual restore state')
     window.__qaRestoreState = state
-  }, restoreStateAsset, settingsAsset), 'Load actual restore state')
+  }, { primary: restoreStateAsset, fallback: settingsAsset }), 'Load actual restore state')
   await waitState(page, 'return Boolean(window.__qaRestoreState)&&!window.__qaRestoreState.blocked&&!window.__qaRestoreState.busy', { polling: 250 })
 }
 const attach = async () => {
