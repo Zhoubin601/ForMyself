@@ -1,0 +1,3540 @@
+{
+  "version": 1,
+  "date": "2026-11-19",
+  "baseline": "c1caec5e6fa040502e9de85df0478e66b8fe02b4",
+  "implementation": "97718ee6a4067a479e4ebe285778876d835c95fa",
+  "issues": {
+    "B-01": "BLOCKED",
+    "H-01": "PASS",
+    "M-01": "PASS",
+    "M-02": "PASS",
+    "L-01": "PASS"
+  },
+  "ci": {
+    "requiredHead": "97718ee6a4067a479e4ebe285778876d835c95fa",
+    "status": "NOT RUN",
+    "pushAuthorization": "PENDING",
+    "workflowUnchanged": true
+  },
+  "environment": {
+    "host": "Windows/WHPX",
+    "node": "v24.14.1",
+    "npm": "11.11.0",
+    "systemImage": "android-34/google_apis/x86_64 rev 14",
+    "target": "emulator",
+    "sqlCipherArtifact": "net.zetetic:sqlcipher-android:4.17.0@aar"
+  },
+  "logs": {
+    "m506-rem-directed-final.log": "8fdb18c808d4c7e89768c364898ab1d1946541633e6d8c6c716f7dad26351c26",
+    "m506-rem-check.log": "71588340e58e5cbfc26b1f0e55727520568c8d5675436dd7783d373d30b3bef2",
+    "m506-rem-build.log": "258290fe79c188cb9d88ee6b570ee07c8aafa45d987d80cc65b06c0d71b04bf0",
+    "m506-rem-stale-live.log": "0b91931c2ef85e7370cb91e3c6d9ec98afe4c050df295985db4d0705fb8bf325"
+  },
+  "host": {
+    "directed": {
+      "exit": 0,
+      "passed": 48,
+      "failed": 0,
+      "skipped": 0
+    },
+    "check": {
+      "exit": 0,
+      "nodePassed": 791,
+      "nodeFailed": 0,
+      "vitestPassed": 420,
+      "vitestFiles": 45,
+      "eslintErrors": 0,
+      "eslintWarnings": 61,
+      "typechecks": "PASS",
+      "webBuild": "PASS"
+    }
+  },
+  "staleManifest": {
+    "reason": "M5_AVD_IDENTITY_UNCONFIRMED",
+    "rejected": [
+      "install",
+      "clear",
+      "kill",
+      "stop",
+      "data-directory-mismatch",
+      "transport-changed",
+      "expired"
+    ],
+    "destructiveCalls": 0,
+    "unchanged": true,
+    "databaseBefore": "645b1af7a0b00ded06e20d6cb91c42a4ee4d359ebe2e9e56401d8c0ba1d62d7e",
+    "databaseAfter": "645b1af7a0b00ded06e20d6cb91c42a4ee4d359ebe2e9e56401d8c0ba1d62d7e",
+    "packagesUnchanged": true,
+    "avdUnchanged": true
+  },
+  "previousPhysicalManifest": {
+    "rejected": true,
+    "reason": "M5_AVD_IDENTITY_UNCONFIRMED",
+    "logSha256": "0b91931c2ef85e7370cb91e3c6d9ec98afe4c050df295985db4d0705fb8bf325"
+  },
+  "instrumentation": {
+    "exit": 0,
+    "passed": 2,
+    "tests": [
+      "KanataM5CipherTest.encryptedBytesKeyRejectionAndRelease",
+      "KanataSqliteTransactionTest.failedCommitCanRollbackOnPrimaryWriter"
+    ]
+  },
+  "isolatedBuild": {
+    "exit": 0,
+    "logSha256": "258290fe79c188cb9d88ee6b570ee07c8aafa45d987d80cc65b06c0d71b04bf0"
+  },
+  "catalog": {
+    "ordinaryByteIdentical": true,
+    "ordinarySha256": "1886d13e6baff8a2431637ee76fcf44b7d846fcf3a3ec1f3d10bdd19ea870714",
+    "ordinaryStatements": 723,
+    "qaSha256": "2c92a866a2410aa9d0e320c89a0c9e8304f9b9d873ca5d379ebedb45e4b5059b",
+    "qaStatements": 954,
+    "schemaJournal": [
+      {
+        "version": 1,
+        "name": "kanata-core",
+        "checksum": "76a3464b65c48dd33ebe80a51af1327696e67be2790384e2883ad6b5447ab0a2"
+      },
+      {
+        "version": 2,
+        "name": "kanata-access-indexes",
+        "checksum": "545360d8561fe05514846ad935fd7acc37b6ed073440f3a04a3fda0943cddab2"
+      },
+      {
+        "version": 3,
+        "name": "kanata-audit-and-application-time",
+        "checksum": "1a48f88ae4507086b8ab0c364cc213f228dcc7f50f71e2c03c66f7b2c8cdd8e1"
+      },
+      {
+        "version": 4,
+        "name": "kanata-domain-commands",
+        "checksum": "e1546c3456c50b286249b1e8e7a3af5bb85cabbfd5e305726499bb52a6619d68"
+      },
+      {
+        "version": 5,
+        "name": "kanata-domain-array-order",
+        "checksum": "10db9e4533df23fd0b82cd054e19703601001292a147c0ef38187a2c420840be"
+      }
+    ],
+    "schemaVersion": 5,
+    "applicationId": 1263424577,
+    "causalQuerySha256": "db16025a507732c234592d037b3dcc602ab4578bbd1a2a4fe343b306d1b696b4",
+    "apkSha256": "1e0e178c35fc58ca520215a8cb3d5d75a14d073e0eb4f5f377424e0f6bce4fbd",
+    "testApkSha256": "76fc15734b35eb11f607b14e0b26c63f06c1aa5a7ca78d6d1e0a867b6c2f6b25"
+  },
+  "eventCausesHostOracle": {
+    "count": 1,
+    "rowSha256": "051c1e0f03d8bef2cf81053ecdf87a981ebeed180c9edb5cf56484a3c38a246e",
+    "tableSha256": "92a27afe321f6a307e25e4f5e4cdd425abc0aef63d1c6d70b1e0e00f61f74981",
+    "verified": true
+  },
+  "runs": [
+    {
+      "mode": "smoke",
+      "seed": "m5-06-v1",
+      "android": "14",
+      "api": 34,
+      "emulator": "kanata_m5_aa6c4b48dcc54fecbba9d8d442f9c291",
+      "serial": "emulator-5582",
+      "webView": "Current WebView package (name, version): (com.google.android.webview, 113.0.5672.136)",
+      "catalogSha256": "2c92a866a2410aa9d0e320c89a0c9e8304f9b9d873ca5d379ebedb45e4b5059b",
+      "instance": {
+        "id": "aa6c4b48dcc54fecbba9d8d442f9c291",
+        "launcherPid": 5420,
+        "launcherStarted": "639306589016505801",
+        "dataDirectorySha256": "9b94382a8a04cd238c45e8fddacb529dfde2cc778f4f90c0ce8ea4e559a54591",
+        "transport": "5",
+        "manifestSha256": "b1aff874b74ffc9ece70bbcbdb1a274d6167682ff2f62da3041366f90629d498"
+      },
+      "artifacts": {
+        "app": "1e0e178c35fc58ca520215a8cb3d5d75a14d073e0eb4f5f377424e0f6bce4fbd",
+        "testApk": "76fc15734b35eb11f607b14e0b26c63f06c1aa5a7ca78d6d1e0a867b6c2f6b25",
+        "catalog": "2c92a866a2410aa9d0e320c89a0c9e8304f9b9d873ca5d379ebedb45e4b5059b",
+        "bundle": "0c9bcd86c3ffdd98d53276f66b85eb7b38b2753633a42b4a57df7bb10f40da6f",
+        "nativePlugin": "6fddf4685866f257616e3b9c26abc714e546759b2c5cc25e3fe0773986270223"
+      },
+      "exit": 0,
+      "log": "m506-rem-final-smoke.log",
+      "logSha256": "59c0fa4c14047b21414df0b441eb417bf791f69ed285ae3f40e11fa6684c119c",
+      "cleanup": {
+        "exit": 0,
+        "pidGone": true
+      }
+    },
+    {
+      "mode": "full",
+      "seed": "m5-06-v1",
+      "android": "14",
+      "api": 34,
+      "emulator": "kanata_m5_aa6c4b48dcc54fecbba9d8d442f9c291",
+      "serial": "emulator-5582",
+      "webView": "Current WebView package (name, version): (com.google.android.webview, 113.0.5672.136)",
+      "catalogSha256": "2c92a866a2410aa9d0e320c89a0c9e8304f9b9d873ca5d379ebedb45e4b5059b",
+      "instance": {
+        "id": "aa6c4b48dcc54fecbba9d8d442f9c291",
+        "launcherPid": 5420,
+        "launcherStarted": "639306589016505801",
+        "dataDirectorySha256": "9b94382a8a04cd238c45e8fddacb529dfde2cc778f4f90c0ce8ea4e559a54591",
+        "transport": "5",
+        "manifestSha256": "b1aff874b74ffc9ece70bbcbdb1a274d6167682ff2f62da3041366f90629d498"
+      },
+      "artifacts": {
+        "app": "1e0e178c35fc58ca520215a8cb3d5d75a14d073e0eb4f5f377424e0f6bce4fbd",
+        "testApk": "76fc15734b35eb11f607b14e0b26c63f06c1aa5a7ca78d6d1e0a867b6c2f6b25",
+        "catalog": "2c92a866a2410aa9d0e320c89a0c9e8304f9b9d873ca5d379ebedb45e4b5059b",
+        "bundle": "0c9bcd86c3ffdd98d53276f66b85eb7b38b2753633a42b4a57df7bb10f40da6f",
+        "nativePlugin": "6fddf4685866f257616e3b9c26abc714e546759b2c5cc25e3fe0773986270223"
+      },
+      "exit": 0,
+      "log": "m506-rem-final-full.log",
+      "logSha256": "b6fc51e5334581e3cdf4a52f3c1fd6e916836d93183ccb60c95deb7a1bb837b6",
+      "cleanup": {
+        "exit": 0,
+        "pidGone": true
+      }
+    },
+    {
+      "mode": "100k",
+      "seed": "m5-06-v1",
+      "android": "14",
+      "api": 34,
+      "emulator": "kanata_m5_aa6c4b48dcc54fecbba9d8d442f9c291",
+      "serial": "emulator-5582",
+      "webView": "Current WebView package (name, version): (com.google.android.webview, 113.0.5672.136)",
+      "catalogSha256": "2c92a866a2410aa9d0e320c89a0c9e8304f9b9d873ca5d379ebedb45e4b5059b",
+      "instance": {
+        "id": "aa6c4b48dcc54fecbba9d8d442f9c291",
+        "launcherPid": 5420,
+        "launcherStarted": "639306589016505801",
+        "dataDirectorySha256": "9b94382a8a04cd238c45e8fddacb529dfde2cc778f4f90c0ce8ea4e559a54591",
+        "transport": "5",
+        "manifestSha256": "b1aff874b74ffc9ece70bbcbdb1a274d6167682ff2f62da3041366f90629d498"
+      },
+      "artifacts": {
+        "app": "1e0e178c35fc58ca520215a8cb3d5d75a14d073e0eb4f5f377424e0f6bce4fbd",
+        "testApk": "76fc15734b35eb11f607b14e0b26c63f06c1aa5a7ca78d6d1e0a867b6c2f6b25",
+        "catalog": "2c92a866a2410aa9d0e320c89a0c9e8304f9b9d873ca5d379ebedb45e4b5059b",
+        "bundle": "0c9bcd86c3ffdd98d53276f66b85eb7b38b2753633a42b4a57df7bb10f40da6f",
+        "nativePlugin": "6fddf4685866f257616e3b9c26abc714e546759b2c5cc25e3fe0773986270223"
+      },
+      "exit": 0,
+      "log": "m506-rem-100k.log",
+      "logSha256": "e8fec990fd2373afa65f531e5221850277f4c8dcfda74fd0b23fcc038338e706",
+      "cleanup": {
+        "exit": 0,
+        "pidGone": true
+      }
+    }
+  ],
+  "smoke": {
+    "smoke": "PASS",
+    "fingerprint": "9a122d81a01de27cb6139f82b25653beb110e86e0f6336a20fd9513ed83cfa49",
+    "counts": {
+      "dataset_metadata": 1,
+      "entity_ids": 180,
+      "participants": 12,
+      "worlds": 2,
+      "world_identities": 2,
+      "character_cards": 5,
+      "card_versions": 5,
+      "character_instances": 10,
+      "conversations": 12,
+      "conversation_participants": 32,
+      "messages": 55,
+      "lorebook_entries": 26,
+      "lorebook_known_by": 10,
+      "memories": 1,
+      "memory_known_by": 1,
+      "memory_sources": 1,
+      "memory_events": 1,
+      "memory_links": 0,
+      "relationships": 50,
+      "relationship_events": 0,
+      "world_events": 2,
+      "event_participants": 2,
+      "event_causes": 1,
+      "event_sources": 1,
+      "world_effects": 1,
+      "effect_baselines": 1,
+      "background_tasks": 1,
+      "task_sources": 1,
+      "task_result_events": 1,
+      "task_result_memories": 1,
+      "task_social_participants": 0,
+      "life_grants": 1,
+      "message_life_sources": 4,
+      "memory_life_sources": 1,
+      "event_life_sources": 1,
+      "preset_applications": 2,
+      "usage_events": 1,
+      "virtual_schedules": 1,
+      "virtual_schedule_days": 2,
+      "memory_policies": 1,
+      "autonomy_policies": 1,
+      "role_binding_state": 1,
+      "role_bindings": 3,
+      "message_audits": 1,
+      "event_audits": 1,
+      "event_array_order": 2,
+      "effect_array_order": 1,
+      "baseline_array_order": 1,
+      "domain_command_receipts": 0,
+      "archived_message_marks": 53
+    },
+    "tableProof": {
+      "tableAlgorithm": "kanata-m5-table-v1",
+      "aggregateAlgorithm": "m5-table-receipt-v1",
+      "tables": [
+        {
+          "name": "dataset_metadata",
+          "count": 1,
+          "empty": false,
+          "sha256": "5dab30261e3d090a1b21209e271f00e101f706bbe9910671d41abd3c96147481"
+        },
+        {
+          "name": "entity_ids",
+          "count": 180,
+          "empty": false,
+          "sha256": "537e1c3f499c32b554e07fd2ae7fabdbbcd7d7c310620d11173314c047c1cef7"
+        },
+        {
+          "name": "participants",
+          "count": 12,
+          "empty": false,
+          "sha256": "8a151f78eab626257a3163211e3037bed2b7dadd17322eb8a3bcc6a2928d89b8"
+        },
+        {
+          "name": "worlds",
+          "count": 2,
+          "empty": false,
+          "sha256": "57e6bdd710c70b0844792e28324ab1cfdc0ed8efee75dd76c85efc990d32c043"
+        },
+        {
+          "name": "world_identities",
+          "count": 2,
+          "empty": false,
+          "sha256": "565814c2c7b33fcae3bfdf54e3553302d9aaa758416aeccce343ab839014e4ce"
+        },
+        {
+          "name": "character_cards",
+          "count": 5,
+          "empty": false,
+          "sha256": "84c591d7f7c83b08c7a73d8cab99783ea90a6ed30c6a730bbc062aa6a9d5bd81"
+        },
+        {
+          "name": "card_versions",
+          "count": 5,
+          "empty": false,
+          "sha256": "fa24b15b80db44cdc5c45848e06a7ad9253b6de4e012f0cdb214d1e3cf216f05"
+        },
+        {
+          "name": "character_instances",
+          "count": 10,
+          "empty": false,
+          "sha256": "0fb80732927139935dac1b15dac193482b28e532cb26361c35e61f19db4708d1"
+        },
+        {
+          "name": "conversations",
+          "count": 12,
+          "empty": false,
+          "sha256": "e3fc046391cc6093ecb888fee723742b042c793620d4d7a8029b873dbb05cb41"
+        },
+        {
+          "name": "conversation_participants",
+          "count": 32,
+          "empty": false,
+          "sha256": "7d6b567d531c2170443c5ca6c501f40b33617eac8a2af838176b484a039bcc52"
+        },
+        {
+          "name": "messages",
+          "count": 55,
+          "empty": false,
+          "sha256": "a8082b85cdda48a46b715cbe30b906776931e45de91a53b36fc8dd4ff38b96b1"
+        },
+        {
+          "name": "lorebook_entries",
+          "count": 26,
+          "empty": false,
+          "sha256": "579b9ba915d5f3d4a9e7bc4e7b1f7e1e73fa41c79de2894aebc58152a7ae1d8a"
+        },
+        {
+          "name": "lorebook_known_by",
+          "count": 10,
+          "empty": false,
+          "sha256": "225334a5f6f579a0da72e3ebae2a7743af2702fceb0e1cf4ef2986fff806082f"
+        },
+        {
+          "name": "memories",
+          "count": 1,
+          "empty": false,
+          "sha256": "2fdc5c82ef43a85280da0edb1e01c83951c06349c2336714d8469eb1abbe6f5a"
+        },
+        {
+          "name": "memory_known_by",
+          "count": 1,
+          "empty": false,
+          "sha256": "fe3a2b4fe8a52ba6a246cd626bd152ba8893ba369dc7eb297226e1b1aa152531"
+        },
+        {
+          "name": "memory_sources",
+          "count": 1,
+          "empty": false,
+          "sha256": "084d3fc91bdef7a10145b177e1cac6e58e0b5f7b7982991218dd5b0650b4d993"
+        },
+        {
+          "name": "memory_events",
+          "count": 1,
+          "empty": false,
+          "sha256": "cb8484e7e6e91605d4cff780870a975d2ed1e83b4356cdf6fc6265c7074cac54"
+        },
+        {
+          "name": "memory_links",
+          "count": 0,
+          "empty": true,
+          "sha256": "4be7ed97ac63c7ce1493ae4294aa638beea82415eec0fac6d7620376e4b67364"
+        },
+        {
+          "name": "relationships",
+          "count": 50,
+          "empty": false,
+          "sha256": "45a591cbfde88310b99e01f7963eab9a5ae822ced86ebdc74122fcfbd97136bd"
+        },
+        {
+          "name": "relationship_events",
+          "count": 0,
+          "empty": true,
+          "sha256": "106f5c9c8b58c469d5b20f61c63be1198d0c31d466e9d5ef1cf0d08c2ad37c16"
+        },
+        {
+          "name": "world_events",
+          "count": 2,
+          "empty": false,
+          "sha256": "083f52c2de949f070c5a1529070518fe021d805ee4c6618965799392d66bcfcb"
+        },
+        {
+          "name": "event_participants",
+          "count": 2,
+          "empty": false,
+          "sha256": "a90a0b00cd2d948e41c4d538ae66f6149a34e5aa67abf8b31f0bc4c4f4a54341"
+        },
+        {
+          "name": "event_causes",
+          "count": 1,
+          "empty": false,
+          "sha256": "92a27afe321f6a307e25e4f5e4cdd425abc0aef63d1c6d70b1e0e00f61f74981"
+        },
+        {
+          "name": "event_sources",
+          "count": 1,
+          "empty": false,
+          "sha256": "c7ca565f8b21bf29cfdf311e3f1e7a24deab2426f076efdb6d5652ec2f276354"
+        },
+        {
+          "name": "world_effects",
+          "count": 1,
+          "empty": false,
+          "sha256": "0b794676a9e62fc628361689a74ae305f95243ca46178fabc7caf5d695a05473"
+        },
+        {
+          "name": "effect_baselines",
+          "count": 1,
+          "empty": false,
+          "sha256": "424cd59a3c7a21318398f482b6c1f511301b2b498b2228dae775aad7217435ce"
+        },
+        {
+          "name": "background_tasks",
+          "count": 1,
+          "empty": false,
+          "sha256": "fd4e0e9abf9c84b5eef50575e6b8ac9c11996227d58142b2efaee29c409fbb11"
+        },
+        {
+          "name": "task_sources",
+          "count": 1,
+          "empty": false,
+          "sha256": "0523eda8301ed4cb2952b42d68efb26caf4b01cb1b940ba0effdd62c652cd451"
+        },
+        {
+          "name": "task_result_events",
+          "count": 1,
+          "empty": false,
+          "sha256": "929b594712ad67b9c3abbafe0107e956471d0525a12e98600e11b330d2fb86fd"
+        },
+        {
+          "name": "task_result_memories",
+          "count": 1,
+          "empty": false,
+          "sha256": "c249fbfcc813d44979c4a8ca831fda81518cf209352bf046048e41b164bd8541"
+        },
+        {
+          "name": "task_social_participants",
+          "count": 0,
+          "empty": true,
+          "sha256": "6634794335db97cb231413d8e26c1c74be7cec5c1c9c8762da11fab2e6ad1746"
+        },
+        {
+          "name": "life_grants",
+          "count": 1,
+          "empty": false,
+          "sha256": "e0ac3d2f6d384519199478779e0950850ad11830870c55e17861da1aa793f27b"
+        },
+        {
+          "name": "message_life_sources",
+          "count": 4,
+          "empty": false,
+          "sha256": "db632433a59dd4cdccff1b7bea8354154627f985e8a92dc02d0a251ac7fed563"
+        },
+        {
+          "name": "memory_life_sources",
+          "count": 1,
+          "empty": false,
+          "sha256": "ad946f4f39ee289844dcb327d722f41d49d5aad33596df6c73d6c1214a8802d0"
+        },
+        {
+          "name": "event_life_sources",
+          "count": 1,
+          "empty": false,
+          "sha256": "b20cbb4ed15cca6decd5383221e710879525b880525ff876647a550707de6c59"
+        },
+        {
+          "name": "preset_applications",
+          "count": 2,
+          "empty": false,
+          "sha256": "35301fab52b9d59592ec93a8e871b78c9c26b69924b864248ad9bd116f86f96e"
+        },
+        {
+          "name": "usage_events",
+          "count": 1,
+          "empty": false,
+          "sha256": "256f03d6db2b6d15e13befbd2c5efd75a079e234993b539d904e9c5f339186ba"
+        },
+        {
+          "name": "virtual_schedules",
+          "count": 1,
+          "empty": false,
+          "sha256": "bd7b7888987433f7848a198b42801cbdfe51452a2f225b01b579c72031ec9cbf"
+        },
+        {
+          "name": "virtual_schedule_days",
+          "count": 2,
+          "empty": false,
+          "sha256": "ff22304e16dc0eecc5b6ead201323265e51fac16e0ffbda1179e40eb2dfbe2a7"
+        },
+        {
+          "name": "memory_policies",
+          "count": 1,
+          "empty": false,
+          "sha256": "328e97cc33f21b8af6c895aa898b38db659bf7f99033e1b79a3ac5219edb7901"
+        },
+        {
+          "name": "autonomy_policies",
+          "count": 1,
+          "empty": false,
+          "sha256": "243a563d8cdb9a05039f85874e5caaa3ce18af0fc27e5b2102f6ebf8e3b1213f"
+        },
+        {
+          "name": "role_binding_state",
+          "count": 1,
+          "empty": false,
+          "sha256": "d5e1de6cdace9b62af61e255aee354ec6c3d11e141be2e7fb247ac004f4e77f6"
+        },
+        {
+          "name": "role_bindings",
+          "count": 3,
+          "empty": false,
+          "sha256": "e94da2ff0503d156dbd4b62808503a6924e7d3cc70a9b884ce321992e3e719c4"
+        },
+        {
+          "name": "message_audits",
+          "count": 1,
+          "empty": false,
+          "sha256": "a724ae5a1726d4a4b2f379d397ae59313dfa9dddcff82da4914e3644835ed60d"
+        },
+        {
+          "name": "event_audits",
+          "count": 1,
+          "empty": false,
+          "sha256": "6edb4e772294f1032820cee6af4d3bfe33721dbf8fe6af9bc619f00cf1ee8f16"
+        },
+        {
+          "name": "event_array_order",
+          "count": 2,
+          "empty": false,
+          "sha256": "3c1cb4eb2951eecbd92ee6e7f0067d2531567a16e252cdc72fe74c79fcc89714"
+        },
+        {
+          "name": "effect_array_order",
+          "count": 1,
+          "empty": false,
+          "sha256": "03d419b37c3df88b54ace07fbb8e0520e15122cbc2a695dc89b67aa5bc0d498d"
+        },
+        {
+          "name": "baseline_array_order",
+          "count": 1,
+          "empty": false,
+          "sha256": "a4414109b9b8ed6b28cd59b96c1888ddc634d66e188f1ab26c6b363de610f153"
+        },
+        {
+          "name": "domain_command_receipts",
+          "count": 0,
+          "empty": true,
+          "sha256": "df6e7e80bcb64d5ab7e39edfba6c0e67b04efe2d6c78d5714db46fa884c67302"
+        },
+        {
+          "name": "archived_message_marks",
+          "count": 53,
+          "empty": false,
+          "sha256": "02ce947e2691b52ac29dc203c6c9def043e972e0ba016dd1045fe013b48ef72d"
+        }
+      ],
+      "aggregateSha256": "f0e05fda7635f7ae453285ecb1b9f9a3ef047bf0a14ca1052d22aee441e59e3f"
+    },
+    "causalFieldsSha256": "051c1e0f03d8bef2cf81053ecdf87a981ebeed180c9edb5cf56484a3c38a246e",
+    "foreignKeyViolations": 0,
+    "integrity": "ok",
+    "health": {
+      "cipher": "4.17.0 community",
+      "journalMode": "wal",
+      "synchronous": 2,
+      "foreignKeys": 1,
+      "cacheSize": -2048,
+      "checkpoint": 1000,
+      "busyTimeout": 5000
+    },
+    "source": {
+      "before": {
+        "primarySha256": "79b511332d1a00d334b5e8d24e52e6e2e7f03922f8782ffe6bbc556085e95e4b",
+        "archivesSha256": "22846e1d69b16c370dab49905389f6a9d8b98397f96a325eeeef0a45c8d87bd7",
+        "archiveCount": 2,
+        "journalSha256": "315b530985814f0e8d35da628c603a8965bffc68f26ee00ed94e8454ad6b62d3"
+      },
+      "after": {
+        "primarySha256": "79b511332d1a00d334b5e8d24e52e6e2e7f03922f8782ffe6bbc556085e95e4b",
+        "archivesSha256": "22846e1d69b16c370dab49905389f6a9d8b98397f96a325eeeef0a45c8d87bd7",
+        "archiveCount": 2,
+        "journalSha256": "315b530985814f0e8d35da628c603a8965bffc68f26ee00ed94e8454ad6b62d3"
+      },
+      "calls": {
+        "read": 8,
+        "stat": 2,
+        "list": 2,
+        "write": 0,
+        "rename": 0,
+        "delete": 0
+      }
+    },
+    "leaseRevoked": true,
+    "idempotent": true
+  },
+  "interruptions": [
+    {
+      "fault": "before-first-commit",
+      "hookReached": true,
+      "oldPid": "12863",
+      "oldPidGone": true,
+      "oldCdpDisconnected": true,
+      "newPid": "13010",
+      "candidateDb": {
+        "before": {
+          "instanceId": "aa6c4b48dcc54fecbba9d8d442f9c291",
+          "package": "com.yubin.formyself.m2qa",
+          "path": "no_backup/kanata-sqlite-v1/kanata.db",
+          "inode": "329226"
+        },
+        "after": {
+          "instanceId": "aa6c4b48dcc54fecbba9d8d442f9c291",
+          "package": "com.yubin.formyself.m2qa",
+          "path": "no_backup/kanata-sqlite-v1/kanata.db",
+          "inode": "329226"
+        },
+        "create": false
+      },
+      "before": {
+        "manifest": "pending",
+        "dataset": 0,
+        "archive": {
+          "cursor_json": {
+            "archiveIndex": 0,
+            "messageOffset": 0
+          },
+          "imported_count": 0,
+          "state": "pending"
+        },
+        "messages": 0,
+        "marks": 0,
+        "lifeSources": 0
+      },
+      "status": "complete",
+      "repeated": "already-complete",
+      "sourceBeforeKill": {
+        "before": {
+          "primarySha256": "754fa4930ab9c858b2d533bbd477c27ddcbf34a4719e7aff8bbfc6c3a4ce594d",
+          "archivesSha256": "e23d4d4173f31585269c761c6a05228a73a958ee623bcc175f535a59bcc07c06",
+          "archiveCount": 2,
+          "journalSha256": "28596444ad4200acaf37ff8aea7d24b5b0a642d6baaf28edabe7b616a12fdf01"
+        },
+        "after": {
+          "primarySha256": "754fa4930ab9c858b2d533bbd477c27ddcbf34a4719e7aff8bbfc6c3a4ce594d",
+          "archivesSha256": "e23d4d4173f31585269c761c6a05228a73a958ee623bcc175f535a59bcc07c06",
+          "archiveCount": 2,
+          "journalSha256": "28596444ad4200acaf37ff8aea7d24b5b0a642d6baaf28edabe7b616a12fdf01"
+        },
+        "calls": {
+          "read": 3,
+          "stat": 1,
+          "list": 1,
+          "write": 0,
+          "rename": 0,
+          "delete": 0
+        }
+      },
+      "source": {
+        "before": {
+          "primarySha256": "754fa4930ab9c858b2d533bbd477c27ddcbf34a4719e7aff8bbfc6c3a4ce594d",
+          "archivesSha256": "e23d4d4173f31585269c761c6a05228a73a958ee623bcc175f535a59bcc07c06",
+          "archiveCount": 2,
+          "journalSha256": "28596444ad4200acaf37ff8aea7d24b5b0a642d6baaf28edabe7b616a12fdf01"
+        },
+        "after": {
+          "primarySha256": "754fa4930ab9c858b2d533bbd477c27ddcbf34a4719e7aff8bbfc6c3a4ce594d",
+          "archivesSha256": "e23d4d4173f31585269c761c6a05228a73a958ee623bcc175f535a59bcc07c06",
+          "archiveCount": 2,
+          "journalSha256": "28596444ad4200acaf37ff8aea7d24b5b0a642d6baaf28edabe7b616a12fdf01"
+        },
+        "calls": {
+          "read": 8,
+          "stat": 2,
+          "list": 2,
+          "write": 0,
+          "rename": 0,
+          "delete": 0
+        }
+      },
+      "tableProof": {
+        "tableAlgorithm": "kanata-m5-table-v1",
+        "aggregateAlgorithm": "m5-table-receipt-v1",
+        "tables": [
+          {
+            "name": "dataset_metadata",
+            "count": 1,
+            "empty": false,
+            "sha256": "5dab30261e3d090a1b21209e271f00e101f706bbe9910671d41abd3c96147481"
+          },
+          {
+            "name": "entity_ids",
+            "count": 180,
+            "empty": false,
+            "sha256": "537e1c3f499c32b554e07fd2ae7fabdbbcd7d7c310620d11173314c047c1cef7"
+          },
+          {
+            "name": "participants",
+            "count": 12,
+            "empty": false,
+            "sha256": "8a151f78eab626257a3163211e3037bed2b7dadd17322eb8a3bcc6a2928d89b8"
+          },
+          {
+            "name": "worlds",
+            "count": 2,
+            "empty": false,
+            "sha256": "57e6bdd710c70b0844792e28324ab1cfdc0ed8efee75dd76c85efc990d32c043"
+          },
+          {
+            "name": "world_identities",
+            "count": 2,
+            "empty": false,
+            "sha256": "565814c2c7b33fcae3bfdf54e3553302d9aaa758416aeccce343ab839014e4ce"
+          },
+          {
+            "name": "character_cards",
+            "count": 5,
+            "empty": false,
+            "sha256": "84c591d7f7c83b08c7a73d8cab99783ea90a6ed30c6a730bbc062aa6a9d5bd81"
+          },
+          {
+            "name": "card_versions",
+            "count": 5,
+            "empty": false,
+            "sha256": "fa24b15b80db44cdc5c45848e06a7ad9253b6de4e012f0cdb214d1e3cf216f05"
+          },
+          {
+            "name": "character_instances",
+            "count": 10,
+            "empty": false,
+            "sha256": "0fb80732927139935dac1b15dac193482b28e532cb26361c35e61f19db4708d1"
+          },
+          {
+            "name": "conversations",
+            "count": 12,
+            "empty": false,
+            "sha256": "e3fc046391cc6093ecb888fee723742b042c793620d4d7a8029b873dbb05cb41"
+          },
+          {
+            "name": "conversation_participants",
+            "count": 32,
+            "empty": false,
+            "sha256": "7d6b567d531c2170443c5ca6c501f40b33617eac8a2af838176b484a039bcc52"
+          },
+          {
+            "name": "messages",
+            "count": 55,
+            "empty": false,
+            "sha256": "a8082b85cdda48a46b715cbe30b906776931e45de91a53b36fc8dd4ff38b96b1"
+          },
+          {
+            "name": "lorebook_entries",
+            "count": 26,
+            "empty": false,
+            "sha256": "579b9ba915d5f3d4a9e7bc4e7b1f7e1e73fa41c79de2894aebc58152a7ae1d8a"
+          },
+          {
+            "name": "lorebook_known_by",
+            "count": 10,
+            "empty": false,
+            "sha256": "225334a5f6f579a0da72e3ebae2a7743af2702fceb0e1cf4ef2986fff806082f"
+          },
+          {
+            "name": "memories",
+            "count": 1,
+            "empty": false,
+            "sha256": "2fdc5c82ef43a85280da0edb1e01c83951c06349c2336714d8469eb1abbe6f5a"
+          },
+          {
+            "name": "memory_known_by",
+            "count": 1,
+            "empty": false,
+            "sha256": "fe3a2b4fe8a52ba6a246cd626bd152ba8893ba369dc7eb297226e1b1aa152531"
+          },
+          {
+            "name": "memory_sources",
+            "count": 1,
+            "empty": false,
+            "sha256": "084d3fc91bdef7a10145b177e1cac6e58e0b5f7b7982991218dd5b0650b4d993"
+          },
+          {
+            "name": "memory_events",
+            "count": 1,
+            "empty": false,
+            "sha256": "cb8484e7e6e91605d4cff780870a975d2ed1e83b4356cdf6fc6265c7074cac54"
+          },
+          {
+            "name": "memory_links",
+            "count": 0,
+            "empty": true,
+            "sha256": "4be7ed97ac63c7ce1493ae4294aa638beea82415eec0fac6d7620376e4b67364"
+          },
+          {
+            "name": "relationships",
+            "count": 50,
+            "empty": false,
+            "sha256": "45a591cbfde88310b99e01f7963eab9a5ae822ced86ebdc74122fcfbd97136bd"
+          },
+          {
+            "name": "relationship_events",
+            "count": 0,
+            "empty": true,
+            "sha256": "106f5c9c8b58c469d5b20f61c63be1198d0c31d466e9d5ef1cf0d08c2ad37c16"
+          },
+          {
+            "name": "world_events",
+            "count": 2,
+            "empty": false,
+            "sha256": "083f52c2de949f070c5a1529070518fe021d805ee4c6618965799392d66bcfcb"
+          },
+          {
+            "name": "event_participants",
+            "count": 2,
+            "empty": false,
+            "sha256": "a90a0b00cd2d948e41c4d538ae66f6149a34e5aa67abf8b31f0bc4c4f4a54341"
+          },
+          {
+            "name": "event_causes",
+            "count": 1,
+            "empty": false,
+            "sha256": "92a27afe321f6a307e25e4f5e4cdd425abc0aef63d1c6d70b1e0e00f61f74981"
+          },
+          {
+            "name": "event_sources",
+            "count": 1,
+            "empty": false,
+            "sha256": "c7ca565f8b21bf29cfdf311e3f1e7a24deab2426f076efdb6d5652ec2f276354"
+          },
+          {
+            "name": "world_effects",
+            "count": 1,
+            "empty": false,
+            "sha256": "0b794676a9e62fc628361689a74ae305f95243ca46178fabc7caf5d695a05473"
+          },
+          {
+            "name": "effect_baselines",
+            "count": 1,
+            "empty": false,
+            "sha256": "424cd59a3c7a21318398f482b6c1f511301b2b498b2228dae775aad7217435ce"
+          },
+          {
+            "name": "background_tasks",
+            "count": 1,
+            "empty": false,
+            "sha256": "fd4e0e9abf9c84b5eef50575e6b8ac9c11996227d58142b2efaee29c409fbb11"
+          },
+          {
+            "name": "task_sources",
+            "count": 1,
+            "empty": false,
+            "sha256": "0523eda8301ed4cb2952b42d68efb26caf4b01cb1b940ba0effdd62c652cd451"
+          },
+          {
+            "name": "task_result_events",
+            "count": 1,
+            "empty": false,
+            "sha256": "929b594712ad67b9c3abbafe0107e956471d0525a12e98600e11b330d2fb86fd"
+          },
+          {
+            "name": "task_result_memories",
+            "count": 1,
+            "empty": false,
+            "sha256": "c249fbfcc813d44979c4a8ca831fda81518cf209352bf046048e41b164bd8541"
+          },
+          {
+            "name": "task_social_participants",
+            "count": 0,
+            "empty": true,
+            "sha256": "6634794335db97cb231413d8e26c1c74be7cec5c1c9c8762da11fab2e6ad1746"
+          },
+          {
+            "name": "life_grants",
+            "count": 1,
+            "empty": false,
+            "sha256": "e0ac3d2f6d384519199478779e0950850ad11830870c55e17861da1aa793f27b"
+          },
+          {
+            "name": "message_life_sources",
+            "count": 4,
+            "empty": false,
+            "sha256": "db632433a59dd4cdccff1b7bea8354154627f985e8a92dc02d0a251ac7fed563"
+          },
+          {
+            "name": "memory_life_sources",
+            "count": 1,
+            "empty": false,
+            "sha256": "ad946f4f39ee289844dcb327d722f41d49d5aad33596df6c73d6c1214a8802d0"
+          },
+          {
+            "name": "event_life_sources",
+            "count": 1,
+            "empty": false,
+            "sha256": "b20cbb4ed15cca6decd5383221e710879525b880525ff876647a550707de6c59"
+          },
+          {
+            "name": "preset_applications",
+            "count": 2,
+            "empty": false,
+            "sha256": "35301fab52b9d59592ec93a8e871b78c9c26b69924b864248ad9bd116f86f96e"
+          },
+          {
+            "name": "usage_events",
+            "count": 1,
+            "empty": false,
+            "sha256": "256f03d6db2b6d15e13befbd2c5efd75a079e234993b539d904e9c5f339186ba"
+          },
+          {
+            "name": "virtual_schedules",
+            "count": 1,
+            "empty": false,
+            "sha256": "bd7b7888987433f7848a198b42801cbdfe51452a2f225b01b579c72031ec9cbf"
+          },
+          {
+            "name": "virtual_schedule_days",
+            "count": 2,
+            "empty": false,
+            "sha256": "ff22304e16dc0eecc5b6ead201323265e51fac16e0ffbda1179e40eb2dfbe2a7"
+          },
+          {
+            "name": "memory_policies",
+            "count": 1,
+            "empty": false,
+            "sha256": "328e97cc33f21b8af6c895aa898b38db659bf7f99033e1b79a3ac5219edb7901"
+          },
+          {
+            "name": "autonomy_policies",
+            "count": 1,
+            "empty": false,
+            "sha256": "243a563d8cdb9a05039f85874e5caaa3ce18af0fc27e5b2102f6ebf8e3b1213f"
+          },
+          {
+            "name": "role_binding_state",
+            "count": 1,
+            "empty": false,
+            "sha256": "d5e1de6cdace9b62af61e255aee354ec6c3d11e141be2e7fb247ac004f4e77f6"
+          },
+          {
+            "name": "role_bindings",
+            "count": 3,
+            "empty": false,
+            "sha256": "e94da2ff0503d156dbd4b62808503a6924e7d3cc70a9b884ce321992e3e719c4"
+          },
+          {
+            "name": "message_audits",
+            "count": 1,
+            "empty": false,
+            "sha256": "a724ae5a1726d4a4b2f379d397ae59313dfa9dddcff82da4914e3644835ed60d"
+          },
+          {
+            "name": "event_audits",
+            "count": 1,
+            "empty": false,
+            "sha256": "6edb4e772294f1032820cee6af4d3bfe33721dbf8fe6af9bc619f00cf1ee8f16"
+          },
+          {
+            "name": "event_array_order",
+            "count": 2,
+            "empty": false,
+            "sha256": "3c1cb4eb2951eecbd92ee6e7f0067d2531567a16e252cdc72fe74c79fcc89714"
+          },
+          {
+            "name": "effect_array_order",
+            "count": 1,
+            "empty": false,
+            "sha256": "03d419b37c3df88b54ace07fbb8e0520e15122cbc2a695dc89b67aa5bc0d498d"
+          },
+          {
+            "name": "baseline_array_order",
+            "count": 1,
+            "empty": false,
+            "sha256": "a4414109b9b8ed6b28cd59b96c1888ddc634d66e188f1ab26c6b363de610f153"
+          },
+          {
+            "name": "domain_command_receipts",
+            "count": 0,
+            "empty": true,
+            "sha256": "df6e7e80bcb64d5ab7e39edfba6c0e67b04efe2d6c78d5714db46fa884c67302"
+          },
+          {
+            "name": "archived_message_marks",
+            "count": 53,
+            "empty": false,
+            "sha256": "02ce947e2691b52ac29dc203c6c9def043e972e0ba016dd1045fe013b48ef72d"
+          }
+        ],
+        "aggregateSha256": "f0e05fda7635f7ae453285ecb1b9f9a3ef047bf0a14ca1052d22aee441e59e3f"
+      },
+      "causalFieldsSha256": "051c1e0f03d8bef2cf81053ecdf87a981ebeed180c9edb5cf56484a3c38a246e",
+      "foreignKeyViolations": 0,
+      "integrity": "ok",
+      "fingerprint": "e0f305617f2d51778e85bb9330416b769c1b2f45e396fe42a7028ae5b27a7d62"
+    },
+    {
+      "fault": "during-batch",
+      "hookReached": true,
+      "oldPid": "13169",
+      "oldPidGone": true,
+      "oldCdpDisconnected": true,
+      "newPid": "13316",
+      "candidateDb": {
+        "before": {
+          "instanceId": "aa6c4b48dcc54fecbba9d8d442f9c291",
+          "package": "com.yubin.formyself.m2qa",
+          "path": "no_backup/kanata-sqlite-v1/kanata.db",
+          "inode": "328763"
+        },
+        "after": {
+          "instanceId": "aa6c4b48dcc54fecbba9d8d442f9c291",
+          "package": "com.yubin.formyself.m2qa",
+          "path": "no_backup/kanata-sqlite-v1/kanata.db",
+          "inode": "328763"
+        },
+        "create": false
+      },
+      "before": {
+        "manifest": "running",
+        "dataset": 1,
+        "archive": {
+          "cursor_json": {
+            "archiveIndex": 0,
+            "messageOffset": 0
+          },
+          "imported_count": 0,
+          "state": "pending"
+        },
+        "messages": 0,
+        "marks": 0,
+        "lifeSources": 0
+      },
+      "status": "complete",
+      "repeated": "already-complete",
+      "sourceBeforeKill": {
+        "before": {
+          "primarySha256": "f017a37ae15a1992c1a3a57db368f030c75874cabf5b035143d92425ddad3339",
+          "archivesSha256": "3c0d1df18128399cc2ebadfdb54db4bbbd71b2c6073bb9fce0d120cf6a807573",
+          "archiveCount": 2,
+          "journalSha256": "fcb6f6a874de66235908c9ec219e348a43de3eda648ba570725e35099773a8b5"
+        },
+        "after": {
+          "primarySha256": "f017a37ae15a1992c1a3a57db368f030c75874cabf5b035143d92425ddad3339",
+          "archivesSha256": "3c0d1df18128399cc2ebadfdb54db4bbbd71b2c6073bb9fce0d120cf6a807573",
+          "archiveCount": 2,
+          "journalSha256": "fcb6f6a874de66235908c9ec219e348a43de3eda648ba570725e35099773a8b5"
+        },
+        "calls": {
+          "read": 4,
+          "stat": 1,
+          "list": 1,
+          "write": 0,
+          "rename": 0,
+          "delete": 0
+        }
+      },
+      "source": {
+        "before": {
+          "primarySha256": "f017a37ae15a1992c1a3a57db368f030c75874cabf5b035143d92425ddad3339",
+          "archivesSha256": "3c0d1df18128399cc2ebadfdb54db4bbbd71b2c6073bb9fce0d120cf6a807573",
+          "archiveCount": 2,
+          "journalSha256": "fcb6f6a874de66235908c9ec219e348a43de3eda648ba570725e35099773a8b5"
+        },
+        "after": {
+          "primarySha256": "f017a37ae15a1992c1a3a57db368f030c75874cabf5b035143d92425ddad3339",
+          "archivesSha256": "3c0d1df18128399cc2ebadfdb54db4bbbd71b2c6073bb9fce0d120cf6a807573",
+          "archiveCount": 2,
+          "journalSha256": "fcb6f6a874de66235908c9ec219e348a43de3eda648ba570725e35099773a8b5"
+        },
+        "calls": {
+          "read": 8,
+          "stat": 2,
+          "list": 2,
+          "write": 0,
+          "rename": 0,
+          "delete": 0
+        }
+      },
+      "tableProof": {
+        "tableAlgorithm": "kanata-m5-table-v1",
+        "aggregateAlgorithm": "m5-table-receipt-v1",
+        "tables": [
+          {
+            "name": "dataset_metadata",
+            "count": 1,
+            "empty": false,
+            "sha256": "5dab30261e3d090a1b21209e271f00e101f706bbe9910671d41abd3c96147481"
+          },
+          {
+            "name": "entity_ids",
+            "count": 180,
+            "empty": false,
+            "sha256": "537e1c3f499c32b554e07fd2ae7fabdbbcd7d7c310620d11173314c047c1cef7"
+          },
+          {
+            "name": "participants",
+            "count": 12,
+            "empty": false,
+            "sha256": "8a151f78eab626257a3163211e3037bed2b7dadd17322eb8a3bcc6a2928d89b8"
+          },
+          {
+            "name": "worlds",
+            "count": 2,
+            "empty": false,
+            "sha256": "57e6bdd710c70b0844792e28324ab1cfdc0ed8efee75dd76c85efc990d32c043"
+          },
+          {
+            "name": "world_identities",
+            "count": 2,
+            "empty": false,
+            "sha256": "565814c2c7b33fcae3bfdf54e3553302d9aaa758416aeccce343ab839014e4ce"
+          },
+          {
+            "name": "character_cards",
+            "count": 5,
+            "empty": false,
+            "sha256": "84c591d7f7c83b08c7a73d8cab99783ea90a6ed30c6a730bbc062aa6a9d5bd81"
+          },
+          {
+            "name": "card_versions",
+            "count": 5,
+            "empty": false,
+            "sha256": "fa24b15b80db44cdc5c45848e06a7ad9253b6de4e012f0cdb214d1e3cf216f05"
+          },
+          {
+            "name": "character_instances",
+            "count": 10,
+            "empty": false,
+            "sha256": "0fb80732927139935dac1b15dac193482b28e532cb26361c35e61f19db4708d1"
+          },
+          {
+            "name": "conversations",
+            "count": 12,
+            "empty": false,
+            "sha256": "e3fc046391cc6093ecb888fee723742b042c793620d4d7a8029b873dbb05cb41"
+          },
+          {
+            "name": "conversation_participants",
+            "count": 32,
+            "empty": false,
+            "sha256": "7d6b567d531c2170443c5ca6c501f40b33617eac8a2af838176b484a039bcc52"
+          },
+          {
+            "name": "messages",
+            "count": 55,
+            "empty": false,
+            "sha256": "a8082b85cdda48a46b715cbe30b906776931e45de91a53b36fc8dd4ff38b96b1"
+          },
+          {
+            "name": "lorebook_entries",
+            "count": 26,
+            "empty": false,
+            "sha256": "579b9ba915d5f3d4a9e7bc4e7b1f7e1e73fa41c79de2894aebc58152a7ae1d8a"
+          },
+          {
+            "name": "lorebook_known_by",
+            "count": 10,
+            "empty": false,
+            "sha256": "225334a5f6f579a0da72e3ebae2a7743af2702fceb0e1cf4ef2986fff806082f"
+          },
+          {
+            "name": "memories",
+            "count": 1,
+            "empty": false,
+            "sha256": "2fdc5c82ef43a85280da0edb1e01c83951c06349c2336714d8469eb1abbe6f5a"
+          },
+          {
+            "name": "memory_known_by",
+            "count": 1,
+            "empty": false,
+            "sha256": "fe3a2b4fe8a52ba6a246cd626bd152ba8893ba369dc7eb297226e1b1aa152531"
+          },
+          {
+            "name": "memory_sources",
+            "count": 1,
+            "empty": false,
+            "sha256": "084d3fc91bdef7a10145b177e1cac6e58e0b5f7b7982991218dd5b0650b4d993"
+          },
+          {
+            "name": "memory_events",
+            "count": 1,
+            "empty": false,
+            "sha256": "cb8484e7e6e91605d4cff780870a975d2ed1e83b4356cdf6fc6265c7074cac54"
+          },
+          {
+            "name": "memory_links",
+            "count": 0,
+            "empty": true,
+            "sha256": "4be7ed97ac63c7ce1493ae4294aa638beea82415eec0fac6d7620376e4b67364"
+          },
+          {
+            "name": "relationships",
+            "count": 50,
+            "empty": false,
+            "sha256": "45a591cbfde88310b99e01f7963eab9a5ae822ced86ebdc74122fcfbd97136bd"
+          },
+          {
+            "name": "relationship_events",
+            "count": 0,
+            "empty": true,
+            "sha256": "106f5c9c8b58c469d5b20f61c63be1198d0c31d466e9d5ef1cf0d08c2ad37c16"
+          },
+          {
+            "name": "world_events",
+            "count": 2,
+            "empty": false,
+            "sha256": "083f52c2de949f070c5a1529070518fe021d805ee4c6618965799392d66bcfcb"
+          },
+          {
+            "name": "event_participants",
+            "count": 2,
+            "empty": false,
+            "sha256": "a90a0b00cd2d948e41c4d538ae66f6149a34e5aa67abf8b31f0bc4c4f4a54341"
+          },
+          {
+            "name": "event_causes",
+            "count": 1,
+            "empty": false,
+            "sha256": "92a27afe321f6a307e25e4f5e4cdd425abc0aef63d1c6d70b1e0e00f61f74981"
+          },
+          {
+            "name": "event_sources",
+            "count": 1,
+            "empty": false,
+            "sha256": "c7ca565f8b21bf29cfdf311e3f1e7a24deab2426f076efdb6d5652ec2f276354"
+          },
+          {
+            "name": "world_effects",
+            "count": 1,
+            "empty": false,
+            "sha256": "0b794676a9e62fc628361689a74ae305f95243ca46178fabc7caf5d695a05473"
+          },
+          {
+            "name": "effect_baselines",
+            "count": 1,
+            "empty": false,
+            "sha256": "424cd59a3c7a21318398f482b6c1f511301b2b498b2228dae775aad7217435ce"
+          },
+          {
+            "name": "background_tasks",
+            "count": 1,
+            "empty": false,
+            "sha256": "fd4e0e9abf9c84b5eef50575e6b8ac9c11996227d58142b2efaee29c409fbb11"
+          },
+          {
+            "name": "task_sources",
+            "count": 1,
+            "empty": false,
+            "sha256": "0523eda8301ed4cb2952b42d68efb26caf4b01cb1b940ba0effdd62c652cd451"
+          },
+          {
+            "name": "task_result_events",
+            "count": 1,
+            "empty": false,
+            "sha256": "929b594712ad67b9c3abbafe0107e956471d0525a12e98600e11b330d2fb86fd"
+          },
+          {
+            "name": "task_result_memories",
+            "count": 1,
+            "empty": false,
+            "sha256": "c249fbfcc813d44979c4a8ca831fda81518cf209352bf046048e41b164bd8541"
+          },
+          {
+            "name": "task_social_participants",
+            "count": 0,
+            "empty": true,
+            "sha256": "6634794335db97cb231413d8e26c1c74be7cec5c1c9c8762da11fab2e6ad1746"
+          },
+          {
+            "name": "life_grants",
+            "count": 1,
+            "empty": false,
+            "sha256": "e0ac3d2f6d384519199478779e0950850ad11830870c55e17861da1aa793f27b"
+          },
+          {
+            "name": "message_life_sources",
+            "count": 4,
+            "empty": false,
+            "sha256": "db632433a59dd4cdccff1b7bea8354154627f985e8a92dc02d0a251ac7fed563"
+          },
+          {
+            "name": "memory_life_sources",
+            "count": 1,
+            "empty": false,
+            "sha256": "ad946f4f39ee289844dcb327d722f41d49d5aad33596df6c73d6c1214a8802d0"
+          },
+          {
+            "name": "event_life_sources",
+            "count": 1,
+            "empty": false,
+            "sha256": "b20cbb4ed15cca6decd5383221e710879525b880525ff876647a550707de6c59"
+          },
+          {
+            "name": "preset_applications",
+            "count": 2,
+            "empty": false,
+            "sha256": "35301fab52b9d59592ec93a8e871b78c9c26b69924b864248ad9bd116f86f96e"
+          },
+          {
+            "name": "usage_events",
+            "count": 1,
+            "empty": false,
+            "sha256": "256f03d6db2b6d15e13befbd2c5efd75a079e234993b539d904e9c5f339186ba"
+          },
+          {
+            "name": "virtual_schedules",
+            "count": 1,
+            "empty": false,
+            "sha256": "bd7b7888987433f7848a198b42801cbdfe51452a2f225b01b579c72031ec9cbf"
+          },
+          {
+            "name": "virtual_schedule_days",
+            "count": 2,
+            "empty": false,
+            "sha256": "ff22304e16dc0eecc5b6ead201323265e51fac16e0ffbda1179e40eb2dfbe2a7"
+          },
+          {
+            "name": "memory_policies",
+            "count": 1,
+            "empty": false,
+            "sha256": "328e97cc33f21b8af6c895aa898b38db659bf7f99033e1b79a3ac5219edb7901"
+          },
+          {
+            "name": "autonomy_policies",
+            "count": 1,
+            "empty": false,
+            "sha256": "243a563d8cdb9a05039f85874e5caaa3ce18af0fc27e5b2102f6ebf8e3b1213f"
+          },
+          {
+            "name": "role_binding_state",
+            "count": 1,
+            "empty": false,
+            "sha256": "d5e1de6cdace9b62af61e255aee354ec6c3d11e141be2e7fb247ac004f4e77f6"
+          },
+          {
+            "name": "role_bindings",
+            "count": 3,
+            "empty": false,
+            "sha256": "e94da2ff0503d156dbd4b62808503a6924e7d3cc70a9b884ce321992e3e719c4"
+          },
+          {
+            "name": "message_audits",
+            "count": 1,
+            "empty": false,
+            "sha256": "a724ae5a1726d4a4b2f379d397ae59313dfa9dddcff82da4914e3644835ed60d"
+          },
+          {
+            "name": "event_audits",
+            "count": 1,
+            "empty": false,
+            "sha256": "6edb4e772294f1032820cee6af4d3bfe33721dbf8fe6af9bc619f00cf1ee8f16"
+          },
+          {
+            "name": "event_array_order",
+            "count": 2,
+            "empty": false,
+            "sha256": "3c1cb4eb2951eecbd92ee6e7f0067d2531567a16e252cdc72fe74c79fcc89714"
+          },
+          {
+            "name": "effect_array_order",
+            "count": 1,
+            "empty": false,
+            "sha256": "03d419b37c3df88b54ace07fbb8e0520e15122cbc2a695dc89b67aa5bc0d498d"
+          },
+          {
+            "name": "baseline_array_order",
+            "count": 1,
+            "empty": false,
+            "sha256": "a4414109b9b8ed6b28cd59b96c1888ddc634d66e188f1ab26c6b363de610f153"
+          },
+          {
+            "name": "domain_command_receipts",
+            "count": 0,
+            "empty": true,
+            "sha256": "df6e7e80bcb64d5ab7e39edfba6c0e67b04efe2d6c78d5714db46fa884c67302"
+          },
+          {
+            "name": "archived_message_marks",
+            "count": 53,
+            "empty": false,
+            "sha256": "02ce947e2691b52ac29dc203c6c9def043e972e0ba016dd1045fe013b48ef72d"
+          }
+        ],
+        "aggregateSha256": "f0e05fda7635f7ae453285ecb1b9f9a3ef047bf0a14ca1052d22aee441e59e3f"
+      },
+      "causalFieldsSha256": "051c1e0f03d8bef2cf81053ecdf87a981ebeed180c9edb5cf56484a3c38a246e",
+      "foreignKeyViolations": 0,
+      "integrity": "ok",
+      "fingerprint": "3370cea57aee6133e75a93ce33f3dad34d19127a9e55141e8959565446bb0659"
+    },
+    {
+      "fault": "after-batch-commit",
+      "hookReached": true,
+      "oldPid": "13499",
+      "oldPidGone": true,
+      "oldCdpDisconnected": true,
+      "newPid": "13667",
+      "candidateDb": {
+        "before": {
+          "instanceId": "aa6c4b48dcc54fecbba9d8d442f9c291",
+          "package": "com.yubin.formyself.m2qa",
+          "path": "no_backup/kanata-sqlite-v1/kanata.db",
+          "inode": "329226"
+        },
+        "after": {
+          "instanceId": "aa6c4b48dcc54fecbba9d8d442f9c291",
+          "package": "com.yubin.formyself.m2qa",
+          "path": "no_backup/kanata-sqlite-v1/kanata.db",
+          "inode": "329226"
+        },
+        "create": false
+      },
+      "before": {
+        "manifest": "running",
+        "dataset": 1,
+        "archive": {
+          "cursor_json": {
+            "archiveIndex": 1,
+            "messageOffset": 0
+          },
+          "imported_count": 50,
+          "state": "running"
+        },
+        "messages": 50,
+        "marks": 50,
+        "lifeSources": 3
+      },
+      "status": "complete",
+      "repeated": "already-complete",
+      "sourceBeforeKill": {
+        "before": {
+          "primarySha256": "1a9af3a3d13baa659a9227b396f23787295544b0fea2f012f9e6e7a74aa048ca",
+          "archivesSha256": "66e9becb8cf05c326df780e9224144716692522fe07ad150b2a5b5d0dc0e7dbf",
+          "archiveCount": 2,
+          "journalSha256": "a16157f3bb1ee281d48ce47927b49ac31e0fc6b3aea8fdb46ba3b6466b38d5aa"
+        },
+        "after": {
+          "primarySha256": "1a9af3a3d13baa659a9227b396f23787295544b0fea2f012f9e6e7a74aa048ca",
+          "archivesSha256": "66e9becb8cf05c326df780e9224144716692522fe07ad150b2a5b5d0dc0e7dbf",
+          "archiveCount": 2,
+          "journalSha256": "a16157f3bb1ee281d48ce47927b49ac31e0fc6b3aea8fdb46ba3b6466b38d5aa"
+        },
+        "calls": {
+          "read": 4,
+          "stat": 1,
+          "list": 1,
+          "write": 0,
+          "rename": 0,
+          "delete": 0
+        }
+      },
+      "source": {
+        "before": {
+          "primarySha256": "1a9af3a3d13baa659a9227b396f23787295544b0fea2f012f9e6e7a74aa048ca",
+          "archivesSha256": "66e9becb8cf05c326df780e9224144716692522fe07ad150b2a5b5d0dc0e7dbf",
+          "archiveCount": 2,
+          "journalSha256": "a16157f3bb1ee281d48ce47927b49ac31e0fc6b3aea8fdb46ba3b6466b38d5aa"
+        },
+        "after": {
+          "primarySha256": "1a9af3a3d13baa659a9227b396f23787295544b0fea2f012f9e6e7a74aa048ca",
+          "archivesSha256": "66e9becb8cf05c326df780e9224144716692522fe07ad150b2a5b5d0dc0e7dbf",
+          "archiveCount": 2,
+          "journalSha256": "a16157f3bb1ee281d48ce47927b49ac31e0fc6b3aea8fdb46ba3b6466b38d5aa"
+        },
+        "calls": {
+          "read": 7,
+          "stat": 2,
+          "list": 2,
+          "write": 0,
+          "rename": 0,
+          "delete": 0
+        }
+      },
+      "tableProof": {
+        "tableAlgorithm": "kanata-m5-table-v1",
+        "aggregateAlgorithm": "m5-table-receipt-v1",
+        "tables": [
+          {
+            "name": "dataset_metadata",
+            "count": 1,
+            "empty": false,
+            "sha256": "5dab30261e3d090a1b21209e271f00e101f706bbe9910671d41abd3c96147481"
+          },
+          {
+            "name": "entity_ids",
+            "count": 180,
+            "empty": false,
+            "sha256": "537e1c3f499c32b554e07fd2ae7fabdbbcd7d7c310620d11173314c047c1cef7"
+          },
+          {
+            "name": "participants",
+            "count": 12,
+            "empty": false,
+            "sha256": "8a151f78eab626257a3163211e3037bed2b7dadd17322eb8a3bcc6a2928d89b8"
+          },
+          {
+            "name": "worlds",
+            "count": 2,
+            "empty": false,
+            "sha256": "57e6bdd710c70b0844792e28324ab1cfdc0ed8efee75dd76c85efc990d32c043"
+          },
+          {
+            "name": "world_identities",
+            "count": 2,
+            "empty": false,
+            "sha256": "565814c2c7b33fcae3bfdf54e3553302d9aaa758416aeccce343ab839014e4ce"
+          },
+          {
+            "name": "character_cards",
+            "count": 5,
+            "empty": false,
+            "sha256": "84c591d7f7c83b08c7a73d8cab99783ea90a6ed30c6a730bbc062aa6a9d5bd81"
+          },
+          {
+            "name": "card_versions",
+            "count": 5,
+            "empty": false,
+            "sha256": "fa24b15b80db44cdc5c45848e06a7ad9253b6de4e012f0cdb214d1e3cf216f05"
+          },
+          {
+            "name": "character_instances",
+            "count": 10,
+            "empty": false,
+            "sha256": "0fb80732927139935dac1b15dac193482b28e532cb26361c35e61f19db4708d1"
+          },
+          {
+            "name": "conversations",
+            "count": 12,
+            "empty": false,
+            "sha256": "e3fc046391cc6093ecb888fee723742b042c793620d4d7a8029b873dbb05cb41"
+          },
+          {
+            "name": "conversation_participants",
+            "count": 32,
+            "empty": false,
+            "sha256": "7d6b567d531c2170443c5ca6c501f40b33617eac8a2af838176b484a039bcc52"
+          },
+          {
+            "name": "messages",
+            "count": 55,
+            "empty": false,
+            "sha256": "a8082b85cdda48a46b715cbe30b906776931e45de91a53b36fc8dd4ff38b96b1"
+          },
+          {
+            "name": "lorebook_entries",
+            "count": 26,
+            "empty": false,
+            "sha256": "579b9ba915d5f3d4a9e7bc4e7b1f7e1e73fa41c79de2894aebc58152a7ae1d8a"
+          },
+          {
+            "name": "lorebook_known_by",
+            "count": 10,
+            "empty": false,
+            "sha256": "225334a5f6f579a0da72e3ebae2a7743af2702fceb0e1cf4ef2986fff806082f"
+          },
+          {
+            "name": "memories",
+            "count": 1,
+            "empty": false,
+            "sha256": "2fdc5c82ef43a85280da0edb1e01c83951c06349c2336714d8469eb1abbe6f5a"
+          },
+          {
+            "name": "memory_known_by",
+            "count": 1,
+            "empty": false,
+            "sha256": "fe3a2b4fe8a52ba6a246cd626bd152ba8893ba369dc7eb297226e1b1aa152531"
+          },
+          {
+            "name": "memory_sources",
+            "count": 1,
+            "empty": false,
+            "sha256": "084d3fc91bdef7a10145b177e1cac6e58e0b5f7b7982991218dd5b0650b4d993"
+          },
+          {
+            "name": "memory_events",
+            "count": 1,
+            "empty": false,
+            "sha256": "cb8484e7e6e91605d4cff780870a975d2ed1e83b4356cdf6fc6265c7074cac54"
+          },
+          {
+            "name": "memory_links",
+            "count": 0,
+            "empty": true,
+            "sha256": "4be7ed97ac63c7ce1493ae4294aa638beea82415eec0fac6d7620376e4b67364"
+          },
+          {
+            "name": "relationships",
+            "count": 50,
+            "empty": false,
+            "sha256": "45a591cbfde88310b99e01f7963eab9a5ae822ced86ebdc74122fcfbd97136bd"
+          },
+          {
+            "name": "relationship_events",
+            "count": 0,
+            "empty": true,
+            "sha256": "106f5c9c8b58c469d5b20f61c63be1198d0c31d466e9d5ef1cf0d08c2ad37c16"
+          },
+          {
+            "name": "world_events",
+            "count": 2,
+            "empty": false,
+            "sha256": "083f52c2de949f070c5a1529070518fe021d805ee4c6618965799392d66bcfcb"
+          },
+          {
+            "name": "event_participants",
+            "count": 2,
+            "empty": false,
+            "sha256": "a90a0b00cd2d948e41c4d538ae66f6149a34e5aa67abf8b31f0bc4c4f4a54341"
+          },
+          {
+            "name": "event_causes",
+            "count": 1,
+            "empty": false,
+            "sha256": "92a27afe321f6a307e25e4f5e4cdd425abc0aef63d1c6d70b1e0e00f61f74981"
+          },
+          {
+            "name": "event_sources",
+            "count": 1,
+            "empty": false,
+            "sha256": "c7ca565f8b21bf29cfdf311e3f1e7a24deab2426f076efdb6d5652ec2f276354"
+          },
+          {
+            "name": "world_effects",
+            "count": 1,
+            "empty": false,
+            "sha256": "0b794676a9e62fc628361689a74ae305f95243ca46178fabc7caf5d695a05473"
+          },
+          {
+            "name": "effect_baselines",
+            "count": 1,
+            "empty": false,
+            "sha256": "424cd59a3c7a21318398f482b6c1f511301b2b498b2228dae775aad7217435ce"
+          },
+          {
+            "name": "background_tasks",
+            "count": 1,
+            "empty": false,
+            "sha256": "fd4e0e9abf9c84b5eef50575e6b8ac9c11996227d58142b2efaee29c409fbb11"
+          },
+          {
+            "name": "task_sources",
+            "count": 1,
+            "empty": false,
+            "sha256": "0523eda8301ed4cb2952b42d68efb26caf4b01cb1b940ba0effdd62c652cd451"
+          },
+          {
+            "name": "task_result_events",
+            "count": 1,
+            "empty": false,
+            "sha256": "929b594712ad67b9c3abbafe0107e956471d0525a12e98600e11b330d2fb86fd"
+          },
+          {
+            "name": "task_result_memories",
+            "count": 1,
+            "empty": false,
+            "sha256": "c249fbfcc813d44979c4a8ca831fda81518cf209352bf046048e41b164bd8541"
+          },
+          {
+            "name": "task_social_participants",
+            "count": 0,
+            "empty": true,
+            "sha256": "6634794335db97cb231413d8e26c1c74be7cec5c1c9c8762da11fab2e6ad1746"
+          },
+          {
+            "name": "life_grants",
+            "count": 1,
+            "empty": false,
+            "sha256": "e0ac3d2f6d384519199478779e0950850ad11830870c55e17861da1aa793f27b"
+          },
+          {
+            "name": "message_life_sources",
+            "count": 4,
+            "empty": false,
+            "sha256": "db632433a59dd4cdccff1b7bea8354154627f985e8a92dc02d0a251ac7fed563"
+          },
+          {
+            "name": "memory_life_sources",
+            "count": 1,
+            "empty": false,
+            "sha256": "ad946f4f39ee289844dcb327d722f41d49d5aad33596df6c73d6c1214a8802d0"
+          },
+          {
+            "name": "event_life_sources",
+            "count": 1,
+            "empty": false,
+            "sha256": "b20cbb4ed15cca6decd5383221e710879525b880525ff876647a550707de6c59"
+          },
+          {
+            "name": "preset_applications",
+            "count": 2,
+            "empty": false,
+            "sha256": "35301fab52b9d59592ec93a8e871b78c9c26b69924b864248ad9bd116f86f96e"
+          },
+          {
+            "name": "usage_events",
+            "count": 1,
+            "empty": false,
+            "sha256": "256f03d6db2b6d15e13befbd2c5efd75a079e234993b539d904e9c5f339186ba"
+          },
+          {
+            "name": "virtual_schedules",
+            "count": 1,
+            "empty": false,
+            "sha256": "bd7b7888987433f7848a198b42801cbdfe51452a2f225b01b579c72031ec9cbf"
+          },
+          {
+            "name": "virtual_schedule_days",
+            "count": 2,
+            "empty": false,
+            "sha256": "ff22304e16dc0eecc5b6ead201323265e51fac16e0ffbda1179e40eb2dfbe2a7"
+          },
+          {
+            "name": "memory_policies",
+            "count": 1,
+            "empty": false,
+            "sha256": "328e97cc33f21b8af6c895aa898b38db659bf7f99033e1b79a3ac5219edb7901"
+          },
+          {
+            "name": "autonomy_policies",
+            "count": 1,
+            "empty": false,
+            "sha256": "243a563d8cdb9a05039f85874e5caaa3ce18af0fc27e5b2102f6ebf8e3b1213f"
+          },
+          {
+            "name": "role_binding_state",
+            "count": 1,
+            "empty": false,
+            "sha256": "d5e1de6cdace9b62af61e255aee354ec6c3d11e141be2e7fb247ac004f4e77f6"
+          },
+          {
+            "name": "role_bindings",
+            "count": 3,
+            "empty": false,
+            "sha256": "e94da2ff0503d156dbd4b62808503a6924e7d3cc70a9b884ce321992e3e719c4"
+          },
+          {
+            "name": "message_audits",
+            "count": 1,
+            "empty": false,
+            "sha256": "a724ae5a1726d4a4b2f379d397ae59313dfa9dddcff82da4914e3644835ed60d"
+          },
+          {
+            "name": "event_audits",
+            "count": 1,
+            "empty": false,
+            "sha256": "6edb4e772294f1032820cee6af4d3bfe33721dbf8fe6af9bc619f00cf1ee8f16"
+          },
+          {
+            "name": "event_array_order",
+            "count": 2,
+            "empty": false,
+            "sha256": "3c1cb4eb2951eecbd92ee6e7f0067d2531567a16e252cdc72fe74c79fcc89714"
+          },
+          {
+            "name": "effect_array_order",
+            "count": 1,
+            "empty": false,
+            "sha256": "03d419b37c3df88b54ace07fbb8e0520e15122cbc2a695dc89b67aa5bc0d498d"
+          },
+          {
+            "name": "baseline_array_order",
+            "count": 1,
+            "empty": false,
+            "sha256": "a4414109b9b8ed6b28cd59b96c1888ddc634d66e188f1ab26c6b363de610f153"
+          },
+          {
+            "name": "domain_command_receipts",
+            "count": 0,
+            "empty": true,
+            "sha256": "df6e7e80bcb64d5ab7e39edfba6c0e67b04efe2d6c78d5714db46fa884c67302"
+          },
+          {
+            "name": "archived_message_marks",
+            "count": 53,
+            "empty": false,
+            "sha256": "02ce947e2691b52ac29dc203c6c9def043e972e0ba016dd1045fe013b48ef72d"
+          }
+        ],
+        "aggregateSha256": "f0e05fda7635f7ae453285ecb1b9f9a3ef047bf0a14ca1052d22aee441e59e3f"
+      },
+      "causalFieldsSha256": "051c1e0f03d8bef2cf81053ecdf87a981ebeed180c9edb5cf56484a3c38a246e",
+      "foreignKeyViolations": 0,
+      "integrity": "ok",
+      "fingerprint": "438e4b222a7a0c34280d621c6c1fd986931fc8feaaf817d67ad755b4d083ca00"
+    },
+    {
+      "fault": "before-verification",
+      "hookReached": true,
+      "oldPid": "13857",
+      "oldPidGone": true,
+      "oldCdpDisconnected": true,
+      "newPid": "14001",
+      "candidateDb": {
+        "before": {
+          "instanceId": "aa6c4b48dcc54fecbba9d8d442f9c291",
+          "package": "com.yubin.formyself.m2qa",
+          "path": "no_backup/kanata-sqlite-v1/kanata.db",
+          "inode": "329226"
+        },
+        "after": {
+          "instanceId": "aa6c4b48dcc54fecbba9d8d442f9c291",
+          "package": "com.yubin.formyself.m2qa",
+          "path": "no_backup/kanata-sqlite-v1/kanata.db",
+          "inode": "329226"
+        },
+        "create": false
+      },
+      "before": {
+        "manifest": "running",
+        "dataset": 1,
+        "archive": {
+          "cursor_json": {
+            "archiveIndex": 2,
+            "messageOffset": 0
+          },
+          "imported_count": 53,
+          "state": "complete"
+        },
+        "messages": 55,
+        "marks": 53,
+        "lifeSources": 4
+      },
+      "status": "complete",
+      "repeated": "already-complete",
+      "sourceBeforeKill": {
+        "before": {
+          "primarySha256": "5b04a2e793cd307a1014f140e4a27837d3ee7e889014dc434a02be45cd53bc77",
+          "archivesSha256": "8095b401834af9cb54f8b2a5172f934afef3f8fc79ae07caec95f005e910fd9d",
+          "archiveCount": 2,
+          "journalSha256": "0d82ce691de8c5ede81b5ca12127fde8625b029c2a3bc49ebc362957d4ca4eb0"
+        },
+        "after": {
+          "primarySha256": "5b04a2e793cd307a1014f140e4a27837d3ee7e889014dc434a02be45cd53bc77",
+          "archivesSha256": "8095b401834af9cb54f8b2a5172f934afef3f8fc79ae07caec95f005e910fd9d",
+          "archiveCount": 2,
+          "journalSha256": "0d82ce691de8c5ede81b5ca12127fde8625b029c2a3bc49ebc362957d4ca4eb0"
+        },
+        "calls": {
+          "read": 5,
+          "stat": 1,
+          "list": 1,
+          "write": 0,
+          "rename": 0,
+          "delete": 0
+        }
+      },
+      "source": {
+        "before": {
+          "primarySha256": "5b04a2e793cd307a1014f140e4a27837d3ee7e889014dc434a02be45cd53bc77",
+          "archivesSha256": "8095b401834af9cb54f8b2a5172f934afef3f8fc79ae07caec95f005e910fd9d",
+          "archiveCount": 2,
+          "journalSha256": "0d82ce691de8c5ede81b5ca12127fde8625b029c2a3bc49ebc362957d4ca4eb0"
+        },
+        "after": {
+          "primarySha256": "5b04a2e793cd307a1014f140e4a27837d3ee7e889014dc434a02be45cd53bc77",
+          "archivesSha256": "8095b401834af9cb54f8b2a5172f934afef3f8fc79ae07caec95f005e910fd9d",
+          "archiveCount": 2,
+          "journalSha256": "0d82ce691de8c5ede81b5ca12127fde8625b029c2a3bc49ebc362957d4ca4eb0"
+        },
+        "calls": {
+          "read": 6,
+          "stat": 2,
+          "list": 2,
+          "write": 0,
+          "rename": 0,
+          "delete": 0
+        }
+      },
+      "tableProof": {
+        "tableAlgorithm": "kanata-m5-table-v1",
+        "aggregateAlgorithm": "m5-table-receipt-v1",
+        "tables": [
+          {
+            "name": "dataset_metadata",
+            "count": 1,
+            "empty": false,
+            "sha256": "5dab30261e3d090a1b21209e271f00e101f706bbe9910671d41abd3c96147481"
+          },
+          {
+            "name": "entity_ids",
+            "count": 180,
+            "empty": false,
+            "sha256": "537e1c3f499c32b554e07fd2ae7fabdbbcd7d7c310620d11173314c047c1cef7"
+          },
+          {
+            "name": "participants",
+            "count": 12,
+            "empty": false,
+            "sha256": "8a151f78eab626257a3163211e3037bed2b7dadd17322eb8a3bcc6a2928d89b8"
+          },
+          {
+            "name": "worlds",
+            "count": 2,
+            "empty": false,
+            "sha256": "57e6bdd710c70b0844792e28324ab1cfdc0ed8efee75dd76c85efc990d32c043"
+          },
+          {
+            "name": "world_identities",
+            "count": 2,
+            "empty": false,
+            "sha256": "565814c2c7b33fcae3bfdf54e3553302d9aaa758416aeccce343ab839014e4ce"
+          },
+          {
+            "name": "character_cards",
+            "count": 5,
+            "empty": false,
+            "sha256": "84c591d7f7c83b08c7a73d8cab99783ea90a6ed30c6a730bbc062aa6a9d5bd81"
+          },
+          {
+            "name": "card_versions",
+            "count": 5,
+            "empty": false,
+            "sha256": "fa24b15b80db44cdc5c45848e06a7ad9253b6de4e012f0cdb214d1e3cf216f05"
+          },
+          {
+            "name": "character_instances",
+            "count": 10,
+            "empty": false,
+            "sha256": "0fb80732927139935dac1b15dac193482b28e532cb26361c35e61f19db4708d1"
+          },
+          {
+            "name": "conversations",
+            "count": 12,
+            "empty": false,
+            "sha256": "e3fc046391cc6093ecb888fee723742b042c793620d4d7a8029b873dbb05cb41"
+          },
+          {
+            "name": "conversation_participants",
+            "count": 32,
+            "empty": false,
+            "sha256": "7d6b567d531c2170443c5ca6c501f40b33617eac8a2af838176b484a039bcc52"
+          },
+          {
+            "name": "messages",
+            "count": 55,
+            "empty": false,
+            "sha256": "a8082b85cdda48a46b715cbe30b906776931e45de91a53b36fc8dd4ff38b96b1"
+          },
+          {
+            "name": "lorebook_entries",
+            "count": 26,
+            "empty": false,
+            "sha256": "579b9ba915d5f3d4a9e7bc4e7b1f7e1e73fa41c79de2894aebc58152a7ae1d8a"
+          },
+          {
+            "name": "lorebook_known_by",
+            "count": 10,
+            "empty": false,
+            "sha256": "225334a5f6f579a0da72e3ebae2a7743af2702fceb0e1cf4ef2986fff806082f"
+          },
+          {
+            "name": "memories",
+            "count": 1,
+            "empty": false,
+            "sha256": "2fdc5c82ef43a85280da0edb1e01c83951c06349c2336714d8469eb1abbe6f5a"
+          },
+          {
+            "name": "memory_known_by",
+            "count": 1,
+            "empty": false,
+            "sha256": "fe3a2b4fe8a52ba6a246cd626bd152ba8893ba369dc7eb297226e1b1aa152531"
+          },
+          {
+            "name": "memory_sources",
+            "count": 1,
+            "empty": false,
+            "sha256": "084d3fc91bdef7a10145b177e1cac6e58e0b5f7b7982991218dd5b0650b4d993"
+          },
+          {
+            "name": "memory_events",
+            "count": 1,
+            "empty": false,
+            "sha256": "cb8484e7e6e91605d4cff780870a975d2ed1e83b4356cdf6fc6265c7074cac54"
+          },
+          {
+            "name": "memory_links",
+            "count": 0,
+            "empty": true,
+            "sha256": "4be7ed97ac63c7ce1493ae4294aa638beea82415eec0fac6d7620376e4b67364"
+          },
+          {
+            "name": "relationships",
+            "count": 50,
+            "empty": false,
+            "sha256": "45a591cbfde88310b99e01f7963eab9a5ae822ced86ebdc74122fcfbd97136bd"
+          },
+          {
+            "name": "relationship_events",
+            "count": 0,
+            "empty": true,
+            "sha256": "106f5c9c8b58c469d5b20f61c63be1198d0c31d466e9d5ef1cf0d08c2ad37c16"
+          },
+          {
+            "name": "world_events",
+            "count": 2,
+            "empty": false,
+            "sha256": "083f52c2de949f070c5a1529070518fe021d805ee4c6618965799392d66bcfcb"
+          },
+          {
+            "name": "event_participants",
+            "count": 2,
+            "empty": false,
+            "sha256": "a90a0b00cd2d948e41c4d538ae66f6149a34e5aa67abf8b31f0bc4c4f4a54341"
+          },
+          {
+            "name": "event_causes",
+            "count": 1,
+            "empty": false,
+            "sha256": "92a27afe321f6a307e25e4f5e4cdd425abc0aef63d1c6d70b1e0e00f61f74981"
+          },
+          {
+            "name": "event_sources",
+            "count": 1,
+            "empty": false,
+            "sha256": "c7ca565f8b21bf29cfdf311e3f1e7a24deab2426f076efdb6d5652ec2f276354"
+          },
+          {
+            "name": "world_effects",
+            "count": 1,
+            "empty": false,
+            "sha256": "0b794676a9e62fc628361689a74ae305f95243ca46178fabc7caf5d695a05473"
+          },
+          {
+            "name": "effect_baselines",
+            "count": 1,
+            "empty": false,
+            "sha256": "424cd59a3c7a21318398f482b6c1f511301b2b498b2228dae775aad7217435ce"
+          },
+          {
+            "name": "background_tasks",
+            "count": 1,
+            "empty": false,
+            "sha256": "fd4e0e9abf9c84b5eef50575e6b8ac9c11996227d58142b2efaee29c409fbb11"
+          },
+          {
+            "name": "task_sources",
+            "count": 1,
+            "empty": false,
+            "sha256": "0523eda8301ed4cb2952b42d68efb26caf4b01cb1b940ba0effdd62c652cd451"
+          },
+          {
+            "name": "task_result_events",
+            "count": 1,
+            "empty": false,
+            "sha256": "929b594712ad67b9c3abbafe0107e956471d0525a12e98600e11b330d2fb86fd"
+          },
+          {
+            "name": "task_result_memories",
+            "count": 1,
+            "empty": false,
+            "sha256": "c249fbfcc813d44979c4a8ca831fda81518cf209352bf046048e41b164bd8541"
+          },
+          {
+            "name": "task_social_participants",
+            "count": 0,
+            "empty": true,
+            "sha256": "6634794335db97cb231413d8e26c1c74be7cec5c1c9c8762da11fab2e6ad1746"
+          },
+          {
+            "name": "life_grants",
+            "count": 1,
+            "empty": false,
+            "sha256": "e0ac3d2f6d384519199478779e0950850ad11830870c55e17861da1aa793f27b"
+          },
+          {
+            "name": "message_life_sources",
+            "count": 4,
+            "empty": false,
+            "sha256": "db632433a59dd4cdccff1b7bea8354154627f985e8a92dc02d0a251ac7fed563"
+          },
+          {
+            "name": "memory_life_sources",
+            "count": 1,
+            "empty": false,
+            "sha256": "ad946f4f39ee289844dcb327d722f41d49d5aad33596df6c73d6c1214a8802d0"
+          },
+          {
+            "name": "event_life_sources",
+            "count": 1,
+            "empty": false,
+            "sha256": "b20cbb4ed15cca6decd5383221e710879525b880525ff876647a550707de6c59"
+          },
+          {
+            "name": "preset_applications",
+            "count": 2,
+            "empty": false,
+            "sha256": "35301fab52b9d59592ec93a8e871b78c9c26b69924b864248ad9bd116f86f96e"
+          },
+          {
+            "name": "usage_events",
+            "count": 1,
+            "empty": false,
+            "sha256": "256f03d6db2b6d15e13befbd2c5efd75a079e234993b539d904e9c5f339186ba"
+          },
+          {
+            "name": "virtual_schedules",
+            "count": 1,
+            "empty": false,
+            "sha256": "bd7b7888987433f7848a198b42801cbdfe51452a2f225b01b579c72031ec9cbf"
+          },
+          {
+            "name": "virtual_schedule_days",
+            "count": 2,
+            "empty": false,
+            "sha256": "ff22304e16dc0eecc5b6ead201323265e51fac16e0ffbda1179e40eb2dfbe2a7"
+          },
+          {
+            "name": "memory_policies",
+            "count": 1,
+            "empty": false,
+            "sha256": "328e97cc33f21b8af6c895aa898b38db659bf7f99033e1b79a3ac5219edb7901"
+          },
+          {
+            "name": "autonomy_policies",
+            "count": 1,
+            "empty": false,
+            "sha256": "243a563d8cdb9a05039f85874e5caaa3ce18af0fc27e5b2102f6ebf8e3b1213f"
+          },
+          {
+            "name": "role_binding_state",
+            "count": 1,
+            "empty": false,
+            "sha256": "d5e1de6cdace9b62af61e255aee354ec6c3d11e141be2e7fb247ac004f4e77f6"
+          },
+          {
+            "name": "role_bindings",
+            "count": 3,
+            "empty": false,
+            "sha256": "e94da2ff0503d156dbd4b62808503a6924e7d3cc70a9b884ce321992e3e719c4"
+          },
+          {
+            "name": "message_audits",
+            "count": 1,
+            "empty": false,
+            "sha256": "a724ae5a1726d4a4b2f379d397ae59313dfa9dddcff82da4914e3644835ed60d"
+          },
+          {
+            "name": "event_audits",
+            "count": 1,
+            "empty": false,
+            "sha256": "6edb4e772294f1032820cee6af4d3bfe33721dbf8fe6af9bc619f00cf1ee8f16"
+          },
+          {
+            "name": "event_array_order",
+            "count": 2,
+            "empty": false,
+            "sha256": "3c1cb4eb2951eecbd92ee6e7f0067d2531567a16e252cdc72fe74c79fcc89714"
+          },
+          {
+            "name": "effect_array_order",
+            "count": 1,
+            "empty": false,
+            "sha256": "03d419b37c3df88b54ace07fbb8e0520e15122cbc2a695dc89b67aa5bc0d498d"
+          },
+          {
+            "name": "baseline_array_order",
+            "count": 1,
+            "empty": false,
+            "sha256": "a4414109b9b8ed6b28cd59b96c1888ddc634d66e188f1ab26c6b363de610f153"
+          },
+          {
+            "name": "domain_command_receipts",
+            "count": 0,
+            "empty": true,
+            "sha256": "df6e7e80bcb64d5ab7e39edfba6c0e67b04efe2d6c78d5714db46fa884c67302"
+          },
+          {
+            "name": "archived_message_marks",
+            "count": 53,
+            "empty": false,
+            "sha256": "02ce947e2691b52ac29dc203c6c9def043e972e0ba016dd1045fe013b48ef72d"
+          }
+        ],
+        "aggregateSha256": "f0e05fda7635f7ae453285ecb1b9f9a3ef047bf0a14ca1052d22aee441e59e3f"
+      },
+      "causalFieldsSha256": "051c1e0f03d8bef2cf81053ecdf87a981ebeed180c9edb5cf56484a3c38a246e",
+      "foreignKeyViolations": 0,
+      "integrity": "ok",
+      "fingerprint": "cb6c7be89601e57ab66c495e51a9fdc7c6aa5a567a92759d9727f04ce5570ea3"
+    }
+  ],
+  "negative": [
+    {
+      "negative": "corrupt-page",
+      "code": "KANATA_ARCHIVE_VERIFY_FAILED",
+      "before": {
+        "manifest": null,
+        "dataset": 0,
+        "archive": null,
+        "messages": 0,
+        "marks": 0,
+        "lifeSources": 0
+      },
+      "after": {
+        "manifest": null,
+        "dataset": 0,
+        "archive": null,
+        "messages": 0,
+        "marks": 0,
+        "lifeSources": 0
+      },
+      "writes": 0,
+      "source": {
+        "before": {
+          "primarySha256": "7782c40bd5fd720b0e8c8370576998ea40a148f26e471775ae9241533df7426a",
+          "archivesSha256": "d50fc0cd8811a7fd5a2428b99ef0527615f082604e99bc7924036bcd8e3e48dd",
+          "archiveCount": 2,
+          "journalSha256": "ccc9b7990129409990e9d9d57f9130fad0a9495c85b5f38acbbf88e7ce188fff"
+        },
+        "after": {
+          "primarySha256": "7782c40bd5fd720b0e8c8370576998ea40a148f26e471775ae9241533df7426a",
+          "archivesSha256": "d50fc0cd8811a7fd5a2428b99ef0527615f082604e99bc7924036bcd8e3e48dd",
+          "archiveCount": 2,
+          "journalSha256": "ccc9b7990129409990e9d9d57f9130fad0a9495c85b5f38acbbf88e7ce188fff"
+        },
+        "calls": {
+          "read": 2,
+          "stat": 1,
+          "list": 1,
+          "write": 0,
+          "rename": 0,
+          "delete": 0
+        }
+      }
+    },
+    {
+      "negative": "recovered",
+      "code": "KANATA_MIGRATION_SOURCE_RECOVERY_REQUIRED",
+      "before": {
+        "manifest": null,
+        "dataset": 0,
+        "archive": null,
+        "messages": 0,
+        "marks": 0,
+        "lifeSources": 0
+      },
+      "after": {
+        "manifest": null,
+        "dataset": 0,
+        "archive": null,
+        "messages": 0,
+        "marks": 0,
+        "lifeSources": 0
+      },
+      "writes": 0,
+      "source": {
+        "before": {
+          "primarySha256": null,
+          "archivesSha256": "166760c5f575f7ba52559b5640a71ff5241d66bc3d8ce91f615cdf5d10d00a81",
+          "archiveCount": 2,
+          "journalSha256": null
+        },
+        "after": {
+          "primarySha256": null,
+          "archivesSha256": "166760c5f575f7ba52559b5640a71ff5241d66bc3d8ce91f615cdf5d10d00a81",
+          "archiveCount": 2,
+          "journalSha256": null
+        },
+        "calls": {
+          "read": 1,
+          "stat": 2,
+          "list": 0,
+          "write": 0,
+          "rename": 0,
+          "delete": 0
+        }
+      }
+    },
+    {
+      "negative": "occupied",
+      "code": "KANATA_MIGRATION_TARGET_NOT_EMPTY",
+      "before": {
+        "manifest": null,
+        "dataset": 1,
+        "archive": null,
+        "messages": 0,
+        "marks": 0,
+        "lifeSources": 0
+      },
+      "after": {
+        "manifest": null,
+        "dataset": 1,
+        "archive": null,
+        "messages": 0,
+        "marks": 0,
+        "lifeSources": 0
+      },
+      "writes": 0,
+      "source": {
+        "before": {
+          "primarySha256": "215dae7a148dc23f5f8a8d72a79dc91e6da1e7fe7928f9f672d0422e23ef0150",
+          "archivesSha256": "927a221ac69439c4e57ba56f186c0ca81bce1ecb842866fca4079f41c67606b5",
+          "archiveCount": 2,
+          "journalSha256": "83acf5aaebc68d347cabf138dc244648436c33269cde8e9fd6a77547594c957e"
+        },
+        "after": {
+          "primarySha256": "215dae7a148dc23f5f8a8d72a79dc91e6da1e7fe7928f9f672d0422e23ef0150",
+          "archivesSha256": "927a221ac69439c4e57ba56f186c0ca81bce1ecb842866fca4079f41c67606b5",
+          "archiveCount": 2,
+          "journalSha256": "83acf5aaebc68d347cabf138dc244648436c33269cde8e9fd6a77547594c957e"
+        },
+        "calls": {
+          "read": 3,
+          "stat": 1,
+          "list": 1,
+          "write": 0,
+          "rename": 0,
+          "delete": 0
+        }
+      }
+    },
+    {
+      "wrongKey": "KANATA_SQLITE_UNLOCK_FAILED",
+      "changedSource": "KANATA_MIGRATION_SOURCE_CHANGED",
+      "before": {
+        "manifest": "complete",
+        "dataset": 1,
+        "archive": {
+          "cursor_json": {
+            "archiveIndex": 2,
+            "messageOffset": 0
+          },
+          "imported_count": 53,
+          "state": "complete"
+        },
+        "messages": 55,
+        "marks": 53,
+        "lifeSources": 4
+      },
+      "after": {
+        "manifest": "complete",
+        "dataset": 1,
+        "archive": {
+          "cursor_json": {
+            "archiveIndex": 2,
+            "messageOffset": 0
+          },
+          "imported_count": 53,
+          "state": "complete"
+        },
+        "messages": 55,
+        "marks": 53,
+        "lifeSources": 4
+      },
+      "writes": 0,
+      "source": {
+        "before": {
+          "primarySha256": "a1ed4f87bf2780b2d5302e527f1e18bbfb5d45b5e8d19140fd98673f9a2144ea",
+          "archivesSha256": "762fdcb67bd61d58343cea5b5c17ba36a584f826eec2872f167d6e7c65c04e90",
+          "archiveCount": 2,
+          "journalSha256": "216306426c43a31545a466fcdf633bc661041d0bbf8db11799ebfd36a1b7e6e4"
+        },
+        "after": {
+          "primarySha256": "a1ed4f87bf2780b2d5302e527f1e18bbfb5d45b5e8d19140fd98673f9a2144ea",
+          "archivesSha256": "762fdcb67bd61d58343cea5b5c17ba36a584f826eec2872f167d6e7c65c04e90",
+          "archiveCount": 2,
+          "journalSha256": "216306426c43a31545a466fcdf633bc661041d0bbf8db11799ebfd36a1b7e6e4"
+        },
+        "calls": {
+          "read": 3,
+          "stat": 1,
+          "list": 1,
+          "write": 0,
+          "rename": 0,
+          "delete": 0
+        }
+      }
+    }
+  ],
+  "capacity": [
+    {
+      "capacity": 1000,
+      "before": {
+        "manifest": null,
+        "dataset": 0,
+        "archive": null,
+        "messages": 0,
+        "marks": 0,
+        "lifeSources": 0
+      },
+      "totalMs": 16791.799999999814,
+      "messageBatches": 21,
+      "maxBatch": 50,
+      "writes": 2359,
+      "health": {
+        "cipher": "4.17.0 community",
+        "journalMode": "wal",
+        "synchronous": 2,
+        "foreignKeys": 1,
+        "cacheSize": -2048,
+        "checkpoint": 1000,
+        "busyTimeout": 5000
+      },
+      "sourceUnchanged": true,
+      "source": {
+        "before": {
+          "primarySha256": "53e8f2eb46c5401649a2d2bdd0e74f11186f238fd2bf26cf7fc78e3f6b236f09",
+          "archivesSha256": "ac4f6a9651cc9a4e6e4f02dc9b1fa925b480cf866b33e2306727f252f08fea12",
+          "archiveCount": 20,
+          "journalSha256": "f00090f55608d11cb748463c791aad4e972f211dc6e5983ae8cf060334e7625f"
+        },
+        "after": {
+          "primarySha256": "53e8f2eb46c5401649a2d2bdd0e74f11186f238fd2bf26cf7fc78e3f6b236f09",
+          "archivesSha256": "ac4f6a9651cc9a4e6e4f02dc9b1fa925b480cf866b33e2306727f252f08fea12",
+          "archiveCount": 20,
+          "journalSha256": "f00090f55608d11cb748463c791aad4e972f211dc6e5983ae8cf060334e7625f"
+        },
+        "calls": {
+          "read": 41,
+          "stat": 1,
+          "list": 1,
+          "write": 0,
+          "rename": 0,
+          "delete": 0
+        }
+      },
+      "leaseRevoked": true,
+      "fixtureMs": 425.4847000000009,
+      "fixtureSha256": "ee4ad439010dc8e08c098062959897e8febb222c36aa2067b0246fa8cb316f1a",
+      "fingerprint": "837be0996bdbce025c28a53c9bb2cbc19430e2661256f98dbf329b0dc942a850",
+      "sqlTableCount": 50,
+      "recentMs": 7.399999999906868,
+      "olderMs": 8.899999999906868,
+      "integrity": "ok",
+      "foreignKeyViolations": 0,
+      "dbBytes": 2105344,
+      "peakRssBytes": 445177856,
+      "peak": {
+        "appRssKiB": 242460,
+        "rendererRssKiB": 192284,
+        "rendererCount": 1
+      },
+      "samples": 19,
+      "tableProof": {
+        "tableAlgorithm": "kanata-m5-table-v1",
+        "aggregateAlgorithm": "m5-table-receipt-v1",
+        "tables": [
+          {
+            "name": "dataset_metadata",
+            "count": 1,
+            "empty": false,
+            "sha256": "5dab30261e3d090a1b21209e271f00e101f706bbe9910671d41abd3c96147481"
+          },
+          {
+            "name": "entity_ids",
+            "count": 1125,
+            "empty": false,
+            "sha256": "f8dec97d3271310a02c8ec5e8bcd3ccf0524e6f85cff490fc46d32ecc6833b57"
+          },
+          {
+            "name": "participants",
+            "count": 12,
+            "empty": false,
+            "sha256": "8a151f78eab626257a3163211e3037bed2b7dadd17322eb8a3bcc6a2928d89b8"
+          },
+          {
+            "name": "worlds",
+            "count": 2,
+            "empty": false,
+            "sha256": "57e6bdd710c70b0844792e28324ab1cfdc0ed8efee75dd76c85efc990d32c043"
+          },
+          {
+            "name": "world_identities",
+            "count": 2,
+            "empty": false,
+            "sha256": "565814c2c7b33fcae3bfdf54e3553302d9aaa758416aeccce343ab839014e4ce"
+          },
+          {
+            "name": "character_cards",
+            "count": 5,
+            "empty": false,
+            "sha256": "84c591d7f7c83b08c7a73d8cab99783ea90a6ed30c6a730bbc062aa6a9d5bd81"
+          },
+          {
+            "name": "card_versions",
+            "count": 5,
+            "empty": false,
+            "sha256": "fa24b15b80db44cdc5c45848e06a7ad9253b6de4e012f0cdb214d1e3cf216f05"
+          },
+          {
+            "name": "character_instances",
+            "count": 10,
+            "empty": false,
+            "sha256": "0fb80732927139935dac1b15dac193482b28e532cb26361c35e61f19db4708d1"
+          },
+          {
+            "name": "conversations",
+            "count": 12,
+            "empty": false,
+            "sha256": "e3fc046391cc6093ecb888fee723742b042c793620d4d7a8029b873dbb05cb41"
+          },
+          {
+            "name": "conversation_participants",
+            "count": 32,
+            "empty": false,
+            "sha256": "7d6b567d531c2170443c5ca6c501f40b33617eac8a2af838176b484a039bcc52"
+          },
+          {
+            "name": "messages",
+            "count": 1000,
+            "empty": false,
+            "sha256": "6d2de1407f0ac6d71719b3b1ad5d6ac61efc8a4a2d5f4d332063ab545ca309e8"
+          },
+          {
+            "name": "lorebook_entries",
+            "count": 26,
+            "empty": false,
+            "sha256": "579b9ba915d5f3d4a9e7bc4e7b1f7e1e73fa41c79de2894aebc58152a7ae1d8a"
+          },
+          {
+            "name": "lorebook_known_by",
+            "count": 10,
+            "empty": false,
+            "sha256": "225334a5f6f579a0da72e3ebae2a7743af2702fceb0e1cf4ef2986fff806082f"
+          },
+          {
+            "name": "memories",
+            "count": 1,
+            "empty": false,
+            "sha256": "2fdc5c82ef43a85280da0edb1e01c83951c06349c2336714d8469eb1abbe6f5a"
+          },
+          {
+            "name": "memory_known_by",
+            "count": 1,
+            "empty": false,
+            "sha256": "fe3a2b4fe8a52ba6a246cd626bd152ba8893ba369dc7eb297226e1b1aa152531"
+          },
+          {
+            "name": "memory_sources",
+            "count": 1,
+            "empty": false,
+            "sha256": "084d3fc91bdef7a10145b177e1cac6e58e0b5f7b7982991218dd5b0650b4d993"
+          },
+          {
+            "name": "memory_events",
+            "count": 1,
+            "empty": false,
+            "sha256": "cb8484e7e6e91605d4cff780870a975d2ed1e83b4356cdf6fc6265c7074cac54"
+          },
+          {
+            "name": "memory_links",
+            "count": 0,
+            "empty": true,
+            "sha256": "4be7ed97ac63c7ce1493ae4294aa638beea82415eec0fac6d7620376e4b67364"
+          },
+          {
+            "name": "relationships",
+            "count": 50,
+            "empty": false,
+            "sha256": "45a591cbfde88310b99e01f7963eab9a5ae822ced86ebdc74122fcfbd97136bd"
+          },
+          {
+            "name": "relationship_events",
+            "count": 0,
+            "empty": true,
+            "sha256": "106f5c9c8b58c469d5b20f61c63be1198d0c31d466e9d5ef1cf0d08c2ad37c16"
+          },
+          {
+            "name": "world_events",
+            "count": 2,
+            "empty": false,
+            "sha256": "083f52c2de949f070c5a1529070518fe021d805ee4c6618965799392d66bcfcb"
+          },
+          {
+            "name": "event_participants",
+            "count": 2,
+            "empty": false,
+            "sha256": "a90a0b00cd2d948e41c4d538ae66f6149a34e5aa67abf8b31f0bc4c4f4a54341"
+          },
+          {
+            "name": "event_causes",
+            "count": 1,
+            "empty": false,
+            "sha256": "92a27afe321f6a307e25e4f5e4cdd425abc0aef63d1c6d70b1e0e00f61f74981"
+          },
+          {
+            "name": "event_sources",
+            "count": 1,
+            "empty": false,
+            "sha256": "c7ca565f8b21bf29cfdf311e3f1e7a24deab2426f076efdb6d5652ec2f276354"
+          },
+          {
+            "name": "world_effects",
+            "count": 1,
+            "empty": false,
+            "sha256": "0b794676a9e62fc628361689a74ae305f95243ca46178fabc7caf5d695a05473"
+          },
+          {
+            "name": "effect_baselines",
+            "count": 1,
+            "empty": false,
+            "sha256": "424cd59a3c7a21318398f482b6c1f511301b2b498b2228dae775aad7217435ce"
+          },
+          {
+            "name": "background_tasks",
+            "count": 1,
+            "empty": false,
+            "sha256": "fd4e0e9abf9c84b5eef50575e6b8ac9c11996227d58142b2efaee29c409fbb11"
+          },
+          {
+            "name": "task_sources",
+            "count": 1,
+            "empty": false,
+            "sha256": "0523eda8301ed4cb2952b42d68efb26caf4b01cb1b940ba0effdd62c652cd451"
+          },
+          {
+            "name": "task_result_events",
+            "count": 1,
+            "empty": false,
+            "sha256": "929b594712ad67b9c3abbafe0107e956471d0525a12e98600e11b330d2fb86fd"
+          },
+          {
+            "name": "task_result_memories",
+            "count": 1,
+            "empty": false,
+            "sha256": "c249fbfcc813d44979c4a8ca831fda81518cf209352bf046048e41b164bd8541"
+          },
+          {
+            "name": "task_social_participants",
+            "count": 0,
+            "empty": true,
+            "sha256": "6634794335db97cb231413d8e26c1c74be7cec5c1c9c8762da11fab2e6ad1746"
+          },
+          {
+            "name": "life_grants",
+            "count": 1,
+            "empty": false,
+            "sha256": "e0ac3d2f6d384519199478779e0950850ad11830870c55e17861da1aa793f27b"
+          },
+          {
+            "name": "message_life_sources",
+            "count": 4,
+            "empty": false,
+            "sha256": "db632433a59dd4cdccff1b7bea8354154627f985e8a92dc02d0a251ac7fed563"
+          },
+          {
+            "name": "memory_life_sources",
+            "count": 1,
+            "empty": false,
+            "sha256": "ad946f4f39ee289844dcb327d722f41d49d5aad33596df6c73d6c1214a8802d0"
+          },
+          {
+            "name": "event_life_sources",
+            "count": 1,
+            "empty": false,
+            "sha256": "b20cbb4ed15cca6decd5383221e710879525b880525ff876647a550707de6c59"
+          },
+          {
+            "name": "preset_applications",
+            "count": 2,
+            "empty": false,
+            "sha256": "35301fab52b9d59592ec93a8e871b78c9c26b69924b864248ad9bd116f86f96e"
+          },
+          {
+            "name": "usage_events",
+            "count": 1,
+            "empty": false,
+            "sha256": "256f03d6db2b6d15e13befbd2c5efd75a079e234993b539d904e9c5f339186ba"
+          },
+          {
+            "name": "virtual_schedules",
+            "count": 1,
+            "empty": false,
+            "sha256": "bd7b7888987433f7848a198b42801cbdfe51452a2f225b01b579c72031ec9cbf"
+          },
+          {
+            "name": "virtual_schedule_days",
+            "count": 2,
+            "empty": false,
+            "sha256": "ff22304e16dc0eecc5b6ead201323265e51fac16e0ffbda1179e40eb2dfbe2a7"
+          },
+          {
+            "name": "memory_policies",
+            "count": 1,
+            "empty": false,
+            "sha256": "328e97cc33f21b8af6c895aa898b38db659bf7f99033e1b79a3ac5219edb7901"
+          },
+          {
+            "name": "autonomy_policies",
+            "count": 1,
+            "empty": false,
+            "sha256": "243a563d8cdb9a05039f85874e5caaa3ce18af0fc27e5b2102f6ebf8e3b1213f"
+          },
+          {
+            "name": "role_binding_state",
+            "count": 1,
+            "empty": false,
+            "sha256": "d5e1de6cdace9b62af61e255aee354ec6c3d11e141be2e7fb247ac004f4e77f6"
+          },
+          {
+            "name": "role_bindings",
+            "count": 3,
+            "empty": false,
+            "sha256": "e94da2ff0503d156dbd4b62808503a6924e7d3cc70a9b884ce321992e3e719c4"
+          },
+          {
+            "name": "message_audits",
+            "count": 1,
+            "empty": false,
+            "sha256": "a724ae5a1726d4a4b2f379d397ae59313dfa9dddcff82da4914e3644835ed60d"
+          },
+          {
+            "name": "event_audits",
+            "count": 1,
+            "empty": false,
+            "sha256": "6edb4e772294f1032820cee6af4d3bfe33721dbf8fe6af9bc619f00cf1ee8f16"
+          },
+          {
+            "name": "event_array_order",
+            "count": 2,
+            "empty": false,
+            "sha256": "3c1cb4eb2951eecbd92ee6e7f0067d2531567a16e252cdc72fe74c79fcc89714"
+          },
+          {
+            "name": "effect_array_order",
+            "count": 1,
+            "empty": false,
+            "sha256": "03d419b37c3df88b54ace07fbb8e0520e15122cbc2a695dc89b67aa5bc0d498d"
+          },
+          {
+            "name": "baseline_array_order",
+            "count": 1,
+            "empty": false,
+            "sha256": "a4414109b9b8ed6b28cd59b96c1888ddc634d66e188f1ab26c6b363de610f153"
+          },
+          {
+            "name": "domain_command_receipts",
+            "count": 0,
+            "empty": true,
+            "sha256": "df6e7e80bcb64d5ab7e39edfba6c0e67b04efe2d6c78d5714db46fa884c67302"
+          },
+          {
+            "name": "archived_message_marks",
+            "count": 998,
+            "empty": false,
+            "sha256": "76081d8ad30f12afac02b70eb960233c96ebaba5d8f678c4d74388d378a3ccce"
+          }
+        ],
+        "aggregateSha256": "9479669ba2810fd38c5a1861f6751eb3910042847c2d1febe94244374bc489f4"
+      },
+      "causalFieldsSha256": "051c1e0f03d8bef2cf81053ecdf87a981ebeed180c9edb5cf56484a3c38a246e",
+      "messageBatchTimingMs": {
+        "min": 33.39999999990687,
+        "max": 695.3999999999069,
+        "mean": 506.3333333333555
+      },
+      "primaryCiphertextSha256": "53e8f2eb46c5401649a2d2bdd0e74f11186f238fd2bf26cf7fc78e3f6b236f09"
+    },
+    {
+      "capacity": 10000,
+      "before": {
+        "manifest": null,
+        "dataset": 0,
+        "archive": null,
+        "messages": 0,
+        "marks": 0,
+        "lifeSources": 0
+      },
+      "totalMs": 109919.8999999999,
+      "messageBatches": 201,
+      "maxBatch": 50,
+      "writes": 20719,
+      "health": {
+        "cipher": "4.17.0 community",
+        "journalMode": "wal",
+        "synchronous": 2,
+        "foreignKeys": 1,
+        "cacheSize": -2048,
+        "checkpoint": 1000,
+        "busyTimeout": 5000
+      },
+      "sourceUnchanged": true,
+      "source": {
+        "before": {
+          "primarySha256": "5667f3a3a78e9b3cba4586101337b701e9d28e929dbd5892eb3b6652a55675ad",
+          "archivesSha256": "5be38ad00c3036967f25a6bc59c5328c5692726ed3d1e4e3decbaecc352e2cfd",
+          "archiveCount": 200,
+          "journalSha256": "d53aa588c70f20a0aeb7481be354354d49b9f7507ccf76717ac7a294e3330e01"
+        },
+        "after": {
+          "primarySha256": "5667f3a3a78e9b3cba4586101337b701e9d28e929dbd5892eb3b6652a55675ad",
+          "archivesSha256": "5be38ad00c3036967f25a6bc59c5328c5692726ed3d1e4e3decbaecc352e2cfd",
+          "archiveCount": 200,
+          "journalSha256": "d53aa588c70f20a0aeb7481be354354d49b9f7507ccf76717ac7a294e3330e01"
+        },
+        "calls": {
+          "read": 401,
+          "stat": 1,
+          "list": 1,
+          "write": 0,
+          "rename": 0,
+          "delete": 0
+        }
+      },
+      "leaseRevoked": true,
+      "fixtureMs": 2548.383300000016,
+      "fixtureSha256": "46f58363bf3f713029114885462947b886e9107397aea77f8e8c3022f8ba57fd",
+      "fingerprint": "0ee02b856ecb3144cb1116477a8d14819ae1aa1d208d75c72a15952ed31cfccd",
+      "sqlTableCount": 50,
+      "recentMs": 6,
+      "olderMs": 5.300000000279397,
+      "integrity": "ok",
+      "foreignKeyViolations": 0,
+      "dbBytes": 12288000,
+      "peakRssBytes": 442060800,
+      "peak": {
+        "appRssKiB": 232632,
+        "rendererRssKiB": 199068,
+        "rendererCount": 1
+      },
+      "samples": 103,
+      "tableProof": {
+        "tableAlgorithm": "kanata-m5-table-v1",
+        "aggregateAlgorithm": "m5-table-receipt-v1",
+        "tables": [
+          {
+            "name": "dataset_metadata",
+            "count": 1,
+            "empty": false,
+            "sha256": "5dab30261e3d090a1b21209e271f00e101f706bbe9910671d41abd3c96147481"
+          },
+          {
+            "name": "entity_ids",
+            "count": 10125,
+            "empty": false,
+            "sha256": "64a4b6a9a350cc088452d5f3f381523ef0bbc7d3c9eb90274b84bddbfb167645"
+          },
+          {
+            "name": "participants",
+            "count": 12,
+            "empty": false,
+            "sha256": "8a151f78eab626257a3163211e3037bed2b7dadd17322eb8a3bcc6a2928d89b8"
+          },
+          {
+            "name": "worlds",
+            "count": 2,
+            "empty": false,
+            "sha256": "57e6bdd710c70b0844792e28324ab1cfdc0ed8efee75dd76c85efc990d32c043"
+          },
+          {
+            "name": "world_identities",
+            "count": 2,
+            "empty": false,
+            "sha256": "565814c2c7b33fcae3bfdf54e3553302d9aaa758416aeccce343ab839014e4ce"
+          },
+          {
+            "name": "character_cards",
+            "count": 5,
+            "empty": false,
+            "sha256": "84c591d7f7c83b08c7a73d8cab99783ea90a6ed30c6a730bbc062aa6a9d5bd81"
+          },
+          {
+            "name": "card_versions",
+            "count": 5,
+            "empty": false,
+            "sha256": "fa24b15b80db44cdc5c45848e06a7ad9253b6de4e012f0cdb214d1e3cf216f05"
+          },
+          {
+            "name": "character_instances",
+            "count": 10,
+            "empty": false,
+            "sha256": "0fb80732927139935dac1b15dac193482b28e532cb26361c35e61f19db4708d1"
+          },
+          {
+            "name": "conversations",
+            "count": 12,
+            "empty": false,
+            "sha256": "e3fc046391cc6093ecb888fee723742b042c793620d4d7a8029b873dbb05cb41"
+          },
+          {
+            "name": "conversation_participants",
+            "count": 32,
+            "empty": false,
+            "sha256": "7d6b567d531c2170443c5ca6c501f40b33617eac8a2af838176b484a039bcc52"
+          },
+          {
+            "name": "messages",
+            "count": 10000,
+            "empty": false,
+            "sha256": "c38da0ea62582364e1ecaaddd442b3063bf566e38f0dafa041af498119ece789"
+          },
+          {
+            "name": "lorebook_entries",
+            "count": 26,
+            "empty": false,
+            "sha256": "579b9ba915d5f3d4a9e7bc4e7b1f7e1e73fa41c79de2894aebc58152a7ae1d8a"
+          },
+          {
+            "name": "lorebook_known_by",
+            "count": 10,
+            "empty": false,
+            "sha256": "225334a5f6f579a0da72e3ebae2a7743af2702fceb0e1cf4ef2986fff806082f"
+          },
+          {
+            "name": "memories",
+            "count": 1,
+            "empty": false,
+            "sha256": "2fdc5c82ef43a85280da0edb1e01c83951c06349c2336714d8469eb1abbe6f5a"
+          },
+          {
+            "name": "memory_known_by",
+            "count": 1,
+            "empty": false,
+            "sha256": "fe3a2b4fe8a52ba6a246cd626bd152ba8893ba369dc7eb297226e1b1aa152531"
+          },
+          {
+            "name": "memory_sources",
+            "count": 1,
+            "empty": false,
+            "sha256": "084d3fc91bdef7a10145b177e1cac6e58e0b5f7b7982991218dd5b0650b4d993"
+          },
+          {
+            "name": "memory_events",
+            "count": 1,
+            "empty": false,
+            "sha256": "cb8484e7e6e91605d4cff780870a975d2ed1e83b4356cdf6fc6265c7074cac54"
+          },
+          {
+            "name": "memory_links",
+            "count": 0,
+            "empty": true,
+            "sha256": "4be7ed97ac63c7ce1493ae4294aa638beea82415eec0fac6d7620376e4b67364"
+          },
+          {
+            "name": "relationships",
+            "count": 50,
+            "empty": false,
+            "sha256": "45a591cbfde88310b99e01f7963eab9a5ae822ced86ebdc74122fcfbd97136bd"
+          },
+          {
+            "name": "relationship_events",
+            "count": 0,
+            "empty": true,
+            "sha256": "106f5c9c8b58c469d5b20f61c63be1198d0c31d466e9d5ef1cf0d08c2ad37c16"
+          },
+          {
+            "name": "world_events",
+            "count": 2,
+            "empty": false,
+            "sha256": "083f52c2de949f070c5a1529070518fe021d805ee4c6618965799392d66bcfcb"
+          },
+          {
+            "name": "event_participants",
+            "count": 2,
+            "empty": false,
+            "sha256": "a90a0b00cd2d948e41c4d538ae66f6149a34e5aa67abf8b31f0bc4c4f4a54341"
+          },
+          {
+            "name": "event_causes",
+            "count": 1,
+            "empty": false,
+            "sha256": "92a27afe321f6a307e25e4f5e4cdd425abc0aef63d1c6d70b1e0e00f61f74981"
+          },
+          {
+            "name": "event_sources",
+            "count": 1,
+            "empty": false,
+            "sha256": "c7ca565f8b21bf29cfdf311e3f1e7a24deab2426f076efdb6d5652ec2f276354"
+          },
+          {
+            "name": "world_effects",
+            "count": 1,
+            "empty": false,
+            "sha256": "0b794676a9e62fc628361689a74ae305f95243ca46178fabc7caf5d695a05473"
+          },
+          {
+            "name": "effect_baselines",
+            "count": 1,
+            "empty": false,
+            "sha256": "424cd59a3c7a21318398f482b6c1f511301b2b498b2228dae775aad7217435ce"
+          },
+          {
+            "name": "background_tasks",
+            "count": 1,
+            "empty": false,
+            "sha256": "fd4e0e9abf9c84b5eef50575e6b8ac9c11996227d58142b2efaee29c409fbb11"
+          },
+          {
+            "name": "task_sources",
+            "count": 1,
+            "empty": false,
+            "sha256": "0523eda8301ed4cb2952b42d68efb26caf4b01cb1b940ba0effdd62c652cd451"
+          },
+          {
+            "name": "task_result_events",
+            "count": 1,
+            "empty": false,
+            "sha256": "929b594712ad67b9c3abbafe0107e956471d0525a12e98600e11b330d2fb86fd"
+          },
+          {
+            "name": "task_result_memories",
+            "count": 1,
+            "empty": false,
+            "sha256": "c249fbfcc813d44979c4a8ca831fda81518cf209352bf046048e41b164bd8541"
+          },
+          {
+            "name": "task_social_participants",
+            "count": 0,
+            "empty": true,
+            "sha256": "6634794335db97cb231413d8e26c1c74be7cec5c1c9c8762da11fab2e6ad1746"
+          },
+          {
+            "name": "life_grants",
+            "count": 1,
+            "empty": false,
+            "sha256": "e0ac3d2f6d384519199478779e0950850ad11830870c55e17861da1aa793f27b"
+          },
+          {
+            "name": "message_life_sources",
+            "count": 4,
+            "empty": false,
+            "sha256": "db632433a59dd4cdccff1b7bea8354154627f985e8a92dc02d0a251ac7fed563"
+          },
+          {
+            "name": "memory_life_sources",
+            "count": 1,
+            "empty": false,
+            "sha256": "ad946f4f39ee289844dcb327d722f41d49d5aad33596df6c73d6c1214a8802d0"
+          },
+          {
+            "name": "event_life_sources",
+            "count": 1,
+            "empty": false,
+            "sha256": "b20cbb4ed15cca6decd5383221e710879525b880525ff876647a550707de6c59"
+          },
+          {
+            "name": "preset_applications",
+            "count": 2,
+            "empty": false,
+            "sha256": "35301fab52b9d59592ec93a8e871b78c9c26b69924b864248ad9bd116f86f96e"
+          },
+          {
+            "name": "usage_events",
+            "count": 1,
+            "empty": false,
+            "sha256": "256f03d6db2b6d15e13befbd2c5efd75a079e234993b539d904e9c5f339186ba"
+          },
+          {
+            "name": "virtual_schedules",
+            "count": 1,
+            "empty": false,
+            "sha256": "bd7b7888987433f7848a198b42801cbdfe51452a2f225b01b579c72031ec9cbf"
+          },
+          {
+            "name": "virtual_schedule_days",
+            "count": 2,
+            "empty": false,
+            "sha256": "ff22304e16dc0eecc5b6ead201323265e51fac16e0ffbda1179e40eb2dfbe2a7"
+          },
+          {
+            "name": "memory_policies",
+            "count": 1,
+            "empty": false,
+            "sha256": "328e97cc33f21b8af6c895aa898b38db659bf7f99033e1b79a3ac5219edb7901"
+          },
+          {
+            "name": "autonomy_policies",
+            "count": 1,
+            "empty": false,
+            "sha256": "243a563d8cdb9a05039f85874e5caaa3ce18af0fc27e5b2102f6ebf8e3b1213f"
+          },
+          {
+            "name": "role_binding_state",
+            "count": 1,
+            "empty": false,
+            "sha256": "d5e1de6cdace9b62af61e255aee354ec6c3d11e141be2e7fb247ac004f4e77f6"
+          },
+          {
+            "name": "role_bindings",
+            "count": 3,
+            "empty": false,
+            "sha256": "e94da2ff0503d156dbd4b62808503a6924e7d3cc70a9b884ce321992e3e719c4"
+          },
+          {
+            "name": "message_audits",
+            "count": 1,
+            "empty": false,
+            "sha256": "a724ae5a1726d4a4b2f379d397ae59313dfa9dddcff82da4914e3644835ed60d"
+          },
+          {
+            "name": "event_audits",
+            "count": 1,
+            "empty": false,
+            "sha256": "6edb4e772294f1032820cee6af4d3bfe33721dbf8fe6af9bc619f00cf1ee8f16"
+          },
+          {
+            "name": "event_array_order",
+            "count": 2,
+            "empty": false,
+            "sha256": "3c1cb4eb2951eecbd92ee6e7f0067d2531567a16e252cdc72fe74c79fcc89714"
+          },
+          {
+            "name": "effect_array_order",
+            "count": 1,
+            "empty": false,
+            "sha256": "03d419b37c3df88b54ace07fbb8e0520e15122cbc2a695dc89b67aa5bc0d498d"
+          },
+          {
+            "name": "baseline_array_order",
+            "count": 1,
+            "empty": false,
+            "sha256": "a4414109b9b8ed6b28cd59b96c1888ddc634d66e188f1ab26c6b363de610f153"
+          },
+          {
+            "name": "domain_command_receipts",
+            "count": 0,
+            "empty": true,
+            "sha256": "df6e7e80bcb64d5ab7e39edfba6c0e67b04efe2d6c78d5714db46fa884c67302"
+          },
+          {
+            "name": "archived_message_marks",
+            "count": 9998,
+            "empty": false,
+            "sha256": "1ea9aa6e6e830c81a564d2c175ed784a7b74550898a3985109d8911c3d96436e"
+          }
+        ],
+        "aggregateSha256": "ad465a084e15e5182300ef526b2b9ad49a67392b265df834d671a8a5e78bda94"
+      },
+      "causalFieldsSha256": "051c1e0f03d8bef2cf81053ecdf87a981ebeed180c9edb5cf56484a3c38a246e",
+      "messageBatchTimingMs": {
+        "min": 21.5,
+        "max": 843.1000000000931,
+        "mean": 472.30895522386254
+      },
+      "primaryCiphertextSha256": "5667f3a3a78e9b3cba4586101337b701e9d28e929dbd5892eb3b6652a55675ad"
+    },
+    {
+      "capacity": 100000,
+      "before": {
+        "manifest": null,
+        "dataset": 0,
+        "archive": null,
+        "messages": 0,
+        "marks": 0,
+        "lifeSources": 0
+      },
+      "totalMs": 912311.7,
+      "messageBatches": 2001,
+      "maxBatch": 50,
+      "writes": 204319,
+      "health": {
+        "cipher": "4.17.0 community",
+        "journalMode": "wal",
+        "synchronous": 2,
+        "foreignKeys": 1,
+        "cacheSize": -2048,
+        "checkpoint": 1000,
+        "busyTimeout": 5000
+      },
+      "sourceUnchanged": true,
+      "source": {
+        "before": {
+          "primarySha256": "ea7c73faafe2d904e8033ddfd70b5318afe2facf59e4f27b4bb6aa8a37649673",
+          "archivesSha256": "54e903c1ace2c6e6e8290bb820d9b52c2849c9df989abb239ca49f18ff4a9fc2",
+          "archiveCount": 2000,
+          "journalSha256": "8487a591082de78c7829b5372df663fa546bb44c2f1389d27ab5dc77c0e91b2d"
+        },
+        "after": {
+          "primarySha256": "ea7c73faafe2d904e8033ddfd70b5318afe2facf59e4f27b4bb6aa8a37649673",
+          "archivesSha256": "54e903c1ace2c6e6e8290bb820d9b52c2849c9df989abb239ca49f18ff4a9fc2",
+          "archiveCount": 2000,
+          "journalSha256": "8487a591082de78c7829b5372df663fa546bb44c2f1389d27ab5dc77c0e91b2d"
+        },
+        "calls": {
+          "read": 4001,
+          "stat": 1,
+          "list": 1,
+          "write": 0,
+          "rename": 0,
+          "delete": 0
+        }
+      },
+      "leaseRevoked": true,
+      "fixtureMs": 20781.984200000003,
+      "fixtureSha256": "9737a69831ba0a0957183426cddec3bcf20a6b3254dc6f8b477f041b001302b8",
+      "fingerprint": "5b99b9c0cc8fe9c0b831bad3c0a9509c3e1465e9857feb740ea2ce7baf8dd670",
+      "sqlTableCount": 50,
+      "recentMs": 4.099999999860302,
+      "olderMs": 3.800000000046566,
+      "integrity": "ok",
+      "foreignKeyViolations": 0,
+      "dbBytes": 115249152,
+      "peakRssBytes": 588820480,
+      "peak": {
+        "appRssKiB": 232548,
+        "rendererRssKiB": 342472,
+        "rendererCount": 1
+      },
+      "samples": 830,
+      "tableProof": {
+        "tableAlgorithm": "kanata-m5-table-v1",
+        "aggregateAlgorithm": "m5-table-receipt-v1",
+        "tables": [
+          {
+            "name": "dataset_metadata",
+            "count": 1,
+            "empty": false,
+            "sha256": "5dab30261e3d090a1b21209e271f00e101f706bbe9910671d41abd3c96147481"
+          },
+          {
+            "name": "entity_ids",
+            "count": 100125,
+            "empty": false,
+            "sha256": "9d0791cd6de6aa479852aa41d77f73a2d1702c3c74b8592177b58f0868c2cd78"
+          },
+          {
+            "name": "participants",
+            "count": 12,
+            "empty": false,
+            "sha256": "8a151f78eab626257a3163211e3037bed2b7dadd17322eb8a3bcc6a2928d89b8"
+          },
+          {
+            "name": "worlds",
+            "count": 2,
+            "empty": false,
+            "sha256": "57e6bdd710c70b0844792e28324ab1cfdc0ed8efee75dd76c85efc990d32c043"
+          },
+          {
+            "name": "world_identities",
+            "count": 2,
+            "empty": false,
+            "sha256": "565814c2c7b33fcae3bfdf54e3553302d9aaa758416aeccce343ab839014e4ce"
+          },
+          {
+            "name": "character_cards",
+            "count": 5,
+            "empty": false,
+            "sha256": "84c591d7f7c83b08c7a73d8cab99783ea90a6ed30c6a730bbc062aa6a9d5bd81"
+          },
+          {
+            "name": "card_versions",
+            "count": 5,
+            "empty": false,
+            "sha256": "fa24b15b80db44cdc5c45848e06a7ad9253b6de4e012f0cdb214d1e3cf216f05"
+          },
+          {
+            "name": "character_instances",
+            "count": 10,
+            "empty": false,
+            "sha256": "0fb80732927139935dac1b15dac193482b28e532cb26361c35e61f19db4708d1"
+          },
+          {
+            "name": "conversations",
+            "count": 12,
+            "empty": false,
+            "sha256": "e3fc046391cc6093ecb888fee723742b042c793620d4d7a8029b873dbb05cb41"
+          },
+          {
+            "name": "conversation_participants",
+            "count": 32,
+            "empty": false,
+            "sha256": "7d6b567d531c2170443c5ca6c501f40b33617eac8a2af838176b484a039bcc52"
+          },
+          {
+            "name": "messages",
+            "count": 100000,
+            "empty": false,
+            "sha256": "f9c500e16905afa2dda9d4145bdb988fd3c7806fb970a1c18e05998fc544915d"
+          },
+          {
+            "name": "lorebook_entries",
+            "count": 26,
+            "empty": false,
+            "sha256": "579b9ba915d5f3d4a9e7bc4e7b1f7e1e73fa41c79de2894aebc58152a7ae1d8a"
+          },
+          {
+            "name": "lorebook_known_by",
+            "count": 10,
+            "empty": false,
+            "sha256": "225334a5f6f579a0da72e3ebae2a7743af2702fceb0e1cf4ef2986fff806082f"
+          },
+          {
+            "name": "memories",
+            "count": 1,
+            "empty": false,
+            "sha256": "2fdc5c82ef43a85280da0edb1e01c83951c06349c2336714d8469eb1abbe6f5a"
+          },
+          {
+            "name": "memory_known_by",
+            "count": 1,
+            "empty": false,
+            "sha256": "fe3a2b4fe8a52ba6a246cd626bd152ba8893ba369dc7eb297226e1b1aa152531"
+          },
+          {
+            "name": "memory_sources",
+            "count": 1,
+            "empty": false,
+            "sha256": "084d3fc91bdef7a10145b177e1cac6e58e0b5f7b7982991218dd5b0650b4d993"
+          },
+          {
+            "name": "memory_events",
+            "count": 1,
+            "empty": false,
+            "sha256": "cb8484e7e6e91605d4cff780870a975d2ed1e83b4356cdf6fc6265c7074cac54"
+          },
+          {
+            "name": "memory_links",
+            "count": 0,
+            "empty": true,
+            "sha256": "4be7ed97ac63c7ce1493ae4294aa638beea82415eec0fac6d7620376e4b67364"
+          },
+          {
+            "name": "relationships",
+            "count": 50,
+            "empty": false,
+            "sha256": "45a591cbfde88310b99e01f7963eab9a5ae822ced86ebdc74122fcfbd97136bd"
+          },
+          {
+            "name": "relationship_events",
+            "count": 0,
+            "empty": true,
+            "sha256": "106f5c9c8b58c469d5b20f61c63be1198d0c31d466e9d5ef1cf0d08c2ad37c16"
+          },
+          {
+            "name": "world_events",
+            "count": 2,
+            "empty": false,
+            "sha256": "083f52c2de949f070c5a1529070518fe021d805ee4c6618965799392d66bcfcb"
+          },
+          {
+            "name": "event_participants",
+            "count": 2,
+            "empty": false,
+            "sha256": "a90a0b00cd2d948e41c4d538ae66f6149a34e5aa67abf8b31f0bc4c4f4a54341"
+          },
+          {
+            "name": "event_causes",
+            "count": 1,
+            "empty": false,
+            "sha256": "92a27afe321f6a307e25e4f5e4cdd425abc0aef63d1c6d70b1e0e00f61f74981"
+          },
+          {
+            "name": "event_sources",
+            "count": 1,
+            "empty": false,
+            "sha256": "c7ca565f8b21bf29cfdf311e3f1e7a24deab2426f076efdb6d5652ec2f276354"
+          },
+          {
+            "name": "world_effects",
+            "count": 1,
+            "empty": false,
+            "sha256": "0b794676a9e62fc628361689a74ae305f95243ca46178fabc7caf5d695a05473"
+          },
+          {
+            "name": "effect_baselines",
+            "count": 1,
+            "empty": false,
+            "sha256": "424cd59a3c7a21318398f482b6c1f511301b2b498b2228dae775aad7217435ce"
+          },
+          {
+            "name": "background_tasks",
+            "count": 1,
+            "empty": false,
+            "sha256": "fd4e0e9abf9c84b5eef50575e6b8ac9c11996227d58142b2efaee29c409fbb11"
+          },
+          {
+            "name": "task_sources",
+            "count": 1,
+            "empty": false,
+            "sha256": "0523eda8301ed4cb2952b42d68efb26caf4b01cb1b940ba0effdd62c652cd451"
+          },
+          {
+            "name": "task_result_events",
+            "count": 1,
+            "empty": false,
+            "sha256": "929b594712ad67b9c3abbafe0107e956471d0525a12e98600e11b330d2fb86fd"
+          },
+          {
+            "name": "task_result_memories",
+            "count": 1,
+            "empty": false,
+            "sha256": "c249fbfcc813d44979c4a8ca831fda81518cf209352bf046048e41b164bd8541"
+          },
+          {
+            "name": "task_social_participants",
+            "count": 0,
+            "empty": true,
+            "sha256": "6634794335db97cb231413d8e26c1c74be7cec5c1c9c8762da11fab2e6ad1746"
+          },
+          {
+            "name": "life_grants",
+            "count": 1,
+            "empty": false,
+            "sha256": "e0ac3d2f6d384519199478779e0950850ad11830870c55e17861da1aa793f27b"
+          },
+          {
+            "name": "message_life_sources",
+            "count": 4,
+            "empty": false,
+            "sha256": "db632433a59dd4cdccff1b7bea8354154627f985e8a92dc02d0a251ac7fed563"
+          },
+          {
+            "name": "memory_life_sources",
+            "count": 1,
+            "empty": false,
+            "sha256": "ad946f4f39ee289844dcb327d722f41d49d5aad33596df6c73d6c1214a8802d0"
+          },
+          {
+            "name": "event_life_sources",
+            "count": 1,
+            "empty": false,
+            "sha256": "b20cbb4ed15cca6decd5383221e710879525b880525ff876647a550707de6c59"
+          },
+          {
+            "name": "preset_applications",
+            "count": 2,
+            "empty": false,
+            "sha256": "35301fab52b9d59592ec93a8e871b78c9c26b69924b864248ad9bd116f86f96e"
+          },
+          {
+            "name": "usage_events",
+            "count": 1,
+            "empty": false,
+            "sha256": "256f03d6db2b6d15e13befbd2c5efd75a079e234993b539d904e9c5f339186ba"
+          },
+          {
+            "name": "virtual_schedules",
+            "count": 1,
+            "empty": false,
+            "sha256": "bd7b7888987433f7848a198b42801cbdfe51452a2f225b01b579c72031ec9cbf"
+          },
+          {
+            "name": "virtual_schedule_days",
+            "count": 2,
+            "empty": false,
+            "sha256": "ff22304e16dc0eecc5b6ead201323265e51fac16e0ffbda1179e40eb2dfbe2a7"
+          },
+          {
+            "name": "memory_policies",
+            "count": 1,
+            "empty": false,
+            "sha256": "328e97cc33f21b8af6c895aa898b38db659bf7f99033e1b79a3ac5219edb7901"
+          },
+          {
+            "name": "autonomy_policies",
+            "count": 1,
+            "empty": false,
+            "sha256": "243a563d8cdb9a05039f85874e5caaa3ce18af0fc27e5b2102f6ebf8e3b1213f"
+          },
+          {
+            "name": "role_binding_state",
+            "count": 1,
+            "empty": false,
+            "sha256": "d5e1de6cdace9b62af61e255aee354ec6c3d11e141be2e7fb247ac004f4e77f6"
+          },
+          {
+            "name": "role_bindings",
+            "count": 3,
+            "empty": false,
+            "sha256": "e94da2ff0503d156dbd4b62808503a6924e7d3cc70a9b884ce321992e3e719c4"
+          },
+          {
+            "name": "message_audits",
+            "count": 1,
+            "empty": false,
+            "sha256": "a724ae5a1726d4a4b2f379d397ae59313dfa9dddcff82da4914e3644835ed60d"
+          },
+          {
+            "name": "event_audits",
+            "count": 1,
+            "empty": false,
+            "sha256": "6edb4e772294f1032820cee6af4d3bfe33721dbf8fe6af9bc619f00cf1ee8f16"
+          },
+          {
+            "name": "event_array_order",
+            "count": 2,
+            "empty": false,
+            "sha256": "3c1cb4eb2951eecbd92ee6e7f0067d2531567a16e252cdc72fe74c79fcc89714"
+          },
+          {
+            "name": "effect_array_order",
+            "count": 1,
+            "empty": false,
+            "sha256": "03d419b37c3df88b54ace07fbb8e0520e15122cbc2a695dc89b67aa5bc0d498d"
+          },
+          {
+            "name": "baseline_array_order",
+            "count": 1,
+            "empty": false,
+            "sha256": "a4414109b9b8ed6b28cd59b96c1888ddc634d66e188f1ab26c6b363de610f153"
+          },
+          {
+            "name": "domain_command_receipts",
+            "count": 0,
+            "empty": true,
+            "sha256": "df6e7e80bcb64d5ab7e39edfba6c0e67b04efe2d6c78d5714db46fa884c67302"
+          },
+          {
+            "name": "archived_message_marks",
+            "count": 99998,
+            "empty": false,
+            "sha256": "bf64b9bd3c2da738248a8073b0a7bcedad98a2e7976edb3985b4eae5e6c46f44"
+          }
+        ],
+        "aggregateSha256": "1be37caecca7ffff3cb0b201aef5593c368dfd7f94bde85f7b1ffba651ac0cc7"
+      },
+      "causalFieldsSha256": "051c1e0f03d8bef2cf81053ecdf87a981ebeed180c9edb5cf56484a3c38a246e",
+      "messageBatchTimingMs": {
+        "min": 55.39999999990687,
+        "max": 1805,
+        "mean": 410.06211894052916
+      },
+      "primaryCiphertextSha256": "ea7c73faafe2d904e8033ddfd70b5318afe2facf59e4f27b4bb6aa8a37649673"
+    }
+  ],
+  "shutdown": {
+    "isolatedEmulatorStopped": true,
+    "launcherPidGone": true,
+    "derivedQaIndexRemoved": true
+  }
+}
