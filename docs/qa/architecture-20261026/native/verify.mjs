@@ -37,19 +37,24 @@ if (!device || !device.serial().startsWith('emulator-')) throw new Error('Only t
 device.setDefaultTimeout(120000)
 const files = await readdir(resolve(root, 'dist/assets'))
 const runtimeAsset = files.find(name => name.startsWith('fullBackupRuntime-') && name.endsWith('.js'))
+const restoreStateAsset = files.find(name => name.startsWith('restoreState-') && name.endsWith('.js'))
 const settingsAsset = files.find(name => name.startsWith('settings-') && name.endsWith('.js'))
-if (!runtimeAsset || !settingsAsset) throw new Error('Missing matching production build')
+if (!runtimeAsset || (!restoreStateAsset && !settingsAsset)) throw new Error('Missing matching production build')
 const evaluate = (page, body) => bounded(page.evaluate(`(async () => { const stores = ${storeExpression}; ${body} })()`),'WebView evaluate',90000)
 const waitState = (page, body, options) => waitForStoreState(page,storeExpression,body,options)
 const waitReady = page => waitState(page,"return ['settings','weight','debt','mood','schedule','todo'].every(k=>stores.get(k)?.isDataLoaded)")
 const waitRestoreIdle = async page => {
-  await bounded(page.evaluate(async asset => {
-    const entry=await import('/assets/'+asset)
-    const state=Object.values(entry).find(x=>x&&Object.hasOwn(x,'blocked')&&Object.hasOwn(x,'busy')&&Object.hasOwn(x,'syncError'))
-    if(!state)throw Error('Missing actual restore state')
-    window.__qaRestoreState=state
-  },settingsAsset),'Load actual restore state')
-  await waitState(page,'return Boolean(window.__qaRestoreState)&&!window.__qaRestoreState.blocked&&!window.__qaRestoreState.busy',{polling:250})
+  await bounded(page.evaluate(async (primary, fallback) => {
+    let entry = await import('/assets/' + (primary || fallback))
+    let state = Object.values(entry).find(x => x && Object.hasOwn(x, 'blocked') && Object.hasOwn(x, 'busy') && Object.hasOwn(x, 'syncError'))
+    if (!state && fallback) {
+      entry = await import('/assets/' + fallback)
+      state = Object.values(entry).find(x => x && Object.hasOwn(x, 'blocked') && Object.hasOwn(x, 'busy') && Object.hasOwn(x, 'syncError'))
+    }
+    if (!state) throw Error('Missing actual restore state')
+    window.__qaRestoreState = state
+  }, restoreStateAsset, settingsAsset), 'Load actual restore state')
+  await waitState(page, 'return Boolean(window.__qaRestoreState)&&!window.__qaRestoreState.blocked&&!window.__qaRestoreState.busy', { polling: 250 })
 }
 const attach = async () => {
   console.log('Attaching app WebView')
