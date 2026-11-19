@@ -3,6 +3,8 @@ import { sha256Text } from '../../../src/shared/crypto/sha256Text.js'
 import { kanataSqliteEncryptedLegacySource } from '../../../tests/helpers/kanataSqliteEncryptedLegacySource.js'
 
 export const seed = 'm5-06-v1'
+export const causalEventId = 'm5-06-causal-event'
+export const eventCausesDigestSql = 'SELECT rowid AS __rowid,world_id,event_id,cause_event_id FROM event_causes WHERE rowid>? ORDER BY rowid LIMIT 50'
 export const inspectSql = {
   archive: "SELECT cursor_json,imported_count,state FROM data_migrations WHERE collection='messages.archive'",
   manifest: "SELECT state,extensions_json FROM data_migrations WHERE collection='__manifest__'",
@@ -29,6 +31,8 @@ export async function encryptedFixture(data, count, password) {
   const legacy = kanataSqliteEncryptedLegacySource()
   const template = data.messages[0]
   const { worldId, conversationId } = template
+  const cause = data.events[0]
+  data.events.push({ ...cause, id: causalEventId, causedByEventIds: [cause.id], sourceRefs: [], lifeSources: [] })
   data.version = 2
   data.messageArchives = []
   template.m5Extension = { seed, nested: ['保存🚀', false, null] }
@@ -49,7 +53,8 @@ export async function encryptedFixture(data, count, password) {
   legacy.values.set(KANATA_RECOVERY_KEY, JSON.stringify({
     type: 'kanata-recovery', version: 1, baseFingerprint: primaryHash, ciphertext,
   }))
-  return { legacy, primaryHash, scope: { worldId, conversationId } }
+  return { legacy, primaryHash, scope: { worldId, conversationId },
+    causalEdge: [cause.worldId, causalEventId, cause.id] }
 }
 
 export function unpackFixture({ files, journal }, mutate) {

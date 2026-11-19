@@ -1,6 +1,7 @@
 param(
     [string] $Sdk = 'E:\Android\Sdk',
-    [string] $RunsRoot = 'E:\Android'
+    [string] $RunsRoot = 'E:\Android',
+    [switch] $M5Identity
 )
 $ErrorActionPreference = 'Stop'
 $Sdk = (Resolve-Path -LiteralPath $Sdk).Path
@@ -16,8 +17,10 @@ $accel = & (Join-Path $Sdk 'emulator/emulator-check.exe') accel
 if ($LASTEXITCODE -ne 0 -or -not ($accel -match 'WHPX.*installed and usable')) { throw 'WHPX required' }
 $devices = & $adb devices
 if ($LASTEXITCODE -ne 0 -or ($devices -match '^emulator-5582\s')) { throw 'Synthetic serial is occupied' }
-$root = Join-Path $RunsRoot ('kanata-m2-synthetic-' + [guid]::NewGuid().ToString('N').Substring(0, 8))
-$name = 'kanata_m2_api34'
+$instanceId = [guid]::NewGuid().ToString('N')
+$root = Join-Path $RunsRoot ('kanata-m2-synthetic-' + $instanceId.Substring(0, 8))
+$name = if ($M5Identity) { "kanata_m5_$instanceId" } else { 'kanata_m2_api34' }
+if (Test-Path -LiteralPath $root) { throw 'Synthetic run directory already exists' }
 $avdHome = Join-Path $root 'avd'
 $avd = Join-Path $avdHome "$name.avd"
 New-Item -ItemType Directory -Path $root | Out-Null
@@ -53,6 +56,7 @@ $env:ANDROID_AVD_HOME = $avdHome
 $env:ANDROID_USER_HOME = Join-Path $root 'prefs'
 $env:ANDROID_EMULATOR_HOME = Join-Path $root 'home'
 $arguments = @('-avd',$name,'-port','5582','-accel','on','-no-window','-no-audio','-no-snapshot','-no-metrics','-gpu','swiftshader','-feature','-Vulkan','-verbose')
+if ($M5Identity) { $arguments += @('-datadir', ('"' + $avd + '"')) }
 $launch = @{
     FilePath = $emulator
     ArgumentList = $arguments
@@ -74,6 +78,13 @@ $manifest = [ordered]@{
     image = $image
     launcherPid = $child.Id
     args = $arguments
+}
+if ($M5Identity) {
+    $manifest.identityVersion = 1
+    $manifest.instanceId = $instanceId
+    $manifest.dataDirectory = $avd
+    $manifest.launcherStarted = $child.StartTime.ToUniversalTime().Ticks.ToString()
+    $manifest.expiresAt = [DateTimeOffset]::UtcNow.AddHours(6).ToUnixTimeMilliseconds()
 }
 $manifest | ConvertTo-Json | Set-Content -Encoding utf8 (Join-Path $root 'device-manifest.json')
 Write-Output (Join-Path $root 'device-manifest.json')

@@ -2,14 +2,14 @@ import { DatabaseSync } from 'node:sqlite'
 import { createKanataDataMigrator } from '../../../src/features/chat/storage/sqlite/kanataDataMigrator.js'
 import { migrateKanataSchema } from '../../../src/features/chat/storage/sqlite/kanataSchemaMigrator.js'
 import { kanataSqliteFixture } from '../../../tests/helpers/kanataSqliteFixture.js'
-import { encryptedFixture, inspectSql, nativeQuery } from './fixture.mjs'
+import { encryptedFixture, eventCausesDigestSql, inspectSql, nativeQuery } from './fixture.mjs'
 
 /** Record the statements that the real importer issues for the QA dataset. The
  * catalog still accepts only fixed SQL hashes and never a runtime-supplied statement. */
 export async function m5Catalog() {
   const db = new DatabaseSync(':memory:')
   db.exec('PRAGMA foreign_keys=ON')
-  const statements = { queries: new Set(Object.values(inspectSql)), writes: new Set() }
+  const statements = { queries: new Set([...Object.values(inspectSql), eventCausesDigestSql]), writes: new Set() }
   let record = false, injected = false
   const rollbackProbe = new Error('M5_CATALOG_ROLLBACK_PROBE')
   const operation = {
@@ -39,7 +39,7 @@ export async function m5Catalog() {
     },
   }
   const password = 'm5-catalog-synthetic'
-  const { legacy } = await encryptedFixture(kanataSqliteFixture(), 55, password)
+  const { legacy, causalEdge } = await encryptedFixture(kanataSqliteFixture(), 55, password)
   const assertReadOnly = legacy.seal()
   try {
     await migrateKanataSchema(operation)
@@ -50,7 +50,11 @@ export async function m5Catalog() {
     })
     const result = await migrator.migrate(password)
     assertReadOnly()
-    return { ...statements, oracle: JSON.parse(db.prepare(inspectSql.manifest).get().extensions_json), counts: result.counts }
+    const probe = db.prepare(eventCausesDigestSql).all(-1)
+    if (probe.length !== 1 || JSON.stringify(probe.map(r => [r.world_id, r.event_id, r.cause_event_id])[0])
+      !== JSON.stringify(causalEdge)) throw Error('M5_CATALOG_CAUSAL_EDGE_MISMATCH')
+    return { ...statements, oracle: JSON.parse(db.prepare(inspectSql.manifest).get().extensions_json),
+      counts: result.counts, causalEdge }
   } finally {
     await legacy.release()
     db.close()

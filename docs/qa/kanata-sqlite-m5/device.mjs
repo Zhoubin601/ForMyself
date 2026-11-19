@@ -6,7 +6,8 @@ import { createKanataDataMigrator } from '../../../src/features/chat/storage/sql
 import { kanataMigrationInsert } from '../../../src/features/chat/storage/sqlite/kanataDataMigrationRows.js'
 import { sha256Text } from '../../../src/shared/crypto/sha256Text.js'
 import { KANATA_DATA_PATH, KANATA_BACKUP_PATH, KANATA_RECOVERY_KEY } from '../../../src/features/chat/storage/kanataRepository.js'
-import { encryptedFixture, unpackFixture, inspectSql, nativeQuery } from './fixture.mjs'
+import { encryptedFixture, unpackFixture, eventCausesDigestSql, inspectSql, nativeQuery } from './fixture.mjs'
+import { sourceHashes, sourceReceipt, targetReceipt } from './evidence.mjs'
 
 if (document.title !== 'M2_SQLCIPHER_SYNTHETIC' || location.origin !== 'https://localhost'
     || !window.Capacitor?.isNativePlatform()) throw Error('M5_ISOLATED_ANDROID_PAGE_REQUIRED')
@@ -88,7 +89,7 @@ async function audit(operation) {
   })
 }
 
-async function verifyRows(operation, scope, count) {
+async function verifyRows(operation, scope, count, causalEdge) {
   return operation.transaction(async tx => {
     const [manifest] = await tx.query(inspectSql.manifest)
     const [row] = await tx.query(inspectSql.first, ['m5-history-000000'])
@@ -106,8 +107,12 @@ async function verifyRows(operation, scope, count) {
     ensure(recent.length === Math.min(count, 50) && older.length === Math.min(count - recent.length, 50)
       && recent[0].id === 'message-two' && new Set([...recent, ...older].map(message => message.id)).size === recent.length + older.length,
     'M5_NATIVE_PAGE_MISMATCH')
+    const causes = await tx.query(eventCausesDigestSql, [-1])
+    const causalFields = causes.map(r => [r.world_id, r.event_id, r.cause_event_id])
+    ensure(JSON.stringify(causalFields) === JSON.stringify([causalEdge]), 'M5_NATIVE_CAUSAL_EDGE_MISMATCH')
+    const tableProof = await targetReceipt(tx, JSON.parse(manifest.extensions_json))
     return { recentMs, olderMs, recentRows: recent.length, olderRows: older.length,
-      tables: JSON.parse(manifest.extensions_json).tables,
+      tableProof, causalFieldsSha256: sha256Text(JSON.stringify(causalFields)),
       foreignKeyViolations: (await tx.query(nativeQuery('PRAGMA foreign_key_check'))).length,
       integrity: (await tx.query(nativeQuery('PRAGMA integrity_check')))[0].integrity_check,
     }
@@ -116,18 +121,17 @@ async function verifyRows(operation, scope, count) {
 
 window.m5Qa = {
   async setup(data, count, password, exportFixture) {
-    const { legacy, primaryHash, scope } = await encryptedFixture(data, count, password)
+    const { legacy, primaryHash, scope, causalEdge } = await encryptedFixture(data, count, password)
     const journal = legacy.values.get(KANATA_RECOVERY_KEY)
     const files = [...legacy.files]
     await legacy.release()
-    prepared = { files, journal, scope, count, primaryHash }
+    prepared = { files, journal, scope, count, primaryHash, causalEdge }
     return exportFixture ? prepared : { primaryHash }
   },
   load(fixture) { prepared = fixture },
   phase: () => phase,
   assertPausedSource() {
-    checkPausedSource()
-    return true
+    return checkPausedSource()
   },
   async run({ password, key, create, fault, negative, repeat = false }) {
     phase = 'opening'
@@ -156,7 +160,8 @@ window.m5Qa = {
         files.set(page, (ciphertext[0] === 'X' ? 'Y' : 'X') + ciphertext.slice(1))
       })
       assertReadOnly = legacy.seal()
-      checkPausedSource = assertReadOnly
+      const sourceBefore = sourceHashes(legacy)
+      checkPausedSource = () => sourceReceipt(legacy, sourceBefore, assertReadOnly)
       const migrator = createKanataDataMigrator({ operation, source: legacy.source, syntheticOnly: true })
       phase = 'importing'
       const started = performance.now()
@@ -164,19 +169,17 @@ window.m5Qa = {
       try {
         result = await migrator.migrate(password)
       } catch (error) {
-        assertReadOnly()
         summary = { before, after: await audit(operation), error: error.code ?? 'M5_QA_UNEXPECTED_IMPORT_ERROR',
-          writes: timing.writes - writesBefore, sourceUnchanged: true }
+          writes: timing.writes - writesBefore, sourceUnchanged: true, source: checkPausedSource() }
         return summary
       }
       const totalMs = performance.now() - started
-      const rows = await verifyRows(operation, prepared.scope, prepared.count)
+      const rows = await verifyRows(operation, prepared.scope, prepared.count, prepared.causalEdge)
       const writesBeforeRepeat = timing.writes
       const repeated = repeat ? await migrator.migrate(password) : undefined
       ensure(!repeat || timing.writes === writesBeforeRepeat, 'M5_NATIVE_REPEAT_WROTE_ROWS')
-      assertReadOnly()
       summary = { result, before, rows, repeated: repeated?.status, totalMs, ...timing,
-        health: await native.health(), sourceUnchanged: true }
+        health: await native.health(), sourceUnchanged: true, source: checkPausedSource() }
       return summary
     } catch (error) {
       return { error: error.code ?? (/^M5_[A-Z_]+$/.test(error.message) ? error.message : 'M5_QA_UNEXPECTED_ERROR') }
