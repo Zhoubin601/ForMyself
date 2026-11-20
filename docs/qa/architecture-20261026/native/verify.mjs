@@ -66,13 +66,38 @@ const waitRestoreIdle = async page => {
   })(${JSON.stringify({ primary: restoreStateAsset, fallback: settingsAsset })})`), 'Load actual restore state')
   await waitState(page, 'return Boolean(window.__qaRestoreState)&&!window.__qaRestoreState.blocked&&!window.__qaRestoreState.busy', { polling: 250 })
 }
+const cleanupTransport = async () => {
+  const summary = { cdp: [], forwarding: [] }
+  while (browserConnections.length) {
+    const browser = browserConnections.pop()
+    summary.cdp.push(await Promise.allSettled([bounded(browser.close(), 'CDP cleanup', 10000)]).then(([item]) => item))
+  }
+  while (forwardPorts.length) {
+    const port = forwardPorts.pop()
+    summary.forwarding.push(await Promise.allSettled([executeFile(adb, ['-s', device.serial(), 'forward', '--remove', `tcp:${port}`], { timeout: 10000 })]).then(([item]) => item))
+  }
+  return summary
+}
+const waitForWebViewPid = async () => {
+  const deadline = Date.now() + 60000
+  while (Date.now() < deadline) {
+    const pidText = (await shell(`pidof ${pkg} 2>/dev/null || true`).catch(() => Buffer.from(''))).toString().trim()
+    const pid = pidText.split(/\s+/).find(token => /^\d+$/.test(token))
+    if (pid) {
+      const sockets = (await shell(`grep -F webview_devtools_remote_${pid} /proc/net/unix 2>/dev/null || true`).catch(() => Buffer.from(''))).toString()
+      if (sockets.includes(`webview_devtools_remote_${pid}`)) return pid
+    }
+    await new Promise(resolve => setTimeout(resolve, 250))
+  }
+  throw Error(`Timed out waiting for WebView devtools socket of ${pkg}`)
+}
 const attach = async () => {
   console.log('Attaching app WebView')
   await shell('input keyevent KEYCODE_WAKEUP')
   await shell('wm dismiss-keyguard')
   await shell(`am start -n ${pkg}/.MainActivity`)
-  const view = await device.webView({ pkg })
-  const { stdout } = await executeFile(adb,['-s',device.serial(),'forward','tcp:0',`localabstract:webview_devtools_remote_${view.pid()}`])
+  const pid = await waitForWebViewPid()
+  const { stdout } = await executeFile(adb,['-s',device.serial(),'forward','tcp:0',`localabstract:webview_devtools_remote_${pid}`])
   const port = stdout.trim()
   if (!/^\d+$/.test(port)) throw Error('Invalid isolated ADB forwarding port')
   forwardPorts.push(port)
@@ -89,9 +114,13 @@ const attach = async () => {
   return page
 }
 const coldStart = async () => {
+  await cleanupTransport()
   await shell(`am force-stop ${pkg}`)
   const deadline = Date.now()+20000
-  while (device.webViews().some(view=>view.pkg()===pkg)) {
+  while (
+    device.webViews().some(view=>view.pkg()===pkg) ||
+    (await shell(`pidof ${pkg} 2>/dev/null || true`).catch(()=>Buffer.from(''))).toString().trim() !== ''
+  ) {
     if (Date.now()>deadline) throw Error('Previous process WebView was not removed after force-stop')
     await new Promise(resolve=>setTimeout(resolve,100))
   }
@@ -445,9 +474,8 @@ try {
   await writeFile(resolve(directory,'playwright-attempt.json'),JSON.stringify(results,null,2)+'\n')
   console.error(error.stack||error)
  } finally {
-  const cleanup={forcedCliExit:true,primaryExitStatus:exitStatus}
-  cleanup.cdp=await Promise.allSettled(browserConnections.map(browser=>bounded(browser.close(),'CDP cleanup',10000)))
-  cleanup.forwarding=await Promise.allSettled(forwardPorts.map(port=>executeFile(adb,['-s',device.serial(),'forward','--remove',`tcp:${port}`],{timeout:10000})))
+  const { cdp, forwarding } = await cleanupTransport()
+  const cleanup={forcedCliExit:true,primaryExitStatus:exitStatus,cdp,forwarding}
   try{await bounded(device.close(),'Android device cleanup',10000);cleanup.device='closed'}catch(error){cleanup.device=String(error)}
   await writeFile(resolve(directory,'playwright-cleanup.json'),JSON.stringify(cleanup,null,2)+'\n')
   console.log('Native test cleanup complete; exiting with status',exitStatus)
