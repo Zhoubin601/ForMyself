@@ -1367,3 +1367,8 @@ Repository旧Facade/materializer删除，QA独立Oracle迁移；长Effect Audit�
 主机714/406/strict/build；同一APK/catalog的1k/10k强停、四路径、provenance、读取、综合177113ms及v4→v5迁移/缺序号拒绝通过。普通APK实际DEX=false、legacy、无合成seed，未安装发布。历史无效夹具和错误前值假设与真实缺陷分开标注，全部失败保留。专用retained Heap/生命周期、普通消息/任务及A–G其他缺口未闭环，E/G4/M4仍BLOCKED，M5 NO；不是MR8两轮全范围审查。
 
 2026-11-13 G4消息实施：普通修订及回复停用真实读取完整标签/未知扩展，1k/10k均复现。SQLite审计必须遵守既有next_revision≤live revision触发器；初版先插审计被拒，改为单槽TEMP暂存→实体CAS→审计→删除自身暂存，均在现有BEGIN IMMEDIATE中。普通读取移除完整DTO回退，幂等输入按SQL JSON树比较；专用来源页/JSON块保留精确原字段，完整重构只在测试sink。定向10项通过，故障/COMMIT/损坏输入/遗留TEMP保持fail closed。没有修改001–005或永久DDL。check和API34设备专项进行中，不提前提升G4。
+
+## 2026-11-20 M6-00 设计收口
+
+- 以 Scheme C 作为首发单项便携包设计基线。Node/JS 合成字节合同可单独实现，Native 能力、发行 profile 和生产接入分别设硬门禁。
+- 对照原审计与后续审查确定 B-01～B-09、H-01～H-06 的实现责任与验收。用现行 Schema 001～005 直接枚举表分类并验证 DDL 语义，保留兼容与隔离边界。

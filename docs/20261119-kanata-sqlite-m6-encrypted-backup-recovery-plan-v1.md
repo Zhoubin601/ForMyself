@@ -1,6 +1,8 @@
 # Kanata SQLite M6 加密备份、恢复与改密计划 v1
 
-- 状态：**PLANNED — M6-00 架构审计待执行**
+- 当前状态（2026-11-20）：**M5 Overall CLOSED / PASS，M6-QA-01 PASS，M6-00 CLOSED / PASS，M6-01 实施中，M6-02 未启动**。M6-00 依据 [GPT-6 独立最终复核](qa/kanata-sqlite-m6/m6-00-final-independent-review-v1.md) 关账。
+- 当前入口：[M6-00 最终设计收口](qa/kanata-sqlite-m6/m6-00-final-closeout-v1.md) · [M6-01 实施任务书](20261120-kanata-sqlite-m6-01-portable-backup-format-task-v1.md) · [M6-QA-01](qa/kanata-sqlite-m6/m6-qa-01-report-v1.md)。
+- 当前阶段授权来自 KANATA-M6-00-CLOSEOUT-2026-11-20。独立 GPT-6 最终复核 PASS 后按任务书启动 M6-01 合成实施。下方原规划和 CI 历史保留当时口径。
 - 日期：2026-11-19
 - 仓库：`Zhoubin601/ForMyself`
 - 规划所在分支：`m5/json-archive-migration`
@@ -44,7 +46,7 @@ M6 必须解决以下核心问题：
 |---|---|---|
 | **M6-00** | 现有备份/恢复/改密架构审计与格式设计输入冻结 | 只读审计报告、风险清单、数据流图、格式决策记录、后续实现任务拆分；不得修改业务代码 |
 | **M6-01** | Kanata SQLite 便携备份格式与合成 Codec | 格式规范、manifest、分块边界、KDF/密钥封装决策、哈希/认证、确定性合成 round-trip 测试 |
-| **M6-02** | SQLCipher 一致性导出与分块备份生成 | 使用 SQLite backup API 或经证明安全的 checkpoint/事务一致导出；有界内存；合成 1k/10k/100k 导出 |
+| **M6-02** | SQLCipher 一致性导出与分块备份生成 | 采用经证实的只读事务逻辑导出，另与物理一致性原语做独立 A/C 合成实验；有界内存；合成 1k/10k/100k 导出 |
 | **M6-03** | 隔离临时库恢复与 RestoreCoordinator 接入 | 临时库分批恢复、完整性/Schema/指纹验证、统一协调器切换、失败回滚及重启恢复 |
 | **M6-04** | 主密码变更与密钥封装轮换 | 通过 protectedModules 与 changeMasterPasswordTransaction；各参与者部分失败、补偿、回滚失败均有证据 |
 | **M6-05** | 故障注入、兼容矩阵与阶段验收 | 强停、磁盘不足、错密、损坏分块、日志损坏、连接中断；v1–v12 兼容回归；独立复核及关账 |
@@ -210,3 +212,11 @@ SQLite 迁移通过不等于 P7 自动通过。Android 512 MiB、完整改密 12
   - 修复冷启动 `attach()` 中 `playwright-core` `device.webView({ pkg })` 因 `ps -A | grep` 造成的进程名误判竞态，改为释放旧连接并通过 `pidof` + `/proc/net/unix` 确定性附着。
   - 新增回归测试 `tests/nativeQaAdapter.test.js`（5 条用例纳入 `npm test` / `npm run check`，Node 测试 796/796、Vitest 420/420 通过）。
 - 阶段门禁声明：M6-QA-01 完成仅代表测试基线语义整改关账，**不代表 M6-00 通过，不自动启动 M6-01**；M6 仍严格按 `M6-00 → 独立复核 → 用户批准 → M6-01` 顺序推进。
+
+## 2026-11-20 M6-01 实际启动检查点
+
+- 签核通过后，在基线 `a301436259663999bd1cd6424e6e04ecb4662dc7` 的独立 M6 worktree 启动。首批交付为 [Node 合成封套](qa/kanata-sqlite-m6/portable/envelope.mjs) 和 [固定向量/负向测试](../tests/kanataPortableBackupEnvelope.test.js)。公开头、合成 profile、PBKDF2/HKDF 和随机 BEK 的 AES-GCM 封套已实现。
+- `node --test tests/kanataPortableBackupEnvelope.test.js` 通过 5 项。固定字节由 Python 3.13.5 的 hashlib/hmac/struct 与 cryptography 50.0.1 的 AESGCM 独立生成，Node WebCrypto 再核对 UTF-8、PBKDF2、HKDF 和封套。错误密码、头/封套篡改、超限 KDF、Unicode、并发限额、取消和随机新包均有定向证据。
+- Node v24.14.1、npm 11.11.0 下 `npm run check` 退出 0。Node 801 项、Vitest 45 文件 420 项通过，类型检查和 Web 构建成功。lint 0 错误、61 项既有告警。构建产物中未检出测试 KDF 域常量，生产源码、原生、Schema 和 canonical 入口无差异。
+- 当前检查点未完成完整 C01。Manifest、分块 AEAD/顺序、Footer/transcript、`kanata-logical-v1` 记录、50 表摘要及全流拒绝矩阵属于 M6-01 后续实施。发行参数仍待 N-01/N-03，Native N-01～06 和完整 A/C 未运行。
+- 本地检查点文件 SHA-256：`envelope.mjs` 为 `aa50f986432a4da97eff5fbaa72e44744eba1c73ad6e42261a44608bffb8b1cd`，`kanataPortableBackupEnvelope.test.js` 为 `5bf0e0611cd6ef3707b076ebfad2a2738a393ad7045d4dfb2d24ed6a41958f2a`。本轮交付为 worktree 改动，无新提交、推送或远端 CI。基线 [Quality 44687910607](https://github.com/Zhoubin601/ForMyself/actions/runs/44687910607) 的 Web 和 Android 均成功。

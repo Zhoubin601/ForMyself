@@ -1295,3 +1295,10 @@ raw/完整需求清单.txt 4.1/4.4/8.3及最新连续执行v3驱动当前实现�
 2026-11-13收齐E检查点来源：既有M4-R/ER1合同中的完整对象边界、每条Effect前后值/归属/审计/幂等、原序及故障恢复；用户已批准005但未批准真实迁移/生产切换。714/406主机、API34/SQLCipher4.17.0同APK/catalog的六类集成设备场景、真实v4升级及普通APK实际DEX检查见唯一清单E与event-bounded-fingerprints.json。52份压缩原始设备记录保留失败和复测；未引入外部资料，raw只读，未用真实数据/备份/模型API。
 
 2026-11-13 G4消息来源：唯一清单G4/M4-R完整对象边界、kanataMessageRepository/MessageDependents/RepositorySql、纯领域reviseKanataMessage与既有M2审计/删除合同。实际1k/10k旧修订跨桥失败和新定向10项证据在同一QA的message-bounded-before/host日志；没有新增产品需求、外部资料或任务编号。测试仅合成来源/未知字段，原始raw与真实资料未使用；完整check和设备结论以随后实际日志为准。
+
+## 2026-11-20 M6-00 条件关账来源
+
+- 用户任务书 KANATA-M6-00-CLOSEOUT-2026-11-20。范围、阶段门禁和基线以该任务书为准。
+- 原始资料 `raw/彼方 · Kanata 技术设计.txt` 第一节提供产品分层背景，备份字节协议、Native 事务和设备性能资料未提供，证据使用 M6 HEAD 的源码及合成探针。
+- 仓库来源及引用日期 2026-11-20。以 `a301436` 上的 [GPT 原审计](qa/kanata-sqlite-m6/m6-00-architecture-audit-v1.md)、[Gemini Neon 独立复核](qa/kanata-sqlite-m6/m6-00-independent-review-v1.md)、[M6-QA-01](qa/kanata-sqlite-m6/m6-qa-01-report-v1.md) 为输入。另只读核对 `f0b0d6cdf0e87d0abd95c5a599f97c5ab1e53325` 的 `m6-00-design-readiness-review-v1.md`（B-06～B-09 原始编号），以及 `60f89c0` 的 M5 最终签核和产品源码差异。
+- GitHub Actions，引用日期 2026-11-20。[Quality 44687910607](https://github.com/Zhoubin601/ForMyself/actions/runs/44687910607) 对应 `a301436`，[Quality 44684735609](https://github.com/Zhoubin601/ForMyself/actions/runs/44684735609) 对应 `522d264`。两次 Web 和 Android 均为成功。
