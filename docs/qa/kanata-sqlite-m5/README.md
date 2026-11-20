@@ -1,6 +1,6 @@
 # Kanata SQLite M5 Synthetic Acceptance
 
-- Status: **M5-05 PASS (local synthetic acceptance + matching Web CI). M5 overall remains OPEN / NOT ACCEPTED.**
+- Status: **CLOSED — M5 Overall: PASS (GPT-6 Independent Audit PASS on `4913ef68ec99bb49b7da611400855fe5f88fa52d`; synthetic acceptance only).**
 - Baseline: `9bfff0867b4024d8d3a2aea2787ac2493164810b`
 - Branch: `m5/json-archive-migration`
 - Scope: synthetic fixture only; no real user data.
@@ -78,6 +78,11 @@ Native SQLCipher, Android/device interruption and capacity checks, and productio
 
 ## M5-06 & M5 Overall Closeout Index (2026-11-19 ~ 2026-11-20)
 
-- M5-06 closeout (PASS): [M5-06 最终关账记录](../../20261119-kanata-sqlite-m5-06-closeout-v1.md), [M5-06 最终独立代码审查报告](m5-06-final-independent-review-v1.md), [M5-06 五项专项整改记录](m5-06-remediation-v1.md), [整改机器证据](m5-06-remediation-evidence-v1.json).
-- M5 Overall closeout (`READY_FOR_CLOSEOUT` — `M5 Overall: PASS — Pending GPT-6 Independent Sign-off`): [Kanata SQLite M5 总体关账报告 v1](../../20261120-kanata-sqlite-m5-overall-closeout-v1.md).
+- M5-06 closeout (PASS): [M5-06 最终关账记录](../../20261119-kanata-sqlite-m5-06-closeout-v1.md), [M5-06 最终独立代码审查报告](m5-06-final-independent-review-v1.md), [M5-06 五项专项整改记录](m5-06-remediation-v1.md), [整改机器证据](m5-06-remediation-evidence-v1.json)（原始 `BLOCKED` 历史快照 [m5-06-android-v1.md](m5-06-android-v1.md)、[m5-06-evidence-v1.json](m5-06-evidence-v1.json) 与 [m5-06-independent-review-v1.md](m5-06-independent-review-v1.md) 均原样保留）。
+- M5 Overall closeout (**`CLOSED`** — `M5 Overall: PASS`): [Kanata SQLite M5 总体关账报告 v1](../../20261120-kanata-sqlite-m5-overall-closeout-v1.md), [M5 最终独立审计报告](m5-overall-final-independent-review-v1.md)（SHA-256 `782cdfb697d0cd61221e54a818334c32b138965588ce2cebcaabaa5ce4721b7c`）。
+  - Auditor: GPT-6 Independent Technical Audit (`KANATA-M5-FINAL-AUDIT-2026-11-20`, 2026-11-20)
+  - Decision: `PASS`（0 Blocker / 0 High / 0 Medium；`L-REV-03` 由后续同 SHA Web CI 关闭并保留历史快照；保留 `L-REV-01`、`L-REV-02`、`L-REV-04`、`L-REV-05`、`EVID-01`、`EVID-02` 计 6 项已接受 Low 遗留风险及后续整改要求）
+  - Audited SHA: `4913ef68ec99bb49b7da611400855fe5f88fa52d`
+  - Audited CI Run: [Quality #148 (44697060149)](https://github.com/Zhoubin601/ForMyself/actions/runs/44697060149)（Web `success`，Android `skipped`）
+  - Scope limit: 仅覆盖 M5 合成迁移与合成验收；不授权生产 Store 切换、真实用户数据迁移、旧文件清理、APK 发布、实体机验收或 M6/M7 实施。
 

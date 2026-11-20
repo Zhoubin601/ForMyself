@@ -1,12 +1,13 @@
 # Kanata SQLite M5 总体关账报告 v1（Overall Closeout）
 
-- 编制日期：2026-11-20
-- 关账状态：**READY_FOR_CLOSEOUT**
-- 最终结论建议：**`M5 Overall: PASS — Pending GPT-6 Independent Sign-off`**（正式 `CLOSED` 状态须由 GPT-6 独立审核确认后更新）
+- 编制日期：2026-11-20（同日完成 GPT-6 独立审计与正式关账更新）
+- 关账状态：**CLOSED**
+- 最终结论：**`M5 Overall: PASS`**（经 GPT-6 独立最终审计 `PASS` 签核与项目负责人正式授权关账）
 - 仓库与目标分支：`Zhoubin601/ForMyself`，`m5/json-archive-migration`
 - M 阶段授权基线：`9bfff0867b4024d8d3a2aea2787ac2493164810b`
-- 本次汇总基线 HEAD：`b695226a8495d9129e9e95cf127bfbc4a61c92c4`
-- 编制角色：M5 阶段关账负责人（独立文档治理任务，不重新开展 M5 开发或修改业务代码）
+- 总体关账汇总基线 HEAD：`b695226a8495d9129e9e95cf127bfbc4a61c92c4`
+- GPT-6 独立审计基准 SHA：`4913ef68ec99bb49b7da611400855fe5f88fa52d`（对应 [Quality #148](https://github.com/Zhoubin601/ForMyself/actions/runs/44697060149)）
+- 编制角色：M5 阶段关账负责人（仅执行文档级正式关账，未修改任何业务代码、Schema、生产配置、CI Workflow 或 Canonical）
 
 ---
 
@@ -80,7 +81,7 @@
 
 ## 4. GitHub Actions CI 证据链接与 SHA 匹配核实
 
-经 GitHub Actions REST API 直接核对分支 `m5/json-archive-migration` 全部历史运行（Run `#111`–`#132`）：
+经 GitHub Actions REST API 直接核对分支 `m5/json-archive-migration` 全部历史运行（Run `#111`–`#132` 及审计基准 `#148`）：
 
 | Run # | Run ID | Head SHA | Web Job (`npm run check`) | Android Job | 关联说明与 SHA 匹配判定 | 链接 |
 |---|---|---|---|---|---|---|
@@ -97,6 +98,7 @@
 | **`#127`** | **`44463304279`** | **`97718ee6a4067a479e4ebe285778876d835c95fa`** | **`success`**（Job `135355003845`） | `skipped`（Job `135355005580`） | **M5-06 整改实现严格同 SHA Web CI PASS**；同时持续覆盖 M5-01～M5-06 全部 `npm run check` 测试 | [Run 44463304279](https://github.com/Zhoubin601/ForMyself/actions/runs/44463304279) |
 | `#128`–`#130` | `44463782792`–`44468994616` | `488a2e1...`–`2b6e8e3...` | `success`（#130 Job `135373599945`） | `skipped`（#130 Job `135373602720`） | M5-06 整改证据、终审计划、终审报告与 M5-06 关账均通过 | [Run 44468994616](https://github.com/Zhoubin601/ForMyself/actions/runs/44468994616) |
 | `#131`–`#132` | `44469733299` / `44469738475` | `85a75db...` / `b695226...` | `success`（#132 Job `135376001983`） | `skipped`（#132 Job `135376003972`） | 当前汇总基线 HEAD `b695226` 全量 `npm run check` PASS | [Run 44469738475](https://github.com/Zhoubin601/ForMyself/actions/runs/44469738475) |
+| **`#148`** | **`44697060149`** | **`4913ef68ec99bb49b7da611400855fe5f88fa52d`** | **`success`** | `skipped` | **GPT-6 独立审计基准 SHA 全量 `npm run check` PASS**（791 Node / 420 Vitest / 0 ESLint error / 类型检查 / Vite 构建通过） | [Run 44697060149](https://github.com/Zhoubin601/ForMyself/actions/runs/44697060149) |
 
 > 本次关账检查另在隔离 worktree 对已入库机器证据执行只读复算：`node docs/qa/kanata-sqlite-m5/verify-remediation-evidence.mjs docs/qa/kanata-sqlite-m5/m5-06-remediation-evidence-v1.json`，退出 0，输出 `{"verified":true,"targetReceipts":8,"uniqueTablesPerReceipt":50}`。
 
@@ -112,7 +114,11 @@
    - 五项整改 **H-01、M-01、M-02、L-01、B-01 全部 PASS**；发现分级：**0 Blocker / 0 High / 0 Medium / 3 Low (`L-REV-01`、`L-REV-02`、`L-REV-03`)**，结论：**M5-06 PASS**。
 3. **M5-01～M5-05 独立复核覆盖说明**：
    - M5-01～M5-05 在其各自完成时点**未单独出具分阶段独立复核报告**；
-   - 但是，M5-01～M5-05 的核心生产/测试实现（`kanataDataMigrator.js`、`kanataDataMigrationRows.js`、`kanataMigrationCoordinator.js`、`kanataSqliteEncryptedLegacySource.js` 及 `tests/kanataSqlite*.test.js`）均已并入 M5-06 两轮独立审查的源码审计与 48/48 宿主实测范围，并由本总体关账对全部提交 SHA、CI 运行与文档账目完成交叉核查。
+   - 但是，M5-01～M5-05 的核心生产/测试实现（`kanataDataMigrator.js`、`kanataDataMigrationRows.js`、`kanataMigrationCoordinator.js`、`kanataSqliteEncryptedLegacySource.js` 及 `tests/kanataSqlite*.test.js`）均已并入 M5-06 两轮独立审查与 GPT-6 总体最终独立审计范围，并由本总体关账对全部提交 SHA、CI 运行与文档账目完成交叉核查。
+4. **M5 Overall 最终独立审计（GPT-6，2026-11-20）**：[m5-overall-final-independent-review-v1.md](qa/kanata-sqlite-m5/m5-overall-final-independent-review-v1.md)（任务 ID `KANATA-M5-FINAL-AUDIT-2026-11-20`，SHA-256 `782cdfb697d0cd61221e54a818334c32b138965588ce2cebcaabaa5ce4721b7c`）。
+   - 审计基准 SHA：`4913ef68ec99bb49b7da611400855fe5f88fa52d`；直接核验 [Quality #127](https://github.com/Zhoubin601/ForMyself/actions/runs/44463304279)（`97718ee6...`）与 [Quality #148](https://github.com/Zhoubin601/ForMyself/actions/runs/44697060149)（`4913ef68...`，Web `791 Node / 420 Vitest / 0 ESLint error / 类型检查 / Vite 构建通过`，Android `skipped`）。
+   - 独立覆盖 Stage A–G（文档/CI 账本、M5-01～M5-04 引擎与事务游标、M5-05 加密旧源集成、M5-06 机器证据交叉字段校验、生产与 Schema 隔离边界、风险重评与最终签核）。
+   - 最终审计结论：**`PASS`**（0 Blocker / 0 High / 0 Medium；`L-REV-03` 判定为 `Resolved`；保留 `L-REV-01`、`L-REV-02`、`L-REV-04`、`L-REV-05`、`EVID-01`、`EVID-02` 共 6 项 `Low` 遗留风险及其后续整改/透明声明要求；同意标注 `CLOSED`）。
 
 ---
 
@@ -124,7 +130,7 @@
 |---|---|---|
 | 1. 是否存在尚未解决的 Blocker？ | **否（0 项）** | `B-01` 已通过 `97718ee` 与 [Quality #127](https://github.com/Zhoubin601/ForMyself/actions/runs/44463304279) 严格关闭；M5-01/02/04 早期失败已在 `d963a31` 修复。 |
 | 2. 是否存在尚未验收的 High 项？ | **否（0 项）** | `H-01` 已在 `97718ee` 实现实例 nonce/PID/QEMU/datadir/`transport_id` 门禁，通过 7 类宿主负向测试、真机旧 manifest 拒绝验证与终审复核。 |
-| 3. M5-06 保留的三个 Low 级问题 | **3 项已确认保留** | `L-REV-01`、`L-REV-02`、`L-REV-03` 见下表，经 [M5-06 关账记录](20261119-kanata-sqlite-m5-06-closeout-v1.md) 第 3 节确认不阻塞关账。 |
+| 3. M5-06 及 GPT-6 审计确认的 Low 级问题 | **1 项已闭环（`L-REV-03`）、6 项已确认保留（`Low`）** | `L-REV-03` 已由 `#127` 与 `#148` 严格同 SHA Web CI 判定为 `Resolved`（历史快照原样保留）；`L-REV-01`、`L-REV-02`、`L-REV-04`、`L-REV-05`、`EVID-01`、`EVID-02` 见下表，经 [M5-06 关账记录](20261119-kanata-sqlite-m5-06-closeout-v1.md) 与 [GPT-6 最终独立审计报告](qa/kanata-sqlite-m5/m5-overall-final-independent-review-v1.md) 确认不阻塞 M5 正式关账。 |
 | 4. 历史 CI 的 SHA 是否匹配？ | **部分中间实现提交为后代等价树 CI，整改实现与基线为严格同 SHA** | `724e96f`（#112）、`97718ee`（#127）、`2b6e8e3`（#130）、`b695226`（#132）均为**严格同 SHA**；`d963a31`、`8ee4f4b` 与 `a781563` 本身无单独立项的 CI 运行，分别由代码树等价的后代文档提交 `838635a`（#119）和 `3e82839`（#123）承载，且全量代码与测试树已由 `#127` 与 `#132` 严格同 SHA 覆盖；`8f4fb73`（#113）与 `6a85894`（#114）为历史失败记录。 |
 | 5. M5 是否还有未完成的任务书？ | **技术实现无未完成任务书；存在历史文档状态标头快照未同步** | 全部 M5 任务书要求的功能与测试均已交付并通过；但 [M5 迁移器任务单](20261118-kanata-sqlite-m5-migration-task-v1.md)（`开发中；尚未验收`）、[M5-05 任务书](20261118-kanata-sqlite-m5-05-encrypted-source-integration-task-v1.md)（`BLOCKED`）、[M5-06 原任务书](20261118-kanata-sqlite-m5-06-android-sqlcipher-synthetic-acceptance-task-v1.md)（`BLOCKED`）、[M5-06 整改任务书](20261118-kanata-sqlite-m5-06-remediation-task-v1.md)（`PLANNED`）、[总计划 M](20261103-kanata-sqlite-migration-plan-v1.md#L18) 及 [长期开发背景](../memory-bank/development-context.md#L95-L103) 中仍保留编写当时的状态快照（已按“不重写历史验收记录”原则保留，并由本总体关账文档统一收口索引）。 |
 | 6. 是否存在没有对应验收记录的实现提交？ | **否（0 项）** | `9bfff08..b695226` 全部代码实现提交（`724e96f`、`d4fbc56`、`8f4fb73`、`6a85894`、`d963a31`、`8ee4f4b`、`a781563`、`97718ee`）均有对应测试、CI 或书面验收/失败记录可追踪。 |
@@ -138,22 +144,25 @@
 - M5-05 加密旧源合成桥接、v1/v2 主文件与加密归档页、只读性及取消语义（31 项集成用例，[M5-05 关账记录](20261118-kanata-sqlite-m5-05-closeout-v1.md)）。
 - M5-06 隔离 Android API 34 / SQLCipher 4.17.0 原生加解密、55 条端到端（含 `event_causes` 因果边）、4 强杀恢复点、1k/10k/100k 合成容量、50 表逐表可复算收据、AVD 实例绑定、`force-stop` PID 校验、严格同 SHA Web CI `#127` 与终审代码审查（[M5-06 关账记录](20261119-kanata-sqlite-m5-06-closeout-v1.md)）。
 
-#### B. 已接受的遗留问题（Accepted Residuals）
+#### B. 已接受的遗留问题与已闭环历史快照（Accepted Residuals & Resolved Historical Snapshot）
 
-1. **L-REV-01（Low · H-01 输入边界）**：[`run-android.mjs:23`](../docs/qa/kanata-sqlite-m5/run-android.mjs#L23) 在 `guard.verify()` 前调用 `path.join(manifest.sdk, ...)`；缺少 `sdk` 字段的畸形 JSON 会提前抛 `TypeError` 而非标准错误码 `M5_AVD_IDENTITY_UNCONFIRMED`（仍于任何 ADB 调用前 fail closed，不影响隔离安全）。
-2. **L-REV-02（Low · M-02 验证器交叉校验边界）**：[`verify-remediation-evidence.mjs`](../docs/qa/kanata-sqlite-m5/verify-remediation-evidence.mjs) 未对强杀与 smoke 的 50 表相等性、`catalog.*` 与 `runs[].artifacts.*`、`runs[].catalogSha256`、`eventCausesHostOracle`、`issues` 及 `min <= mean <= max` 做交叉断言，且仅凭摘要 JSON 不能重算非空表原始行（实际入库 JSON 已在终审中被独立脚本验证上述全部维度真实一致）。
-3. **L-REV-03（Low · B-01 文档快照时序）**：证据提交 `488a2e1` 形成于推送与触发 `#127` 之前，保留推送前 `B-01: BLOCKED` / `NOT RUN` 快照；按不改写历史证据原则原样保留，已由 `#127` 与 [M5-06 关账记录](20261119-kanata-sqlite-m5-06-closeout-v1.md) 闭环。
-4. **中间实现提交 CI SHA 粒度差异**：`d963a31`、`8ee4f4b`、`a781563` 无各自单独 `head_sha` 的 CI 运行记录；其代码树已分别由 `#119`（`838635a`）、`#123`（`3e82839`）及严格同 SHA 的 `#127`（`97718ee`）和 `#132`（`b695226`）完整覆盖。
-5. **Run `#112` 遗留 CI 临时 Artifact**：M5 首次 CI（`44263764005`）在引入分支隔离前上传了临时 artifact `android-test-reports`（ID `14410475049`，`15,265,445` 字节，未创建 Release）；后续 `#113`–`#132` 均已跳过 Android job，未再构建或上传 APK。
-6. **既有证据范围与环境边界**：
-   - 未入 Git 的 7 份本机日志与隔离 QA APK 仅能依据入库 SHA-256 指纹与本机构建产物比对；
-   - 100k 容量在终审时仅对 47 张固定表、关键表计数及聚合 SHA-256 复算，未在宿主重跑完整 100k 加密导入；
-   - 全部 Android 实测数据均基于隔离 Windows/WHPX API 34 模拟器合成数据，不外推为实体设备或生产数据指标。
+以下全部风险评级与后续整改要求以 GPT-6 [最终独立审计报告](qa/kanata-sqlite-m5/m5-overall-final-independent-review-v1.md) 第 8 节为准：
+
+1. **L-REV-01（Low · Manifest `sdk` 输入边界）**：[`run-android.mjs:23`](../docs/qa/kanata-sqlite-m5/run-android.mjs#L23) 在 `guard.verify()` 前调用 `path.join(manifest.sdk, ...)`；缺少 `sdk` 字段的畸形 JSON 会提前抛 `TypeError` 而非标准错误码 `M5_AVD_IDENTITY_UNCONFIRMED`（仍于任何 ADB 调用前 fail closed，不影响隔离安全）。**后续整改要求**：保留并接受；在构造路径前对 manifest `sdk` 字段做规范化校验。
+2. **L-REV-02（Low · 证据验证器交叉校验边界）**：[`verify-remediation-evidence.mjs`](../docs/qa/kanata-sqlite-m5/verify-remediation-evidence.mjs) 未对强杀与 smoke 的 50 表相等性、`catalog.*` 与 `runs[].artifacts.*`、`runs[].catalogSha256`、`eventCausesHostOracle`、`issues` 状态、CI 状态及 `min <= mean <= max` 做交叉断言，且仅凭摘要 JSON 不能重算非空表原始行（实际入库 JSON 已在 M5-06 终审及 GPT-6 独立交叉核查中被证实内部一致）。**后续整改要求**：M5 阶段接受；在 M6 或后续验收复用该验证器前完成交叉断言加固。
+3. **L-REV-03（Resolved · 历史 CI 快照时序）**：证据提交 `488a2e1` 形成于推送与触发 `#127` 之前，其内 `m5-06-remediation-v1.md` 与 `m5-06-remediation-evidence-v1.json` 保留推送前 `B-01: BLOCKED` / `ci: NOT RUN` 快照；原始 `m5-06-android-v1.md`、`m5-06-evidence-v1.json` 与 `m5-06-independent-review-v1.md` 亦保留首轮 `BLOCKED` 历史快照。**处置结果**：已由后续严格同 SHA Web CI `#127`（`97718ee6...`）与 `#148`（`4913ef68...`）关闭（`Resolved`）；按“不重写历史验收记录”原则全部原始 `BLOCKED` / `NOT RUN` 快照原样保留。
+4. **L-REV-04（Low · PR 场景 Android CI 排除条件）**：`.github/workflows/quality.yml:21` 以 `github.ref != 'refs/heads/m5/json-archive-migration'` 排除 Android job；对于 Pull Request，`github.ref` 为 `refs/pull/.../merge`，因此从 M5 分支发起的 PR 不会触发该排除条件（当前不存在任何 M5 PR，且默认 PR 构建标志不启用 M5 合成目录）。**后续整改要求**：M5 阶段接受；在未来发起任何源自 M5 分支的 PR 前收紧该判断条件。
+5. **L-REV-05（Low · 正向关系与序号夹具覆盖边界）**：`event_replacements`、`memory_links`、`relationship_events` 与 `task_social_participants` 在最终 smoke 夹具中尚无非空正向用例；effect 与 baseline 数组顺序表各自仅有 1 行（未覆盖 `ordinal > 0`）；映射代码与 Schema 约束已由 GPT-6 审查，未发现实现缺陷。**后续整改要求**：在 M5 合成关账范围内接受；在进入任何生产迁移验收前补充非空正向夹具用例。
+6. **EVID-01（Low · 本地 APK 与原始日志未入库限制）**：本地构建的隔离 APK 与 7 份原始 Android 日志未提交至 GitHub 树，GPT-6 无法在远端仓库对上述本地二进制与日志字节重新计算哈希；入库 JSON 已保留哈希指纹，且 M5-06 终审报告记录了本地产物交叉复算一致。**后续整改要求**：作为显式证据边界予以接受并长期在关账记录中透明保留，不得将远端只读审计外推为本地二进制重放。
+7. **EVID-02（Low · 100k 宿主逐行对照覆盖 47/50 表）**：宿主机独立逐行对照覆盖 47/50 张固定表（其余 3 张高容量表单独记录计数），Android SQLCipher 目标收据覆盖全部 50 张表；未发现 M5 容量失败。**后续整改要求**：作为显式证据边界予以接受。
+8. **中间实现提交 CI SHA 粒度差异**：`d963a31`、`8ee4f4b`、`a781563` 无各自单独 `head_sha` 的 CI 运行记录；其代码树已分别由 `#119`（`838635a`）、`#123`（`3e82839`）及严格同 SHA 的 `#127`（`97718ee`）、`#132`（`b695226`）与 `#148`（`4913ef68`）完整覆盖。
+9. **Run `#112` 遗留 CI 临时 Artifact**：M5 首次 CI（`44263764005`）在引入分支隔离前上传了临时 artifact `android-test-reports`（ID `14410475049`，`15,265,445` 字节，未创建 Release）；后续 `#113`–`#148` 均已跳过 Android job，未再构建或上传 APK。
+10. **模拟器与合成数据范围边界**：全部 Android 实测数据均基于隔离 Windows/WHPX API 34 模拟器合成数据，不外推为实体设备或生产数据指标。
 
 #### C. 待补充证据（Pending Evidence）
 
-- **GPT-6 独立总体关账审核与签核**：本阶段全部技术与局部关账证据已齐备，尚待 GPT-6 独立审阅本报告后做出最终 `CLOSED` 签核。
-- （文档索引说明：[总计划 M](20261103-kanata-sqlite-migration-plan-v1.md#L18) 与 [长期开发背景](../memory-bank/development-context.md#L95-L103) 中关于 M5 的旧状态描述，待总体关账正式 `CLOSED` 后按对应分支治理流程刷新，不在本次仅补 M5 总体关账的范围内越界改写其他阶段主体记录。）
+- **M5 范围内待补充证据：无（0 项）**。GPT-6 独立总体关账审计与签核已于 2026-11-20 完成并给出 **`PASS`** 结论（见第 10 节与 [m5-overall-final-independent-review-v1.md](qa/kanata-sqlite-m5/m5-overall-final-independent-review-v1.md)）。
+- （文档索引说明：[总计划 M](20261103-kanata-sqlite-migration-plan-v1.md#L18) 与 [长期开发背景](../memory-bank/development-context.md#L95-L103) 中关于 M5 的旧状态快照不在本次仅改 M5 关账文档的授权范围内修改，留待对应主线分支治理流程按需刷新。）
 
 #### D. 真正未完成事项（Unfinished within M5）
 
@@ -174,12 +183,12 @@
 
 ## 8. M5 Overall 最终结论
 
-基于 M5-01 至 M5-06 全部阶段证据、严格同 SHA Web CI（Quality `#127` / `#132`）、隔离 Android SQLCipher 4.17.0 实测与可复算机器证据、两轮独立代码审查（终审 0 Blocker / 0 High / 0 Medium / 3 项已接受 Low）及完整安全边界核对：
+基于 M5-01 至 M5-06 全部阶段证据、严格同 SHA Web CI（Quality `#127` / `#132` / `#148`）、隔离 Android SQLCipher 4.17.0 实测与可复算机器证据、M5-06 两轮独立代码审查、GPT-6 总体最终独立审计（`KANATA-M5-FINAL-AUDIT-2026-11-20`，0 Blocker / 0 High / 0 Medium / `L-REV-03` Resolved / 6 项已接受 Low）及完整安全边界核对：
 
-- 关账检查状态：**`READY_FOR_CLOSEOUT`**
-- 最终结论建议：**`M5 Overall: PASS — Pending GPT-6 Independent Sign-off`**
+- 关账状态：**`CLOSED`**
+- 最终结论：**`M5 Overall: PASS`**（GPT-6 Independent Audit: `PASS`；Owner Formal Closeout Authorized）
 
-本报告仅提交总体关账汇总结论；正式 `CLOSED` 状态将在 GPT-6 独立关账审核确认后更新。
+本结论仅覆盖 M5 合成迁移与合成验收范围，**不授权**生产存储切换、真实用户数据迁移、旧 JSON 清理、APK 发布、实体设备验收或任何 M6/M7 实施工作。
 
 ---
 
@@ -194,5 +203,20 @@
 3. **能力与风险交接输入**：
    - M5 交付的 `kanataDataMigrator.js` 仍保持 `syntheticOnly: true` 与注入式 source 契约，未接入生产 Store 或真实文件系统；
    - M6-00/M6-01 在设计便携加密备份（V3）、SQLCipher 一致性导出、隔离恢复接入 `restoreCoordinator` 及 `changeMasterPasswordTransaction` 联动时，必须显式评估：如何与现有完整备份 v1–v12 及 Kanata 产品组合 v13 区分、是否复用或重设计密钥派生/封装及 SQLCipher `rekey` 语义，以及如何处理 WAL 活跃状态下的一致快照与有界内存约束；
-   - M5-06 的隔离 Android SQLCipher QA 设施（[`docs/qa/kanata-sqlite-m5/`](qa/kanata-sqlite-m5/README.md)）可作为 M6 原生验收的参考范式，若复用 `run-android.mjs` / `verify-remediation-evidence.mjs`，建议顺手补齐 `L-REV-01` 与 `L-REV-02` 的健壮性检查；
+   - M5-06 的隔离 Android SQLCipher QA 设施（[`docs/qa/kanata-sqlite-m5/`](qa/kanata-sqlite-m5/README.md)）可作为 M6 原生验收的参考范式，复用 `run-android.mjs` / `verify-remediation-evidence.mjs` 前须补齐 `L-REV-01` 与 `L-REV-02` 的健壮性检查；涉及未来 PR 或生产迁移验收前须分别落实 `L-REV-04` 与 `L-REV-05`；
    - M5 PASS 不等价于生产存储切换、旧文件清理或 P7（Android 512 MiB / 改密 120 秒 / Web 768 MiB）通过，相关门禁留待 M6、M7 与合并回 Kanata 后的 P7 复测分别把关。
+
+---
+
+## 10. GPT-6 独立最终审计签核记录
+
+| 签核项目 | 记录内容 |
+|---|---|
+| 任务编号 | `KANATA-M5-FINAL-AUDIT-2026-11-20` |
+| 独立审计方 | GPT-6 Independent Technical Audit（只读审计） |
+| 审计日期 | 2026-11-20 |
+| 审计基准 SHA | `4913ef68ec99bb49b7da611400855fe5f88fa52d`（`m5/json-archive-migration`） |
+| 审计基准 CI | [Quality #148 (44697060149)](https://github.com/Zhoubin601/ForMyself/actions/runs/44697060149)（Web `success`，Android `skipped`）与 [Quality #127 (44463304279)](https://github.com/Zhoubin601/ForMyself/actions/runs/44463304279) |
+| 独立审计结论 | **`PASS`**（M5-01～M5-06 全部 `PASS`；0 Blocker / 0 High / 0 Medium；`L-REV-03` `Resolved`；保留 6 项 `Low`：`L-REV-01`、`L-REV-02`、`L-REV-04`、`L-REV-05`、`EVID-01`、`EVID-02`） |
+| 完整审计报告 | [m5-overall-final-independent-review-v1.md](qa/kanata-sqlite-m5/m5-overall-final-independent-review-v1.md)（871 行，39,780 Bytes，SHA-256 `782cdfb697d0cd61221e54a818334c32b138965588ce2cebcaabaa5ce4721b7c`） |
+| 正式关账状态 | **`CLOSED`**（仅文档级关账；提交推送后于新最终 SHA 运行 Web CI 并核验通过后完成闭环） |
