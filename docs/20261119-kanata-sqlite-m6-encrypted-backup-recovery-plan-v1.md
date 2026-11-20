@@ -197,3 +197,16 @@ SQLite 迁移通过不等于 P7 自动通过。Android 512 MiB、完整改密 12
 - M6-QA-01 完成只表示测试基线语义修正，不代表 M6-00 完成。
 - 后续仍须按既定顺序：**M6-00 只读架构审计与设计输入冻结 → 用户/独立审查批准 → M6-01 备份格式与合成 Codec**。不得因本轮 CI 全绿或 M6-QA-01 通过自动跳过 M6-00、自动启动 M6-01。
 - M6-00 需结合原始双基线、原审计材料与 Neon 独立复核综合关账；M5 Overall 仍按其自身证据单独处理。
+
+### 9.6 M6-QA-01 执行结果
+
+- 状态：**PASS（测试基线整改完成）**
+- 整改报告：[m6-qa-01-report-v1.md](qa/kanata-sqlite-m6/m6-qa-01-report-v1.md)
+- 代码验证基线提交：`522d26455f72e62b19d9fe7a5624e99837424893`（GitHub Actions [Quality #44684735609](https://github.com/Zhoubin601/ForMyself/actions/runs/44684735609) Web 与 Android 双 Job 均 `success`）
+- 整改落地点：
+  - 新增专用 QA adapter `docs/qa/architecture-20261026/native/runtimeAdapter.mjs`，通过纯属性查找解析唯一的 `createFullBackupRuntime` 工厂函数及 `restoreState`/`restoreJournal`，消除 `loadRuntime` 对无关导出函数的无参盲调（L-01）。
+  - 修正 `docs/qa/architecture-20261026/native/verify.mjs`：拆分 `chatModuleLoaded` / `chatViewReady` / `kanataWorldInitialized` / `chatUserMessageSent` / `chatAssistantReplied` / `chatSendReply` 语义，并在 KanataView 实机执行阿拜多斯世界初始化、进入私聊会话、发送合成消息、验证用户消息与 assistant 回复及持久化后截取 `native-chat.png`（M-01）。
+  - 改密冷启动后使用 `verifyKanataPreservedData` 与 `[data-message-id]` DOM 校验核对世界、会话及消息稳定 ID 与内容一致性（M-02）。
+  - 修复冷启动 `attach()` 中 `playwright-core` `device.webView({ pkg })` 因 `ps -A | grep` 造成的进程名误判竞态，改为释放旧连接并通过 `pidof` + `/proc/net/unix` 确定性附着。
+  - 新增回归测试 `tests/nativeQaAdapter.test.js`（5 条用例纳入 `npm test` / `npm run check`，Node 测试 796/796、Vitest 420/420 通过）。
+- 阶段门禁声明：M6-QA-01 完成仅代表测试基线语义整改关账，**不代表 M6-00 通过，不自动启动 M6-01**；M6 仍严格按 `M6-00 → 独立复核 → 用户批准 → M6-01` 顺序推进。
