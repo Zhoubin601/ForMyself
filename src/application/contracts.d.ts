@@ -151,3 +151,27 @@ export type KanataWorldRuntime = ReturnType<typeof import('./kanataWorldRuntime.
 export type KanataSocialRuntime = ReturnType<typeof import('./kanataSocialRuntime.js').createKanataSocialRuntime>
 export type KanataContactRuntime = ReturnType<typeof import('./kanataContactRuntime.js').createKanataContactRuntime>
 export type KanataDeferredRuntime = ReturnType<typeof import('./kanataDeferredRuntime.js').createKanataDeferredRuntime>
+
+export type {
+  PortableErrorCode,
+  PortableTableCategory,
+  PortableColumnType,
+  PortableValue,
+  PortableRowRecord,
+  PortableColumnSpec,
+  PortableTableSpec,
+  PortableSha256Hasher,
+  PortableCryptoProvider,
+  PortableTableVerifier,
+  PortablePublicHeader,
+  PortableManifest,
+  PortableFooter,
+  PortableVerifyContext,
+  PortableStagingSink,
+  PortableTableRowSource,
+  PortableByteSource,
+  PortableEncodeMaterial,
+  PortableEncodeOptions,
+  PortableDecodeOptions,
+  PortableDecodeResult,
+} from '../features/chat/backup/portable/contracts'
