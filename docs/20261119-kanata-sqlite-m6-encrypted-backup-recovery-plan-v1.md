@@ -125,3 +125,75 @@ M6-00 的报告通过人工复核后，才制定 M6-01 的实现任务书。M6-0
 M0–M5（候选 Schema、Repository、业务访问模型、迁移器）→ M6（便携加密备份、恢复、改密与故障恢复）→ M7（性能验收、文档收口与合并准备）→ 用户明确授权后合并回 Kanata → 以合并后新基线重新执行 P7 原始门禁。
 
 SQLite 迁移通过不等于 P7 自动通过。Android 512 MiB、完整改密 120 秒、Web 768 MiB 及原 P7 完整需求验收门槛保持有效。
+
+
+## 9. 2026-11-20 CI 基线修复与独立复核补充
+
+### 9.1 当前状态与治理边界
+
+- M6 总状态仍为 **PLANNED — M6-00 架构审计待执行**。
+- 本轮 Android CI 基线修复已完成；它属于 M6 开发环境与验收脚本基线修复，**不构成 M6-00 架构审计 PASS，也不授权 M6-01**。
+- M5-06 在规划基线中的阶段记录保持原结论；**M5 Overall 总体关账仍是独立治理事项**，不得从 M6 CI 变绿推导为 M5 Overall 已关账。
+- 规划原始基线仍为 `2b6e8e3591385024576c6606cce2acc31dbaad2b`；规划原始版本所在分支为 `m5/json-archive-migration`。本规划当前维护副本位于 `m6/encrypted-backup-recovery`。
+- 当前维护分支在本次更新前已包含独立复核报告提交 `57dba0170bde64952e85d0a83d026e355f7ac622`。该提交触发的 Quality #44678066753 在本次记录时 Web Job 已 PASS、Android Job 仍在运行；不得提前宣称该次运行全绿。
+
+### 9.2 CI 基线修复已验证事项
+
+功能修复提交：`dbd35ab8f7435736237dd6778d146c9be8ceacf7`。
+
+文档同步提交：`af31867bf2f20fc79adad8385dc43637122b7fa8`。
+
+- Quality #44542364600：Web + Android 双 Job PASS。
+- Quality #44677069315：最终文档同步 SHA `af31867...` 的 Web + Android 双 Job PASS。
+- #44677069315 的 Android Job 包含标准 Debug APK 构建、Instrumentation 与 WebView Playwright；Playwright 退出码 0、`pageErrors=[]`、三张不同的原生界面截图。
+- Web Job 日志：Node 测试 791/791 通过，Vitest 420/420 通过，类型检查及 Vite 构建通过。
+- 两个 Instrumentation 测试现同时接受标准包名 `com.yubin.formyself` 与合成 QA 包名 `com.yubin.formyself.m2qa`，并断言包名与 `BuildConfig.KANATA_M2_SYNTHETIC` 一致；`kanataM2Synthetic` 默认仍为 false。
+- Playwright 已适配 KanataView / 旧 ChatView 选择器分支、`restoreState-*.js` 独立 chunk 和单对象 `page.evaluate` 参数。
+
+修复记录：[m6-ci-baseline-fix-v1.md](qa/kanata-sqlite-m6/m6-ci-baseline-fix-v1.md)。
+
+独立复核：[m6-ci-baseline-independent-review-v1.md](qa/kanata-sqlite-m6/m6-ci-baseline-independent-review-v1.md)。
+
+### 9.3 独立复核发现与风险登记
+
+**M-01 — Medium：KanataView 分支将未执行的聊天收发测试标记为通过。**
+
+当前 `docs/qa/architecture-20261026/native/verify.mjs` 在旧 ChatView 分支会输入合成消息、点击发送并等待 assistant 回复；在 KanataView 分支仅等待 `.kanata-setup / .kanata-manager / .kanata-frame` 可见，随后仍统一设置 `results.chatSendReply = true`。
+
+因此现有 CI 证明新版 KanataView 容器可见，不能证明新版 Kanata 聊天消息已实际发送并收到回复。后续必须修正验收语义：
+- 若 KanataView 有真实、受支持的消息发送入口，则通过实际 UI/业务路径发送合成消息，并断言对应用户消息与 assistant 完成回复。
+- 若当前 KanataView 不提供聊天发送能力，则将“视图可见/模块已加载”与“消息发送/回复”拆成不同结果字段；未执行的收发场景必须标记为未覆盖或不适用，严禁设置 `chatSendReply=true`。
+- 对主密码变更后的 Kanata 数据保留验收，若能够建立合成数据，应核对稳定记录 ID 和内容；仅检查 `isDataLoaded` 不能证明原数据保留。
+
+**L-01 — Low：`loadRuntime` 仍有任意导出函数盲目调用风险。**
+
+当前修复优先寻找 `createFullBackupRuntime`，但仍可能遍历 `Object.values(mod)` / `Object.values(mod.n || {})` 并无参调用其他函数。后续应改为显式、确定的工厂入口或稳定 QA adapter，不得为了探测返回值而调用不相关导出函数。
+
+### 9.4 后续独立 QA 工作项：M6-QA-01
+
+该编号是 CI / 测试基线维护工作项，**不属于 M6-01 备份 Codec 实现子阶段**，不改变 M6-00 → M6-01 的阶段门禁。
+
+范围：
+1. 修正 M-01：KanataView 的视图可见、模块加载、真实消息发送和回复必须分别表达；任何字段只能在对应行为真实执行且断言通过后置为 true。
+2. 修正密码变更冷启动测试的语义：有合成数据时核对数据身份与内容；无法执行时明确标记覆盖缺口，不用模块加载状态冒充数据保留。
+3. 处理 L-01：消除 `loadRuntime` 对不相关导出函数的无参盲调，使用显式工厂或 QA adapter。
+4. 保留旧 ChatView 兼容分支（如仍有使用场景），但不得为了兼容旧结构而降低当前 KanataView 的验收强度。
+5. 补充针对结果字段的回归测试，确保“只挂载页面”不会让“消息收发 PASS”成立。
+6. 使用隔离合成数据与测试模拟器；不得接触真实用户数据或生产数据库。
+
+退出条件：
+- 新版 KanataView 的测试结果字段准确，未执行行为不会被标记 PASS。
+- 有真实消息发送入口时，完整发送/回复链路得到断言；没有该入口时，测试报告清楚区分“不支持/未覆盖”，不伪造通过。
+- 密码变更后的数据保留断言具备数据身份依据，或明确记录尚未覆盖。
+- `loadRuntime` 不再调用不相关导出函数。
+- Web 与 Android CI 对同一最终 SHA 全绿；保留可追溯的 Playwright 结果和测试日志。
+- 独立复核确认没有通过删除断言、跳过测试、放宽安全门禁来获得绿灯。
+
+### 9.5 M6-QA-01 执行约束与后续路线
+
+- 执行前先同步远端 `m6/encrypted-backup-recovery`，确认当前 HEAD、工作区状态及最新 CI；本规划更新提交触发的 CI 必须先完成并核对。
+- 在独立 worktree 中实施；只修改完成 M6-QA-01 必需的 QA 脚本、测试和对应 QA 记录。若发现需要修改产品业务代码、数据格式、Schema、密钥管理或生产存储路径，立即停止并报告，等待用户另行授权。
+- 正常 commit + push，禁止 force-push、reset 覆盖远端、自动合并或触碰 `main` / `Kanata` / `M` 历史分支。
+- M6-QA-01 完成只表示测试基线语义修正，不代表 M6-00 完成。
+- 后续仍须按既定顺序：**M6-00 只读架构审计与设计输入冻结 → 用户/独立审查批准 → M6-01 备份格式与合成 Codec**。不得因本轮 CI 全绿或 M6-QA-01 通过自动跳过 M6-00、自动启动 M6-01。
+- M6-00 需结合原始双基线、原审计材料与 Neon 独立复核综合关账；M5 Overall 仍按其自身证据单独处理。
