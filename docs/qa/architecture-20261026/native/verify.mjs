@@ -6,6 +6,13 @@ import { createHash } from 'node:crypto'
 import { execFile } from 'node:child_process'
 import { promisify } from 'node:util'
 import { waitForStoreState } from './waitForStoreState.mjs'
+import {
+  resolveFullBackupRuntimeFactory,
+  resolveRestoreState,
+  resolveRestoreJournal,
+  computeChatSendReply,
+  verifyKanataPreservedData
+} from './runtimeAdapter.mjs'
 const modulePath = process.env.FORMYSELF_PLAYWRIGHT_MODULE || 'playwright-core'
 const { _android, chromium } = await import(modulePath)
 const directory = dirname(fileURLToPath(import.meta.url)), root = resolve(directory, '../../../..')
@@ -44,16 +51,19 @@ const evaluate = (page, body) => bounded(page.evaluate(`(async () => { const sto
 const waitState = (page, body, options) => waitForStoreState(page,storeExpression,body,options)
 const waitReady = page => waitState(page,"return ['settings','weight','debt','mood','schedule','todo'].every(k=>stores.get(k)?.isDataLoaded)")
 const waitRestoreIdle = async page => {
-  await bounded(page.evaluate(async ({ primary, fallback }) => {
-    let entry = await import('/assets/' + (primary || fallback))
-    let state = Object.values(entry).find(x => x && Object.hasOwn(x, 'blocked') && Object.hasOwn(x, 'busy') && Object.hasOwn(x, 'syncError'))
-    if (!state && fallback) {
-      entry = await import('/assets/' + fallback)
-      state = Object.values(entry).find(x => x && Object.hasOwn(x, 'blocked') && Object.hasOwn(x, 'busy') && Object.hasOwn(x, 'syncError'))
+  await bounded(page.evaluate(`(async ({ primary, fallback }) => {
+    const resolveState = ${resolveRestoreState.toString()};
+    let entry = await import('/assets/' + (primary || fallback));
+    let state;
+    try {
+      state = resolveState(entry);
+    } catch (error) {
+      if (!fallback || primary === fallback) throw error;
+      entry = await import('/assets/' + fallback);
+      state = resolveState(entry);
     }
-    if (!state) throw Error('Missing actual restore state')
-    window.__qaRestoreState = state
-  }, { primary: restoreStateAsset, fallback: settingsAsset }), 'Load actual restore state')
+    window.__qaRestoreState = state;
+  })(${JSON.stringify({ primary: restoreStateAsset, fallback: settingsAsset })})`), 'Load actual restore state')
   await waitState(page, 'return Boolean(window.__qaRestoreState)&&!window.__qaRestoreState.blocked&&!window.__qaRestoreState.busy', { polling: 250 })
 }
 const attach = async () => {
@@ -87,9 +97,9 @@ const coldStart = async () => {
   }
   return attach()
 }
-const tapButton = async (page, name) => {
+const tapButton = async (page, name, scope = page) => {
   name=name.trim()
-  const button=page.getByRole('button',{name,exact:true})
+  const button=scope.getByRole('button',{name,exact:true})
   await button.waitFor({state:'visible'})
   await button.scrollIntoViewIfNeeded()
   if (!await button.isEnabled()) throw Error('Disabled native test button: '+name)
@@ -104,7 +114,7 @@ const tapButton = async (page, name) => {
   await bounded(device.input.tap(point),'Native button touch '+name,30000)
 }
 const captureNative = async name => {
-  const selector={'native-vault.png':'.vault-view','native-chat.png':'.chat-composer textarea, .kanata-form textarea, .kanata-manager, .kanata-frame, .kanata-setup','native-home.png':'.home-dashboard'}[name]
+  const selector={'native-vault.png':'.vault-view','native-chat.png':'.chat-composer textarea, .kanata-chat .kanata-form textarea','native-home.png':'.home-dashboard'}[name]
   if(!selector)throw Error('Unknown screenshot view: '+name)
   await pageForCapture().locator(selector).first().waitFor({state:'visible'})
   if(name==='native-home.png'){
@@ -149,7 +159,7 @@ const verifyProtectedIdentity = async page => {
   await input.fill(password)
   await tapButton(page,'验证')
 }
-const loadRuntime = page => evaluate(page, `const mod=await import('/assets/${runtimeAsset}'); const candidates=[mod.createFullBackupRuntime,mod.n?.createFullBackupRuntime,...Object.values(mod),...Object.values(mod.n||{})]; let runtime=null; for(const fn of candidates){ if(typeof fn!=='function')continue; try{ const res=fn(); if(res&&typeof res.createFullBackupSnapshot==='function'){ runtime=res; break; } }catch{} } if(!runtime)throw Error('Missing createFullBackupRuntime factory'); window.__qaRuntime=runtime; return true;`)
+const loadRuntime = page => evaluate(page, `const mod=await import('/assets/${runtimeAsset}'); const resolveFactory=${resolveFullBackupRuntimeFactory.toString()}; const factory=resolveFactory(mod); const runtime=factory(); if(!runtime||typeof runtime.createFullBackupSnapshot!=='function')throw Error('Invalid createFullBackupRuntime return value'); window.__qaRuntime=runtime; return true;`)
 try {
   for (const name of ['playwright-results.json','playwright-attempt.json','playwright-progress.json','playwright-failure.png','native-home.png','native-chat.png','native-vault.png','android-display-failure.png']) await rm(resolve(directory,name),{force:true})
   results.deviceSerial = device.serial()
@@ -204,17 +214,104 @@ try {
   results.vaultUiCreate = true
   await checkpoint('Vault create checked')
   await captureNative('native-vault.png')
+  let kanataExpectedData = null
   await evaluate(page,"stores.get('settings').switchView('chat'); return true;")
+  await waitState(page,"return stores.get('protectedAccess').status.chat==='ready'")
+  results.chatModuleLoaded = true
   const chatComposer = page.locator('.chat-composer textarea')
-  const kanataView = page.locator('.kanata-setup, .kanata-manager, .kanata-frame')
-  await chatComposer.or(kanataView).first().waitFor({ state: 'visible' })
-  if (await chatComposer.isVisible()) {
+  const kanataFrame = page.locator('.kanata-frame')
+  await chatComposer.or(kanataFrame).first().waitFor({ state: 'visible' })
+  results.chatViewReady = true
+  const hasLegacyComposer = await chatComposer.isVisible()
+  const hasKanataStore = await evaluate(page,"return Boolean(stores.get('kanata'));")
+  if (hasLegacyComposer) {
+    results.chatArchitecture = 'legacy-chat'
+    results.kanataWorldInitialized = 'not-applicable'
+    results.chatUserMessageSent = false
+    results.chatAssistantReplied = false
+    results.chatSendReply = false
     await chatComposer.fill('合成原生测试消息'); await tapButton(page,'发送消息')
+    await waitState(page,"const m=stores.get('chat').messages;return m.some(x=>x.role==='user'&&x.content==='合成原生测试消息')")
+    results.chatUserMessageSent = true
     await waitState(page,"const m=stores.get('chat').messages,index=m.findLastIndex(x=>x.role==='user'&&x.content==='合成原生测试消息');return index>=0&&m.slice(index+1).some(x=>x.role==='assistant'&&x.status==='complete'&&x.content.includes('合成回复：原生验证'))")
+    results.chatAssistantReplied = true
+    results.chatSendReply = computeChatSendReply(results)
+    await captureNative('native-chat.png')
+  } else if (hasKanataStore) {
+    results.chatArchitecture = 'kanata'
+    results.kanataWorldInitialized = false
+    results.chatUserMessageSent = false
+    results.chatAssistantReplied = false
+    results.chatSendReply = false
+    const setupButton = page.getByRole('button', { name: '开始准备彼方', exact: true })
+    if (await setupButton.isVisible()) {
+      await tapButton(page, '开始准备彼方')
+      await tapButton(page, '确认清理并准备')
+      await page.locator('.kanata-manager').waitFor({ state: 'visible' })
+    } else {
+      await page.locator('.kanata-manager, .kanata-chat').first().waitFor({ state: 'visible' })
+    }
+    await waitState(page,"const k=stores.get('kanata');return Boolean(k?.isDataLoaded&&k.snapshot?.worlds?.length>0&&!k.hasPendingSave&&!k.saveError)")
+    results.kanataWorldInitialized = true
+    const kanataInput = page.locator('.kanata-chat textarea[placeholder="说说此刻想分享的事"]')
+    if (!await kanataInput.isVisible()) {
+      const conversationInfo = await evaluate(page, `
+        const s=stores.get('kanata').snapshot;
+        const world=s.worlds.find(w=>!w.archived)||s.worlds[0];
+        const conv=s.conversations.find(c=>c.worldId===world.id&&c.type==='private')
+          ||s.conversations.find(c=>c.worldId===world.id&&c.type!=='character');
+        return conv?{id:conv.id,title:conv.title}:null;`)
+      if (!conversationInfo) throw Error('Kanata world has no available conversation entry')
+      await tapButton(page, conversationInfo.title, page.locator('.kanata-conversation-list'))
+      await page.locator('.kanata-chat').waitFor({ state: 'visible' })
+    }
+    await kanataInput.waitFor({ state: 'visible' })
+    const activeContext = await evaluate(page, `
+      const s=stores.get('kanata').snapshot;
+      const world=s.worlds.find(w=>!w.archived)||s.worlds[0];
+      const title=document.querySelector('.kanata-chat h3')?.textContent?.trim()||'';
+      const conv=s.conversations.find(c=>c.worldId===world.id&&c.title===title&&c.type!=='character')
+        ||s.conversations.find(c=>c.worldId===world.id&&c.type==='private')
+        ||s.conversations.find(c=>c.worldId===world.id&&c.type!=='character');
+      return conv?{worldId:world.id,worldName:world.name,conversationId:conv.id,conversationTitle:conv.title,existingIds:s.messages.map(m=>m.id)}:null;`)
+    if (!activeContext) throw Error('Kanata active conversation context unavailable')
+    const syntheticMessage = '合成原生测试消息'
+    await kanataInput.fill(syntheticMessage)
+    await tapButton(page, '发送消息')
+    await waitState(page, `
+      const m=stores.get('kanata')?.snapshot?.messages||[];
+      const seen=new Set(${JSON.stringify(activeContext.existingIds)});
+      return m.some(x=>!seen.has(x.id)&&x.conversationId===${JSON.stringify(activeContext.conversationId)}&&x.role==='user'&&x.status==='complete'&&x.content===${JSON.stringify(syntheticMessage)});`)
+    await page.locator('.kanata-chat-timeline .kanata-chat-message.is-user .kanata-text', { hasText: syntheticMessage }).first().waitFor({ state: 'visible' })
+    results.chatUserMessageSent = true
+    await waitState(page, `
+      const m=stores.get('kanata')?.snapshot?.messages||[];
+      const seen=new Set(${JSON.stringify(activeContext.existingIds)});
+      const u=m.findLast(x=>!seen.has(x.id)&&x.conversationId===${JSON.stringify(activeContext.conversationId)}&&x.role==='user'&&x.status==='complete'&&x.content===${JSON.stringify(syntheticMessage)});
+      return Boolean(u&&m.some(x=>x.conversationId===${JSON.stringify(activeContext.conversationId)}&&x.role==='assistant'&&x.status==='complete'&&x.replyToMessageId===u.id&&x.content.includes('合成回复：原生验证')));`)
+    await page.locator('.kanata-chat-timeline .kanata-chat-message:not(.is-user) .kanata-text', { hasText: '合成回复：原生验证' }).first().waitFor({ state: 'visible' })
+    results.chatAssistantReplied = true
+    await page.locator('.kanata-chat textarea[placeholder="说说此刻想分享的事"]:not([disabled])').waitFor({ state: 'visible' })
+    await evaluate(page, "await stores.get('kanata').flush(); return true;")
+    await waitState(page, "const k=stores.get('kanata');return !k.hasPendingSave&&!k.saveError")
+    kanataExpectedData = await evaluate(page, `
+      const s=stores.get('kanata').snapshot;
+      const seen=new Set(${JSON.stringify(activeContext.existingIds)});
+      const u=s.messages.findLast(x=>!seen.has(x.id)&&x.conversationId===${JSON.stringify(activeContext.conversationId)}&&x.role==='user'&&x.status==='complete'&&x.content===${JSON.stringify(syntheticMessage)});
+      const a=u?s.messages.find(x=>x.conversationId===${JSON.stringify(activeContext.conversationId)}&&x.role==='assistant'&&x.status==='complete'&&x.replyToMessageId===u.id&&x.content.includes('合成回复：原生验证')):null;
+      return u&&a?{worldId:${JSON.stringify(activeContext.worldId)},worldName:${JSON.stringify(activeContext.worldName)},conversationId:${JSON.stringify(activeContext.conversationId)},conversationTitle:${JSON.stringify(activeContext.conversationTitle)},userMessageId:u.id,userMessageContent:u.content,assistantMessageId:a.id,assistantMessageContent:a.content}:null;`)
+    if (!kanataExpectedData) throw Error('Failed to record durable Kanata synthetic message identity')
+    results.kanataSyntheticRecord = {
+      worldId: kanataExpectedData.worldId,
+      conversationId: kanataExpectedData.conversationId,
+      userMessageId: kanataExpectedData.userMessageId,
+      assistantMessageId: kanataExpectedData.assistantMessageId
+    }
+    results.chatSendReply = computeChatSendReply(results)
+    await captureNative('native-chat.png')
   } else {
-    await kanataView.first().waitFor({ state: 'visible' })
+    throw Error('Chat view rendered without supported message composer or Kanata store')
   }
-  results.chatSendReply = true; await captureNative('native-chat.png')
   await checkpoint('Chat checked')
   const taskId = await evaluate(page,"await stores.get('todo').add({title:'合成深链待办',startDate:'2026-10-26',recurrence:{type:'none'}});return stores.get('todo').snapshot.tasks.find(t=>t.title==='合成深链待办').id;")
   results.nativeAppProbe = await evaluate(page,`window.__qaNativeUrlEvents=[];const cap=window.Capacitor,app=cap?.Plugins?.App;
@@ -235,7 +332,8 @@ try {
   results.backgroundReleasesSensitiveData = await evaluate(page,"return !stores.get('auth').isLocked&&!stores.get('auth').savedMasterPwd&&(!stores.get('chat')||stores.get('chat').messages.length===0)&&(!stores.get('kanata')||stores.get('kanata').snapshot===null);")
   await evaluate(page,"stores.get('settings').switchView('chat');return true;")
   await verifyProtectedIdentity(page)
-  await page.locator('.chat-composer textarea, .kanata-setup, .kanata-manager, .kanata-frame').first().waitFor({ state: 'visible' })
+  await waitState(page,"return stores.get('protectedAccess').status.chat==='ready'")
+  await page.locator('.chat-composer textarea, .kanata-manager, .kanata-chat').first().waitFor({ state: 'visible' })
   await checkpoint('Background release and reauthentication checked')
   await loadRuntime(page)
   await evaluate(page,`await stores.get('protectedAccess').ensureModules(); const target=window.__qaRuntime.createFullBackupSnapshot();target.data.weight=[{id:'native-partial',date:'2026-10-26',weight:60}];
@@ -252,8 +350,8 @@ try {
   await checkpoint('Uncommitted rollback checked')
   await loadRuntime(page)
   await evaluate(page,`const entry=await import(document.querySelector('script[type=module]').src);
-    const journal=Object.values(entry).find(x=>x&&Object.hasOwn(x,'inspect')&&Object.hasOwn(x,'commit')&&Object.hasOwn(x,'prepare'));
-    if(!journal)throw Error('Missing actual journal');
+    const resolveJournal=${resolveRestoreJournal.toString()};
+    const journal=resolveJournal(entry);
     if(await journal.inspect())throw Error('Previous recovery journal was not cleared before the next scenario');
     const target=window.__qaRuntime.createFullBackupSnapshot();target.data.weight=[{id:'native-committed',date:'2026-10-26',weight:61}];
     const info=window.__qaCommittedDiagnostics={participants:[],error:null};
@@ -283,14 +381,26 @@ try {
   page = await coldStart(); await waitReady(page)
   await evaluate(page,"stores.get('settings').switchView('chat');return true;")
   await verifyProtectedIdentity(page)
-  await page.locator('.chat-composer textarea, .kanata-setup, .kanata-manager, .kanata-frame').first().waitFor({ state: 'visible' })
-  results.passwordChangeColdStartPreservesChat = await evaluate(page, `
-    const isKanata = Boolean(stores.get('kanata'));
-    if (isKanata) {
-      return stores.get('protectedAccess').status.chat === 'ready' && stores.get('kanata').isDataLoaded;
-    }
-    return (stores.get('chat')?.messages || []).some(m=>m.role==='user'&&m.content==='合成原生测试消息');
-  `)
+  await waitState(page,"return stores.get('protectedAccess').status.chat==='ready'")
+  await page.locator('.chat-composer textarea, .kanata-manager, .kanata-chat').first().waitFor({ state: 'visible' })
+  if (kanataExpectedData) {
+    const identityCheck = await evaluate(page, `
+      const verifyIdentity = ${verifyKanataPreservedData.toString()};
+      return {
+        ready: stores.get('protectedAccess').status.chat === 'ready',
+        isDataLoaded: Boolean(stores.get('kanata')?.isDataLoaded),
+        identity: verifyIdentity(stores.get('kanata')?.snapshot, ${JSON.stringify(kanataExpectedData)})
+      };`)
+    await tapButton(page, kanataExpectedData.conversationTitle, page.locator('.kanata-conversation-list'))
+    await page.locator(`.kanata-chat-timeline [data-message-id="${kanataExpectedData.userMessageId}"] .kanata-text`, { hasText: kanataExpectedData.userMessageContent }).waitFor({ state: 'visible' })
+    await page.locator(`.kanata-chat-timeline [data-message-id="${kanataExpectedData.assistantMessageId}"] .kanata-text`, { hasText: kanataExpectedData.assistantMessageContent }).waitFor({ state: 'visible' })
+    results.kanataDataIdentityCheck = identityCheck.identity
+    results.passwordChangeColdStartPreservesChat = Boolean(identityCheck.ready && identityCheck.isDataLoaded && identityCheck.identity.ok)
+  } else {
+    results.passwordChangeColdStartPreservesChat = await evaluate(page, `
+      return !stores.get('kanata') && (stores.get('chat')?.messages || []).some(m=>m.role==='user'&&m.content==='合成原生测试消息');
+    `)
+  }
   results.apiKeyAfterPasswordChange = await evaluate(page,"return stores.get('settings').aiApiKey==='synthetic-native-key-only';")
   await evaluate(page,"stores.get('settings').switchView('passwords');return true;")
   await waitState(page,"return stores.get('protectedAccess').status.passwords==='ready'")
