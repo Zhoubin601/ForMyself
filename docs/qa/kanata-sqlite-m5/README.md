@@ -75,3 +75,9 @@ Native SQLCipher, Android/device interruption and capacity checks, and productio
 - Remote branch head verified as `838635ac6084ecd7e9a02b383c5e79789a8eb472`.
 - This closes the same-SHA CI blocker in M5-05. It does **not** establish native SQLCipher/device interruption/capacity acceptance, production integration, real-data migration, canonical switch, cleanup, or APK release.
 - M5-06 was separately authorized on 2026-11-18. See the [M5-06 Android SQLCipher execution record](m5-06-android-v1.md) for the tested implementation SHA, local evidence, and outstanding acceptance gates.
+
+## M5-06 & M5 Overall Closeout Index (2026-11-19 ~ 2026-11-20)
+
+- M5-06 closeout (PASS): [M5-06 最终关账记录](../../20261119-kanata-sqlite-m5-06-closeout-v1.md), [M5-06 最终独立代码审查报告](m5-06-final-independent-review-v1.md), [M5-06 五项专项整改记录](m5-06-remediation-v1.md), [整改机器证据](m5-06-remediation-evidence-v1.json).
+- M5 Overall closeout (`READY_FOR_CLOSEOUT` — `M5 Overall: PASS — Pending GPT-6 Independent Sign-off`): [Kanata SQLite M5 总体关账报告 v1](../../20261120-kanata-sqlite-m5-overall-closeout-v1.md).
+
