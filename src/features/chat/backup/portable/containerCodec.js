@@ -339,6 +339,7 @@ export function buildFrameKeyInfo(streamId, type) {
 
 /**
  * Compute wrapKey with bounded single-flight KDF guard and cancellation support.
+ * Transfers wrapKey ownership to the caller only on normal return; zeroizes on error or cancellation.
  * @param {string} password
  * @param {Uint8Array} header
  * @param {Uint8Array} salt
@@ -348,7 +349,7 @@ export function buildFrameKeyInfo(streamId, type) {
  * @param {AbortSignal | undefined} signal
  * @returns {Promise<Uint8Array>}
  */
-async function deriveWrapKey(password, header, salt, backupId, iterations, cryptoProvider, signal) {
+export async function deriveWrapKey(password, header, salt, backupId, iterations, cryptoProvider, signal) {
   checkCancelled(signal)
   if (kdfInFlight) {
     throw new PortableBackupError(PORTABLE_ERROR_CODES.RESOURCE_LIMIT, 'kdf-concurrency')
@@ -357,17 +358,22 @@ async function deriveWrapKey(password, header, salt, backupId, iterations, crypt
   kdfInFlight = true
   /** @type {Uint8Array | undefined} */
   let baseKey
+  /** @type {Uint8Array | undefined} */
+  let wrapKey
+  let transferred = false
   try {
     const domainSalt = concatBytes(KEK_SALT_PREFIX, salt, backupId)
     baseKey = await cryptoProvider.pbkdf2Sha256(passBytes, domainSalt, iterations, PORTABLE_KEY_SIZE)
     checkCancelled(signal)
     const wrapInfo = concatBytes(WRAP_INFO_PREFIX, header)
-    const wrapKey = await cryptoProvider.hkdfSha256(baseKey, backupId, wrapInfo, PORTABLE_KEY_SIZE)
+    wrapKey = await cryptoProvider.hkdfSha256(baseKey, backupId, wrapInfo, PORTABLE_KEY_SIZE)
+    expectExactBytes(wrapKey, PORTABLE_KEY_SIZE, PORTABLE_ERROR_CODES.IO_FAILED, 'wrap-key-length')
     checkCancelled(signal)
+    transferred = true
     return wrapKey
   } finally {
     kdfInFlight = false
-    zeroize(passBytes, baseKey)
+    zeroize(passBytes, baseKey, transferred ? undefined : wrapKey)
   }
 }
 
@@ -455,6 +461,7 @@ function resolveExportMaterial(cryptoProvider, material) {
 export function createBoundedByteReader(source, signal) {
   /** @type {AsyncIterator<Uint8Array> | Iterator<Uint8Array> | null} */
   let iterator = null
+  let iteratorDone = false
   /** @type {(() => Promise<Uint8Array | null> | Uint8Array | null) | null} */
   let pullFn = null
   /** @type {Uint8Array | null} */
@@ -485,7 +492,12 @@ export function createBoundedByteReader(source, signal) {
           chunk = await pullFn()
         } else if (iterator) {
           const step = await iterator.next()
-          chunk = step.done ? null : step.value
+          if (step.done) {
+            iteratorDone = true
+            chunk = null
+          } else {
+            chunk = step.value
+          }
         }
       } catch (error) {
         if (error instanceof PortableBackupError) throw error
@@ -563,6 +575,21 @@ export function createBoundedByteReader(source, signal) {
         throw new PortableBackupError(PORTABLE_ERROR_CODES.INVALID_CONTAINER, 'trailing-data')
       }
     },
+
+    /**
+     * Release any underlying iterator resource when closing early or finishing.
+     */
+    async close() {
+      leftover = null
+      if (iterator && !iteratorDone && typeof iterator.return === 'function') {
+        iteratorDone = true
+        try {
+          await iterator.return()
+        } catch {
+          // Best-effort iterator cleanup; preserve original error.
+        }
+      }
+    },
   }
 }
 
@@ -603,6 +630,8 @@ export async function* encodePortableContainer({
   let dataKey
   /** @type {Uint8Array | undefined} */
   let footerKey
+  /** @type {Uint8Array | null} */
+  let pendingPlain = null
 
   try {
     const header = encodePublicHeader({ salt: mat.salt, backupId: mat.backupId })
@@ -619,6 +648,7 @@ export async function* encodePortableContainer({
     expectExactBytes(wrappedBek, PORTABLE_ENVELOPE_SIZE, PORTABLE_ERROR_CODES.IO_FAILED, 'wrap-bek')
     zeroize(wrapKey)
     wrapKey = undefined
+    checkCancelled(signal)
 
     const prefix = concatBytes(header, mat.wrapNonce, wrappedBek)
     const envelopeDigest = computeEnvelopeDigest(cryptoProvider, prefix)
@@ -630,12 +660,14 @@ export async function* encodePortableContainer({
       buildFrameKeyInfo(PORTABLE_STREAM_ID.CONTROL, PORTABLE_FRAME_TYPE.MANIFEST),
       PORTABLE_KEY_SIZE,
     )
+    checkCancelled(signal)
     dataKey = await cryptoProvider.hkdfSha256(
       mat.bek,
       mat.backupId,
       buildFrameKeyInfo(PORTABLE_STREAM_ID.DATA, PORTABLE_FRAME_TYPE.DATA),
       PORTABLE_KEY_SIZE,
     )
+    checkCancelled(signal)
     footerKey = await cryptoProvider.hkdfSha256(
       mat.bek,
       mat.backupId,
@@ -645,6 +677,7 @@ export async function* encodePortableContainer({
     checkCancelled(signal)
 
     yield prefix
+    checkCancelled(signal)
 
     // 1. MANIFEST frame
     const manifestPlain = encodeManifestPayload()
@@ -656,15 +689,19 @@ export async function* encodePortableContainer({
       plaintextLen: PORTABLE_MANIFEST_SIZE,
       ciphertextLen: PORTABLE_MANIFEST_SIZE + PORTABLE_TAG_SIZE,
     })
+    checkCancelled(signal)
     const manifestCipher = await cryptoProvider.aesGcmEncrypt(
       manifestKey,
       buildFrameNonce(PORTABLE_STREAM_ID.CONTROL, PORTABLE_FRAME_TYPE.MANIFEST, 0n),
       manifestPlain,
       concatBytes(envelopeDigest, manifestFrameHeader),
     )
+    checkCancelled(signal)
     transcriptHasher.addFrame(manifestFrameHeader, manifestCipher)
     yield manifestFrameHeader
+    checkCancelled(signal)
     yield manifestCipher
+    checkCancelled(signal)
 
     // 2. DATA frames with 1-block lookahead for final flag
     /** @type {{ tableId: number, rowCount: bigint, digest: Uint8Array }[]} */
@@ -678,8 +715,6 @@ export async function* encodePortableContainer({
       },
     })
 
-    /** @type {Uint8Array | null} */
-    let pendingPlain = null
     let dataFrameCount = 0
     let totalPlaintextBytes = 0n
     let totalCiphertextBytes = 0n
@@ -719,6 +754,7 @@ export async function* encodePortableContainer({
         plainChunk,
         concatBytes(envelopeDigest, frameHeader),
       )
+      checkCancelled(signal)
       transcriptHasher.addFrame(frameHeader, ciphertextAndTag)
       dataFrameCount += 1
       return { frameHeader, ciphertextAndTag }
@@ -728,17 +764,23 @@ export async function* encodePortableContainer({
       checkCancelled(signal)
       if (pendingPlain !== null) {
         const frame = await encryptAndEmitDataFrame(pendingPlain, PORTABLE_FRAME_FLAG.CONTINUE)
+        pendingPlain = null
         yield frame.frameHeader
+        checkCancelled(signal)
         yield frame.ciphertextAndTag
+        checkCancelled(signal)
       }
       pendingPlain = chunk
     }
+    checkCancelled(signal)
 
     requirePortable(pendingPlain !== null && pendingPlain.byteLength >= 1, PORTABLE_ERROR_CODES.INVALID_CONTAINER, 'empty-data-stream')
     const finalFrame = await encryptAndEmitDataFrame(pendingPlain, PORTABLE_FRAME_FLAG.FINAL)
     pendingPlain = null
     yield finalFrame.frameHeader
+    checkCancelled(signal)
     yield finalFrame.ciphertextAndTag
+    checkCancelled(signal)
 
     // 3. FOOTER frame
     const transcript = transcriptHasher.digest()
@@ -758,16 +800,20 @@ export async function* encodePortableContainer({
       plaintextLen: PORTABLE_FOOTER_SIZE,
       ciphertextLen: PORTABLE_FOOTER_SIZE + PORTABLE_TAG_SIZE,
     })
+    checkCancelled(signal)
     const footerCipher = await cryptoProvider.aesGcmEncrypt(
       footerKey,
       buildFrameNonce(PORTABLE_STREAM_ID.CONTROL, PORTABLE_FRAME_TYPE.FOOTER, 0n),
       footerPlain,
       concatBytes(envelopeDigest, footerFrameHeader),
     )
+    checkCancelled(signal)
     totalPackageBytes += BigInt(PORTABLE_FRAME_HEADER_SIZE + footerCipher.byteLength)
     requirePortable(totalPackageBytes <= PORTABLE_LIMITS.MAX_PACKAGE_BYTES, PORTABLE_ERROR_CODES.RESOURCE_LIMIT, 'package-size')
     yield footerFrameHeader
+    checkCancelled(signal)
     yield footerCipher
+    checkCancelled(signal)
 
     return {
       dataFrameCount,
@@ -777,7 +823,7 @@ export async function* encodePortableContainer({
       verifiers: mergedVerifiers,
     }
   } finally {
-    zeroize(mat.salt, mat.backupId, mat.wrapNonce, mat.bek, wrapKey, manifestKey, dataKey, footerKey)
+    zeroize(mat.salt, mat.backupId, mat.wrapNonce, mat.bek, wrapKey, manifestKey, dataKey, footerKey, pendingPlain)
   }
 }
 
@@ -802,9 +848,8 @@ export async function decodePortableContainer({
   signal,
   validateJson = true,
 }) {
-  checkCancelled(signal)
-  const reader = createBoundedByteReader(source, signal)
-
+  /** @type {ReturnType<typeof createBoundedByteReader> | null} */
+  let reader = null
   /** @type {Uint8Array | undefined} */
   let wrapKey
   /** @type {Uint8Array | undefined} */
@@ -816,8 +861,12 @@ export async function decodePortableContainer({
   /** @type {Uint8Array | undefined} */
   let footerKey
   let committed = false
+  let aborted = false
 
   try {
+    checkCancelled(signal)
+    reader = createBoundedByteReader(source, signal)
+
     // 1. Read fixed 124-byte prefix; validate header & password BEFORE any KDF.
     const prefix = await reader.readExact(PORTABLE_PREFIX_SIZE)
     const headerBytes = prefix.subarray(0, PORTABLE_HEADER_SIZE)
@@ -835,6 +884,7 @@ export async function decodePortableContainer({
       signal,
     )
 
+    checkCancelled(signal)
     try {
       bek = await cryptoProvider.aesGcmDecrypt(wrapKey, wrapNonce, wrappedBek, headerBytes)
     } catch {
@@ -854,18 +904,21 @@ export async function decodePortableContainer({
       buildFrameKeyInfo(PORTABLE_STREAM_ID.CONTROL, PORTABLE_FRAME_TYPE.MANIFEST),
       PORTABLE_KEY_SIZE,
     )
+    checkCancelled(signal)
     dataKey = await cryptoProvider.hkdfSha256(
       bek,
       parsedHeader.backupId,
       buildFrameKeyInfo(PORTABLE_STREAM_ID.DATA, PORTABLE_FRAME_TYPE.DATA),
       PORTABLE_KEY_SIZE,
     )
+    checkCancelled(signal)
     footerKey = await cryptoProvider.hkdfSha256(
       bek,
       parsedHeader.backupId,
       buildFrameKeyInfo(PORTABLE_STREAM_ID.CONTROL, PORTABLE_FRAME_TYPE.FOOTER),
       PORTABLE_KEY_SIZE,
     )
+    checkCancelled(signal)
 
     /**
      * Validate frame header bounds and decode one authenticated frame.
@@ -875,6 +928,7 @@ export async function decodePortableContainer({
      */
     const readAndDecryptFrame = async (frameHeaderBytes, f, key) => {
       const ciphertextAndTag = await reader.readExact(f.ciphertextLen)
+      checkCancelled(signal)
       let plaintext
       try {
         plaintext = await cryptoProvider.aesGcmDecrypt(
@@ -886,6 +940,7 @@ export async function decodePortableContainer({
       } catch {
         throw new PortableBackupError(PORTABLE_ERROR_CODES.AUTH_FAILED, `frame:${f.type}:${f.index}`)
       }
+      checkCancelled(signal)
       requirePortable(
         plaintext.byteLength === f.plaintextLen,
         PORTABLE_ERROR_CODES.INVALID_CONTAINER,
@@ -986,6 +1041,7 @@ export async function decodePortableContainer({
       transcriptHasher.addFrame(dhBytes, dataFrame.ciphertextAndTag)
       dataFrameCount += 1
       await logicalDecoder.push(dataFrame.plaintext)
+      checkCancelled(signal)
       if (df.flags === PORTABLE_FRAME_FLAG.FINAL) seenFinalData = true
     }
 
@@ -1006,6 +1062,7 @@ export async function decodePortableContainer({
 
     const footerFrame = await readAndDecryptFrame(fhBytes, ff, footerKey)
     await reader.assertEof()
+    checkCancelled(signal)
 
     const actualTranscript = transcriptHasher.digest()
     const footer = decodeFooterPayload(footerFrame.plaintext)
@@ -1032,6 +1089,7 @@ export async function decodePortableContainer({
       )
     }
 
+    checkCancelled(signal)
     await stagingSink.verify(footer.verifiers, {
       header: { ...parsedHeader, salt: parsedHeader.salt.slice(), backupId: parsedHeader.backupId.slice() },
       manifest,
@@ -1048,9 +1106,13 @@ export async function decodePortableContainer({
     }
   } finally {
     zeroize(wrapKey, bek, manifestKey, dataKey, footerKey)
-    if (!committed) {
+    if (reader) {
+      await reader.close()
+    }
+    if (!committed && !aborted) {
+      aborted = true
       try {
-        await stagingSink.abort()
+        await stagingSink?.abort?.()
       } catch {
         // Preserve original validation/auth error; abort is best-effort cleanup.
       }

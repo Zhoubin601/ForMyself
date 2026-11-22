@@ -24,7 +24,11 @@ import { createWebCryptoProvider } from '../docs/qa/kanata-sqlite-m6/portable/we
 import { concatBytes, hexToBytes, bytesToHex } from '../src/features/chat/backup/portable/bytes.js'
 import { PORTABLE_BUSINESS_TABLES, PORTABLE_FOOTER_TABLES } from '../src/features/chat/backup/portable/catalog.js'
 import { PORTABLE_FRAME_LIMIT, PORTABLE_LIMITS } from '../src/features/chat/backup/portable/constants.js'
-import { decodePublicHeader } from '../src/features/chat/backup/portable/containerCodec.js'
+import {
+  decodePublicHeader,
+  deriveWrapKey,
+  encodePublicHeader,
+} from '../src/features/chat/backup/portable/containerCodec.js'
 
 const vectors = JSON.parse(
   readFileSync(new URL('../docs/qa/kanata-sqlite-m6/portable/vectors-v1.json', import.meta.url), 'utf8'),
@@ -1043,4 +1047,783 @@ test('C01-05 production bundles and composition roots do not import portable syn
   }
   const headerCheck = decodePublicHeader(hexToBytes(vectors.emptyPackage.prefixHex).subarray(0, 64))
   assert.equal(headerCheck.profile, 0xff01)
+})
+
+const isZeroed = buf => buf instanceof Uint8Array && buf.every(byte => byte === 0)
+
+function makeKeyTrackingCryptoProvider(inner = nodeCrypto, hooks = {}) {
+  const trackedKeys = {
+    passBytes: [],
+    baseKeys: [],
+    hkdfKeys: [],
+    wrapKeysInEncrypt: [],
+    bekRefs: [],
+    frameKeysInEncrypt: [],
+  }
+  let encryptIndex = 0
+  return {
+    trackedKeys,
+    provider: {
+      randomBytes: len => inner.randomBytes(len),
+      async pbkdf2Sha256(pw, salt, iter, len) {
+        trackedKeys.passBytes.push(pw)
+        const base = await inner.pbkdf2Sha256(pw, salt, iter, len)
+        trackedKeys.baseKeys.push(base)
+        return base
+      },
+      async hkdfSha256(ikm, salt, info, len) {
+        if (hooks.onHkdfStart) await hooks.onHkdfStart({ ikm, info })
+        const out = await inner.hkdfSha256(ikm, salt, info, len)
+        trackedKeys.hkdfKeys.push(out)
+        if (hooks.onHkdfEnd) await hooks.onHkdfEnd({ out, info })
+        return out
+      },
+      async aesGcmEncrypt(key, nonce, plaintext, aad) {
+        const callNo = ++encryptIndex
+        if (callNo === 1) {
+          trackedKeys.wrapKeysInEncrypt.push(key)
+          trackedKeys.bekRefs.push(plaintext)
+        } else {
+          trackedKeys.frameKeysInEncrypt.push(key)
+        }
+        if (hooks.onEncrypt) {
+          return hooks.onEncrypt({
+            callNo,
+            key,
+            nonce,
+            plaintext,
+            aad,
+            runInner: () => inner.aesGcmEncrypt(key, nonce, plaintext, aad),
+          })
+        }
+        return inner.aesGcmEncrypt(key, nonce, plaintext, aad)
+      },
+      aesGcmDecrypt: (k, n, c, a) => inner.aesGcmDecrypt(k, n, c, a),
+      createSha256: () => inner.createSha256(),
+    },
+  }
+}
+
+test('F01 encoder final cancellation windows abort cleanly, never complete, and zeroize all keys', async () => {
+  const emptyDerived = await computeSyntheticDerivedVerifiers({}, nodeCrypto)
+
+  const assertAllTrackedZeroized = tracked => {
+    for (const k of [
+      ...tracked.passBytes,
+      ...tracked.baseKeys,
+      ...tracked.hkdfKeys,
+      ...tracked.wrapKeysInEncrypt,
+      ...tracked.bekRefs,
+      ...tracked.frameKeysInEncrypt,
+    ]) {
+      assert.equal(isZeroed(k), true, 'expected key/secret buffer to be zeroized')
+    }
+  }
+
+  // 1) Cancel immediately after final DATA frame ciphertext yield (AsyncGenerator yield suspension)
+  {
+    const ctrl = new AbortController()
+    const { trackedKeys, provider } = makeKeyTrackingCryptoProvider()
+    const gen = streamSyntheticPortableBackup({
+      password: vectors.password,
+      getTableSource: createSyntheticTableSource(),
+      derivedVerifiers: emptyDerived,
+      cryptoProvider: provider,
+      signal: ctrl.signal,
+    })
+    const yielded = []
+    for (let i = 0; i < 5; i++) {
+      const step = await gen.next()
+      assert.equal(step.done, false)
+      yielded.push(step.value)
+    }
+    // 5 yields for single-DATA-frame empty package: prefix, manifestHdr, manifestCipher, finalDataHdr, finalDataCipher
+    ctrl.abort()
+    await assert.rejects(gen.next(), expectCode('CANCELLED'))
+    const tail = await gen.next()
+    assert.deepEqual(tail, { done: true, value: undefined })
+    assert.equal(yielded.length, 5)
+    assertAllTrackedZeroized(trackedKeys)
+  }
+
+  // 2) Cancel DURING Footer AEAD encryption (callNo === 4, plaintextLen === 2152)
+  {
+    const ctrl = new AbortController()
+    let footerEncryptEntered = false
+    const { trackedKeys, provider } = makeKeyTrackingCryptoProvider(nodeCrypto, {
+      async onEncrypt({ callNo, plaintext, runInner }) {
+        if (callNo === 4) {
+          assert.equal(plaintext.byteLength, 2152)
+          footerEncryptEntered = true
+          ctrl.abort()
+          await Promise.resolve()
+        }
+        return runInner()
+      },
+    })
+    const gen = streamSyntheticPortableBackup({
+      password: vectors.password,
+      getTableSource: createSyntheticTableSource(),
+      derivedVerifiers: emptyDerived,
+      cryptoProvider: provider,
+      signal: ctrl.signal,
+    })
+    const yielded = []
+    await assert.rejects(async () => {
+      for await (const chunk of gen) yielded.push(chunk)
+    }, expectCode('CANCELLED'))
+    assert.equal(footerEncryptEntered, true)
+    assert.equal(yielded.length, 5)
+    assertAllTrackedZeroized(trackedKeys)
+  }
+
+  // 3) Cancel AFTER Footer AEAD completes but BEFORE Footer frame header/ciphertext are yielded
+  {
+    const ctrl = new AbortController()
+    const { trackedKeys, provider } = makeKeyTrackingCryptoProvider(nodeCrypto, {
+      async onEncrypt({ callNo, plaintext, runInner }) {
+        const cipher = await runInner()
+        if (callNo === 4) {
+          assert.equal(plaintext.byteLength, 2152)
+          ctrl.abort()
+        }
+        return cipher
+      },
+    })
+    const gen = streamSyntheticPortableBackup({
+      password: vectors.password,
+      getTableSource: createSyntheticTableSource(),
+      derivedVerifiers: emptyDerived,
+      cryptoProvider: provider,
+      signal: ctrl.signal,
+    })
+    const yielded = []
+    await assert.rejects(async () => {
+      for await (const chunk of gen) yielded.push(chunk)
+    }, expectCode('CANCELLED'))
+    assert.equal(yielded.length, 5)
+    assertAllTrackedZeroized(trackedKeys)
+  }
+
+  // 4) Cancel AFTER Footer ciphertext yield before generator returns final completion object
+  {
+    const ctrl = new AbortController()
+    const { trackedKeys, provider } = makeKeyTrackingCryptoProvider()
+    const gen = streamSyntheticPortableBackup({
+      password: vectors.password,
+      getTableSource: createSyntheticTableSource(),
+      derivedVerifiers: emptyDerived,
+      cryptoProvider: provider,
+      signal: ctrl.signal,
+    })
+    for (let i = 0; i < 7; i++) {
+      const step = await gen.next()
+      assert.equal(step.done, false)
+    }
+    ctrl.abort()
+    await assert.rejects(gen.next(), expectCode('CANCELLED'))
+    assertAllTrackedZeroized(trackedKeys)
+  }
+})
+
+test('F02 decoder unified cleanup aborts staging on pre-abort, init/read errors, verification failures, pre-commit cancel and preserves original error', async () => {
+  const emptyBytes = hexToBytes(vectors.emptyPackage.packageHex)
+  const emptyDerived = await computeSyntheticDerivedVerifiers({}, nodeCrypto)
+
+  const makeSpySink = ({ expected = emptyDerived, onVerify = null, abortThrows = null } = {}) => {
+    const inner = createBoundedCounterStagingSink({ expectedDerivedVerifiers: expected, cryptoProvider: nodeCrypto })
+    let abortCalls = 0
+    let commitCalls = 0
+    return {
+      get state() {
+        return inner.state
+      },
+      get abortCalls() {
+        return abortCalls
+      },
+      get commitCalls() {
+        return commitCalls
+      },
+      beginTable: (t, c) => inner.beginTable(t, c),
+      writeRow: (t, r, o) => inner.writeRow(t, r, o),
+      finishTable: (t, c, d) => inner.finishTable(t, c, d),
+      async verify(verifiers, ctx) {
+        await inner.verify(verifiers, ctx)
+        if (onVerify) await onVerify(verifiers, ctx)
+      },
+      commit() {
+        commitCalls += 1
+        return inner.commit()
+      },
+      abort() {
+        abortCalls += 1
+        inner.abort()
+        if (abortThrows) throw abortThrows
+      },
+    }
+  }
+
+  const makeTrackedAsyncIterable = (bytes, { chunkSize = 100, throwAfterChunk = -1, extraTrailing = null } = {}) => {
+    let returnCalls = 0
+    let chunksYielded = 0
+    const iterable = {
+      [Symbol.asyncIterator]() {
+        let offset = 0
+        let sentTrailing = false
+        return {
+          async next() {
+            if (throwAfterChunk >= 0 && chunksYielded >= throwAfterChunk) {
+              throw new Error('STREAM_READ_ERR')
+            }
+            if (offset < bytes.byteLength) {
+              const end = Math.min(offset + chunkSize, bytes.byteLength)
+              const value = bytes.subarray(offset, end)
+              offset = end
+              chunksYielded += 1
+              return { done: false, value }
+            }
+            if (extraTrailing && !sentTrailing) {
+              sentTrailing = true
+              return { done: false, value: extraTrailing }
+            }
+            return { done: true, value: undefined }
+          },
+          async return() {
+            returnCalls += 1
+            return { done: true, value: undefined }
+          },
+        }
+      },
+    }
+    return {
+      iterable,
+      get returnCalls() {
+        return returnCalls
+      },
+    }
+  }
+
+  // 1) Signal already aborted before call -> abort staging once
+  {
+    const ctrl = new AbortController()
+    ctrl.abort()
+    const sink = makeSpySink()
+    await assert.rejects(
+      importSyntheticPortableBackup({ source: emptyBytes, password: vectors.password, stagingSink: sink, signal: ctrl.signal }),
+      expectCode('CANCELLED'),
+    )
+    assert.equal(sink.abortCalls, 1)
+    assert.equal(sink.commitCalls, 0)
+    assert.equal(sink.state, 'aborted')
+  }
+
+  // 2) Source initialization failure (null source & throwing [Symbol.asyncIterator]()) -> abort staging once
+  for (const badSource of [
+    null,
+    {
+      [Symbol.asyncIterator]() {
+        throw new Error('INIT_ITER_BOOM')
+      },
+    },
+  ]) {
+    const sink = makeSpySink()
+    await assert.rejects(
+      importSyntheticPortableBackup({ source: badSource, password: vectors.password, stagingSink: sink }),
+      err => (badSource === null ? err?.code === 'IO_FAILED' : err?.message === 'INIT_ITER_BOOM'),
+    )
+    assert.equal(sink.abortCalls, 1)
+    assert.equal(sink.commitCalls, 0)
+    assert.equal(sink.state, 'aborted')
+  }
+
+  // 3) Source read throws mid-stream -> iterator.return() called & staging aborted once
+  {
+    const tracked = makeTrackedAsyncIterable(emptyBytes, { chunkSize: 124, throwAfterChunk: 1 })
+    const sink = makeSpySink()
+    await assert.rejects(
+      importSyntheticPortableBackup({ source: tracked.iterable, password: vectors.password, stagingSink: sink }),
+      expectCode('IO_FAILED'),
+    )
+    assert.equal(tracked.returnCalls, 1)
+    assert.equal(sink.abortCalls, 1)
+    assert.equal(sink.state, 'aborted')
+  }
+
+  // 4) Manifest verification failure -> iterator.return() called & staging aborted once
+  {
+    const badFpManifest = Buffer.alloc(40)
+    badFpManifest.writeUInt32BE(0x4b4e5441, 0)
+    badFpManifest.writeUInt16BE(5, 4)
+    badFpManifest[38] = 1
+    const { logical } = buildRawLogicalStream(new Map())
+    const badManifestPkg = buildCustomPortablePackage({
+      password: vectors.password,
+      manifestPayload: badFpManifest,
+      dataFrames: [{ flags: 1, index: 0, plaintext: logical }],
+      footerPayloadBuilder: ({ dataFrameCount, totalPlaintextBytes, totalCiphertextBytes, transcript }) =>
+        encodeFooterBuffer({
+          dataFrameCount,
+          totalPlaintextBytes,
+          totalCiphertextBytes,
+          transcript,
+          verifiers: emptyDerived,
+        }),
+    })
+    const tracked = makeTrackedAsyncIterable(badManifestPkg, { chunkSize: 200 })
+    const sink = makeSpySink()
+    await assert.rejects(
+      importSyntheticPortableBackup({ source: tracked.iterable, password: vectors.password, stagingSink: sink }),
+      expectCode('INVALID_LOGICAL'),
+    )
+    assert.equal(tracked.returnCalls, 1)
+    assert.equal(sink.abortCalls, 1)
+    assert.equal(sink.state, 'aborted')
+  }
+
+  // 5) DATA frame authentication failure -> iterator.return() called & staging aborted once
+  {
+    const tampered = emptyBytes.slice()
+    tampered[220] ^= 1
+    const tracked = makeTrackedAsyncIterable(tampered, { chunkSize: 240 })
+    const sink = makeSpySink()
+    await assert.rejects(
+      importSyntheticPortableBackup({ source: tracked.iterable, password: vectors.password, stagingSink: sink }),
+      expectCode('AUTH_FAILED'),
+    )
+    assert.equal(tracked.returnCalls, 1)
+    assert.equal(sink.abortCalls, 1)
+    assert.equal(sink.state, 'aborted')
+  }
+
+  // 6) Footer verification failure (tampered footer transcript with trailing stream) -> iterator.return() & abort
+  {
+    const { logical } = buildRawLogicalStream(new Map())
+    const badFooterPkg = buildCustomPortablePackage({
+      password: vectors.password,
+      dataFrames: [{ flags: 1, index: 0, plaintext: logical }],
+      footerPayloadBuilder: ({ dataFrameCount, totalPlaintextBytes, totalCiphertextBytes, transcript }) => {
+        const badT = Buffer.from(transcript)
+        badT[0] ^= 1
+        return encodeFooterBuffer({
+          dataFrameCount,
+          totalPlaintextBytes,
+          totalCiphertextBytes,
+          transcript: badT,
+          verifiers: emptyDerived,
+        })
+      },
+    })
+    const tracked = makeTrackedAsyncIterable(badFooterPkg, {
+      chunkSize: 500,
+      extraTrailing: new Uint8Array([0x00]),
+    })
+    const sink = makeSpySink()
+    await assert.rejects(
+      importSyntheticPortableBackup({ source: tracked.iterable, password: vectors.password, stagingSink: sink }),
+      expectCode('INVALID_CONTAINER'),
+    )
+    assert.equal(tracked.returnCalls, 1)
+    assert.equal(sink.abortCalls, 1)
+    assert.equal(sink.state, 'aborted')
+  }
+
+  // 7) Cancel right before commit (inside verify) -> abort once, commit never called
+  {
+    const ctrl = new AbortController()
+    const sink = makeSpySink({
+      onVerify() {
+        ctrl.abort()
+      },
+    })
+    await assert.rejects(
+      importSyntheticPortableBackup({ source: emptyBytes, password: vectors.password, stagingSink: sink, signal: ctrl.signal }),
+      expectCode('CANCELLED'),
+    )
+    assert.equal(sink.commitCalls, 0)
+    assert.equal(sink.abortCalls, 1)
+    assert.equal(sink.state, 'aborted')
+  }
+
+  // 8) Original business/auth error preserved when stagingSink.abort() itself throws
+  {
+    const tampered = emptyBytes.slice()
+    tampered[220] ^= 1
+    const sink = makeSpySink({ abortThrows: new Error('ABORT_DISK_IO_FAIL') })
+    await assert.rejects(
+      importSyntheticPortableBackup({ source: tampered, password: vectors.password, stagingSink: sink }),
+      expectCode('AUTH_FAILED'),
+    )
+    assert.equal(sink.abortCalls, 1)
+  }
+
+  // 9) Successful commit is never overwritten by abort, and iterator finishes cleanly without extra return()
+  {
+    const tracked = makeTrackedAsyncIterable(emptyBytes, { chunkSize: 512 })
+    const sink = makeSpySink()
+    await importSyntheticPortableBackup({ source: tracked.iterable, password: vectors.password, stagingSink: sink })
+    assert.equal(sink.commitCalls, 1)
+    assert.equal(sink.abortCalls, 0)
+    assert.equal(sink.state, 'committed')
+    assert.equal(tracked.returnCalls, 0)
+  }
+})
+
+test('F03 deriveWrapKey explicit ownership transfer and key zeroization on HKDF cancel/error', async () => {
+  const header = encodePublicHeader({ salt: fixedMaterial.salt, backupId: fixedMaterial.backupId })
+  const expectedWrapHex = '65782e93ddb6aacb3798924d699bceb634fa557754c93a5fd69fdcb85bdc1816'
+
+  // 1) Normal success transfers wrapKey ownership to caller while zeroizing passBytes & baseKey
+  {
+    const { trackedKeys, provider } = makeKeyTrackingCryptoProvider()
+    const wrapKey = await deriveWrapKey(
+      vectors.password,
+      header,
+      fixedMaterial.salt,
+      fixedMaterial.backupId,
+      600000,
+      provider,
+      undefined,
+    )
+    assert.equal(bytesToHex(wrapKey), expectedWrapHex)
+    assert.equal(isZeroed(wrapKey), false)
+    assert.equal(isZeroed(trackedKeys.passBytes[0]), true)
+    assert.equal(isZeroed(trackedKeys.baseKeys[0]), true)
+  }
+
+  // 2) Cancel DURING HKDF execution -> zeroizes newly generated wrapKey as well as baseKey & passBytes
+  {
+    const ctrl = new AbortController()
+    const { trackedKeys, provider } = makeKeyTrackingCryptoProvider(nodeCrypto, {
+      async onHkdfStart() {
+        ctrl.abort()
+        await Promise.resolve()
+      },
+    })
+    await assert.rejects(
+      deriveWrapKey(
+        vectors.password,
+        header,
+        fixedMaterial.salt,
+        fixedMaterial.backupId,
+        600000,
+        provider,
+        ctrl.signal,
+      ),
+      expectCode('CANCELLED'),
+    )
+    assert.equal(trackedKeys.hkdfKeys.length, 1)
+    assert.equal(isZeroed(trackedKeys.hkdfKeys[0]), true)
+    assert.equal(isZeroed(trackedKeys.baseKeys[0]), true)
+    assert.equal(isZeroed(trackedKeys.passBytes[0]), true)
+  }
+
+  // 3) Cancel AFTER HKDF completes -> zeroizes newly generated wrapKey before returning
+  {
+    const ctrl = new AbortController()
+    const { trackedKeys, provider } = makeKeyTrackingCryptoProvider(nodeCrypto, {
+      onHkdfEnd() {
+        ctrl.abort()
+      },
+    })
+    await assert.rejects(
+      deriveWrapKey(
+        vectors.password,
+        header,
+        fixedMaterial.salt,
+        fixedMaterial.backupId,
+        600000,
+        provider,
+        ctrl.signal,
+      ),
+      expectCode('CANCELLED'),
+    )
+    assert.equal(trackedKeys.hkdfKeys.length, 1)
+    assert.equal(isZeroed(trackedKeys.hkdfKeys[0]), true)
+    assert.equal(isZeroed(trackedKeys.baseKeys[0]), true)
+    assert.equal(isZeroed(trackedKeys.passBytes[0]), true)
+  }
+
+  // 4) HKDF throws exception -> zeroizes passBytes & baseKey and releases kdfInFlight lock
+  {
+    const { trackedKeys, provider } = makeKeyTrackingCryptoProvider(nodeCrypto, {
+      onHkdfStart() {
+        throw new Error('HKDF_FAILURE')
+      },
+    })
+    await assert.rejects(
+      deriveWrapKey(
+        vectors.password,
+        header,
+        fixedMaterial.salt,
+        fixedMaterial.backupId,
+        600000,
+        provider,
+        undefined,
+      ),
+      err => err?.message === 'HKDF_FAILURE',
+    )
+    assert.equal(isZeroed(trackedKeys.baseKeys[0]), true)
+    assert.equal(isZeroed(trackedKeys.passBytes[0]), true)
+
+    // Subsequent call recovers cleanly (kdfInFlight reset)
+    const recovered = await deriveWrapKey(
+      vectors.password,
+      header,
+      fixedMaterial.salt,
+      fixedMaterial.backupId,
+      600000,
+      nodeCrypto,
+      undefined,
+    )
+    assert.equal(bytesToHex(recovered), expectedWrapHex)
+  }
+
+  // 5) nodeCryptoProvider randomBytes returns fresh detached non-zero Uint8Arrays
+  {
+    const r1 = nodeCrypto.randomBytes(32)
+    const r2 = nodeCrypto.randomBytes(32)
+    assert.equal(r1 instanceof Uint8Array, true)
+    assert.equal(r1.byteLength, 32)
+    assert.equal(isZeroed(r1), false)
+    assert.notDeepEqual(r1, r2)
+  }
+})
+
+test('C01-03 SQLite staging sink rejects cross-ordinal and cross-world duplicate IDs across all 3 ordinal tables', async () => {
+  const datasetRows = [{ singleton: 1, user_id: 'u1', data_version: 2, extensions_json: '{}' }]
+  const worldRows = [
+    {
+      id: 'w1',
+      name: 'W1',
+      rules: 'r',
+      revision: 1,
+      time_zone: 'UTC',
+      created_at: 1,
+      last_simulated_at: 1,
+      autonomy_enabled: 1,
+      proactive_enabled: 0,
+      notifications_enabled: 1,
+      default_chat_mode: 'daily',
+      archived: null,
+      identity_id: 'id1',
+      extensions_json: '{}',
+    },
+    {
+      id: 'w2',
+      name: 'W2',
+      rules: 'r',
+      revision: 1,
+      time_zone: 'UTC',
+      created_at: 1,
+      last_simulated_at: 1,
+      autonomy_enabled: 1,
+      proactive_enabled: 0,
+      notifications_enabled: 1,
+      default_chat_mode: 'daily',
+      archived: null,
+      identity_id: 'id2',
+      extensions_json: '{}',
+    },
+  ]
+  const identityRows = [
+    { id: 'id1', world_id: 'w1', user_id: 'u1', display_name: 'U1', background: 'bg', revision: 1, extensions_json: '{}' },
+    { id: 'id2', world_id: 'w2', user_id: 'u1', display_name: 'U2', background: 'bg', revision: 1, extensions_json: '{}' },
+  ]
+  const cardRows = [{ id: 'card1', current_version_id: 'cv1', archived: 0, preset_application_id: null, extensions_json: '{}' }]
+  const cardVersionRows = [
+    {
+      id: 'cv1',
+      card_id: 'card1',
+      revision: 1,
+      definition_json: '{}',
+      raw_data_json: '{}',
+      source: 'manual',
+      imported_json: null,
+      extensions_json: '{}',
+    },
+  ]
+  const instanceRows = [
+    {
+      id: 'inst-1',
+      world_id: 'w1',
+      card_id: 'card1',
+      card_version_id: 'cv1',
+      revision: 1,
+      overrides_json: '{}',
+      mood: 'ok',
+      energy: 0.5,
+      location: 'home',
+      autonomy_enabled: 1,
+      proactive_enabled: 0,
+      extensions_json: '{}',
+    },
+  ]
+
+  const baseEvent = (id, worldId, ordinal) => ({
+    ordinal,
+    id,
+    world_id: worldId,
+    status: 'committed',
+    visibility: 'private',
+    summary: 's',
+    effective_at: 1,
+    recorded_at: 1,
+    revision: 1,
+    causality: null,
+    kind: null,
+    action_instance_id: null,
+    action_relationship_id: null,
+    action_location: null,
+    replaces_event_id: null,
+    extensions_json: '{}',
+  })
+
+  const baseEffect = (id, worldId, ordinal) => ({
+    ordinal,
+    id,
+    world_id: worldId,
+    event_id: 'evt-ref',
+    target_type: 'instance',
+    target_id: 'inst-1',
+    target_instance_id: 'inst-1',
+    target_relationship_id: null,
+    operation: 'set',
+    path: 'state.mood',
+    value_json: '"ok"',
+    rule_version: 1,
+    extensions_json: '{}',
+  })
+
+  const baseBaseline = (id, worldId, ordinal) => ({
+    ordinal,
+    id,
+    world_id: worldId,
+    target_type: 'instance',
+    target_id: 'inst-1',
+    target_instance_id: 'inst-1',
+    target_relationship_id: null,
+    path: 'state.energy',
+    value_json: '0.5',
+    extensions_json: '{}',
+  })
+
+  // Positive control: unique IDs across all 3 ordinal tables commit cleanly in SQLite staging
+  {
+    const okBusiness = {
+      dataset_metadata: datasetRows,
+      worlds: [worldRows[0]],
+      world_identities: [identityRows[0]],
+      character_cards: cardRows,
+      card_versions: cardVersionRows,
+      character_instances: instanceRows,
+      world_events: [baseEvent('evt-ref', 'w1', 0)],
+      world_effects: [baseEffect('ef-ok', 'w1', 0)],
+      effect_baselines: [baseBaseline('eb-ok', 'w1', 0)],
+    }
+    const okDerived = await computeSyntheticDerivedVerifiers(
+      {
+        entity_ids: [
+          { id: 'card1', table_name: 'character_cards' },
+          { id: 'cv1', table_name: 'card_versions' },
+          { id: 'eb-ok', table_name: 'effect_baselines' },
+          { id: 'ef-ok', table_name: 'world_effects' },
+          { id: 'evt-ref', table_name: 'world_events' },
+          { id: 'id1', table_name: 'world_identities' },
+          { id: 'inst-1', table_name: 'character_instances' },
+          { id: 'w1', table_name: 'worlds' },
+        ],
+        event_array_order: [{ world_id: 'w1', entity_id: 'evt-ref', ordinal: 0 }],
+        effect_array_order: [{ world_id: 'w1', entity_id: 'ef-ok', ordinal: 0 }],
+        baseline_array_order: [{ world_id: 'w1', entity_id: 'eb-ok', ordinal: 0 }],
+        participants: [
+          { world_id: 'w1', id: 'id1', kind: 'user', identity_id: 'id1', instance_id: null },
+          { world_id: 'w1', id: 'inst-1', kind: 'character', identity_id: null, instance_id: 'inst-1' },
+        ],
+      },
+      nodeCrypto,
+    )
+    const okExport = await exportSyntheticPortableBackup({
+      password: 'ordinal-dup-password',
+      getTableSource: createSyntheticTableSource(okBusiness),
+      derivedVerifiers: okDerived,
+      cryptoProvider: nodeCrypto,
+    })
+    const okSink = createSqliteStagingSink({ cryptoProvider: nodeCrypto })
+    await importSyntheticPortableBackup({
+      source: okExport.bytes,
+      password: 'ordinal-dup-password',
+      stagingSink: okSink,
+      cryptoProvider: nodeCrypto,
+    })
+    assert.equal(okSink.state, 'committed')
+    okSink.database.close()
+  }
+
+  const cases = [
+    {
+      name: 'world_events same-world cross-ordinal dup',
+      business: {
+        dataset_metadata: datasetRows,
+        worlds: [worldRows[0]],
+        world_identities: [identityRows[0]],
+        world_events: [baseEvent('dup-ev', 'w1', 0), baseEvent('dup-ev', 'w1', 1)],
+      },
+    },
+    {
+      name: 'world_events cross-world dup',
+      business: {
+        dataset_metadata: datasetRows,
+        worlds: worldRows,
+        world_identities: identityRows,
+        world_events: [baseEvent('dup-ev', 'w1', 0), baseEvent('dup-ev', 'w2', 0)],
+      },
+    },
+    {
+      name: 'world_effects same-world cross-ordinal dup',
+      business: {
+        dataset_metadata: datasetRows,
+        worlds: [worldRows[0]],
+        world_identities: [identityRows[0]],
+        character_cards: cardRows,
+        card_versions: cardVersionRows,
+        character_instances: instanceRows,
+        world_events: [baseEvent('evt-ref', 'w1', 0)],
+        world_effects: [baseEffect('dup-ef', 'w1', 0), baseEffect('dup-ef', 'w1', 1)],
+      },
+    },
+    {
+      name: 'effect_baselines same-world cross-ordinal dup',
+      business: {
+        dataset_metadata: datasetRows,
+        worlds: [worldRows[0]],
+        world_identities: [identityRows[0]],
+        character_cards: cardRows,
+        card_versions: cardVersionRows,
+        character_instances: instanceRows,
+        effect_baselines: [baseBaseline('dup-eb', 'w1', 0), baseBaseline('dup-eb', 'w1', 1)],
+      },
+    },
+  ]
+
+  const emptyDerived = await computeSyntheticDerivedVerifiers({}, nodeCrypto)
+  for (const tc of cases) {
+    const exported = await exportSyntheticPortableBackup({
+      password: 'ordinal-dup-password',
+      getTableSource: createSyntheticTableSource(tc.business),
+      derivedVerifiers: emptyDerived,
+      cryptoProvider: nodeCrypto,
+    })
+    const sqliteSink = createSqliteStagingSink({ cryptoProvider: nodeCrypto })
+    await assert.rejects(
+      importSyntheticPortableBackup({
+        source: exported.bytes,
+        password: 'ordinal-dup-password',
+        stagingSink: sqliteSink,
+        cryptoProvider: nodeCrypto,
+      }),
+      err => err?.code === 'INVALID_LOGICAL' && err?.stage === 'sqlite-staging-install',
+      tc.name,
+    )
+    assert.equal(sqliteSink.state, 'aborted', tc.name)
+  }
 })

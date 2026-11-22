@@ -18,11 +18,20 @@ const pbkdf2Async = promisify(pbkdf2)
 export function createNodeCryptoProvider() {
   return {
     randomBytes(length) {
-      return new Uint8Array(randomBytes(length))
+      const raw = randomBytes(length)
+      try {
+        return new Uint8Array(raw)
+      } finally {
+        raw.fill(0)
+      }
     },
     async pbkdf2Sha256(passwordBytes, salt, iterations, keyLength) {
       const derived = await pbkdf2Async(passwordBytes, salt, iterations, keyLength, 'sha256')
-      return new Uint8Array(derived)
+      try {
+        return new Uint8Array(derived)
+      } finally {
+        derived.fill(0)
+      }
     },
     hkdfSha256(ikm, salt, info, keyLength) {
       return new Uint8Array(hkdfSync('sha256', ikm, salt, info, keyLength))
@@ -33,7 +42,11 @@ export function createNodeCryptoProvider() {
       const c1 = cipher.update(plaintext)
       const c2 = cipher.final()
       const tag = cipher.getAuthTag()
-      return new Uint8Array(Buffer.concat([c1, c2, tag]))
+      const out = new Uint8Array(c1.byteLength + c2.byteLength + tag.byteLength)
+      out.set(c1, 0)
+      out.set(c2, c1.byteLength)
+      out.set(tag, c1.byteLength + c2.byteLength)
+      return out
     },
     aesGcmDecrypt(key, nonce, ciphertextAndTag, aad) {
       if (ciphertextAndTag.byteLength < PORTABLE_TAG_SIZE) {
@@ -47,7 +60,15 @@ export function createNodeCryptoProvider() {
       decipher.setAuthTag(tag)
       const p1 = decipher.update(ciphertext)
       const p2 = decipher.final()
-      return new Uint8Array(Buffer.concat([p1, p2]))
+      try {
+        const out = new Uint8Array(p1.byteLength + p2.byteLength)
+        out.set(p1, 0)
+        out.set(p2, p1.byteLength)
+        return out
+      } finally {
+        p1.fill(0)
+        p2.fill(0)
+      }
     },
     createSha256() {
       const hash = createHash('sha256')
