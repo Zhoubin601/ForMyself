@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { createDecipheriv } from 'node:crypto'
 import { readFileSync } from 'node:fs'
 import test from 'node:test'
 import {
@@ -1825,5 +1826,238 @@ test('C01-03 SQLite staging sink rejects cross-ordinal and cross-world duplicate
       tc.name,
     )
     assert.equal(sqliteSink.state, 'aborted', tc.name)
+  }
+})
+
+test('F04 aesGcmDecrypt zeroizes temporary plaintext buffers on both success and GCM tag failure', async () => {
+  const capturedUpdates = []
+  const capturedFinals = []
+  let sawNonZeroAfterUpdate = false
+
+  const trackedProvider = createNodeCryptoProvider({
+    createDecipherivImpl(algorithm, key, iv, options) {
+      const realDecipher = createDecipheriv(algorithm, key, iv, options)
+      return {
+        setAAD: aad => realDecipher.setAAD(aad),
+        setAuthTag: tag => realDecipher.setAuthTag(tag),
+        update(data) {
+          const buf = realDecipher.update(data)
+          if (buf.some(b => b !== 0)) sawNonZeroAfterUpdate = true
+          capturedUpdates.push(buf)
+          return buf
+        },
+        final() {
+          const buf = realDecipher.final()
+          capturedFinals.push(buf)
+          return buf
+        },
+      }
+    },
+  })
+
+  const key = new Uint8Array(32).fill(0x11)
+  const nonce = new Uint8Array(12).fill(0x22)
+  const aad = new Uint8Array([1, 2, 3, 4])
+  const plain = new Uint8Array(64).fill(0x5a)
+  const sealed = nodeCrypto.aesGcmEncrypt(key, nonce, plain, aad)
+
+  // 1) Normal path returns independent plaintext Uint8Array and zeroizes temp Buffers
+  const opened = trackedProvider.aesGcmDecrypt(key, nonce, sealed, aad)
+  assert.deepEqual(opened, plain)
+  assert.equal(sawNonZeroAfterUpdate, true)
+  assert.equal(capturedUpdates.length, 1)
+  assert.equal(isZeroed(capturedUpdates[0]), true)
+  assert.equal(isZeroed(capturedFinals[0]), true)
+
+  // 2) Tampered GCM tag fails in decipher.final(), yet p1 produced by decipher.update() is still zeroized
+  sawNonZeroAfterUpdate = false
+  const tamperedTag = sealed.slice()
+  tamperedTag[tamperedTag.byteLength - 1] ^= 1
+  assert.throws(() => trackedProvider.aesGcmDecrypt(key, nonce, tamperedTag, aad))
+  assert.equal(sawNonZeroAfterUpdate, true)
+  assert.equal(capturedUpdates.length, 2)
+  assert.equal(isZeroed(capturedUpdates[1]), true)
+
+  // 3) End-to-end container decode auth failure on DATA frame tag still zeroizes all p1 Buffers
+  const populatedBytes = hexToBytes(vectors.populatedPackage.packageHex)
+  const tamperedPackage = populatedBytes.slice()
+  tamperedPackage[230] ^= 1
+  const emptyDerived = await computeSyntheticDerivedVerifiers({}, nodeCrypto)
+  const sink = createBoundedCounterStagingSink({ expectedDerivedVerifiers: emptyDerived, cryptoProvider: nodeCrypto })
+  await assert.rejects(
+    importSyntheticPortableBackup({
+      source: tamperedPackage,
+      password: vectors.password,
+      stagingSink: sink,
+      cryptoProvider: trackedProvider,
+    }),
+    expectCode('AUTH_FAILED'),
+  )
+  assert.equal(sink.state, 'aborted')
+  assert.ok(capturedUpdates.length >= 3)
+  assert.equal(
+    capturedUpdates.every(buf => isZeroed(buf)),
+    true,
+  )
+})
+
+test('F05 AsyncIterator.return getter/rejection failures still run staging abort once and preserve original decode error', async () => {
+  const emptyBytes = hexToBytes(vectors.emptyPackage.packageHex)
+  const emptyDerived = await computeSyntheticDerivedVerifiers({}, nodeCrypto)
+
+  const makeSpySink = ({ abortThrows = null } = {}) => {
+    const inner = createBoundedCounterStagingSink({ expectedDerivedVerifiers: emptyDerived, cryptoProvider: nodeCrypto })
+    let abortCalls = 0
+    let commitCalls = 0
+    return {
+      get state() {
+        return inner.state
+      },
+      get abortCalls() {
+        return abortCalls
+      },
+      get commitCalls() {
+        return commitCalls
+      },
+      beginTable: (t, c) => inner.beginTable(t, c),
+      writeRow: (t, r, o) => inner.writeRow(t, r, o),
+      finishTable: (t, c, d) => inner.finishTable(t, c, d),
+      verify: (v, ctx) => inner.verify(v, ctx),
+      commit() {
+        commitCalls += 1
+        return inner.commit()
+      },
+      abort() {
+        abortCalls += 1
+        inner.abort()
+        if (abortThrows) throw abortThrows
+      },
+    }
+  }
+
+  const makeFaultyReturnIterable = (bytes, { chunkSize = 200, throwAfterChunk = -1, getterThrows = false, returnRejects = false } = {}) => {
+    let getterCalls = 0
+    let returnCalls = 0
+    const iterable = {
+      [Symbol.asyncIterator]() {
+        let offset = 0
+        let chunksYielded = 0
+        const iter = {
+          async next() {
+            if (throwAfterChunk >= 0 && chunksYielded >= throwAfterChunk) {
+              throw new Error('STREAM_READ_FAILURE')
+            }
+            if (offset < bytes.byteLength) {
+              const end = Math.min(offset + chunkSize, bytes.byteLength)
+              const value = bytes.subarray(offset, end)
+              offset = end
+              chunksYielded += 1
+              return { done: false, value }
+            }
+            return { done: true, value: undefined }
+          },
+        }
+        if (getterThrows) {
+          Object.defineProperty(iter, 'return', {
+            get() {
+              getterCalls += 1
+              throw new Error('ITERATOR_RETURN_GETTER_BOOM')
+            },
+          })
+        } else if (returnRejects) {
+          iter.return = async () => {
+            returnCalls += 1
+            throw new Error('ITERATOR_RETURN_REJECT_BOOM')
+          }
+        } else {
+          iter.return = async () => {
+            returnCalls += 1
+            return { done: true, value: undefined }
+          }
+        }
+        return iter
+      },
+    }
+    return {
+      iterable,
+      get getterCalls() {
+        return getterCalls
+      },
+      get returnCalls() {
+        return returnCalls
+      },
+    }
+  }
+
+  // 1) AsyncIterator.return getter throws when decoding tampered DATA frame -> AUTH_FAILED preserved, abort called once
+  {
+    const tampered = emptyBytes.slice()
+    tampered[220] ^= 1
+    const faulty = makeFaultyReturnIterable(tampered, { chunkSize: 240, getterThrows: true })
+    const sink = makeSpySink()
+    await assert.rejects(
+      importSyntheticPortableBackup({ source: faulty.iterable, password: vectors.password, stagingSink: sink }),
+      expectCode('AUTH_FAILED'),
+    )
+    assert.equal(faulty.getterCalls, 1)
+    assert.equal(sink.abortCalls, 1)
+    assert.equal(sink.commitCalls, 0)
+    assert.equal(sink.state, 'aborted')
+  }
+
+  // 2) AsyncIterator.return() rejects when stream read fails mid-way -> IO_FAILED preserved, abort called once
+  {
+    const faulty = makeFaultyReturnIterable(emptyBytes, { chunkSize: 124, throwAfterChunk: 1, returnRejects: true })
+    const sink = makeSpySink()
+    await assert.rejects(
+      importSyntheticPortableBackup({ source: faulty.iterable, password: vectors.password, stagingSink: sink }),
+      expectCode('IO_FAILED'),
+    )
+    assert.equal(faulty.returnCalls, 1)
+    assert.equal(sink.abortCalls, 1)
+    assert.equal(sink.commitCalls, 0)
+    assert.equal(sink.state, 'aborted')
+  }
+
+  // 3) Original INVALID_LOGICAL error + return() rejection + staging.abort() throw -> original error preserved, abort once
+  {
+    const badFpManifest = Buffer.alloc(40)
+    badFpManifest.writeUInt32BE(0x4b4e5441, 0)
+    badFpManifest.writeUInt16BE(5, 4)
+    badFpManifest[38] = 1
+    const { logical } = buildRawLogicalStream(new Map())
+    const badManifestPkg = buildCustomPortablePackage({
+      password: vectors.password,
+      manifestPayload: badFpManifest,
+      dataFrames: [{ flags: 1, index: 0, plaintext: logical }],
+      footerPayloadBuilder: ({ dataFrameCount, totalPlaintextBytes, totalCiphertextBytes, transcript }) =>
+        encodeFooterBuffer({
+          dataFrameCount,
+          totalPlaintextBytes,
+          totalCiphertextBytes,
+          transcript,
+          verifiers: emptyDerived,
+        }),
+    })
+    const faulty = makeFaultyReturnIterable(badManifestPkg, { chunkSize: 200, returnRejects: true })
+    const sink = makeSpySink({ abortThrows: new Error('ABORT_ALSO_FAILED') })
+    await assert.rejects(
+      importSyntheticPortableBackup({ source: faulty.iterable, password: vectors.password, stagingSink: sink }),
+      expectCode('INVALID_LOGICAL'),
+    )
+    assert.equal(faulty.returnCalls, 1)
+    assert.equal(sink.abortCalls, 1)
+    assert.equal(sink.commitCalls, 0)
+  }
+
+  // 4) Successful decode with throwing return getter commits cleanly and never executes abort
+  {
+    const faulty = makeFaultyReturnIterable(emptyBytes, { chunkSize: 512, getterThrows: true })
+    const sink = makeSpySink()
+    await importSyntheticPortableBackup({ source: faulty.iterable, password: vectors.password, stagingSink: sink })
+    assert.equal(sink.commitCalls, 1)
+    assert.equal(sink.abortCalls, 0)
+    assert.equal(sink.state, 'committed')
+    assert.equal(faulty.getterCalls, 0)
   }
 })

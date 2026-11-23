@@ -13,9 +13,10 @@ const pbkdf2Async = promisify(pbkdf2)
 
 /**
  * Create a Node.js `node:crypto` provider implementing PortableCryptoProvider.
+ * @param {{ createDecipherivImpl?: typeof createDecipheriv }} [options]
  * @returns {import('../../../../src/features/chat/backup/portable/contracts').PortableCryptoProvider}
  */
-export function createNodeCryptoProvider() {
+export function createNodeCryptoProvider({ createDecipherivImpl = createDecipheriv } = {}) {
   return {
     randomBytes(length) {
       const raw = randomBytes(length)
@@ -55,19 +56,23 @@ export function createNodeCryptoProvider() {
       const split = ciphertextAndTag.byteLength - PORTABLE_TAG_SIZE
       const ciphertext = ciphertextAndTag.subarray(0, split)
       const tag = ciphertextAndTag.subarray(split)
-      const decipher = createDecipheriv('aes-256-gcm', key, nonce, { authTagLength: PORTABLE_TAG_SIZE })
+      const decipher = createDecipherivImpl('aes-256-gcm', key, nonce, { authTagLength: PORTABLE_TAG_SIZE })
       decipher.setAAD(aad)
       decipher.setAuthTag(tag)
-      const p1 = decipher.update(ciphertext)
-      const p2 = decipher.final()
+      /** @type {Buffer | undefined} */
+      let p1
+      /** @type {Buffer | undefined} */
+      let p2
       try {
+        p1 = decipher.update(ciphertext)
+        p2 = decipher.final()
         const out = new Uint8Array(p1.byteLength + p2.byteLength)
         out.set(p1, 0)
         out.set(p2, p1.byteLength)
         return out
       } finally {
-        p1.fill(0)
-        p2.fill(0)
+        p1?.fill(0)
+        p2?.fill(0)
       }
     },
     createSha256() {

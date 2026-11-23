@@ -581,13 +581,15 @@ export function createBoundedByteReader(source, signal) {
      */
     async close() {
       leftover = null
-      if (iterator && !iteratorDone && typeof iterator.return === 'function') {
-        iteratorDone = true
-        try {
-          await iterator.return()
-        } catch {
-          // Best-effort iterator cleanup; preserve original error.
+      if (!iterator || iteratorDone) return
+      iteratorDone = true
+      try {
+        const returnFn = iterator.return
+        if (typeof returnFn === 'function') {
+          await returnFn.call(iterator)
         }
+      } catch {
+        // Best-effort iterator cleanup; preserve original error.
       }
     },
   }
@@ -1105,16 +1107,23 @@ export async function decodePortableContainer({
       footer,
     }
   } finally {
-    zeroize(wrapKey, bek, manifestKey, dataKey, footerKey)
-    if (reader) {
-      await reader.close()
-    }
-    if (!committed && !aborted) {
-      aborted = true
-      try {
-        await stagingSink?.abort?.()
-      } catch {
-        // Preserve original validation/auth error; abort is best-effort cleanup.
+    try {
+      zeroize(wrapKey, bek, manifestKey, dataKey, footerKey)
+      if (reader) {
+        try {
+          await reader.close()
+        } catch {
+          // Best-effort reader cleanup; preserve original error.
+        }
+      }
+    } finally {
+      if (!committed && !aborted) {
+        aborted = true
+        try {
+          await stagingSink?.abort?.()
+        } catch {
+          // Preserve original validation/auth error; abort is best-effort cleanup.
+        }
       }
     }
   }
