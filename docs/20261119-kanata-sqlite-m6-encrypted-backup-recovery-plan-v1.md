@@ -1,8 +1,8 @@
 # Kanata SQLite M6 加密备份、恢复与改密计划 v1
 
-- 当前状态（2026-11-20）：**M5 Overall CLOSED / PASS，M6-QA-01 PASS，M6-00 CLOSED / PASS，M6-01 实施中，M6-02 未启动**。M6-00 依据 [GPT-6 独立最终复核](qa/kanata-sqlite-m6/m6-00-final-independent-review-v1.md) 关账。
-- 当前入口：[M6-00 最终设计收口](qa/kanata-sqlite-m6/m6-00-final-closeout-v1.md) · [M6-01 实施任务书](20261120-kanata-sqlite-m6-01-portable-backup-format-task-v1.md) · [M6-QA-01](qa/kanata-sqlite-m6/m6-qa-01-report-v1.md)。
-- 当前阶段授权来自 KANATA-M6-00-CLOSEOUT-2026-11-20。独立 GPT-6 最终复核 PASS 后按任务书启动 M6-01 合成实施。下方原规划和 CI 历史保留当时口径。
+- 当前状态（2026-11-23）：**M5 Overall CLOSED / PASS，M6-QA-01 PASS，M6-00 CLOSED / PASS，M6-01 CLOSED / PASS，M6-02 已获授权并进入实施准备**。M6-01 以提交 43b26d6ec41929a59844bb62a882bdf578391192 完成最终独立复核。
+- 当前入口：[M6-00 最终设计收口](qa/kanata-sqlite-m6/m6-00-final-closeout-v1.md) · [M6-01 实施任务书](20261120-kanata-sqlite-m6-01-portable-backup-format-task-v1.md) · [M6-01 交付报告](qa/kanata-sqlite-m6/m6-01-portable-codec-report-v1.md) · [M6-02 实施任务书](20261123-kanata-sqlite-m6-02-consistent-export-task-v1.md)。
+- M6-01 已由 GPT-6 在提交 43b26d6ec41929a59844bb62a882bdf578391192 完成最终独立复审并签核 PASS。用户于 2026-11-23 明确授权启动 M6-02；当前执行范围以 M6-02 独立任务书为准。下方历史规划和 CI 记录保留当时口径。
 - 日期：2026-11-19
 - 仓库：`Zhoubin601/ForMyself`
 - 规划所在分支：`m5/json-archive-migration`
@@ -220,3 +220,15 @@ SQLite 迁移通过不等于 P7 自动通过。Android 512 MiB、完整改密 12
 - Node v24.14.1、npm 11.11.0 下 `npm run check` 退出 0。Node 801 项、Vitest 45 文件 420 项通过，类型检查和 Web 构建成功。lint 0 错误、61 项既有告警。构建产物中未检出测试 KDF 域常量，生产源码、原生、Schema 和 canonical 入口无差异。
 - 当前检查点未完成完整 C01。Manifest、分块 AEAD/顺序、Footer/transcript、`kanata-logical-v1` 记录、50 表摘要及全流拒绝矩阵属于 M6-01 后续实施。发行参数仍待 N-01/N-03，Native N-01～06 和完整 A/C 未运行。
 - 本地检查点文件 SHA-256：`envelope.mjs` 为 `aa50f986432a4da97eff5fbaa72e44744eba1c73ad6e42261a44608bffb8b1cd`，`kanataPortableBackupEnvelope.test.js` 为 `5bf0e0611cd6ef3707b076ebfad2a2738a393ad7045d4dfb2d24ed6a41958f2a`。本轮交付为 worktree 改动，无新提交、推送或远端 CI。基线 [Quality 44687910607](https://github.com/Zhoubin601/ForMyself/actions/runs/44687910607) 的 Web 和 Android 均成功。
+
+
+## 10. 2026-11-23 M6-01 最终关账与 M6-02 启动授权
+
+- M6-01 最终独立复审：**PASS**。复核对象为提交 43b26d6ec41929a59844bb62a882bdf578391192，分支 m6/encrypted-backup-recovery。
+- M6-01 最终交付报告：[m6-01-portable-codec-report-v1.md](qa/kanata-sqlite-m6/m6-01-portable-codec-report-v1.md)。
+- 远端 Quality #45109150171 的 Web 与 Android Job 均成功。该 Android CI 证明现有 Android 构建和既有冒烟无回归，不替代 M6-02 的 N-01～N-04 Native 探针。
+- M6-01 的 F01～F05 整改已完成；M6-01 未接入生产 Store、Native SQLCipher 导出、Settings UI、RestoreCoordinator 或普通 APK SQLite 激活位。
+- 用户于 2026-11-23 明确授权启动 M6-02。正式任务书：[20261123-kanata-sqlite-m6-02-consistent-export-task-v1.md](20261123-kanata-sqlite-m6-02-consistent-export-task-v1.md)。
+- M6-02 采用 A/C 独立合成实验：A 为 SQLCipher 物理一致性快照可行性；C 为 Native 只读逻辑快照与 M6-01 KPB1 分块导出。Scheme C 为 M6-00 建议路线，但不预设性能胜者。
+- M6-02 代码基线为 43b26d6ec41929a59844bb62a882bdf578391192。实现仍限定在 m6/encrypted-backup-recovery 独立分支和隔离 worktree；禁止真实数据、生产 canonical 切换、APK 发布、合并和自动启动 M6-03。
+- 本节更新只记录阶段状态和用户授权，不代表 M6-02 实现、A/C 实验、Native 低 API 能力或性能门禁已通过。
