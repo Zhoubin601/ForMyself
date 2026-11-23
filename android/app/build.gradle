@@ -2,8 +2,12 @@ apply plugin: 'com.android.application'
 
 def kanataM2Synthetic = providers.gradleProperty('kanataM2Synthetic').map { it == 'true' }.orElse(false)
 def kanataM5Synthetic = providers.gradleProperty('kanataM5Synthetic').map { it == 'true' }.orElse(false)
+def kanataM6Synthetic = providers.gradleProperty('kanataM6Synthetic').map { it == 'true' }.orElse(false)
 if (kanataM5Synthetic.get() && !kanataM2Synthetic.get()) {
     throw new GradleException('M5 catalog is only allowed in the isolated QA build')
+}
+if (kanataM6Synthetic.get() && !kanataM2Synthetic.get()) {
+    throw new GradleException('M6 native probes are only allowed in the isolated QA build')
 }
 def kanataCatalog = layout.buildDirectory.dir('generated/kanataSqlite/assets')
 def kanataRepository = rootProject.projectDir.parentFile
@@ -62,6 +66,10 @@ android {
         androidTest.assets.srcDirs += ["../../tests/fixtures"]
         if (kanataM5Synthetic.get()) {
             androidTest.java.srcDir new File(kanataRepository, 'docs/qa/kanata-sqlite-m5/androidTest')
+        }
+        if (kanataM6Synthetic.get()) {
+            androidTest.java.srcDir new File(kanataRepository, 'docs/qa/kanata-sqlite-m6/androidTest')
+            androidTest.assets.srcDirs += [new File(kanataRepository, 'docs/qa/kanata-sqlite-m6/portable')]
         }
     }
 
