@@ -204,6 +204,7 @@ public class KanataM6N01CryptoProbeTest {
 
     /**
      * Zero-allocation byte-safe PBKDF2-HMAC-SHA256 using precomputed HMAC ipad/opad SHA-256 midstates.
+     * Clears all intermediate and output buffers on exception or cancellation paths.
      */
     private static byte[] pbkdf2HmacSha256ZeroAlloc(
             byte[] passwordBytes,
@@ -211,6 +212,21 @@ public class KanataM6N01CryptoProbeTest {
             int iterations,
             int keyLen,
             AtomicBoolean cancelled) throws Exception {
+        byte[] out = new byte[keyLen];
+        pbkdf2HmacSha256ZeroAllocInto(passwordBytes, salt, iterations, keyLen, cancelled, out);
+        return out;
+    }
+
+    private static void pbkdf2HmacSha256ZeroAllocInto(
+            byte[] passwordBytes,
+            byte[] salt,
+            int iterations,
+            int keyLen,
+            AtomicBoolean cancelled,
+            byte[] out) throws Exception {
+        if (passwordBytes == null || salt == null || iterations <= 0 || keyLen <= 0 || out == null || out.length < keyLen) {
+            throw new IllegalArgumentException("INVALID_PBKDF2_ARGS");
+        }
         byte[] keyBlock = new byte[64];
         byte[] padBlock = new byte[64];
         int[] ipadMid = new int[8];
@@ -220,7 +236,8 @@ public class KanataM6N01CryptoProbeTest {
         int[] u = new int[8];
         int[] t = new int[8];
         byte[] firstMsg = new byte[salt.length + 4];
-        byte[] out = new byte[keyLen];
+        byte[] fullBlock = new byte[128];
+        boolean completed = false;
         try {
             if (passwordBytes.length > 64) {
                 byte[] hashedKey = MessageDigest.getInstance("SHA-256").digest(passwordBytes);
@@ -239,7 +256,6 @@ public class KanataM6N01CryptoProbeTest {
 
             System.arraycopy(salt, 0, firstMsg, 0, salt.length);
             int blocks = (keyLen + 31) / 32;
-            byte[] fullBlock = new byte[128];
             for (int block = 1; block <= blocks; block++) {
                 if (cancelled != null && cancelled.get()) {
                     throw new InterruptedException("CANCELLED");
@@ -310,9 +326,14 @@ public class KanataM6N01CryptoProbeTest {
                     if (outOff < keyLen) out[outOff++] = (byte) val;
                 }
             }
-            Arrays.fill(fullBlock, (byte) 0);
-            return out;
+            if (cancelled != null && cancelled.get()) {
+                throw new InterruptedException("CANCELLED");
+            }
+            completed = true;
         } finally {
+            if (!completed) {
+                Arrays.fill(out, 0, keyLen, (byte) 0);
+            }
             Arrays.fill(keyBlock, (byte) 0);
             Arrays.fill(padBlock, (byte) 0);
             Arrays.fill(ipadMid, 0);
@@ -322,6 +343,7 @@ public class KanataM6N01CryptoProbeTest {
             Arrays.fill(u, 0);
             Arrays.fill(t, 0);
             Arrays.fill(firstMsg, (byte) 0);
+            Arrays.fill(fullBlock, (byte) 0);
         }
     }
 
@@ -769,5 +791,91 @@ public class KanataM6N01CryptoProbeTest {
 
         Arrays.fill(pwBytes, (byte) 0);
         Arrays.fill(derivedKek, (byte) 0);
+    }
+
+    @Test
+    public void probeStandardPbkdf2VectorsAndFailureBufferWipe() throws Exception {
+        // 1. Independent PBKDF2-HMAC-SHA256 standard vectors (RFC 7914 / NUL / >64-byte key)
+        Object[][] stdVectors = new Object[][] {
+                { "password".getBytes(StandardCharsets.UTF_8), "salt".getBytes(StandardCharsets.UTF_8), 1, 32,
+                        "120fb6cffcf8b32c43e7225256c4f837a86548c92ccc35480805987cb70be17b" },
+                { "password".getBytes(StandardCharsets.UTF_8), "salt".getBytes(StandardCharsets.UTF_8), 2, 32,
+                        "ae4d0c95af6b46d32d0adff928f06dd02a303f8ef3c251dfd6e2d85a95474c43" },
+                { "password".getBytes(StandardCharsets.UTF_8), "salt".getBytes(StandardCharsets.UTF_8), 4096, 32,
+                        "c5e478d59288c841aa530db6845c4c8d962893a001ce4e11a4963873aa98134a" },
+                { "passwordPASSWORDpassword".getBytes(StandardCharsets.UTF_8),
+                        "saltSALTsaltSALTsaltSALTsaltSALTsalt".getBytes(StandardCharsets.UTF_8), 4096, 40,
+                        "348c89dbcbd32b2f32d814b8116e84cf2b17347ebc1800181c4e2a1fb8dd53e1c635518c7dac47e9" },
+                { "pass\u0000word".getBytes(StandardCharsets.UTF_8), "sa\u0000lt".getBytes(StandardCharsets.UTF_8), 4096, 16,
+                        "89b69d0516f829893c696226650a8687" },
+                { ("A".repeat(70) + "\u0000" + "B".repeat(10)).getBytes(StandardCharsets.UTF_8),
+                        "long-key-salt-0123456789".getBytes(StandardCharsets.UTF_8), 1000, 48,
+                        "5f1a8aa74130b6f114322e03286f836a18c4b3384f2c3cf4a9d94a3200db2eccf299dde4bac2020386b3daa7d443f62c" }
+        };
+        JSONObject vecReport = new JSONObject();
+        for (int i = 0; i < stdVectors.length; i++) {
+            byte[] p = (byte[]) stdVectors[i][0];
+            byte[] s = (byte[]) stdVectors[i][1];
+            int c = (int) stdVectors[i][2];
+            int dkLen = (int) stdVectors[i][3];
+            String expectedHex = (String) stdVectors[i][4];
+            byte[] actual = pbkdf2HmacSha256ZeroAlloc(p, s, c, dkLen, null);
+            assertEquals("Standard vector " + i + " mismatch", expectedHex, bytesToHex(actual));
+            Arrays.fill(actual, (byte) 0);
+            vecReport.put("vec_" + i + "_c" + c + "_dk" + dkLen, expectedHex);
+        }
+
+        // 2. Verify partial output buffer is wiped on mid-block-2 cancellation (keyLen=64)
+        byte[] outBuf = new byte[64];
+        byte[] pTest = "cancel-wipe-test".getBytes(StandardCharsets.UTF_8);
+        byte[] sTest = "cancel-salt-16bb".getBytes(StandardCharsets.UTF_8);
+        AtomicBoolean cancelled = new AtomicBoolean(false);
+        CountDownLatch finished = new CountDownLatch(1);
+        AtomicReference<Throwable> err = new AtomicReference<>();
+        Thread worker = new Thread(() -> {
+            try {
+                pbkdf2HmacSha256ZeroAllocInto(pTest, sTest, 300_000, 64, cancelled, outBuf);
+            } catch (Throwable t) {
+                err.set(t);
+            } finally {
+                finished.countDown();
+            }
+        });
+        worker.start();
+        // Spin briefly until block 1 has been written into outBuf[0..31], then cancel during block 2!
+        long deadline = SystemClock.elapsedRealtime() + 10_000;
+        boolean sawPartialWrite = false;
+        while (SystemClock.elapsedRealtime() < deadline) {
+            boolean nonZero = false;
+            for (int i = 0; i < 32; i++) {
+                if (outBuf[i] != 0) {
+                    nonZero = true;
+                    break;
+                }
+            }
+            if (nonZero) {
+                sawPartialWrite = true;
+                cancelled.set(true);
+                break;
+            }
+            Thread.yield();
+        }
+        assertTrue("Expected block 1 write before cancel", sawPartialWrite);
+        assertTrue(finished.await(10, TimeUnit.SECONDS));
+        assertTrue("Expected InterruptedException on cancel", err.get() instanceof InterruptedException);
+        for (int i = 0; i < outBuf.length; i++) {
+            assertEquals("Output buffer byte " + i + " was not wiped after cancel", 0, outBuf[i]);
+        }
+
+        // 3. Verify invalid-argument exception path does not leave caller sentinel or fail silently
+        byte[] errBuf = new byte[32];
+        Arrays.fill(errBuf, (byte) 0x55);
+        assertThrows(IllegalArgumentException.class,
+                () -> pbkdf2HmacSha256ZeroAllocInto(pTest, sTest, 0, 32, null, errBuf));
+
+        vecReport.put("sawPartialBlock1WriteBeforeCancel", sawPartialWrite);
+        vecReport.put("outputBufferWipedAfterCancel", true);
+        vecReport.put("invalidArgRejected", true);
+        report("F08_STD_VECTORS_AND_WIPE", vecReport);
     }
 }

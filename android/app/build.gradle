@@ -89,7 +89,9 @@ android {
 
 androidComponents {
     beforeVariants(selector().withBuildType('release')) { variant ->
-        if (kanataM5Synthetic.get()) variant.enable = false
+        if (kanataM2Synthetic.get() || kanataM5Synthetic.get() || kanataM6Synthetic.get()) {
+            variant.enable = false
+        }
     }
 }
 

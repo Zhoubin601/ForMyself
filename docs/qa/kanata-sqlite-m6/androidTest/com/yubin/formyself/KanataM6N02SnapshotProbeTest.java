@@ -605,4 +605,347 @@ public class KanataM6N02SnapshotProbeTest {
             dir.delete();
         }
     }
+
+    private static String logicalSnapshotDigest(SQLiteDatabase db) throws Exception {
+        java.security.MessageDigest md = java.security.MessageDigest.getInstance("SHA-256");
+        for (String table : new String[] { "probe_worlds", "probe_messages", "probe_entity_ids" }) {
+            try (Cursor c = db.rawQuery("SELECT * FROM " + table + " ORDER BY 1", new Object[0])) {
+                md.update(table.getBytes(StandardCharsets.UTF_8));
+                int cols = c.getColumnCount();
+                while (c.moveToNext()) {
+                    for (int i = 0; i < cols; i++) {
+                        String val = c.isNull(i) ? "<NULL>" : c.getString(i);
+                        md.update(val.getBytes(StandardCharsets.UTF_8));
+                        md.update((byte) '|');
+                    }
+                    md.update((byte) '\n');
+                }
+            }
+        }
+        byte[] d = md.digest();
+        StringBuilder sb = new StringBuilder(64);
+        for (byte b : d) {
+            sb.append(Character.forDigit((b >> 4) & 0xf, 16));
+            sb.append(Character.forDigit(b & 0xf, 16));
+        }
+        return sb.toString();
+    }
+
+    private static JSONArray schemaListing(SQLiteDatabase db) throws Exception {
+        JSONArray arr = new JSONArray();
+        try (Cursor c = db.rawQuery(
+                "SELECT type, name, sql FROM sqlite_schema WHERE name NOT GLOB 'sqlite_*' ORDER BY type, name",
+                new Object[0])) {
+            while (c.moveToNext()) {
+                arr.put(c.getString(0) + ":" + c.getString(1) + ":" + c.getString(2));
+            }
+        }
+        return arr;
+    }
+
+    private static void noRows(SQLiteDatabase db, String sql) {
+        try (Cursor c = db.rawQuery(sql, new Object[0])) {
+            assertFalse("Expected zero rows for " + sql, c.moveToNext());
+        }
+    }
+
+    private static void setupFullSchemeASyntheticDb(SQLiteDatabase db) {
+        db.setForeignKeyConstraintsEnabled(true);
+        assertTrue(db.enableWriteAheadLogging());
+        db.rawExecSQL("PRAGMA temp_store=MEMORY");
+        db.rawExecSQL("PRAGMA synchronous=FULL");
+        db.rawExecSQL("PRAGMA wal_autocheckpoint=0");
+        db.rawExecSQL("PRAGMA busy_timeout=5000");
+        db.rawExecSQL("PRAGMA application_id=1263424577");
+        db.rawExecSQL("PRAGMA user_version=5");
+
+        db.execSQL("CREATE TABLE probe_worlds("
+                + "id TEXT PRIMARY KEY, name TEXT NOT NULL, tx_epoch INTEGER NOT NULL)");
+        db.execSQL("CREATE TABLE probe_messages("
+                + "id TEXT PRIMARY KEY, world_id TEXT NOT NULL REFERENCES probe_worlds(id), "
+                + "body TEXT NOT NULL, tx_epoch INTEGER NOT NULL)");
+        db.execSQL("CREATE INDEX idx_probe_msg_world ON probe_messages(world_id, tx_epoch)");
+        db.execSQL("CREATE TABLE probe_entity_ids("
+                + "entity_id TEXT PRIMARY KEY, entity_type TEXT NOT NULL, tx_epoch INTEGER NOT NULL)");
+        db.execSQL("CREATE TRIGGER trg_probe_world_entity AFTER INSERT ON probe_worlds BEGIN "
+                + "INSERT INTO probe_entity_ids(entity_id, entity_type, tx_epoch) "
+                + "VALUES(NEW.id, 'world', NEW.tx_epoch); END");
+
+        db.beginTransactionNonExclusive();
+        try {
+            db.execSQL("INSERT INTO probe_worlds VALUES('w1', 'Abydos', 1)");
+            db.execSQL("INSERT INTO probe_messages VALUES('m1', 'w1', 'epoch1-msg', 1)");
+            db.setTransactionSuccessful();
+        } finally {
+            db.endTransaction();
+        }
+        // Second committed WAL transaction left uncheckpointed
+        db.beginTransactionNonExclusive();
+        try {
+            db.execSQL("INSERT INTO probe_worlds VALUES('w2', 'Gehenna', 2)");
+            db.execSQL("INSERT INTO probe_messages VALUES('m2', 'w2', 'wal-committed-msg', 2)");
+            db.setTransactionSuccessful();
+        } finally {
+            db.endTransaction();
+        }
+    }
+
+    @Test
+    public void probeSchemeAExportMetadataAndCloneRekey() throws Exception {
+        Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
+        assertEquals("com.yubin.formyself.m2qa", context.getPackageName());
+        assertTrue(BuildConfig.KANATA_M2_SYNTHETIC);
+        System.loadLibrary("sqlcipher");
+
+        File dir = new File(context.getCacheDir(), "m6-f07-" + UUID.randomUUID());
+        assertTrue(dir.mkdirs());
+        File srcAFile = new File(dir, "src_a.db");
+        File expAFile = new File(dir, "exp_a_target.db");
+        File cloneSrcFile = new File(dir, "clone_src.db");
+        File cloneCopyFile = new File(dir, "clone_rekey_target.db");
+
+        byte[] srcKey = randomRawKey(null);
+        byte[] exportKey = randomRawKey(null);
+        byte[] rekeyTargetKey = randomRawKey(null);
+        String exportKeySqlLiteral = "'" + new String(exportKey, StandardCharsets.US_ASCII).replace("'", "''") + "'";
+
+        try {
+            // === Experiment A: sqlcipher_export + explicit user_version / application_id restoration before DETACH ===
+            JSONObject expAReport = new JSONObject();
+            try (SQLiteDatabase srcDb = SQLiteDatabase.openDatabase(
+                    srcAFile.getPath(), srcKey, null, FLAGS_RW | SQLiteDatabase.CREATE_IF_NECESSARY, (d, e) -> {}, null)) {
+                setupFullSchemeASyntheticDb(srcDb);
+                String srcDigestBefore = logicalSnapshotDigest(srcDb);
+                String srcSchemaBefore = schemaListing(srcDb).toString();
+                long walLen = new File(srcAFile.getPath() + "-wal").length();
+                expAReport.put("walBytesBeforeExport", walLen);
+                assertTrue("Expected uncommitted-to-main WAL bytes > 0", walLen > 0);
+
+                // Verify uncommitted concurrent transaction is NOT included in export, or observe BUSY behavior
+                ExecutorService concExec = Executors.newSingleThreadExecutor();
+                CountDownLatch roPinned = new CountDownLatch(1);
+                CountDownLatch roRelease = new CountDownLatch(1);
+                Future<String> roHold = concExec.submit(() -> {
+                    try (SQLiteDatabase ro = SQLiteDatabase.openDatabase(
+                            srcAFile.getPath(), srcKey, null, FLAGS_RO, (d, e) -> {}, null)) {
+                        KanataM6SqlCipherSessionProbe.beginDeferredTransaction(ro, true, null);
+                        try {
+                            String v = scalar(ro, "SELECT count(*) FROM probe_worlds");
+                            roPinned.countDown();
+                            roRelease.await(10, TimeUnit.SECONDS);
+                            return v;
+                        } finally {
+                            ro.endTransaction();
+                        }
+                    }
+                });
+                assertTrue(roPinned.await(10, TimeUnit.SECONDS));
+
+                try {
+                    srcDb.rawExecSQL("ATTACH DATABASE '" + expAFile.getPath() + "' AS exp_a KEY " + exportKeySqlLiteral);
+                    scalar(srcDb, "SELECT sqlcipher_export('exp_a')");
+                    srcDb.rawExecSQL("PRAGMA exp_a.user_version = 5");
+                    srcDb.rawExecSQL("PRAGMA exp_a.application_id = 1263424577");
+                    srcDb.rawExecSQL("DETACH DATABASE exp_a");
+                    expAReport.put("exportWithActiveReaderSucceeded", true);
+                } finally {
+                    roRelease.countDown();
+                    assertEquals("2", roHold.get(5, TimeUnit.SECONDS));
+                    concExec.shutdownNow();
+                }
+
+                // Reopen target with independent random DEK
+                try (SQLiteDatabase targetDb = SQLiteDatabase.openDatabase(
+                        expAFile.getPath(), exportKey, null, FLAGS_RW, (d, e) -> {}, null)) {
+                    targetDb.setForeignKeyConstraintsEnabled(true);
+                    expAReport.put("targetUserVersion", scalar(targetDb, "PRAGMA user_version"));
+                    expAReport.put("targetAppId", scalar(targetDb, "PRAGMA application_id"));
+                    expAReport.put("targetIntegrity", scalar(targetDb, "PRAGMA integrity_check"));
+                    noRows(targetDb, "PRAGMA cipher_integrity_check");
+                    noRows(targetDb, "SELECT * FROM pragma_foreign_key_check");
+                    expAReport.put("targetCipherAndFkOk", true);
+
+                    String targetSchema = schemaListing(targetDb).toString();
+                    String targetDigest = logicalSnapshotDigest(targetDb);
+                    assertEquals(srcSchemaBefore, targetSchema);
+                    assertEquals(srcDigestBefore, targetDigest);
+                    expAReport.put("schemaExactMatch", true);
+                    expAReport.put("logicalDigestExactMatch", true);
+                    expAReport.put("logicalDigestHex", targetDigest);
+                    expAReport.put("targetWorldCount", scalar(targetDb, "SELECT count(*) FROM probe_worlds"));
+                    expAReport.put("targetMessageCount", scalar(targetDb, "SELECT count(*) FROM probe_messages"));
+                    expAReport.put("targetEntityCount", scalar(targetDb, "SELECT count(*) FROM probe_entity_ids"));
+
+                    // Verify triggers & FK actually enforce on reopened target
+                    targetDb.execSQL("INSERT INTO probe_worlds VALUES('w_post', 'Trinity', 3)");
+                    assertEquals("3", scalar(targetDb, "SELECT count(*) FROM probe_entity_ids"));
+                    try {
+                        targetDb.execSQL("INSERT INTO probe_messages VALUES('m_bad', 'missing_world', 'bad', 3)");
+                        fail("FK must reject invalid world_id on target");
+                    } catch (SQLiteException expectedFk) {
+                        expAReport.put("targetFkEnforcedAfterReopen", true);
+                    }
+                }
+
+                // Verify source DEK is rejected on target
+                assertThrows(SQLiteException.class, () -> {
+                    try (SQLiteDatabase wrong = SQLiteDatabase.openDatabase(
+                            expAFile.getPath(), srcKey, null, FLAGS_RO, (d, e) -> {}, null)) {
+                        scalar(wrong, "SELECT count(*) FROM probe_worlds");
+                    }
+                });
+                expAReport.put("sourceDekRejectedOnTarget", true);
+
+                // Verify source database unchanged
+                assertEquals(srcDigestBefore, logicalSnapshotDigest(srcDb));
+                assertEquals(srcSchemaBefore, schemaListing(srcDb).toString());
+                assertEquals("5", scalar(srcDb, "PRAGMA user_version"));
+                assertEquals("1263424577", scalar(srcDb, "PRAGMA application_id"));
+                expAReport.put("sourceUnchanged", true);
+
+                // Additional WAL concurrency check for sqlcipher_export: uncommitted writer on separate RW conn
+                File expAConcFile = new File(dir, "exp_a_conc.db");
+                ExecutorService uncommExec = Executors.newSingleThreadExecutor();
+                CountDownLatch uncommReady = new CountDownLatch(1);
+                CountDownLatch uncommRelease = new CountDownLatch(1);
+                Future<String> uncommWriter = uncommExec.submit(() -> {
+                    try (SQLiteDatabase w2 = SQLiteDatabase.openDatabase(
+                            srcAFile.getPath(), srcKey, null, FLAGS_RW, (d, e) -> {}, null)) {
+                        w2.rawExecSQL("PRAGMA busy_timeout=50");
+                        w2.beginTransactionNonExclusive();
+                        try {
+                            w2.execSQL("INSERT INTO probe_worlds VALUES('w_uncomm', 'Uncommitted', 99)");
+                            uncommReady.countDown();
+                            uncommRelease.await(10, TimeUnit.SECONDS);
+                        } finally {
+                            w2.endTransaction();
+                        }
+                        return "ROLLED_BACK";
+                    }
+                });
+                assertTrue(uncommReady.await(5, TimeUnit.SECONDS));
+                try {
+                    srcDb.rawExecSQL("ATTACH DATABASE '" + expAConcFile.getPath() + "' AS exp_ac KEY " + exportKeySqlLiteral);
+                    scalar(srcDb, "SELECT sqlcipher_export('exp_ac')");
+                    srcDb.rawExecSQL("PRAGMA exp_ac.user_version = 5");
+                    srcDb.rawExecSQL("PRAGMA exp_ac.application_id = 1263424577");
+                    srcDb.rawExecSQL("DETACH DATABASE exp_ac");
+                    try (SQLiteDatabase concTarget = SQLiteDatabase.openDatabase(
+                            expAConcFile.getPath(), exportKey, null, FLAGS_RO, (d, e) -> {}, null)) {
+                        String cnt = scalar(concTarget, "SELECT count(*) FROM probe_worlds");
+                        expAReport.put("exportDuringUncommittedWriter", "SUCCEEDED_EXCLUDES_UNCOMMITTED_COUNT_" + cnt);
+                        assertEquals("2", cnt);
+                    }
+                } catch (Throwable t) {
+                    expAReport.put("exportDuringUncommittedWriter", "FAILED:" + t.getClass().getSimpleName() + ":" + t.getMessage());
+                    try { srcDb.rawExecSQL("DETACH DATABASE exp_ac"); } catch (Throwable ignored) {}
+                } finally {
+                    uncommRelease.countDown();
+                    assertEquals("ROLLED_BACK", uncommWriter.get(5, TimeUnit.SECONDS));
+                    uncommExec.shutdownNow();
+                    SQLiteDatabase.deleteDatabase(expAConcFile);
+                }
+            }
+            report("F07_EXP_A_SQLCIPHER_EXPORT_META", expAReport);
+
+            // === Experiment B: Disposable Clone + Checkpoint + Close + Copy + Open(srcKey) + Rekey(newDek) ===
+            JSONObject expBReport = new JSONObject();
+            String cloneOrigDigest;
+            String cloneOrigSchema;
+            // Step 1: Create disposable synthetic clone with WAL data
+            try (SQLiteDatabase cloneDb = SQLiteDatabase.openDatabase(
+                    cloneSrcFile.getPath(), srcKey, null, FLAGS_RW | SQLiteDatabase.CREATE_IF_NECESSARY, (d, e) -> {}, null)) {
+                setupFullSchemeASyntheticDb(cloneDb);
+                cloneOrigDigest = logicalSnapshotDigest(cloneDb);
+                cloneOrigSchema = schemaListing(cloneDb).toString();
+                expBReport.put("walBytesBeforeCheckpoint", new File(cloneSrcFile.getPath() + "-wal").length());
+
+                // Step 2: Complete checkpoint
+                try (Cursor ck = cloneDb.rawQuery("PRAGMA wal_checkpoint(TRUNCATE)", new Object[0])) {
+                    assertTrue(ck.moveToFirst());
+                    expBReport.put("checkpointBusy", ck.getInt(0));
+                    expBReport.put("checkpointLog", ck.getInt(1));
+                    expBReport.put("checkpointCheckpointed", ck.getInt(2));
+                    assertEquals(0, ck.getInt(0));
+                }
+            } // Step 3: All connections closed
+
+            // Step 4: Verify WAL/SHM sidecar state
+            File cloneWal = new File(cloneSrcFile.getPath() + "-wal");
+            File cloneShm = new File(cloneSrcFile.getPath() + "-shm");
+            expBReport.put("walExistsAfterClose", cloneWal.exists());
+            expBReport.put("walBytesAfterClose", cloneWal.exists() ? cloneWal.length() : 0L);
+            expBReport.put("shmExistsAfterClose", cloneShm.exists());
+            expBReport.put("shmBytesAfterClose", cloneShm.exists() ? cloneShm.length() : 0L);
+
+            // Step 5: Copy database file
+            try (FileInputStream fis = new FileInputStream(cloneSrcFile);
+                 FileOutputStream fos = new FileOutputStream(cloneCopyFile)) {
+                byte[] buf = new byte[8192];
+                int r;
+                while ((r = fis.read(buf)) != -1) fos.write(buf, 0, r);
+                fos.getFD().sync();
+            }
+
+            // Step 6 & 7: Open copy with source test key & attempt SQLCipher rekey to independent random test DEK
+            try (SQLiteDatabase rekeyDb = SQLiteDatabase.openDatabase(
+                    cloneCopyFile.getPath(), srcKey, null, FLAGS_RW, (d, e) -> {}, null)) {
+                expBReport.put("copyJournalModeBeforeRekey", scalar(rekeyDb, "PRAGMA journal_mode"));
+                try {
+                    rekeyDb.changePassword(rekeyTargetKey);
+                    expBReport.put("rekeyMethod", "SQLiteDatabase.changePassword(byte[])");
+                    expBReport.put("rekeySucceeded", true);
+                } catch (Throwable t) {
+                    expBReport.put("rekeyMethod", "SQLiteDatabase.changePassword(byte[])");
+                    expBReport.put("rekeySucceeded", false);
+                    expBReport.put("rekeyError", t.getClass().getSimpleName() + ":" + t.getMessage());
+                }
+            } // Step 8: Close copy
+
+            // Step 8b & 9: Reopen copy with new key & reject old key
+            if (expBReport.optBoolean("rekeySucceeded", false)) {
+                try (SQLiteDatabase reopened = SQLiteDatabase.openDatabase(
+                        cloneCopyFile.getPath(), rekeyTargetKey, null, FLAGS_RO, (d, e) -> {}, null)) {
+                    expBReport.put("reopenNewKeySucceeded", true);
+                    expBReport.put("targetUserVersion", scalar(reopened, "PRAGMA user_version"));
+                    expBReport.put("targetAppId", scalar(reopened, "PRAGMA application_id"));
+                    expBReport.put("targetIntegrity", scalar(reopened, "PRAGMA integrity_check"));
+                    noRows(reopened, "PRAGMA cipher_integrity_check");
+                    noRows(reopened, "SELECT * FROM pragma_foreign_key_check");
+                    assertEquals("5", scalar(reopened, "PRAGMA user_version"));
+                    assertEquals("1263424577", scalar(reopened, "PRAGMA application_id"));
+                    assertEquals(cloneOrigSchema, schemaListing(reopened).toString());
+                    assertEquals(cloneOrigDigest, logicalSnapshotDigest(reopened));
+                    expBReport.put("schemaAndDigestExactMatch", true);
+                }
+                assertThrows(SQLiteException.class, () -> {
+                    try (SQLiteDatabase oldKeyDb = SQLiteDatabase.openDatabase(
+                            cloneCopyFile.getPath(), srcKey, null, FLAGS_RO, (d, e) -> {}, null)) {
+                        scalar(oldKeyDb, "SELECT count(*) FROM probe_worlds");
+                    }
+                });
+                expBReport.put("oldKeyRejectedAfterRekey", true);
+            }
+
+            // Step 10: Verify original disposable clone source DB has no logical changes
+            try (SQLiteDatabase verifySrc = SQLiteDatabase.openDatabase(
+                    cloneSrcFile.getPath(), srcKey, null, FLAGS_RO, (d, e) -> {}, null)) {
+                assertEquals(cloneOrigDigest, logicalSnapshotDigest(verifySrc));
+                assertEquals(cloneOrigSchema, schemaListing(verifySrc).toString());
+                assertEquals("5", scalar(verifySrc, "PRAGMA user_version"));
+                assertEquals("1263424577", scalar(verifySrc, "PRAGMA application_id"));
+                expBReport.put("originalSourceUnchanged", true);
+            }
+            report("F07_EXP_B_CLONE_AND_REKEY", expBReport);
+        } finally {
+            Arrays.fill(srcKey, (byte) 0);
+            Arrays.fill(exportKey, (byte) 0);
+            Arrays.fill(rekeyTargetKey, (byte) 0);
+            SQLiteDatabase.deleteDatabase(srcAFile);
+            SQLiteDatabase.deleteDatabase(expAFile);
+            SQLiteDatabase.deleteDatabase(cloneSrcFile);
+            SQLiteDatabase.deleteDatabase(cloneCopyFile);
+            dir.delete();
+        }
+    }
 }
