@@ -1372,3 +1372,33 @@ Repository旧Facade/materializer删除，QA独立Oracle迁移；长Effect Audit�
 
 - 以 Scheme C 作为首发单项便携包设计基线。Node/JS 合成字节合同可单独实现，Native 能力、发行 profile 和生产接入分别设硬门禁。
 - 对照原审计与后续审查确定 B-01～B-09、H-01～H-06 的实现责任与验收。用现行 Schema 001～005 直接枚举表分类并验证 DDL 语义，保留兼容与隔离边界。
+
+
+## 2026-11-23 M6-02 一致性导出与 A/C 计划分析
+
+### 当前状态
+
+M6-01 已在提交 43b26d6ec41929a59844bb62a882bdf578391192 通过 GPT-6 最终独立复审。用户已明确授权开始 M6-02。M6-02 尚未实施，当前新增任务书只定义范围和验收条件。
+
+### 核心判断
+
+1. M6-00 已建议 Scheme C 作为首发单项便携包架构：Native 持有 SQLCipher 数据面，Node/JS 作为同字节 oracle；A 物理一致性路线保留为独立对照，不预设性能胜者。
+2. A 路线的第一问题是当前 SQLCipher Android 4.17.0 AAR / Native wrapper 是否实际暴露可证明一致的物理快照 API，以及是否能生成使用独立 DEK 的跨设备加密副本。API 名称存在、反射可见或 health 配置值均不足以证明能力。
+3. WAL 活跃时禁止复制主数据库文件。若评估 checkpoint + close + copy，只能在 disposable synthetic clone 上验证；C 路线固定只读源视图禁止 checkpoint、DDL、rekey 和维护写。
+4. C 路线必须在同一 Native connection / 同一只读事务 pin 住快照；schema、counts、rows、derived summaries 与 digests 必须来自同一读视图。逐批开启独立事务会混合版本，不能接受。
+5. Native/Capacitor Bridge 只传小命令、进度、句柄和有界元数据。不得把整行大字符串、全量 KanataData、整库 Base64 或巨型 JSON 送入 JS。
+6. M6-01 的 KPB1、kanata-logical-v1、Schema 005、固定 KAT、0xff01 合成 profile 和 64 KiB 候选 DATA 帧均为冻结合同。M6-02 不决定发行 profile 0x0001，也不修改 Schema 001–005。
+7. N-01～N-04 是本阶段首批 Native 硬门禁；API 24/25 未实测时不得宣称低 API 兼容。N-05/N-06 由后续恢复/改密阶段继续承担。
+8. A/C 对照数据必须同种子、同逻辑 dataset fingerprint、同样本规模和相同测量口径；至少 1 次冷测与 5 次重复，样本不足不报告可靠 P95。
+9. Android 512 MiB RSS 红线保持不变。M6-02 不自设新的时延门槛，不调整 P7 的 120 秒改密和 Web 768 MiB 门槛。
+
+### 范围与阶段边界
+
+- 允许：隔离 synthetic-only SQLCipher 数据库、Native 快照/流式读取探针、C 路线 KPB1 导出、A 路线可行性实验、独立目标语义验证、1k/10k/100k 性能与故障测量。
+- 禁止：真实数据、生产 Store/canonical、普通 APK SQLite 激活、Settings/RestoreCoordinator 接线、改密、Schema 变更、发布 APK、合并分支。
+- A 被证实不支持时可记录 NOT_SUPPORTED；不得写成 A PASS。C 与其他硬门禁通过时，可申请“C PASS / A NOT_SUPPORTED”的阶段结论。
+- C、低 API 密码学、快照一致性或资源硬门禁失败时 M6-02 保持 BLOCKED，不得启动 M6-03。
+
+### 执行顺序
+
+Preflight 与依赖核对 → N-01/N-02 → N-03/N-04 → C Native 流式导出 → A 可行性实验 → F02-01～F02-04 → 1k/10k/100k 测量 → 全量检查与远端 CI → GPT-6 独立复审。

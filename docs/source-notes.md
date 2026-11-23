@@ -1302,3 +1302,14 @@ raw/完整需求清单.txt 4.1/4.4/8.3及最新连续执行v3驱动当前实现�
 - 原始资料 `raw/彼方 · Kanata 技术设计.txt` 第一节提供产品分层背景，备份字节协议、Native 事务和设备性能资料未提供，证据使用 M6 HEAD 的源码及合成探针。
 - 仓库来源及引用日期 2026-11-20。以 `a301436` 上的 [GPT 原审计](qa/kanata-sqlite-m6/m6-00-architecture-audit-v1.md)、[Gemini Neon 独立复核](qa/kanata-sqlite-m6/m6-00-independent-review-v1.md)、[M6-QA-01](qa/kanata-sqlite-m6/m6-qa-01-report-v1.md) 为输入。另只读核对 `f0b0d6cdf0e87d0abd95c5a599f97c5ab1e53325` 的 `m6-00-design-readiness-review-v1.md`（B-06～B-09 原始编号），以及 `60f89c0` 的 M5 最终签核和产品源码差异。
 - GitHub Actions，引用日期 2026-11-20。[Quality 44687910607](https://github.com/Zhoubin601/ForMyself/actions/runs/44687910607) 对应 `a301436`，[Quality 44684735609](https://github.com/Zhoubin601/ForMyself/actions/runs/44684735609) 对应 `522d264`。两次 Web 和 Android 均为成功。
+
+
+## 2026-11-23 Kanata SQLite M6-02 任务书来源
+
+- 用户授权：当前对话中用户于 2026-11-23 明确同意开始 M6-02 并要求制定任务书。此项授权只覆盖 M6-02 隔离合成实现与实验，不包含真实数据、生产切换、APK 发布、分支合并或自动启动 M6-03。
+- 阶段状态来源：[M6 总体计划](20261119-kanata-sqlite-m6-encrypted-backup-recovery-plan-v1.md)、[M6-00 最终设计收口](qa/kanata-sqlite-m6/m6-00-final-closeout-v1.md)、[M6-00 GPT-6 独立最终复核](qa/kanata-sqlite-m6/m6-00-final-independent-review-v1.md)。
+- M6-01 实现来源：[M6-01 任务书](20261120-kanata-sqlite-m6-01-portable-backup-format-task-v1.md)、[M6-01 交付报告](qa/kanata-sqlite-m6/m6-01-portable-codec-report-v1.md)，代码签核基线为 43b26d6ec41929a59844bb62a882bdf578391192。固定 Schema 指纹为 8d4ede29039ca2958146250e618ee78e76163490e47eeaaab74b02dde852f39a。
+- A/C 与 Native 探针来源：M6-00 最终设计收口 G-02/G-03、风险矩阵 B-02/B-03/B-05、H-02/H-03、Native N-01～N-06 和末尾“M6-02 A/C 独立实验规格”。其中 M6-02 首批执行 N-01～N-04；N-05/N-06 仍属于后续恢复/改密接入门禁。
+- 性能来源：[SQLite 迁移与性能重构计划 M v1](20261103-kanata-sqlite-migration-plan-v1.md) 第 7 节：1k/10k/100k、重复测量、P50/P95、Android 512 MiB、Web 768 MiB 与完整改密 120 秒原门槛。
+- 工程规范来源：[AGENTS.md](../AGENTS.md)、[架构接口与 Agent 开发规范](../架构接口与Agent开发说明书.md)、[开发背景](../memory-bank/development-context.md)。执行前必须重新检查工作树、分支、源码和远端 HEAD。
+- 引用日期：2026-11-23（北京时间）。本任务书未引入外部资料；未读取 raw 中的真实用户资料、真实备份或设备数据库。
