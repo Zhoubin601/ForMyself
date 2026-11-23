@@ -1,19 +1,20 @@
-# Kanata SQLite M6-02 Native 前置探针报告 v1（Preflight / N-01 / N-02）
+# Kanata SQLite M6-02 Native 全阶段探针报告 v1（Preflight / N-01 / N-02 / N-03 / N-04）
 
-- **任务编号**：`KANATA-M6-02-START-2026-11-23`
+- **任务编号**：`KANATA-M6-02-END-TO-END-2026-11-23`（延续自 `KANATA-M6-02-START-2026-11-23`）
 - **任务书**：[docs/20261123-kanata-sqlite-m6-02-consistent-export-task-v1.md](../../20261123-kanata-sqlite-m6-02-consistent-export-task-v1.md)
 - **执行分支 / 工作树**：`m6/encrypted-backup-recovery`（`.worktrees/kanata-m5`）
-- **本轮范围**：`Preflight → N-01 → N-02`（严守阶段边界；`N-03`、`N-04`、`C` 路线完整导出与 `A/C` 性能对照均未实施）
+- **本报告覆盖**：`Preflight → N-01 → N-02 → Round 2.1 → N-03 → N-04` 全部 Native 探针及低版本兼容性核查（A/C 基准与 F02 故障注入分别详见 [m6-02-ac-export-report-v1.md](m6-02-ac-export-report-v1.md) 与 [m6-02-final-report-v1.md](m6-02-final-report-v1.md)）
 - **日期**：2026-11-23（北京时间）
 
 ## 阶段总状态摘要
 
 | 项目 | 状态 | 摘要说明 |
 | --- | --- | --- |
-| Git Preflight | **PASS** | `.worktrees/kanata-m5` 从 M6-01 签核基线 `43b26d6` fast-forward 同步至 `61ae25d`；核对 `43b26d6..61ae25d` 仅含文档变更，生产代码、Schema 与依赖清单零差异；主工作树保持未动。 |
-| N-01（API 30 / API 34） | **PASS（API 30/34）；API 24/25 NOT_RUN** | Zero-Alloc 字节安全 PBKDF2 + HKDF + AES-256-GCM 与 `vectors-v1.json`（及 Node/WebCrypto）逐字节一致；**发现 P0 问题**：Conscrypt `Mac("HmacSHA256")` 600k 紧循环在 API 34 触发 Scudo 256 MiB OOM / LMK 崩溃，改用零分配 SHA-256 midstate 后 0 KiB RSS 增长且 0 ms 取消。API 24/25 因本地无镜像与 `sdkmanager` 标为 `NOT_RUN`。 |
-| N-02（只读快照与物理原语） | **PASS（探测完成）；A 路线 `NOT_SUPPORTED`** | 核实 `sqlcipher-android:4.17.0` AAR 无 Online Backup Java/JNI API；`VACUUM INTO` 强制复用源 DEK；`sqlcipher_export` 在 `OPEN_READONLY` 失败且在 `OPEN_READWRITE` 丢失 `user_version` / `application_id`；`SQLiteDatabase.beginTransactionReadOnly()` 实际执行 `BEGIN EXCLUSIVE`；同包 `SQLiteSession.TRANSACTION_MODE_DEFERRED` 在独立 `OPEN_READONLY` 连接上可稳定固定 WAL 快照且不阻塞并发写入。 |
-| N-03 / N-04 | **NOT_RUN** | 超出本轮授权范围，未实施，不提前标记 PASS。 |
+| Git Preflight | **PASS** | 从 `43b26d6` → `7c8d847` 后延续工作，始终保持生产 `src/`、`package.json`、`package-lock.json` 与 `android/app/src/main/` 零变更；主工作树保持未动。 |
+| N-01（API 30 / API 34） | **PASS（API 30/34）；API 24/25 NOT_RUN** | Zero-Alloc 字节安全 PBKDF2 + HKDF + AES-256-GCM 与 `vectors-v1.json` 及 Node/WebCrypto 逐字节一致；Round 2.1 改用 `CountDownLatch` 确定性同步取消钩子并验证无效参数不污染预置缓冲区。API 24/25 因本地无镜像与 `sdkmanager` 标为 `NOT_RUN`。 |
+| N-02（只读快照与物理原语） | **PASS（API 30/34）** | `sqlcipher-android:4.17.0` 无 Online Backup JNI API；`VACUUM INTO` 强制继承源 DEK；`sqlcipher_export` 在只读连接失败且丢头信息；`OPEN_READONLY` + `SQLiteSession.TRANSACTION_MODE_DEFERRED` 可无阻塞固定 WAL 快照。Round 2.1 已去除 A1/A2 错误吞咽，增加全部强制断言。 |
+| N-03（长字段 / 有界内存 / Bridge） | **PASS（API 30/34）；API 24/25 NOT_RUN** | 实测 `262144` / `262145` UTF-16、2 MiB 长 TEXT、64 KiB DATA 跨帧、NUL、补充平面、前导 `\ufeff` BOM、`3.9 MiB` CursorWindow 行；实证 SQLCipher `nativeBindString` 与 Android `new String(UTF-8)` 会剥离前导 BOM 并已通过 `CAST(? AS TEXT)`/`bindBlob` 与严格 RFC 3629 解码修复；WebView/Bridge 仅传控制句柄；2 MiB / 4 MiB 超限在大分配前拒绝；全过程 RSS 远低于 512 MiB 红线。 |
+| N-04（SAF / Share / Activity 生命周期） | **PASS（API 30/34）；API 24/25 NOT_RUN** | 实测 SAF 短读、零进展（上限 8 次拒绝）、半写 pipe 中止、关闭回读校验、URI 授权与 `revokeUriPermission`、`Share` FileProvider、Activity `onPause`/旋转、Operation Lease Epoch 失效、迟到与重复回调幂等、独立工作进程 `:m6worker` 强杀后重启恢复并清理 `.tmp` 与旧租约，旧备份与源 DB 始终完好。 |
 
 ---
 
@@ -219,29 +220,73 @@
 
 ---
 
-## 11. BLOCKED / NOT_RUN 项
+## 11. N-03 长字段、CursorWindow、Bridge 与有界内存验证（API 30 与 API 34 均 PASS）
 
-| 项目 | 状态 | 原因与补充条件 |
+对应 [KanataM6N03BoundedMemoryTest.java](androidTest/com/yubin/formyself/KanataM6N03BoundedMemoryTest.java)、[KanataM6BoundedRowReader.java](androidTest/com/yubin/formyself/KanataM6BoundedRowReader.java) 与 [KanataM6SyntheticPortablePlugin.java](syntheticDebug/java/com/yubin/formyself/KanataM6SyntheticPortablePlugin.java)。
+
+### 11.1 N-03 必须回答的 7 项问题实证核对
+
+| 核对问题 | 实证结论 | 源码与实测依据 |
 | --- | --- | --- |
-| Android API 24 / API 25 N-01 & N-02 实测 | **`NOT_RUN`** | 本地 SDK 无 `android-24`、`android-25` 系统镜像，且无 `cmdline-tools`/`sdkmanager` 及对应实体机；需要配置 API 24/25 镜像或真机后补跑 `KanataM6N01CryptoProbeTest` 与 `KanataM6N02SnapshotProbeTest`。 |
-| N-03（长行、CursorWindow、JNI、Bridge 与有界内存） | **`NOT_RUN`** | 超出本轮 `Preflight → N-01 → N-02` 范围，待下一阶段授权执行。 |
-| N-04（SAF / Share / Activity 生命周期） | **`NOT_RUN`** | 超出本轮范围，待下一阶段授权执行。 |
-| C 路线完整导出与 1k/10k/100k A/C 性能对照 | **`NOT_RUN`** | 超出本轮范围，待用户与 GPT-6 审查本报告后授权启动。 |
-| 发行参数 `0x0001` 冻结 | **`BLOCKED`** | 仍受 API 24/25 实测与 N-03 有界内存实测约束，600,000 次仅为候选测试参数。 |
+| 1. 是否存在整行一次性加载？ | **否（在读取超限或超大列前截断/分块）** | `KanataM6BoundedRowReader.buildSelectSql()` 先查询 `length(CAST(col AS BLOB))`；仅 `<= 262,144` B 的列随主游标以 `BLOB` 内联读取，`> 262,144` B 的列在主游标返回 `NULL` 并二次使用 `substr(CAST(col AS BLOB), offset1Based, 262144)` 按 256 KiB 分块读取，避免依赖 CursorWindow 整行膨胀。 |
+| 2. 是否存在整库 Base64 转换？ | **否** | Scheme C 全程使用 `ByteBuffer` / `byte[]` 流式写入 AES-GCM 密文与 `FileOutputStream` spool，零整库/整包 Base64 字符串转换。 |
+| 3. Bridge 是否传输了大块业务数据？ | **否** | Capacitor Bridge 实测仅传输句柄、状态与分片元信息：请求负载字节 `[36, 30, 8220]`，响应负载 `[98, 106]`；显式尝试 >8 KiB/超限控制载荷被插件门禁拒绝（`rejectedOversizeCalls=1`）。 |
+| 4. 单行缓冲区是否有明确上限？ | **是** | 严格强制单列 TEXT 上限 `2,097,152 B`（2 MiB）与单行体上限 `4,194,304 B`（4 MiB），且一次仅驻留最多 1 个编码行缓冲。 |
+| 5. 最大在途 DATA 帧数量是否受控？ | **是（实测 `maxInFlightFrames=2`）** | `KanataM6SchemeCExporter.FramePipeline` 采用 1 帧前瞻写管线，`65,536 B`（64 KiB）`DATA` 帧上限，API 30/34 实测均 `maxInFlightFrames = 2`（含正在加密发射与前瞻缓存，满足 `<= 2` 帧 + `1` 行约束）。 |
+| 6. Native Heap、Java Heap、JS Heap 与 RSS 是否均有记录？ | **是** | 见下表 11.2 实测值（`/proc/self/status` `VmRSS`/`VmHWM`、`Debug.getNativeHeapAllocatedSize()`、Java `totalMemory()-freeMemory()` 及 WebView `performance.memory`）。 |
+| 7. 超限时是否能在大规模分配之前拒绝？ | **是** | 写入 `> 2 MiB` TEXT 与 `> 4 MiB` 行数据时，`KanataM6BoundedRowReader` 在检查 `length(CAST(col AS BLOB))` 阶段即抛出 `RESOURCE_LIMIT`（`col-text-limit:messages.content`、`row-body-size:card_versions`），未分配任何 multi-MiB 行缓冲区。 |
+
+### 11.2 长字段边缘字符、SQLCipher UTF-16 BOM 陷阱与双平台实测数据
+
+> [!IMPORTANT]
+> **实证发现的字符与运行时陷阱（已修复并纳入测试）**：
+> 1. **SQLCipher `nativeBindString` / `sqlite3_bind_text16` 静默剥离前导 `U+FEFF` BOM**：直接绑定含前导 `\ufeff` 的 2 MiB 字符串进 SQLite 时，`length(CAST(col AS BLOB))` 会从 `2,097,152 B` 静默缩短为 `2,097,149 B`；Android `new String(bytes, UTF_8)` 及 ICU `CharsetDecoder` 在解码前导 UTF-8 BOM (`EF BB BF`) 时也会丢弃前导 BOM。Scheme C 导出端通过 `CAST(col AS BLOB)` + `KanataM6PortableCrypto.decodeStrictUtf8()`（逐字节 RFC 3629 UTF-8 校验解码器）保留前导 BOM；导入端通过 `CAST(? AS TEXT)` + `SQLiteStatement.bindBlob(...)` 实现 2 MiB 前导 BOM 数据**精确 2,097,152 B 逐字节往返无损**。
+> 2. **262,144 / 262,145 与嵌入式 NUL / 补充平面边界**：`Cursor.getString()` 在包含嵌入 `\u0000` 与正好 `262,144` / `262,145` 边界时经 `CAST(... AS BLOB)` 256 KiB 分块读取完整保留（总产出 `155` 个 `DATA` 帧、最大行体 `3,900,064 B`、最终文件 `10,131,335 B`）。
+
+| 实测指标（最终代码复测） | API 30 (`Codex_Todo_API30`) | API 34 (`Codex_Todo_WebView34`) |
+| --- | --- | --- |
+| `src_m2mib_blobLen` / `headHex` | `2,097,152 B` / `EFBBBFE59088E68890F09F93` | `2,097,152 B` / `EFBBBFE59088E68890F09F93` |
+| `directCursorWindow_3_9MiB_row` / `2MiB_text` | `SUCCEEDED:3899992` / `SUCCEEDED:2097144` | `SUCCEEDED:3899992` / `SUCCEEDED:2097144` |
+| `schemeC_dataFrameCount` / `maxInFlightFrames` | `155` / **`2`** | `155` / **`2`** |
+| `schemeC_maxRowBodyBytes` / `finalFileBytes` | `3,900,064 B` / `10,131,335 B` | `3,900,064 B` / `10,131,335 B` |
+| Long-field 阶段 RSS (`before` → `peak` / `VmHWM`) | `197,208 KiB` → `223,940 KiB` (`223,956 KiB`) | `175,576 KiB` → `175,852 KiB` (`182,308 KiB`) |
+| Long-field 阶段 Native Heap Delta / Java Heap Peak | `+3,384,208 B` / `55,880,304 B` | `+3,488,368 B` / `55,756,744 B` |
+| WebView + Bridge 进程 RSS / `VmHWM` | `285,308 KiB` / `285,936 KiB` (~279 MiB ≪ 512 MiB) | `226,564 KiB` / `250,992 KiB` (~245 MiB ≪ 512 MiB) |
+| WebView + Bridge `NativeHeap` / `JavaHeap` / `JSHeap` | `23,491,824 B` / `33,812,472 B` / `10,000,000 B` | `22,942,528 B` / `10,412,712 B` / `10,000,000 B` |
+| `targetExactRoundtripVerified` / 超限预分配拒绝 | **PASS**（2 MiB & 4 MiB 均预先拒绝） | **PASS**（2 MiB & 4 MiB 均预先拒绝） |
 
 ---
 
-## 12. 质量与构建回归记录（本轮工作树 `.worktrees/kanata-m5`）
+## 12. N-04 SAF / Share / Activity 生命周期 / 进程强杀验证（API 30 与 API 34 均 PASS）
 
-- `npm run check`（ESLint + Node 测试 + Vitest + TypeScript + Vite 构建）：**退出码 0**（Node `818/818` 通过，Vitest `45` 文件 `420/420` 通过，ESLint `0` 错误 / `61` 既有告警）。
-- 标准 Android 构建（无 synthetic 标志，等价 CI 构建）：`.\gradlew.bat --no-daemon :app:testDebugUnitTest :app:assembleDebug :app:assembleDebugAndroidTest` — 验证通过后登记于本次交付汇报。
-- 隔离 M6 探针构建：`.\gradlew.bat --no-daemon -PkanataM2Synthetic=true -PkanataM6Synthetic=true :app:assembleDebug :app:assembleDebugAndroidTest` — 编译通过并在 API 30 (`80.321s` / `18.829s`) 与 API 34 (`38.316s` / `1.001s`) 上运行 `OK (2 tests)`。
+对应 [KanataM6N04SafLifecycleTest.java](androidTest/com/yubin/formyself/KanataM6N04SafLifecycleTest.java)、[KanataM6BridgeActivity.java](syntheticDebug/java/com/yubin/formyself/KanataM6BridgeActivity.java)、[KanataM6RotationActivity.java](syntheticDebug/java/com/yubin/formyself/KanataM6RotationActivity.java)、[KanataM6SyntheticSafProvider.java](syntheticDebug/java/com/yubin/formyself/KanataM6SyntheticSafProvider.java) 与 [KanataM6KillableWorkerService.java](syntheticDebug/java/com/yubin/formyself/KanataM6KillableWorkerService.java)。所有能力隔离在合成测试组件内，未接入正式 Settings UI 或产品 RestoreCoordinator。
+
+| 测试维度 | API 30 实测 | API 34 实测 | 验证结论 |
+| --- | --- | --- | --- |
+| Activity `onPause` 关闭 DB 与撤销 Operation Lease Epoch | `true` | `true` | 过期任务不可继续读写，事务按生命周期合同关闭。 |
+| 迟到回调 & 重复完成通知 (`staleCallbackRejectedCount=1`, `duplicateCompletionIdempotentCount=1`) | `1` / `1` | `1` / `1` | 旧回调不能覆盖新任务状态，重复通知幂等处理。 |
+| 屏幕旋转生命周期 (`rotationCreateCount=2`, `rotationDestroyCount=2`) | `2` / `2` | `2` / `2` | 配置重建周期无状态错乱或句柄泄漏。 |
+| 独立工作进程 `:m6worker` `SIGKILL` 强杀与重启清理 | `killedPid=5074`, 重启 `pid=5101`；残留 `pending` 与 `.tmp` 均被清理 (`false`/`false`) | `killedPid=6946`, 重启 `pid=6973`；残留 `pending` 与 `.tmp` 均被清理 (`false`/`false`) | 强杀产生的半成品不进入成功态，重启恢复完成清理。 |
+| SAF `ContentProvider` 极端 7B 短读与完整恢复 | `safShortReadImportOk=true` | `true` | `BoundedStreamReader` 正确拼包并完整还原隔离库。 |
+| SAF `revokeUriPermission` 权限撤销拦截 | `uriRevokeRejectedWithSecurityException=true` | `true` | 撤销权限后继续读取明确触发 `SecurityException`。 |
+| `ContentProvider` 零进展读取 / 半写 pipe 中止 | `zeroProgressRejected="reader-zero-progress"`, `halfWriteRejectedBeforeSuccess=true` | 同左 | 达到零进展重试上限 (8) 即拒绝；半写 pipe 不提交成功态。 |
+| 写入后关闭与回读不匹配拦截 (`readbackMismatchCaught=true`) | `true` | `true` | 回读发现坏包立即失败，既往有效备份与哨兵文件零受损。 |
+| `FileProvider` Share 提供与 URI 撤销 + 源 DB 完整性 | `shareFileProviderAndRevokeOk=true`, `sourceDbIntact=true` | 同左 | 源 DB 与既有成功备份始终完好。 |
 
 ---
 
-## 13. 后续建议
+## 13. BLOCKED / NOT_RUN 项与低版本门禁状态
 
-1. **向用户和 GPT-6 汇报**：确认本轮核心结论——**A 路线在当前 SQLCipher 4.17.0 AAR 下 `NOT_SUPPORTED`，C 路线底层密码学（Zero-Alloc PBKDF2 + HKDF + AES-GCM）与 `OPEN_READONLY` + `TRANSACTION_MODE_DEFERRED` WAL 快照原语均已实测可行**。
-2. **下一阶段授权请求**：
-   - 批准基于 **Scheme C（Zero-Alloc PBKDF2 + 独立 `OPEN_READONLY` `TRANSACTION_MODE_DEFERRED` 快照）** 启动 **N-03（长字段/262145/2MiB/CursorWindow 有界读取）** 与 **N-04（SAF/Share/生命周期）** 探针；
-   - 明确是否需要在本机补充下载 `android-24` / `android-25` 系统镜像（或接入 API 24/25 实体机）以消除低 API `NOT_RUN` 缺口后再冻结 `0x0001` 发行 KDF 参数。
+| 项目 | 状态 | 原因与约束 |
+| --- | --- | --- |
+| **Android API 24 / API 25 全部 M6 实测** | **`NOT_RUN`** | 宿主机 `E:\Android\Sdk\system-images` 仅有 `android-30`、`android-31`、`android-34`、`android-37.0`，且缺失 `cmdline-tools` / `sdkmanager` 与 API 24/25 真机；**严禁用 API 30/34 数据替代 API 24/25 兼容结论**。 |
+| **发行参数 `0x0001` 冻结与 UI/RestoreCoordinator 接入** | **`BLOCKED`** | 受 API 24/25 真机/镜像校准缺口约束及本阶段隔离范围要求，仅允许使用合成参数 `0xff01`，且严格保留独立验证门禁待 GPT-6 审计后另立阶段推进。 |
+
+---
+
+## 14. 最终代码版本双平台复测回归记录（API 30 与 API 34）
+
+所有 M6 测试在最终代码定稿后于以下双目标重新编译并全量运行通过：
+- **API 34 (`Codex_Todo_WebView34`)**：14 项探针/互操作/负向/F02 测试 + 3 项 A/C 基准测试共 **17/17 PASS**（见 `KanataM6N01` `cold=1,272 ms, warm=[1255,1253,1251,1264,1248] ms, endRSS=114,268 KiB` 等上述全量最新数值）。
+- **API 30 (`Codex_Todo_API30`)**：14 项探针/互操作/负向/F02 测试 + 3 项 A/C 基准测试共 **17/17 PASS**（见 `KanataM6N01` `cold=328 ms, warm=[306,311,308,314,315] ms, endRSS=148,224 KiB` 等上述全量最新数值）。
+- **标准与隔离构建矩阵**：详见总报告 [m6-02-final-report-v1.md](m6-02-final-report-v1.md)。

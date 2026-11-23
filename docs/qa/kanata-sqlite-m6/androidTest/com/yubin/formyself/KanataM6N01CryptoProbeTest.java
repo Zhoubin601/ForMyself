@@ -202,6 +202,11 @@ public class KanataM6N01CryptoProbeTest {
         sha256Compress(state, w);
     }
 
+    @FunctionalInterface
+    private interface Pbkdf2BlockHook {
+        void onEvent(int block, int iter) throws InterruptedException;
+    }
+
     /**
      * Zero-allocation byte-safe PBKDF2-HMAC-SHA256 using precomputed HMAC ipad/opad SHA-256 midstates.
      * Clears all intermediate and output buffers on exception or cancellation paths.
@@ -213,7 +218,7 @@ public class KanataM6N01CryptoProbeTest {
             int keyLen,
             AtomicBoolean cancelled) throws Exception {
         byte[] out = new byte[keyLen];
-        pbkdf2HmacSha256ZeroAllocInto(passwordBytes, salt, iterations, keyLen, cancelled, out);
+        pbkdf2HmacSha256ZeroAllocInto(passwordBytes, salt, iterations, keyLen, cancelled, out, null);
         return out;
     }
 
@@ -224,6 +229,17 @@ public class KanataM6N01CryptoProbeTest {
             int keyLen,
             AtomicBoolean cancelled,
             byte[] out) throws Exception {
+        pbkdf2HmacSha256ZeroAllocInto(passwordBytes, salt, iterations, keyLen, cancelled, out, null);
+    }
+
+    private static void pbkdf2HmacSha256ZeroAllocInto(
+            byte[] passwordBytes,
+            byte[] salt,
+            int iterations,
+            int keyLen,
+            AtomicBoolean cancelled,
+            byte[] out,
+            Pbkdf2BlockHook hook) throws Exception {
         if (passwordBytes == null || salt == null || iterations <= 0 || keyLen <= 0 || out == null || out.length < keyLen) {
             throw new IllegalArgumentException("INVALID_PBKDF2_ARGS");
         }
@@ -296,6 +312,9 @@ public class KanataM6N01CryptoProbeTest {
                 System.arraycopy(state, 0, t, 0, 8);
 
                 for (int iter = 2; iter <= iterations; iter++) {
+                    if (hook != null && (iter & 0x3ff) == 0) {
+                        hook.onEvent(block, iter);
+                    }
                     if (cancelled != null && (iter & 0x3ff) == 0 && cancelled.get()) {
                         throw new InterruptedException("CANCELLED");
                     }
@@ -324,6 +343,9 @@ public class KanataM6N01CryptoProbeTest {
                     if (outOff < keyLen) out[outOff++] = (byte) (val >>> 16);
                     if (outOff < keyLen) out[outOff++] = (byte) (val >>> 8);
                     if (outOff < keyLen) out[outOff++] = (byte) val;
+                }
+                if (hook != null) {
+                    hook.onEvent(block, 0);
                 }
             }
             if (cancelled != null && cancelled.get()) {
@@ -782,6 +804,8 @@ public class KanataM6N01CryptoProbeTest {
         cancelTriggerNs.set(SystemClock.elapsedRealtimeNanos());
         cancelled.set(true);
         assertTrue(finished.await(5, TimeUnit.SECONDS));
+        worker.join(5000);
+        assertFalse(worker.isAlive());
         assertTrue(cancelError.get() instanceof InterruptedException);
         long cancelLatencyMs = (cancelFinishNs.get() - cancelTriggerNs.get()) / 1_000_000L;
         perf.put("cancel_600k_latency_ms", cancelLatencyMs);
@@ -825,16 +849,33 @@ public class KanataM6N01CryptoProbeTest {
             vecReport.put("vec_" + i + "_c" + c + "_dk" + dkLen, expectedHex);
         }
 
-        // 2. Verify partial output buffer is wiped on mid-block-2 cancellation (keyLen=64)
+        // 2. Deterministically verify partial output buffer is wiped on mid-block-2 cancellation (keyLen=64)
         byte[] outBuf = new byte[64];
         byte[] pTest = "cancel-wipe-test".getBytes(StandardCharsets.UTF_8);
         byte[] sTest = "cancel-salt-16bb".getBytes(StandardCharsets.UTF_8);
         AtomicBoolean cancelled = new AtomicBoolean(false);
+        CountDownLatch block1Written = new CountDownLatch(1);
+        CountDownLatch allowBlock2 = new CountDownLatch(1);
+        CountDownLatch block2Entered = new CountDownLatch(1);
+        CountDownLatch allowCancelCheck = new CountDownLatch(1);
         CountDownLatch finished = new CountDownLatch(1);
         AtomicReference<Throwable> err = new AtomicReference<>();
+        Pbkdf2BlockHook syncHook = (block, iter) -> {
+            if (block == 1 && iter == 0) {
+                block1Written.countDown();
+                if (!allowBlock2.await(10, TimeUnit.SECONDS)) {
+                    throw new InterruptedException("TIMEOUT_ALLOW_BLOCK2");
+                }
+            } else if (block == 2 && iter == 1024) {
+                block2Entered.countDown();
+                if (!allowCancelCheck.await(10, TimeUnit.SECONDS)) {
+                    throw new InterruptedException("TIMEOUT_ALLOW_CANCEL");
+                }
+            }
+        };
         Thread worker = new Thread(() -> {
             try {
-                pbkdf2HmacSha256ZeroAllocInto(pTest, sTest, 300_000, 64, cancelled, outBuf);
+                pbkdf2HmacSha256ZeroAllocInto(pTest, sTest, 300_000, 64, cancelled, outBuf, syncHook);
             } catch (Throwable t) {
                 err.set(t);
             } finally {
@@ -842,40 +883,43 @@ public class KanataM6N01CryptoProbeTest {
             }
         });
         worker.start();
-        // Spin briefly until block 1 has been written into outBuf[0..31], then cancel during block 2!
-        long deadline = SystemClock.elapsedRealtime() + 10_000;
-        boolean sawPartialWrite = false;
-        while (SystemClock.elapsedRealtime() < deadline) {
-            boolean nonZero = false;
-            for (int i = 0; i < 32; i++) {
-                if (outBuf[i] != 0) {
-                    nonZero = true;
-                    break;
-                }
-            }
-            if (nonZero) {
-                sawPartialWrite = true;
-                cancelled.set(true);
+
+        assertTrue("Timed out waiting for block 1 completion", block1Written.await(10, TimeUnit.SECONDS));
+        boolean block1NonZero = false;
+        for (int i = 0; i < 32; i++) {
+            if (outBuf[i] != 0) {
+                block1NonZero = true;
                 break;
             }
-            Thread.yield();
         }
-        assertTrue("Expected block 1 write before cancel", sawPartialWrite);
+        assertTrue("Block 1 output must be written into outBuf[0..31] before proceeding to block 2", block1NonZero);
+        allowBlock2.countDown();
+
+        assertTrue("Timed out waiting for block 2 start", block2Entered.await(10, TimeUnit.SECONDS));
+        cancelled.set(true);
+        allowCancelCheck.countDown();
+
         assertTrue(finished.await(10, TimeUnit.SECONDS));
+        worker.join(5000);
+        assertFalse(worker.isAlive());
         assertTrue("Expected InterruptedException on cancel", err.get() instanceof InterruptedException);
         for (int i = 0; i < outBuf.length; i++) {
             assertEquals("Output buffer byte " + i + " was not wiped after cancel", 0, outBuf[i]);
         }
 
-        // 3. Verify invalid-argument exception path does not leave caller sentinel or fail silently
+        // 3. Verify invalid-argument exception path does not pollute caller pre-filled buffer
         byte[] errBuf = new byte[32];
         Arrays.fill(errBuf, (byte) 0x55);
         assertThrows(IllegalArgumentException.class,
                 () -> pbkdf2HmacSha256ZeroAllocInto(pTest, sTest, 0, 32, null, errBuf));
+        for (int i = 0; i < errBuf.length; i++) {
+            assertEquals("Invalid-arg error must not pollute caller buffer at " + i, (byte) 0x55, errBuf[i]);
+        }
 
-        vecReport.put("sawPartialBlock1WriteBeforeCancel", sawPartialWrite);
+        vecReport.put("sawPartialBlock1WriteBeforeCancel", block1NonZero);
+        vecReport.put("deterministicSync", "CountDownLatch(block1Written,allowBlock2,block2Entered,allowCancelCheck)");
         vecReport.put("outputBufferWipedAfterCancel", true);
-        vecReport.put("invalidArgRejected", true);
+        vecReport.put("invalidArgRejectedWithoutPollutingCallerBuffer", true);
         report("F08_STD_VECTORS_AND_WIPE", vecReport);
     }
 }

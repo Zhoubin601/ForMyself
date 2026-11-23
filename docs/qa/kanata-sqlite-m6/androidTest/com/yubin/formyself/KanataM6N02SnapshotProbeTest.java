@@ -220,6 +220,7 @@ public class KanataM6N02SnapshotProbeTest {
                     }
                 } finally {
                     pool.shutdownNow();
+                    assertTrue("Executor pool did not terminate", pool.awaitTermination(5, TimeUnit.SECONDS));
                 }
                 report("LOCK_TRAPS", lockProbes);
 
@@ -463,6 +464,7 @@ public class KanataM6N02SnapshotProbeTest {
                             walReport.put("t3Status", t3Future.get(5, TimeUnit.SECONDS));
                         } finally {
                             writerPool.shutdownNow();
+                            assertTrue("Writer pool did not terminate", writerPool.awaitTermination(5, TimeUnit.SECONDS));
                         }
                     } finally {
                         roConn.endTransaction();
@@ -544,9 +546,11 @@ public class KanataM6N02SnapshotProbeTest {
                         assertEquals("3:2", samePoolReader.get(5, TimeUnit.SECONDS));
                     } finally {
                         samePoolWriterExec.shutdownNow();
+                        assertTrue("Same-pool writer exec did not terminate", samePoolWriterExec.awaitTermination(5, TimeUnit.SECONDS));
                     }
                 } finally {
                     samePoolExec.shutdownNow();
+                    assertTrue("Same-pool reader exec did not terminate", samePoolExec.awaitTermination(5, TimeUnit.SECONDS));
                 }
                 report("WAL_SNAPSHOT_PROBE", walReport);
             }
@@ -752,17 +756,24 @@ public class KanataM6N02SnapshotProbeTest {
                     roRelease.countDown();
                     assertEquals("2", roHold.get(5, TimeUnit.SECONDS));
                     concExec.shutdownNow();
+                    assertTrue("Concurrent reader exec did not terminate", concExec.awaitTermination(5, TimeUnit.SECONDS));
                 }
 
                 // Reopen target with independent random DEK
                 try (SQLiteDatabase targetDb = SQLiteDatabase.openDatabase(
                         expAFile.getPath(), exportKey, null, FLAGS_RW, (d, e) -> {}, null)) {
                     targetDb.setForeignKeyConstraintsEnabled(true);
-                    expAReport.put("targetUserVersion", scalar(targetDb, "PRAGMA user_version"));
-                    expAReport.put("targetAppId", scalar(targetDb, "PRAGMA application_id"));
-                    expAReport.put("targetIntegrity", scalar(targetDb, "PRAGMA integrity_check"));
+                    String targetUserVersion = scalar(targetDb, "PRAGMA user_version");
+                    String targetAppId = scalar(targetDb, "PRAGMA application_id");
+                    String targetIntegrity = scalar(targetDb, "PRAGMA integrity_check");
+                    assertEquals("5", targetUserVersion);
+                    assertEquals("1263424577", targetAppId);
+                    assertEquals("ok", targetIntegrity);
                     noRows(targetDb, "PRAGMA cipher_integrity_check");
                     noRows(targetDb, "SELECT * FROM pragma_foreign_key_check");
+                    expAReport.put("targetUserVersion", targetUserVersion);
+                    expAReport.put("targetAppId", targetAppId);
+                    expAReport.put("targetIntegrity", targetIntegrity);
                     expAReport.put("targetCipherAndFkOk", true);
 
                     String targetSchema = schemaListing(targetDb).toString();
@@ -775,6 +786,9 @@ public class KanataM6N02SnapshotProbeTest {
                     expAReport.put("targetWorldCount", scalar(targetDb, "SELECT count(*) FROM probe_worlds"));
                     expAReport.put("targetMessageCount", scalar(targetDb, "SELECT count(*) FROM probe_messages"));
                     expAReport.put("targetEntityCount", scalar(targetDb, "SELECT count(*) FROM probe_entity_ids"));
+                    assertEquals("2", expAReport.getString("targetWorldCount"));
+                    assertEquals("2", expAReport.getString("targetMessageCount"));
+                    assertEquals("2", expAReport.getString("targetEntityCount"));
 
                     // Verify triggers & FK actually enforce on reopened target
                     targetDb.execSQL("INSERT INTO probe_worlds VALUES('w_post', 'Trinity', 3)");
@@ -801,6 +815,9 @@ public class KanataM6N02SnapshotProbeTest {
                 assertEquals(srcSchemaBefore, schemaListing(srcDb).toString());
                 assertEquals("5", scalar(srcDb, "PRAGMA user_version"));
                 assertEquals("1263424577", scalar(srcDb, "PRAGMA application_id"));
+                assertEquals("ok", scalar(srcDb, "PRAGMA integrity_check"));
+                noRows(srcDb, "PRAGMA cipher_integrity_check");
+                noRows(srcDb, "SELECT * FROM pragma_foreign_key_check");
                 expAReport.put("sourceUnchanged", true);
 
                 // Additional WAL concurrency check for sqlcipher_export: uncommitted writer on separate RW conn
@@ -816,7 +833,7 @@ public class KanataM6N02SnapshotProbeTest {
                         try {
                             w2.execSQL("INSERT INTO probe_worlds VALUES('w_uncomm', 'Uncommitted', 99)");
                             uncommReady.countDown();
-                            uncommRelease.await(10, TimeUnit.SECONDS);
+                            assertTrue("Timed out waiting to release uncommitted writer", uncommRelease.await(10, TimeUnit.SECONDS));
                         } finally {
                             w2.endTransaction();
                         }
@@ -832,17 +849,24 @@ public class KanataM6N02SnapshotProbeTest {
                     srcDb.rawExecSQL("DETACH DATABASE exp_ac");
                     try (SQLiteDatabase concTarget = SQLiteDatabase.openDatabase(
                             expAConcFile.getPath(), exportKey, null, FLAGS_RO, (d, e) -> {}, null)) {
+                        concTarget.setForeignKeyConstraintsEnabled(true);
                         String cnt = scalar(concTarget, "SELECT count(*) FROM probe_worlds");
-                        expAReport.put("exportDuringUncommittedWriter", "SUCCEEDED_EXCLUDES_UNCOMMITTED_COUNT_" + cnt);
                         assertEquals("2", cnt);
+                        assertEquals("5", scalar(concTarget, "PRAGMA user_version"));
+                        assertEquals("1263424577", scalar(concTarget, "PRAGMA application_id"));
+                        assertEquals("ok", scalar(concTarget, "PRAGMA integrity_check"));
+                        noRows(concTarget, "PRAGMA cipher_integrity_check");
+                        noRows(concTarget, "SELECT * FROM pragma_foreign_key_check");
+                        assertEquals(srcSchemaBefore, schemaListing(concTarget).toString());
+                        assertEquals(srcDigestBefore, logicalSnapshotDigest(concTarget));
+                        expAReport.put("exportDuringUncommittedWriter", "SUCCEEDED_EXCLUDES_UNCOMMITTED_COUNT_" + cnt);
                     }
-                } catch (Throwable t) {
-                    expAReport.put("exportDuringUncommittedWriter", "FAILED:" + t.getClass().getSimpleName() + ":" + t.getMessage());
-                    try { srcDb.rawExecSQL("DETACH DATABASE exp_ac"); } catch (Throwable ignored) {}
                 } finally {
+                    try { srcDb.rawExecSQL("DETACH DATABASE exp_ac"); } catch (Throwable ignored) {}
                     uncommRelease.countDown();
                     assertEquals("ROLLED_BACK", uncommWriter.get(5, TimeUnit.SECONDS));
                     uncommExec.shutdownNow();
+                    assertTrue("Uncommitted writer exec did not terminate", uncommExec.awaitTermination(5, TimeUnit.SECONDS));
                     SQLiteDatabase.deleteDatabase(expAConcFile);
                 }
             }
@@ -853,8 +877,10 @@ public class KanataM6N02SnapshotProbeTest {
             String cloneOrigDigest;
             String cloneOrigSchema;
             // Step 1: Create disposable synthetic clone with WAL data
+            SQLiteDatabase cloneRef;
             try (SQLiteDatabase cloneDb = SQLiteDatabase.openDatabase(
                     cloneSrcFile.getPath(), srcKey, null, FLAGS_RW | SQLiteDatabase.CREATE_IF_NECESSARY, (d, e) -> {}, null)) {
+                cloneRef = cloneDb;
                 setupFullSchemeASyntheticDb(cloneDb);
                 cloneOrigDigest = logicalSnapshotDigest(cloneDb);
                 cloneOrigSchema = schemaListing(cloneDb).toString();
@@ -866,17 +892,21 @@ public class KanataM6N02SnapshotProbeTest {
                     expBReport.put("checkpointBusy", ck.getInt(0));
                     expBReport.put("checkpointLog", ck.getInt(1));
                     expBReport.put("checkpointCheckpointed", ck.getInt(2));
-                    assertEquals(0, ck.getInt(0));
+                    assertEquals("Checkpoint busy must be 0", 0, ck.getInt(0));
                 }
             } // Step 3: All connections closed
+            assertFalse("Clone DB connection must be closed before sidecar check and copy", cloneRef.isOpen());
+            expBReport.put("allConnectionsClosed", true);
 
             // Step 4: Verify WAL/SHM sidecar state
             File cloneWal = new File(cloneSrcFile.getPath() + "-wal");
             File cloneShm = new File(cloneSrcFile.getPath() + "-shm");
-            expBReport.put("walExistsAfterClose", cloneWal.exists());
-            expBReport.put("walBytesAfterClose", cloneWal.exists() ? cloneWal.length() : 0L);
-            expBReport.put("shmExistsAfterClose", cloneShm.exists());
-            expBReport.put("shmBytesAfterClose", cloneShm.exists() ? cloneShm.length() : 0L);
+            assertFalse("WAL sidecar must not exist after checkpoint + close", cloneWal.exists());
+            assertFalse("SHM sidecar must not exist after checkpoint + close", cloneShm.exists());
+            expBReport.put("walExistsAfterClose", false);
+            expBReport.put("walBytesAfterClose", 0L);
+            expBReport.put("shmExistsAfterClose", false);
+            expBReport.put("shmBytesAfterClose", 0L);
 
             // Step 5: Copy database file
             try (FileInputStream fis = new FileInputStream(cloneSrcFile);
@@ -887,53 +917,71 @@ public class KanataM6N02SnapshotProbeTest {
                 fos.getFD().sync();
             }
 
-            // Step 6 & 7: Open copy with source test key & attempt SQLCipher rekey to independent random test DEK
+            // Step 5b: Verify copy integrity before rekey
+            try (SQLiteDatabase copyPreRekey = SQLiteDatabase.openDatabase(
+                    cloneCopyFile.getPath(), srcKey, null, FLAGS_RO, (d, e) -> {}, null)) {
+                copyPreRekey.setForeignKeyConstraintsEnabled(true);
+                assertEquals("5", scalar(copyPreRekey, "PRAGMA user_version"));
+                assertEquals("1263424577", scalar(copyPreRekey, "PRAGMA application_id"));
+                assertEquals("ok", scalar(copyPreRekey, "PRAGMA integrity_check"));
+                noRows(copyPreRekey, "PRAGMA cipher_integrity_check");
+                noRows(copyPreRekey, "SELECT * FROM pragma_foreign_key_check");
+                assertEquals(cloneOrigSchema, schemaListing(copyPreRekey).toString());
+                assertEquals(cloneOrigDigest, logicalSnapshotDigest(copyPreRekey));
+                expBReport.put("copyPreRekeyIntegrityOk", true);
+            }
+
+            // Step 6 & 7: Open copy with source test key & enforce SQLCipher rekey to independent random test DEK
+            SQLiteDatabase rekeyRef;
             try (SQLiteDatabase rekeyDb = SQLiteDatabase.openDatabase(
                     cloneCopyFile.getPath(), srcKey, null, FLAGS_RW, (d, e) -> {}, null)) {
+                rekeyRef = rekeyDb;
                 expBReport.put("copyJournalModeBeforeRekey", scalar(rekeyDb, "PRAGMA journal_mode"));
-                try {
-                    rekeyDb.changePassword(rekeyTargetKey);
-                    expBReport.put("rekeyMethod", "SQLiteDatabase.changePassword(byte[])");
-                    expBReport.put("rekeySucceeded", true);
-                } catch (Throwable t) {
-                    expBReport.put("rekeyMethod", "SQLiteDatabase.changePassword(byte[])");
-                    expBReport.put("rekeySucceeded", false);
-                    expBReport.put("rekeyError", t.getClass().getSimpleName() + ":" + t.getMessage());
-                }
+                rekeyDb.changePassword(rekeyTargetKey);
+                expBReport.put("rekeyMethod", "SQLiteDatabase.changePassword(byte[])");
+                expBReport.put("rekeySucceeded", true);
             } // Step 8: Close copy
+            assertFalse("Rekeyed DB connection must be closed", rekeyRef.isOpen());
 
-            // Step 8b & 9: Reopen copy with new key & reject old key
-            if (expBReport.optBoolean("rekeySucceeded", false)) {
-                try (SQLiteDatabase reopened = SQLiteDatabase.openDatabase(
-                        cloneCopyFile.getPath(), rekeyTargetKey, null, FLAGS_RO, (d, e) -> {}, null)) {
-                    expBReport.put("reopenNewKeySucceeded", true);
-                    expBReport.put("targetUserVersion", scalar(reopened, "PRAGMA user_version"));
-                    expBReport.put("targetAppId", scalar(reopened, "PRAGMA application_id"));
-                    expBReport.put("targetIntegrity", scalar(reopened, "PRAGMA integrity_check"));
-                    noRows(reopened, "PRAGMA cipher_integrity_check");
-                    noRows(reopened, "SELECT * FROM pragma_foreign_key_check");
-                    assertEquals("5", scalar(reopened, "PRAGMA user_version"));
-                    assertEquals("1263424577", scalar(reopened, "PRAGMA application_id"));
-                    assertEquals(cloneOrigSchema, schemaListing(reopened).toString());
-                    assertEquals(cloneOrigDigest, logicalSnapshotDigest(reopened));
-                    expBReport.put("schemaAndDigestExactMatch", true);
-                }
-                assertThrows(SQLiteException.class, () -> {
-                    try (SQLiteDatabase oldKeyDb = SQLiteDatabase.openDatabase(
-                            cloneCopyFile.getPath(), srcKey, null, FLAGS_RO, (d, e) -> {}, null)) {
-                        scalar(oldKeyDb, "SELECT count(*) FROM probe_worlds");
-                    }
-                });
-                expBReport.put("oldKeyRejectedAfterRekey", true);
+            // Step 8b & 9: Reopen copy with new key & reject old key (unconditional assertions)
+            try (SQLiteDatabase reopened = SQLiteDatabase.openDatabase(
+                    cloneCopyFile.getPath(), rekeyTargetKey, null, FLAGS_RO, (d, e) -> {}, null)) {
+                reopened.setForeignKeyConstraintsEnabled(true);
+                expBReport.put("reopenNewKeySucceeded", true);
+                String targetUv = scalar(reopened, "PRAGMA user_version");
+                String targetAppId = scalar(reopened, "PRAGMA application_id");
+                String targetIntegrity = scalar(reopened, "PRAGMA integrity_check");
+                assertEquals("5", targetUv);
+                assertEquals("1263424577", targetAppId);
+                assertEquals("ok", targetIntegrity);
+                noRows(reopened, "PRAGMA cipher_integrity_check");
+                noRows(reopened, "SELECT * FROM pragma_foreign_key_check");
+                assertEquals(cloneOrigSchema, schemaListing(reopened).toString());
+                assertEquals(cloneOrigDigest, logicalSnapshotDigest(reopened));
+                expBReport.put("targetUserVersion", targetUv);
+                expBReport.put("targetAppId", targetAppId);
+                expBReport.put("targetIntegrity", targetIntegrity);
+                expBReport.put("schemaAndDigestExactMatch", true);
             }
+            assertThrows(SQLiteException.class, () -> {
+                try (SQLiteDatabase oldKeyDb = SQLiteDatabase.openDatabase(
+                        cloneCopyFile.getPath(), srcKey, null, FLAGS_RO, (d, e) -> {}, null)) {
+                    scalar(oldKeyDb, "SELECT count(*) FROM probe_worlds");
+                }
+            });
+            expBReport.put("oldKeyRejectedAfterRekey", true);
 
             // Step 10: Verify original disposable clone source DB has no logical changes
             try (SQLiteDatabase verifySrc = SQLiteDatabase.openDatabase(
                     cloneSrcFile.getPath(), srcKey, null, FLAGS_RO, (d, e) -> {}, null)) {
+                verifySrc.setForeignKeyConstraintsEnabled(true);
                 assertEquals(cloneOrigDigest, logicalSnapshotDigest(verifySrc));
                 assertEquals(cloneOrigSchema, schemaListing(verifySrc).toString());
                 assertEquals("5", scalar(verifySrc, "PRAGMA user_version"));
                 assertEquals("1263424577", scalar(verifySrc, "PRAGMA application_id"));
+                assertEquals("ok", scalar(verifySrc, "PRAGMA integrity_check"));
+                noRows(verifySrc, "PRAGMA cipher_integrity_check");
+                noRows(verifySrc, "SELECT * FROM pragma_foreign_key_check");
                 expBReport.put("originalSourceUnchanged", true);
             }
             report("F07_EXP_B_CLONE_AND_REKEY", expBReport);

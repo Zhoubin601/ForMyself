@@ -1,0 +1,11 @@
+{
+  "password": " 合成📦 é \u0000﻿ ",
+  "saltHex": "101112131415161718191a1b1c1d1e1f",
+  "backupIdHex": "202122232425262728292a2b2c2d2e2f",
+  "wrapNonceHex": "303132333435363738393a3b",
+  "bekHex": "505152535455565758595a5b5c5d5e5f606162636465666768696a6b6c6d6e6f",
+  "packageByteLength": 4292,
+  "packageSha256": "e2c53f578a5bb5e60f949b7983eefab11becb6433604ca73a8f75af30ce61dcb",
+  "transcriptHex": "a170a1d0c134d9f57f5b6e48c76834c45c0b4be9c868f7ff4f796e247ee1b168",
+  "dataFrameCount": 1
+}
