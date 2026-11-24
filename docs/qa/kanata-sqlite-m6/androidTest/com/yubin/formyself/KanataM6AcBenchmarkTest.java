@@ -24,27 +24,34 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
-import java.nio.charset.StandardCharsets;
+import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.UUID;
-import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Unified A1 / A2 / C comparative benchmark at 1k, 10k, and 100k messages.
- * - Deterministic Schema 005 synthetic dataset covering all 45 business + 5 derived + 3 runtime tables.
- * - Verifies dataset identity & per-table SHA-256 logical equivalence.
- * - Executes 1 independent cold run + 5 interleaved rotating warm runs per scale.
- * - Clearly distinguishes A2 offline exclusive-maintenance lock vs A1/C online snapshot semantics.
+ * Remediated measurement methodology:
+ * - Uniform 10 ms high-frequency ResourceSampler across A1, A2, and C (RSS, Native Heap, Java Heap, WAL peak, spool peak).
+ * - Write-block timing starts BEFORE beginSnapshotFreezeAndDrain() for both A2 and C, and spans full lock for A1.
+ * - Unmeasurable or inapplicable phases are explicitly recorded as -1 (N/A) without double-counting any interval.
+ * - A2 executes the full offline maintenance contract on an independent per-round active-WAL DB copy:
+ *   freeze -> drain -> checkpoint(TRUNCATE) -> close ALL source connections -> verify sidecars absent -> copy -> endFreeze -> rekey.
+ * - Real mid-operation cancellation probes for A1 (sqlcipher_export), A2 (file copy + rekey limitation), and C (exportToSpool).
+ * - Includes explicit same-scope size comparison (excluding runtime tables + pre-applied task projection).
  */
 @RunWith(AndroidJUnit4.class)
 public class KanataM6AcBenchmarkTest {
     static {
         System.loadLibrary("sqlcipher");
     }
+
     private static final String TAG = "KanataM6Bench";
     private static final int FLAGS_RW = SQLiteDatabase.OPEN_READWRITE | SQLiteDatabase.NO_LOCALIZED_COLLATORS;
     private static final int FLAGS_RO = SQLiteDatabase.OPEN_READONLY | SQLiteDatabase.NO_LOCALIZED_COLLATORS;
@@ -70,6 +77,60 @@ public class KanataM6AcBenchmarkTest {
             }
         } catch (Exception ignored) {}
         return -1L;
+    }
+
+    private static final class ResourceSampler implements AutoCloseable {
+        private final File[] walFiles;
+        private final File[] spoolFiles;
+        private final AtomicBoolean running = new AtomicBoolean(true);
+        private final Thread thread;
+        volatile long peakRssKiB = -1L;
+        volatile long peakNativeHeapBytes = -1L;
+        volatile long peakJavaHeapBytes = -1L;
+        volatile long peakWalBytes = 0L;
+        volatile long peakSpoolBytes = 0L;
+
+        ResourceSampler(File[] walFiles, File[] spoolFiles) {
+            this.walFiles = walFiles != null ? walFiles : new File[0];
+            this.spoolFiles = spoolFiles != null ? spoolFiles : new File[0];
+            sampleOnce();
+            this.thread = new Thread(() -> {
+                while (running.get()) {
+                    sampleOnce();
+                    SystemClock.sleep(10);
+                }
+            }, "m6-res-sampler");
+            this.thread.start();
+        }
+
+        void sampleOnce() {
+            long rss = readVmRssKiB();
+            if (rss > peakRssKiB) peakRssKiB = rss;
+            long nat = Debug.getNativeHeapAllocatedSize();
+            if (nat > peakNativeHeapBytes) peakNativeHeapBytes = nat;
+            Runtime rt = Runtime.getRuntime();
+            long java = rt.totalMemory() - rt.freeMemory();
+            if (java > peakJavaHeapBytes) peakJavaHeapBytes = java;
+            long walSum = 0L;
+            for (File wf : walFiles) {
+                if (wf != null && wf.exists()) walSum += wf.length();
+            }
+            if (walSum > peakWalBytes) peakWalBytes = walSum;
+            long spSum = 0L;
+            for (File sf : spoolFiles) {
+                if (sf != null && sf.exists()) spSum += sf.length();
+            }
+            if (spSum > peakSpoolBytes) peakSpoolBytes = spSum;
+        }
+
+        @Override
+        public void close() {
+            running.set(false);
+            try {
+                thread.join(2000L);
+            } catch (InterruptedException ignored) {}
+            sampleOnce();
+        }
     }
 
     private static String scalar(SQLiteDatabase db, String sql) {
@@ -110,12 +171,15 @@ public class KanataM6AcBenchmarkTest {
         }
     }
 
-    private static void copyWithSync(File src, File dst) throws Exception {
+    private static void copyWithSync(File src, File dst, AtomicBoolean cancelFlag) throws Exception {
         try (FileInputStream fis = new FileInputStream(src);
              FileOutputStream fos = new FileOutputStream(dst)) {
             byte[] buf = new byte[65536];
             int n;
             while ((n = fis.read(buf)) != -1) {
+                if (cancelFlag != null && cancelFlag.get()) {
+                    throw new IOException("COPY_CANCELLED");
+                }
                 fos.write(buf, 0, n);
             }
             fos.flush();
@@ -128,18 +192,22 @@ public class KanataM6AcBenchmarkTest {
         int round;
         boolean cold;
         long totalMs;
-        long snapshotPinMs;
-        long dbReadMs;
-        long kdfAeadMs;
-        long spoolWriteMs;
-        long fsyncReadbackMs;
+        long freezeDrainMs = -1L;
+        long snapshotPinMs = -1L;
+        long dbReadMs = -1L;
+        long kdfAeadMs = -1L;
+        long spoolWriteMs = -1L;
+        long exportExecMs = -1L;
+        long checkpointCloseMs = -1L;
+        long fileCopyMs = -1L;
+        long fsyncReadbackMs = -1L;
+        long writeBlockMs = -1L;
         long finalBytes;
         long peakRssKiB;
         long peakNativeHeapBytes;
         long peakJavaHeapBytes;
         long walPeakBytes;
         long spoolPeakBytes;
-        long writeBlockMs;
         boolean logicalVerified;
 
         JSONObject toJson() throws Exception {
@@ -148,18 +216,22 @@ public class KanataM6AcBenchmarkTest {
                     .put("round", round)
                     .put("cold", cold)
                     .put("totalMs", totalMs)
+                    .put("freezeDrainMs", freezeDrainMs)
                     .put("snapshotPinMs", snapshotPinMs)
                     .put("dbReadMs", dbReadMs)
                     .put("kdfAeadMs", kdfAeadMs)
                     .put("spoolWriteMs", spoolWriteMs)
+                    .put("exportExecMs", exportExecMs)
+                    .put("checkpointCloseMs", checkpointCloseMs)
+                    .put("fileCopyMs", fileCopyMs)
                     .put("fsyncReadbackMs", fsyncReadbackMs)
+                    .put("writeBlockMs", writeBlockMs)
                     .put("finalBytes", finalBytes)
                     .put("peakRssKiB", peakRssKiB)
                     .put("peakNativeHeapBytes", peakNativeHeapBytes)
                     .put("peakJavaHeapBytes", peakJavaHeapBytes)
                     .put("walPeakBytes", walPeakBytes)
                     .put("spoolPeakBytes", spoolPeakBytes)
-                    .put("writeBlockMs", writeBlockMs)
                     .put("logicalVerified", logicalVerified);
         }
     }
@@ -171,13 +243,13 @@ public class KanataM6AcBenchmarkTest {
             KanataM6PortableCatalog catalog,
             KanataM6SyntheticDataset.LogicalSummary expectedPhysical,
             boolean deepLogicalVerify,
+            File optionalCopyOut,
             int round,
             boolean cold) throws Exception {
         BenchSample s = new BenchSample();
         s.route = "A1";
         s.round = round;
         s.cold = cold;
-        long walPeak = KanataM6SyntheticDataset.walSizeBytes(srcDb);
 
         File tmpDir = new File(workDir, "a1_stage_" + UUID.randomUUID());
         assertTrue(tmpDir.mkdirs());
@@ -186,23 +258,30 @@ public class KanataM6AcBenchmarkTest {
         SQLiteDatabase.deleteDatabase(tmpOut);
         SQLiteDatabase.deleteDatabase(finalOut);
 
-        long tStart = SystemClock.elapsedRealtimeNanos();
+        File srcWal = new File(srcDb.getAbsolutePath() + "-wal");
+        File tmpWal = new File(tmpOut.getAbsolutePath() + "-wal");
         SQLiteDatabase db = null;
-        try {
-            long tPin0 = SystemClock.elapsedRealtimeNanos();
+
+        try (ResourceSampler sampler = new ResourceSampler(
+                new File[] { srcWal, tmpWal },
+                new File[] { tmpOut, finalOut })) {
+            long tStart = SystemClock.elapsedRealtimeNanos();
             db = SQLiteDatabase.openDatabase(
                     srcDb.getAbsolutePath(), srcRawKey, null,
                     FLAGS_RW | SQLiteDatabase.CREATE_IF_NECESSARY, (d, e) -> {}, null);
             db.rawExecSQL("PRAGMA temp_store=MEMORY");
             db.rawExecSQL("PRAGMA busy_timeout=5000");
-            s.snapshotPinMs = (SystemClock.elapsedRealtimeNanos() - tPin0) / 1_000_000L;
-            // Online physical export blocks concurrent writers only while sqlcipher_export holds read-write lock
-            long tWriteBlock0 = SystemClock.elapsedRealtimeNanos();
 
+            // A1 has no separate non-blocking snapshot pin; sqlcipher_export holds source lock for full duration
+            s.snapshotPinMs = -1L; // N/A
+            s.dbReadMs = -1L;      // N/A (fused inside sqlcipher_export)
+            s.kdfAeadMs = -1L;     // N/A (inline inside ATTACH KEY + sqlcipher_export)
+            s.spoolWriteMs = -1L;  // N/A (fused inside sqlcipher_export)
+
+            long tWriteBlock0 = SystemClock.elapsedRealtimeNanos();
             String escapedPath = tmpOut.getAbsolutePath().replace("'", "''");
             String escapedPw = BACKUP_PW.replace("'", "''");
 
-            long tExport0 = SystemClock.elapsedRealtimeNanos();
             db.execSQL("ATTACH DATABASE '" + escapedPath + "' AS a1_exp KEY '" + escapedPw + "'");
             try {
                 scalar(db, "SELECT sqlcipher_export('a1_exp')");
@@ -211,34 +290,27 @@ public class KanataM6AcBenchmarkTest {
             } finally {
                 db.execSQL("DETACH DATABASE a1_exp");
             }
-            long exportNs = SystemClock.elapsedRealtimeNanos() - tExport0;
             db.close();
             db = null;
-            s.writeBlockMs = (SystemClock.elapsedRealtimeNanos() - tWriteBlock0) / 1_000_000L;
-            s.dbReadMs = exportNs / 1_000_000L;
-            // A1 key derivation & page encryption happen inside ATTACH KEY + sqlcipher_export
-            s.kdfAeadMs = -1L;
-
-            walPeak = Math.max(walPeak, KanataM6SyntheticDataset.walSizeBytes(srcDb));
-            walPeak = Math.max(walPeak, KanataM6SyntheticDataset.walSizeBytes(tmpOut));
-            s.spoolPeakBytes = tmpOut.length();
+            long tWriteBlockEnd = SystemClock.elapsedRealtimeNanos();
+            s.exportExecMs = (tWriteBlockEnd - tWriteBlock0) / 1_000_000L;
+            s.writeBlockMs = s.exportExecMs;
+            sampler.sampleOnce();
 
             long tSync0 = SystemClock.elapsedRealtimeNanos();
             try (FileOutputStream fos = new FileOutputStream(tmpOut, true)) {
                 fos.getFD().sync();
             }
-            assertTrue(tmpOut.renameTo(finalOut));
+            KanataM6SchemeCExporter.defaultAtomicReplace(tmpOut, finalOut);
             fsyncAndReadbackSha(finalOut);
             s.fsyncReadbackMs = (SystemClock.elapsedRealtimeNanos() - tSync0) / 1_000_000L;
-            s.spoolWriteMs = s.dbReadMs;
             s.totalMs = (SystemClock.elapsedRealtimeNanos() - tStart) / 1_000_000L;
             s.finalBytes = finalOut.length();
-            s.walPeakBytes = walPeak;
+            sampler.sampleOnce();
 
-            s.peakRssKiB = readVmRssKiB();
-            s.peakNativeHeapBytes = Debug.getNativeHeapAllocatedSize();
-            Runtime rt = Runtime.getRuntime();
-            s.peakJavaHeapBytes = rt.totalMemory() - rt.freeMemory();
+            if (optionalCopyOut != null) {
+                copyWithSync(finalOut, optionalCopyOut, null);
+            }
 
             verifySqliteDbIntegrity(finalOut, BACKUP_PW, null);
             if (deepLogicalVerify) {
@@ -253,6 +325,12 @@ public class KanataM6AcBenchmarkTest {
                     outRo.close();
                 }
             }
+
+            s.peakRssKiB = sampler.peakRssKiB;
+            s.peakNativeHeapBytes = sampler.peakNativeHeapBytes;
+            s.peakJavaHeapBytes = sampler.peakJavaHeapBytes;
+            s.walPeakBytes = sampler.peakWalBytes;
+            s.spoolPeakBytes = Math.max(sampler.peakSpoolBytes, s.finalBytes);
             return s;
         } finally {
             if (db != null && db.isOpen()) db.close();
@@ -262,60 +340,77 @@ public class KanataM6AcBenchmarkTest {
         }
     }
 
-    private static BenchSample runA2(
-            File srcDb,
+    /**
+     * A2 Offline Maintenance Contract on an independent per-round synthetic DB with live uncheckpointed WAL:
+     * beginSnapshotFreezeAndDrain -> wal_checkpoint(TRUNCATE) -> close ALL source connections ->
+     * verify -wal/-shm absent -> copy stable file -> endSnapshotFreeze -> changePassword(rekey) -> fsync/readback.
+     */
+    private static BenchSample runA2Offline(
+            int messageCount,
             byte[] srcRawKey,
             File workDir,
             KanataM6PortableCatalog catalog,
             KanataM6SnapshotOwner.WriteGate writeGate,
             KanataM6SyntheticDataset.LogicalSummary expectedPhysical,
             boolean deepLogicalVerify,
+            File optionalCopyOut,
             int round,
             boolean cold) throws Exception {
         BenchSample s = new BenchSample();
         s.route = "A2";
         s.round = round;
         s.cold = cold;
-        long walPeak = KanataM6SyntheticDataset.walSizeBytes(srcDb);
 
-        File cloneDb = new File(workDir, "a2_clone_" + UUID.randomUUID() + ".db");
+        File roundSrcDb = new File(workDir, "a2_round_src_" + UUID.randomUUID() + ".db");
         File copyDb = new File(workDir, "a2_copy_" + UUID.randomUUID() + ".db");
-        SQLiteDatabase.deleteDatabase(cloneDb);
+        SQLiteDatabase.deleteDatabase(roundSrcDb);
         SQLiteDatabase.deleteDatabase(copyDb);
 
-        long tStart = SystemClock.elapsedRealtimeNanos();
-        // A2 offline maintenance requires exclusive write gate from clone/checkpoint through close+copy!
-        writeGate.beginSnapshotFreezeAndDrain(5000L);
-        long tBlock0 = SystemClock.elapsedRealtimeNanos();
+        // Seed independent per-round synthetic DB with active uncheckpointed WAL BEFORE timed A2 export!
+        SQLiteDatabase activeSrcConn = KanataM6SyntheticDataset.populateWithActiveWal(
+                roundSrcDb, srcRawKey, catalog, messageCount);
+        File srcWal = new File(roundSrcDb.getAbsolutePath() + "-wal");
+        File srcShm = new File(roundSrcDb.getAbsolutePath() + "-shm");
+        assertTrue("A2 round source must start with active uncheckpointed WAL",
+                srcWal.exists() && srcWal.length() > 0L);
+
         boolean gateReleased = false;
-        try {
-            // Copy srcDb + -wal + -shm under exclusive freeze so srcDb's active WAL remains untouched for interleaved A1/C runs
-            copyWithSync(srcDb, cloneDb);
-            File srcWal = new File(srcDb.getAbsolutePath() + "-wal");
-            File srcShm = new File(srcDb.getAbsolutePath() + "-shm");
-            if (srcWal.exists()) copyWithSync(srcWal, new File(cloneDb.getAbsolutePath() + "-wal"));
-            if (srcShm.exists()) copyWithSync(srcShm, new File(cloneDb.getAbsolutePath() + "-shm"));
+        try (ResourceSampler sampler = new ResourceSampler(
+                new File[] { srcWal },
+                new File[] { copyDb })) {
+            long tStart = SystemClock.elapsedRealtimeNanos();
+            // Start write-block timer BEFORE calling beginSnapshotFreezeAndDrain()
+            long tBlock0 = SystemClock.elapsedRealtimeNanos();
+            writeGate.beginSnapshotFreezeAndDrain(5000L);
+            long tAfterDrain = SystemClock.elapsedRealtimeNanos();
+            s.freezeDrainMs = (tAfterDrain - tBlock0) / 1_000_000L;
+
+            // Offline maintenance: checkpoint(TRUNCATE) and close ALL source connections before copying
+            long tCk0 = SystemClock.elapsedRealtimeNanos();
+            try (Cursor ck = activeSrcConn.rawQuery("PRAGMA wal_checkpoint(TRUNCATE)", null)) {
+                assertTrue(ck.moveToFirst());
+                assertEquals(0, ck.getInt(0));
+            }
+            activeSrcConn.close();
+            activeSrcConn = null;
+            assertFalse("-wal must not exist after closing all source connections", srcWal.exists());
+            assertFalse("-shm must not exist after closing all source connections", srcShm.exists());
+            long tAfterClose = SystemClock.elapsedRealtimeNanos();
+            s.checkpointCloseMs = (tAfterClose - tCk0) / 1_000_000L;
 
             long tCopy0 = SystemClock.elapsedRealtimeNanos();
-            SQLiteDatabase cl = SQLiteDatabase.openDatabase(
-                    cloneDb.getAbsolutePath(), srcRawKey, null, FLAGS_RW, (d, e) -> {}, null);
-            try {
-                try (Cursor ck = cl.rawQuery("PRAGMA wal_checkpoint(TRUNCATE)", null)) {
-                    assertTrue(ck.moveToFirst());
-                    assertEquals(0, ck.getInt(0));
-                }
-            } finally {
-                cl.close();
-            }
-            assertFalse(new File(cloneDb.getAbsolutePath() + "-wal").exists());
-            assertFalse(new File(cloneDb.getAbsolutePath() + "-shm").exists());
-            copyWithSync(cloneDb, copyDb);
-            s.dbReadMs = (SystemClock.elapsedRealtimeNanos() - tCopy0) / 1_000_000L;
-            // Release source write lock once offline copy is safely captured
+            copyWithSync(roundSrcDb, copyDb, null);
+            long tAfterCopy = SystemClock.elapsedRealtimeNanos();
+            s.fileCopyMs = (tAfterCopy - tCopy0) / 1_000_000L;
+
             writeGate.endSnapshotFreeze();
             gateReleased = true;
             s.writeBlockMs = (SystemClock.elapsedRealtimeNanos() - tBlock0) / 1_000_000L;
-            s.snapshotPinMs = s.writeBlockMs;
+
+            s.snapshotPinMs = -1L; // N/A (offline exclusive lock, not online WAL snapshot pin)
+            s.dbReadMs = -1L;      // N/A (file-level copy)
+            s.spoolWriteMs = -1L;  // N/A (file-level copy accounted in fileCopyMs)
+            sampler.sampleOnce();
 
             long tRekey0 = SystemClock.elapsedRealtimeNanos();
             SQLiteDatabase rk = SQLiteDatabase.openDatabase(
@@ -327,19 +422,16 @@ public class KanataM6AcBenchmarkTest {
             }
             s.kdfAeadMs = (SystemClock.elapsedRealtimeNanos() - tRekey0) / 1_000_000L;
 
-            s.spoolPeakBytes = copyDb.length();
             long tSync0 = SystemClock.elapsedRealtimeNanos();
             fsyncAndReadbackSha(copyDb);
             s.fsyncReadbackMs = (SystemClock.elapsedRealtimeNanos() - tSync0) / 1_000_000L;
-            s.spoolWriteMs = s.dbReadMs;
             s.totalMs = (SystemClock.elapsedRealtimeNanos() - tStart) / 1_000_000L;
             s.finalBytes = copyDb.length();
-            s.walPeakBytes = Math.max(walPeak, KanataM6SyntheticDataset.walSizeBytes(cloneDb));
+            sampler.sampleOnce();
 
-            s.peakRssKiB = readVmRssKiB();
-            s.peakNativeHeapBytes = Debug.getNativeHeapAllocatedSize();
-            Runtime rt = Runtime.getRuntime();
-            s.peakJavaHeapBytes = rt.totalMemory() - rt.freeMemory();
+            if (optionalCopyOut != null) {
+                copyWithSync(copyDb, optionalCopyOut, null);
+            }
 
             verifySqliteDbIntegrity(copyDb, BACKUP_PW, null);
             if (deepLogicalVerify) {
@@ -354,10 +446,17 @@ public class KanataM6AcBenchmarkTest {
                     outRo.close();
                 }
             }
+
+            s.peakRssKiB = sampler.peakRssKiB;
+            s.peakNativeHeapBytes = sampler.peakNativeHeapBytes;
+            s.peakJavaHeapBytes = sampler.peakJavaHeapBytes;
+            s.walPeakBytes = sampler.peakWalBytes;
+            s.spoolPeakBytes = Math.max(sampler.peakSpoolBytes, s.finalBytes);
             return s;
         } finally {
             if (!gateReleased) writeGate.endSnapshotFreeze();
-            SQLiteDatabase.deleteDatabase(cloneDb);
+            if (activeSrcConn != null && activeSrcConn.isOpen()) activeSrcConn.close();
+            SQLiteDatabase.deleteDatabase(roundSrcDb);
             SQLiteDatabase.deleteDatabase(copyDb);
         }
     }
@@ -382,9 +481,12 @@ public class KanataM6AcBenchmarkTest {
         File outPkg = new File(workDir, "scheme_c_" + UUID.randomUUID() + ".kpb1");
         File targetDb = new File(workDir, "scheme_c_target_" + UUID.randomUUID() + ".db");
         byte[] targetKey = randomRawKey();
-        long walPeak = KanataM6SyntheticDataset.walSizeBytes(srcDb);
+        File srcWal = new File(srcDb.getAbsolutePath() + "-wal");
+        final File[] tmpSpoolRef = new File[1];
 
-        try {
+        try (ResourceSampler sampler = new ResourceSampler(
+                new File[] { srcWal },
+                new File[] { outPkg })) {
             KanataM6SchemeCExporter.ExportMetrics em = KanataM6SchemeCExporter.exportToSpool(
                     srcDb.getAbsolutePath(),
                     srcRawKey,
@@ -396,24 +498,35 @@ public class KanataM6AcBenchmarkTest {
                     null,
                     null,
                     new AtomicBoolean(false),
-                    null);
+                    new KanataM6SchemeCExporter.SpoolHooks() {
+                        @Override
+                        public void onTaskTempFileCreated(String taskId, File tmpSpool) {
+                            tmpSpoolRef[0] = tmpSpool;
+                        }
+                        @Override
+                        public void beforeSpoolWrite(long totalWrittenSoFar, byte[] chunk) {
+                            sampler.sampleOnce();
+                        }
+                    });
+            sampler.sampleOnce();
 
             s.totalMs = em.totalMs;
+            s.freezeDrainMs = em.freezeDrainMs;
             s.snapshotPinMs = em.snapshotPinMs;
             s.dbReadMs = em.dbReadMs;
             s.kdfAeadMs = em.kdfMs + em.aeadMs;
             s.spoolWriteMs = em.spoolWriteMs;
             s.fsyncReadbackMs = em.fsyncReadbackMs;
             s.finalBytes = em.finalFileBytes;
-            s.peakRssKiB = em.peakRssKiB;
-            s.peakNativeHeapBytes = em.peakNativeHeapBytes;
-            s.peakJavaHeapBytes = em.peakJavaHeapBytes;
-            s.walPeakBytes = Math.max(walPeak, KanataM6SyntheticDataset.walSizeBytes(srcDb));
-            s.spoolPeakBytes = em.spoolPeakBytes;
+            s.peakRssKiB = Math.max(sampler.peakRssKiB, em.peakRssKiB);
+            s.peakNativeHeapBytes = Math.max(sampler.peakNativeHeapBytes, em.peakNativeHeapBytes);
+            s.peakJavaHeapBytes = Math.max(sampler.peakJavaHeapBytes, em.peakJavaHeapBytes);
+            s.walPeakBytes = sampler.peakWalBytes;
+            s.spoolPeakBytes = Math.max(sampler.peakSpoolBytes, em.spoolPeakBytes);
             s.writeBlockMs = em.writeBlockMs;
 
             if (optionalCopyOut != null) {
-                copyWithSync(outPkg, optionalCopyOut);
+                copyWithSync(outPkg, optionalCopyOut, null);
             }
 
             if (deepLogicalVerify) {
@@ -446,7 +559,7 @@ public class KanataM6AcBenchmarkTest {
             File workDir,
             File spoolDir,
             KanataM6PortableCatalog catalog) throws Exception {
-        // Measure Scheme C deterministic mid-stream cancel response time
+        // 1. Scheme C deterministic mid-stream cancel response time
         AtomicBoolean cFlag = new AtomicBoolean(false);
         CancellationSignal cSig = new CancellationSignal();
         long[] cCancelTriggerNs = new long[] { 0L };
@@ -459,7 +572,7 @@ public class KanataM6AcBenchmarkTest {
                         null, cSig, cFlag, new KanataM6SchemeCExporter.SpoolHooks() {
                             @Override
                             public void afterTableRead(int tableId, long rowCount) {
-                                if (tableId == 34) { // messages table
+                                if (tableId == 34) {
                                     cCancelTriggerNs[0] = SystemClock.elapsedRealtimeNanos();
                                     cFlag.set(true);
                                     cSig.cancel();
@@ -475,37 +588,133 @@ public class KanataM6AcBenchmarkTest {
         }
         long cCancelMs = Math.max(0L, (SystemClock.elapsedRealtimeNanos() - cCancelTriggerNs[0]) / 1_000_000L);
 
-        // Measure A1 close/abort latency on cancellation signal
-        AtomicBoolean a1Aborted = new AtomicBoolean(false);
-        long tA10 = SystemClock.elapsedRealtimeNanos();
+        // 2. A1 real sqlcipher_export() mid-operation cancellation test (NOT a SELECT probe!)
+        File a1CancelOut = new File(workDir, "a1_cancel_" + UUID.randomUUID() + ".db");
+        SQLiteDatabase.deleteDatabase(a1CancelOut);
         CancellationSignal a1Sig = new CancellationSignal();
-        SQLiteDatabase a1Db = SQLiteDatabase.openDatabase(
-                srcDb.getAbsolutePath(), srcRawKey, null, FLAGS_RO, (d, e) -> {}, null);
+        boolean a1Interrupted = false;
+        long a1WaitAfterCancelMs = -1L;
+        ExecutorService a1Exec = Executors.newSingleThreadExecutor();
         try {
-            try (Cursor cur = a1Db.rawQuery("SELECT id, content FROM messages", new String[0], a1Sig)) {
-                if (cur.moveToFirst()) {
-                    tA10 = SystemClock.elapsedRealtimeNanos();
-                    a1Sig.cancel();
-                    while (cur.moveToNext()) { /* exits via OperationCanceledException */ }
+            long[] triggerNs = new long[] { 0L };
+            java.util.concurrent.CountDownLatch exportStarted = new java.util.concurrent.CountDownLatch(1);
+            Future<String> fut = a1Exec.submit(() -> {
+                SQLiteDatabase db = SQLiteDatabase.openDatabase(
+                        srcDb.getAbsolutePath(), srcRawKey, null, FLAGS_RW, (d, e) -> {}, null);
+                try {
+                    String escPath = a1CancelOut.getAbsolutePath().replace("'", "''");
+                    String escPw = BACKUP_PW.replace("'", "''");
+                    db.execSQL("ATTACH DATABASE '" + escPath + "' AS a1_c KEY '" + escPw + "'");
+                    exportStarted.countDown();
+                    try (Cursor c = db.rawQuery("SELECT sqlcipher_export('a1_c')", null, a1Sig)) {
+                        c.moveToFirst();
+                    } finally {
+                        try { db.execSQL("DETACH DATABASE a1_c"); } catch (Throwable ignored) {}
+                    }
+                    return "COMPLETED_UNINTERRUPTED";
+                } catch (Throwable t) {
+                    return "ABORTED:" + t.getClass().getSimpleName();
+                } finally {
+                    db.close();
                 }
-            } catch (Exception expected) {
-                a1Aborted.set(true);
-            }
+            });
+            exportStarted.await(5, TimeUnit.SECONDS);
+            Thread.sleep(5);
+            triggerNs[0] = SystemClock.elapsedRealtimeNanos();
+            a1Sig.cancel();
+            String a1Outcome = fut.get(30, TimeUnit.SECONDS);
+            a1WaitAfterCancelMs = Math.max(0L, (SystemClock.elapsedRealtimeNanos() - triggerNs[0]) / 1_000_000L);
+            a1Interrupted = a1Outcome.startsWith("ABORTED:");
         } finally {
-            a1Db.close();
+            a1Exec.shutdownNow();
+            a1Exec.awaitTermination(5, TimeUnit.SECONDS);
+            SQLiteDatabase.deleteDatabase(a1CancelOut);
         }
-        long a1CancelMs = (SystemClock.elapsedRealtimeNanos() - tA10) / 1_000_000L;
 
-        // Measure A2 cooperative cancel flag response before rekey
-        long tA20 = SystemClock.elapsedRealtimeNanos();
-        AtomicBoolean a2Stop = new AtomicBoolean(true);
-        assertTrue(a2Stop.get());
-        long a2CancelMs = (SystemClock.elapsedRealtimeNanos() - tA20) / 1_000_000L;
+        // 3. A2 real file copy cooperative cancel + explicit rekey limitation
+        File a2CancelCopy = new File(workDir, "a2_cancel_copy_" + UUID.randomUUID() + ".db");
+        File srcWal = new File(srcDb.getAbsolutePath() + "-wal");
+        File a2CopySource = (srcWal.exists() && srcWal.length() > srcDb.length()) ? srcWal : srcDb;
+        AtomicBoolean a2CopyStop = new AtomicBoolean(false);
+        long a2CopyCancelMs = -1L;
+        boolean a2CopyAborted = false;
+        ExecutorService a2Exec = Executors.newSingleThreadExecutor();
+        try {
+            long[] a2TrigNs = new long[] { 0L };
+            java.util.concurrent.CountDownLatch copyStarted = new java.util.concurrent.CountDownLatch(1);
+            Future<Boolean> fut = a2Exec.submit(() -> {
+                try {
+                    copyStarted.countDown();
+                    copyWithSync(a2CopySource, a2CancelCopy, a2CopyStop);
+                    return false;
+                } catch (IOException expected) {
+                    return "COPY_CANCELLED".equals(expected.getMessage());
+                }
+            });
+            copyStarted.await(5, TimeUnit.SECONDS);
+            Thread.sleep(2);
+            a2TrigNs[0] = SystemClock.elapsedRealtimeNanos();
+            a2CopyStop.set(true);
+            a2CopyAborted = fut.get(10, TimeUnit.SECONDS);
+            a2CopyCancelMs = Math.max(0L, (SystemClock.elapsedRealtimeNanos() - a2TrigNs[0]) / 1_000_000L);
+        } finally {
+            a2Exec.shutdownNow();
+            a2Exec.awaitTermination(5, TimeUnit.SECONDS);
+            SQLiteDatabase.deleteDatabase(a2CancelCopy);
+        }
 
         return new JSONObject()
-                .put("A1_cancelMs", a1CancelMs)
-                .put("A2_preRekeyStopMs", a2CancelMs)
-                .put("C_cancelMs", cCancelMs);
+                .put("C_midStreamCancelSupported", true)
+                .put("C_cancelMs", cCancelMs)
+                .put("A1_midExportCancelSupported", a1Interrupted)
+                .put("A1_waitAfterCancelMs", a1WaitAfterCancelMs)
+                .put("A2_fileCopyCancelSupported", a2CopyAborted)
+                .put("A2_fileCopyCancelMs", a2CopyCancelMs)
+                .put("A2_rekeyCancelSupported", false);
+    }
+
+    private JSONObject measureSameScopeSizeComparison(
+            File srcDb,
+            byte[] srcKey,
+            File workDir,
+            File spoolDir,
+            KanataM6PortableCatalog catalog) throws Exception {
+        File cOut = new File(workDir, "same_scope_c_" + UUID.randomUUID() + ".kpb1");
+        File sameScopeDb = new File(workDir, "same_scope_db_" + UUID.randomUUID() + ".db");
+        File a1Out = new File(workDir, "same_scope_a1_" + UUID.randomUUID() + ".db");
+        byte[] tmpKey = randomRawKey();
+        try {
+            KanataM6SchemeCExporter.ExportMetrics em = KanataM6SchemeCExporter.exportToSpool(
+                    srcDb.getAbsolutePath(), srcKey, BACKUP_PW, catalog,
+                    new KanataM6SnapshotOwner.WriteGate(), spoolDir, cOut,
+                    null, null, new AtomicBoolean(false), null);
+            try (FileInputStream in = new FileInputStream(cOut)) {
+                KanataM6SchemeCImporter.importAndVerifyToIsolatedTarget(
+                        in, BACKUP_PW, catalog, workDir, sameScopeDb, tmpKey, new AtomicBoolean(false));
+            }
+            try (SQLiteDatabase rw = SQLiteDatabase.openDatabase(
+                    sameScopeDb.getAbsolutePath(), tmpKey, null,
+                    FLAGS_RW | SQLiteDatabase.CREATE_IF_NECESSARY, (d, e) -> {}, null)) {
+                String escPath = a1Out.getAbsolutePath().replace("'", "''");
+                String escPw = BACKUP_PW.replace("'", "''");
+                rw.execSQL("ATTACH DATABASE '" + escPath + "' AS ss_exp KEY '" + escPw + "'");
+                try {
+                    scalar(rw, "SELECT sqlcipher_export('ss_exp')");
+                    rw.rawExecSQL("PRAGMA ss_exp.user_version = 5");
+                    rw.rawExecSQL("PRAGMA ss_exp.application_id = " + KanataM6PortableCatalog.APPLICATION_ID);
+                } finally {
+                    rw.execSQL("DETACH DATABASE ss_exp");
+                }
+            }
+            return new JSONObject()
+                    .put("sameScope_A1_Bytes", a1Out.length())
+                    .put("sameScope_C_Bytes", em.finalFileBytes);
+        } finally {
+            Arrays.fill(tmpKey, (byte) 0);
+            SQLiteDatabase.deleteDatabase(sameScopeDb);
+            SQLiteDatabase.deleteDatabase(a1Out);
+            cOut.delete();
+        }
     }
 
     private void runScaleBenchmark(int messageCount, boolean exportExtInteropSample) throws Exception {
@@ -527,80 +736,90 @@ public class KanataM6AcBenchmarkTest {
                 long initialWalBytes = KanataM6SyntheticDataset.walSizeBytes(srcDb);
                 assertTrue("Expected uncheckpointed active WAL > 0", initialWalBytes > 0L);
 
-            KanataM6SyntheticDataset.LogicalSummary physicalSummary;
-            KanataM6SyntheticDataset.LogicalSummary projectedSummary;
-            SQLiteDatabase ro = SQLiteDatabase.openDatabase(srcDb.getAbsolutePath(), srcKey, null, FLAGS_RO, (d, e) -> {}, null);
-            try {
-                physicalSummary = KanataM6SyntheticDataset.computeLogicalFingerprint(ro, catalog, false);
-                projectedSummary = KanataM6SyntheticDataset.computeLogicalFingerprint(ro, catalog, true);
-            } finally {
-                ro.close();
-            }
-            assertEquals(45, physicalSummary.populatedBusinessTableCount);
-            assertEquals(5, physicalSummary.populatedDerivedTableCount);
-            assertEquals(messageCount, physicalSummary.tableRowCounts.get("messages").longValue());
-
-            KanataM6SnapshotOwner.WriteGate writeGate = new KanataM6SnapshotOwner.WriteGate();
-            JSONArray rawSamples = new JSONArray();
-
-            // 1 Independent Cold Run: A1 -> A2 -> C
-            rawSamples.put(runA1(srcDb, srcKey, workDir, catalog, physicalSummary, true, 0, true).toJson());
-            rawSamples.put(runA2(srcDb, srcKey, workDir, catalog, writeGate, physicalSummary, true, 0, true).toJson());
-            File extSample = null;
-            if (exportExtInteropSample) {
-                File extDir = targetCtx.getExternalFilesDir(null);
-                if (extDir != null) {
-                    extSample = new File(extDir, "m6_bench_" + messageCount + "_sample.kpb1");
+                KanataM6SyntheticDataset.LogicalSummary physicalSummary;
+                KanataM6SyntheticDataset.LogicalSummary projectedSummary;
+                SQLiteDatabase ro = SQLiteDatabase.openDatabase(srcDb.getAbsolutePath(), srcKey, null, FLAGS_RO, (d, e) -> {}, null);
+                try {
+                    physicalSummary = KanataM6SyntheticDataset.computeLogicalFingerprint(ro, catalog, false);
+                    projectedSummary = KanataM6SyntheticDataset.computeLogicalFingerprint(ro, catalog, true);
+                } finally {
+                    ro.close();
                 }
-            }
-            rawSamples.put(runC(srcDb, srcKey, workDir, spoolDir, catalog, writeGate, projectedSummary, true, extSample, 0, true).toJson());
+                assertEquals(45, physicalSummary.populatedBusinessTableCount);
+                assertEquals(5, physicalSummary.populatedDerivedTableCount);
+                assertEquals(messageCount, physicalSummary.tableRowCounts.get("messages").longValue());
 
-            // 5 Interleaved Rotating Warm Runs
-            String[][] schedules = new String[][] {
-                    { "A1", "C", "A2" },
-                    { "C", "A2", "A1" },
-                    { "A2", "A1", "C" },
-                    { "A1", "A2", "C" },
-                    { "C", "A1", "A2" }
-            };
-            for (int r = 0; r < schedules.length; r++) {
-                boolean verifyRound = (r == schedules.length - 1);
-                for (String route : schedules[r]) {
-                    if ("A1".equals(route)) {
-                        rawSamples.put(runA1(srcDb, srcKey, workDir, catalog, physicalSummary, verifyRound, r + 1, false).toJson());
-                    } else if ("A2".equals(route)) {
-                        rawSamples.put(runA2(srcDb, srcKey, workDir, catalog, writeGate, physicalSummary, verifyRound, r + 1, false).toJson());
-                    } else {
-                        rawSamples.put(runC(srcDb, srcKey, workDir, spoolDir, catalog, writeGate, projectedSummary, verifyRound, null, r + 1, false).toJson());
+                KanataM6SnapshotOwner.WriteGate writeGate = new KanataM6SnapshotOwner.WriteGate();
+                JSONArray rawSamples = new JSONArray();
+
+                File extSampleC = null;
+                File extSampleA1 = null;
+                File extSampleA2 = null;
+                if (exportExtInteropSample) {
+                    File extDir = targetCtx.getExternalFilesDir(null);
+                    if (extDir != null) {
+                        extSampleC = new File(extDir, "m6_bench_" + messageCount + "_sample.kpb1");
+                        extSampleA1 = new File(extDir, "m6_cross_api_a1.db");
+                        extSampleA2 = new File(extDir, "m6_cross_api_a2.db");
                     }
                 }
-            }
 
-            JSONObject cancelMetrics = measureCancellationTimes(srcDb, srcKey, workDir, spoolDir, catalog);
+                // 1 Independent Cold Run: A1 -> A2 -> C
+                rawSamples.put(runA1(srcDb, srcKey, workDir, catalog, physicalSummary, true, extSampleA1, 0, true).toJson());
+                rawSamples.put(runA2Offline(messageCount, srcKey, workDir, catalog, writeGate, physicalSummary, true, extSampleA2, 0, true).toJson());
+                rawSamples.put(runC(srcDb, srcKey, workDir, spoolDir, catalog, writeGate, projectedSummary, true, extSampleC, 0, true).toJson());
 
-            // Re-verify source DB physical logical summary hasn't drifted after 18 exports + cancellations
-            SQLiteDatabase roAfter = SQLiteDatabase.openDatabase(srcDb.getAbsolutePath(), srcKey, null, FLAGS_RO, (d, e) -> {}, null);
-            try {
-                KanataM6SyntheticDataset.LogicalSummary after =
-                        KanataM6SyntheticDataset.computeLogicalFingerprint(roAfter, catalog, false);
-                assertEquals(physicalSummary.overallDigestHex, after.overallDigestHex);
-            } finally {
-                roAfter.close();
-            }
+                // 5 Interleaved Rotating Warm Runs
+                String[][] schedules = new String[][] {
+                        { "A1", "C", "A2" },
+                        { "C", "A2", "A1" },
+                        { "A2", "A1", "C" },
+                        { "A1", "A2", "C" },
+                        { "C", "A1", "A2" }
+                };
+                for (int r = 0; r < schedules.length; r++) {
+                    boolean verifyRound = (r == schedules.length - 1);
+                    for (String route : schedules[r]) {
+                        if ("A1".equals(route)) {
+                            rawSamples.put(runA1(srcDb, srcKey, workDir, catalog, physicalSummary, verifyRound, null, r + 1, false).toJson());
+                        } else if ("A2".equals(route)) {
+                            rawSamples.put(runA2Offline(messageCount, srcKey, workDir, catalog, writeGate, physicalSummary, verifyRound, null, r + 1, false).toJson());
+                        } else {
+                            rawSamples.put(runC(srcDb, srcKey, workDir, spoolDir, catalog, writeGate, projectedSummary, verifyRound, null, r + 1, false).toJson());
+                        }
+                    }
+                }
 
-            for (int i = 0; i < rawSamples.length(); i++) {
-                Log.i(TAG, "SAMPLE_" + messageCount + "=" + rawSamples.getJSONObject(i).toString());
-            }
-            Log.i(TAG, "BENCH_SUMMARY_" + messageCount + "=" + new JSONObject()
-                    .put("messageCount", messageCount)
-                    .put("datasetGenMs", genMs)
-                    .put("initialWalBytes", initialWalBytes)
-                    .put("srcDbBytes", srcDb.length())
-                    .put("physicalOverallSha256", physicalSummary.overallDigestHex)
-                    .put("projectedOverallSha256", projectedSummary.overallDigestHex)
-                    .put("totalBusinessRows", physicalSummary.totalBusinessRows)
-                    .put("extSamplePath", extSample != null ? extSample.getAbsolutePath() : null)
-                    .put("cancel", cancelMetrics));
+                JSONObject cancelMetrics = measureCancellationTimes(srcDb, srcKey, workDir, spoolDir, catalog);
+                JSONObject sameScopeSizes = (messageCount <= 10000)
+                        ? measureSameScopeSizeComparison(srcDb, srcKey, workDir, spoolDir, catalog)
+                        : null;
+
+                SQLiteDatabase roAfter = SQLiteDatabase.openDatabase(srcDb.getAbsolutePath(), srcKey, null, FLAGS_RO, (d, e) -> {}, null);
+                try {
+                    KanataM6SyntheticDataset.LogicalSummary after =
+                            KanataM6SyntheticDataset.computeLogicalFingerprint(roAfter, catalog, false);
+                    assertEquals(physicalSummary.overallDigestHex, after.overallDigestHex);
+                } finally {
+                    roAfter.close();
+                }
+
+                for (int i = 0; i < rawSamples.length(); i++) {
+                    Log.i(TAG, "SAMPLE_" + messageCount + "=" + rawSamples.getJSONObject(i).toString());
+                }
+                Log.i(TAG, "BENCH_SUMMARY_" + messageCount + "=" + new JSONObject()
+                        .put("messageCount", messageCount)
+                        .put("datasetGenMs", genMs)
+                        .put("initialWalBytes", initialWalBytes)
+                        .put("srcDbBytes", srcDb.length())
+                        .put("physicalOverallSha256", physicalSummary.overallDigestHex)
+                        .put("projectedOverallSha256", projectedSummary.overallDigestHex)
+                        .put("totalBusinessRows", physicalSummary.totalBusinessRows)
+                        .put("sameScopeComparison", sameScopeSizes)
+                        .put("extSamplePath", extSampleC != null ? extSampleC.getAbsolutePath() : null)
+                        .put("extA1Path", extSampleA1 != null ? extSampleA1.getAbsolutePath() : null)
+                        .put("extA2Path", extSampleA2 != null ? extSampleA2.getAbsolutePath() : null)
+                        .put("cancel", cancelMetrics));
             }
         } finally {
             Arrays.fill(srcKey, (byte) 0);

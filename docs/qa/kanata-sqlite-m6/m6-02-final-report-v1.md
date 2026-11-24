@@ -1,53 +1,49 @@
 # Kanata SQLite M6-02 全阶段最终交付与审计材料 v1
 
-- **任务编号**：`KANATA-M6-02-END-TO-END-2026-11-23`
-- **基线提交**：`7c8d847ea834b571b96859c7a97cdfe20bb75b96`（起始于 M6-01 签核基线 `43b26d6ec41929a59844bb62a882bdf578391192`）
+- **任务编号**：`KANATA-M6-02-INDEPENDENT-AUDIT-REMEDIATION-2026-11-23`（基于 `KANATA-M6-02-END-TO-END-2026-11-23` 整改）
+- **审计基线提交**：`38d0b6b004d2c93a0c58ffb6bf3ed56c414b89c9`（起始于 M6-01 签核基线 `43b26d6ec41929a59844bb62a882bdf578391192`）
 - **执行仓库 / 分支 / 工作树**：`Zhoubin601/ForMyself` / `m6/encrypted-backup-recovery` / `.worktrees/kanata-m5`
 - **执行与整改**：Hydrogen
 - **最终独立审计**：GPT-6（本报告不自行宣布 M6-02 `CLOSED`，仅提交完整可复现实验证据与产物供 GPT-6 独立审签）
-- **日期**：2026-11-23（北京时间）
+- **日期**：2026-11-24（北京时间）
 
 ---
 
 ## 1. 全阶段完成状态总览
 
-| 阶段 | 任务内容 | API 30 (`Codex_Todo_API30`) | API 34 (`Codex_Todo_WebView34`) | API 24/25 | 依据报告 |
-| --- | --- | --- | --- | --- | --- |
-| **Round 2.1** | F07 A1/A2 失败吞咽清理 + 强制完整性断言；F08 `CountDownLatch` 确定性同步取消钩子 + 缓冲区非污染断言 | **PASS** (4/4) | **PASS** (4/4) | `NOT_RUN` | [m6-02-round2.1-hardening-v1.md](m6-02-round2.1-hardening-v1.md) |
-| **N-01 / N-02** | Zero-Alloc PBKDF2 / KAT / 5 边缘 UTF-8 / WAL `DEFERRED` 只读快照原语（最终代码复测） | **PASS** (4/4) | **PASS** (4/4) | `NOT_RUN` | [m6-02-native-probes-v1.md](m6-02-native-probes-v1.md) |
-| **N-03** | 262144/262145/2MiB/4MiB 长字段、`CursorWindow` 分块、Bridge 控制边界、WebView JS Heap 与有界内存 (<512 MiB) | **PASS** (2/2) | **PASS** (2/2) | `NOT_RUN` | [m6-02-native-probes-v1.md](m6-02-native-probes-v1.md) |
-| **N-04** | SAF 短读/零进展/半写/撤销权限、Share FileProvider、Activity 暂停/旋转、Epoch 失效、`:m6worker` 强杀重启清理 | **PASS** (2/2) | **PASS** (2/2) | `NOT_RUN` | [m6-02-native-probes-v1.md](m6-02-native-probes-v1.md) |
-| **Scheme C** | Native `DEFERRED` 逻辑快照 + 45 业务 + 5 派生 + 3 运行排除 + `KPB1` 流式加解密 + Node 双向逐字节互操作 + Schema 005 目标校验 & 负向拒绝 | **PASS** (3/3) | **PASS** (3/3 + Node 双向验证) | `NOT_RUN` | [m6-02-ac-export-report-v1.md](m6-02-ac-export-report-v1.md) |
-| **A / C 对照** | A1 vs A2 vs C 在 `1k` / `10k` / `100k` 统一确定性数据集上的 1 冷 + 5 交错轮换全指标实测 | **PASS** (3/3, 54 样本) | **PASS** (3/3, 54 样本) | `NOT_RUN` | [m6-02-ac-export-report-v1.md](m6-02-ac-export-report-v1.md) |
-| **F02 故障注入** | `F02-01` ~ `F02-04` 并发 WAL、WriteGate drain、`BUSY` checkpoint、各阶段取消、`ENOSPC`/fsync/回读、短读/零进展/篡改 | **PASS** (3/3) | **PASS** (3/3) | `NOT_RUN` | 本文第 4 节 |
-| **API 24/25 兼容** | 本地无 `android-24`/`android-25` 镜像与 `sdkmanager`，亦无实体机 | — | — | **`NOT_RUN`** | 本文第 5 节 |
-| **全量回归与隔离** | `npm run check`、无标志标准 Gradle、`Synthetic Release` 阻断、生产边界 `git diff --exit-code` | — | **宿主机全 PASS** | — | 本文第 6 节 |
+| 阶段 | 任务内容 | API 24 (`7.0`) | API 25 (`7.1.1`) | API 30 (`11`) | API 34 (`14`) | 依据报告 |
+| --- | --- | --- | --- | --- | --- | --- |
+| **Round 2.1 + A 路线复核** | F07 A1/A2/Cross-API；F08 确定性取消；A1 重判为 `FEASIBLE_AS_BLOCKING_SQLCIPHER_EXPORT / NOT_SELECTED` | **PASS** (2/2) | **PASS** (2/2) | **PASS** (2/2) | **PASS** (2/2) | [m6-02-native-probes-v1.md](m6-02-native-probes-v1.md) |
+| **N-01 / N-02** | Zero-Alloc PBKDF2 / KAT / 5 边缘 UTF-8 / WAL `DEFERRED` 只读快照 / A1&A2 跨端打开 (`CROSS_API_A1_A2`) | **PASS** (5/5) | **PASS** (5/5) | **PASS** (5/5) | **PASS** (5/5) | [m6-02-native-probes-v1.md](m6-02-native-probes-v1.md) |
+| **N-03** | 262144/262145/2MiB/4MiB 长字段、`CursorWindow` 分块、真实 Bridge→Exporter 控制链与有界内存 (<512 MiB) | **1/2 (`Bridge BLOCKED on WebView 52.0`)** | **1/2 (`Bridge BLOCKED on WebView 52.0`)** | **PASS** (2/2) | **PASS** (2/2) | [m6-02-native-probes-v1.md](m6-02-native-probes-v1.md) |
+| **N-04** | 真实 `DocumentsProvider`+`DocumentsUI`、真实 `ACTION_SEND`+`:m6sharerecv`、`KanataM6LifecycleController`、`:m6worker` 真导出 4 阶段 `SIGKILL` 恢复 | **PASS** (4/4) | **PASS** (4/4) | **PASS** (4/4) | **PASS** (4/4) | [m6-02-native-probes-v1.md](m6-02-native-probes-v1.md) |
+| **Scheme C** | Native `DEFERRED` 逻辑快照 + 45 业务 + 5 派生 + 3 运行排除 + `KPB1` + Node 双向逐字节互操作 + 目标库完整 50 表核对 | **PASS** (3/3) | **PASS** (3/3) | **PASS** (3/3) | **PASS** (3/3 + Node 双向验证) | [m6-02-ac-export-report-v1.md](m6-02-ac-export-report-v1.md) |
+| **A / C 对照（口径修正）** | `writeBlock` 前置于 `beginSnapshotFreezeAndDrain()`、A2 严格离线独立副本、10 ms `ResourceSampler`、真取消与同范围体积对照 | — | — | **PASS** (3/3, 54 样本) | **PASS** (3/3, 54 样本) | [m6-02-ac-export-report-v1.md](m6-02-ac-export-report-v1.md) |
+| **F02 故障注入与原子整改** | `F02-01` ~ `F02-06`（含 Exporter 唯一任务 ID/同文件系统原子替换/并发冲突保护、Importer 目标库 A 八重保护与 50 表校验） | **PASS** (5/5) | **PASS** (5/5) | **PASS** (5/5) | **PASS** (5/5) | 本文第 4 节 |
+| **全量回归与隔离** | `npm run check`、无标志标准 Gradle、`Synthetic Release` 阻断、生产边界 `git diff --exit-code` | — | — | **宿主机 + 4 API 实测归档** | — | 本文第 6 节 |
 
 ---
 
 ## 2. 本次交付文件清单与生产隔离边界
 
-所有新增与变更代码均通过 [android/app/build.gradle](../../../android/app/build.gradle) 的 `-PkanataM6Synthetic=true`（强制依赖 `kanataM2Synthetic=true`）严格隔离于测试与文档目录，未修改任何产品运行时路径：
+所有新增与变更代码均通过 [android/app/build.gradle](../../../android/app/build.gradle) 的 `-PkanataM6Synthetic=true`（强制依赖 `kanataM2Synthetic=true`）严格隔离于 `syntheticDebug/`、`androidTest/` 与 `portable/` 目录，未修改任何产品运行时路径：
 
 1. **Gradle 构建配置**：
-   - [android/app/build.gradle](../../../android/app/build.gradle)：为 `kanataM6Synthetic=true` 挂载 `syntheticDebug` manifest/java 源码集与 `portable` 测试 assets；`release` 构建类型在任何合成标志开启时通过 `variant.enable = false` 阻断构建。
-2. **Scheme C 核心实现与测试支持（`docs/qa/kanata-sqlite-m6/androidTest/`）**：
-   - [KanataM6PortableCatalog.java](androidTest/com/yubin/formyself/KanataM6PortableCatalog.java)：加载并 SHA-256 校验 Schema 005 冻结目录 `kanata-portable-catalog-v1.json`。
-   - [KanataM6PortableCrypto.java](androidTest/com/yubin/formyself/KanataM6PortableCrypto.java)：Zero-Alloc SHA-256 midstate PBKDF2 + HKDF + AES-256-GCM + RFC 3629 严格 UTF-8 解码（保留前导 `\ufeff`）。
-   - [KanataM6SnapshotOwner.java](androidTest/com/yubin/formyself/KanataM6SnapshotOwner.java)：`WriteGate` 排空与隔离 `OPEN_READONLY` `TRANSACTION_MODE_DEFERRED` 快照持有者及 Schema 005 ordinal 完整性校验。
-   - [KanataM6BoundedRowReader.java](androidTest/com/yubin/formyself/KanataM6BoundedRowReader.java)：预先 `length(CAST(col AS BLOB))` 校验、`> 256 KiB` 256 KiB BLOB 分块、2 MiB/4 MiB 预分配超限拒绝及 `pause-sending-v1` 投影。
-   - [KanataM6SchemeCExporter.java](androidTest/com/yubin/formyself/KanataM6SchemeCExporter.java)：`<= 2` 帧在途 `64 KiB` 流式加密、`fsync` + 全量读回 SHA-256 校验 + 原子重命名 + 全路径敏敏缓冲区清零。
-   - [KanataM6SchemeCImporter.java](androidTest/com/yubin/formyself/KanataM6SchemeCImporter.java)：KDF 前头检验、短读/零进展/精确 EOF 校验、`CAST(? AS TEXT)` + `bindBlob` 写入、双遍自引用外键回填与 50 表校验器全核对。
-   - [KanataM6SyntheticDataset.java](androidTest/com/yubin/formyself/KanataM6SyntheticDataset.java)：`1k` / `10k` / `100k` 确定性 53 表全覆盖数据集与活跃 WAL 维持器。
+   - [android/app/build.gradle](../../../android/app/build.gradle)：为 `kanataM6Synthetic=true` 挂载 `syntheticDebug` manifest/java 源码集与 `portable` 测试 assets（含 `debug.assets.srcDirs`）；`release` 构建类型在任何合成标志开启时通过 `variant.enable = false` 阻断构建。
+2. **Scheme C 核心实现（全部迁至 `docs/qa/kanata-sqlite-m6/syntheticDebug/java/` 供 `:m6worker` 与 `Plugin` 真实调用）**：
+   - [KanataM6PortableCatalog.java](syntheticDebug/java/com/yubin/formyself/KanataM6PortableCatalog.java)：加载并 SHA-256 校验 Schema 005 冻结目录 `kanata-portable-catalog-v1.json`。
+   - [KanataM6PortableCrypto.java](syntheticDebug/java/com/yubin/formyself/KanataM6PortableCrypto.java)：Zero-Alloc SHA-256 midstate PBKDF2（含 `KdfProgressHook`）+ HKDF + AES-256-GCM + RFC 3629 严格 UTF-8 解码（保留前导 `\ufeff`）。
+   - [KanataM6SnapshotOwner.java](syntheticDebug/java/com/yubin/formyself/KanataM6SnapshotOwner.java)：`WriteGate` 排空与隔离 `OPEN_READONLY` `TRANSACTION_MODE_DEFERRED` 快照持有者及 Schema 005 ordinal 完整性校验。
+   - [KanataM6BoundedRowReader.java](syntheticDebug/java/com/yubin/formyself/KanataM6BoundedRowReader.java)：预先 `length(CAST(col AS BLOB))` 校验、`> 256 KiB` 256 KiB BLOB 分块、2 MiB/4 MiB 预分配超限拒绝、`pause-sending-v1` 投影及异常路径行缓冲清零。
+   - [KanataM6SchemeCExporter.java](syntheticDebug/java/com/yubin/formyself/KanataM6SchemeCExporter.java)：`taskId` 唯一临时文件、同文件系统 `Os.stat` 校验与回退、`.task-<taskId>.pending` 进程锁日志与启动恢复 `recoverIncompleteTasks()`、`<= 2` 帧在途 `64 KiB` 流式加密、`fsync` + 全量读回 SHA-256 + 不预先删除旧目标的 `Os.rename` 原子替换 + 父目录 `fsync` + 敏感缓冲区清零。
+   - [KanataM6SchemeCImporter.java](syntheticDebug/java/com/yubin/formyself/KanataM6SchemeCImporter.java)：区分调用前既有库（默认拒绝覆盖）、独立 `.stage-target-*.db` 完整恢复及逐表验证（45 业务 + 5 派生逐表行数与 SHA-256、`user_version=5`、`application_id=1263424577`、Schema 005 指纹与结构、`integrity_check=ok`、`cipher_integrity_check` 空、`foreign_key_check` 空、005 ordinal 完整、`pause-sending-v1` 投影、3 张运行表为空）、checkpoint 并关闭后原子替换提交；`finally` 仅清理本次任务拥有的 staging 文件，绝不删除原有目标 DB。
+   - [KanataM6SqlCipherSessionProbe.java](syntheticDebug/java/net/zetetic/database/sqlcipher/KanataM6SqlCipherSessionProbe.java)：`SQLiteSession.TRANSACTION_MODE_DEFERRED` 受控包内适配。
 3. **测试套件与隔离辅助组件**：
-   - [KanataM6N01CryptoProbeTest.java](androidTest/com/yubin/formyself/KanataM6N01CryptoProbeTest.java)、[KanataM6N02SnapshotProbeTest.java](androidTest/com/yubin/formyself/KanataM6N02SnapshotProbeTest.java)、[KanataM6N03BoundedMemoryTest.java](androidTest/com/yubin/formyself/KanataM6N03BoundedMemoryTest.java)、[KanataM6N04SafLifecycleTest.java](androidTest/com/yubin/formyself/KanataM6N04SafLifecycleTest.java)、[KanataM6SchemeCInteropAndNegativeTest.java](androidTest/com/yubin/formyself/KanataM6SchemeCInteropAndNegativeTest.java)、[KanataM6AcBenchmarkTest.java](androidTest/com/yubin/formyself/KanataM6AcBenchmarkTest.java)、[KanataM6F02FaultMatrixTest.java](androidTest/com/yubin/formyself/KanataM6F02FaultMatrixTest.java)。
-   - `docs/qa/kanata-sqlite-m6/syntheticDebug/`：`AndroidManifest.xml`、`KanataM6BridgeActivity.java`、`KanataM6RotationActivity.java`、`KanataM6SyntheticPortablePlugin.java`、`KanataM6SyntheticSafProvider.java`、`KanataM6KillableWorkerService.java`（全部仅编译于 `kanataM6Synthetic=true` debug 变体）。
+   - [KanataM6SyntheticDataset.java](androidTest/com/yubin/formyself/KanataM6SyntheticDataset.java)、[KanataM6N01CryptoProbeTest.java](androidTest/com/yubin/formyself/KanataM6N01CryptoProbeTest.java)、[KanataM6N02SnapshotProbeTest.java](androidTest/com/yubin/formyself/KanataM6N02SnapshotProbeTest.java)、[KanataM6N03BoundedMemoryTest.java](androidTest/com/yubin/formyself/KanataM6N03BoundedMemoryTest.java)、[KanataM6N04SafLifecycleTest.java](androidTest/com/yubin/formyself/KanataM6N04SafLifecycleTest.java)、[KanataM6SchemeCInteropAndNegativeTest.java](androidTest/com/yubin/formyself/KanataM6SchemeCInteropAndNegativeTest.java)、[KanataM6AcBenchmarkTest.java](androidTest/com/yubin/formyself/KanataM6AcBenchmarkTest.java)、[KanataM6F02FaultMatrixTest.java](androidTest/com/yubin/formyself/KanataM6F02FaultMatrixTest.java)。
+   - `docs/qa/kanata-sqlite-m6/syntheticDebug/`：`AndroidManifest.xml`、[KanataM6BridgeActivity.java](syntheticDebug/java/com/yubin/formyself/KanataM6BridgeActivity.java)、[KanataM6RotationActivity.java](syntheticDebug/java/com/yubin/formyself/KanataM6RotationActivity.java)、[KanataM6LifecycleController.java](syntheticDebug/java/com/yubin/formyself/KanataM6LifecycleController.java)、[KanataM6ShareReceiverActivity.java](syntheticDebug/java/com/yubin/formyself/KanataM6ShareReceiverActivity.java) (`:m6sharerecv`)、[KanataM6SyntheticPortablePlugin.java](syntheticDebug/java/com/yubin/formyself/KanataM6SyntheticPortablePlugin.java)、[KanataM6SyntheticSafProvider.java](syntheticDebug/java/com/yubin/formyself/KanataM6SyntheticSafProvider.java)、[KanataM6KillableWorkerService.java](syntheticDebug/java/com/yubin/formyself/KanataM6KillableWorkerService.java) (`:m6worker`)。
    - `docs/qa/kanata-sqlite-m6/portable/`：`buildPortableCatalogJson.mjs`、`kanata-portable-catalog-v1.json`、`buildNodeInteropFixture.mjs`、`node_interop_populated.kpb1`、`node_interop_populated.json`。
 4. **交付报告**：
-   - [m6-02-round2.1-hardening-v1.md](m6-02-round2.1-hardening-v1.md)
-   - [m6-02-native-probes-v1.md](m6-02-native-probes-v1.md)
-   - [m6-02-ac-export-report-v1.md](m6-02-ac-export-report-v1.md)
-   - `docs/qa/kanata-sqlite-m6/m6-02-final-report-v1.md`（本报告）
+   - [m6-02-round2.1-hardening-v1.md](m6-02-round2.1-hardening-v1.md)、[m6-02-native-probes-v1.md](m6-02-native-probes-v1.md)、[m6-02-ac-export-report-v1.md](m6-02-ac-export-report-v1.md)、`docs/qa/kanata-sqlite-m6/m6-02-final-report-v1.md`（本报告）。
 
 ---
 
@@ -60,28 +56,32 @@
 
 ---
 
-## 4. F02-01 ～ F02-04 故障注入矩阵与 6 条安全不变量核对
+## 4. F02-01 ～ F02-06 故障注入与原子安全整改矩阵
 
-在 API 30 与 API 34 实测通过 [KanataM6F02FaultMatrixTest.java](androidTest/com/yubin/formyself/KanataM6F02FaultMatrixTest.java) 与 [KanataM6N04SafLifecycleTest.java](androidTest/com/yubin/formyself/KanataM6N04SafLifecycleTest.java)：
+在 **API 24、API 25、API 30 与 API 34** 实测全数通过 [KanataM6F02FaultMatrixTest.java](androidTest/com/yubin/formyself/KanataM6F02FaultMatrixTest.java) 与 [KanataM6N04SafLifecycleTest.java](androidTest/com/yubin/formyself/KanataM6N04SafLifecycleTest.java)：
 
-| 编号 | 注入故障场景 | (1) 准确识别失败 | (2) 源 DB 完整 | (3) 旧成功备份完好 | (4) 半成品拒绝/清理 | (5) 零资源/连接/线程泄漏 | (6) 零假成功状态 | 实测关键指标 |
+| 编号 | 注入故障场景 | (1) 准确识别失败 | (2) 源 DB 完整 | (3) 旧备份/既有目标完好 | (4) 半成品拒绝/清理 | (5) 零资源/连接/线程泄漏 | (6) 零假成功状态 | 实测关键指标 |
 | --- | --- | :---: | :---: | :---: | :---: | :---: | :---: | --- |
-| **F02-01** | 活跃 WAL 已提交/未提交事务隔离 + 跨表原子性 (`messages`+`message_audits`) + 长生命周期并发 reader + post-snapshot 写入隔离 | **PASS** | **PASS** | — | **PASS** | **PASS** | **PASS** | `uncommittedWalExcluded=true`, `postSnapshotTxExcluded=true`, 恢复目标仅含排空前的 `201` 条与完整跨表审计 |
-| **F02-02** | `WriteGate` 排空正在提交的 writer + 门禁阻塞/恢复 + 长读下 `wal_checkpoint(TRUNCATE)` `BUSY=1` 冲突应对及关闭后 `BUSY=0` | **PASS** | **PASS** | — | **PASS** | **PASS** | **PASS** | `drainedTxCaptured=true`, `busyWhileReaderActive=1`, `busyAfterReaderClose=0` |
-| **F02-03a** | Pre-start 与 KDF/Mid-stream `CancellationSignal` + `AtomicBoolean` 取消 | **PASS** (`ERR_CANCELLED`) | **PASS** | **PASS** (SHA 不变) | **PASS** (`spool` 0 残留) | **PASS** | **PASS** | `sourceSha256=b0b59974...`, `priorBackupSha256` 逐字节不变 |
-| **F02-03b** | Spool write 注入 `ENOSPC` / `beforeFsync` 注入 `EIO` | **PASS** (`ERR_IO_FAILED`) | **PASS** | **PASS** (SHA 不变) | **PASS** (`spool.tmp` 清理) | **PASS** | **PASS** | `enospcRejectedAndPriorPreserved=true`, `fsyncFailureRejectedAndPriorPreserved=true` |
-| **F02-03c** | `beforeReadback` 篡改 spool 尾部触发回读校验失败 | **PASS** (`ERR_IO_FAILED`) | **PASS** | **PASS** (SHA 不变) | **PASS** (`spool.tmp` 删除) | **PASS** | **PASS** | `readbackMismatchCaught=true` |
-| **F02-04a** | Provider 7 字节极端短读恢复、零进展上限 (8 次) 拒绝、半写 pipe 中止 | **PASS** (`ERR_IO_FAILED`) | **PASS** | **PASS** | **PASS** | **PASS** | **PASS** | `shortRead7ByteOk=true`, `zeroProgressRejected=true`, `halfWriteRejectedBeforeSuccess=true` |
-| **F02-04b** | SAF URI 权限撤销 (`SecurityException`)、Activity pause 撤销 Epoch、迟到/重复回调、`:m6worker` `SIGKILL` 强杀重启清理 | **PASS** | **PASS** | **PASS** | **PASS** | **PASS** | **PASS** | `killedWorkerPid=6946/5074`, 重启后 `hadPending=true` -> `pendingExistsNow=false, tmpExistsNow=false` |
-| **F02-04c** | Footer 后 1 字节尾部追加、DATA 密文篡改、Footer GCM Tag 篡改 | **PASS** (`ERR_INVALID_CONTAINER` / `ERR_AUTH_FAILED`) | **PASS** | **PASS** | **PASS** (`targetDb` 未提交) | **PASS** | **PASS** | `trailingByteRejected=true`, `tamperedCipherRejected=true`, `tamperedTagRejected=true` |
+| **F02-01** | 活跃 WAL 已提交/未提交事务隔离 + 跨表原子性 + 长读并发 + post-snapshot 写入隔离 | **PASS** | **PASS** | — | **PASS** | **PASS** | **PASS** | `uncommittedWalExcluded=true`, `postSnapshotTxExcluded=true`, `pkg1Bytes=46255` |
+| **F02-02** | `WriteGate` 排空 writer + 门禁阻塞/恢复 + 长读下 `wal_checkpoint(TRUNCATE)` `BUSY=1` | **PASS** | **PASS** | — | **PASS** | **PASS** | **PASS** | `drainedTxCaptured=true`, `busyWhileReaderActive=1`, `busyAfterReaderClose=0` |
+| **F02-03a** | Pre-start 与 KDF/Mid-stream `CancellationSignal` + `AtomicBoolean` 取消 | **PASS** (`ERR_CANCELLED`) | **PASS** | **PASS** | **PASS** (`0` 残留) | **PASS** | **PASS** | `sourceSha256=b0b59974...`, `priorBackupSha256` 不变 |
+| **F02-03b** | Spool write 注入 `ENOSPC` / `beforeFsync` 注入 `EIO` | **PASS** (`ERR_IO_FAILED`) | **PASS** | **PASS** | **PASS** (`.spool.tmp` 清理) | **PASS** | **PASS** | `enospcRejectedAndPriorPreserved=true`, `fsyncFailureRejectedAndPriorPreserved=true` |
+| **F02-03c** | `beforeReadback` 篡改 spool 尾部触发回读校验失败 | **PASS** (`ERR_IO_FAILED`) | **PASS** | **PASS** | **PASS** (`.spool.tmp` 删除) | **PASS** | **PASS** | `readbackMismatchCaught=true` |
+| **F02-04a** | Provider 极端短读、零进展上限 (8 次)、半写 pipe 中止 | **PASS** (`ERR_IO_FAILED`) | **PASS** | **PASS** | **PASS** | **PASS** | **PASS** | `shortRead7ByteOk=true`, `zeroProgressRejected=true`, `halfWriteRejected=true` |
+| **F02-04b** | 真实 `DocumentsProvider` 权限撤销、Activity 生命周期关库、`:m6worker` 4 阶段 (`KDF`/`DB_READ`/`SPOOL_WRITE`/`COMMIT`) `SIGKILL` 恢复 | **PASS** | **PASS** | **PASS** | **PASS** | **PASS** | **PASS** | `cleanedTasks=1` across all 4 stages (`API 24/25/30/34`) |
+| **F02-04c** | Footer 后 1 字节尾部追加、DATA 密文篡改、Footer GCM Tag 篡改 | **PASS** | **PASS** | **PASS** | **PASS** | **PASS** | **PASS** | `trailingByteRejected=true`, `tamperedCipherRejected=true`, `tamperedTagRejected=true` |
+| **F02-05 (P0)** | Exporter 原子提交整改：既有有效备份 A 存在时注入最终 `Os.rename` 失败、提交阶段进程中断恢复、目标文件系统错误，及双任务并发竞争同一目标路径 | **PASS** | **PASS** | **PASS** (A SHA-256 不变且可正常解密) | **PASS**（仅清理当前任务临时文件，不误删另一任务文件） | **PASS** | **PASS** | `renameFailPreservedA=true`, `commitInterruptRecoveryPreservedA=true`, `targetFsErrorPreservedA=true`, `concurrentTasksIsolatedTempAndPreservedA=true` |
+| **F02-06 (P0/P1)** | Importer 目标库 A 保护（默认拒绝覆盖 + staging 隔离安装）及错误密码 / 错误 Magic / Footer 篡改 / DATA 篡改 / EOF 错误 / 中途取消 / staging 安装失败 / 最终提交失败 8 场景 + 50 表完整核对 | **PASS** | — | **PASS** (目标库 A SHA-256 与逻辑摘要完全不变) | **PASS**（不删除已有 DB A，仅清理本任务 staging 临时库） | **PASS** | **PASS** | `defaultOverwriteRefused=true`, `all8FailureModesPreservedA=true`, `full50TableVerificationOk=true`（含 45 业务 + 5 派生 SHA-256、Schema FP、`cipher_integrity_check`、`foreign_key_check`、ordinal、`pause-sending-v1`） |
 
 ---
 
-## 5. Android API 24/25 低版本兼容性状态与缺口声明
+## 5. Android API 24/25 低版本实测结果与残余阻断声明
 
-- **实查环境状态**：宿主机 `E:\Android\Sdk\system-images` 仅安装了 `android-30`、`android-31`、`android-34`、`android-37.0`，且不存在 `cmdline-tools` / `sdkmanager`，当前亦未接入 API 24 (Android 7.0) 或 API 25 (Android 7.1) 真机。
-- **诚实记录**：所有 API 24/25 测试项均明确标记为 **`NOT_RUN`**；**严禁使用 API 30/34 结果推断或替代 API 24/25 的 `CursorWindow`、WebView Bridge、PBKDF2 延时校准或 SAF 运行表现**。
-- **未覆盖风险**：在未完成 API 24/25 实体机或镜像实测及真机 600k PBKDF2 耗时校准前，**不得冻结发行 profile `0x0001`**，亦不得将 M6-02 视作低版本全量签核完毕。
+- **实建低版本测试环境**：成功安装 SDK `cmdline-tools/latest`、`platforms/android-24`、`platforms/android-25` 及 `system-images/android-24/default/x86_64`、`system-images/android-25/default/x86_64`，建立独立模拟器 `Codex_Kanata_API24` (Android 7.0) 与 `Codex_Kanata_API25` (Android 7.1.1) 并执行全量 19 项非基准套件。
+- **实测结果（API 24 与 API 25 均 18/19 PASS）**：
+  - **全部通过项 (18/19)**：`N-01`（Zero-Alloc PBKDF2 无 JCA `PBKDF2WithHmacSHA256` 依赖，在 API 24/25 正常运行并通过 KAT 与取消测试）、`N-02`（含 API 34→24/25 `CROSS_API_A1_A2` 打开校验）、`N-03` 长字段 / 2 MiB 前导 BOM / 3.9 MiB CursorWindow / 预分配拒绝、`N-04` 真实 `DocumentsUI` SAF + `ACTION_SEND` Share + 生命周期控制器 + 4 阶段真实导出 `SIGKILL` 恢复、Scheme C 互操作与负向拒绝、`F02-01`～`F02-06` 故障与原子保护矩阵。
+  - **诚实记录之残余 `BLOCKED` 项 (1/19)**：`probeCapacitorBridgeControlBoundsAndWebViewMemory` 在 `Codex_Kanata_API24` 与 `Codex_Kanata_API25` 上稳定失败（`{"error":"PLUGIN_MISSING"}`）。实证原因：两个 AOSP 原厂镜像预装 `com.android.webview` 均为 `52.0.2743.100`，低于 Capacitor 8 内核硬性门槛（`Bridge.MINIMUM_ANDROID_WEBVIEW_VERSION = 55`，默认 `60`），`Bridge.java` 主动拒绝初始化 JS Bridge。同时在 API 24/25 实测还定位并修复了测试侧 `java.util.Base64` (API 26+) 兼容性及同 UID SAF 持久化授权行为差异 (`sameUidPersistableSkippedPre26=true`)。
+- **门禁结论**：本轮严格保留低版本 WebView 真实限制记录（**API 24/25 上 Native Crypto/SQLite/SAF/Exporter/Importer 均 PASS，但未升级系统 WebView 的原厂 API 24/25 镜像无法承载 Capacitor 8 Bridge**），仍需在后续 M6-03 产品定型前结合目标用户最低系统/WebView 要求及实体真机延迟校准冻结 `0x0001`。
 
 ---
 
@@ -91,19 +91,21 @@
 | --- | --- | --- |
 | **生产边界隔离** | `git diff --exit-code 43b26d6ec41929a59844bb62a882bdf578391192 -- src package.json package-lock.json android/app/src/main` | **Exit 0**（零差异） |
 | **格式与空白** | `git diff --check` | **Exit 0** |
-| **Web 全量检查** | `npm run check` (`lint && test && test:component && typecheck && build`) | **Exit 0**（ESLint 0 errors / 61 既有 warnings；Node **818/818 pass**；Vitest **45 文件 420/420 pass**；`vue-tsc` + `tsc -p tsconfig.contracts.json` pass；Vite `built in 1.07s`） |
-| **标准 Android 构建** | `.\gradlew.bat --no-daemon :app:testDebugUnitTest :app:assembleDebug :app:assembleDebugAndroidTest`（无 synthetic 标志） | **Exit 0** (`BUILD SUCCESSFUL in 24s`) |
-| **Synthetic Release 阻断** | `.\gradlew.bat --no-daemon -PkanataM2Synthetic=true -PkanataM6Synthetic=true :app:assembleRelease` | **Exit 1（预期阻断失败）**：`release` variant 被 `beforeVariants` `variant.enable = false` 禁用，`Task 'assembleRelease' not found` |
-| **API 34 隔离全套** | `am instrument ... KanataM6N01..N04,SchemeCInteropAndNegativeTest,F02FaultMatrixTest` + `KanataM6AcBenchmarkTest` | **14/14 PASS** + **3/3 PASS** (`571.776s`, 54 样本) |
-| **API 30 隔离全套** | `am instrument ... KanataM6N01..N04,SchemeCInteropAndNegativeTest,F02FaultMatrixTest` + `KanataM6AcBenchmarkTest` | **14/14 PASS** + **3/3 PASS** (`463.426s`, 54 样本) |
-| **Android → Node 反向解码** | 拉取 `m6_android_to_node_interop.kpb1` & `m6_bench_1000_sample.kpb1` 运行 `syntheticCodec.mjs` | **PASS**（50 表校验器、1,000 条消息与 `pause-sending-v1` 精确吻合） |
+| **Web 全量检查** | `npm run check` (`lint && test && test:component && typecheck && build`) | **Exit 0**（ESLint 0 errors；Node 全部通过；Vitest 全部通过；`vue-tsc` + `tsc` 通过；Vite `built in 903ms`） |
+| **标准 Android 构建** | `.\gradlew.bat --no-daemon :app:testDebugUnitTest :app:assembleDebug :app:assembleDebugAndroidTest`（无 synthetic 标志） | **Exit 0** (`BUILD SUCCESSFUL in 49s`)，标准 Debug APK SHA-256 = `62f5df78f4fd27ab639149dcca7d8923f8c01f9ad0a26bd02d0327a227d9ba18` |
+| **Synthetic Release 阻断** | `.\gradlew.bat --no-daemon -PkanataM2Synthetic=true -PkanataM6Synthetic=true :app:assembleRelease` | **Exit 1（预期阻断失败）**：`Task 'assembleRelease' not found in project ':app'` |
+| **API 34 隔离全套** | `am instrument`（19 项套件 + 3 档 `KanataM6AcBenchmarkTest`） | **19/19 PASS** (`221.309s`) + **3/3 Bench PASS** (`1k+10k: 212.5s`, `100k: 1,421.967s`, 54 修订样本) |
+| **API 30 隔离全套** | `am instrument`（19 项套件 + 3 档 `KanataM6AcBenchmarkTest` + API 34→30 `CROSS_API_A1_A2`） | **19/19 PASS** (`114.979s`) + **3/3 Bench PASS** (`798.929s`, 54 修订样本) |
+| **API 25 隔离套件** | `am instrument`（19 项套件 + API 34→25 `CROSS_API_A1_A2`） | **18/19 PASS** (`101.976s`, `N-03 Bridge` 因 WebView `52.0` `BLOCKED`) |
+| **API 24 隔离套件** | `am instrument`（19 项套件 + API 34→24 `CROSS_API_A1_A2`） | **18/19 PASS** (`94.769s`, `N-03 Bridge` 因 WebView `52.0` `BLOCKED`) |
+| **Android → Node 反向解码** | 拉取 API 34 `m6_android_to_node_interop.kpb1` (`4,292 B`) & `m6_bench_1000_sample.kpb1` (`197,584 B`) 运行 [syntheticCodec.mjs](portable/syntheticCodec.mjs) | **PASS**（50 表校验器、1,000 条消息、`integrity_check=ok`、`0` 外键冲突） |
 
 ---
 
 ## 7. 待解决风险清单与 GPT-6 独立审计核验点
 
-1. **`NOT_RUN` — API 24/25 真机/镜像缺口**：需补充 API 24/25 环境实测后再推进 M6-03 与 `0x0001` 迭代次数冻结。
-2. **100k 消息下 Scheme C CPU/JNI 读库耗时 (`22.7s–26.9s`)**：虽然后台可流式取消且写阻塞恒为 `4 ms`、RSS 仅 `173–203 MiB`，但若需面向更大规模用户优化体感时间，M6-03 可考虑原生 JNI 批量行序列化或跳过冗余每行 `JSONTokener` 解析以显著加速。
-3. **本阶段交付范围内暂未接入产品级 UI 与 `RestoreCoordinator`**：符合“不提前污染产品线”隔离合同；M6-03 接入正式应用层时仍需单独设计 Settings UI、`RestoreCoordinator` 协调流与加密恢复日志闭环。
+1. **API 24/25 原厂镜像 WebView 52.0 阻断 Capacitor 8 Bridge**：Native 加密、SQLCipher、SAF、生命周期、进程强杀恢复与 F02 原子提交均已在 API 24/25 通过实测（18/19），但未升级系统 WebView 的 AOSP 7.0/7.1 无法初始化 Capacitor 8 Bridge，产品决策时需明确 WebView >= 60 门槛或提升 `minSdkVersion`。
+2. **100k 消息下 Scheme C CPU/JNI 读库耗时 (`26.3s–64.4s`)**：虽然后台可 5–62 ms 中断且写阻塞恒为 `5–20 ms`、RSS `190–217 MiB` 远低于红线，若面向更大数据量用户，M6-03 可评估原生 JNI 批量行序列化进一步加速。
+3. **本阶段交付范围严格隔离于测试态**：未修改生产 `src/` 与 `android/app/src/main/`；M6-03 产品接入时仍需在产品侧 `RestoreCoordinator`、加密恢复日志与 Settings UI 完成闭环后另行验收。
 
-> **审计提交声明**：以上所有实验数据、代码实现、回归输出与边界检查均已可由独立审签方在分支 `m6/encrypted-backup-recovery` 上按命令原样复现。本报告仅供 **GPT-6** 进行最终独立审计与验收裁定。
+> **审计提交声明**：以上所有整改代码、四平台实测数据（含保留历史 108 条原始样本与新修订 108 条样本）、回归输出与边界检查均已提交至分支 `m6/encrypted-backup-recovery` 供 **GPT-6** 最终独立审计裁定。

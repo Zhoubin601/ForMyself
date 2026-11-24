@@ -1,6 +1,7 @@
 package com.yubin.formyself;
 
 import android.database.Cursor;
+import android.util.Base64;
 
 import net.zetetic.database.sqlcipher.SQLiteDatabase;
 import net.zetetic.database.sqlcipher.SQLiteStatement;
@@ -9,7 +10,6 @@ import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -125,7 +125,7 @@ public final class KanataM6SyntheticDataset {
             // Transaction 2..N: batch-insert messages (leave final 20 un-checkpointed in WAL)
             int initialBatchCount = Math.max(0, messageCount - 20);
             String insertMsgSql = "INSERT INTO messages VALUES(?, 'w1', ?, ?, ?, ?, ?, ?, ?, 1, 'complete', ?, ?, NULL, ?, ?, ?)";
-            String sampleB64 = Base64.getEncoder().encodeToString("kanata-synthetic-payload-vector-0123456789".getBytes(StandardCharsets.UTF_8));
+            String sampleB64 = Base64.encodeToString("kanata-synthetic-payload-vector-0123456789".getBytes(StandardCharsets.UTF_8), Base64.NO_WRAP);
             int chunkSize = 2000;
             for (int start = 0; start < initialBatchCount; start += chunkSize) {
                 int end = Math.min(initialBatchCount, start + chunkSize);

@@ -36,6 +36,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * F02-01 ~ F02-04 Fault Injection Matrix for Kanata SQLite M6-02 Scheme C.
@@ -418,15 +419,21 @@ public class KanataM6F02FaultMatrixTest {
             assertEquals(0, spoolDir.listFiles() == null ? 0 : spoolDir.listFiles().length);
 
             // 4. Readback verification mismatch (corrupt 1 byte in tmpSpool right before readback)
-            File expectedTmpSpool = new File(spoolDir, priorValidBackup.getName() + ".spool.tmp");
+            AtomicReference<File> capturedTmpSpool = new AtomicReference<>();
             assertThrowsCode(KanataM6PortableCrypto.ERR_IO_FAILED, () ->
                     KanataM6SchemeCExporter.exportToSpool(
                             srcDb.getAbsolutePath(), srcKey, PW, catalog,
                             new KanataM6SnapshotOwner.WriteGate(), spoolDir, priorValidBackup,
                             null, null, new AtomicBoolean(false), new KanataM6SchemeCExporter.SpoolHooks() {
                                 @Override
+                                public void onTaskTempFileCreated(String taskId, File tmpSpool) {
+                                    capturedTmpSpool.set(tmpSpool);
+                                }
+                                @Override
                                 public void beforeReadback() throws IOException {
-                                    try (RandomAccessFile raf = new RandomAccessFile(expectedTmpSpool, "rw")) {
+                                    File ts = capturedTmpSpool.get();
+                                    assertNotNull(ts);
+                                    try (RandomAccessFile raf = new RandomAccessFile(ts, "rw")) {
                                         long pos = Math.max(0L, raf.length() - 10L);
                                         raf.seek(pos);
                                         int b = raf.read();
@@ -436,7 +443,8 @@ public class KanataM6F02FaultMatrixTest {
                                 }
                             }));
             assertEquals(baselineBackupSha, sha256File(priorValidBackup));
-            assertFalse("Failed tmpSpool must be deleted", expectedTmpSpool.exists());
+            assertNotNull(capturedTmpSpool.get());
+            assertFalse("Failed tmpSpool must be deleted", capturedTmpSpool.get().exists());
 
             // 5. Cancel right at pre-set atomic flag (KDF / startup stage)
             AtomicBoolean preCancelled = new AtomicBoolean(true);
@@ -553,6 +561,425 @@ public class KanataM6F02FaultMatrixTest {
             Arrays.fill(srcKey, (byte) 0);
             Arrays.fill(dstKeyOk, (byte) 0);
             Arrays.fill(dstKeyBad, (byte) 0);
+            deleteRecursive(workDir);
+        }
+    }
+
+    private static void assertBackupDecryptsToExpected(
+            File pkgFile,
+            String password,
+            KanataM6PortableCatalog catalog,
+            File workDir,
+            String expectedOverallDigest) throws Exception {
+        byte[] verifyKey = randomRawKey();
+        File verifyDb = new File(workDir, "verify_a_" + UUID.randomUUID() + ".db");
+        try {
+            try (FileInputStream fis = new FileInputStream(pkgFile)) {
+                KanataM6SchemeCImporter.ImportResult res = KanataM6SchemeCImporter.importAndVerifyToIsolatedTarget(
+                        fis, password, catalog, workDir, verifyDb, verifyKey, new AtomicBoolean(false));
+                assertEquals(50, res.footerVerifiers.size());
+            }
+            if (expectedOverallDigest != null) {
+                try (SQLiteDatabase db = SQLiteDatabase.openDatabase(
+                        verifyDb.getAbsolutePath(), verifyKey, null, FLAGS_RO, (d, e) -> {}, null)) {
+                    KanataM6SyntheticDataset.LogicalSummary sum =
+                            KanataM6SyntheticDataset.computeLogicalFingerprint(db, catalog, true);
+                    assertEquals(expectedOverallDigest, sum.overallDigestHex);
+                }
+            }
+        } finally {
+            Arrays.fill(verifyKey, (byte) 0);
+            SQLiteDatabase.deleteDatabase(verifyDb);
+        }
+    }
+
+    @Test
+    public void f02_05_exporterAtomicCommitProtectionAndConcurrentTasks() throws Exception {
+        Context instrCtx = InstrumentationRegistry.getInstrumentation().getContext();
+        Context targetCtx = InstrumentationRegistry.getInstrumentation().getTargetContext();
+        KanataM6PortableCatalog catalog = KanataM6PortableCatalog.load(instrCtx);
+
+        File workDir = new File(targetCtx.getFilesDir(), "m6_f02_5_" + UUID.randomUUID());
+        File spoolDir = new File(workDir, "spool");
+        assertTrue(workDir.mkdirs());
+        File srcDb = new File(workDir, "src.db");
+        File backupTarget = new File(workDir, "backup_a.kpb1");
+        byte[] srcKey = randomRawKey();
+        ExecutorService exec = Executors.newFixedThreadPool(2);
+
+        try {
+            KanataM6SyntheticDataset.populateUniformDataset(srcDb, srcKey, catalog, 40);
+            String expectedProjectedDigest;
+            try (SQLiteDatabase ro = SQLiteDatabase.openDatabase(
+                    srcDb.getAbsolutePath(), srcKey, null, FLAGS_RO, (d, e) -> {}, null)) {
+                expectedProjectedDigest = KanataM6SyntheticDataset
+                        .computeLogicalFingerprint(ro, catalog, true).overallDigestHex;
+            }
+
+            // Produce valid baseline Backup A
+            KanataM6SchemeCExporter.ExportMetrics baseMetrics = KanataM6SchemeCExporter.exportToSpool(
+                    srcDb.getAbsolutePath(), srcKey, PW, catalog,
+                    new KanataM6SnapshotOwner.WriteGate(), spoolDir, backupTarget,
+                    null, null, new AtomicBoolean(false), null, "task-base-a");
+            String backupASha = sha256File(backupTarget);
+            assertEquals(baseMetrics.packageSha256Hex, backupASha);
+            assertBackupDecryptsToExpected(backupTarget, PW, catalog, workDir, expectedProjectedDigest);
+
+            // Mutate source DB so any new export B has distinct content from A
+            try (SQLiteDatabase rw = SQLiteDatabase.openDatabase(
+                    srcDb.getAbsolutePath(), srcKey, null, FLAGS_RW, (d, e) -> {}, null)) {
+                rw.execSQL("INSERT INTO messages VALUES('msg-b-new', 'w1', 'c1', 'user', 'user', 'id-1', 'u', 'BACKUP_B_DATA', 1700009999999, 1, 'complete', 'tb', 'bb', NULL, NULL, NULL, '{}')");
+            }
+
+            // 1. Inject final rename failure after full readback verification
+            AtomicBoolean renameAttempted = new AtomicBoolean(false);
+            AtomicReference<File> tmp1 = new AtomicReference<>();
+            assertThrowsCode(KanataM6PortableCrypto.ERR_IO_FAILED, () ->
+                    KanataM6SchemeCExporter.exportToSpool(
+                            srcDb.getAbsolutePath(), srcKey, PW, catalog,
+                            new KanataM6SnapshotOwner.WriteGate(), spoolDir, backupTarget,
+                            null, null, new AtomicBoolean(false), new KanataM6SchemeCExporter.SpoolHooks() {
+                                @Override
+                                public void onTaskTempFileCreated(String taskId, File tmpSpool) {
+                                    tmp1.set(tmpSpool);
+                                }
+                                @Override
+                                public void performAtomicReplace(File stagedFile, File finalTargetFile) throws IOException {
+                                    renameAttempted.set(true);
+                                    assertTrue("Staged temp file must exist at commit phase", stagedFile.exists());
+                                    assertTrue("Old backup A must NOT be deleted before rename", finalTargetFile.exists());
+                                    throw new IOException("EIO: injected final rename failure");
+                                }
+                            }, "task-rename-fail"));
+            assertTrue(renameAttempted.get());
+            assertFalse("Failed task temp must be cleaned", tmp1.get().exists());
+            assertEquals(backupASha, sha256File(backupTarget));
+            assertBackupDecryptsToExpected(backupTarget, PW, catalog, workDir, expectedProjectedDigest);
+            assertEquals(0, spoolDir.listFiles() == null ? 0 : spoolDir.listFiles().length);
+
+            // 2. Inject commit-stage interruption & simulate abrupt leftover task artifact recovery
+            File simulatedInterruptedTmp = new File(spoolDir, "." + backupTarget.getName() + ".task-abrupt-commit.spool.tmp");
+            File simulatedInterruptedPending = new File(spoolDir, ".task-task-abrupt-commit.pending");
+            assertThrowsCode(KanataM6PortableCrypto.ERR_IO_FAILED, () ->
+                    KanataM6SchemeCExporter.exportToSpool(
+                            srcDb.getAbsolutePath(), srcKey, PW, catalog,
+                            new KanataM6SnapshotOwner.WriteGate(), spoolDir, backupTarget,
+                            null, null, new AtomicBoolean(false), new KanataM6SchemeCExporter.SpoolHooks() {
+                                @Override
+                                public void beforeAtomicCommit(File stagedFile, File finalTargetFile) throws IOException {
+                                    // Preserve a copy to simulate crash-leftover before startup recovery runs
+                                    try (FileInputStream fis = new FileInputStream(stagedFile);
+                                         FileOutputStream fos = new FileOutputStream(simulatedInterruptedTmp)) {
+                                        byte[] buf = new byte[8192];
+                                        int n;
+                                        while ((n = fis.read(buf)) != -1) fos.write(buf, 0, n);
+                                    }
+                                    try (FileOutputStream pos = new FileOutputStream(simulatedInterruptedPending)) {
+                                        pos.write(new JSONObject()
+                                                .put("taskId", "task-abrupt-commit")
+                                                .put("state", "VERIFIED_READY_TO_COMMIT")
+                                                .put("tmpSpoolPath", simulatedInterruptedTmp.getAbsolutePath())
+                                                .put("targetPath", backupTarget.getAbsolutePath())
+                                                .toString().getBytes(java.nio.charset.StandardCharsets.UTF_8));
+                                    } catch (Exception ex) {
+                                        throw new IOException(ex);
+                                    }
+                                    throw new IOException("EINTR: simulated commit-stage process interruption");
+                                }
+                            }, "task-commit-interrupt"));
+            assertTrue(simulatedInterruptedTmp.exists());
+            assertTrue(simulatedInterruptedPending.exists());
+            assertEquals(backupASha, sha256File(backupTarget));
+            KanataM6SchemeCExporter.RecoveryReport rec = KanataM6SchemeCExporter.recoverIncompleteTasks(spoolDir);
+            assertEquals(1, rec.cleanedTasks);
+            assertFalse(simulatedInterruptedTmp.exists());
+            assertFalse(simulatedInterruptedPending.exists());
+            assertEquals(backupASha, sha256File(backupTarget));
+            assertBackupDecryptsToExpected(backupTarget, PW, catalog, workDir, expectedProjectedDigest);
+
+            // 3. Inject target filesystem error (EROFS / EXDEV)
+            assertThrowsCode(KanataM6PortableCrypto.ERR_IO_FAILED, () ->
+                    KanataM6SchemeCExporter.exportToSpool(
+                            srcDb.getAbsolutePath(), srcKey, PW, catalog,
+                            new KanataM6SnapshotOwner.WriteGate(), spoolDir, backupTarget,
+                            null, null, new AtomicBoolean(false), new KanataM6SchemeCExporter.SpoolHooks() {
+                                @Override
+                                public void performAtomicReplace(File stagedFile, File finalTargetFile) throws IOException {
+                                    throw new IOException("EROFS: Read-only target filesystem");
+                                }
+                            }, "task-target-fs-err"));
+            assertEquals(backupASha, sha256File(backupTarget));
+            assertBackupDecryptsToExpected(backupTarget, PW, catalog, workDir, expectedProjectedDigest);
+
+            // 4. Two concurrent tasks writing to the SAME target path:
+            // Task 1 fails at beforeAtomicCommit while Task 2 holds its own temp file in spoolDir.
+            // Task 1 cleanup MUST NOT delete Task 2's temp file; Task 2 also fails at rename -> A intact!
+            CountDownLatch bothCreatedTemp = new CountDownLatch(2);
+            CountDownLatch task1Cleaned = new CountDownLatch(1);
+            AtomicReference<File> t1Tmp = new AtomicReference<>();
+            AtomicReference<File> t2Tmp = new AtomicReference<>();
+            AtomicBoolean t2SawOwnTempAfterT1Fail = new AtomicBoolean(false);
+
+            Future<String> f1 = exec.submit(() -> {
+                try {
+                    KanataM6SchemeCExporter.exportToSpool(
+                            srcDb.getAbsolutePath(), srcKey, PW, catalog,
+                            new KanataM6SnapshotOwner.WriteGate(), spoolDir, backupTarget,
+                            null, null, new AtomicBoolean(false), new KanataM6SchemeCExporter.SpoolHooks() {
+                                @Override
+                                public void onTaskTempFileCreated(String taskId, File tmpSpool) {
+                                    t1Tmp.set(tmpSpool);
+                                    bothCreatedTemp.countDown();
+                                }
+                                @Override
+                                public void beforeAtomicCommit(File stagedFile, File finalTargetFile) throws IOException {
+                                    try {
+                                        assertTrue(bothCreatedTemp.await(10, TimeUnit.SECONDS));
+                                    } catch (InterruptedException ie) {
+                                        throw new IOException(ie);
+                                    }
+                                    throw new IOException("task1-commit-abort");
+                                }
+                            }, "concurrent-task-1");
+                    return "UNEXPECTED_SUCCESS";
+                } catch (KanataM6PortableCrypto.PortableException pe) {
+                    return pe.code;
+                } finally {
+                    task1Cleaned.countDown();
+                }
+            });
+
+            Future<String> f2 = exec.submit(() -> {
+                try {
+                    KanataM6SchemeCExporter.exportToSpool(
+                            srcDb.getAbsolutePath(), srcKey, PW, catalog,
+                            new KanataM6SnapshotOwner.WriteGate(), spoolDir, backupTarget,
+                            null, null, new AtomicBoolean(false), new KanataM6SchemeCExporter.SpoolHooks() {
+                                @Override
+                                public void onTaskTempFileCreated(String taskId, File tmpSpool) {
+                                    t2Tmp.set(tmpSpool);
+                                    bothCreatedTemp.countDown();
+                                }
+                                @Override
+                                public void beforeAtomicCommit(File stagedFile, File finalTargetFile) throws IOException {
+                                    try {
+                                        assertTrue(task1Cleaned.await(10, TimeUnit.SECONDS));
+                                    } catch (InterruptedException ie) {
+                                        throw new IOException(ie);
+                                    }
+                                    // While Task 1 already failed & cleaned up, Task 2's own temp file must still exist intact!
+                                    t2SawOwnTempAfterT1Fail.set(stagedFile.exists());
+                                    throw new IOException("task2-commit-abort");
+                                }
+                            }, "concurrent-task-2");
+                    return "UNEXPECTED_SUCCESS";
+                } catch (KanataM6PortableCrypto.PortableException pe) {
+                    return pe.code;
+                }
+            });
+
+            assertEquals(KanataM6PortableCrypto.ERR_IO_FAILED, f1.get(15, TimeUnit.SECONDS));
+            assertEquals(KanataM6PortableCrypto.ERR_IO_FAILED, f2.get(15, TimeUnit.SECONDS));
+            assertNotNull(t1Tmp.get());
+            assertNotNull(t2Tmp.get());
+            assertNotEquals("Concurrent tasks must use distinct temp files", t1Tmp.get().getName(), t2Tmp.get().getName());
+            assertTrue("Task 1 cleanup must not delete Task 2 temp file", t2SawOwnTempAfterT1Fail.get());
+            assertFalse(t1Tmp.get().exists());
+            assertFalse(t2Tmp.get().exists());
+            assertEquals(0, spoolDir.listFiles() == null ? 0 : spoolDir.listFiles().length);
+            assertEquals(backupASha, sha256File(backupTarget));
+            assertBackupDecryptsToExpected(backupTarget, PW, catalog, workDir, expectedProjectedDigest);
+
+            Log.i(TAG, "F02_05=" + new JSONObject()
+                    .put("renameFailPreservedA", true)
+                    .put("commitInterruptRecoveryPreservedA", true)
+                    .put("targetFsErrorPreservedA", true)
+                    .put("concurrentTasksIsolatedTempAndPreservedA", true)
+                    .put("backupASha256", backupASha));
+        } finally {
+            Arrays.fill(srcKey, (byte) 0);
+            exec.shutdownNow();
+            exec.awaitTermination(5, TimeUnit.SECONDS);
+            deleteRecursive(workDir);
+        }
+    }
+
+    @Test
+    public void f02_06_importerExistingTargetProtectionAndFull50TableVerification() throws Exception {
+        Context instrCtx = InstrumentationRegistry.getInstrumentation().getContext();
+        Context targetCtx = InstrumentationRegistry.getInstrumentation().getTargetContext();
+        KanataM6PortableCatalog catalog = KanataM6PortableCatalog.load(instrCtx);
+
+        File workDir = new File(targetCtx.getFilesDir(), "m6_f02_6_" + UUID.randomUUID());
+        File spoolDir = new File(workDir, "spool");
+        assertTrue(workDir.mkdirs());
+        File srcDbA = new File(workDir, "existing_target_a.db");
+        File srcDbB = new File(workDir, "src_b.db");
+        File pkgB = new File(workDir, "pkg_b.kpb1");
+        byte[] keyA = randomRawKey();
+        byte[] keyB = randomRawKey();
+        byte[] importNewKey = randomRawKey();
+
+        try {
+            // Seed existing valid Schema 005 Database A and close cleanly (checkpointed, no sidecars)
+            KanataM6SyntheticDataset.populateUniformDataset(srcDbA, keyA, catalog, 30);
+            try (SQLiteDatabase ckA = SQLiteDatabase.openDatabase(
+                    srcDbA.getAbsolutePath(), keyA, null, FLAGS_RW, (d, e) -> {}, null)) {
+                try (Cursor ck = ckA.rawQuery("PRAGMA wal_checkpoint(TRUNCATE)", null)) {
+                    assertTrue(ck.moveToFirst());
+                }
+            }
+            String shaABefore = sha256File(srcDbA);
+            KanataM6SyntheticDataset.LogicalSummary sumABefore;
+            try (SQLiteDatabase roA = SQLiteDatabase.openDatabase(
+                    srcDbA.getAbsolutePath(), keyA, null, FLAGS_RO, (d, e) -> {}, null)) {
+                sumABefore = KanataM6SyntheticDataset.computeLogicalFingerprint(roA, catalog, false);
+            }
+
+            // Seed distinct Dataset B and export valid KPB1 package B
+            KanataM6SyntheticDataset.populateUniformDataset(srcDbB, keyB, catalog, 55);
+            KanataM6SchemeCExporter.exportToSpool(
+                    srcDbB.getAbsolutePath(), keyB, PW, catalog,
+                    new KanataM6SnapshotOwner.WriteGate(), spoolDir, pkgB,
+                    null, null, new AtomicBoolean(false), null);
+            byte[] pkgBytes = readAllBytes(pkgB);
+
+            // 0. Default mode MUST refuse to overwrite pre-existing Database A
+            assertThrowsCode(KanataM6PortableCrypto.ERR_IO_FAILED, () ->
+                    KanataM6SchemeCImporter.importAndVerifyToIsolatedTarget(
+                            new ByteArrayInputStream(pkgBytes), PW, catalog, workDir,
+                            srcDbA, importNewKey, new AtomicBoolean(false)));
+
+            // 1. Wrong password (even with allowOverwriteExistingTarget=true)
+            assertThrowsCode(KanataM6PortableCrypto.ERR_AUTH_FAILED, () ->
+                    KanataM6SchemeCImporter.importAndVerifyToIsolatedTarget(
+                            new ByteArrayInputStream(pkgBytes), "wrong-password-123", catalog, workDir,
+                            srcDbA, importNewKey, new AtomicBoolean(false), true, null));
+
+            // 2. Wrong magic
+            byte[] badMagic = pkgBytes.clone();
+            badMagic[0] = 'Z';
+            assertThrowsCode(KanataM6PortableCrypto.ERR_UNSUPPORTED_FORMAT, () ->
+                    KanataM6SchemeCImporter.importAndVerifyToIsolatedTarget(
+                            new ByteArrayInputStream(badMagic), PW, catalog, workDir,
+                            srcDbA, importNewKey, new AtomicBoolean(false), true, null));
+
+            // 3. Footer tampered (last byte of container)
+            byte[] badFooter = pkgBytes.clone();
+            badFooter[badFooter.length - 1] ^= 0x55;
+            assertThrowsCode(KanataM6PortableCrypto.ERR_AUTH_FAILED, () ->
+                    KanataM6SchemeCImporter.importAndVerifyToIsolatedTarget(
+                            new ByteArrayInputStream(badFooter), PW, catalog, workDir,
+                            srcDbA, importNewKey, new AtomicBoolean(false), true, null));
+
+            // 4. DATA frame tampered
+            byte[] badData = pkgBytes.clone();
+            badData[260] ^= 0x33;
+            assertThrowsCode(KanataM6PortableCrypto.ERR_AUTH_FAILED, () ->
+                    KanataM6SchemeCImporter.importAndVerifyToIsolatedTarget(
+                            new ByteArrayInputStream(badData), PW, catalog, workDir,
+                            srcDbA, importNewKey, new AtomicBoolean(false), true, null));
+
+            // 5. EOF error (truncated container + trailing byte)
+            byte[] truncated = Arrays.copyOf(pkgBytes, pkgBytes.length - 20);
+            assertThrowsCode(KanataM6PortableCrypto.ERR_INVALID_CONTAINER, () ->
+                    KanataM6SchemeCImporter.importAndVerifyToIsolatedTarget(
+                            new ByteArrayInputStream(truncated), PW, catalog, workDir,
+                            srcDbA, importNewKey, new AtomicBoolean(false), true, null));
+            byte[] trailing = Arrays.copyOf(pkgBytes, pkgBytes.length + 1);
+            trailing[trailing.length - 1] = 0x09;
+            assertThrowsCode(KanataM6PortableCrypto.ERR_INVALID_CONTAINER, () ->
+                    KanataM6SchemeCImporter.importAndVerifyToIsolatedTarget(
+                            new ByteArrayInputStream(trailing), PW, catalog, workDir,
+                            srcDbA, importNewKey, new AtomicBoolean(false), true, null));
+
+            // 6. Mid-import cancellation (cancel during stream read)
+            AtomicBoolean cancelMid = new AtomicBoolean(false);
+            try (InputStream cancellingIn = new FilterInputStream(new ByteArrayInputStream(pkgBytes)) {
+                int total = 0;
+                @Override
+                public int read(byte[] b, int off, int len) throws IOException {
+                    int n = super.read(b, off, Math.min(len, 1024));
+                    if (n > 0) {
+                        total += n;
+                        if (total >= 2048) cancelMid.set(true);
+                    }
+                    return n;
+                }
+            }) {
+                assertThrowsCode(KanataM6PortableCrypto.ERR_CANCELLED, () ->
+                        KanataM6SchemeCImporter.importAndVerifyToIsolatedTarget(
+                                cancellingIn, PW, catalog, workDir,
+                                srcDbA, importNewKey, cancelMid, true, null));
+            }
+
+            // 7. Staging install failure
+            assertThrowsCode(KanataM6PortableCrypto.ERR_IO_FAILED, () ->
+                    KanataM6SchemeCImporter.importAndVerifyToIsolatedTarget(
+                            new ByteArrayInputStream(pkgBytes), PW, catalog, workDir,
+                            srcDbA, importNewKey, new AtomicBoolean(false), true,
+                            new KanataM6SchemeCImporter.ImportHooks() {
+                                @Override
+                                public void beforeStagingInstall(File targetStageFile) throws Exception {
+                                    throw new IOException("ENOSPC: staging install failed");
+                                }
+                            }));
+
+            // 8. Final atomic commit failure after full 50-table staging verification
+            AtomicBoolean commitReached = new AtomicBoolean(false);
+            assertThrowsCode(KanataM6PortableCrypto.ERR_IO_FAILED, () ->
+                    KanataM6SchemeCImporter.importAndVerifyToIsolatedTarget(
+                            new ByteArrayInputStream(pkgBytes), PW, catalog, workDir,
+                            srcDbA, importNewKey, new AtomicBoolean(false), true,
+                            new KanataM6SchemeCImporter.ImportHooks() {
+                                @Override
+                                public void performAtomicTargetCommit(File targetStageFile, File targetDbFile) throws Exception {
+                                    commitReached.set(true);
+                                    assertTrue(targetStageFile.exists());
+                                    throw new IOException("EIO: injected final target commit failure");
+                                }
+                            }));
+            assertTrue(commitReached.get());
+
+            // Verify Database A is 100% untouched: file SHA-256, logical summary, integrity, cipher_integrity, FK, and no leftover stage files!
+            assertEquals("Database A SHA-256 must remain identical", shaABefore, sha256File(srcDbA));
+            try (SQLiteDatabase roA = SQLiteDatabase.openDatabase(
+                    srcDbA.getAbsolutePath(), keyA, null, FLAGS_RO, (d, e) -> {}, null)) {
+                assertEquals("5", scalar(roA, "PRAGMA user_version"));
+                assertEquals("1263424577", scalar(roA, "PRAGMA application_id"));
+                assertEquals("ok", scalar(roA, "PRAGMA integrity_check"));
+                try (Cursor cic = roA.rawQuery("PRAGMA cipher_integrity_check", null)) {
+                    assertEquals(0, cic.getCount());
+                }
+                try (Cursor fkc = roA.rawQuery("PRAGMA foreign_key_check", null)) {
+                    assertEquals(0, fkc.getCount());
+                }
+                KanataM6SyntheticDataset.LogicalSummary sumAAfter =
+                        KanataM6SyntheticDataset.computeLogicalFingerprint(roA, catalog, false);
+                assertEquals(sumABefore.overallDigestHex, sumAAfter.overallDigestHex);
+            }
+            for (File f : workDir.listFiles()) {
+                assertFalse("No leftover stage DB allowed: " + f.getName(), f.getName().startsWith(".stage-"));
+            }
+
+            // 9. Clean isolated import verifies full 50-table restoration & rejects staging corruption
+            File cleanTarget = new File(workDir, "clean_target.db");
+            KanataM6SchemeCImporter.ImportResult okRes = KanataM6SchemeCImporter.importAndVerifyToIsolatedTarget(
+                    new ByteArrayInputStream(pkgBytes), PW, catalog, workDir,
+                    cleanTarget, importNewKey, new AtomicBoolean(false));
+            assertEquals(50, okRes.footerVerifiers.size());
+            assertTrue(cleanTarget.exists());
+
+            Log.i(TAG, "F02_06=" + new JSONObject()
+                    .put("defaultOverwriteRefused", true)
+                    .put("all8FailureModesPreservedA", true)
+                    .put("dbASha256", shaABefore)
+                    .put("dbALogicalDigest", sumABefore.overallDigestHex)
+                    .put("full50TableVerificationOk", true));
+        } finally {
+            Arrays.fill(keyA, (byte) 0);
+            Arrays.fill(keyB, (byte) 0);
+            Arrays.fill(importNewKey, (byte) 0);
             deleteRecursive(workDir);
         }
     }

@@ -1,63 +1,85 @@
 package com.yubin.formyself;
 
-import android.content.ContentProvider;
-import android.content.ContentValues;
-import android.content.UriMatcher;
+import android.content.res.AssetFileDescriptor;
 import android.database.Cursor;
 import android.database.MatrixCursor;
+import android.graphics.Point;
 import android.net.Uri;
+import android.os.CancellationSignal;
+import android.os.Handler;
 import android.os.ParcelFileDescriptor;
-import android.provider.OpenableColumns;
+import android.provider.DocumentsContract;
+import android.provider.DocumentsProvider;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * Isolated synthetic ContentProvider mimicking SAF document URIs, permission grant/revocation,
- * short reads, zero-progress reads, half-writes, ENOSPC, and readback corruption faults.
+ * Real Android DocumentsProvider test implementation for N-04 SAF lifecycle verification.
+ * Exposed via android.content.action.DOCUMENTS_PROVIDER so Android's system DocumentsUI
+ * (ACTION_OPEN_DOCUMENT / ACTION_CREATE_DOCUMENT) discovers and grants real system URI permissions.
+ * Does NOT implement any custom permission map; URI grants/revocations rely strictly on Android OS.
  */
-public final class KanataM6SyntheticSafProvider extends ContentProvider {
-    public static final String AUTHORITY = "com.yubin.formyself.m2qa.saf";
-    public static final Uri BASE_URI = Uri.parse("content://" + AUTHORITY + "/doc");
+public final class KanataM6SyntheticSafProvider extends DocumentsProvider {
+    public static final String AUTHORITY = "com.yubin.formyself.m2qa.documents";
+    public static final String ROOT_ID = "kanata-m6-root";
+    public static final String ROOT_DOC_ID = "root";
+    public static final String ROOT_TITLE = "Kanata Synthetic Docs";
 
     public enum FaultMode {
         NORMAL,
-        REVOKED,
         SHORT_READ,
         HALF_WRITE_ENOSPC,
-        READBACK_CORRUPT
+        READBACK_CORRUPT,
+        PROVIDER_IO_ERROR
     }
 
-    private static final ConcurrentHashMap<String, Integer> GRANTED_MODES = new ConcurrentHashMap<>();
+    private static final String[] DEFAULT_ROOT_PROJECTION = new String[] {
+            DocumentsContract.Root.COLUMN_ROOT_ID,
+            DocumentsContract.Root.COLUMN_MIME_TYPES,
+            DocumentsContract.Root.COLUMN_FLAGS,
+            DocumentsContract.Root.COLUMN_TITLE,
+            DocumentsContract.Root.COLUMN_DOCUMENT_ID,
+            DocumentsContract.Root.COLUMN_SUMMARY
+    };
+
+    private static final String[] DEFAULT_DOCUMENT_PROJECTION = new String[] {
+            DocumentsContract.Document.COLUMN_DOCUMENT_ID,
+            DocumentsContract.Document.COLUMN_MIME_TYPE,
+            DocumentsContract.Document.COLUMN_DISPLAY_NAME,
+            DocumentsContract.Document.COLUMN_LAST_MODIFIED,
+            DocumentsContract.Document.COLUMN_FLAGS,
+            DocumentsContract.Document.COLUMN_SIZE
+    };
+
     private static final ConcurrentHashMap<String, FaultMode> FAULT_MODES = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<String, AtomicInteger> OPEN_COUNTS = new ConcurrentHashMap<>();
 
-    public static Uri uriForDoc(String docId) {
-        return BASE_URI.buildUpon().appendPath(docId).build();
+    public static Uri rootUri() {
+        return DocumentsContract.buildDocumentUri(AUTHORITY, ROOT_DOC_ID);
     }
 
-    public static void grantDoc(String docId, int modeFlags) {
-        GRANTED_MODES.put(docId, modeFlags);
+    public static void setFaultMode(String docIdOrName, FaultMode mode) {
+        FAULT_MODES.put(docIdOrName, mode);
     }
 
-    public static void revokeDoc(String docId) {
-        GRANTED_MODES.remove(docId);
-    }
-
-    public static void setFaultMode(String docId, FaultMode mode) {
-        FAULT_MODES.put(docId, mode);
-    }
-
-    public static void resetAll() {
-        GRANTED_MODES.clear();
+    public static void resetFaultsAndFiles(android.content.Context context) {
         FAULT_MODES.clear();
         OPEN_COUNTS.clear();
+        if (context != null) {
+            File dir = rootDirFor(context);
+            File[] files = dir.listFiles();
+            if (files != null) {
+                for (File f : files) f.delete();
+            }
+        }
     }
 
     public static int openCount(String docId) {
@@ -65,29 +87,20 @@ public final class KanataM6SyntheticSafProvider extends ContentProvider {
         return c == null ? 0 : c.get();
     }
 
-    private File docFile(String docId) {
-        File dir = new File(getContext().getCacheDir(), "m6-saf-provider-docs");
+    private static File rootDirFor(android.content.Context context) {
+        File dir = new File(context.getNoBackupFilesDir(), "m6-saf-documents");
         if (!dir.exists()) dir.mkdirs();
-        return new File(dir, docId);
+        return dir;
     }
 
-    private String docIdFromUri(Uri uri) {
-        String id = uri.getLastPathSegment();
-        if (id == null || id.contains("..") || id.contains("/")) {
-            throw new SecurityException("Invalid docId");
+    private File fileForDocId(String documentId) throws FileNotFoundException {
+        if (ROOT_DOC_ID.equals(documentId)) {
+            return rootDirFor(getContext());
         }
-        return id;
-    }
-
-    private void checkGrant(String docId, int requiredFlag) {
-        FaultMode fm = FAULT_MODES.getOrDefault(docId, FaultMode.NORMAL);
-        if (fm == FaultMode.REVOKED) {
-            throw new SecurityException("SAF URI permission revoked (fault)");
+        if (documentId == null || documentId.isEmpty() || documentId.contains("..") || documentId.contains("/")) {
+            throw new FileNotFoundException("Invalid documentId: " + documentId);
         }
-        Integer granted = GRANTED_MODES.get(docId);
-        if (granted == null || (granted & requiredFlag) != requiredFlag) {
-            throw new SecurityException("SAF URI permission denied for doc=" + docId);
-        }
+        return new File(rootDirFor(getContext()), documentId);
     }
 
     @Override
@@ -96,19 +109,134 @@ public final class KanataM6SyntheticSafProvider extends ContentProvider {
     }
 
     @Override
-    public ParcelFileDescriptor openFile(Uri uri, String mode) throws FileNotFoundException {
-        String docId = docIdFromUri(uri);
-        boolean write = mode.contains("w");
-        boolean read = mode.contains("r") || !write;
-        if (write) checkGrant(docId, android.content.Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-        if (read && !write) checkGrant(docId, android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION);
-        OPEN_COUNTS.computeIfAbsent(docId, k -> new AtomicInteger()).incrementAndGet();
+    public Cursor queryRoots(String[] projection) {
+        MatrixCursor result = new MatrixCursor(projection != null ? projection : DEFAULT_ROOT_PROJECTION);
+        MatrixCursor.RowBuilder row = result.newRow();
+        row.add(DocumentsContract.Root.COLUMN_ROOT_ID, ROOT_ID);
+        row.add(DocumentsContract.Root.COLUMN_SUMMARY, "Isolated M6-02 SAF Test Root");
+        row.add(DocumentsContract.Root.COLUMN_FLAGS,
+                DocumentsContract.Root.FLAG_SUPPORTS_CREATE
+                        | DocumentsContract.Root.FLAG_SUPPORTS_IS_CHILD
+                        | DocumentsContract.Root.FLAG_LOCAL_ONLY);
+        row.add(DocumentsContract.Root.COLUMN_TITLE, ROOT_TITLE);
+        row.add(DocumentsContract.Root.COLUMN_DOCUMENT_ID, ROOT_DOC_ID);
+        row.add(DocumentsContract.Root.COLUMN_MIME_TYPES, "*/*");
+        return result;
+    }
 
-        FaultMode fm = FAULT_MODES.getOrDefault(docId, FaultMode.NORMAL);
-        File target = docFile(docId);
+    @Override
+    public boolean isChildDocument(String parentDocumentId, String documentId) {
+        return ROOT_DOC_ID.equals(parentDocumentId)
+                && documentId != null
+                && !ROOT_DOC_ID.equals(documentId)
+                && !documentId.contains("/")
+                && !documentId.contains("..");
+    }
 
+    @Override
+    public Cursor queryDocument(String documentId, String[] projection) throws FileNotFoundException {
+        MatrixCursor result = new MatrixCursor(projection != null ? projection : DEFAULT_DOCUMENT_PROJECTION);
+        File file = fileForDocId(documentId);
+        if (!file.exists()) {
+            throw new FileNotFoundException("Missing document: " + documentId);
+        }
+        includeFile(result, documentId, file);
+        return result;
+    }
+
+    @Override
+    public Cursor queryChildDocuments(String parentDocumentId, String[] projection, String sortOrder)
+            throws FileNotFoundException {
+        MatrixCursor result = new MatrixCursor(projection != null ? projection : DEFAULT_DOCUMENT_PROJECTION);
+        File parent = fileForDocId(parentDocumentId);
+        if (!parent.isDirectory()) {
+            throw new FileNotFoundException("Not a directory: " + parentDocumentId);
+        }
+        File[] children = parent.listFiles();
+        if (children != null) {
+            for (File child : children) {
+                includeFile(result, child.getName(), child);
+            }
+        }
+        return result;
+    }
+
+    private void includeFile(MatrixCursor result, String docId, File file) {
+        int flags = 0;
+        String mimeType;
+        if (file.isDirectory()) {
+            mimeType = DocumentsContract.Document.MIME_TYPE_DIR;
+            flags |= DocumentsContract.Document.FLAG_DIR_SUPPORTS_CREATE;
+        } else {
+            mimeType = "application/octet-stream";
+            flags |= DocumentsContract.Document.FLAG_SUPPORTS_WRITE
+                    | DocumentsContract.Document.FLAG_SUPPORTS_DELETE;
+        }
+        MatrixCursor.RowBuilder row = result.newRow();
+        row.add(DocumentsContract.Document.COLUMN_DOCUMENT_ID, docId);
+        row.add(DocumentsContract.Document.COLUMN_DISPLAY_NAME, ROOT_DOC_ID.equals(docId) ? ROOT_TITLE : file.getName());
+        row.add(DocumentsContract.Document.COLUMN_SIZE, file.isDirectory() ? 0L : file.length());
+        row.add(DocumentsContract.Document.COLUMN_MIME_TYPE, mimeType);
+        row.add(DocumentsContract.Document.COLUMN_LAST_MODIFIED, file.lastModified());
+        row.add(DocumentsContract.Document.COLUMN_FLAGS, flags);
+    }
+
+    @Override
+    public String createDocument(String parentDocumentId, String mimeType, String displayName)
+            throws FileNotFoundException {
+        if (!ROOT_DOC_ID.equals(parentDocumentId)) {
+            throw new FileNotFoundException("Invalid parent: " + parentDocumentId);
+        }
+        String safeName = (displayName == null || displayName.trim().isEmpty())
+                ? "kanata-doc-" + System.currentTimeMillis() + ".kpb1"
+                : displayName.replace('/', '_');
+        File file = new File(rootDirFor(getContext()), safeName);
+        if (file.exists()) {
+            int idx = 1;
+            while (file.exists()) {
+                file = new File(rootDirFor(getContext()), idx + "_" + safeName);
+                idx++;
+            }
+        }
+        try {
+            if (!file.createNewFile()) {
+                throw new FileNotFoundException("Failed to create document: " + file.getName());
+            }
+        } catch (IOException e) {
+            throw new FileNotFoundException("Create error: " + e.getMessage());
+        }
+        return file.getName();
+    }
+
+    @Override
+    public void deleteDocument(String documentId) throws FileNotFoundException {
+        File file = fileForDocId(documentId);
+        if (ROOT_DOC_ID.equals(documentId) || !file.delete()) {
+            throw new FileNotFoundException("Unable to delete: " + documentId);
+        }
+    }
+
+    @Override
+    public AssetFileDescriptor openDocumentThumbnail(
+            String documentId, Point sizeHint, CancellationSignal signal) throws FileNotFoundException {
+        throw new FileNotFoundException("No thumbnail");
+    }
+
+    @Override
+    public ParcelFileDescriptor openDocument(String documentId, String mode, CancellationSignal signal)
+            throws FileNotFoundException {
+        File target = fileForDocId(documentId);
+        OPEN_COUNTS.computeIfAbsent(documentId, k -> new AtomicInteger()).incrementAndGet();
+
+        FaultMode fm = FAULT_MODES.getOrDefault(documentId, FaultMode.NORMAL);
+        if (fm == FaultMode.PROVIDER_IO_ERROR) {
+            throw new FileNotFoundException("Injected provider error on document=" + documentId);
+        }
+
+        boolean write = mode != null && mode.contains("w");
+        boolean read = mode == null || mode.contains("r") || !write;
         if (read && !write && fm == FaultMode.SHORT_READ) {
-            return openShortReadPipe(target, docId);
+            return openShortReadPipe(target);
         }
         if (read && !write && fm == FaultMode.READBACK_CORRUPT) {
             return openCorruptedReadbackPipe(target);
@@ -117,24 +245,24 @@ public final class KanataM6SyntheticSafProvider extends ContentProvider {
             return openHalfWriteFailingPipe(target);
         }
 
-        int pfdMode = ParcelFileDescriptor.parseMode(mode);
-        return ParcelFileDescriptor.open(target, pfdMode);
+        int pfdMode = ParcelFileDescriptor.parseMode(mode != null ? mode : "r");
+        try {
+            return ParcelFileDescriptor.open(target, pfdMode, new Handler(getContext().getMainLooper()), e -> {});
+        } catch (IOException e) {
+            return ParcelFileDescriptor.open(target, pfdMode);
+        }
     }
 
-    private ParcelFileDescriptor openShortReadPipe(File source, String docId) throws FileNotFoundException {
+    private ParcelFileDescriptor openShortReadPipe(File source) throws FileNotFoundException {
         if (!source.exists()) throw new FileNotFoundException(source.getPath());
         try {
             ParcelFileDescriptor[] pipe = ParcelFileDescriptor.createReliablePipe();
             Thread t = new Thread(() -> {
                 try (ParcelFileDescriptor.AutoCloseOutputStream out = new ParcelFileDescriptor.AutoCloseOutputStream(pipe[1]);
-                     InputStream in = new java.io.FileInputStream(source)) {
-                    byte[] small = new byte[13]; // Force tiny 13-byte short reads across frame headers & payloads
+                     InputStream in = new FileInputStream(source)) {
+                    byte[] small = new byte[13];
                     int n;
                     while ((n = in.read(small)) != -1) {
-                        if (FAULT_MODES.getOrDefault(docId, FaultMode.NORMAL) == FaultMode.REVOKED) {
-                            pipe[1].closeWithError("URI permission revoked mid-read");
-                            return;
-                        }
                         out.write(small, 0, n);
                         out.flush();
                     }
@@ -153,7 +281,7 @@ public final class KanataM6SyntheticSafProvider extends ContentProvider {
             ParcelFileDescriptor[] pipe = ParcelFileDescriptor.createReliablePipe();
             Thread t = new Thread(() -> {
                 try (ParcelFileDescriptor.AutoCloseOutputStream out = new ParcelFileDescriptor.AutoCloseOutputStream(pipe[1]);
-                     InputStream in = new java.io.FileInputStream(source)) {
+                     InputStream in = new FileInputStream(source)) {
                     byte[] buf = new byte[4096];
                     int n;
                     boolean flipped = false;
@@ -176,7 +304,7 @@ public final class KanataM6SyntheticSafProvider extends ContentProvider {
 
     private ParcelFileDescriptor openHalfWriteFailingPipe(File target) throws FileNotFoundException {
         try {
-            OutputStream fos = new java.io.FileOutputStream(target);
+            OutputStream fos = new FileOutputStream(target);
             ParcelFileDescriptor[] pipe = ParcelFileDescriptor.createReliablePipe();
             Thread t = new Thread(() -> {
                 long written = 0L;
@@ -203,37 +331,5 @@ public final class KanataM6SyntheticSafProvider extends ContentProvider {
         } catch (IOException e) {
             throw new FileNotFoundException("pipe failed: " + e.getMessage());
         }
-    }
-
-    @Override
-    public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
-        String docId = docIdFromUri(uri);
-        checkGrant(docId, android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION);
-        File f = docFile(docId);
-        MatrixCursor mc = new MatrixCursor(new String[] { OpenableColumns.DISPLAY_NAME, OpenableColumns.SIZE });
-        mc.addRow(new Object[] { docId, f.exists() ? f.length() : 0L });
-        return mc;
-    }
-
-    @Override
-    public String getType(Uri uri) {
-        return "application/octet-stream";
-    }
-
-    @Override
-    public Uri insert(Uri uri, ContentValues values) {
-        return null;
-    }
-
-    @Override
-    public int delete(Uri uri, String selection, String[] selectionArgs) {
-        String docId = docIdFromUri(uri);
-        checkGrant(docId, android.content.Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-        return docFile(docId).delete() ? 1 : 0;
-    }
-
-    @Override
-    public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
-        return 0;
     }
 }

@@ -386,15 +386,30 @@ public final class KanataM6PortableCrypto {
         sha256Compress(state, w);
     }
 
+    public interface KdfProgressHook {
+        void onKdfProgress(int block, int iteration);
+    }
+
     public static byte[] pbkdf2HmacSha256ZeroAlloc(
             byte[] passwordBytes, byte[] salt, int iterations, int keyLen, AtomicBoolean cancelled) {
         byte[] out = new byte[keyLen];
-        pbkdf2HmacSha256ZeroAllocInto(passwordBytes, salt, iterations, keyLen, cancelled, out);
+        pbkdf2HmacSha256ZeroAllocInto(passwordBytes, salt, iterations, keyLen, cancelled, out, null);
         return out;
     }
 
     public static void pbkdf2HmacSha256ZeroAllocInto(
             byte[] passwordBytes, byte[] salt, int iterations, int keyLen, AtomicBoolean cancelled, byte[] out) {
+        pbkdf2HmacSha256ZeroAllocInto(passwordBytes, salt, iterations, keyLen, cancelled, out, null);
+    }
+
+    public static void pbkdf2HmacSha256ZeroAllocInto(
+            byte[] passwordBytes,
+            byte[] salt,
+            int iterations,
+            int keyLen,
+            AtomicBoolean cancelled,
+            byte[] out,
+            KdfProgressHook progressHook) {
         if (passwordBytes == null || salt == null || iterations <= 0 || keyLen <= 0 || out == null || out.length < keyLen) {
             throw new PortableException(ERR_INVALID_PASSWORD_INPUT, "pbkdf2-args");
         }
@@ -463,8 +478,13 @@ public final class KanataM6PortableCrypto {
                 System.arraycopy(state, 0, t, 0, 8);
 
                 for (int iter = 2; iter <= iterations; iter++) {
-                    if (cancelled != null && (iter & 0x3ff) == 0 && cancelled.get()) {
-                        throw new PortableException(ERR_CANCELLED, "kdf");
+                    if ((iter & 0x3ff) == 0) {
+                        if (progressHook != null) {
+                            progressHook.onKdfProgress(block, iter);
+                        }
+                        if (cancelled != null && cancelled.get()) {
+                            throw new PortableException(ERR_CANCELLED, "kdf");
+                        }
                     }
                     System.arraycopy(u, 0, w, 0, 8);
                     w[8] = 0x80000000;

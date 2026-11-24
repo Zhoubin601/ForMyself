@@ -126,13 +126,20 @@ public final class KanataM6SnapshotOwner {
     public static final class PinnedSnapshot implements AutoCloseable {
         public final SQLiteDatabase roDb;
         public final long leaseEpoch;
+        public final long freezeDrainNs;
         public final long writeBlockNs;
         public final long snapshotPinNs;
         private boolean closed = false;
 
-        PinnedSnapshot(SQLiteDatabase roDb, long leaseEpoch, long writeBlockNs, long snapshotPinNs) {
+        PinnedSnapshot(
+                SQLiteDatabase roDb,
+                long leaseEpoch,
+                long freezeDrainNs,
+                long writeBlockNs,
+                long snapshotPinNs) {
             this.roDb = roDb;
             this.leaseEpoch = leaseEpoch;
+            this.freezeDrainNs = freezeDrainNs;
             this.writeBlockNs = writeBlockNs;
             this.snapshotPinNs = snapshotPinNs;
         }
@@ -163,7 +170,8 @@ public final class KanataM6SnapshotOwner {
             boolean releaseGateAfterPin) throws Exception {
         long tStartNs = SystemClock.elapsedRealtimeNanos();
         long newEpoch = gate != null ? gate.beginSnapshotFreezeAndDrain(5000L) : 0L;
-        long gateStartNs = SystemClock.elapsedRealtimeNanos();
+        long tAfterDrainNs = SystemClock.elapsedRealtimeNanos();
+        long freezeDrainNs = tAfterDrainNs - tStartNs;
         boolean handedOff = false;
         SQLiteDatabase roDb = null;
         try {
@@ -199,14 +207,17 @@ public final class KanataM6SnapshotOwner {
             verifySchema005Ordinals(roDb);
 
             long tPinnedNs = SystemClock.elapsedRealtimeNanos();
-            long writeBlockNs = tPinnedNs - gateStartNs;
-            long pinNs = tPinnedNs - tStartNs;
-
             if (gate != null && releaseGateAfterPin) {
                 gate.endSnapshotFreeze();
             }
+            long tUnblockedNs = SystemClock.elapsedRealtimeNanos();
+            // Write block spans from BEFORE beginSnapshotFreezeAndDrain() through endSnapshotFreeze() (or pin if kept frozen)
+            long writeBlockNs = (gate != null && releaseGateAfterPin)
+                    ? (tUnblockedNs - tStartNs)
+                    : (tPinnedNs - tStartNs);
+            long pinNs = tPinnedNs - tStartNs;
             handedOff = true;
-            return new PinnedSnapshot(roDb, newEpoch, writeBlockNs, pinNs);
+            return new PinnedSnapshot(roDb, newEpoch, freezeDrainNs, writeBlockNs, pinNs);
         } finally {
             if (!handedOff) {
                 if (gate != null) gate.endSnapshotFreeze();
@@ -222,7 +233,7 @@ public final class KanataM6SnapshotOwner {
         }
     }
 
-    private static void verifySchema005Ordinals(SQLiteDatabase roDb) {
+    public static void verifySchema005Ordinals(SQLiteDatabase roDb) {
         String[][] pairs = new String[][] {
                 { "world_events", "event_array_order" },
                 { "world_effects", "effect_array_order" },

@@ -996,4 +996,49 @@ public class KanataM6N02SnapshotProbeTest {
             dir.delete();
         }
     }
+
+    @Test
+    public void verifyCrossApiA1A2ArtifactsIfStaged() throws Exception {
+        Context targetCtx = InstrumentationRegistry.getInstrumentation().getTargetContext();
+        Context instrCtx = InstrumentationRegistry.getInstrumentation().getContext();
+        System.loadLibrary("sqlcipher");
+        File extDir = targetCtx.getExternalFilesDir(null);
+        File intDir = targetCtx.getFilesDir();
+        File a1File = (extDir != null && new File(extDir, "m6_cross_api_a1.db").exists())
+                ? new File(extDir, "m6_cross_api_a1.db")
+                : new File(intDir, "m6_cross_api_a1.db");
+        File a2File = (extDir != null && new File(extDir, "m6_cross_api_a2.db").exists())
+                ? new File(extDir, "m6_cross_api_a2.db")
+                : new File(intDir, "m6_cross_api_a2.db");
+        if (!a1File.exists() && !a2File.exists()) {
+            report("CROSS_API_A1_A2", new JSONObject().put("status", "NOT_STAGED"));
+            return;
+        }
+        KanataM6PortableCatalog catalog = KanataM6PortableCatalog.load(instrCtx);
+        String pw = "bench-合成📦-pw-v1";
+        JSONObject res = new JSONObject()
+                .put("sdkInt", android.os.Build.VERSION.SDK_INT)
+                .put("abi", android.os.Build.SUPPORTED_ABIS.length > 0 ? android.os.Build.SUPPORTED_ABIS[0] : "unknown");
+
+        for (File f : new File[] { a1File, a2File }) {
+            if (!f.exists()) continue;
+            String label = f == a1File ? "a1" : "a2";
+            try (SQLiteDatabase db = SQLiteDatabase.openDatabase(
+                    f.getAbsolutePath(), pw, null, FLAGS_RO, (d, e) -> {}, null)) {
+                assertEquals("5", scalar(db, "PRAGMA user_version"));
+                assertEquals("1263424577", scalar(db, "PRAGMA application_id"));
+                assertEquals("ok", scalar(db, "PRAGMA integrity_check"));
+                noRows(db, "PRAGMA cipher_integrity_check");
+                noRows(db, "SELECT * FROM pragma_foreign_key_check");
+                KanataM6SyntheticDataset.LogicalSummary sum =
+                        KanataM6SyntheticDataset.computeLogicalFingerprint(db, catalog, false);
+                assertEquals(45, sum.populatedBusinessTableCount);
+                assertEquals(5, sum.populatedDerivedTableCount);
+                res.put(label + "_opened", true)
+                        .put(label + "_bytes", f.length())
+                        .put(label + "_digest", sum.overallDigestHex);
+            }
+        }
+        report("CROSS_API_A1_A2", res);
+    }
 }

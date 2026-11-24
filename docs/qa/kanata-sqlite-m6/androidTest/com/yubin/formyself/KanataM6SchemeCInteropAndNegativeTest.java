@@ -494,6 +494,31 @@ public class KanataM6SchemeCInteropAndNegativeTest {
                             rejectTarget, kTarget, new AtomicBoolean(false)));
             assertFalse(rejectTarget.exists());
 
+            // 4f. Target DB post-install verification catches business table mismatch & header mismatch
+            assertThrowsPortable(KanataM6PortableCrypto.ERR_INVALID_LOGICAL, () ->
+                    KanataM6SchemeCImporter.importAndVerifyToIsolatedTarget(
+                            new ByteArrayInputStream(validBytes), pw, catalog, workDir,
+                            rejectTarget, kTarget, new AtomicBoolean(false), false,
+                            new KanataM6SchemeCImporter.ImportHooks() {
+                                @Override
+                                public void afterInstallBeforeVerify(SQLiteDatabase targetStageDb) {
+                                    targetStageDb.execSQL("UPDATE worlds SET name='TAMPERED' WHERE id='w1'");
+                                }
+                            }));
+            assertFalse(rejectTarget.exists());
+
+            assertThrowsPortable(KanataM6PortableCrypto.ERR_INVALID_LOGICAL, () ->
+                    KanataM6SchemeCImporter.importAndVerifyToIsolatedTarget(
+                            new ByteArrayInputStream(validBytes), pw, catalog, workDir,
+                            rejectTarget, kTarget, new AtomicBoolean(false), false,
+                            new KanataM6SchemeCImporter.ImportHooks() {
+                                @Override
+                                public void afterInstallBeforeVerify(SQLiteDatabase targetStageDb) {
+                                    targetStageDb.rawExecSQL("PRAGMA user_version=4");
+                                }
+                            }));
+            assertFalse(rejectTarget.exists());
+
             Log.i(TAG, "NEGATIVE_REJECTIONS=" + new JSONObject()
                     .put("schema004Rejected", true)
                     .put("missingOrdinalRejected", true)

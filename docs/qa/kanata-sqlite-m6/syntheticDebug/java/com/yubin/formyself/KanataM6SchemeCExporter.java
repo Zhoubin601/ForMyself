@@ -3,22 +3,35 @@ package com.yubin.formyself;
 import android.database.Cursor;
 import android.os.CancellationSignal;
 import android.os.Debug;
+import android.os.Process;
 import android.os.SystemClock;
+import android.system.ErrnoException;
+import android.system.Os;
+import android.system.OsConstants;
+import android.system.StructStat;
 
 import net.zetetic.database.sqlcipher.SQLiteDatabase;
 
+import org.json.JSONObject;
+
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.nio.channels.FileLock;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -71,15 +84,40 @@ public final class KanataM6SchemeCExporter {
     }
 
     public interface SpoolHooks {
+        default void onTaskTempFileCreated(String taskId, File tmpSpool) {}
+        default void beforeKdf() throws IOException {}
+        default void onKdfProgress(int block, int iteration) {}
         default void onFrameQueued(int inFlightFrames, int maxRowBytes) {}
         default void beforeSpoolWrite(long totalWrittenSoFar, byte[] chunk) throws IOException {}
         default void beforeFsync() throws IOException {}
         default void beforeReadback() throws IOException {}
+        default void beforeAtomicCommit(File stagedFile, File finalTargetFile) throws IOException {}
+        default void performAtomicReplace(File stagedFile, File finalTargetFile) throws IOException {
+            defaultAtomicReplace(stagedFile, finalTargetFile);
+        }
+        default void afterAtomicCommit(File finalTargetFile) throws IOException {}
         default void afterTableRead(int tableId, long rowCount) {}
     }
 
+    public static final class RecoveryReport {
+        public final int scannedJournals;
+        public final int cleanedTasks;
+        public final List<String> cleanedTaskIds;
+        public final List<String> skippedActiveTaskIds;
+
+        RecoveryReport(int scannedJournals, int cleanedTasks, List<String> cleanedTaskIds, List<String> skippedActiveTaskIds) {
+            this.scannedJournals = scannedJournals;
+            this.cleanedTasks = cleanedTasks;
+            this.cleanedTaskIds = cleanedTaskIds;
+            this.skippedActiveTaskIds = skippedActiveTaskIds;
+        }
+    }
+
     public static final class ExportMetrics {
+        public String taskId;
+        public File taskTempFile;
         public long totalMs;
+        public long freezeDrainMs;
         public long snapshotPinMs;
         public long writeBlockMs;
         public long dbReadMs;
@@ -102,7 +140,150 @@ public final class KanataM6SchemeCExporter {
         public List<Verifier> verifiers;
     }
 
+    private static final Set<String> ACTIVE_TASKS = ConcurrentHashMap.newKeySet();
+
     private KanataM6SchemeCExporter() {}
+
+    public static boolean sameFileSystem(File dirA, File dirB) throws IOException {
+        try {
+            StructStat stA = Os.stat(dirA.getAbsolutePath());
+            StructStat stB = Os.stat(dirB.getAbsolutePath());
+            return stA.st_dev == stB.st_dev;
+        } catch (ErrnoException e) {
+            throw new IOException("stat-failed: " + e.getMessage(), e);
+        }
+    }
+
+    public static void defaultAtomicReplace(File stagedFile, File finalTargetFile) throws IOException {
+        File stagedAbs = stagedFile.getAbsoluteFile();
+        File targetAbs = finalTargetFile.getAbsoluteFile();
+        File stagedParent = stagedAbs.getParentFile();
+        File targetParent = targetAbs.getParentFile();
+        if (stagedParent == null || targetParent == null) {
+            throw new IOException("missing-parent-dir");
+        }
+        if (!sameFileSystem(stagedParent, targetParent)) {
+            throw new IOException("EXDEV: cross-filesystem atomic replace refused");
+        }
+        try {
+            Os.rename(stagedAbs.getPath(), targetAbs.getPath());
+        } catch (ErrnoException e) {
+            throw new IOException("atomic-rename-failed(" + e.errno + "): " + e.getMessage(), e);
+        }
+        fsyncDirectoryBestEffort(targetParent);
+    }
+
+    private static void fsyncDirectoryBestEffort(File dir) {
+        FileDescriptor fd = null;
+        try {
+            fd = Os.open(dir.getAbsolutePath(), OsConstants.O_RDONLY, 0);
+            Os.fsync(fd);
+        } catch (Throwable ignored) {
+        } finally {
+            if (fd != null) {
+                try {
+                    Os.close(fd);
+                } catch (Throwable ignored) {}
+            }
+        }
+    }
+
+    private static String sanitizeTaskId(String explicitTaskId) {
+        if (explicitTaskId != null && !explicitTaskId.isEmpty() && explicitTaskId.matches("[A-Za-z0-9._-]+")) {
+            return explicitTaskId;
+        }
+        return "exp-" + UUID.randomUUID();
+    }
+
+    private static void writePendingJournal(
+            RandomAccessFile raf,
+            String taskId,
+            String state,
+            File tmpSpool,
+            File commitTemp,
+            File finalTargetFile) throws IOException {
+        try {
+            JSONObject obj = new JSONObject()
+                    .put("taskId", taskId)
+                    .put("pid", Process.myPid())
+                    .put("state", state)
+                    .put("tmpSpoolPath", tmpSpool.getAbsolutePath())
+                    .put("commitTempPath", commitTemp != null ? commitTemp.getAbsolutePath() : JSONObject.NULL)
+                    .put("targetPath", finalTargetFile.getAbsolutePath());
+            byte[] bytes = obj.toString().getBytes(StandardCharsets.UTF_8);
+            raf.seek(0L);
+            raf.setLength(0L);
+            raf.write(bytes);
+            raf.getFD().sync();
+        } catch (Exception e) {
+            if (e instanceof IOException) throw (IOException) e;
+            throw new IOException("pending-journal-write", e);
+        }
+    }
+
+    /**
+     * Startup recovery for incomplete Scheme C export tasks.
+     * Only deletes .spool.tmp / .commit.tmp / .pending files owned by dead or unlocked tasks;
+     * never touches active tasks, committed backups, or unrelated files.
+     */
+    public static RecoveryReport recoverIncompleteTasks(File... dirs) {
+        int scanned = 0;
+        int cleaned = 0;
+        List<String> cleanedIds = new ArrayList<>();
+        List<String> skippedIds = new ArrayList<>();
+        if (dirs == null) return new RecoveryReport(0, 0, cleanedIds, skippedIds);
+
+        for (File dir : dirs) {
+            if (dir == null || !dir.isDirectory()) continue;
+            File[] files = dir.listFiles((d, name) -> name.startsWith(".task-") && name.endsWith(".pending"));
+            if (files == null) continue;
+            for (File journal : files) {
+                scanned++;
+                String name = journal.getName();
+                String tid = name.substring(".task-".length(), name.length() - ".pending".length());
+                if (ACTIVE_TASKS.contains(tid)) {
+                    skippedIds.add(tid);
+                    continue;
+                }
+                try (RandomAccessFile raf = new RandomAccessFile(journal, "rw")) {
+                    FileLock lock = null;
+                    try {
+                        lock = raf.getChannel().tryLock();
+                    } catch (Throwable ignored) {}
+                    if (lock == null) {
+                        skippedIds.add(tid);
+                        continue;
+                    }
+                    try {
+                        byte[] raw = new byte[(int) Math.min(65536L, raf.length())];
+                        raf.seek(0L);
+                        raf.readFully(raw);
+                        JSONObject obj = new JSONObject(new String(raw, StandardCharsets.UTF_8));
+                        String tmpPath = obj.optString("tmpSpoolPath", "");
+                        String commitPath = obj.isNull("commitTempPath") ? "" : obj.optString("commitTempPath", "");
+                        if (!tmpPath.isEmpty()) {
+                            File tf = new File(tmpPath);
+                            if (tf.exists() && tf.getName().endsWith(".spool.tmp")) {
+                                tf.delete();
+                            }
+                        }
+                        if (!commitPath.isEmpty()) {
+                            File cf = new File(commitPath);
+                            if (cf.exists() && cf.getName().endsWith(".commit.tmp")) {
+                                cf.delete();
+                            }
+                        }
+                        cleaned++;
+                        cleanedIds.add(tid);
+                    } finally {
+                        lock.release();
+                    }
+                    journal.delete();
+                } catch (Throwable ignored) {}
+            }
+        }
+        return new RecoveryReport(scanned, cleaned, cleanedIds, skippedIds);
+    }
 
     private static final class OrderTracker {
         private final KanataM6PortableCatalog.TableDef tableDef;
@@ -238,8 +419,28 @@ public final class KanataM6SchemeCExporter {
             CancellationSignal cancelSignal,
             AtomicBoolean cancelled,
             SpoolHooks hooks) throws Exception {
+        return exportToSpool(
+                dbPath, rawSqlCipherKey, password, catalog, writeGate,
+                spoolDir, finalTargetFile, explicitMaterial, cancelSignal, cancelled, hooks, null);
+    }
+
+    public static ExportMetrics exportToSpool(
+            String dbPath,
+            byte[] rawSqlCipherKey,
+            String password,
+            KanataM6PortableCatalog catalog,
+            KanataM6SnapshotOwner.WriteGate writeGate,
+            File spoolDir,
+            File finalTargetFile,
+            ExportMaterial explicitMaterial,
+            CancellationSignal cancelSignal,
+            AtomicBoolean cancelled,
+            SpoolHooks hooks,
+            String explicitTaskId) throws Exception {
         long tTotalStart = SystemClock.elapsedRealtimeNanos();
+        String taskId = sanitizeTaskId(explicitTaskId);
         ExportMetrics m = new ExportMetrics();
+        m.taskId = taskId;
         sampleResources(m);
 
         byte[] pwBytes = KanataM6PortableCrypto.encodeStrictPasswordUtf8(password);
@@ -252,13 +453,26 @@ public final class KanataM6SchemeCExporter {
 
         byte[] outPlain = new byte[KanataM6PortableCrypto.FRAME_LIMIT];
         byte[] pendingPlain = null;
-        int pendingLen = 0;
 
-        if (!spoolDir.exists() && !spoolDir.mkdirs()) {
+        File targetAbs = finalTargetFile.getAbsoluteFile();
+        File targetDir = targetAbs.getParentFile();
+        if (targetDir == null || (!targetDir.exists() && !targetDir.mkdirs())) {
+            throw new KanataM6PortableCrypto.PortableException(KanataM6PortableCrypto.ERR_IO_FAILED, "target-parent-mkdir");
+        }
+        File effectiveSpoolDir = (spoolDir != null) ? spoolDir.getAbsoluteFile() : targetDir;
+        if (!effectiveSpoolDir.exists() && !effectiveSpoolDir.mkdirs()) {
             throw new KanataM6PortableCrypto.PortableException(KanataM6PortableCrypto.ERR_IO_FAILED, "spool-mkdir");
         }
-        File tmpSpool = new File(spoolDir, finalTargetFile.getName() + ".spool.tmp");
-        if (tmpSpool.exists()) tmpSpool.delete();
+
+        boolean sameFs = sameFileSystem(effectiveSpoolDir, targetDir);
+        File tmpSpool = new File(effectiveSpoolDir, "." + targetAbs.getName() + "." + taskId + ".spool.tmp");
+        File commitTempFile = sameFs ? null : new File(targetDir, "." + targetAbs.getName() + "." + taskId + ".commit.tmp");
+        File pendingJournal = new File(effectiveSpoolDir, ".task-" + taskId + ".pending");
+        m.taskTempFile = tmpSpool;
+
+        ACTIVE_TASKS.add(taskId);
+        RandomAccessFile pendingRaf = null;
+        FileLock pendingLock = null;
 
         long dbReadNs = 0L;
         long aeadNs = 0L;
@@ -266,21 +480,33 @@ public final class KanataM6SchemeCExporter {
         long totalSpoolWritten = 0L;
         boolean exportCommitted = false;
 
-        try (KanataM6SnapshotOwner.PinnedSnapshot snap = KanataM6SnapshotOwner.acquirePinnedSnapshot(
-                dbPath, rawSqlCipherKey, writeGate, catalog, cancelSignal, cancelled, true)) {
-            m.snapshotPinMs = snap.snapshotPinNs / 1_000_000L;
-            m.writeBlockMs = snap.writeBlockNs / 1_000_000L;
-            sampleResources(m);
+        try {
+            if (!tmpSpool.createNewFile()) {
+                throw new KanataM6PortableCrypto.PortableException(KanataM6PortableCrypto.ERR_IO_FAILED, "tmp-collision");
+            }
+            if (hooks != null) hooks.onTaskTempFileCreated(taskId, tmpSpool);
+            pendingRaf = new RandomAccessFile(pendingJournal, "rw");
+            pendingLock = pendingRaf.getChannel().lock();
+            writePendingJournal(pendingRaf, taskId, "STARTED", tmpSpool, commitTempFile, targetAbs);
 
-            // 1. KDF + Key Derivation
-            long tKdfStart = SystemClock.elapsedRealtimeNanos();
-            byte[] header = encodePublicHeader(mat.salt, mat.backupId);
-            byte[] kekSalt = KanataM6PortableCrypto.concat(
-                    "KPB1/KEK\0".getBytes(StandardCharsets.US_ASCII), mat.salt, mat.backupId);
-            KanataM6PortableCrypto.pbkdf2HmacSha256ZeroAllocInto(
-                    pwBytes, kekSalt, KanataM6PortableCrypto.SYNTHETIC_ITERATIONS,
-                    KanataM6PortableCrypto.KEY_SIZE, cancelled, baseKek);
-            KanataM6PortableCrypto.zeroize(pwBytes);
+            try (KanataM6SnapshotOwner.PinnedSnapshot snap = KanataM6SnapshotOwner.acquirePinnedSnapshot(
+                    dbPath, rawSqlCipherKey, writeGate, catalog, cancelSignal, cancelled, true)) {
+                m.freezeDrainMs = snap.freezeDrainNs / 1_000_000L;
+                m.snapshotPinMs = snap.snapshotPinNs / 1_000_000L;
+                m.writeBlockMs = snap.writeBlockNs / 1_000_000L;
+                sampleResources(m);
+
+                // 1. KDF + Key Derivation
+                if (hooks != null) hooks.beforeKdf();
+                long tKdfStart = SystemClock.elapsedRealtimeNanos();
+                byte[] header = encodePublicHeader(mat.salt, mat.backupId);
+                byte[] kekSalt = KanataM6PortableCrypto.concat(
+                        "KPB1/KEK\0".getBytes(StandardCharsets.US_ASCII), mat.salt, mat.backupId);
+                KanataM6PortableCrypto.pbkdf2HmacSha256ZeroAllocInto(
+                        pwBytes, kekSalt, KanataM6PortableCrypto.SYNTHETIC_ITERATIONS,
+                        KanataM6PortableCrypto.KEY_SIZE, cancelled, baseKek,
+                        hooks != null ? hooks::onKdfProgress : null);
+                KanataM6PortableCrypto.zeroize(pwBytes);
 
             wrapKey = KanataM6PortableCrypto.hkdfSha256(
                     baseKek, mat.backupId,
@@ -692,17 +918,53 @@ public final class KanataM6SchemeCExporter {
                 throw new KanataM6PortableCrypto.PortableException(
                         KanataM6PortableCrypto.ERR_IO_FAILED, "spool-readback-mismatch");
             }
-            if (finalTargetFile.exists() && !finalTargetFile.delete()) {
-                throw new KanataM6PortableCrypto.PortableException(
-                        KanataM6PortableCrypto.ERR_IO_FAILED, "target-replace-delete");
+
+            // If spoolDir and targetDir are on different filesystems, stage & fsync & readback-verify on targetDir's FS first!
+            File stagedForCommit = tmpSpool;
+            if (commitTempFile != null) {
+                try (FileInputStream fis = new FileInputStream(tmpSpool);
+                     FileOutputStream cos = new FileOutputStream(commitTempFile)) {
+                    byte[] cbuf = new byte[65536];
+                    int r;
+                    while ((r = fis.read(cbuf)) != -1) {
+                        KanataM6PortableCrypto.checkCancelled(cancelled);
+                        cos.write(cbuf, 0, r);
+                    }
+                    cos.flush();
+                    cos.getFD().sync();
+                }
+                MessageDigest commitSha = MessageDigest.getInstance("SHA-256");
+                long commitBytes = 0L;
+                byte[] crbuf = new byte[65536];
+                try (FileInputStream cis = new FileInputStream(commitTempFile)) {
+                    int r;
+                    while ((r = cis.read(crbuf)) != -1) {
+                        KanataM6PortableCrypto.checkCancelled(cancelled);
+                        commitSha.update(crbuf, 0, r);
+                        commitBytes += r;
+                    }
+                } finally {
+                    Arrays.fill(crbuf, (byte) 0);
+                }
+                if (commitBytes != totalSpoolWritten || !MessageDigest.isEqual(expectedSha, commitSha.digest())) {
+                    throw new KanataM6PortableCrypto.PortableException(
+                            KanataM6PortableCrypto.ERR_IO_FAILED, "commit-stage-readback-mismatch");
+                }
+                stagedForCommit = commitTempFile;
             }
-            if (!tmpSpool.renameTo(finalTargetFile)) {
-                throw new KanataM6PortableCrypto.PortableException(
-                        KanataM6PortableCrypto.ERR_IO_FAILED, "spool-atomic-rename");
+
+            // 8. Verified atomic commit phase (never deletes prior target before atomic replace!)
+            writePendingJournal(pendingRaf, taskId, "VERIFIED_READY_TO_COMMIT", tmpSpool, commitTempFile, targetAbs);
+            if (hooks != null) {
+                hooks.beforeAtomicCommit(stagedForCommit, targetAbs);
+                hooks.performAtomicReplace(stagedForCommit, targetAbs);
+                hooks.afterAtomicCommit(targetAbs);
+            } else {
+                defaultAtomicReplace(stagedForCommit, targetAbs);
             }
             long readbackElapsedNs = SystemClock.elapsedRealtimeNanos() - tReadback0;
             m.fsyncReadbackMs = (m.fsyncReadbackMs + readbackElapsedNs) / 1_000_000L;
-            m.finalFileBytes = finalTargetFile.length();
+            m.finalFileBytes = targetAbs.length();
             m.packageSha256Hex = KanataM6PortableCrypto.bytesToHex(actualSha);
             m.dbReadMs = dbReadNs / 1_000_000L;
             m.aeadMs = aeadNs / 1_000_000L;
@@ -711,14 +973,33 @@ public final class KanataM6SchemeCExporter {
             m.totalMs = (SystemClock.elapsedRealtimeNanos() - tTotalStart) / 1_000_000L;
             exportCommitted = true;
             return m;
+            }
         } catch (KanataM6PortableCrypto.PortableException pe) {
             throw pe;
         } catch (IOException ioe) {
             throw new KanataM6PortableCrypto.PortableException(KanataM6PortableCrypto.ERR_IO_FAILED, "spool-io", ioe);
         } finally {
-            if (!exportCommitted && tmpSpool.exists()) {
-                tmpSpool.delete();
+            if (pendingLock != null) {
+                try {
+                    pendingLock.release();
+                } catch (Throwable ignored) {}
             }
+            if (pendingRaf != null) {
+                try {
+                    pendingRaf.close();
+                } catch (Throwable ignored) {}
+            }
+            if (!exportCommitted) {
+                if (tmpSpool.exists()) tmpSpool.delete();
+                if (commitTempFile != null && commitTempFile.exists()) commitTempFile.delete();
+            } else {
+                if (commitTempFile != null) {
+                    if (commitTempFile.exists()) commitTempFile.delete();
+                    if (tmpSpool.exists()) tmpSpool.delete();
+                }
+            }
+            if (pendingJournal.exists()) pendingJournal.delete();
+            ACTIVE_TASKS.remove(taskId);
             KanataM6PortableCrypto.zeroize(pwBytes, baseKek, wrapKey, manifestKey, dataKey, footerKey, outPlain, pendingPlain);
             if (explicitMaterial == null) mat.zeroize();
         }

@@ -70,6 +70,7 @@ android {
         if (kanataM6Synthetic.get()) {
             debug.manifest.srcFile new File(kanataRepository, 'docs/qa/kanata-sqlite-m6/syntheticDebug/AndroidManifest.xml')
             debug.java.srcDir new File(kanataRepository, 'docs/qa/kanata-sqlite-m6/syntheticDebug/java')
+            debug.assets.srcDirs += [new File(kanataRepository, 'docs/qa/kanata-sqlite-m6/portable')]
             androidTest.java.srcDir new File(kanataRepository, 'docs/qa/kanata-sqlite-m6/androidTest')
             androidTest.assets.srcDirs += [new File(kanataRepository, 'docs/qa/kanata-sqlite-m6/portable')]
         }

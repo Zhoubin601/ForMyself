@@ -329,98 +329,217 @@ public class KanataM6N03BoundedMemoryTest {
 
     @Test
     public void probeCapacitorBridgeControlBoundsAndWebViewMemory() throws Exception {
-        KanataM6SyntheticPortablePlugin.resetMetrics();
+        Context targetCtx = InstrumentationRegistry.getInstrumentation().getTargetContext();
+        Context instrCtx = InstrumentationRegistry.getInstrumentation().getContext();
+        System.loadLibrary("sqlcipher");
+        KanataM6PortableCatalog catalog = KanataM6PortableCatalog.load(instrCtx);
+
+        File workDir = new File(targetCtx.getCacheDir(), "m6-n03-bridge-" + UUID.randomUUID());
+        File spoolDir = new File(targetCtx.getNoBackupFilesDir(), "m6-n03-bridge-spool-" + UUID.randomUUID());
+        assertTrue(workDir.mkdirs());
+        assertTrue(spoolDir.mkdirs());
+        File srcDbFile = new File(workDir, "bridge_src.db");
+        File verifyTargetDb = new File(workDir, "bridge_verify_target.db");
+        byte[] rawKey = randomRawKey();
+        byte[] verifyKey = randomRawKey();
+        String bridgePw = "n03-bridge-real-pw";
+
+        KanataM6SyntheticPortablePlugin.resetMetricsAndJobs();
         JSONObject bridgeReport = new JSONObject();
 
-        try (ActivityScenario<KanataM6BridgeActivity> scenario = ActivityScenario.launch(KanataM6BridgeActivity.class)) {
-            CountDownLatch jsDone = new CountDownLatch(1);
-            AtomicReference<String> jsResult = new AtomicReference<>();
-            AtomicReference<Throwable> jsErr = new AtomicReference<>();
+        try {
+            KanataM6SyntheticDataset.populateUniformDataset(srcDbFile, rawKey, catalog, 250);
+            KanataM6SyntheticPortablePlugin.registerSyntheticSource(
+                    "src-n03", srcDbFile.getAbsolutePath(), rawKey, bridgePw, spoolDir, workDir);
 
-            scenario.onActivity(activity -> {
-                WebView webView = activity.getBridge().getWebView();
-                String script =
-                        "(async function() {" +
-                        "  const p = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.KanataM6SyntheticPortable;" +
-                        "  if (!p) return JSON.stringify({ error: 'PLUGIN_MISSING' });" +
-                        "  const u8 = new Uint8Array(65536);" +
-                        "  u8[0] = 0x4b; u8[65535] = 0x01;" +
-                        "  const startRes = await p.controlStartExport({ mode: 'synthetic-c', scale: 'n03' });" +
-                        "  const pollRes = await p.controlPollStatus({ handle: startRes.handle });" +
-                        "  let rejectedOversize = false;" +
-                        "  try {" +
-                        "    await p.controlStartExport({ handle: 'x', bulkRows: 'A'.repeat(8192) });" +
-                        "  } catch (e) {" +
-                        "    rejectedOversize = true;" +
-                        "  }" +
-                        "  const mem = window.performance && window.performance.memory ? {" +
-                        "    usedJSHeapSize: window.performance.memory.usedJSHeapSize," +
-                        "    totalJSHeapSize: window.performance.memory.totalJSHeapSize," +
-                        "    jsHeapSizeLimit: window.performance.memory.jsHeapSizeLimit" +
-                        "  } : null;" +
-                        "  return JSON.stringify({" +
-                        "    startRes: startRes," +
-                        "    pollRes: pollRes," +
-                        "    rejectedOversize: rejectedOversize," +
-                        "    typedArrayLen: u8.byteLength," +
-                        "    jsMemory: mem" +
-                        "  });" +
-                        "})()";
-                // Wait briefly for Capacitor bridge injection if initial load is still settling
-                webView.postDelayed(() -> webView.evaluateJavascript(
-                        "(function(){ var r = " + script + "; r.then(function(v){ window.__n03Out = v; }).catch(function(e){ window.__n03Out = JSON.stringify({err:String(e)}); }); return 'PENDING'; })()",
-                        ignored -> {}), 1200);
-            });
+            try (ActivityScenario<KanataM6BridgeActivity> scenario = ActivityScenario.launch(KanataM6BridgeActivity.class)) {
+                CountDownLatch jsDone = new CountDownLatch(1);
+                AtomicReference<String> jsResult = new AtomicReference<>();
 
-            // Poll window.__n03Out cleanly via onActivity
-            long deadline = SystemClock.elapsedRealtime() + 15_000;
-            while (SystemClock.elapsedRealtime() < deadline) {
-                CountDownLatch step = new CountDownLatch(1);
                 scenario.onActivity(activity -> {
                     WebView webView = activity.getBridge().getWebView();
-                    webView.evaluateJavascript("window.__n03Out || null", value -> {
-                        if (value != null && !"null".equals(value)) {
-                            jsResult.set(value);
-                            jsDone.countDown();
-                        }
-                        step.countDown();
-                    });
+                    String script =
+                            "(function() {" +
+                            "  var p = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.KanataM6SyntheticPortable;" +
+                            "  if (!p) return Promise.resolve(JSON.stringify({ error: 'PLUGIN_MISSING' }));" +
+                            "  var u8 = new Uint8Array(65536);" +
+                            "  u8[0] = 0x4b; u8[65535] = 0x01;" +
+                            "  var delay = function(ms) { return new Promise(function(r) { setTimeout(r, ms); }); };" +
+                            "  var state = { duplicateRejected: false, cancelAfterCompleteRejected: false, dupCancelRejected: false, staleRejected: false, rejectedOversize: false };" +
+                            "  function pollUntilDone(handle, maxIter, delayMs) {" +
+                            "    var i = 0;" +
+                            "    function step() {" +
+                            "      return p.controlPollStatus({ handle: handle }).then(function(res) {" +
+                            "        if (res.state === 'COMPLETED' || res.state === 'FAILED' || res.state === 'CANCELLED' || i >= maxIter - 1) return res;" +
+                            "        i++;" +
+                            "        return delay(delayMs).then(step);" +
+                            "      });" +
+                            "    }" +
+                            "    return step();" +
+                            "  }" +
+                            "  return p.controlStartExport({ sourceId: 'src-n03', targetName: 'bridge_out.kpb1', clientRequestId: 'req-1' }).then(function(sr) {" +
+                            "    state.startRes = sr;" +
+                            "    return p.controlStartExport({ sourceId: 'src-n03', targetName: 'bridge_dup.kpb1', clientRequestId: 'req-1' }).then(function() {}, function() { state.duplicateRejected = true; });" +
+                            "  }).then(function() {" +
+                            "    return pollUntilDone(state.startRes.handle, 120, 100);" +
+                            "  }).then(function(pr) {" +
+                            "    state.pollRes = pr;" +
+                            "    return p.controlCancelExport({ handle: state.startRes.handle }).then(function() {}, function() { state.cancelAfterCompleteRejected = true; });" +
+                            "  }).then(function() {" +
+                            "    return p.controlStartExport({ sourceId: 'src-n03', targetName: 'bridge_cancel.kpb1', clientRequestId: 'req-2', tableDelayMs: 25 });" +
+                            "  }).then(function(s2) {" +
+                            "    state.start2 = s2;" +
+                            "    return delay(120);" +
+                            "  }).then(function() {" +
+                            "    return p.controlCancelExport({ handle: state.start2.handle });" +
+                            "  }).then(function(cr) {" +
+                            "    state.cancelRes = cr;" +
+                            "    return p.controlCancelExport({ handle: state.start2.handle }).then(function() {}, function() { state.dupCancelRejected = true; });" +
+                            "  }).then(function() {" +
+                            "    return pollUntilDone(state.start2.handle, 80, 50);" +
+                            "  }).then(function(p2) {" +
+                            "    state.poll2 = p2;" +
+                            "    return p.controlPollStatus({ handle: 'non-existent-stale-handle' }).then(function() {}, function() { state.staleRejected = true; });" +
+                            "  }).then(function() {" +
+                            "    return p.controlStartExport({ handle: 'x', bulkRows: Array(8193).join('A') }).then(function() {}, function() { state.rejectedOversize = true; });" +
+                            "  }).then(function() {" +
+                            "    var mem = window.performance && window.performance.memory ? {" +
+                            "      usedJSHeapSize: window.performance.memory.usedJSHeapSize," +
+                            "      totalJSHeapSize: window.performance.memory.totalJSHeapSize," +
+                            "      jsHeapSizeLimit: window.performance.memory.jsHeapSizeLimit" +
+                            "    } : null;" +
+                            "    return JSON.stringify({" +
+                            "      startRes: state.startRes," +
+                            "      pollRes: state.pollRes," +
+                            "      duplicateRejected: state.duplicateRejected," +
+                            "      cancelAfterCompleteRejected: state.cancelAfterCompleteRejected," +
+                            "      cancelHandle: state.start2.handle," +
+                            "      cancelRes: state.cancelRes," +
+                            "      dupCancelRejected: state.dupCancelRejected," +
+                            "      poll2: state.poll2," +
+                            "      staleRejected: state.staleRejected," +
+                            "      rejectedOversize: state.rejectedOversize," +
+                            "      typedArrayLen: u8.byteLength," +
+                            "      jsMemory: mem" +
+                            "    });" +
+                            "  });" +
+                            "})()";
+                    webView.postDelayed(() -> webView.evaluateJavascript(
+                            "(function(){ var r = " + script + "; r.then(function(v){ window.__n03Out = v; }).catch(function(e){ window.__n03Out = JSON.stringify({err:String(e)}); }); return 'PENDING'; })()",
+                            ignored -> {}), 1200);
                 });
-                step.await(2, TimeUnit.SECONDS);
-                if (jsDone.getCount() == 0) break;
-                Thread.sleep(200);
-            }
-            assertEquals("WebView JS bridge script did not finish", 0, jsDone.getCount());
-            assertNull(jsErr.get());
 
-            String rawJsonString = jsResult.get();
-            // Unquote JSON string returned by evaluateJavascript
-            String unquoted = new org.json.JSONTokener(rawJsonString).nextValue().toString();
-            JSONObject jsObj = new JSONObject(unquoted);
-            assertFalse("Plugin missing in WebView: " + unquoted, jsObj.has("error"));
-            assertTrue("Oversize bridge call must be rejected", jsObj.getBoolean("rejectedOversize"));
-            assertEquals(65536, jsObj.getInt("typedArrayLen"));
-            assertEquals("COMPLETED", jsObj.getJSONObject("pollRes").getString("state"));
-            assertEquals(1, KanataM6SyntheticPortablePlugin.REJECTED_OVERSIZE_BRIDGE_CALLS.get());
-            // Verify normal control messages stayed tiny (< 512 B)
-            assertFalse(KanataM6SyntheticPortablePlugin.OBSERVED_RESPONSE_BYTES.isEmpty());
-            for (int sz : KanataM6SyntheticPortablePlugin.OBSERVED_RESPONSE_BYTES) {
-                assertTrue("Bridge control response too large: " + sz, sz < 512);
-            }
+                long deadline = SystemClock.elapsedRealtime() + 30_000L;
+                while (SystemClock.elapsedRealtime() < deadline) {
+                    CountDownLatch step = new CountDownLatch(1);
+                    scenario.onActivity(activity -> {
+                        WebView webView = activity.getBridge().getWebView();
+                        webView.evaluateJavascript("window.__n03Out || null", value -> {
+                            if (value != null && !"null".equals(value)) {
+                                jsResult.set(value);
+                                jsDone.countDown();
+                            }
+                            step.countDown();
+                        });
+                    });
+                    step.await(2, TimeUnit.SECONDS);
+                    if (jsDone.getCount() == 0) break;
+                    Thread.sleep(200);
+                }
+                assertEquals("WebView JS bridge script did not finish", 0, jsDone.getCount());
 
-            long rss = readProcStatusKiB("VmRSS:");
-            long hwm = readProcStatusKiB("VmHWM:");
-            assertTrue("App+WebView RSS must stay below 512 MiB: " + rss, rss < 524_288L);
-            bridgeReport.put("jsResult", jsObj);
-            bridgeReport.put("observedRequestBytes", KanataM6SyntheticPortablePlugin.OBSERVED_REQUEST_BYTES.toString());
-            bridgeReport.put("observedResponseBytes", KanataM6SyntheticPortablePlugin.OBSERVED_RESPONSE_BYTES.toString());
-            bridgeReport.put("rejectedOversizeCalls", KanataM6SyntheticPortablePlugin.REJECTED_OVERSIZE_BRIDGE_CALLS.get());
-            bridgeReport.put("appPlusWebViewVmRssKiB", rss);
-            bridgeReport.put("appPlusWebViewVmHwmKiB", hwm);
-            bridgeReport.put("nativeHeapAllocatedBytes", Debug.getNativeHeapAllocatedSize());
-            Runtime rt = Runtime.getRuntime();
-            bridgeReport.put("javaHeapUsedBytes", rt.totalMemory() - rt.freeMemory());
-            report("N03_BRIDGE_AND_WEBVIEW", bridgeReport);
+                String rawJsonString = jsResult.get();
+                String unquoted = new org.json.JSONTokener(rawJsonString).nextValue().toString();
+                JSONObject jsObj = new JSONObject(unquoted);
+                assertFalse("Plugin error in WebView: " + unquoted, jsObj.has("error") || jsObj.has("err"));
+                assertTrue("Oversize bridge call must be rejected", jsObj.getBoolean("rejectedOversize"));
+                assertTrue("Duplicate request must be rejected", jsObj.getBoolean("duplicateRejected"));
+                assertTrue("Cancel after complete must be rejected", jsObj.getBoolean("cancelAfterCompleteRejected"));
+                assertTrue("Duplicate cancel must be rejected", jsObj.getBoolean("dupCancelRejected"));
+                assertTrue("Stale handle must be rejected", jsObj.getBoolean("staleRejected"));
+                assertEquals(65536, jsObj.getInt("typedArrayLen"));
+
+                JSONObject pollRes = jsObj.getJSONObject("pollRes");
+                assertEquals("COMPLETED", pollRes.getString("state"));
+                assertEquals(45, pollRes.getInt("tablesDone"));
+                assertTrue(pollRes.getInt("dataFrames") >= 1);
+                assertTrue(pollRes.getBoolean("verifiedReadback"));
+                assertTrue(pollRes.getLong("finalFileBytes") > 0L);
+
+                JSONObject poll2 = jsObj.getJSONObject("poll2");
+                assertEquals("CANCELLED", poll2.getString("state"));
+                assertEquals(KanataM6PortableCrypto.ERR_CANCELLED, poll2.getString("errorCode"));
+                assertFalse("Cancelled bridge export must not leave final file",
+                        new File(workDir, "bridge_cancel.kpb1").exists());
+
+                // Verify exported KPB1 file on Native side decrypts and passes all 50-table verification!
+                File exportedFile = new File(workDir, "bridge_out.kpb1");
+                assertTrue(exportedFile.exists());
+                assertEquals(pollRes.getLong("finalFileBytes"), exportedFile.length());
+                try (FileInputStream fis = new FileInputStream(exportedFile)) {
+                    KanataM6SchemeCImporter.ImportResult ir = KanataM6SchemeCImporter.importAndVerifyToIsolatedTarget(
+                            fis, bridgePw, catalog, workDir, verifyTargetDb, verifyKey, new AtomicBoolean(false));
+                    assertEquals(250L + 56L, ir.totalBusinessRows);
+                    assertEquals(50, ir.footerVerifiers.size());
+                }
+
+                // Expire active handle and prove JS rejects subsequent poll on expired handle
+                String completedHandle = jsObj.getJSONObject("startRes").getString("handle");
+                KanataM6SyntheticPortablePlugin.expireHandle(completedHandle);
+                CountDownLatch expLatch = new CountDownLatch(1);
+                AtomicReference<String> expOut = new AtomicReference<>();
+                scenario.onActivity(act -> act.getBridge().getWebView().evaluateJavascript(
+                        "(async function(){ try { await window.Capacitor.Plugins.KanataM6SyntheticPortable.controlPollStatus({handle:'"
+                                + completedHandle + "'}); window.__n03Exp='UNEXPECTED_OK'; } catch(e) { window.__n03Exp='REJECTED'; } })()",
+                        ignored -> {}));
+                long expDeadline = SystemClock.elapsedRealtime() + 5_000L;
+                while (SystemClock.elapsedRealtime() < expDeadline && expLatch.getCount() > 0) {
+                    CountDownLatch s = new CountDownLatch(1);
+                    scenario.onActivity(act -> act.getBridge().getWebView().evaluateJavascript("window.__n03Exp || null", val -> {
+                        if (val != null && !"null".equals(val)) {
+                            expOut.set(val);
+                            expLatch.countDown();
+                        }
+                        s.countDown();
+                    }));
+                    s.await(1, TimeUnit.SECONDS);
+                    if (expLatch.getCount() == 0) break;
+                    Thread.sleep(100);
+                }
+                assertEquals("\"REJECTED\"", expOut.get());
+
+                assertEquals(1, KanataM6SyntheticPortablePlugin.REJECTED_OVERSIZE_BRIDGE_CALLS.get());
+                assertTrue(KanataM6SyntheticPortablePlugin.REJECTED_STALE_OR_DUPLICATE_CALLS.get() >= 4);
+                assertFalse(KanataM6SyntheticPortablePlugin.OBSERVED_RESPONSE_BYTES.isEmpty());
+                for (int sz : KanataM6SyntheticPortablePlugin.OBSERVED_RESPONSE_BYTES) {
+                    assertTrue("Bridge control response too large: " + sz, sz < 512);
+                }
+                for (int sz : KanataM6SyntheticPortablePlugin.OBSERVED_REQUEST_BYTES) {
+                    assertTrue("Accepted/logged normal request check", sz <= 8250);
+                }
+
+                long rss = readProcStatusKiB("VmRSS:");
+                long hwm = readProcStatusKiB("VmHWM:");
+                assertTrue("App+WebView RSS must stay below 512 MiB: " + rss, rss < 524_288L);
+                bridgeReport.put("jsResult", jsObj);
+                bridgeReport.put("observedMaxBridgeBytes", KanataM6SyntheticPortablePlugin.MAX_OBSERVED_BRIDGE_BYTES.get());
+                bridgeReport.put("rejectedOversizeCalls", KanataM6SyntheticPortablePlugin.REJECTED_OVERSIZE_BRIDGE_CALLS.get());
+                bridgeReport.put("rejectedStaleOrDuplicateCalls", KanataM6SyntheticPortablePlugin.REJECTED_STALE_OR_DUPLICATE_CALLS.get());
+                bridgeReport.put("appPlusWebViewVmRssKiB", rss);
+                bridgeReport.put("appPlusWebViewVmHwmKiB", hwm);
+                bridgeReport.put("nativeHeapAllocatedBytes", Debug.getNativeHeapAllocatedSize());
+                Runtime rt = Runtime.getRuntime();
+                bridgeReport.put("javaHeapUsedBytes", rt.totalMemory() - rt.freeMemory());
+                report("N03_BRIDGE_AND_WEBVIEW", bridgeReport);
+            }
+        } finally {
+            KanataM6SyntheticPortablePlugin.resetMetricsAndJobs();
+            Arrays.fill(rawKey, (byte) 0);
+            Arrays.fill(verifyKey, (byte) 0);
+            SQLiteDatabase.deleteDatabase(srcDbFile);
+            SQLiteDatabase.deleteDatabase(verifyTargetDb);
+            deleteRecursive(workDir);
+            deleteRecursive(spoolDir);
         }
     }
 
