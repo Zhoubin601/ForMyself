@@ -511,12 +511,19 @@ public class KanataM6N03BoundedMemoryTest {
                 assertEquals(1, KanataM6SyntheticPortablePlugin.REJECTED_OVERSIZE_BRIDGE_CALLS.get());
                 assertTrue(KanataM6SyntheticPortablePlugin.REJECTED_STALE_OR_DUPLICATE_CALLS.get() >= 4);
                 assertFalse(KanataM6SyntheticPortablePlugin.OBSERVED_RESPONSE_BYTES.isEmpty());
+                assertFalse(KanataM6SyntheticPortablePlugin.OBSERVED_REQUEST_BYTES.isEmpty());
                 for (int sz : KanataM6SyntheticPortablePlugin.OBSERVED_RESPONSE_BYTES) {
-                    assertTrue("Bridge control response too large: " + sz, sz < 512);
+                    assertTrue("Bridge control response too large: " + sz,
+                            sz <= KanataM6SyntheticPortablePlugin.MAX_BRIDGE_RESPONSE_BYTES);
                 }
                 for (int sz : KanataM6SyntheticPortablePlugin.OBSERVED_REQUEST_BYTES) {
-                    assertTrue("Accepted/logged normal request check", sz <= 8250);
+                    assertTrue("Accepted Bridge control request must stay <= 4096 B, got " + sz,
+                            sz <= KanataM6SyntheticPortablePlugin.MAX_BRIDGE_CONTROL_BYTES);
                 }
+                assertTrue("MAX_OBSERVED_BRIDGE_BYTES must never include rejected oversize calls, got "
+                                + KanataM6SyntheticPortablePlugin.MAX_OBSERVED_BRIDGE_BYTES.get(),
+                        KanataM6SyntheticPortablePlugin.MAX_OBSERVED_BRIDGE_BYTES.get()
+                                <= KanataM6SyntheticPortablePlugin.MAX_BRIDGE_CONTROL_BYTES);
 
                 long rss = readProcStatusKiB("VmRSS:");
                 long hwm = readProcStatusKiB("VmHWM:");

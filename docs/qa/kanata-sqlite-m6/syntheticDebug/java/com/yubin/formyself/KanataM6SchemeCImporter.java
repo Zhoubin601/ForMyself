@@ -3,15 +3,17 @@ package com.yubin.formyself;
 import android.database.Cursor;
 import android.system.ErrnoException;
 import android.system.Os;
-import android.system.OsConstants;
+import android.system.StructStat;
 
 import net.zetetic.database.sqlcipher.SQLiteDatabase;
 import net.zetetic.database.sqlcipher.SQLiteStatement;
 
 import java.io.File;
-import java.io.FileDescriptor;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.RandomAccessFile;
+import java.nio.channels.FileLock;
+import java.nio.channels.OverlappingFileLockException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.ArrayList;
@@ -22,7 +24,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Isolated Scheme C KPB1 importer & Schema 005 target SQLCipher verifier.
@@ -158,7 +162,144 @@ public final class KanataM6SchemeCImporter {
         default void afterStagingVerified(File targetStageFile) throws Exception {}
         default void beforeTargetCommit(File targetStageFile, File targetDbFile) throws Exception {}
         default void performAtomicTargetCommit(File targetStageFile, File targetDbFile) throws Exception {
-            defaultAtomicTargetCommit(targetStageFile, targetDbFile);
+            defaultAtomicRenameOnly(targetStageFile, targetDbFile);
+        }
+        default void performTargetDirFsync(File targetParentDir) throws Exception {
+            KanataM6SchemeCExporter.fsyncDirectoryStrict(targetParentDir);
+        }
+    }
+
+    private static final class CommitLockSlot {
+        final ReentrantLock mutex = new ReentrantLock(true);
+        int refs = 0;
+    }
+
+    private static final ConcurrentHashMap<String, CommitLockSlot> TARGET_COMMIT_LOCKS =
+            new ConcurrentHashMap<>();
+
+    private static File canonicalTargetFile(File f) throws IOException {
+        try {
+            return f.getCanonicalFile();
+        } catch (IOException e) {
+            return f.getAbsoluteFile();
+        }
+    }
+
+    private static File lockFileForTarget(File canonTarget) throws Exception {
+        File parent = canonTarget.getParentFile();
+        MessageDigest md = MessageDigest.getInstance("SHA-256");
+        byte[] hash = md.digest(canonTarget.getPath().getBytes(StandardCharsets.UTF_8));
+        String hex = KanataM6PortableCrypto.bytesToHex(hash).substring(0, 24);
+        return new File(parent, ".kanata-import-" + hex + ".lock");
+    }
+
+    public static boolean hasActiveCommitLock(File targetDbFile) throws Exception {
+        File canon = canonicalTargetFile(targetDbFile);
+        if (TARGET_COMMIT_LOCKS.containsKey(canon.getPath())) return true;
+        File lf = lockFileForTarget(canon);
+        return lf.exists();
+    }
+
+    private static final class TargetCommitLockHandle implements AutoCloseable {
+        private final String key;
+        private final CommitLockSlot slot;
+        private final File lockFile;
+        private final RandomAccessFile raf;
+        private final FileLock fileLock;
+
+        TargetCommitLockHandle(String key, CommitLockSlot slot, File lockFile, RandomAccessFile raf, FileLock fileLock) {
+            this.key = key;
+            this.slot = slot;
+            this.lockFile = lockFile;
+            this.raf = raf;
+            this.fileLock = fileLock;
+        }
+
+        @Override
+        public void close() {
+            try {
+                if (!slot.mutex.hasQueuedThreads() && lockFile != null && lockFile.exists()) {
+                    lockFile.delete();
+                }
+            } catch (Throwable ignored) {}
+            if (fileLock != null) {
+                try {
+                    fileLock.release();
+                } catch (Throwable ignored) {}
+            }
+            if (raf != null) {
+                try {
+                    raf.close();
+                } catch (Throwable ignored) {}
+            }
+            synchronized (TARGET_COMMIT_LOCKS) {
+                slot.refs--;
+                if (slot.refs <= 0 && !slot.mutex.hasQueuedThreads()) {
+                    TARGET_COMMIT_LOCKS.remove(key, slot);
+                }
+            }
+            slot.mutex.unlock();
+        }
+    }
+
+    private static TargetCommitLockHandle acquireTargetCommitLock(File targetAbs) throws Exception {
+        File canon = canonicalTargetFile(targetAbs);
+        String key = canon.getPath();
+        File lockFile = lockFileForTarget(canon);
+        CommitLockSlot slot;
+        synchronized (TARGET_COMMIT_LOCKS) {
+            slot = TARGET_COMMIT_LOCKS.get(key);
+            if (slot == null) {
+                slot = new CommitLockSlot();
+                TARGET_COMMIT_LOCKS.put(key, slot);
+            }
+            slot.refs++;
+        }
+        slot.mutex.lock();
+        boolean acquired = false;
+        try {
+            while (true) {
+                RandomAccessFile raf = new RandomAccessFile(lockFile, "rw");
+                FileLock fl = null;
+                boolean ok = false;
+                try {
+                    try {
+                        fl = raf.getChannel().lock();
+                    } catch (OverlappingFileLockException ofle) {
+                        fl = null;
+                    }
+                    if (fl != null) {
+                        try {
+                            StructStat fdStat = Os.fstat(raf.getFD());
+                            StructStat pathStat = Os.stat(lockFile.getPath());
+                            if (fdStat.st_dev == pathStat.st_dev && fdStat.st_ino == pathStat.st_ino) {
+                                ok = true;
+                                acquired = true;
+                                return new TargetCommitLockHandle(key, slot, lockFile, raf, fl);
+                            }
+                        } catch (ErrnoException ignored) {
+                            // Unlinked concurrently in another process; retry on fresh inode.
+                        }
+                    }
+                } finally {
+                    if (!ok) {
+                        if (fl != null) {
+                            try { fl.release(); } catch (Throwable ignored) {}
+                        }
+                        try { raf.close(); } catch (Throwable ignored) {}
+                    }
+                }
+            }
+        } finally {
+            if (!acquired) {
+                synchronized (TARGET_COMMIT_LOCKS) {
+                    slot.refs--;
+                    if (slot.refs <= 0 && !slot.mutex.hasQueuedThreads()) {
+                        TARGET_COMMIT_LOCKS.remove(key, slot);
+                    }
+                }
+                slot.mutex.unlock();
+            }
         }
     }
 
@@ -172,7 +313,7 @@ public final class KanataM6SchemeCImporter {
                 || new File(abs.getPath() + "-journal").exists();
     }
 
-    public static void defaultAtomicTargetCommit(File targetStageFile, File targetDbFile) throws IOException {
+    public static void defaultAtomicRenameOnly(File targetStageFile, File targetDbFile) throws IOException {
         File stagedAbs = targetStageFile.getAbsoluteFile();
         File targetAbs = targetDbFile.getAbsoluteFile();
         File stagedParent = stagedAbs.getParentFile();
@@ -188,18 +329,12 @@ public final class KanataM6SchemeCImporter {
         } catch (ErrnoException e) {
             throw new IOException("target-atomic-rename-failed(" + e.errno + "): " + e.getMessage(), e);
         }
-        FileDescriptor fd = null;
-        try {
-            fd = Os.open(targetParent.getPath(), OsConstants.O_RDONLY, 0);
-            Os.fsync(fd);
-        } catch (Throwable ignored) {
-        } finally {
-            if (fd != null) {
-                try {
-                    Os.close(fd);
-                } catch (Throwable ignored) {}
-            }
-        }
+    }
+
+    public static void defaultAtomicTargetCommit(File targetStageFile, File targetDbFile) throws IOException {
+        defaultAtomicRenameOnly(targetStageFile, targetDbFile);
+        File targetParent = targetDbFile.getAbsoluteFile().getParentFile();
+        KanataM6SchemeCExporter.fsyncDirectoryStrict(targetParent);
     }
 
     private static byte[] buildFrameNonce(int streamId, int type, long index) {
@@ -571,26 +706,39 @@ public final class KanataM6SchemeCImporter {
             if (hooks != null) hooks.afterStagingVerified(targetStageFile);
             KanataM6PortableCrypto.checkCancelled(cancelled);
 
-            // 7. Re-check pre-existing protection and atomically commit staging DB to targetDbFile
-            if (hasDatabaseOrSidecar(targetAbs)) {
-                if (!allowOverwriteExistingTarget) {
-                    throw new KanataM6PortableCrypto.PortableException(
-                            KanataM6PortableCrypto.ERR_IO_FAILED, "target-already-exists");
+            // 7. Target-path serialized mutex: re-check pre-existing protection through atomic commit + dir fsync
+            try (TargetCommitLockHandle commitLock = acquireTargetCommitLock(targetAbs)) {
+                if (hasDatabaseOrSidecar(targetAbs)) {
+                    if (!allowOverwriteExistingTarget) {
+                        throw new KanataM6PortableCrypto.PortableException(
+                                KanataM6PortableCrypto.ERR_IO_FAILED, "target-already-exists");
+                    }
+                    File wal = new File(targetAbs.getPath() + "-wal");
+                    File shm = new File(targetAbs.getPath() + "-shm");
+                    if ((wal.exists() && wal.length() > 0L) || (shm.exists() && shm.length() > 0L)) {
+                        throw new KanataM6PortableCrypto.PortableException(
+                                KanataM6PortableCrypto.ERR_IO_FAILED, "target-active-sidecar");
+                    }
                 }
-                File wal = new File(targetAbs.getPath() + "-wal");
-                File shm = new File(targetAbs.getPath() + "-shm");
-                if ((wal.exists() && wal.length() > 0L) || (shm.exists() && shm.length() > 0L)) {
+                if (hooks != null) {
+                    hooks.beforeTargetCommit(targetStageFile, targetAbs);
+                    hooks.performAtomicTargetCommit(targetStageFile, targetAbs);
+                } else {
+                    defaultAtomicRenameOnly(targetStageFile, targetAbs);
+                }
+                targetCommitted = true;
+
+                try {
+                    if (hooks != null) {
+                        hooks.performTargetDirFsync(targetParent);
+                    } else {
+                        KanataM6SchemeCExporter.fsyncDirectoryStrict(targetParent);
+                    }
+                } catch (IOException dirSyncErr) {
                     throw new KanataM6PortableCrypto.PortableException(
-                            KanataM6PortableCrypto.ERR_IO_FAILED, "target-active-sidecar");
+                            KanataM6PortableCrypto.ERR_DURABILITY_UNCONFIRMED, "target-dir-fsync-failed", dirSyncErr);
                 }
             }
-            if (hooks != null) {
-                hooks.beforeTargetCommit(targetStageFile, targetAbs);
-                hooks.performAtomicTargetCommit(targetStageFile, targetAbs);
-            } else {
-                defaultAtomicTargetCommit(targetStageFile, targetAbs);
-            }
-            targetCommitted = true;
 
             return new ImportResult(
                     dataFrameCount,

@@ -23,11 +23,13 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.channels.FileLock;
+import java.nio.channels.OverlappingFileLockException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -50,12 +52,18 @@ public final class KanataM6SchemeCExporter {
         public final byte[] backupId;
         public final byte[] wrapNonce;
         public final byte[] bek;
+        public final boolean ownedByTask;
 
         public ExportMaterial(byte[] salt, byte[] backupId, byte[] wrapNonce, byte[] bek) {
+            this(salt, backupId, wrapNonce, bek, false);
+        }
+
+        private ExportMaterial(byte[] salt, byte[] backupId, byte[] wrapNonce, byte[] bek, boolean ownedByTask) {
             this.salt = salt;
             this.backupId = backupId;
             this.wrapNonce = wrapNonce;
             this.bek = bek;
+            this.ownedByTask = ownedByTask;
         }
 
         public static ExportMaterial random() {
@@ -63,11 +71,14 @@ public final class KanataM6SchemeCExporter {
                     KanataM6PortableCrypto.randomBytes(KanataM6PortableCrypto.SALT_SIZE),
                     KanataM6PortableCrypto.randomBytes(KanataM6PortableCrypto.BACKUP_ID_SIZE),
                     KanataM6PortableCrypto.randomBytes(KanataM6PortableCrypto.WRAP_NONCE_SIZE),
-                    KanataM6PortableCrypto.randomBytes(KanataM6PortableCrypto.KEY_SIZE));
+                    KanataM6PortableCrypto.randomBytes(KanataM6PortableCrypto.KEY_SIZE),
+                    true);
         }
 
-        void zeroize() {
-            KanataM6PortableCrypto.zeroize(salt, backupId, wrapNonce, bek);
+        void zeroizeIfOwned() {
+            if (ownedByTask) {
+                KanataM6PortableCrypto.zeroize(salt, backupId, wrapNonce, bek);
+            }
         }
     }
 
@@ -85,15 +96,24 @@ public final class KanataM6SchemeCExporter {
 
     public interface SpoolHooks {
         default void onTaskTempFileCreated(String taskId, File tmpSpool) {}
+        default void onSensitiveBufferAllocated(String label, byte[] buffer) {}
         default void beforeKdf() throws IOException {}
         default void onKdfProgress(int block, int iteration) {}
+        default void afterDbRead(int tableId, long rowIndex) throws IOException {}
+        default void afterRowEncoded(int tableId, KanataM6BoundedRowReader.EncodedRow row) throws IOException {}
+        default void afterOrderTrackerValidated(int tableId, long rowIndex) throws IOException {}
+        default void beforeChunkerAppend(int tableId, int bytesLen) throws IOException {}
+        default void afterChunkerAppend(int tableId, int bytesLen) throws IOException {}
         default void onFrameQueued(int inFlightFrames, int maxRowBytes) {}
         default void beforeSpoolWrite(long totalWrittenSoFar, byte[] chunk) throws IOException {}
         default void beforeFsync() throws IOException {}
         default void beforeReadback() throws IOException {}
         default void beforeAtomicCommit(File stagedFile, File finalTargetFile) throws IOException {}
         default void performAtomicReplace(File stagedFile, File finalTargetFile) throws IOException {
-            defaultAtomicReplace(stagedFile, finalTargetFile);
+            defaultAtomicRenameOnly(stagedFile, finalTargetFile);
+        }
+        default void performTargetDirFsync(File targetParentDir) throws IOException {
+            fsyncDirectoryStrict(targetParentDir);
         }
         default void afterAtomicCommit(File finalTargetFile) throws IOException {}
         default void afterTableRead(int tableId, long rowCount) {}
@@ -102,20 +122,43 @@ public final class KanataM6SchemeCExporter {
     public static final class RecoveryReport {
         public final int scannedJournals;
         public final int cleanedTasks;
+        public final int confirmedCommitTasks;
+        public final int unconfirmedCommitTasks;
+        public final int rejectedUntrustedJournals;
         public final List<String> cleanedTaskIds;
         public final List<String> skippedActiveTaskIds;
+        public final List<String> confirmedCommitTaskIds;
+        public final List<String> unconfirmedCommitTaskIds;
+        public final List<String> rejectedJournalNames;
 
-        RecoveryReport(int scannedJournals, int cleanedTasks, List<String> cleanedTaskIds, List<String> skippedActiveTaskIds) {
+        RecoveryReport(
+                int scannedJournals,
+                int cleanedTasks,
+                int confirmedCommitTasks,
+                int unconfirmedCommitTasks,
+                int rejectedUntrustedJournals,
+                List<String> cleanedTaskIds,
+                List<String> skippedActiveTaskIds,
+                List<String> confirmedCommitTaskIds,
+                List<String> unconfirmedCommitTaskIds,
+                List<String> rejectedJournalNames) {
             this.scannedJournals = scannedJournals;
             this.cleanedTasks = cleanedTasks;
+            this.confirmedCommitTasks = confirmedCommitTasks;
+            this.unconfirmedCommitTasks = unconfirmedCommitTasks;
+            this.rejectedUntrustedJournals = rejectedUntrustedJournals;
             this.cleanedTaskIds = cleanedTaskIds;
             this.skippedActiveTaskIds = skippedActiveTaskIds;
+            this.confirmedCommitTaskIds = confirmedCommitTaskIds;
+            this.unconfirmedCommitTaskIds = unconfirmedCommitTaskIds;
+            this.rejectedJournalNames = rejectedJournalNames;
         }
     }
 
     public static final class ExportMetrics {
         public String taskId;
         public File taskTempFile;
+        public String commitState;
         public long totalMs;
         public long freezeDrainMs;
         public long snapshotPinMs;
@@ -142,6 +185,10 @@ public final class KanataM6SchemeCExporter {
 
     private static final Set<String> ACTIVE_TASKS = ConcurrentHashMap.newKeySet();
 
+    public static boolean isTaskActiveInProcess(String taskId) {
+        return taskId != null && ACTIVE_TASKS.contains(taskId);
+    }
+
     private KanataM6SchemeCExporter() {}
 
     public static boolean sameFileSystem(File dirA, File dirB) throws IOException {
@@ -154,7 +201,7 @@ public final class KanataM6SchemeCExporter {
         }
     }
 
-    public static void defaultAtomicReplace(File stagedFile, File finalTargetFile) throws IOException {
+    public static void defaultAtomicRenameOnly(File stagedFile, File finalTargetFile) throws IOException {
         File stagedAbs = stagedFile.getAbsoluteFile();
         File targetAbs = finalTargetFile.getAbsoluteFile();
         File stagedParent = stagedAbs.getParentFile();
@@ -170,29 +217,49 @@ public final class KanataM6SchemeCExporter {
         } catch (ErrnoException e) {
             throw new IOException("atomic-rename-failed(" + e.errno + "): " + e.getMessage(), e);
         }
-        fsyncDirectoryBestEffort(targetParent);
     }
 
-    private static void fsyncDirectoryBestEffort(File dir) {
+    public static void defaultAtomicReplace(File stagedFile, File finalTargetFile) throws IOException {
+        defaultAtomicRenameOnly(stagedFile, finalTargetFile);
+        File targetParent = finalTargetFile.getAbsoluteFile().getParentFile();
+        fsyncDirectoryStrict(targetParent);
+    }
+
+    public static void fsyncDirectoryStrict(File dir) throws IOException {
+        if (dir == null) throw new IOException("dir-fsync-null-dir");
         FileDescriptor fd = null;
+        IOException openOrSyncErr = null;
         try {
             fd = Os.open(dir.getAbsolutePath(), OsConstants.O_RDONLY, 0);
             Os.fsync(fd);
-        } catch (Throwable ignored) {
+        } catch (ErrnoException e) {
+            openOrSyncErr = new IOException("dir-fsync-failed(" + e.errno + "): " + e.getMessage(), e);
+            throw openOrSyncErr;
+        } catch (Throwable t) {
+            openOrSyncErr = new IOException("dir-fsync-failed: " + t.getMessage(), t);
+            throw openOrSyncErr;
         } finally {
             if (fd != null) {
                 try {
                     Os.close(fd);
-                } catch (Throwable ignored) {}
+                } catch (Throwable closeErr) {
+                    if (openOrSyncErr == null) {
+                        throw new IOException("dir-close-failed: " + closeErr.getMessage(), closeErr);
+                    }
+                }
             }
         }
     }
 
     private static String sanitizeTaskId(String explicitTaskId) {
-        if (explicitTaskId != null && !explicitTaskId.isEmpty() && explicitTaskId.matches("[A-Za-z0-9._-]+")) {
-            return explicitTaskId;
+        if (explicitTaskId == null || explicitTaskId.isEmpty()) {
+            return "exp-" + UUID.randomUUID();
         }
-        return "exp-" + UUID.randomUUID();
+        if (explicitTaskId.contains("..") || !explicitTaskId.matches("[A-Za-z0-9._-]+")) {
+            throw new KanataM6PortableCrypto.PortableException(
+                    KanataM6PortableCrypto.ERR_INVALID_LOGICAL, "invalid-task-id");
+        }
+        return explicitTaskId;
     }
 
     private static void writePendingJournal(
@@ -201,15 +268,17 @@ public final class KanataM6SchemeCExporter {
             String state,
             File tmpSpool,
             File commitTemp,
-            File finalTargetFile) throws IOException {
+            File finalTargetFile,
+            String expectedSha256Hex) throws IOException {
         try {
             JSONObject obj = new JSONObject()
                     .put("taskId", taskId)
                     .put("pid", Process.myPid())
                     .put("state", state)
-                    .put("tmpSpoolPath", tmpSpool.getAbsolutePath())
-                    .put("commitTempPath", commitTemp != null ? commitTemp.getAbsolutePath() : JSONObject.NULL)
-                    .put("targetPath", finalTargetFile.getAbsolutePath());
+                    .put("tmpSpoolPath", tmpSpool.getCanonicalPath())
+                    .put("commitTempPath", commitTemp != null ? commitTemp.getCanonicalPath() : JSONObject.NULL)
+                    .put("targetPath", finalTargetFile.getCanonicalPath())
+                    .put("expectedSha256Hex", expectedSha256Hex != null ? expectedSha256Hex : JSONObject.NULL);
             byte[] bytes = obj.toString().getBytes(StandardCharsets.UTF_8);
             raf.seek(0L);
             raf.setLength(0L);
@@ -221,26 +290,69 @@ public final class KanataM6SchemeCExporter {
         }
     }
 
+    private static String computeFileSha256Hex(File f) throws Exception {
+        MessageDigest md = MessageDigest.getInstance("SHA-256");
+        byte[] buf = new byte[65536];
+        try (FileInputStream fis = new FileInputStream(f)) {
+            int n;
+            while ((n = fis.read(buf)) != -1) {
+                md.update(buf, 0, n);
+            }
+        } finally {
+            Arrays.fill(buf, (byte) 0);
+        }
+        return KanataM6PortableCrypto.bytesToHex(md.digest());
+    }
+
     /**
      * Startup recovery for incomplete Scheme C export tasks.
-     * Only deletes .spool.tmp / .commit.tmp / .pending files owned by dead or unlocked tasks;
-     * never touches active tasks, committed backups, or unrelated files.
+     * Validates canonical directory containment and Task ID filename binding on every Journal entry;
+     * rejects malformed/untrusted Journals without deleting any referenced files;
+     * never deletes active tasks or committed targets (including RENAMED_PENDING_DIR_SYNC recovery).
      */
     public static RecoveryReport recoverIncompleteTasks(File... dirs) {
         int scanned = 0;
         int cleaned = 0;
+        int confirmedCommits = 0;
+        int unconfirmedCommits = 0;
+        int rejectedUntrusted = 0;
         List<String> cleanedIds = new ArrayList<>();
         List<String> skippedIds = new ArrayList<>();
-        if (dirs == null) return new RecoveryReport(0, 0, cleanedIds, skippedIds);
+        List<String> confirmedIds = new ArrayList<>();
+        List<String> unconfirmedIds = new ArrayList<>();
+        List<String> rejectedNames = new ArrayList<>();
+        if (dirs == null) {
+            return new RecoveryReport(0, 0, 0, 0, 0, cleanedIds, skippedIds, confirmedIds, unconfirmedIds, rejectedNames);
+        }
+
+        Set<File> allowedCanonDirs = new HashSet<>();
+        for (File d : dirs) {
+            if (d != null && d.isDirectory()) {
+                try {
+                    allowedCanonDirs.add(d.getCanonicalFile());
+                } catch (IOException ignored) {}
+            }
+        }
 
         for (File dir : dirs) {
             if (dir == null || !dir.isDirectory()) continue;
+            final File dirCanon;
+            try {
+                dirCanon = dir.getCanonicalFile();
+            } catch (IOException e) {
+                continue;
+            }
             File[] files = dir.listFiles((d, name) -> name.startsWith(".task-") && name.endsWith(".pending"));
             if (files == null) continue;
             for (File journal : files) {
                 scanned++;
                 String name = journal.getName();
                 String tid = name.substring(".task-".length(), name.length() - ".pending".length());
+                if (tid.isEmpty() || tid.contains("..") || !tid.matches("[A-Za-z0-9._-]+")) {
+                    rejectedUntrusted++;
+                    rejectedNames.add(name);
+                    continue;
+                }
                 if (ACTIVE_TASKS.contains(tid)) {
                     skippedIds.add(tid);
                     continue;
@@ -249,51 +361,167 @@ public final class KanataM6SchemeCExporter {
                     FileLock lock = null;
                     try {
                         lock = raf.getChannel().tryLock();
+                    } catch (OverlappingFileLockException ofle) {
+                        lock = null;
                     } catch (Throwable ignored) {}
                     if (lock == null) {
                         skippedIds.add(tid);
                         continue;
                     }
+                    boolean deleteJournalAfterUnlock = false;
                     try {
-                        byte[] raw = new byte[(int) Math.min(65536L, raf.length())];
+                        long len = raf.length();
+                        if (len <= 0L || len > 65536L) {
+                            rejectedUntrusted++;
+                            rejectedNames.add(name);
+                            continue;
+                        }
+                        byte[] raw = new byte[(int) len];
                         raf.seek(0L);
                         raf.readFully(raw);
                         JSONObject obj = new JSONObject(new String(raw, StandardCharsets.UTF_8));
-                        String tmpPath = obj.optString("tmpSpoolPath", "");
+                        String jsonTid = obj.optString("taskId", "");
+                        String state = obj.optString("state", "");
+                        if (!tid.equals(jsonTid) || state.isEmpty()) {
+                            rejectedUntrusted++;
+                            rejectedNames.add(name);
+                            continue;
+                        }
+
+                        String tmpPath = obj.isNull("tmpSpoolPath") ? "" : obj.optString("tmpSpoolPath", "");
                         String commitPath = obj.isNull("commitTempPath") ? "" : obj.optString("commitTempPath", "");
+                        String targetPath = obj.isNull("targetPath") ? "" : obj.optString("targetPath", "");
+                        String expectedSha = obj.isNull("expectedSha256Hex") ? "" : obj.optString("expectedSha256Hex", "");
+
+                        File validatedTmp = null;
                         if (!tmpPath.isEmpty()) {
-                            File tf = new File(tmpPath);
-                            if (tf.exists() && tf.getName().endsWith(".spool.tmp")) {
-                                tf.delete();
+                            File rawTmp = new File(tmpPath);
+                            if (tmpPath.contains("..") || !rawTmp.isAbsolute()) {
+                                rejectedUntrusted++;
+                                rejectedNames.add(name);
+                                continue;
                             }
+                            File canonTmp = rawTmp.getCanonicalFile();
+                            if (!dirCanon.equals(canonTmp.getParentFile())
+                                    || !canonTmp.getName().startsWith(".")
+                                    || !canonTmp.getName().endsWith("." + tid + ".spool.tmp")) {
+                                rejectedUntrusted++;
+                                rejectedNames.add(name);
+                                continue;
+                            }
+                            validatedTmp = canonTmp;
                         }
+
+                        File validatedCommit = null;
                         if (!commitPath.isEmpty()) {
-                            File cf = new File(commitPath);
-                            if (cf.exists() && cf.getName().endsWith(".commit.tmp")) {
-                                cf.delete();
+                            File rawCommit = new File(commitPath);
+                            if (commitPath.contains("..") || !rawCommit.isAbsolute()) {
+                                rejectedUntrusted++;
+                                rejectedNames.add(name);
+                                continue;
                             }
+                            File canonCommit = rawCommit.getCanonicalFile();
+                            if (!allowedCanonDirs.contains(canonCommit.getParentFile())
+                                    || !canonCommit.getName().startsWith(".")
+                                    || !canonCommit.getName().endsWith("." + tid + ".commit.tmp")) {
+                                rejectedUntrusted++;
+                                rejectedNames.add(name);
+                                continue;
+                            }
+                            validatedCommit = canonCommit;
                         }
-                        cleaned++;
-                        cleanedIds.add(tid);
+
+                        if ("RENAMED_PENDING_DIR_SYNC".equals(state)) {
+                            if (targetPath.isEmpty() || targetPath.contains("..")) {
+                                rejectedUntrusted++;
+                                rejectedNames.add(name);
+                                continue;
+                            }
+                            File canonTarget = new File(targetPath).getCanonicalFile();
+                            File targetParent = canonTarget.getParentFile();
+                            if (targetParent == null || !allowedCanonDirs.contains(targetParent)
+                                    || !canonTarget.exists() || expectedSha.isEmpty()) {
+                                unconfirmedCommits++;
+                                unconfirmedIds.add(tid);
+                                continue;
+                            }
+                            String actualSha = computeFileSha256Hex(canonTarget);
+                            if (!expectedSha.equals(actualSha)) {
+                                unconfirmedCommits++;
+                                unconfirmedIds.add(tid);
+                                continue;
+                            }
+                            try {
+                                fsyncDirectoryStrict(targetParent);
+                                if (validatedTmp != null && validatedTmp.exists() && !validatedTmp.equals(canonTarget)) {
+                                    validatedTmp.delete();
+                                }
+                                if (validatedCommit != null && validatedCommit.exists() && !validatedCommit.equals(canonTarget)) {
+                                    validatedCommit.delete();
+                                }
+                                confirmedCommits++;
+                                confirmedIds.add(tid);
+                                deleteJournalAfterUnlock = true;
+                            } catch (IOException dirSyncErr) {
+                                unconfirmedCommits++;
+                                unconfirmedIds.add(tid);
+                            }
+                        } else if ("COMMITTED".equals(state)) {
+                            if (validatedTmp != null && validatedCommit != null && validatedTmp.exists()) {
+                                validatedTmp.delete();
+                            }
+                            deleteJournalAfterUnlock = true;
+                        } else if ("STARTED".equals(state) || "VERIFIED_READY_TO_COMMIT".equals(state)) {
+                            if (validatedTmp != null && validatedTmp.exists()) {
+                                validatedTmp.delete();
+                            }
+                            if (validatedCommit != null && validatedCommit.exists()) {
+                                validatedCommit.delete();
+                            }
+                            cleaned++;
+                            cleanedIds.add(tid);
+                            deleteJournalAfterUnlock = true;
+                        } else {
+                            rejectedUntrusted++;
+                            rejectedNames.add(name);
+                        }
+                    } catch (Throwable parseOrIo) {
+                        rejectedUntrusted++;
+                        rejectedNames.add(name);
                     } finally {
                         lock.release();
                     }
-                    journal.delete();
+                    if (deleteJournalAfterUnlock) {
+                        journal.delete();
+                    }
                 } catch (Throwable ignored) {}
             }
         }
-        return new RecoveryReport(scanned, cleaned, cleanedIds, skippedIds);
+        return new RecoveryReport(
+                scanned, cleaned, confirmedCommits, unconfirmedCommits, rejectedUntrusted,
+                cleanedIds, skippedIds, confirmedIds, unconfirmedIds, rejectedNames);
     }
 
-    private static final class OrderTracker {
+    private static final class OrderTracker implements AutoCloseable {
         private final KanataM6PortableCatalog.TableDef tableDef;
+        private final SpoolHooks hooks;
         private byte[] prevWorldIdBytes;
         private long prevOrdinal = -1;
         private byte[][] prevPkText;
         private long[] prevPkNum;
 
-        OrderTracker(KanataM6PortableCatalog.TableDef tableDef) {
+        OrderTracker(KanataM6PortableCatalog.TableDef tableDef, SpoolHooks hooks) {
             this.tableDef = tableDef;
+            this.hooks = hooks;
+        }
+
+        private byte[] trackClone(String label, byte[] src) {
+            if (src == null) return null;
+            byte[] copy = src.clone();
+            if (hooks != null && copy.length > 0) {
+                hooks.onSensitiveBufferAllocated(label, copy);
+            }
+            return copy;
         }
 
         void accept(KanataM6BoundedRowReader.EncodedRow row) {
@@ -315,7 +543,8 @@ public final class KanataM6SchemeCExporter {
                                 KanataM6PortableCrypto.ERR_INVALID_LOGICAL, "ordinal-start");
                     }
                 }
-                prevWorldIdBytes = wid;
+                KanataM6PortableCrypto.zeroize(prevWorldIdBytes);
+                prevWorldIdBytes = trackClone("order.prevWorldId." + tableDef.name, wid);
                 prevOrdinal = ord;
                 return;
             }
@@ -335,8 +564,34 @@ public final class KanataM6SchemeCExporter {
                 KanataM6PortableCrypto.requirePortable(cmp < 0,
                         KanataM6PortableCrypto.ERR_INVALID_LOGICAL, "pk-order:" + tableDef.name);
             }
-            prevPkText = row.pkTextBytes;
-            prevPkNum = row.pkNumericValues;
+            if (prevPkText != null) {
+                for (int i = 0; i < prevPkText.length; i++) {
+                    KanataM6PortableCrypto.zeroize(prevPkText[i]);
+                }
+            }
+            byte[][] nextPrevText = new byte[row.pkTextBytes.length][];
+            for (int i = 0; i < row.pkTextBytes.length; i++) {
+                nextPrevText[i] = trackClone("order.prevPk." + tableDef.name + "." + i, row.pkTextBytes[i]);
+            }
+            prevPkText = nextPrevText;
+            prevPkNum = row.pkNumericValues != null ? row.pkNumericValues.clone() : null;
+        }
+
+        @Override
+        public void close() {
+            KanataM6PortableCrypto.zeroize(prevWorldIdBytes);
+            prevWorldIdBytes = null;
+            if (prevPkText != null) {
+                for (int i = 0; i < prevPkText.length; i++) {
+                    KanataM6PortableCrypto.zeroize(prevPkText[i]);
+                    prevPkText[i] = null;
+                }
+                prevPkText = null;
+            }
+            if (prevPkNum != null) {
+                Arrays.fill(prevPkNum, 0L);
+                prevPkNum = null;
+            }
         }
     }
 
@@ -443,34 +698,29 @@ public final class KanataM6SchemeCExporter {
         m.taskId = taskId;
         sampleResources(m);
 
-        byte[] pwBytes = KanataM6PortableCrypto.encodeStrictPasswordUtf8(password);
-        ExportMaterial mat = explicitMaterial != null ? explicitMaterial : ExportMaterial.random();
-        byte[] baseKek = new byte[KanataM6PortableCrypto.KEY_SIZE];
+        if (!ACTIVE_TASKS.add(taskId)) {
+            throw new KanataM6PortableCrypto.PortableException(
+                    KanataM6PortableCrypto.ERR_IO_FAILED, "task-id-already-active");
+        }
+        final boolean ownsActiveTask = true;
+        boolean ownsPendingJournal = false;
+        boolean ownsTempSpool = false;
+        boolean ownsCommitTemp = false;
+
+        byte[] pwBytes = null;
+        ExportMaterial mat = null;
+        byte[] baseKek = null;
         byte[] wrapKey = null;
         byte[] manifestKey = null;
         byte[] dataKey = null;
         byte[] footerKey = null;
+        byte[] outPlain = null;
+        byte[] manifestPlain = null;
+        byte[] footerPlain = null;
 
-        byte[] outPlain = new byte[KanataM6PortableCrypto.FRAME_LIMIT];
-        byte[] pendingPlain = null;
-
-        File targetAbs = finalTargetFile.getAbsoluteFile();
-        File targetDir = targetAbs.getParentFile();
-        if (targetDir == null || (!targetDir.exists() && !targetDir.mkdirs())) {
-            throw new KanataM6PortableCrypto.PortableException(KanataM6PortableCrypto.ERR_IO_FAILED, "target-parent-mkdir");
-        }
-        File effectiveSpoolDir = (spoolDir != null) ? spoolDir.getAbsoluteFile() : targetDir;
-        if (!effectiveSpoolDir.exists() && !effectiveSpoolDir.mkdirs()) {
-            throw new KanataM6PortableCrypto.PortableException(KanataM6PortableCrypto.ERR_IO_FAILED, "spool-mkdir");
-        }
-
-        boolean sameFs = sameFileSystem(effectiveSpoolDir, targetDir);
-        File tmpSpool = new File(effectiveSpoolDir, "." + targetAbs.getName() + "." + taskId + ".spool.tmp");
-        File commitTempFile = sameFs ? null : new File(targetDir, "." + targetAbs.getName() + "." + taskId + ".commit.tmp");
-        File pendingJournal = new File(effectiveSpoolDir, ".task-" + taskId + ".pending");
-        m.taskTempFile = tmpSpool;
-
-        ACTIVE_TASKS.add(taskId);
+        File tmpSpool = null;
+        File commitTempFile = null;
+        File pendingJournal = null;
         RandomAccessFile pendingRaf = null;
         FileLock pendingLock = null;
 
@@ -478,16 +728,65 @@ public final class KanataM6SchemeCExporter {
         long aeadNs = 0L;
         long spoolWriteNs = 0L;
         long totalSpoolWritten = 0L;
+        boolean renamedToTarget = false;
+        boolean durabilityConfirmed = false;
         boolean exportCommitted = false;
 
+        final KanataM6BoundedRowReader.BufferObserver rowBufferObserver = (hooks != null)
+                ? hooks::onSensitiveBufferAllocated
+                : null;
+
         try {
+            File targetAbs = finalTargetFile.getAbsoluteFile();
+            File targetDir = targetAbs.getParentFile();
+            if (targetDir == null || (!targetDir.exists() && !targetDir.mkdirs())) {
+                throw new KanataM6PortableCrypto.PortableException(KanataM6PortableCrypto.ERR_IO_FAILED, "target-parent-mkdir");
+            }
+            File effectiveSpoolDir = (spoolDir != null) ? spoolDir.getAbsoluteFile() : targetDir;
+            if (!effectiveSpoolDir.exists() && !effectiveSpoolDir.mkdirs()) {
+                throw new KanataM6PortableCrypto.PortableException(KanataM6PortableCrypto.ERR_IO_FAILED, "spool-mkdir");
+            }
+
+            boolean sameFs = sameFileSystem(effectiveSpoolDir, targetDir);
+            tmpSpool = new File(effectiveSpoolDir, "." + targetAbs.getName() + "." + taskId + ".spool.tmp");
+            commitTempFile = sameFs ? null : new File(targetDir, "." + targetAbs.getName() + "." + taskId + ".commit.tmp");
+            pendingJournal = new File(effectiveSpoolDir, ".task-" + taskId + ".pending");
+            m.taskTempFile = tmpSpool;
+
+            boolean createdPending = pendingJournal.createNewFile();
+            pendingRaf = new RandomAccessFile(pendingJournal, "rw");
+            try {
+                pendingLock = pendingRaf.getChannel().tryLock();
+            } catch (OverlappingFileLockException ofle) {
+                pendingLock = null;
+            }
+            if (pendingLock == null) {
+                throw new KanataM6PortableCrypto.PortableException(
+                        KanataM6PortableCrypto.ERR_IO_FAILED, "task-id-locked");
+            }
+            if (!createdPending && pendingRaf.length() > 0L) {
+                throw new KanataM6PortableCrypto.PortableException(
+                        KanataM6PortableCrypto.ERR_IO_FAILED, "task-id-unrecovered-collision");
+            }
+            ownsPendingJournal = true;
+
             if (!tmpSpool.createNewFile()) {
                 throw new KanataM6PortableCrypto.PortableException(KanataM6PortableCrypto.ERR_IO_FAILED, "tmp-collision");
             }
+            ownsTempSpool = true;
             if (hooks != null) hooks.onTaskTempFileCreated(taskId, tmpSpool);
-            pendingRaf = new RandomAccessFile(pendingJournal, "rw");
-            pendingLock = pendingRaf.getChannel().lock();
-            writePendingJournal(pendingRaf, taskId, "STARTED", tmpSpool, commitTempFile, targetAbs);
+            writePendingJournal(pendingRaf, taskId, "STARTED", tmpSpool, commitTempFile, targetAbs, null);
+
+            pwBytes = KanataM6PortableCrypto.encodeStrictPasswordUtf8(password);
+            if (hooks != null) hooks.onSensitiveBufferAllocated("pwBytes", pwBytes);
+            mat = explicitMaterial != null ? explicitMaterial : ExportMaterial.random();
+            if (hooks != null && mat.ownedByTask) {
+                hooks.onSensitiveBufferAllocated("mat.bek", mat.bek);
+            }
+            baseKek = new byte[KanataM6PortableCrypto.KEY_SIZE];
+            if (hooks != null) hooks.onSensitiveBufferAllocated("baseKek", baseKek);
+            outPlain = new byte[KanataM6PortableCrypto.FRAME_LIMIT];
+            if (hooks != null) hooks.onSensitiveBufferAllocated("outPlain", outPlain);
 
             try (KanataM6SnapshotOwner.PinnedSnapshot snap = KanataM6SnapshotOwner.acquirePinnedSnapshot(
                     dbPath, rawSqlCipherKey, writeGate, catalog, cancelSignal, cancelled, true)) {
@@ -512,20 +811,24 @@ public final class KanataM6SchemeCExporter {
                     baseKek, mat.backupId,
                     KanataM6PortableCrypto.concat("KPB1/wrap\0".getBytes(StandardCharsets.US_ASCII), header),
                     KanataM6PortableCrypto.KEY_SIZE);
+            if (hooks != null) hooks.onSensitiveBufferAllocated("wrapKey", wrapKey);
             KanataM6PortableCrypto.zeroize(baseKek);
 
             manifestKey = KanataM6PortableCrypto.hkdfSha256(
                     mat.bek, mat.backupId,
                     buildFrameKeyInfo(KanataM6PortableCrypto.STREAM_CONTROL, KanataM6PortableCrypto.FRAME_MANIFEST),
                     KanataM6PortableCrypto.KEY_SIZE);
+            if (hooks != null) hooks.onSensitiveBufferAllocated("manifestKey", manifestKey);
             dataKey = KanataM6PortableCrypto.hkdfSha256(
                     mat.bek, mat.backupId,
                     buildFrameKeyInfo(KanataM6PortableCrypto.STREAM_DATA, KanataM6PortableCrypto.FRAME_DATA),
                     KanataM6PortableCrypto.KEY_SIZE);
+            if (hooks != null) hooks.onSensitiveBufferAllocated("dataKey", dataKey);
             footerKey = KanataM6PortableCrypto.hkdfSha256(
                     mat.bek, mat.backupId,
                     buildFrameKeyInfo(KanataM6PortableCrypto.STREAM_CONTROL, KanataM6PortableCrypto.FRAME_FOOTER),
                     KanataM6PortableCrypto.KEY_SIZE);
+            if (hooks != null) hooks.onSensitiveBufferAllocated("footerKey", footerKey);
             m.kdfMs = (SystemClock.elapsedRealtimeNanos() - tKdfStart) / 1_000_000L;
 
             long tAead = SystemClock.elapsedRealtimeNanos();
@@ -556,7 +859,6 @@ public final class KanataM6SchemeCExporter {
                         if (written > m.spoolPeakBytes) m.spoolPeakBytes = written;
                         spoolSha.update(chunk);
                         long te = SystemClock.elapsedRealtimeNanos();
-                        // accumulate via return or field
                         lastWriteNs += (te - ts);
                     }
                     long lastWriteNs = 0L;
@@ -566,7 +868,8 @@ public final class KanataM6SchemeCExporter {
                 writer.write(prefix);
 
                 // 2. MANIFEST frame
-                byte[] manifestPlain = new byte[KanataM6PortableCrypto.MANIFEST_SIZE];
+                manifestPlain = new byte[KanataM6PortableCrypto.MANIFEST_SIZE];
+                if (hooks != null) hooks.onSensitiveBufferAllocated("manifestPlain", manifestPlain);
                 KanataM6PortableCrypto.writeU32BE(manifestPlain, 0, KanataM6PortableCatalog.APPLICATION_ID);
                 KanataM6PortableCrypto.writeU16BE(manifestPlain, 4, KanataM6PortableCatalog.SCHEMA_VERSION);
                 System.arraycopy(catalog.schemaFingerprintBytes, 0, manifestPlain, 6, 32);
@@ -589,6 +892,7 @@ public final class KanataM6SchemeCExporter {
                         KanataM6PortableCrypto.concat(envelopeDigest, mfHeader),
                         "manifest-encrypt");
                 aeadNs += SystemClock.elapsedRealtimeNanos() - ta1;
+                KanataM6PortableCrypto.zeroize(manifestPlain);
                 transcriptSha.update(mfHeader);
                 transcriptSha.update(mfCipher);
                 writer.write(mfHeader);
@@ -598,9 +902,9 @@ public final class KanataM6SchemeCExporter {
                 long totalPlainBytes = 0L;
                 long totalCipherBytes = 0L;
                 int dataFrameCount = 0;
-                int outOff = 0;
 
                 final byte[] finalDataKey = dataKey;
+                final byte[] finalOutPlain = outPlain;
                 final long[] totalPlainRef = new long[] { 0L };
                 final long[] totalCipherRef = new long[] { 0L };
                 final long[] totalPkgRef = new long[] { totalPackageBytes };
@@ -654,6 +958,7 @@ public final class KanataM6SchemeCExporter {
                             if (inFlight > m.maxInFlightFrames) m.maxInFlightFrames = inFlight;
                             if (hooks != null) hooks.onFrameQueued(inFlight, m.maxRowBodyBytes);
                             emitFrame(pendingBuf, pendingSize, KanataM6PortableCrypto.FLAG_CONTINUE);
+                            KanataM6PortableCrypto.zeroize(pendingBuf);
                             pendingBuf = null;
                             pendingSize = 0;
                         } else {
@@ -661,6 +966,7 @@ public final class KanataM6SchemeCExporter {
                             if (hooks != null) hooks.onFrameQueued(1, m.maxRowBodyBytes);
                         }
                         pendingBuf = new byte[len];
+                        if (hooks != null) hooks.onSensitiveBufferAllocated("pendingBuf", pendingBuf);
                         System.arraycopy(fullChunk, 0, pendingBuf, 0, len);
                         pendingSize = len;
                     }
@@ -694,11 +1000,12 @@ public final class KanataM6SchemeCExporter {
                         while (pos < len) {
                             int avail = KanataM6PortableCrypto.FRAME_LIMIT - off;
                             int take = Math.min(avail, len - pos);
-                            System.arraycopy(src, srcOff + pos, outPlain, off, take);
+                            System.arraycopy(src, srcOff + pos, finalOutPlain, off, take);
                             off += take;
                             pos += take;
                             if (off == KanataM6PortableCrypto.FRAME_LIMIT) {
-                                pipeline.pushChunk(outPlain, off);
+                                pipeline.pushChunk(finalOutPlain, off);
+                                Arrays.fill(finalOutPlain, 0, off, (byte) 0);
                                 off = 0;
                                 sampleResources(m);
                             }
@@ -706,7 +1013,8 @@ public final class KanataM6SchemeCExporter {
                     }
                     void flushRemainder() throws IOException {
                         if (off > 0) {
-                            pipeline.pushChunk(outPlain, off);
+                            pipeline.pushChunk(finalOutPlain, off);
+                            Arrays.fill(finalOutPlain, 0, off, (byte) 0);
                             off = 0;
                         }
                     }
@@ -720,9 +1028,7 @@ public final class KanataM6SchemeCExporter {
                 for (KanataM6PortableCatalog.TableDef tableDef : catalog.businessTables) {
                     KanataM6PortableCrypto.checkCancelled(cancelled);
                     long tRead0 = SystemClock.elapsedRealtimeNanos();
-                    String countSql = tableDef.hasOrdinal
-                            ? "SELECT count(*) FROM " + tableDef.name
-                            : "SELECT count(*) FROM " + tableDef.name;
+                    String countSql = "SELECT count(*) FROM " + tableDef.name;
                     long expectedCount = Long.parseLong(KanataM6SnapshotOwner.scalar(snap.roDb, countSql));
                     totalBusinessRows += expectedCount;
                     KanataM6PortableCrypto.requirePortable(
@@ -741,46 +1047,52 @@ public final class KanataM6SchemeCExporter {
                     KanataM6PortableCrypto.writeU16BE(tidBytes, 0, tableDef.tableId);
                     tableSha.update(tidBytes);
 
-                    OrderTracker tracker = new OrderTracker(tableDef);
-                    long actualCount = 0L;
+                    try (OrderTracker tracker = new OrderTracker(tableDef, hooks)) {
+                        long actualCount = 0L;
 
-                    String selectSql = KanataM6BoundedRowReader.buildSelectSql(tableDef);
-                    long tCur0 = SystemClock.elapsedRealtimeNanos();
-                    try (Cursor c = snap.roDb.rawQuery(selectSql, new String[0], cancelSignal)) {
-                        dbReadNs += SystemClock.elapsedRealtimeNanos() - tCur0;
-                        while (true) {
-                            long tNext0 = SystemClock.elapsedRealtimeNanos();
-                            boolean hasNext = c.moveToNext();
-                            dbReadNs += SystemClock.elapsedRealtimeNanos() - tNext0;
-                            if (!hasNext) break;
-                            KanataM6PortableCrypto.checkCancelled(cancelled);
+                        String selectSql = KanataM6BoundedRowReader.buildSelectSql(tableDef);
+                        long tCur0 = SystemClock.elapsedRealtimeNanos();
+                        try (Cursor c = snap.roDb.rawQuery(selectSql, new String[0], cancelSignal)) {
+                            dbReadNs += SystemClock.elapsedRealtimeNanos() - tCur0;
+                            while (true) {
+                                long tNext0 = SystemClock.elapsedRealtimeNanos();
+                                boolean hasNext = c.moveToNext();
+                                dbReadNs += SystemClock.elapsedRealtimeNanos() - tNext0;
+                                if (!hasNext) break;
+                                KanataM6PortableCrypto.checkCancelled(cancelled);
+                                if (hooks != null) hooks.afterDbRead(tableDef.tableId, actualCount);
 
-                            long tRow0 = SystemClock.elapsedRealtimeNanos();
-                            KanataM6BoundedRowReader.EncodedRow row = KanataM6BoundedRowReader.readAndEncodeCurrentRow(
-                                    snap.roDb, c, tableDef, true, true);
-                            dbReadNs += SystemClock.elapsedRealtimeNanos() - tRow0;
+                                long tRow0 = SystemClock.elapsedRealtimeNanos();
+                                try (KanataM6BoundedRowReader.EncodedRow row = KanataM6BoundedRowReader.readAndEncodeCurrentRow(
+                                        snap.roDb, c, tableDef, true, true, rowBufferObserver)) {
+                                    dbReadNs += SystemClock.elapsedRealtimeNanos() - tRow0;
+                                    if (hooks != null) hooks.afterRowEncoded(tableDef.tableId, row);
 
-                            if (row.bodyLen > m.maxRowBodyBytes) m.maxRowBodyBytes = row.bodyLen;
-                            tracker.accept(row);
+                                    if (row.bodyLen > m.maxRowBodyBytes) m.maxRowBodyBytes = row.bodyLen;
+                                    tracker.accept(row);
+                                    if (hooks != null) hooks.afterOrderTrackerValidated(tableDef.tableId, actualCount);
 
-                            KanataM6PortableCrypto.writeU32BE(lenBuf, 0, row.bodyLen);
-                            tableSha.update(lenBuf);
-                            tableSha.update(row.body, 0, row.bodyLen);
+                                    KanataM6PortableCrypto.writeU32BE(lenBuf, 0, row.bodyLen);
+                                    tableSha.update(lenBuf);
+                                    tableSha.update(row.body, 0, row.bodyLen);
 
-                            chunker.append(lenBuf, 0, 4);
-                            chunker.append(row.body, 0, row.bodyLen);
-                            KanataM6PortableCrypto.zeroize(row.body);
-                            actualCount++;
-                            KanataM6PortableCrypto.requirePortable(
-                                    actualCount <= expectedCount,
-                                    KanataM6PortableCrypto.ERR_INVALID_LOGICAL, "row-count-mismatch");
+                                    if (hooks != null) hooks.beforeChunkerAppend(tableDef.tableId, 4 + row.bodyLen);
+                                    chunker.append(lenBuf, 0, 4);
+                                    chunker.append(row.body, 0, row.bodyLen);
+                                    if (hooks != null) hooks.afterChunkerAppend(tableDef.tableId, 4 + row.bodyLen);
+                                }
+                                actualCount++;
+                                KanataM6PortableCrypto.requirePortable(
+                                        actualCount <= expectedCount,
+                                        KanataM6PortableCrypto.ERR_INVALID_LOGICAL, "row-count-mismatch");
+                            }
                         }
+                        KanataM6PortableCrypto.requirePortable(
+                                actualCount == expectedCount,
+                                KanataM6PortableCrypto.ERR_INVALID_LOGICAL, "row-count-mismatch");
+                        allVerifiers.add(new Verifier(tableDef.tableId, actualCount, tableSha.digest()));
+                        if (hooks != null) hooks.afterTableRead(tableDef.tableId, actualCount);
                     }
-                    KanataM6PortableCrypto.requirePortable(
-                            actualCount == expectedCount,
-                            KanataM6PortableCrypto.ERR_INVALID_LOGICAL, "row-count-mismatch");
-                    allVerifiers.add(new Verifier(tableDef.tableId, actualCount, tableSha.digest()));
-                    if (hooks != null) hooks.afterTableRead(tableDef.tableId, actualCount);
                 }
 
                 chunker.flushRemainder();
@@ -788,6 +1100,7 @@ public final class KanataM6SchemeCExporter {
                 sampleResources(m);
                 } finally {
                     pipeline.zeroizePending();
+                    KanataM6PortableCrypto.zeroize(finalOutPlain);
                 }
 
                 // 4. Compute 5 derived table verifiers from the SAME pinned snapshot
@@ -799,31 +1112,35 @@ public final class KanataM6SchemeCExporter {
                     KanataM6PortableCrypto.writeU16BE(tidBytes, 0, derDef.tableId);
                     derSha.update(tidBytes);
 
-                    OrderTracker tracker = new OrderTracker(derDef);
-                    long rowCount = 0L;
-                    String selectSql = KanataM6BoundedRowReader.buildSelectSql(derDef);
-                    long td0 = SystemClock.elapsedRealtimeNanos();
-                    try (Cursor c = snap.roDb.rawQuery(selectSql, new String[0], cancelSignal)) {
-                        dbReadNs += SystemClock.elapsedRealtimeNanos() - td0;
-                        while (true) {
-                            long tn0 = SystemClock.elapsedRealtimeNanos();
-                            boolean hasNext = c.moveToNext();
-                            dbReadNs += SystemClock.elapsedRealtimeNanos() - tn0;
-                            if (!hasNext) break;
-                            KanataM6PortableCrypto.checkCancelled(cancelled);
-                            long tr0 = SystemClock.elapsedRealtimeNanos();
-                            KanataM6BoundedRowReader.EncodedRow row = KanataM6BoundedRowReader.readAndEncodeCurrentRow(
-                                    snap.roDb, c, derDef, true, true);
-                            dbReadNs += SystemClock.elapsedRealtimeNanos() - tr0;
-                            tracker.accept(row);
-                            KanataM6PortableCrypto.writeU32BE(lenBuf, 0, row.bodyLen);
-                            derSha.update(lenBuf);
-                            derSha.update(row.body, 0, row.bodyLen);
-                            KanataM6PortableCrypto.zeroize(row.body);
-                            rowCount++;
+                    try (OrderTracker tracker = new OrderTracker(derDef, hooks)) {
+                        long rowCount = 0L;
+                        String selectSql = KanataM6BoundedRowReader.buildSelectSql(derDef);
+                        long td0 = SystemClock.elapsedRealtimeNanos();
+                        try (Cursor c = snap.roDb.rawQuery(selectSql, new String[0], cancelSignal)) {
+                            dbReadNs += SystemClock.elapsedRealtimeNanos() - td0;
+                            while (true) {
+                                long tn0 = SystemClock.elapsedRealtimeNanos();
+                                boolean hasNext = c.moveToNext();
+                                dbReadNs += SystemClock.elapsedRealtimeNanos() - tn0;
+                                if (!hasNext) break;
+                                KanataM6PortableCrypto.checkCancelled(cancelled);
+                                if (hooks != null) hooks.afterDbRead(derDef.tableId, rowCount);
+                                long tr0 = SystemClock.elapsedRealtimeNanos();
+                                try (KanataM6BoundedRowReader.EncodedRow row = KanataM6BoundedRowReader.readAndEncodeCurrentRow(
+                                        snap.roDb, c, derDef, true, true, rowBufferObserver)) {
+                                    dbReadNs += SystemClock.elapsedRealtimeNanos() - tr0;
+                                    if (hooks != null) hooks.afterRowEncoded(derDef.tableId, row);
+                                    tracker.accept(row);
+                                    if (hooks != null) hooks.afterOrderTrackerValidated(derDef.tableId, rowCount);
+                                    KanataM6PortableCrypto.writeU32BE(lenBuf, 0, row.bodyLen);
+                                    derSha.update(lenBuf);
+                                    derSha.update(row.body, 0, row.bodyLen);
+                                }
+                                rowCount++;
+                            }
                         }
+                        allVerifiers.add(new Verifier(derDef.tableId, rowCount, derSha.digest()));
                     }
-                    allVerifiers.add(new Verifier(derDef.tableId, rowCount, derSha.digest()));
                 }
 
                 // 5. FOOTER frame
@@ -832,7 +1149,8 @@ public final class KanataM6SchemeCExporter {
                         allVerifiers.size() == KanataM6PortableCrypto.FOOTER_TABLE_COUNT,
                         KanataM6PortableCrypto.ERR_INVALID_LOGICAL, "footer-verifier-count");
                 byte[] transcript = transcriptSha.digest();
-                byte[] footerPlain = new byte[KanataM6PortableCrypto.FOOTER_SIZE];
+                footerPlain = new byte[KanataM6PortableCrypto.FOOTER_SIZE];
+                if (hooks != null) hooks.onSensitiveBufferAllocated("footerPlain", footerPlain);
                 KanataM6PortableCrypto.writeU32BE(footerPlain, 0, dfCountRef[0]);
                 KanataM6PortableCrypto.writeU64BE(footerPlain, 4, totalPlainRef[0]);
                 KanataM6PortableCrypto.writeU64BE(footerPlain, 12, totalCipherRef[0]);
@@ -864,6 +1182,7 @@ public final class KanataM6SchemeCExporter {
                         KanataM6PortableCrypto.concat(envelopeDigest, ffHeader),
                         "footer-encrypt");
                 aeadRef[0] += SystemClock.elapsedRealtimeNanos() - taf;
+                KanataM6PortableCrypto.zeroize(footerPlain);
                 totalPkgRef[0] += ffHeader.length + ffCipher.length;
                 KanataM6PortableCrypto.requirePortable(
                         totalPkgRef[0] <= KanataM6PortableCrypto.MAX_PACKAGE_BYTES,
@@ -918,13 +1237,19 @@ public final class KanataM6SchemeCExporter {
                 throw new KanataM6PortableCrypto.PortableException(
                         KanataM6PortableCrypto.ERR_IO_FAILED, "spool-readback-mismatch");
             }
+            String actualShaHex = KanataM6PortableCrypto.bytesToHex(actualSha);
 
             // If spoolDir and targetDir are on different filesystems, stage & fsync & readback-verify on targetDir's FS first!
             File stagedForCommit = tmpSpool;
             if (commitTempFile != null) {
+                if (!commitTempFile.createNewFile()) {
+                    throw new KanataM6PortableCrypto.PortableException(
+                            KanataM6PortableCrypto.ERR_IO_FAILED, "commit-temp-collision");
+                }
+                ownsCommitTemp = true;
+                byte[] cbuf = new byte[65536];
                 try (FileInputStream fis = new FileInputStream(tmpSpool);
                      FileOutputStream cos = new FileOutputStream(commitTempFile)) {
-                    byte[] cbuf = new byte[65536];
                     int r;
                     while ((r = fis.read(cbuf)) != -1) {
                         KanataM6PortableCrypto.checkCancelled(cancelled);
@@ -932,6 +1257,8 @@ public final class KanataM6SchemeCExporter {
                     }
                     cos.flush();
                     cos.getFD().sync();
+                } finally {
+                    Arrays.fill(cbuf, (byte) 0);
                 }
                 MessageDigest commitSha = MessageDigest.getInstance("SHA-256");
                 long commitBytes = 0L;
@@ -954,23 +1281,42 @@ public final class KanataM6SchemeCExporter {
             }
 
             // 8. Verified atomic commit phase (never deletes prior target before atomic replace!)
-            writePendingJournal(pendingRaf, taskId, "VERIFIED_READY_TO_COMMIT", tmpSpool, commitTempFile, targetAbs);
+            writePendingJournal(pendingRaf, taskId, "VERIFIED_READY_TO_COMMIT", tmpSpool, commitTempFile, targetAbs, actualShaHex);
             if (hooks != null) {
                 hooks.beforeAtomicCommit(stagedForCommit, targetAbs);
                 hooks.performAtomicReplace(stagedForCommit, targetAbs);
-                hooks.afterAtomicCommit(targetAbs);
             } else {
-                defaultAtomicReplace(stagedForCommit, targetAbs);
+                defaultAtomicRenameOnly(stagedForCommit, targetAbs);
             }
+            renamedToTarget = true;
+            writePendingJournal(pendingRaf, taskId, "RENAMED_PENDING_DIR_SYNC", tmpSpool, commitTempFile, targetAbs, actualShaHex);
+
+            try {
+                if (hooks != null) {
+                    hooks.performTargetDirFsync(targetDir);
+                } else {
+                    fsyncDirectoryStrict(targetDir);
+                }
+            } catch (IOException dirSyncErr) {
+                throw new KanataM6PortableCrypto.PortableException(
+                        KanataM6PortableCrypto.ERR_DURABILITY_UNCONFIRMED, "target-dir-fsync-failed", dirSyncErr);
+            }
+            durabilityConfirmed = true;
+            writePendingJournal(pendingRaf, taskId, "COMMITTED", tmpSpool, commitTempFile, targetAbs, actualShaHex);
+            if (hooks != null) {
+                hooks.afterAtomicCommit(targetAbs);
+            }
+
             long readbackElapsedNs = SystemClock.elapsedRealtimeNanos() - tReadback0;
             m.fsyncReadbackMs = (m.fsyncReadbackMs + readbackElapsedNs) / 1_000_000L;
             m.finalFileBytes = targetAbs.length();
-            m.packageSha256Hex = KanataM6PortableCrypto.bytesToHex(actualSha);
+            m.packageSha256Hex = actualShaHex;
             m.dbReadMs = dbReadNs / 1_000_000L;
             m.aeadMs = aeadNs / 1_000_000L;
             m.spoolWriteMs = spoolWriteNs / 1_000_000L;
             sampleResources(m);
             m.totalMs = (SystemClock.elapsedRealtimeNanos() - tTotalStart) / 1_000_000L;
+            m.commitState = "COMMITTED";
             exportCommitted = true;
             return m;
             }
@@ -989,19 +1335,33 @@ public final class KanataM6SchemeCExporter {
                     pendingRaf.close();
                 } catch (Throwable ignored) {}
             }
-            if (!exportCommitted) {
-                if (tmpSpool.exists()) tmpSpool.delete();
-                if (commitTempFile != null && commitTempFile.exists()) commitTempFile.delete();
-            } else {
-                if (commitTempFile != null) {
-                    if (commitTempFile.exists()) commitTempFile.delete();
-                    if (tmpSpool.exists()) tmpSpool.delete();
+            if (!renamedToTarget) {
+                if (ownsTempSpool && tmpSpool != null && tmpSpool.exists()) {
+                    tmpSpool.delete();
+                }
+                if (ownsCommitTemp && commitTempFile != null && commitTempFile.exists()) {
+                    commitTempFile.delete();
+                }
+            } else if (durabilityConfirmed && commitTempFile != null) {
+                if (ownsTempSpool && tmpSpool != null && tmpSpool.exists()) {
+                    tmpSpool.delete();
                 }
             }
-            if (pendingJournal.exists()) pendingJournal.delete();
-            ACTIVE_TASKS.remove(taskId);
-            KanataM6PortableCrypto.zeroize(pwBytes, baseKek, wrapKey, manifestKey, dataKey, footerKey, outPlain, pendingPlain);
-            if (explicitMaterial == null) mat.zeroize();
+            // Only delete pending journal owned by this task, and preserve RENAMED_PENDING_DIR_SYNC
+            // if rename succeeded on disk but directory fsync failed!
+            boolean keepPendingForRecovery = renamedToTarget && !durabilityConfirmed;
+            if (ownsPendingJournal && !keepPendingForRecovery && pendingJournal != null && pendingJournal.exists()) {
+                pendingJournal.delete();
+            }
+            if (ownsActiveTask) {
+                ACTIVE_TASKS.remove(taskId);
+            }
+            KanataM6PortableCrypto.zeroize(
+                    pwBytes, baseKek, wrapKey, manifestKey, dataKey, footerKey,
+                    outPlain, manifestPlain, footerPlain);
+            if (mat != null) {
+                mat.zeroizeIfOwned();
+            }
         }
     }
 }

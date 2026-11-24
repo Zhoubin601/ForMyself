@@ -9,6 +9,7 @@ import org.json.JSONObject;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -20,19 +21,25 @@ import java.util.List;
  * - Reads large TEXT columns (> 256 KiB) in 256 KiB BLOB chunks via substr(CAST(col AS BLOB), ?, ?)
  *   to stay strictly within Android SQLite CursorWindow (2 MiB) limits without truncation.
  * - Retains at most 1 encoded row body (<= 4 MiB) in memory at a time.
+ * - Deterministic sensitive buffer ownership & zeroization on every exit path.
  */
 public final class KanataM6BoundedRowReader {
     public static final int INLINE_TEXT_THRESHOLD_BYTES = 262_144; // 256 KiB
 
+    public interface BufferObserver {
+        void onSensitiveBufferAllocated(String label, byte[] buffer);
+    }
+
     private KanataM6BoundedRowReader() {}
 
-    public static final class EncodedRow {
+    public static final class EncodedRow implements AutoCloseable {
         public final byte[] body;
         public final int bodyLen;
         public final byte[][] pkTextBytes;
         public final long[] pkNumericValues;
         public final byte[] ordinalWorldIdBytes;
         public final long ordinal;
+        private boolean closed = false;
 
         EncodedRow(
                 byte[] body,
@@ -47,6 +54,20 @@ public final class KanataM6BoundedRowReader {
             this.pkNumericValues = pkNumericValues;
             this.ordinalWorldIdBytes = ordinalWorldIdBytes;
             this.ordinal = ordinal;
+        }
+
+        @Override
+        public void close() {
+            if (closed) return;
+            closed = true;
+            KanataM6PortableCrypto.zeroize(body);
+            if (pkTextBytes != null) {
+                for (int i = 0; i < pkTextBytes.length; i++) {
+                    KanataM6PortableCrypto.zeroize(pkTextBytes[i]);
+                    pkTextBytes[i] = null;
+                }
+            }
+            KanataM6PortableCrypto.zeroize(ordinalWorldIdBytes);
         }
     }
 
@@ -97,6 +118,16 @@ public final class KanataM6BoundedRowReader {
             KanataM6PortableCatalog.TableDef tableDef,
             boolean applyTaskPolicy,
             boolean validateJson) {
+        return readAndEncodeCurrentRow(roDb, cursor, tableDef, applyTaskPolicy, validateJson, null);
+    }
+
+    public static EncodedRow readAndEncodeCurrentRow(
+            SQLiteDatabase roDb,
+            Cursor cursor,
+            KanataM6PortableCatalog.TableDef tableDef,
+            boolean applyTaskPolicy,
+            boolean validateJson,
+            BufferObserver observer) {
         List<KanataM6PortableCatalog.ColumnDef> cols = tableDef.columns;
         int colCount = cols.size();
 
@@ -153,6 +184,7 @@ public final class KanataM6BoundedRowReader {
 
         // Check if any column requires chunked BLOB fetch (> 256 KiB); if so, collect PK values first.
         byte[] body = new byte[(int) computedBodyBytes];
+        if (observer != null) observer.onSensitiveBufferAllocated("row.body", body);
         byte[][] colInlineBytes = new byte[colCount][];
         boolean handedOff = false;
         try {
@@ -177,9 +209,12 @@ public final class KanataM6BoundedRowReader {
                         if (textLens[i] <= INLINE_TEXT_THRESHOLD_BYTES) {
                             byte[] raw = cursor.getBlob(valIdx);
                             if (raw == null) raw = new byte[0];
+                            if (observer != null && raw.length > 0) {
+                                observer.onSensitiveBufferAllocated("row.colInline." + c.name, raw);
+                            }
+                            colInlineBytes[i] = raw;
                             KanataM6PortableCrypto.requirePortable(raw.length == textLens[i],
                                     KanataM6PortableCrypto.ERR_INVALID_LOGICAL, "blob-len-mismatch");
-                            colInlineBytes[i] = raw;
                         } else {
                             hasLargeText[i] = true;
                         }
@@ -210,6 +245,8 @@ public final class KanataM6BoundedRowReader {
                 }
                 if (nextState != null) {
                     byte[] next = nextState.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+                    if (observer != null) observer.onSensitiveBufferAllocated("row.projectedState", next);
+                    KanataM6PortableCrypto.zeroize(colInlineBytes[stateIdx]);
                     colInlineBytes[stateIdx] = next;
                     textLens[stateIdx] = next.length;
                     int exactLen = 0;
@@ -221,6 +258,7 @@ public final class KanataM6BoundedRowReader {
                     if (exactLen != body.length) {
                         KanataM6PortableCrypto.zeroize(body);
                         body = new byte[exactLen];
+                        if (observer != null) observer.onSensitiveBufferAllocated("row.body.reprojected", body);
                     }
                 }
             }
@@ -297,6 +335,9 @@ public final class KanataM6BoundedRowReader {
                                         KanataM6PortableCrypto.ERR_INVALID_LOGICAL, "chunk-missing");
                                 byte[] piece = chunkCur.getBlob(0);
                                 try {
+                                    if (observer != null && piece != null) {
+                                        observer.onSensitiveBufferAllocated("row.chunk." + c.name, piece);
+                                    }
                                     KanataM6PortableCrypto.requirePortable(piece != null && piece.length == take,
                                             KanataM6PortableCrypto.ERR_INVALID_LOGICAL, "chunk-len");
                                     System.arraycopy(piece, 0, body, outPos + copied, take);

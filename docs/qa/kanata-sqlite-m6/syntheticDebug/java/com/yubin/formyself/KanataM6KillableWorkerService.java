@@ -28,6 +28,7 @@ public final class KanataM6KillableWorkerService extends Service {
     public static final String EXTRA_RAW_KEY_HEX = "rawKeyHex";
     public static final String EXTRA_PASSWORD = "password";
     public static final String EXTRA_TARGET_PATH = "targetPath";
+    public static final String EXTRA_TARGET_DIR = "targetDir";
     public static final String EXTRA_TASK_ID = "taskId";
     public static final String EXTRA_PAUSE_STAGE = "pauseStage";
 
@@ -35,6 +36,7 @@ public final class KanataM6KillableWorkerService extends Service {
     public static final String STAGE_DB_READ = "DB_READ";
     public static final String STAGE_SPOOL_WRITE = "SPOOL_WRITE";
     public static final String STAGE_COMMIT = "COMMIT";
+    public static final String STAGE_AFTER_RENAME_BEFORE_DIR_SYNC = "AFTER_RENAME_BEFORE_DIR_SYNC";
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -139,6 +141,15 @@ public final class KanataM6KillableWorkerService extends Service {
                                         signalReadyAndHoldForSigkill(workDir, taskId, STAGE_COMMIT, stagedFile);
                                     }
                                 }
+
+                                @Override
+                                public void performTargetDirFsync(File targetParentDir) throws IOException {
+                                    if (STAGE_AFTER_RENAME_BEFORE_DIR_SYNC.equals(pauseStage)
+                                            && triggered.compareAndSet(false, true)) {
+                                        signalReadyAndHoldForSigkill(workDir, taskId, STAGE_AFTER_RENAME_BEFORE_DIR_SYNC, targetFile);
+                                    }
+                                    KanataM6SchemeCExporter.fsyncDirectoryStrict(targetParentDir);
+                                }
                             },
                             taskId);
                 } catch (Throwable t) {
@@ -154,18 +165,25 @@ public final class KanataM6KillableWorkerService extends Service {
             }, "m6-killable-exporter").start();
         } else if (ACTION_CHECK_RECOVERY.equals(action)) {
             String spoolDirPath = intent.getStringExtra(EXTRA_SPOOL_DIR);
+            String targetDirPath = intent.getStringExtra(EXTRA_TARGET_DIR);
             new Thread(() -> {
                 try {
                     File spoolDir = new File(spoolDirPath);
-                    KanataM6SchemeCExporter.RecoveryReport rep =
-                            KanataM6SchemeCExporter.recoverIncompleteTasks(spoolDir);
+                    KanataM6SchemeCExporter.RecoveryReport rep = (targetDirPath != null && !targetDirPath.isEmpty())
+                            ? KanataM6SchemeCExporter.recoverIncompleteTasks(spoolDir, new File(targetDirPath))
+                            : KanataM6SchemeCExporter.recoverIncompleteTasks(spoolDir);
                     File recovered = new File(workDir, "worker_recovered.json");
                     JSONObject out = new JSONObject()
                             .put("pid", Process.myPid())
                             .put("scannedJournals", rep.scannedJournals)
                             .put("cleanedTasks", rep.cleanedTasks)
+                            .put("confirmedCommitTasks", rep.confirmedCommitTasks)
+                            .put("unconfirmedCommitTasks", rep.unconfirmedCommitTasks)
+                            .put("rejectedUntrustedJournals", rep.rejectedUntrustedJournals)
                             .put("cleanedTaskIds", new org.json.JSONArray(rep.cleanedTaskIds))
-                            .put("skippedActiveTaskIds", new org.json.JSONArray(rep.skippedActiveTaskIds));
+                            .put("skippedActiveTaskIds", new org.json.JSONArray(rep.skippedActiveTaskIds))
+                            .put("confirmedCommitTaskIds", new org.json.JSONArray(rep.confirmedCommitTaskIds))
+                            .put("rejectedJournalNames", new org.json.JSONArray(rep.rejectedJournalNames));
                     try (FileOutputStream fos = new FileOutputStream(recovered)) {
                         fos.write(out.toString().getBytes(StandardCharsets.UTF_8));
                         fos.getFD().sync();

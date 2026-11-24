@@ -74,6 +74,7 @@ public final class KanataM6PortableCrypto {
     public static final String ERR_INVALID_LOGICAL = "INVALID_LOGICAL";
     public static final String ERR_INVALID_PASSWORD_INPUT = "INVALID_PASSWORD_INPUT";
     public static final String ERR_IO_FAILED = "IO_FAILED";
+    public static final String ERR_DURABILITY_UNCONFIRMED = "DURABILITY_UNCONFIRMED";
     public static final String ERR_CANCELLED = "CANCELLED";
     public static final String ERR_ARRAY_ORDER_INCOMPLETE = "ARRAY_ORDER_INCOMPLETE";
 

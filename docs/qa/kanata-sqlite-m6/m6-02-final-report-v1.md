@@ -1,10 +1,11 @@
 # Kanata SQLite M6-02 全阶段最终交付与审计材料 v1
 
-- **任务编号**：`KANATA-M6-02-INDEPENDENT-AUDIT-REMEDIATION-2026-11-23`（基于 `KANATA-M6-02-END-TO-END-2026-11-23` 整改）
-- **审计基线提交**：`38d0b6b004d2c93a0c58ffb6bf3ed56c414b89c9`（起始于 M6-01 签核基线 `43b26d6ec41929a59844bb62a882bdf578391192`）
+- **任务编号**：`KANATA-M6-02-INDEPENDENT-AUDIT-REMEDIATION-2026-11-23` + 第二轮定点整改 `M6-02-FIX-02`
+- **审计基线提交**：`38d0b6b004d2c93a0c58ffb6bf3ed56c414b89c9`（第一轮整改提交：`bdfbac415c22552b5056aa2535367496a165cd7b`；起始于 M6-01 签核基线 `43b26d6ec41929a59844bb62a882bdf578391192`）
+- **文件变更核对（P2-02 口径统一）**：`38d0b6b..bdfbac4` 经 `git show --stat` 共列出 26 个条目（其中 24 个实质内容增改 + 2 个 `R100` 纯重命名迁移 `KanataM6PortableCatalog.java` / `KanataM6SqlCipherSessionProbe.java` 零行变动；部分 GitHub Compare 视图将基线展示为 25 个文件）。第二轮 `M6-02-FIX-02` 的完整整改文件清单、实现说明、四平台回归与远端 CI 证据见 [m6-02-fix-02-implementation-report.md](m6-02-fix-02-implementation-report.md)、[m6-02-fix-02-regression-report.md](m6-02-fix-02-regression-report.md) 与 [m6-02-fix-02-ci-evidence.md](m6-02-fix-02-ci-evidence.md)。
 - **执行仓库 / 分支 / 工作树**：`Zhoubin601/ForMyself` / `m6/encrypted-backup-recovery` / `.worktrees/kanata-m5`
 - **执行与整改**：Hydrogen
-- **最终独立审计**：GPT-6（本报告不自行宣布 M6-02 `CLOSED`，仅提交完整可复现实验证据与产物供 GPT-6 独立审签）
+- **最终独立审计**：GPT-6 / GPT-6.2（本报告不自行宣布 M6-02 `CLOSED`，仅提交完整可复现实验证据与产物供独立审签）
 - **日期**：2026-11-24（北京时间）
 
 ---
@@ -20,7 +21,8 @@
 | **Scheme C** | Native `DEFERRED` 逻辑快照 + 45 业务 + 5 派生 + 3 运行排除 + `KPB1` + Node 双向逐字节互操作 + 目标库完整 50 表核对 | **PASS** (3/3) | **PASS** (3/3) | **PASS** (3/3) | **PASS** (3/3 + Node 双向验证) | [m6-02-ac-export-report-v1.md](m6-02-ac-export-report-v1.md) |
 | **A / C 对照（口径修正）** | `writeBlock` 前置于 `beginSnapshotFreezeAndDrain()`、A2 严格离线独立副本、10 ms `ResourceSampler`、真取消与同范围体积对照 | — | — | **PASS** (3/3, 54 样本) | **PASS** (3/3, 54 样本) | [m6-02-ac-export-report-v1.md](m6-02-ac-export-report-v1.md) |
 | **F02 故障注入与原子整改** | `F02-01` ~ `F02-06`（含 Exporter 唯一任务 ID/同文件系统原子替换/并发冲突保护、Importer 目标库 A 八重保护与 50 表校验） | **PASS** (5/5) | **PASS** (5/5) | **PASS** (5/5) | **PASS** (5/5) | 本文第 4 节 |
-| **全量回归与隔离** | `npm run check`、无标志标准 Gradle、`Synthetic Release` 阻断、生产边界 `git diff --exit-code` | — | — | **宿主机 + 4 API 实测归档** | — | 本文第 6 节 |
+| **Fix-02 专项故障注入** | `P1-01` ~ `P1-05`、`P2-01`（跨进程 Task ID、Importer 提交互斥、Bridge 三接口统一 4096/512 B、8 注入点清零、目录 fsync 显式状态、Journal 路径校验） | **5/6** (`p1_03 Bridge WV 52.0 BLOCKED`) | **5/6** (`p1_03 Bridge WV 52.0 BLOCKED`) | **PASS** (6/6) | **PASS** (6/6) | [m6-02-fix-02-regression-report.md](m6-02-fix-02-regression-report.md) |
+| **全量回归与隔离** | `npm run check`、无标志标准 Gradle、`Synthetic Release` 阻断、生产边界 `git diff --exit-code`、CI `m6-synthetic-android` | — | — | **宿主机 + 4 API + CI 归档** | — | 本文第 6 节 & [m6-02-fix-02-ci-evidence.md](m6-02-fix-02-ci-evidence.md) |
 
 ---
 
@@ -42,8 +44,8 @@
    - [KanataM6SyntheticDataset.java](androidTest/com/yubin/formyself/KanataM6SyntheticDataset.java)、[KanataM6N01CryptoProbeTest.java](androidTest/com/yubin/formyself/KanataM6N01CryptoProbeTest.java)、[KanataM6N02SnapshotProbeTest.java](androidTest/com/yubin/formyself/KanataM6N02SnapshotProbeTest.java)、[KanataM6N03BoundedMemoryTest.java](androidTest/com/yubin/formyself/KanataM6N03BoundedMemoryTest.java)、[KanataM6N04SafLifecycleTest.java](androidTest/com/yubin/formyself/KanataM6N04SafLifecycleTest.java)、[KanataM6SchemeCInteropAndNegativeTest.java](androidTest/com/yubin/formyself/KanataM6SchemeCInteropAndNegativeTest.java)、[KanataM6AcBenchmarkTest.java](androidTest/com/yubin/formyself/KanataM6AcBenchmarkTest.java)、[KanataM6F02FaultMatrixTest.java](androidTest/com/yubin/formyself/KanataM6F02FaultMatrixTest.java)。
    - `docs/qa/kanata-sqlite-m6/syntheticDebug/`：`AndroidManifest.xml`、[KanataM6BridgeActivity.java](syntheticDebug/java/com/yubin/formyself/KanataM6BridgeActivity.java)、[KanataM6RotationActivity.java](syntheticDebug/java/com/yubin/formyself/KanataM6RotationActivity.java)、[KanataM6LifecycleController.java](syntheticDebug/java/com/yubin/formyself/KanataM6LifecycleController.java)、[KanataM6ShareReceiverActivity.java](syntheticDebug/java/com/yubin/formyself/KanataM6ShareReceiverActivity.java) (`:m6sharerecv`)、[KanataM6SyntheticPortablePlugin.java](syntheticDebug/java/com/yubin/formyself/KanataM6SyntheticPortablePlugin.java)、[KanataM6SyntheticSafProvider.java](syntheticDebug/java/com/yubin/formyself/KanataM6SyntheticSafProvider.java)、[KanataM6KillableWorkerService.java](syntheticDebug/java/com/yubin/formyself/KanataM6KillableWorkerService.java) (`:m6worker`)。
    - `docs/qa/kanata-sqlite-m6/portable/`：`buildPortableCatalogJson.mjs`、`kanata-portable-catalog-v1.json`、`buildNodeInteropFixture.mjs`、`node_interop_populated.kpb1`、`node_interop_populated.json`。
-4. **交付报告**：
-   - [m6-02-round2.1-hardening-v1.md](m6-02-round2.1-hardening-v1.md)、[m6-02-native-probes-v1.md](m6-02-native-probes-v1.md)、[m6-02-ac-export-report-v1.md](m6-02-ac-export-report-v1.md)、`docs/qa/kanata-sqlite-m6/m6-02-final-report-v1.md`（本报告）。
+4. **交付报告与 CI 脚本**：
+   - [m6-02-round2.1-hardening-v1.md](m6-02-round2.1-hardening-v1.md)、[m6-02-native-probes-v1.md](m6-02-native-probes-v1.md)、[m6-02-ac-export-report-v1.md](m6-02-ac-export-report-v1.md)、[m6-02-fix-02-implementation-report.md](m6-02-fix-02-implementation-report.md)、[m6-02-fix-02-regression-report.md](m6-02-fix-02-regression-report.md)、[m6-02-fix-02-ci-evidence.md](m6-02-fix-02-ci-evidence.md)、[run-m6-ci.sh](run-m6-ci.sh)、[KanataM6Fix02FaultInjectionTest.java](androidTest/com/yubin/formyself/KanataM6Fix02FaultInjectionTest.java)、`docs/qa/kanata-sqlite-m6/m6-02-final-report-v1.md`（本报告）。
 
 ---
 
@@ -91,13 +93,13 @@
 | --- | --- | --- |
 | **生产边界隔离** | `git diff --exit-code 43b26d6ec41929a59844bb62a882bdf578391192 -- src package.json package-lock.json android/app/src/main` | **Exit 0**（零差异） |
 | **格式与空白** | `git diff --check` | **Exit 0** |
-| **Web 全量检查** | `npm run check` (`lint && test && test:component && typecheck && build`) | **Exit 0**（ESLint 0 errors；Node 全部通过；Vitest 全部通过；`vue-tsc` + `tsc` 通过；Vite `built in 903ms`） |
-| **标准 Android 构建** | `.\gradlew.bat --no-daemon :app:testDebugUnitTest :app:assembleDebug :app:assembleDebugAndroidTest`（无 synthetic 标志） | **Exit 0** (`BUILD SUCCESSFUL in 49s`)，标准 Debug APK SHA-256 = `62f5df78f4fd27ab639149dcca7d8923f8c01f9ad0a26bd02d0327a227d9ba18` |
+| **Web 全量检查** | `npm run check` (`lint && test && test:component && typecheck && build`) | **Exit 0**（ESLint 0 errors；Node 全部通过；Vitest 全部通过；`vue-tsc` + `tsc` 通过；Vite `built in 976ms`） |
+| **标准 Android 构建** | `.\gradlew.bat --no-daemon :app:testDebugUnitTest :app:assembleDebug :app:assembleDebugAndroidTest`（无 synthetic 标志） | **Exit 0** (`BUILD SUCCESSFUL in 23s`)，标准 Debug APK SHA-256 = `62f5df78f4fd27ab639149dcca7d8923f8c01f9ad0a26bd02d0327a227d9ba18` |
 | **Synthetic Release 阻断** | `.\gradlew.bat --no-daemon -PkanataM2Synthetic=true -PkanataM6Synthetic=true :app:assembleRelease` | **Exit 1（预期阻断失败）**：`Task 'assembleRelease' not found in project ':app'` |
-| **API 34 隔离全套** | `am instrument`（19 项套件 + 3 档 `KanataM6AcBenchmarkTest`） | **19/19 PASS** (`221.309s`) + **3/3 Bench PASS** (`1k+10k: 212.5s`, `100k: 1,421.967s`, 54 修订样本) |
-| **API 30 隔离全套** | `am instrument`（19 项套件 + 3 档 `KanataM6AcBenchmarkTest` + API 34→30 `CROSS_API_A1_A2`） | **19/19 PASS** (`114.979s`) + **3/3 Bench PASS** (`798.929s`, 54 修订样本) |
-| **API 25 隔离套件** | `am instrument`（19 项套件 + API 34→25 `CROSS_API_A1_A2`） | **18/19 PASS** (`101.976s`, `N-03 Bridge` 因 WebView `52.0` `BLOCKED`) |
-| **API 24 隔离套件** | `am instrument`（19 项套件 + API 34→24 `CROSS_API_A1_A2`） | **18/19 PASS** (`94.769s`, `N-03 Bridge` 因 WebView `52.0` `BLOCKED`) |
+| **API 34 隔离全套** | `am instrument`（19 项原有 + 6 项 Fix-02 + 3 档 `KanataM6AcBenchmarkTest`，WebView `113.0.5672.136`） | **19/19 PASS** (`135.615s`) + **6/6 Fix-02 PASS** (`48.204s`) + **3/3 Bench PASS** (`714.64s`, 54 样本) |
+| **API 30 隔离全套** | `am instrument`（19 项原有 + 6 项 Fix-02 + 3 档 `KanataM6AcBenchmarkTest`，WebView `113.0.5672.136`） | **19/19 PASS** (`61.931s`) + **6/6 Fix-02 PASS** (`17.456s`) + **3/3 Bench PASS** (`743.632s`, 54 样本) |
+| **API 25 隔离套件** | `am instrument`（19 项原有 + 6 项 Fix-02 + API 34→25 `CROSS_API_A1_A2`，WebView `52.0.2743.100`） | **18/19 PASS** + **5/6 Fix-02 PASS**（两项 WebView Bridge 因 WebView `52.0` `BLOCKED`） |
+| **API 24 隔离套件** | `am instrument`（19 项原有 + 6 项 Fix-02 + API 34→24 `CROSS_API_A1_A2`，WebView `52.0.2743.100`） | **18/19 PASS** + **5/6 Fix-02 PASS**（两项 WebView Bridge 因 WebView `52.0` `BLOCKED`） |
 | **Android → Node 反向解码** | 拉取 API 34 `m6_android_to_node_interop.kpb1` (`4,292 B`) & `m6_bench_1000_sample.kpb1` (`197,584 B`) 运行 [syntheticCodec.mjs](portable/syntheticCodec.mjs) | **PASS**（50 表校验器、1,000 条消息、`integrity_check=ok`、`0` 外键冲突） |
 
 ---
