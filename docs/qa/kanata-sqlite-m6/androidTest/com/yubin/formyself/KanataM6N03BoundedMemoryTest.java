@@ -356,6 +356,24 @@ public class KanataM6N03BoundedMemoryTest {
                 CountDownLatch jsDone = new CountDownLatch(1);
                 AtomicReference<String> jsResult = new AtomicReference<>();
 
+                // Wait for Capacitor bridge & synthetic plugin injection across WebView cold-start/navigation
+                long bridgeReadyDeadline = SystemClock.elapsedRealtime() + 15_000L;
+                while (SystemClock.elapsedRealtime() < bridgeReadyDeadline) {
+                    CountDownLatch readyLatch = new CountDownLatch(1);
+                    AtomicReference<String> readyVal = new AtomicReference<>();
+                    scenario.onActivity(activity -> activity.getBridge().getWebView().evaluateJavascript(
+                            "(function(){ return !!(window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.KanataM6SyntheticPortable); })()",
+                            val -> {
+                                readyVal.set(val);
+                                readyLatch.countDown();
+                            }));
+                    readyLatch.await(2, TimeUnit.SECONDS);
+                    if ("true".equals(readyVal.get())) {
+                        break;
+                    }
+                    Thread.sleep(250);
+                }
+
                 scenario.onActivity(activity -> {
                     WebView webView = activity.getBridge().getWebView();
                     String script =
@@ -424,9 +442,9 @@ public class KanataM6N03BoundedMemoryTest {
                             "    });" +
                             "  });" +
                             "})()";
-                    webView.postDelayed(() -> webView.evaluateJavascript(
+                    webView.evaluateJavascript(
                             "(function(){ var r = " + script + "; r.then(function(v){ window.__n03Out = v; }).catch(function(e){ window.__n03Out = JSON.stringify({err:String(e)}); }); return 'PENDING'; })()",
-                            ignored -> {}), 1200);
+                            ignored -> {});
                 });
 
                 long deadline = SystemClock.elapsedRealtime() + 30_000L;
