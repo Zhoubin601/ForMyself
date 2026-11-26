@@ -122,6 +122,7 @@ public final class KanataM6SchemeCExporter {
         }
         default void afterAtomicCommit(File finalTargetFile) throws IOException {}
         default void beforeTaskCleanupUnderLock(String taskId, File tmpSpool, File journalFile) {}
+        default void beforeTaskLockRelease(String taskId, File lockFile, long dev, long ino) {}
         default void afterTableRead(int tableId, long rowCount) {}
     }
 
@@ -202,6 +203,7 @@ public final class KanataM6SchemeCExporter {
     private static final class TaskLockSlot {
         final ReentrantLock mutex = new ReentrantLock(true);
         int refs = 0;
+        boolean ownerActive = false;
     }
 
     private static final ConcurrentHashMap<String, TaskLockSlot> TASK_LOCKS = new ConcurrentHashMap<>();
@@ -237,6 +239,7 @@ public final class KanataM6SchemeCExporter {
         final FileLock fileLock;
         final long lockDev;
         final long lockIno;
+        volatile Runnable beforeOsReleaseHook;
 
         TaskLockHandle(
                 String key,
@@ -270,9 +273,12 @@ public final class KanataM6SchemeCExporter {
 
         @Override
         public void close() {
+            // Stable lock file: NEVER unlink .lock on close().
+            // Caller has already finished business logic and temp/journal cleanup.
             try {
-                if (isStillLiveInode()) {
-                    lockFile.delete();
+                Runnable hook = beforeOsReleaseHook;
+                if (hook != null) {
+                    hook.run();
                 }
             } catch (Throwable ignored) {}
             try {
@@ -282,6 +288,7 @@ public final class KanataM6SchemeCExporter {
                 raf.close();
             } catch (Throwable ignored) {}
             synchronized (TASK_LOCKS) {
+                slot.ownerActive = false;
                 slot.refs--;
                 if (slot.refs <= 0) {
                     TASK_LOCKS.remove(key, slot);
@@ -292,10 +299,10 @@ public final class KanataM6SchemeCExporter {
     }
 
     /**
-     * Acquires a dedicated, Journal-independent task mutex (.task-<taskId>.lock).
+     * Acquires a dedicated, stable, Journal-independent task mutex (.task-<taskId>.lock).
      * Combines an in-process ReentrantLock slot with a cross-process OS FileLock and
-     * verifies Os.fstat(fd) == Os.stat(path) in a retry loop so unlinked/replaced inodes
-     * can never break mutual exclusion.
+     * verifies Os.fstat(fd) == Os.stat(path). The stable lock file is never unlinked
+     * during normal release or recovery so cross-process mutual exclusion cannot split across inodes.
      */
     static TaskLockHandle tryAcquireTaskLock(File spoolDir, String taskId) throws IOException {
         File canonDir = spoolDir.getCanonicalFile();
@@ -308,17 +315,13 @@ public final class KanataM6SchemeCExporter {
                 slot = new TaskLockSlot();
                 TASK_LOCKS.put(key, slot);
             }
-            slot.refs++;
-        }
-        if (!slot.mutex.tryLock()) {
-            synchronized (TASK_LOCKS) {
-                slot.refs--;
-                if (slot.refs <= 0) {
-                    TASK_LOCKS.remove(key, slot);
-                }
+            if (slot.ownerActive) {
+                return null;
             }
-            return null;
+            slot.refs++;
+            slot.ownerActive = true;
         }
+        slot.mutex.lock();
         boolean acquired = false;
         try {
             for (int attempt = 0; attempt < 16; attempt++) {
@@ -343,7 +346,7 @@ public final class KanataM6SchemeCExporter {
                             return new TaskLockHandle(key, slot, lockFile, raf, fl, fdStat.st_dev, fdStat.st_ino);
                         }
                     } catch (ErrnoException ignored) {
-                        // Lock file was unlinked concurrently by a departing owner; retry on live inode.
+                        // Unexpected external unlink; retry on live inode.
                     }
                 } finally {
                     if (!ok) {
@@ -358,6 +361,7 @@ public final class KanataM6SchemeCExporter {
         } finally {
             if (!acquired) {
                 synchronized (TASK_LOCKS) {
+                    slot.ownerActive = false;
                     slot.refs--;
                     if (slot.refs <= 0) {
                         TASK_LOCKS.remove(key, slot);
@@ -368,10 +372,63 @@ public final class KanataM6SchemeCExporter {
         }
     }
 
+    /**
+     * Checks whether the task lock is currently held in-process or by another OS process.
+     * Does NOT equate stable lockFile.exists() with an active lock; when the file exists on disk
+     * and no in-process owner is active, probes OS FileLock non-blockingly under slot.mutex
+     * (never opening a second FD while this process holds an fcntl lock).
+     */
     public static boolean hasActiveTaskLock(File spoolDir, String taskId) throws IOException {
         File canonDir = spoolDir.getCanonicalFile();
         File lockFile = taskLockFileFor(canonDir, taskId);
-        return TASK_LOCKS.containsKey(lockFile.getPath()) || lockFile.exists();
+        String key = lockFile.getPath();
+        TaskLockSlot probeSlot;
+        synchronized (TASK_LOCKS) {
+            TaskLockSlot existing = TASK_LOCKS.get(key);
+            if (existing != null) {
+                return existing.ownerActive || existing.mutex.isLocked();
+            }
+            probeSlot = new TaskLockSlot();
+            probeSlot.refs = 1;
+            TASK_LOCKS.put(key, probeSlot);
+        }
+        if (!probeSlot.mutex.tryLock()) {
+            synchronized (TASK_LOCKS) {
+                probeSlot.refs--;
+                if (probeSlot.refs <= 0) {
+                    TASK_LOCKS.remove(key, probeSlot);
+                }
+            }
+            return true;
+        }
+        try {
+            if (!lockFile.exists()) {
+                return false;
+            }
+            try (RandomAccessFile raf = new RandomAccessFile(lockFile, "rw")) {
+                FileLock fl;
+                try {
+                    fl = raf.getChannel().tryLock();
+                } catch (OverlappingFileLockException ofle) {
+                    return true;
+                }
+                if (fl == null) {
+                    return true;
+                }
+                try {
+                    fl.release();
+                } catch (Throwable ignored) {}
+                return false;
+            }
+        } finally {
+            synchronized (TASK_LOCKS) {
+                probeSlot.refs--;
+                if (probeSlot.refs <= 0) {
+                    TASK_LOCKS.remove(key, probeSlot);
+                }
+            }
+            probeSlot.mutex.unlock();
+        }
     }
 
     private KanataM6SchemeCExporter() {}
@@ -927,22 +984,7 @@ public final class KanataM6SchemeCExporter {
                     } catch (Throwable ignored) {}
                 }
             }
-
-            // Sweep orphaned .task-<tid>.lock files left by a process killed before writing any journal
-            File[] lockFiles = dir.listFiles((d, name) -> name.startsWith(".task-") && name.endsWith(".lock"));
-            if (lockFiles != null) {
-                for (File lf : lockFiles) {
-                    String name = lf.getName();
-                    String tid = name.substring(".task-".length(), name.length() - ".lock".length());
-                    if (tid.isEmpty() || tid.contains("..") || !tid.matches("[A-Za-z0-9._-]+")) continue;
-                    if (ACTIVE_TASKS.contains(tid)) continue;
-                    File correspondingPending = new File(dirCanon, ".task-" + tid + ".pending");
-                    if (correspondingPending.exists()) continue;
-                    try (TaskLockHandle ignoredLock = tryAcquireTaskLock(dirCanon, tid)) {
-                        // Closing an acquired lock when no other threads wait safely unlinks the stale lock file.
-                    } catch (Throwable ignored) {}
-                }
-            }
+            // Note: .task-<tid>.lock files are stable OS-lock anchor files and are NEVER unlinked during recovery.
         }
         return new RecoveryReport(
                 scanned, cleaned, confirmedCommits, unconfirmedCommits, rejectedUntrusted,
@@ -1833,6 +1875,11 @@ public final class KanataM6SchemeCExporter {
                 }
             } finally {
                 if (taskLock != null) {
+                    if (hooks != null) {
+                        final TaskLockHandle tlRef = taskLock;
+                        taskLock.beforeOsReleaseHook = () ->
+                                hooks.beforeTaskLockRelease(taskId, tlRef.lockFile, tlRef.lockDev, tlRef.lockIno);
+                    }
                     try {
                         taskLock.close();
                     } catch (Throwable ignored) {}

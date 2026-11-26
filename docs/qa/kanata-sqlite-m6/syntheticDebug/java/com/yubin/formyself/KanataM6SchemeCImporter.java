@@ -175,6 +175,7 @@ public final class KanataM6SchemeCImporter {
         default void performTargetDirFsync(File targetParentDir) throws Exception {
             KanataM6SchemeCExporter.fsyncDirectoryStrict(targetParentDir);
         }
+        default void beforeTargetLockRelease(File lockFile, long dev, long ino) {}
     }
 
     public interface ImportRecoveryHooks {
@@ -224,6 +225,7 @@ public final class KanataM6SchemeCImporter {
     private static final class CommitLockSlot {
         final ReentrantLock mutex = new ReentrantLock(true);
         int refs = 0;
+        boolean ownerActive = false;
     }
 
     private static final ConcurrentHashMap<String, CommitLockSlot> TARGET_COMMIT_LOCKS =
@@ -237,7 +239,7 @@ public final class KanataM6SchemeCImporter {
         }
     }
 
-    private static File lockFileForTarget(File canonTarget) throws Exception {
+    static File lockFileForTarget(File canonTarget) throws Exception {
         File parent = canonTarget.getParentFile();
         MessageDigest md = MessageDigest.getInstance("SHA-256");
         byte[] hash = md.digest(canonTarget.getPath().getBytes(StandardCharsets.UTF_8));
@@ -245,21 +247,74 @@ public final class KanataM6SchemeCImporter {
         return new File(parent, ".kanata-import-" + hex + ".lock");
     }
 
+    /**
+     * Checks whether the target commit lock is currently held in-process or by another OS process.
+     * Does NOT equate stable lockFile.exists() with an active lock; when the file exists on disk
+     * and no in-process owner is active, probes OS FileLock non-blockingly under slot.mutex
+     * (never opening a second FD while this process holds an fcntl lock).
+     */
     public static boolean hasActiveCommitLock(File targetDbFile) throws Exception {
         File canon = canonicalTargetFile(targetDbFile);
-        if (TARGET_COMMIT_LOCKS.containsKey(canon.getPath())) return true;
-        File lf = lockFileForTarget(canon);
-        return lf.exists();
+        String key = canon.getPath();
+        File lockFile = lockFileForTarget(canon);
+        CommitLockSlot probeSlot;
+        synchronized (TARGET_COMMIT_LOCKS) {
+            CommitLockSlot existing = TARGET_COMMIT_LOCKS.get(key);
+            if (existing != null) {
+                return existing.ownerActive || existing.mutex.isLocked();
+            }
+            probeSlot = new CommitLockSlot();
+            probeSlot.refs = 1;
+            TARGET_COMMIT_LOCKS.put(key, probeSlot);
+        }
+        if (!probeSlot.mutex.tryLock()) {
+            synchronized (TARGET_COMMIT_LOCKS) {
+                probeSlot.refs--;
+                if (probeSlot.refs <= 0) {
+                    TARGET_COMMIT_LOCKS.remove(key, probeSlot);
+                }
+            }
+            return true;
+        }
+        try {
+            if (!lockFile.exists()) {
+                return false;
+            }
+            try (RandomAccessFile raf = new RandomAccessFile(lockFile, "rw")) {
+                FileLock fl;
+                try {
+                    fl = raf.getChannel().tryLock();
+                } catch (OverlappingFileLockException ofle) {
+                    return true;
+                }
+                if (fl == null) {
+                    return true;
+                }
+                try {
+                    fl.release();
+                } catch (Throwable ignored) {}
+                return false;
+            }
+        } finally {
+            synchronized (TARGET_COMMIT_LOCKS) {
+                probeSlot.refs--;
+                if (probeSlot.refs <= 0) {
+                    TARGET_COMMIT_LOCKS.remove(key, probeSlot);
+                }
+            }
+            probeSlot.mutex.unlock();
+        }
     }
 
-    private static final class TargetCommitLockHandle implements AutoCloseable {
-        private final String key;
-        private final CommitLockSlot slot;
-        private final File lockFile;
-        private final RandomAccessFile raf;
-        private final FileLock fileLock;
-        private final long lockDev;
-        private final long lockIno;
+    static final class TargetCommitLockHandle implements AutoCloseable {
+        final String key;
+        final CommitLockSlot slot;
+        final File lockFile;
+        final RandomAccessFile raf;
+        final FileLock fileLock;
+        final long lockDev;
+        final long lockIno;
+        volatile Runnable beforeOsReleaseHook;
 
         TargetCommitLockHandle(
                 String key,
@@ -293,9 +348,12 @@ public final class KanataM6SchemeCImporter {
 
         @Override
         public void close() {
+            // Stable lock file: NEVER unlink .lock on close().
+            // Caller has already finished business work and staging/journal cleanup.
             try {
-                if (isStillLiveInode()) {
-                    lockFile.delete();
+                Runnable hook = beforeOsReleaseHook;
+                if (hook != null) {
+                    hook.run();
                 }
             } catch (Throwable ignored) {}
             if (fileLock != null) {
@@ -309,6 +367,7 @@ public final class KanataM6SchemeCImporter {
                 } catch (Throwable ignored) {}
             }
             synchronized (TARGET_COMMIT_LOCKS) {
+                slot.ownerActive = false;
                 slot.refs--;
                 if (slot.refs <= 0) {
                     TARGET_COMMIT_LOCKS.remove(key, slot);
@@ -318,7 +377,7 @@ public final class KanataM6SchemeCImporter {
         }
     }
 
-    private static TargetCommitLockHandle acquireTargetCommitLock(File targetAbs, AtomicBoolean cancelled) throws Exception {
+    static TargetCommitLockHandle acquireTargetCommitLock(File targetAbs, AtomicBoolean cancelled) throws Exception {
         KanataM6PortableCrypto.checkCancelled(cancelled);
         File canon = canonicalTargetFile(targetAbs);
         String key = canon.getPath();
@@ -345,6 +404,9 @@ public final class KanataM6SchemeCImporter {
                             KanataM6PortableCrypto.ERR_CANCELLED, "lock-interrupted", ie);
                 }
             }
+            synchronized (TARGET_COMMIT_LOCKS) {
+                slot.ownerActive = true;
+            }
             while (true) {
                 KanataM6PortableCrypto.checkCancelled(cancelled);
                 RandomAccessFile raf = new RandomAccessFile(lockFile, "rw");
@@ -366,7 +428,7 @@ public final class KanataM6SchemeCImporter {
                                 return new TargetCommitLockHandle(key, slot, lockFile, raf, fl, fdStat.st_dev, fdStat.st_ino);
                             }
                         } catch (ErrnoException ignored) {
-                            // Unlinked concurrently in another process; retry on fresh inode.
+                            // Unexpected external unlink; retry on fresh inode.
                         }
                     }
                 } finally {
@@ -390,6 +452,9 @@ public final class KanataM6SchemeCImporter {
         } finally {
             if (!acquired) {
                 synchronized (TARGET_COMMIT_LOCKS) {
+                    if (mutexLocked) {
+                        slot.ownerActive = false;
+                    }
                     slot.refs--;
                     if (slot.refs <= 0) {
                         TARGET_COMMIT_LOCKS.remove(key, slot);
@@ -402,7 +467,7 @@ public final class KanataM6SchemeCImporter {
         }
     }
 
-    private static TargetCommitLockHandle tryAcquireTargetCommitLock(File targetAbs) throws Exception {
+    static TargetCommitLockHandle tryAcquireTargetCommitLock(File targetAbs) throws Exception {
         File canon = canonicalTargetFile(targetAbs);
         String key = canon.getPath();
         File lockFile = lockFileForTarget(canon);
@@ -413,17 +478,13 @@ public final class KanataM6SchemeCImporter {
                 slot = new CommitLockSlot();
                 TARGET_COMMIT_LOCKS.put(key, slot);
             }
-            slot.refs++;
-        }
-        if (!slot.mutex.tryLock()) {
-            synchronized (TARGET_COMMIT_LOCKS) {
-                slot.refs--;
-                if (slot.refs <= 0) {
-                    TARGET_COMMIT_LOCKS.remove(key, slot);
-                }
+            if (slot.ownerActive) {
+                return null;
             }
-            return null;
+            slot.refs++;
+            slot.ownerActive = true;
         }
+        slot.mutex.lock();
         boolean acquired = false;
         try {
             for (int attempt = 0; attempt < 16; attempt++) {
@@ -448,7 +509,7 @@ public final class KanataM6SchemeCImporter {
                             return new TargetCommitLockHandle(key, slot, lockFile, raf, fl, fdStat.st_dev, fdStat.st_ino);
                         }
                     } catch (ErrnoException ignored) {
-                        // Unlinked concurrently by departing owner; retry on live inode.
+                        // Unexpected external unlink; retry on live inode.
                     }
                 } finally {
                     if (!ok) {
@@ -463,6 +524,7 @@ public final class KanataM6SchemeCImporter {
         } finally {
             if (!acquired) {
                 synchronized (TARGET_COMMIT_LOCKS) {
+                    slot.ownerActive = false;
                     slot.refs--;
                     if (slot.refs <= 0) {
                         TARGET_COMMIT_LOCKS.remove(key, slot);
@@ -1242,6 +1304,10 @@ public final class KanataM6SchemeCImporter {
             StructStat importJournalStat = null;
 
             try (TargetCommitLockHandle commitLock = acquireTargetCommitLock(targetAbs, cancelled)) {
+                if (hooks != null) {
+                    commitLock.beforeOsReleaseHook = () ->
+                            hooks.beforeTargetLockRelease(commitLock.lockFile, commitLock.lockDev, commitLock.lockIno);
+                }
                 try {
                     // R02-6: Mandatory cancellation check AFTER acquiring target lock so cancelled waiters never commit!
                     KanataM6PortableCrypto.checkCancelled(cancelled);

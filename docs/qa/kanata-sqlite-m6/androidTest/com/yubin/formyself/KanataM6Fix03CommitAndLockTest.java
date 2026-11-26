@@ -290,7 +290,9 @@ public class KanataM6Fix03CommitAndLockTest {
             assertEquals(0, recJsonB.getInt("cleanedTasks"));
             assertEquals(0, recJsonB.getInt("unconfirmedCommitTasks"));
             assertFalse("Journal must be removed after confirmed commit", pendingB.exists());
-            assertFalse("Dedicated lock file must be removed after recovery", lockB.exists());
+            assertTrue("Stable task lock file must remain on disk after recovery", lockB.exists());
+            assertFalse("Task lock must be inactive after recovery",
+                    KanataM6SchemeCExporter.hasActiveTaskLock(spoolDir, taskIdB));
             assertEquals(expectedShaB, sha256File(targetBackup));
             verifyBackupDecrypts(targetBackup, PW, catalog, workDir, expectedBProjected);
 
@@ -355,7 +357,15 @@ public class KanataM6Fix03CommitAndLockTest {
             assertEquals(0, recC.cleanedTasks);
             assertFalse(pendingC.exists());
             assertFalse(".pending.next must be cleaned up on recovery", pendingCNext.exists());
-            assertEquals(0, spoolDir.listFiles() == null ? 0 : spoolDir.listFiles().length);
+            File[] remC = spoolDir.listFiles();
+            if (remC != null) {
+                for (File f : remC) {
+                    String fn = f.getName();
+                    assertTrue("Unexpected leftover spool file: " + fn,
+                            fn.startsWith(".task-") && fn.endsWith(".lock"));
+                }
+            }
+            assertFalse(KanataM6SchemeCExporter.hasActiveTaskLock(spoolDir, taskIdC));
             verifyBackupDecrypts(targetBackup, PW, catalog, workDir, expectedCProjected);
 
             Log.i(TAG, "R01_01=" + new JSONObject()
@@ -774,7 +784,9 @@ public class KanataM6Fix03CommitAndLockTest {
                     lockInoStarted.get(), lockInoVerified.get());
             assertNotEquals("Journal MUST update via atomic rename (new inode), never truncate in-place",
                     journalInoStarted.get(), journalInoVerified.get());
-            assertFalse("Task lock must be cleaned after completion",
+            assertTrue("Stable task lock file must remain on disk after completion",
+                    new File(spoolDir, ".task-" + tidA + ".lock").exists());
+            assertFalse("Task lock must be inactive after completion",
                     KanataM6SchemeCExporter.hasActiveTaskLock(spoolDir, tidA));
 
             // Part B: Task exit cleanup race — cleanup executes STRICTLY under lock; neither recovery nor duplicate Task ID can interleave!

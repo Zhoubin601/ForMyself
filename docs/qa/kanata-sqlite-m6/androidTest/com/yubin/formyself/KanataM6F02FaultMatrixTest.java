@@ -386,7 +386,7 @@ public class KanataM6F02FaultMatrixTest {
                                 }
                             }));
             assertEquals(baselineBackupSha, sha256File(priorValidBackup));
-            assertEquals(0, spoolDir.listFiles() == null ? 0 : spoolDir.listFiles().length);
+            assertOnlyDormantTaskLocksInSpoolDir(spoolDir);
 
             // 2. ENOSPC simulated during spool write
             assertThrowsCode(KanataM6PortableCrypto.ERR_IO_FAILED, () ->
@@ -402,7 +402,7 @@ public class KanataM6F02FaultMatrixTest {
                                 }
                             }));
             assertEquals(baselineBackupSha, sha256File(priorValidBackup));
-            assertEquals(0, spoolDir.listFiles() == null ? 0 : spoolDir.listFiles().length);
+            assertOnlyDormantTaskLocksInSpoolDir(spoolDir);
 
             // 3. fsync failure
             assertThrowsCode(KanataM6PortableCrypto.ERR_IO_FAILED, () ->
@@ -416,7 +416,7 @@ public class KanataM6F02FaultMatrixTest {
                                 }
                             }));
             assertEquals(baselineBackupSha, sha256File(priorValidBackup));
-            assertEquals(0, spoolDir.listFiles() == null ? 0 : spoolDir.listFiles().length);
+            assertOnlyDormantTaskLocksInSpoolDir(spoolDir);
 
             // 4. Readback verification mismatch (corrupt 1 byte in tmpSpool right before readback)
             AtomicReference<File> capturedTmpSpool = new AtomicReference<>();
@@ -655,7 +655,7 @@ public class KanataM6F02FaultMatrixTest {
             assertFalse("Failed task temp must be cleaned", tmp1.get().exists());
             assertEquals(backupASha, sha256File(backupTarget));
             assertBackupDecryptsToExpected(backupTarget, PW, catalog, workDir, expectedProjectedDigest);
-            assertEquals(0, spoolDir.listFiles() == null ? 0 : spoolDir.listFiles().length);
+            assertOnlyDormantTaskLocksInSpoolDir(spoolDir);
 
             // 2. Inject commit-stage interruption & simulate abrupt leftover task artifact recovery
             File simulatedInterruptedTmp = new File(spoolDir, "." + backupTarget.getName() + ".task-abrupt-commit.spool.tmp");
@@ -786,7 +786,7 @@ public class KanataM6F02FaultMatrixTest {
             assertTrue("Task 1 cleanup must not delete Task 2 temp file", t2SawOwnTempAfterT1Fail.get());
             assertFalse(t1Tmp.get().exists());
             assertFalse(t2Tmp.get().exists());
-            assertEquals(0, spoolDir.listFiles() == null ? 0 : spoolDir.listFiles().length);
+            assertOnlyDormantTaskLocksInSpoolDir(spoolDir);
             assertEquals(backupASha, sha256File(backupTarget));
             assertBackupDecryptsToExpected(backupTarget, PW, catalog, workDir, expectedProjectedDigest);
 
@@ -996,6 +996,19 @@ public class KanataM6F02FaultMatrixTest {
         } catch (KanataM6PortableCrypto.PortableException pe) {
             assertEquals("Expected " + expectedCode + " but got " + pe.code + " (" + pe.stage + ")",
                     expectedCode, pe.code);
+        }
+    }
+
+    private static void assertOnlyDormantTaskLocksInSpoolDir(File spoolDir) throws IOException {
+        File[] files = spoolDir.listFiles();
+        if (files == null) return;
+        for (File f : files) {
+            String n = f.getName();
+            assertTrue("Unexpected leftover spool artifact: " + n,
+                    n.startsWith(".task-") && n.endsWith(".lock"));
+            String tid = n.substring(".task-".length(), n.length() - ".lock".length());
+            assertFalse("Task lock should be dormant: " + tid,
+                    KanataM6SchemeCExporter.hasActiveTaskLock(spoolDir, tid));
         }
     }
 

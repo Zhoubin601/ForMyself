@@ -4,7 +4,9 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
 import android.os.Process;
+import android.os.SystemClock;
 import android.system.Os;
+import android.system.StructStat;
 
 import org.json.JSONObject;
 
@@ -25,6 +27,8 @@ public final class KanataM6KillableWorkerService extends Service {
     public static final String ACTION_CHECK_RECOVERY = "com.yubin.formyself.M6_CHECK_RECOVERY";
     public static final String ACTION_START_IMPORT_PAUSE = "com.yubin.formyself.M6_START_IMPORT_PAUSE";
     public static final String ACTION_CHECK_IMPORT_RECOVERY = "com.yubin.formyself.M6_CHECK_IMPORT_RECOVERY";
+    public static final String ACTION_COMPETE_EXPORTER_LOCK = "com.yubin.formyself.M6_COMPETE_EXPORTER_LOCK";
+    public static final String ACTION_COMPETE_IMPORTER_LOCK = "com.yubin.formyself.M6_COMPETE_IMPORTER_LOCK";
     public static final String EXTRA_WORK_DIR = "workDir";
     public static final String EXTRA_SPOOL_DIR = "spoolDir";
     public static final String EXTRA_DB_PATH = "dbPath";
@@ -35,6 +39,7 @@ public final class KanataM6KillableWorkerService extends Service {
     public static final String EXTRA_TARGET_DIR = "targetDir";
     public static final String EXTRA_TASK_ID = "taskId";
     public static final String EXTRA_PAUSE_STAGE = "pauseStage";
+    public static final String EXTRA_LOCK_MODE = "lockMode";
 
     public static final String STAGE_KDF = "KDF";
     public static final String STAGE_DB_READ = "DB_READ";
@@ -43,6 +48,8 @@ public final class KanataM6KillableWorkerService extends Service {
     public static final String STAGE_AFTER_RENAME_BEFORE_JOURNAL_UPDATE = "AFTER_RENAME_BEFORE_JOURNAL_UPDATE";
     public static final String STAGE_BEFORE_POST_RENAME_JOURNAL_RENAME = "BEFORE_POST_RENAME_JOURNAL_RENAME";
     public static final String STAGE_AFTER_RENAME_BEFORE_DIR_SYNC = "AFTER_RENAME_BEFORE_DIR_SYNC";
+    public static final String STAGE_BEFORE_TASK_LOCK_RELEASE = "BEFORE_TASK_LOCK_RELEASE";
+    public static final String STAGE_BEFORE_TARGET_LOCK_RELEASE = "BEFORE_TARGET_LOCK_RELEASE";
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -218,6 +225,22 @@ public final class KanataM6KillableWorkerService extends Service {
                                     }
                                     KanataM6SchemeCExporter.fsyncDirectoryStrict(targetParentDir);
                                 }
+
+                                @Override
+                                public void beforeTaskLockRelease(String tid, File lockFile, long dev, long ino) {
+                                    if (STAGE_BEFORE_TASK_LOCK_RELEASE.equals(pauseStage)
+                                            && triggered.compareAndSet(false, true)) {
+                                        JSONObject extra = new JSONObject();
+                                        try {
+                                            extra.put("lockPath", lockFile.getAbsolutePath())
+                                                    .put("lockDev", dev)
+                                                    .put("lockIno", ino)
+                                                    .put("lockExists", lockFile.exists());
+                                        } catch (Throwable ignored) {}
+                                        signalReadyAndHoldForSigkill(
+                                                workDir, tid, STAGE_BEFORE_TASK_LOCK_RELEASE, lockFile, extra);
+                                    }
+                                }
                             },
                             taskId);
                 } catch (Throwable t) {
@@ -307,6 +330,22 @@ public final class KanataM6KillableWorkerService extends Service {
                                         }
                                         KanataM6SchemeCExporter.fsyncDirectoryStrict(targetParentDir);
                                     }
+
+                                    @Override
+                                    public void beforeTargetLockRelease(File lockFile, long dev, long ino) {
+                                        if (STAGE_BEFORE_TARGET_LOCK_RELEASE.equals(pauseStage)
+                                                && triggered.compareAndSet(false, true)) {
+                                            JSONObject extra = new JSONObject();
+                                            try {
+                                                extra.put("lockPath", lockFile.getAbsolutePath())
+                                                        .put("lockDev", dev)
+                                                        .put("lockIno", ino)
+                                                        .put("lockExists", lockFile.exists());
+                                            } catch (Throwable ignored) {}
+                                            signalReadyAndHoldForSigkill(
+                                                    workDir, taskId, STAGE_BEFORE_TARGET_LOCK_RELEASE, lockFile, extra);
+                                        }
+                                    }
                                 },
                                 taskId);
                     }
@@ -344,6 +383,109 @@ public final class KanataM6KillableWorkerService extends Service {
                 } catch (Throwable ignored) {}
                 stopSelf(startId);
             }, "m6-import-recovery-worker").start();
+        } else if (ACTION_COMPETE_EXPORTER_LOCK.equals(action)) {
+            String spoolDirPath = intent.getStringExtra(EXTRA_SPOOL_DIR);
+            String lockMode = intent.getStringExtra(EXTRA_LOCK_MODE);
+            new Thread(() -> {
+                try {
+                    File spoolDir = new File(spoolDirPath).getCanonicalFile();
+                    File lockFile = KanataM6SchemeCExporter.taskLockFileFor(spoolDir, taskId);
+                    int blockedCount = 0;
+                    long deadline = SystemClock.elapsedRealtime() + 25_000L;
+                    KanataM6SchemeCExporter.TaskLockHandle acquired = null;
+                    while (true) {
+                        acquired = KanataM6SchemeCExporter.tryAcquireTaskLock(spoolDir, taskId);
+                        if (acquired != null) {
+                            long acquiredAt = SystemClock.elapsedRealtimeNanos();
+                            long dev = acquired.lockDev;
+                            long ino = acquired.lockIno;
+                            acquired.close();
+                            JSONObject out = new JSONObject()
+                                    .put("pid", Process.myPid())
+                                    .put("taskId", taskId)
+                                    .put("acquired", true)
+                                    .put("blockedCount", blockedCount)
+                                    .put("lockPath", lockFile.getAbsolutePath())
+                                    .put("lockDev", dev)
+                                    .put("lockIno", ino)
+                                    .put("acquiredAtNanos", acquiredAt);
+                            writeJsonAtomically(new File(workDir, "worker_acquired.json"), out);
+                            break;
+                        }
+                        blockedCount++;
+                        if (blockedCount == 1) {
+                            StructStat diskStat = KanataM6SchemeCExporter.lstatOrNull(lockFile);
+                            JSONObject blk = new JSONObject()
+                                    .put("pid", Process.myPid())
+                                    .put("taskId", taskId)
+                                    .put("acquired", false)
+                                    .put("blocked", true)
+                                    .put("lockExists", lockFile.exists())
+                                    .put("diskDev", diskStat != null ? diskStat.st_dev : -1L)
+                                    .put("diskIno", diskStat != null ? diskStat.st_ino : -1L);
+                            writeJsonAtomically(new File(workDir, "worker_probe_blocked.json"), blk);
+                        }
+                        if ("try_once".equals(lockMode) || SystemClock.elapsedRealtime() >= deadline) {
+                            break;
+                        }
+                        Thread.sleep(20L);
+                    }
+                } catch (Throwable t) {
+                    try {
+                        writeJsonAtomically(new File(workDir, "worker_error.txt"),
+                                new JSONObject().put("error", t.getClass().getName() + ":" + t.getMessage()));
+                    } catch (Throwable ignored) {}
+                }
+                stopSelf(startId);
+            }, "m6-compete-exporter-lock").start();
+        } else if (ACTION_COMPETE_IMPORTER_LOCK.equals(action)) {
+            String targetPath = intent.getStringExtra(EXTRA_TARGET_PATH);
+            String lockMode = intent.getStringExtra(EXTRA_LOCK_MODE);
+            new Thread(() -> {
+                try {
+                    File targetAbs = new File(targetPath).getAbsoluteFile();
+                    if ("try_once".equals(lockMode)) {
+                        try (KanataM6SchemeCImporter.TargetCommitLockHandle h =
+                                     KanataM6SchemeCImporter.tryAcquireTargetCommitLock(targetAbs)) {
+                            if (h == null) {
+                                writeJsonAtomically(new File(workDir, "worker_probe_blocked.json"),
+                                        new JSONObject().put("pid", Process.myPid()).put("acquired", false).put("blocked", true));
+                            } else {
+                                writeJsonAtomically(new File(workDir, "worker_acquired.json"),
+                                        new JSONObject()
+                                                .put("pid", Process.myPid())
+                                                .put("acquired", true)
+                                                .put("lockDev", h.lockDev)
+                                                .put("lockIno", h.lockIno)
+                                                .put("acquiredAtNanos", SystemClock.elapsedRealtimeNanos()));
+                            }
+                        }
+                    } else {
+                        writeJsonAtomically(new File(workDir, "worker_attempting.json"),
+                                new JSONObject()
+                                        .put("pid", Process.myPid())
+                                        .put("attemptingAtNanos", SystemClock.elapsedRealtimeNanos()));
+                        try (KanataM6SchemeCImporter.TargetCommitLockHandle h =
+                                     KanataM6SchemeCImporter.acquireTargetCommitLock(targetAbs, new AtomicBoolean(false))) {
+                            long acquiredAt = SystemClock.elapsedRealtimeNanos();
+                            writeJsonAtomically(new File(workDir, "worker_acquired.json"),
+                                    new JSONObject()
+                                            .put("pid", Process.myPid())
+                                            .put("acquired", true)
+                                            .put("lockDev", h.lockDev)
+                                            .put("lockIno", h.lockIno)
+                                            .put("lockPath", h.lockFile.getAbsolutePath())
+                                            .put("acquiredAtNanos", acquiredAt));
+                        }
+                    }
+                } catch (Throwable t) {
+                    try {
+                        writeJsonAtomically(new File(workDir, "worker_error.txt"),
+                                new JSONObject().put("error", t.getClass().getName() + ":" + t.getMessage()));
+                    } catch (Throwable ignored) {}
+                }
+                stopSelf(startId);
+            }, "m6-compete-importer-lock").start();
         }
         return START_NOT_STICKY;
     }
