@@ -4,6 +4,7 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
 import android.os.Process;
+import android.system.Os;
 
 import org.json.JSONObject;
 
@@ -48,6 +49,16 @@ public final class KanataM6KillableWorkerService extends Service {
         return null;
     }
 
+    private static void writeJsonAtomically(File target, JSONObject json) throws Exception {
+        File tmp = new File(target.getParentFile(), target.getName() + ".tmp." + Process.myPid());
+        try (FileOutputStream fos = new FileOutputStream(tmp, false)) {
+            fos.write(json.toString().getBytes(StandardCharsets.UTF_8));
+            fos.flush();
+            fos.getFD().sync();
+        }
+        Os.rename(tmp.getAbsolutePath(), target.getAbsolutePath());
+    }
+
     private static void signalReadyAndHoldForSigkill(
             File workDir, String taskId, String stage, File tmpSpool, JSONObject extraFields) {
         try {
@@ -64,10 +75,7 @@ public final class KanataM6KillableWorkerService extends Service {
                     info.put(k, extraFields.get(k));
                 }
             }
-            try (FileOutputStream fos = new FileOutputStream(ready)) {
-                fos.write(info.toString().getBytes(StandardCharsets.UTF_8));
-                fos.getFD().sync();
-            }
+            writeJsonAtomically(ready, info);
             // Hold open until instrumentation issues Process.killProcess(workerPid)
             Thread.sleep(60_000L);
         } catch (Throwable ignored) {}
@@ -245,10 +253,7 @@ public final class KanataM6KillableWorkerService extends Service {
                             .put("confirmedCommitTaskIds", new org.json.JSONArray(rep.confirmedCommitTaskIds))
                             .put("unconfirmedCommitTaskIds", new org.json.JSONArray(rep.unconfirmedCommitTaskIds))
                             .put("rejectedJournalNames", new org.json.JSONArray(rep.rejectedJournalNames));
-                    try (FileOutputStream fos = new FileOutputStream(recovered)) {
-                        fos.write(out.toString().getBytes(StandardCharsets.UTF_8));
-                        fos.getFD().sync();
-                    }
+                    writeJsonAtomically(recovered, out);
                 } catch (Throwable ignored) {}
                 stopSelf(startId);
             }, "m6-recovery-worker").start();
@@ -335,10 +340,7 @@ public final class KanataM6KillableWorkerService extends Service {
                             .put("confirmedCommitTaskIds", new org.json.JSONArray(rep.confirmedCommitTaskIds))
                             .put("unconfirmedCommitTaskIds", new org.json.JSONArray(rep.unconfirmedCommitTaskIds))
                             .put("rejectedJournalNames", new org.json.JSONArray(rep.rejectedJournalNames));
-                    try (FileOutputStream fos = new FileOutputStream(recovered)) {
-                        fos.write(out.toString().getBytes(StandardCharsets.UTF_8));
-                        fos.getFD().sync();
-                    }
+                    writeJsonAtomically(recovered, out);
                 } catch (Throwable ignored) {}
                 stopSelf(startId);
             }, "m6-import-recovery-worker").start();
