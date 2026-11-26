@@ -22,9 +22,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public final class KanataM6KillableWorkerService extends Service {
     public static final String ACTION_START_EXPORT_PAUSE = "com.yubin.formyself.M6_START_EXPORT_PAUSE";
     public static final String ACTION_CHECK_RECOVERY = "com.yubin.formyself.M6_CHECK_RECOVERY";
+    public static final String ACTION_START_IMPORT_PAUSE = "com.yubin.formyself.M6_START_IMPORT_PAUSE";
+    public static final String ACTION_CHECK_IMPORT_RECOVERY = "com.yubin.formyself.M6_CHECK_IMPORT_RECOVERY";
     public static final String EXTRA_WORK_DIR = "workDir";
     public static final String EXTRA_SPOOL_DIR = "spoolDir";
     public static final String EXTRA_DB_PATH = "dbPath";
+    public static final String EXTRA_PACKAGE_PATH = "packagePath";
     public static final String EXTRA_RAW_KEY_HEX = "rawKeyHex";
     public static final String EXTRA_PASSWORD = "password";
     public static final String EXTRA_TARGET_PATH = "targetPath";
@@ -36,6 +39,8 @@ public final class KanataM6KillableWorkerService extends Service {
     public static final String STAGE_DB_READ = "DB_READ";
     public static final String STAGE_SPOOL_WRITE = "SPOOL_WRITE";
     public static final String STAGE_COMMIT = "COMMIT";
+    public static final String STAGE_AFTER_RENAME_BEFORE_JOURNAL_UPDATE = "AFTER_RENAME_BEFORE_JOURNAL_UPDATE";
+    public static final String STAGE_BEFORE_POST_RENAME_JOURNAL_RENAME = "BEFORE_POST_RENAME_JOURNAL_RENAME";
     public static final String STAGE_AFTER_RENAME_BEFORE_DIR_SYNC = "AFTER_RENAME_BEFORE_DIR_SYNC";
 
     @Override
@@ -43,7 +48,8 @@ public final class KanataM6KillableWorkerService extends Service {
         return null;
     }
 
-    private static void signalReadyAndHoldForSigkill(File workDir, String taskId, String stage, File tmpSpool) {
+    private static void signalReadyAndHoldForSigkill(
+            File workDir, String taskId, String stage, File tmpSpool, JSONObject extraFields) {
         try {
             File ready = new File(workDir, "worker_ready.json");
             JSONObject info = new JSONObject()
@@ -51,6 +57,13 @@ public final class KanataM6KillableWorkerService extends Service {
                     .put("taskId", taskId)
                     .put("stage", stage)
                     .put("tmpSpoolPath", tmpSpool != null ? tmpSpool.getAbsolutePath() : null);
+            if (extraFields != null) {
+                java.util.Iterator<String> it = extraFields.keys();
+                while (it.hasNext()) {
+                    String k = it.next();
+                    info.put(k, extraFields.get(k));
+                }
+            }
             try (FileOutputStream fos = new FileOutputStream(ready)) {
                 fos.write(info.toString().getBytes(StandardCharsets.UTF_8));
                 fos.getFD().sync();
@@ -58,6 +71,20 @@ public final class KanataM6KillableWorkerService extends Service {
             // Hold open until instrumentation issues Process.killProcess(workerPid)
             Thread.sleep(60_000L);
         } catch (Throwable ignored) {}
+    }
+
+    private static void signalReadyAndHoldForSigkill(File workDir, String taskId, String stage, File tmpSpool) {
+        signalReadyAndHoldForSigkill(workDir, taskId, stage, tmpSpool, null);
+    }
+
+    private static String readJournalStateSafe(File journalFile) {
+        if (journalFile == null || !journalFile.exists()) return "";
+        try {
+            byte[] raw = KanataM6SchemeCExporter.readSmallFileBounded(journalFile, 65536);
+            return new JSONObject(new String(raw, StandardCharsets.UTF_8)).optString("state", "");
+        } catch (Throwable t) {
+            return "ERR:" + t.getMessage();
+        }
     }
 
     @Override
@@ -143,6 +170,39 @@ public final class KanataM6KillableWorkerService extends Service {
                                 }
 
                                 @Override
+                                public void afterAtomicRenameBeforeJournalUpdate(
+                                        File stagedFile, File finalTargetFile, File journalFile) throws IOException {
+                                    if (STAGE_AFTER_RENAME_BEFORE_JOURNAL_UPDATE.equals(pauseStage)
+                                            && triggered.compareAndSet(false, true)) {
+                                        JSONObject extra = new JSONObject();
+                                        try {
+                                            extra.put("journalStateAtPause", readJournalStateSafe(journalFile))
+                                                    .put("stagedExistsAtPause", stagedFile != null && stagedFile.exists())
+                                                    .put("targetExistsAtPause", finalTargetFile != null && finalTargetFile.exists());
+                                        } catch (Throwable ignored) {}
+                                        signalReadyAndHoldForSigkill(
+                                                workDir, taskId, STAGE_AFTER_RENAME_BEFORE_JOURNAL_UPDATE, finalTargetFile, extra);
+                                    }
+                                }
+
+                                @Override
+                                public void beforeJournalRename(
+                                        String nextState, File tmpJournalFile, File journalFile) throws IOException {
+                                    if (STAGE_BEFORE_POST_RENAME_JOURNAL_RENAME.equals(pauseStage)
+                                            && "RENAMED_PENDING_DIR_SYNC".equals(nextState)
+                                            && triggered.compareAndSet(false, true)) {
+                                        JSONObject extra = new JSONObject();
+                                        try {
+                                            extra.put("journalStateAtPause", readJournalStateSafe(journalFile))
+                                                    .put("tmpNextExistsAtPause", tmpJournalFile != null && tmpJournalFile.exists())
+                                                    .put("targetExistsAtPause", targetFile.exists());
+                                        } catch (Throwable ignored) {}
+                                        signalReadyAndHoldForSigkill(
+                                                workDir, taskId, STAGE_BEFORE_POST_RENAME_JOURNAL_RENAME, targetFile, extra);
+                                    }
+                                }
+
+                                @Override
                                 public void performTargetDirFsync(File targetParentDir) throws IOException {
                                     if (STAGE_AFTER_RENAME_BEFORE_DIR_SYNC.equals(pauseStage)
                                             && triggered.compareAndSet(false, true)) {
@@ -183,6 +243,7 @@ public final class KanataM6KillableWorkerService extends Service {
                             .put("cleanedTaskIds", new org.json.JSONArray(rep.cleanedTaskIds))
                             .put("skippedActiveTaskIds", new org.json.JSONArray(rep.skippedActiveTaskIds))
                             .put("confirmedCommitTaskIds", new org.json.JSONArray(rep.confirmedCommitTaskIds))
+                            .put("unconfirmedCommitTaskIds", new org.json.JSONArray(rep.unconfirmedCommitTaskIds))
                             .put("rejectedJournalNames", new org.json.JSONArray(rep.rejectedJournalNames));
                     try (FileOutputStream fos = new FileOutputStream(recovered)) {
                         fos.write(out.toString().getBytes(StandardCharsets.UTF_8));
@@ -191,6 +252,96 @@ public final class KanataM6KillableWorkerService extends Service {
                 } catch (Throwable ignored) {}
                 stopSelf(startId);
             }, "m6-recovery-worker").start();
+        } else if (ACTION_START_IMPORT_PAUSE.equals(action)) {
+            String packagePath = intent.getStringExtra(EXTRA_PACKAGE_PATH);
+            String rawKeyHex = intent.getStringExtra(EXTRA_RAW_KEY_HEX);
+            String password = intent.getStringExtra(EXTRA_PASSWORD);
+            String targetPath = intent.getStringExtra(EXTRA_TARGET_PATH);
+            String pauseStage = intent.getStringExtra(EXTRA_PAUSE_STAGE);
+            new Thread(() -> {
+                byte[] rawKey = null;
+                try {
+                    System.loadLibrary("sqlcipher");
+                    rawKey = KanataM6PortableCrypto.hexToBytes(rawKeyHex);
+                    KanataM6PortableCatalog catalog = KanataM6PortableCatalog.load(getApplicationContext());
+                    File pkgFile = new File(packagePath);
+                    File targetFile = new File(targetPath);
+                    final AtomicBoolean triggered = new AtomicBoolean(false);
+                    try (java.io.FileInputStream fis = new java.io.FileInputStream(pkgFile)) {
+                        KanataM6SchemeCImporter.importAndVerifyToIsolatedTarget(
+                                fis,
+                                password,
+                                catalog,
+                                workDir,
+                                targetFile,
+                                rawKey,
+                                new AtomicBoolean(false),
+                                false,
+                                new KanataM6SchemeCImporter.ImportHooks() {
+                                    @Override
+                                    public void afterTargetRenameBeforeJournalUpdate(
+                                            File targetDbFile, File importJournalFile) throws Exception {
+                                        if (STAGE_AFTER_RENAME_BEFORE_JOURNAL_UPDATE.equals(pauseStage)
+                                                && triggered.compareAndSet(false, true)) {
+                                            JSONObject extra = new JSONObject();
+                                            try {
+                                                extra.put("journalStateAtPause", readJournalStateSafe(importJournalFile))
+                                                        .put("targetExistsAtPause", targetDbFile != null && targetDbFile.exists());
+                                            } catch (Throwable ignored) {}
+                                            signalReadyAndHoldForSigkill(
+                                                    workDir, taskId, STAGE_AFTER_RENAME_BEFORE_JOURNAL_UPDATE, targetDbFile, extra);
+                                        }
+                                    }
+
+                                    @Override
+                                    public void performTargetDirFsync(File targetParentDir) throws Exception {
+                                        if (STAGE_AFTER_RENAME_BEFORE_DIR_SYNC.equals(pauseStage)
+                                                && triggered.compareAndSet(false, true)) {
+                                            signalReadyAndHoldForSigkill(
+                                                    workDir, taskId, STAGE_AFTER_RENAME_BEFORE_DIR_SYNC, targetFile);
+                                        }
+                                        KanataM6SchemeCExporter.fsyncDirectoryStrict(targetParentDir);
+                                    }
+                                },
+                                taskId);
+                    }
+                } catch (Throwable t) {
+                    try {
+                        File errFile = new File(workDir, "worker_error.txt");
+                        try (FileOutputStream fos = new FileOutputStream(errFile)) {
+                            fos.write((t.getClass().getName() + ":" + t.getMessage()).getBytes(StandardCharsets.UTF_8));
+                        }
+                    } catch (Throwable ignored) {}
+                } finally {
+                    KanataM6PortableCrypto.zeroize(rawKey);
+                }
+            }, "m6-killable-importer").start();
+        } else if (ACTION_CHECK_IMPORT_RECOVERY.equals(action)) {
+            String targetDirPath = intent.getStringExtra(EXTRA_TARGET_DIR);
+            new Thread(() -> {
+                try {
+                    KanataM6SchemeCImporter.ImportRecoveryReport rep =
+                            KanataM6SchemeCImporter.recoverIncompleteImports(new File(targetDirPath));
+                    File recovered = new File(workDir, "worker_import_recovered.json");
+                    JSONObject out = new JSONObject()
+                            .put("pid", Process.myPid())
+                            .put("scannedJournals", rep.scannedJournals)
+                            .put("cleanedTasks", rep.cleanedTasks)
+                            .put("confirmedCommitTasks", rep.confirmedCommitTasks)
+                            .put("unconfirmedCommitTasks", rep.unconfirmedCommitTasks)
+                            .put("rejectedUntrustedJournals", rep.rejectedUntrustedJournals)
+                            .put("cleanedTaskIds", new org.json.JSONArray(rep.cleanedTaskIds))
+                            .put("skippedActiveTaskIds", new org.json.JSONArray(rep.skippedActiveTaskIds))
+                            .put("confirmedCommitTaskIds", new org.json.JSONArray(rep.confirmedCommitTaskIds))
+                            .put("unconfirmedCommitTaskIds", new org.json.JSONArray(rep.unconfirmedCommitTaskIds))
+                            .put("rejectedJournalNames", new org.json.JSONArray(rep.rejectedJournalNames));
+                    try (FileOutputStream fos = new FileOutputStream(recovered)) {
+                        fos.write(out.toString().getBytes(StandardCharsets.UTF_8));
+                        fos.getFD().sync();
+                    }
+                } catch (Throwable ignored) {}
+                stopSelf(startId);
+            }, "m6-import-recovery-worker").start();
         }
         return START_NOT_STICKY;
     }

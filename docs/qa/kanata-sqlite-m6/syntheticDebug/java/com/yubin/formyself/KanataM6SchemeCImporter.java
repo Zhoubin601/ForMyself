@@ -1,6 +1,7 @@
 package com.yubin.formyself;
 
 import android.database.Cursor;
+import android.os.Process;
 import android.system.ErrnoException;
 import android.system.Os;
 import android.system.StructStat;
@@ -8,7 +9,10 @@ import android.system.StructStat;
 import net.zetetic.database.sqlcipher.SQLiteDatabase;
 import net.zetetic.database.sqlcipher.SQLiteStatement;
 
+import org.json.JSONObject;
+
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
@@ -25,6 +29,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -160,12 +165,59 @@ public final class KanataM6SchemeCImporter {
         default void beforeStagingInstall(File targetStageFile) throws Exception {}
         default void afterInstallBeforeVerify(SQLiteDatabase targetStageDb) throws Exception {}
         default void afterStagingVerified(File targetStageFile) throws Exception {}
+        default void afterTargetLockAcquiredBeforeCommit(File targetStageFile, File targetDbFile) throws Exception {}
+        default void beforeImportJournalRename(String nextState, File tmpJournalFile, File journalFile) throws Exception {}
         default void beforeTargetCommit(File targetStageFile, File targetDbFile) throws Exception {}
         default void performAtomicTargetCommit(File targetStageFile, File targetDbFile) throws Exception {
             defaultAtomicRenameOnly(targetStageFile, targetDbFile);
         }
+        default void afterTargetRenameBeforeJournalUpdate(File targetDbFile, File importJournalFile) throws Exception {}
         default void performTargetDirFsync(File targetParentDir) throws Exception {
             KanataM6SchemeCExporter.fsyncDirectoryStrict(targetParentDir);
+        }
+    }
+
+    public interface ImportRecoveryHooks {
+        default void performTargetDirFsync(File targetParentDir) throws IOException {
+            KanataM6SchemeCExporter.fsyncDirectoryStrict(targetParentDir);
+        }
+        default void afterTargetLockAcquired(String importTaskId, File targetDbFile) throws IOException {}
+        default void beforeJournalDelete(String importTaskId, File journal) throws IOException {}
+    }
+
+    public static final class ImportRecoveryReport {
+        public final int scannedJournals;
+        public final int cleanedTasks;
+        public final int confirmedCommitTasks;
+        public final int unconfirmedCommitTasks;
+        public final int rejectedUntrustedJournals;
+        public final List<String> cleanedTaskIds;
+        public final List<String> skippedActiveTaskIds;
+        public final List<String> confirmedCommitTaskIds;
+        public final List<String> unconfirmedCommitTaskIds;
+        public final List<String> rejectedJournalNames;
+
+        ImportRecoveryReport(
+                int scannedJournals,
+                int cleanedTasks,
+                int confirmedCommitTasks,
+                int unconfirmedCommitTasks,
+                int rejectedUntrustedJournals,
+                List<String> cleanedTaskIds,
+                List<String> skippedActiveTaskIds,
+                List<String> confirmedCommitTaskIds,
+                List<String> unconfirmedCommitTaskIds,
+                List<String> rejectedJournalNames) {
+            this.scannedJournals = scannedJournals;
+            this.cleanedTasks = cleanedTasks;
+            this.confirmedCommitTasks = confirmedCommitTasks;
+            this.unconfirmedCommitTasks = unconfirmedCommitTasks;
+            this.rejectedUntrustedJournals = rejectedUntrustedJournals;
+            this.cleanedTaskIds = cleanedTaskIds;
+            this.skippedActiveTaskIds = skippedActiveTaskIds;
+            this.confirmedCommitTaskIds = confirmedCommitTaskIds;
+            this.unconfirmedCommitTaskIds = unconfirmedCommitTaskIds;
+            this.rejectedJournalNames = rejectedJournalNames;
         }
     }
 
@@ -206,19 +258,43 @@ public final class KanataM6SchemeCImporter {
         private final File lockFile;
         private final RandomAccessFile raf;
         private final FileLock fileLock;
+        private final long lockDev;
+        private final long lockIno;
 
-        TargetCommitLockHandle(String key, CommitLockSlot slot, File lockFile, RandomAccessFile raf, FileLock fileLock) {
+        TargetCommitLockHandle(
+                String key,
+                CommitLockSlot slot,
+                File lockFile,
+                RandomAccessFile raf,
+                FileLock fileLock,
+                long lockDev,
+                long lockIno) {
             this.key = key;
             this.slot = slot;
             this.lockFile = lockFile;
             this.raf = raf;
             this.fileLock = fileLock;
+            this.lockDev = lockDev;
+            this.lockIno = lockIno;
+        }
+
+        boolean isStillLiveInode() {
+            try {
+                StructStat fdStat = Os.fstat(raf.getFD());
+                StructStat pathStat = Os.stat(lockFile.getPath());
+                return fdStat.st_dev == lockDev
+                        && fdStat.st_ino == lockIno
+                        && fdStat.st_dev == pathStat.st_dev
+                        && fdStat.st_ino == pathStat.st_ino;
+            } catch (Throwable ignored) {
+                return false;
+            }
         }
 
         @Override
         public void close() {
             try {
-                if (!slot.mutex.hasQueuedThreads() && lockFile != null && lockFile.exists()) {
+                if (isStillLiveInode()) {
                     lockFile.delete();
                 }
             } catch (Throwable ignored) {}
@@ -234,7 +310,7 @@ public final class KanataM6SchemeCImporter {
             }
             synchronized (TARGET_COMMIT_LOCKS) {
                 slot.refs--;
-                if (slot.refs <= 0 && !slot.mutex.hasQueuedThreads()) {
+                if (slot.refs <= 0) {
                     TARGET_COMMIT_LOCKS.remove(key, slot);
                 }
             }
@@ -242,7 +318,8 @@ public final class KanataM6SchemeCImporter {
         }
     }
 
-    private static TargetCommitLockHandle acquireTargetCommitLock(File targetAbs) throws Exception {
+    private static TargetCommitLockHandle acquireTargetCommitLock(File targetAbs, AtomicBoolean cancelled) throws Exception {
+        KanataM6PortableCrypto.checkCancelled(cancelled);
         File canon = canonicalTargetFile(targetAbs);
         String key = canon.getPath();
         File lockFile = lockFileForTarget(canon);
@@ -255,16 +332,27 @@ public final class KanataM6SchemeCImporter {
             }
             slot.refs++;
         }
-        slot.mutex.lock();
+        boolean mutexLocked = false;
         boolean acquired = false;
         try {
+            while (!mutexLocked) {
+                KanataM6PortableCrypto.checkCancelled(cancelled);
+                try {
+                    mutexLocked = slot.mutex.tryLock(50L, TimeUnit.MILLISECONDS);
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    throw new KanataM6PortableCrypto.PortableException(
+                            KanataM6PortableCrypto.ERR_CANCELLED, "lock-interrupted", ie);
+                }
+            }
             while (true) {
+                KanataM6PortableCrypto.checkCancelled(cancelled);
                 RandomAccessFile raf = new RandomAccessFile(lockFile, "rw");
                 FileLock fl = null;
                 boolean ok = false;
                 try {
                     try {
-                        fl = raf.getChannel().lock();
+                        fl = raf.getChannel().tryLock();
                     } catch (OverlappingFileLockException ofle) {
                         fl = null;
                     }
@@ -275,7 +363,7 @@ public final class KanataM6SchemeCImporter {
                             if (fdStat.st_dev == pathStat.st_dev && fdStat.st_ino == pathStat.st_ino) {
                                 ok = true;
                                 acquired = true;
-                                return new TargetCommitLockHandle(key, slot, lockFile, raf, fl);
+                                return new TargetCommitLockHandle(key, slot, lockFile, raf, fl, fdStat.st_dev, fdStat.st_ino);
                             }
                         } catch (ErrnoException ignored) {
                             // Unlinked concurrently in another process; retry on fresh inode.
@@ -289,18 +377,429 @@ public final class KanataM6SchemeCImporter {
                         try { raf.close(); } catch (Throwable ignored) {}
                     }
                 }
+                if (fl == null) {
+                    try {
+                        Thread.sleep(15L);
+                    } catch (InterruptedException ie) {
+                        Thread.currentThread().interrupt();
+                        throw new KanataM6PortableCrypto.PortableException(
+                                KanataM6PortableCrypto.ERR_CANCELLED, "lock-wait-interrupted", ie);
+                    }
+                }
             }
         } finally {
             if (!acquired) {
                 synchronized (TARGET_COMMIT_LOCKS) {
                     slot.refs--;
-                    if (slot.refs <= 0 && !slot.mutex.hasQueuedThreads()) {
+                    if (slot.refs <= 0) {
+                        TARGET_COMMIT_LOCKS.remove(key, slot);
+                    }
+                }
+                if (mutexLocked) {
+                    slot.mutex.unlock();
+                }
+            }
+        }
+    }
+
+    private static TargetCommitLockHandle tryAcquireTargetCommitLock(File targetAbs) throws Exception {
+        File canon = canonicalTargetFile(targetAbs);
+        String key = canon.getPath();
+        File lockFile = lockFileForTarget(canon);
+        CommitLockSlot slot;
+        synchronized (TARGET_COMMIT_LOCKS) {
+            slot = TARGET_COMMIT_LOCKS.get(key);
+            if (slot == null) {
+                slot = new CommitLockSlot();
+                TARGET_COMMIT_LOCKS.put(key, slot);
+            }
+            slot.refs++;
+        }
+        if (!slot.mutex.tryLock()) {
+            synchronized (TARGET_COMMIT_LOCKS) {
+                slot.refs--;
+                if (slot.refs <= 0) {
+                    TARGET_COMMIT_LOCKS.remove(key, slot);
+                }
+            }
+            return null;
+        }
+        boolean acquired = false;
+        try {
+            for (int attempt = 0; attempt < 16; attempt++) {
+                RandomAccessFile raf = new RandomAccessFile(lockFile, "rw");
+                FileLock fl = null;
+                boolean ok = false;
+                try {
+                    try {
+                        fl = raf.getChannel().tryLock();
+                    } catch (OverlappingFileLockException ofle) {
+                        fl = null;
+                    }
+                    if (fl == null) {
+                        return null;
+                    }
+                    try {
+                        StructStat fdStat = Os.fstat(raf.getFD());
+                        StructStat pathStat = Os.stat(lockFile.getPath());
+                        if (fdStat.st_dev == pathStat.st_dev && fdStat.st_ino == pathStat.st_ino) {
+                            ok = true;
+                            acquired = true;
+                            return new TargetCommitLockHandle(key, slot, lockFile, raf, fl, fdStat.st_dev, fdStat.st_ino);
+                        }
+                    } catch (ErrnoException ignored) {
+                        // Unlinked concurrently by departing owner; retry on live inode.
+                    }
+                } finally {
+                    if (!ok) {
+                        if (fl != null) {
+                            try { fl.release(); } catch (Throwable ignored) {}
+                        }
+                        try { raf.close(); } catch (Throwable ignored) {}
+                    }
+                }
+            }
+            return null;
+        } finally {
+            if (!acquired) {
+                synchronized (TARGET_COMMIT_LOCKS) {
+                    slot.refs--;
+                    if (slot.refs <= 0) {
                         TARGET_COMMIT_LOCKS.remove(key, slot);
                     }
                 }
                 slot.mutex.unlock();
             }
         }
+    }
+
+    private static String sanitizeImportTaskId(String explicitTaskId) {
+        if (explicitTaskId == null || explicitTaskId.isEmpty()) {
+            return "imp-" + UUID.randomUUID();
+        }
+        if (explicitTaskId.contains("..") || !explicitTaskId.matches("[A-Za-z0-9._-]+")) {
+            throw new KanataM6PortableCrypto.PortableException(
+                    KanataM6PortableCrypto.ERR_INVALID_LOGICAL, "invalid-import-task-id");
+        }
+        return explicitTaskId;
+    }
+
+    private static StructStat writeImportJournalAtomic(
+            File importJournal,
+            File journalDir,
+            String importTaskId,
+            String state,
+            File targetStageFile,
+            File targetDbFile,
+            String expectedSha256Hex,
+            boolean syncJournalDir,
+            ImportHooks hooks) throws IOException {
+        try {
+            if (expectedSha256Hex == null || expectedSha256Hex.isEmpty()) {
+                throw new IOException("import-journal-missing-expected-sha:" + state);
+            }
+            JSONObject obj = new JSONObject()
+                    .put("taskId", importTaskId)
+                    .put("kind", "IMPORT")
+                    .put("pid", Process.myPid())
+                    .put("state", state)
+                    .put("stagePath", targetStageFile.getCanonicalPath())
+                    .put("targetPath", targetDbFile.getCanonicalPath())
+                    .put("expectedSha256Hex", expectedSha256Hex);
+            byte[] bytes = obj.toString().getBytes(StandardCharsets.UTF_8);
+            File tmpNext = new File(journalDir, importJournal.getName() + ".next");
+            try (FileOutputStream fos = new FileOutputStream(tmpNext, false)) {
+                fos.write(bytes);
+                fos.flush();
+                fos.getFD().sync();
+            }
+            if (hooks != null) {
+                hooks.beforeImportJournalRename(state, tmpNext, importJournal);
+            }
+            try {
+                Os.rename(tmpNext.getAbsolutePath(), importJournal.getAbsolutePath());
+            } catch (ErrnoException e) {
+                tmpNext.delete();
+                throw new IOException("import-journal-rename-failed(" + e.errno + "): " + e.getMessage(), e);
+            }
+            if (syncJournalDir) {
+                KanataM6SchemeCExporter.fsyncDirectoryStrict(journalDir);
+            }
+            return KanataM6SchemeCExporter.lstatOrNull(importJournal);
+        } catch (Exception e) {
+            if (e instanceof IOException) throw (IOException) e;
+            throw new IOException("import-journal-write", e);
+        }
+    }
+
+    public static ImportRecoveryReport recoverIncompleteImports(File... dirs) {
+        return recoverIncompleteImports((ImportRecoveryHooks) null, dirs);
+    }
+
+    /**
+     * Startup recovery for incomplete or post-rename durability-unconfirmed Scheme C imports.
+     * Uses canonical directory containment, Task ID binding, target commit mutex serialization,
+     * and joint (expectedSha256Hex + staging file + target DB) verification.
+     * Preserves UNCONFIRMED state whenever commit status cannot be proven; completely idempotent.
+     */
+    public static ImportRecoveryReport recoverIncompleteImports(ImportRecoveryHooks hooks, File... dirs) {
+        int scanned = 0;
+        int cleaned = 0;
+        int confirmedCommits = 0;
+        int unconfirmedCommits = 0;
+        int rejectedUntrusted = 0;
+        List<String> cleanedIds = new ArrayList<>();
+        List<String> skippedIds = new ArrayList<>();
+        List<String> confirmedIds = new ArrayList<>();
+        List<String> unconfirmedIds = new ArrayList<>();
+        List<String> rejectedNames = new ArrayList<>();
+        if (dirs == null) {
+            return new ImportRecoveryReport(0, 0, 0, 0, 0, cleanedIds, skippedIds, confirmedIds, unconfirmedIds, rejectedNames);
+        }
+
+        Set<File> allowedCanonDirs = new HashSet<>();
+        for (File d : dirs) {
+            if (d != null && d.isDirectory()) {
+                try {
+                    allowedCanonDirs.add(d.getCanonicalFile());
+                } catch (IOException ignored) {}
+            }
+        }
+
+        for (File dir : dirs) {
+            if (dir == null || !dir.isDirectory()) continue;
+            final File dirCanon;
+            try {
+                dirCanon = dir.getCanonicalFile();
+            } catch (IOException e) {
+                continue;
+            }
+            File[] files = dir.listFiles((d, name) -> name.startsWith(".import-") && name.endsWith(".pending"));
+            if (files != null) {
+                for (File journal : files) {
+                    String name = journal.getName();
+                    String tid = name.substring(".import-".length(), name.length() - ".pending".length());
+                    if (tid.isEmpty() || tid.contains("..") || !tid.matches("[A-Za-z0-9._-]+")) {
+                        scanned++;
+                        rejectedUntrusted++;
+                        rejectedNames.add(name);
+                        continue;
+                    }
+                    // Pre-read targetPath strictly to derive the canonical target commit mutex;
+                    // all authoritative validation & mutation happens AFTER acquiring the commit mutex!
+                    File preliminaryTarget;
+                    try {
+                        byte[] preRaw = KanataM6SchemeCExporter.readSmallFileBounded(journal, 65536);
+                        JSONObject preObj = new JSONObject(new String(preRaw, StandardCharsets.UTF_8));
+                        String preTid = preObj.optString("taskId", "");
+                        String preTarget = preObj.isNull("targetPath") ? "" : preObj.optString("targetPath", "");
+                        if (!tid.equals(preTid) || preTarget.isEmpty() || preTarget.contains("..") || !new File(preTarget).isAbsolute()) {
+                            scanned++;
+                            rejectedUntrusted++;
+                            rejectedNames.add(name);
+                            continue;
+                        }
+                        preliminaryTarget = new File(preTarget).getCanonicalFile();
+                        if (preliminaryTarget.getParentFile() == null
+                                || !allowedCanonDirs.contains(preliminaryTarget.getParentFile())) {
+                            scanned++;
+                            rejectedUntrusted++;
+                            rejectedNames.add(name);
+                            continue;
+                        }
+                    } catch (Throwable preErr) {
+                        scanned++;
+                        rejectedUntrusted++;
+                        rejectedNames.add(name);
+                        continue;
+                    }
+
+                    try (TargetCommitLockHandle commitLock = tryAcquireTargetCommitLock(preliminaryTarget)) {
+                        if (commitLock == null) {
+                            scanned++;
+                            skippedIds.add(tid);
+                            continue;
+                        }
+                        if (!journal.exists()) {
+                            continue;
+                        }
+                        StructStat journalStat = KanataM6SchemeCExporter.lstatOrNull(journal);
+                        if (journalStat == null) {
+                            continue;
+                        }
+                        scanned++;
+                        if (hooks != null) {
+                            hooks.afterTargetLockAcquired(tid, preliminaryTarget);
+                        }
+                        try {
+                            byte[] raw = KanataM6SchemeCExporter.readSmallFileBounded(journal, 65536);
+                            JSONObject obj = new JSONObject(new String(raw, StandardCharsets.UTF_8));
+                            String jsonTid = obj.optString("taskId", "");
+                            String state = obj.optString("state", "");
+                            String stagePath = obj.isNull("stagePath") ? "" : obj.optString("stagePath", "");
+                            String targetPath = obj.isNull("targetPath") ? "" : obj.optString("targetPath", "");
+                            String expectedSha = obj.isNull("expectedSha256Hex") ? "" : obj.optString("expectedSha256Hex", "");
+
+                            if (!tid.equals(jsonTid) || state.isEmpty()
+                                    || stagePath.isEmpty() || stagePath.contains("..") || !new File(stagePath).isAbsolute()
+                                    || targetPath.isEmpty() || targetPath.contains("..") || !new File(targetPath).isAbsolute()) {
+                                rejectedUntrusted++;
+                                rejectedNames.add(name);
+                                continue;
+                            }
+                            File canonStage = new File(stagePath).getCanonicalFile();
+                            File canonTarget = new File(targetPath).getCanonicalFile();
+                            File targetParent = canonTarget.getParentFile();
+                            if (!preliminaryTarget.equals(canonTarget)
+                                    || targetParent == null || !allowedCanonDirs.contains(targetParent)
+                                    || !dirCanon.equals(canonStage.getParentFile())
+                                    || !canonStage.getName().startsWith(".stage-target-" + tid + "-")
+                                    || !canonStage.getName().endsWith(".db")) {
+                                rejectedUntrusted++;
+                                rejectedNames.add(name);
+                                continue;
+                            }
+
+                            StructStat stageStat = KanataM6SchemeCExporter.lstatOrNull(canonStage);
+                            File pendingNext = new File(dirCanon, name + ".next");
+
+                            if ("RENAMED_PENDING_DIR_SYNC".equals(state)) {
+                                if (!canonTarget.exists() || expectedSha.isEmpty()) {
+                                    unconfirmedCommits++;
+                                    unconfirmedIds.add(tid);
+                                    continue;
+                                }
+                                String actualSha = KanataM6SchemeCExporter.computeFileSha256Hex(canonTarget);
+                                if (!expectedSha.equals(actualSha)) {
+                                    unconfirmedCommits++;
+                                    unconfirmedIds.add(tid);
+                                    continue;
+                                }
+                                try {
+                                    if (hooks != null) {
+                                        hooks.performTargetDirFsync(targetParent);
+                                    } else {
+                                        KanataM6SchemeCExporter.fsyncDirectoryStrict(targetParent);
+                                    }
+                                    if (stageStat != null && !canonStage.equals(canonTarget)
+                                            && KanataM6SchemeCExporter.sameInode(canonStage, stageStat)) {
+                                        SQLiteDatabase.deleteDatabase(canonStage);
+                                    }
+                                    if (pendingNext.exists() && commitLock.isStillLiveInode()) {
+                                        pendingNext.delete();
+                                    }
+                                    if (hooks != null) {
+                                        hooks.beforeJournalDelete(tid, journal);
+                                    }
+                                    if (KanataM6SchemeCExporter.sameInode(journal, journalStat)) {
+                                        journal.delete();
+                                        KanataM6SchemeCExporter.fsyncDirectoryStrict(dirCanon);
+                                    }
+                                    confirmedCommits++;
+                                    confirmedIds.add(tid);
+                                } catch (IOException dirSyncErr) {
+                                    unconfirmedCommits++;
+                                    unconfirmedIds.add(tid);
+                                }
+                            } else if ("VERIFIED_READY_TO_COMMIT".equals(state)) {
+                                if (!canonStage.exists()) {
+                                    // Staged DB is gone: check whether rename to canonTarget already completed!
+                                    if (!canonTarget.exists() || expectedSha.isEmpty()) {
+                                        unconfirmedCommits++;
+                                        unconfirmedIds.add(tid);
+                                        continue;
+                                    }
+                                    String actualSha = KanataM6SchemeCExporter.computeFileSha256Hex(canonTarget);
+                                    if (!expectedSha.equals(actualSha)) {
+                                        unconfirmedCommits++;
+                                        unconfirmedIds.add(tid);
+                                        continue;
+                                    }
+                                    try {
+                                        if (hooks != null) {
+                                            hooks.performTargetDirFsync(targetParent);
+                                        } else {
+                                            KanataM6SchemeCExporter.fsyncDirectoryStrict(targetParent);
+                                        }
+                                        if (pendingNext.exists() && commitLock.isStillLiveInode()) {
+                                            pendingNext.delete();
+                                        }
+                                        if (hooks != null) {
+                                            hooks.beforeJournalDelete(tid, journal);
+                                        }
+                                        if (KanataM6SchemeCExporter.sameInode(journal, journalStat)) {
+                                            journal.delete();
+                                            KanataM6SchemeCExporter.fsyncDirectoryStrict(dirCanon);
+                                        }
+                                        confirmedCommits++;
+                                        confirmedIds.add(tid);
+                                    } catch (IOException dirSyncErr) {
+                                        unconfirmedCommits++;
+                                        unconfirmedIds.add(tid);
+                                    }
+                                } else {
+                                    // Staged DB still exists: validate expected digest & target state before cleaning.
+                                    if (expectedSha.isEmpty()) {
+                                        unconfirmedCommits++;
+                                        unconfirmedIds.add(tid);
+                                        continue;
+                                    }
+                                    String stageSha = KanataM6SchemeCExporter.computeFileSha256Hex(canonStage);
+                                    if (!expectedSha.equals(stageSha)) {
+                                        unconfirmedCommits++;
+                                        unconfirmedIds.add(tid);
+                                        continue;
+                                    }
+                                    if (canonTarget.exists()
+                                            && expectedSha.equals(KanataM6SchemeCExporter.computeFileSha256Hex(canonTarget))) {
+                                        unconfirmedCommits++;
+                                        unconfirmedIds.add(tid);
+                                        continue;
+                                    }
+                                    if (stageStat != null && KanataM6SchemeCExporter.sameInode(canonStage, stageStat)) {
+                                        SQLiteDatabase.deleteDatabase(canonStage);
+                                    }
+                                    if (pendingNext.exists() && commitLock.isStillLiveInode()) {
+                                        pendingNext.delete();
+                                    }
+                                    if (hooks != null) {
+                                        hooks.beforeJournalDelete(tid, journal);
+                                    }
+                                    if (KanataM6SchemeCExporter.sameInode(journal, journalStat)) {
+                                        journal.delete();
+                                        KanataM6SchemeCExporter.fsyncDirectoryStrict(dirCanon);
+                                    }
+                                    cleaned++;
+                                    cleanedIds.add(tid);
+                                }
+                            } else if ("COMMITTED".equals(state)) {
+                                if (pendingNext.exists() && commitLock.isStillLiveInode()) {
+                                    pendingNext.delete();
+                                }
+                                if (hooks != null) {
+                                    hooks.beforeJournalDelete(tid, journal);
+                                }
+                                if (KanataM6SchemeCExporter.sameInode(journal, journalStat)) {
+                                    journal.delete();
+                                    KanataM6SchemeCExporter.fsyncDirectoryStrict(dirCanon);
+                                }
+                                confirmedCommits++;
+                                confirmedIds.add(tid);
+                            } else {
+                                rejectedUntrusted++;
+                                rejectedNames.add(name);
+                            }
+                        } catch (Throwable parseOrIo) {
+                            rejectedUntrusted++;
+                            rejectedNames.add(name);
+                        }
+                    } catch (Throwable ignored) {}
+                }
+            }
+        }
+        return new ImportRecoveryReport(
+                scanned, cleaned, confirmedCommits, unconfirmedCommits, rejectedUntrusted,
+                cleanedIds, skippedIds, confirmedIds, unconfirmedIds, rejectedNames);
     }
 
     private KanataM6SchemeCImporter() {}
@@ -385,6 +884,28 @@ public final class KanataM6SchemeCImporter {
             AtomicBoolean cancelled,
             boolean allowOverwriteExistingTarget,
             ImportHooks hooks) throws Exception {
+        return importAndVerifyToIsolatedTarget(
+                source, password, catalog, workDir, targetDbFile, targetRawKey,
+                cancelled, allowOverwriteExistingTarget, hooks, null);
+    }
+
+    /**
+     * Decodes, authenticates, verifies EOF + 50 verifiers, installs & fully verifies into an isolated staging DB,
+     * then atomically commits to targetDbFile with crash-safe durability journal and target commit mutex.
+     * Never deletes a pre-existing targetDbFile on any failure.
+     */
+    public static ImportResult importAndVerifyToIsolatedTarget(
+            InputStream source,
+            String password,
+            KanataM6PortableCatalog catalog,
+            File workDir,
+            File targetDbFile,
+            byte[] targetRawKey,
+            AtomicBoolean cancelled,
+            boolean allowOverwriteExistingTarget,
+            ImportHooks hooks,
+            String explicitImportTaskId) throws Exception {
+        String importTaskId = sanitizeImportTaskId(explicitImportTaskId);
         File targetAbs = targetDbFile.getAbsoluteFile();
         File targetParent = targetAbs.getParentFile();
         if (targetParent == null || (!targetParent.exists() && !targetParent.mkdirs())) {
@@ -411,12 +932,14 @@ public final class KanataM6SchemeCImporter {
         byte[] footerKey = null;
 
         File stageFile = new File(workDir, ".stage-rows-" + UUID.randomUUID() + ".db");
-        File targetStageFile = new File(targetParent, ".stage-target-" + UUID.randomUUID() + ".db");
+        String stageNonce = UUID.randomUUID().toString().substring(0, 8);
+        File targetStageFile = new File(targetParent, ".stage-target-" + importTaskId + "-" + stageNonce + ".db");
         byte[] stageKey = null;
         SQLiteDatabase stageDb = null;
         SQLiteDatabase targetStageDb = null;
         LogicalStreamDecoder logicalDecoder = null;
         boolean targetCommitted = false;
+        boolean stageCleanedUnderLock = false;
 
         try {
             BoundedStreamReader reader = new BoundedStreamReader(source, cancelled);
@@ -703,40 +1226,101 @@ public final class KanataM6SchemeCImporter {
             if (stageWal.exists()) stageWal.delete();
             if (stageShm.exists()) stageShm.delete();
 
+            // Strictly fsync closed staging DB file and compute expected SHA-256 before entering commit phase
+            KanataM6SchemeCExporter.fsyncFileStrict(targetStageFile);
+            String stageSha256Hex = KanataM6SchemeCExporter.computeFileSha256Hex(targetStageFile);
+            StructStat targetStageStat = KanataM6SchemeCExporter.lstatOrNull(targetStageFile);
+
             if (hooks != null) hooks.afterStagingVerified(targetStageFile);
             KanataM6PortableCrypto.checkCancelled(cancelled);
 
-            // 7. Target-path serialized mutex: re-check pre-existing protection through atomic commit + dir fsync
-            try (TargetCommitLockHandle commitLock = acquireTargetCommitLock(targetAbs)) {
-                if (hasDatabaseOrSidecar(targetAbs)) {
-                    if (!allowOverwriteExistingTarget) {
-                        throw new KanataM6PortableCrypto.PortableException(
-                                KanataM6PortableCrypto.ERR_IO_FAILED, "target-already-exists");
-                    }
-                    File wal = new File(targetAbs.getPath() + "-wal");
-                    File shm = new File(targetAbs.getPath() + "-shm");
-                    if ((wal.exists() && wal.length() > 0L) || (shm.exists() && shm.length() > 0L)) {
-                        throw new KanataM6PortableCrypto.PortableException(
-                                KanataM6PortableCrypto.ERR_IO_FAILED, "target-active-sidecar");
-                    }
-                }
-                if (hooks != null) {
-                    hooks.beforeTargetCommit(targetStageFile, targetAbs);
-                    hooks.performAtomicTargetCommit(targetStageFile, targetAbs);
-                } else {
-                    defaultAtomicRenameOnly(targetStageFile, targetAbs);
-                }
-                targetCommitted = true;
+            // 7. Target-path serialized mutex: cancel re-check, durable pre-commit journal, atomic rename, dir fsync
+            File importJournal = new File(targetParent, ".import-" + importTaskId + ".pending");
+            File importJournalNext = new File(targetParent, ".import-" + importTaskId + ".pending.next");
+            boolean ownsImportJournal = false;
+            boolean durabilityConfirmed = false;
+            StructStat importJournalStat = null;
 
+            try (TargetCommitLockHandle commitLock = acquireTargetCommitLock(targetAbs, cancelled)) {
                 try {
+                    // R02-6: Mandatory cancellation check AFTER acquiring target lock so cancelled waiters never commit!
+                    KanataM6PortableCrypto.checkCancelled(cancelled);
                     if (hooks != null) {
-                        hooks.performTargetDirFsync(targetParent);
-                    } else {
-                        KanataM6SchemeCExporter.fsyncDirectoryStrict(targetParent);
+                        hooks.afterTargetLockAcquiredBeforeCommit(targetStageFile, targetAbs);
+                        KanataM6PortableCrypto.checkCancelled(cancelled);
                     }
-                } catch (IOException dirSyncErr) {
-                    throw new KanataM6PortableCrypto.PortableException(
-                            KanataM6PortableCrypto.ERR_DURABILITY_UNCONFIRMED, "target-dir-fsync-failed", dirSyncErr);
+                    if (hasDatabaseOrSidecar(targetAbs)) {
+                        if (!allowOverwriteExistingTarget) {
+                            throw new KanataM6PortableCrypto.PortableException(
+                                    KanataM6PortableCrypto.ERR_IO_FAILED, "target-already-exists");
+                        }
+                        File wal = new File(targetAbs.getPath() + "-wal");
+                        File shm = new File(targetAbs.getPath() + "-shm");
+                        if ((wal.exists() && wal.length() > 0L) || (shm.exists() && shm.length() > 0L)) {
+                            throw new KanataM6PortableCrypto.PortableException(
+                                    KanataM6PortableCrypto.ERR_IO_FAILED, "target-active-sidecar");
+                        }
+                    }
+                    if (importJournal.exists() && importJournal.length() > 0L) {
+                        throw new KanataM6PortableCrypto.PortableException(
+                                KanataM6PortableCrypto.ERR_IO_FAILED, "import-task-id-unrecovered-collision");
+                    }
+
+                    // Persist VERIFIED_READY_TO_COMMIT journal + targetParent directory entry durably BEFORE Os.rename!
+                    importJournalStat = writeImportJournalAtomic(
+                            importJournal, targetParent, importTaskId, "VERIFIED_READY_TO_COMMIT",
+                            targetStageFile, targetAbs, stageSha256Hex, true, hooks);
+                    ownsImportJournal = true;
+
+                    if (hooks != null) {
+                        hooks.beforeTargetCommit(targetStageFile, targetAbs);
+                        KanataM6PortableCrypto.checkCancelled(cancelled);
+                        hooks.performAtomicTargetCommit(targetStageFile, targetAbs);
+                    } else {
+                        KanataM6PortableCrypto.checkCancelled(cancelled);
+                        defaultAtomicRenameOnly(targetStageFile, targetAbs);
+                    }
+                    targetCommitted = true;
+
+                    try {
+                        if (hooks != null) {
+                            hooks.afterTargetRenameBeforeJournalUpdate(targetAbs, importJournal);
+                        }
+                        importJournalStat = writeImportJournalAtomic(
+                                importJournal, targetParent, importTaskId, "RENAMED_PENDING_DIR_SYNC",
+                                targetStageFile, targetAbs, stageSha256Hex, false, hooks);
+                        if (hooks != null) {
+                            hooks.performTargetDirFsync(targetParent);
+                        } else {
+                            KanataM6SchemeCExporter.fsyncDirectoryStrict(targetParent);
+                        }
+                    } catch (IOException postRenameErr) {
+                        throw new KanataM6PortableCrypto.PortableException(
+                                KanataM6PortableCrypto.ERR_DURABILITY_UNCONFIRMED, "target-dir-fsync-failed", postRenameErr);
+                    }
+                    durabilityConfirmed = true;
+                    try {
+                        importJournalStat = writeImportJournalAtomic(
+                                importJournal, targetParent, importTaskId, "COMMITTED",
+                                targetStageFile, targetAbs, stageSha256Hex, false, hooks);
+                    } catch (IOException ignoredAfterDurableCommit) {
+                        // Target rename + target dir fsync already succeeded; finally deletes journal under lock.
+                    }
+                } finally {
+                    boolean lockStillValid = commitLock.isStillLiveInode();
+                    if (!targetCommitted && targetStageStat != null
+                            && KanataM6SchemeCExporter.sameInode(targetStageFile, targetStageStat)) {
+                        SQLiteDatabase.deleteDatabase(targetStageFile);
+                        stageCleanedUnderLock = true;
+                    }
+                    boolean keepImportJournalForRecovery = targetCommitted && !durabilityConfirmed;
+                    if (ownsImportJournal && lockStillValid && importJournalNext.exists()) {
+                        importJournalNext.delete();
+                    }
+                    if (ownsImportJournal && !keepImportJournalForRecovery
+                            && KanataM6SchemeCExporter.sameInode(importJournal, importJournalStat)) {
+                        importJournal.delete();
+                    }
                 }
             }
 
@@ -760,7 +1344,7 @@ public final class KanataM6SchemeCImporter {
                     targetStageDb.close();
                 } catch (Throwable ignored) {}
             }
-            if (!targetCommitted) {
+            if (!targetCommitted && !stageCleanedUnderLock) {
                 // Only delete the staging DB created by THIS task; NEVER delete targetDbFile!
                 SQLiteDatabase.deleteDatabase(targetStageFile);
             }
