@@ -111,7 +111,32 @@
 
 ## 5. 远端 CI 验证证据
 
-- **待补齐（代码提交推送触发 `Quality` Workflow 后回填最终代码 SHA、Run ID、Job IDs 与 Artifact IDs）**。
+- **Workflow 名称**：`Quality` ([.github/workflows/quality.yml](../../../.github/workflows/quality.yml))
+- **分支**：`m6/encrypted-backup-recovery`
+- **通过全绿 CI 验证的代码提交 SHA**：**`07388b1481b0d97fc156770b6bd8f89162566099`**（包含核心 R01/R02 整改提交 `8a52d387b7fa8a5405634e856f93f636c4e8dadc` 与 `:m6worker` 信号文件原子发布加固 `07388b1481b0d97fc156770b6bd8f89162566099`）
+- **最终全绿 Run ID**：**`45754772327`**
+- **Run URL**：https://github.com/Zhoubin601/ForMyself/actions/runs/45754772327
+- **总体结论**：**`success`**（4/4 Job 一次全部通过，零重试）
+- **时间范围**：`2026-11-26T04:22:16Z` ~ `2026-11-26T04:41:49Z`
+
+### 5.1 全绿 Run `45754772327` 各 Job 明细
+
+| Job 名称 | Job ID | 状态 | 执行内容与结果 | 链接 |
+| :--- | :--- | :--- | :--- | :--- |
+| `web` | `139690708244` | **SUCCESS** | `npm ci && npm run check`（ESLint、818 项 Node 测试、Vitest、TypeScript、Vite 构建） | https://github.com/Zhoubin601/ForMyself/actions/runs/45754772327/job/139690708244 |
+| `android` | `139690708575` | **SUCCESS** | 标准非合成 `:app:testDebugUnitTest :app:assembleDebug :app:assembleDebugAndroidTest` 与既有 WebView Playwright 回归 | https://github.com/Zhoubin601/ForMyself/actions/runs/45754772327/job/139690708575 |
+| `m6-synthetic-android (33)` | `139690708445` | **SUCCESS** | Synthetic Release 禁止构建验证 + 全量 **33/33 PASS**（原有 19 项 + Fix-02 6 项 + Fix-03 R01/R02 5 项 + 3 档 54 样本基准） | https://github.com/Zhoubin601/ForMyself/actions/runs/45754772327/job/139690708445 |
+| `m6-synthetic-android (34)` | `139690708545` | **SUCCESS** | Synthetic Release 禁止构建验证 + 全量 **33/33 PASS**（原有 19 项 + Fix-02 6 项 + Fix-03 R01/R02 5 项 + 3 档 54 样本基准） | https://github.com/Zhoubin601/ForMyself/actions/runs/45754772327/job/139690708545 |
+
+### 5.2 Run `45754772327` 已上传 CI Artifacts
+
+| Artifact 名称 | Artifact ID | 大小 (Bytes) | SHA-256 Digest | 下载 API URL |
+| :--- | :--- | ---: | :--- | :--- |
+| `m6-synthetic-api34-reports` | `15088630540` | `944,301` | `sha256:8f6adcfc5289951e328d3d2f437044388818b9f9a75bb31be9771c7d025ee331` | https://api.github.com/repos/Zhoubin601/ForMyself/actions/artifacts/15088630540/zip |
+| `m6-synthetic-api33-reports` | `15087612446` | `877,248` | `sha256:654e0fe93152aace0b5c2b67d2796609e457cd73518463e0bbfb8a5af891e5ae` | https://api.github.com/repos/Zhoubin601/ForMyself/actions/artifacts/15087612446/zip |
+| `android-test-reports` | `15086708689` | `15,220,909` | `sha256:cdb08248c1974b13cf0a479d62979db081de1b24eefcd577aa81fed3eb034cb3` | https://api.github.com/repos/Zhoubin601/ForMyself/actions/artifacts/15086708689/zip |
+
+> 前置 Run 诚实记录：提交 `8a52d387b7fa8a5405634e856f93f636c4e8dadc` 触发的首次 Run `45751818424` 中，`web`、`android` 与 `m6-synthetic-android (33)`（33/33）均通过，`m6-synthetic-android (34)`（32/33）在 `r01_01` 暴露出测试服务 `KanataM6KillableWorkerService` 直接用 `FileOutputStream` 写 `worker_ready.json` 导致的 0 字节读竞态（`JSONException: End of input at character 0`）。随后提交 `07388b1481b0d97fc156770b6bd8f89162566099` 改为临时文件 `fsync` + `Os.rename` 原子发布 `worker_ready.json` / `worker_recovered.json` / `worker_import_recovered.json`，Run `45754772327` 一次实现 4/4 全绿。
 
 ---
 
