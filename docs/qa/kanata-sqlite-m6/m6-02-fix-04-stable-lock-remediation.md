@@ -17,7 +17,7 @@
 | :--- | :--- | :--- | :--- |
 | **Exporter 任务锁文件** | `.task-<tid>.lock` 在 `TaskLockHandle.close()` 内先 `lockFile.delete()` 再 `fileLock.release()` | 永久稳定锁文件，正常 `close()` 与 `recoverIncompleteTasks()` **禁止 unlink** | [KanataM6SchemeCExporter.java](file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata-m5/docs/qa/kanata-sqlite-m6/syntheticDebug/java/com/yubin/formyself/KanataM6SchemeCExporter.java#L234-L381) |
 | **Importer 目标提交锁文件** | `.kanata-import-<hash>.lock` 在 `TargetCommitLockHandle.close()` 内先 `lockFile.delete()` 再 `fileLock.release()` | 永久稳定锁文件，正常 `close()` 与恢复过程 **禁止 unlink** | [KanataM6SchemeCImporter.java](file:///D:/2026Autumn%20Semester%20File/GitHub/formyself-app/.worktrees/kanata-m5/docs/qa/kanata-sqlite-m6/syntheticDebug/java/com/yubin/formyself/KanataM6SchemeCImporter.java#L256-L535) |
-| **释放顺序** | `delete()` → `fileLock.release()` → `raf.close()` → `mutex.unlock()` | 业务与临时文件/Journal 清理已提前完成 → 可选测试注入点 `beforeOsReleaseHook` → `fileLock.release()` → `raf.close()` → `slot.ownerActive = false` & `slot.mutex.unlock()` | Exporter `#L274-L299` / `#L1879-L1881`；Importer `#L350-L380` / `#L1306-L1311` |
+| **释放顺序** | `delete()` → `fileLock.release()` → `raf.close()` → `mutex.unlock()` | 业务与临时文件/Journal 清理已提前完成 → 可选测试注入点 `beforeOsReleaseHook` → `fileLock.release()` → `raf.close()` → `slot.ownerActive = false` & `slot.mutex.unlock()` | Exporter `#L273-L299` / `#L1879-L1881`；Importer `#L345-L377` / `#L1306-L1311` |
 | **Orphan Lock Sweep** | `recoverIncompleteTasks()` 末尾通过尝试加锁并 `close()` 清理孤立 `.lock` 文件（原 931–945 行） | **已移除**，避免借由加锁后删除造成目录项与 inode 切换竞态 | `KanataM6SchemeCExporter.java` (`recoverIncompleteTasks`) |
 | **活动状态判定** | 将锁文件存在/创建副作用与活动锁混用 | `hasActiveTaskLock()` / `hasActiveCommitLock()` 在同进程先检查 `slot.ownerActive \|\| slot.mutex.isLocked()`（避免 POSIX `fcntl` 因同进程关闭新 FD 误放原锁），仅当本进程无持锁者且 `lockFile.exists()` 时通过 `FileChannel.tryLock()` 非阻塞探测 OS 锁；休眠稳定 `.lock` 文件明确返回 `false` | Exporter `#L381`；Importer `#L256` |
 | **`SIGKILL` 行为** | 强杀后依赖文件存在性判断可能误判或被 orphan sweep 删除 | 内核在进程退出后自动释放原 `(st_dev, st_ino)` 的 OS `FileLock`；恢复进程与新任务直接重新获取**同一 inode** | 见第 2 节真实多进程证据 |
@@ -52,7 +52,7 @@
 | 平台 | 设备 / AVD | WebView 版本 | 执行范围 | 结果 | 兼容性与备注 |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | **API 34** | `Codex_Todo_WebView34` (`Android 14`) | `113.0.5672.136` | 完整 34 项 M6 非基准套件 (`KanataM6N01..N04`, `SchemeCInterop`, `F02`, `Fix02`, `Fix03`, `Fix04`) | **34/34 PASS** (`0 skipped, 0 failed`) | Native API + WebView Bridge 全量通过 |
-| **API 30** | `Codex_Todo_API30` (`Android 11`) | `113.0.5672.136`（已升级） | 完整 34 项 M6 非基准套件 (`KanataM6N01..Fix04`) | **34/34 PASS** (`0 skipped, 0 failed`) | 原厂 API 30 WebView `83.0.4103.106` 上 `ES2020/optional chaining` Bridge 失败历史 `BLOCKED` 记录保持不变 |
+| **API 30** | `Codex_Todo_API30` (`Android 11`) | `113.0.5672.136`（已升级） | 完整 34 项 M6 非基准套件 (`KanataM6N01..Fix04`) | **34/34 PASS** (`0 skipped, 0 failed`) | 原厂 API 30 WebView 83 上 Bridge 失败历史 `BLOCKED` 记录保持不变 |
 | **API 25** | `Codex_Kanata_API25` (`Android 7.1.1`) | `52.0.2743.100` | 定向 Native 锁与恢复 20 项（`Fix04` 4 项 + `Fix03` 5 项 + `F02` 5 项 + `Fix02` Native 5 项 + `N04` SIGKILL 1 项） | **20/20 PASS** (`0 skipped, 0 failed`) | Native API 兼容通过；WebView 52 上的 Bridge 历史 `BLOCKED` 记录保持不变 |
 | **API 24** | `Codex_Kanata_API24` (`Android 7.0`) | `52.0.2743.100` | 定向 Native 锁与恢复 20 项（同 API 25 范围） | **20/20 PASS** (`0 skipped, 0 failed`) | Native API 兼容通过；WebView 52 上的 Bridge 历史 `BLOCKED` 记录保持不变 |
 
@@ -68,7 +68,23 @@
 
 ## 4. 远端 GitHub Actions `Quality` CI 记录
 
-- **待填充**：提交推送 FIX-04 代码后由 `Quality` workflow（`.github/workflows/quality.yml`）实际运行并回填 Run ID、4/4 Job 状态、Artifact ID 与最终提交 SHA。
+- **测试提交 SHA**：`808205c665b143c4411eb8b5128882ac966222ae`
+- **Workflow / Run ID**：`Quality` / [`45763919600`](https://github.com/Zhoubin601/ForMyself/actions/runs/45763919600)（`status=completed`, `conclusion=success`）
+
+| Job 名称 | Job ID | 状态 / 结论 | 链接 |
+| :--- | :--- | :--- | :--- |
+| `web` | `139720143559` | `completed` / `success` | https://github.com/Zhoubin601/ForMyself/actions/runs/45763919600/job/139720143559 |
+| `android` | `139720143894` | `completed` / `success` | https://github.com/Zhoubin601/ForMyself/actions/runs/45763919600/job/139720143894 |
+| `m6-synthetic-android (33)` | `139720144282` | `completed` / `success` | https://github.com/Zhoubin601/ForMyself/actions/runs/45763919600/job/139720144282 |
+| `m6-synthetic-android (34)` | `139720144101` | `completed` / `success` | https://github.com/Zhoubin601/ForMyself/actions/runs/45763919600/job/139720144101 |
+
+### 上传产物（Artifacts）
+
+| Artifact ID | 名称 | 大小 (bytes) |
+| :--- | :--- | :--- |
+| `15091565863` | `android-test-reports` | `15221252` |
+| `15091872139` | `m6-synthetic-api33-reports` | `967498` |
+| `15092565480` | `m6-synthetic-api34-reports` | `1156893` |
 
 ---
 
