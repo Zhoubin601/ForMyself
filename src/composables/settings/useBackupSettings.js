@@ -3,7 +3,10 @@ import { restoreState } from '../../platform/storage/restoreState.js'
 import { createFullBackupRuntime } from '../../application/fullBackupRuntime.js'
 import { backupFailureGuidance } from '../../application/backupErrors.js'
 import { Capacitor } from '@capacitor/core'
-import { ref } from 'vue'
+import { App as CapacitorApp } from '@capacitor/app'
+import { getCurrentInstance, onBeforeUnmount, ref, watch } from 'vue'
+import { createListenerScope } from '../../application/moduleLifecycle.js'
+import { createKanataPortableRestoreRuntime } from '../../application/kanataPortableRestoreRuntime.js'
 import { Filesystem, Directory, Encoding } from '@capacitor/filesystem'
 import { Share } from '@capacitor/share'
 import CryptoJS from 'crypto-js'
@@ -48,11 +51,88 @@ export function useBackupSettings() {
   const chatStore = useChatStore()
 
   const fileInputRef = ref(null)
+  const portableFileInputRef = ref(null)
+  const portableBackupPassword = ref('')
 
   const exportDataType = ref('full')
   const backupPickerOpen = ref(false)
 
   const backupTypeOptions = BACKUP_TYPE_OPTIONS
+
+  const portableRestore = createKanataPortableRestoreRuntime()
+  const portableRestoreState = portableRestore.state
+  const portableListeners = createListenerScope()
+  const stopSectionWatch = watch(
+    () => settingsStore.settingsSection,
+    section => {
+      if (section === 'data') {
+        void portableRestore.refreshCapability()
+        void portableRestore.refreshUnconfirmed()
+      }
+    },
+    { immediate: true }
+  )
+  void portableListeners.listenMany(CapacitorApp, [
+    ['appStateChange', ({ isActive }) => {
+      if (isActive && settingsStore.settingsSection === 'data') {
+        void portableRestore.refreshCapability()
+        void portableRestore.refreshUnconfirmed()
+      }
+    }]
+  ])
+
+  const cleanupPortableRestore = () => {
+    stopSectionWatch()
+    portableBackupPassword.value = ''
+    portableRestore.dispose()
+    portableListeners.dispose()
+  }
+  if (getCurrentInstance()) {
+    onBeforeUnmount(cleanupPortableRestore)
+  }
+
+  const refreshBackupCapability = () => portableRestore.refreshCapability()
+  const triggerPortableFileSelect = () => {
+    if (portableRestoreState.busy || !portableFileInputRef.value) return
+    beginNativeActivityGuard()
+    portableFileInputRef.value.click()
+  }
+  const handlePortableFileChange = event => {
+    const file = event?.target?.files?.[0] || null
+    portableRestore.selectBackupFile(file)
+    if (event?.target) event.target.value = ''
+  }
+  const startPortableRestore = async () => {
+    const password = portableBackupPassword.value
+    try {
+      await portableRestore.startStaging({ backupPassword: password })
+    } finally {
+      portableBackupPassword.value = ''
+    }
+  }
+  const confirmPortableRestore = async () => {
+    if (!await protectedAccess.authenticate()) return false
+    const confirmed = await appConfirm(
+      '隔离临时库已完成 50 项表摘要、外键与完整性校验。继续将通过全局恢复协调器切换当前彼方数据。',
+      { title: '确认提交恢复？', confirmText: '确认切换', destructive: true }
+    )
+    if (!confirmed) return false
+    return portableRestore.confirmCommitRestore({ localMasterPassword: authStore.savedMasterPwd })
+  }
+  const cancelPortableRestore = async () => {
+    portableBackupPassword.value = ''
+    await portableRestore.cancelRestore()
+  }
+  const retryPortableRestoreSync = () => portableRestore.retrySync()
+  const reverifyUnconfirmedTask = taskId => portableRestore.reverifyUnconfirmed(taskId)
+  const manualCleanupUnconfirmedTask = async taskId => {
+    const confirmed = await appConfirm(
+      `确认对未确认记录 ${taskId} 执行受控人工核验与安全清理？无法证明安全时系统仍将保持保护状态且不会删除任何材料。`,
+      { title: '人工核验与清理', confirmText: '确认核验清理', destructive: true }
+    )
+    if (!confirmed) return null
+    return portableRestore.manualCleanupUnconfirmed(taskId, { confirmed: true })
+  }
 
   // --- 数据导出/导入 ---
   const getDataTypeLabel = () => {
@@ -327,6 +407,19 @@ export function useBackupSettings() {
     downloadAsFile,
     exportJSON,
     triggerImport,
-    handleFileUpload
+    handleFileUpload,
+    portableFileInputRef,
+    portableBackupPassword,
+    portableRestoreState,
+    refreshBackupCapability,
+    triggerPortableFileSelect,
+    handlePortableFileChange,
+    startPortableRestore,
+    confirmPortableRestore,
+    cancelPortableRestore,
+    retryPortableRestoreSync,
+    reverifyUnconfirmedTask,
+    manualCleanupUnconfirmedTask,
+    cleanupPortableRestore
   }
 }

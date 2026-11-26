@@ -50,10 +50,12 @@ for line in text.splitlines():
         m6_probes.setdefault(tag, {})[k] = v
         if k in ("N03_BRIDGE_AND_WEBVIEW", "N03_LONG_FIELDS_AND_BOUNDED_MEMORY"):
             bridge[k] = v
-    elif tag in ("KanataM6F02", "KanataM6Fix02", "KanataM6Fix03", "KanataM6Fix04"):
+    elif tag in ("KanataM6F02", "KanataM6Fix02", "KanataM6Fix03", "KanataM6Fix04", "KanataM603", "KanataM603Bridge"):
         faults.setdefault(tag, {})[k] = v
-        if k == "P1_03":
+        if k in ("P1_03", "M603_BRIDGE_CAPABILITY"):
             bridge[k] = v
+    elif tag == "KanataM603Bench":
+        bench_summaries[k] = v
     elif tag == "KanataM6Bench":
         if k.startswith("SAMPLE_"):
             scale = k.split("_", 1)[1]
@@ -152,7 +154,7 @@ fi
 adb logcat -G 16M || true
 adb logcat -c || true
 
-TEST_CLASSES="com.yubin.formyself.KanataM6N01CryptoProbeTest,com.yubin.formyself.KanataM6N02SnapshotProbeTest,com.yubin.formyself.KanataM6N03BoundedMemoryTest,com.yubin.formyself.KanataM6N04SafLifecycleTest,com.yubin.formyself.KanataM6SchemeCInteropAndNegativeTest,com.yubin.formyself.KanataM6F02FaultMatrixTest,com.yubin.formyself.KanataM6Fix02FaultInjectionTest,com.yubin.formyself.KanataM6Fix03CommitAndLockTest,com.yubin.formyself.KanataM6Fix04StableLockTest,com.yubin.formyself.KanataM6AcBenchmarkTest"
+TEST_CLASSES="com.yubin.formyself.KanataM6N01CryptoProbeTest,com.yubin.formyself.KanataM6N02SnapshotProbeTest,com.yubin.formyself.KanataM6N03BoundedMemoryTest,com.yubin.formyself.KanataM6N04SafLifecycleTest,com.yubin.formyself.KanataM6SchemeCInteropAndNegativeTest,com.yubin.formyself.KanataM6F02FaultMatrixTest,com.yubin.formyself.KanataM6Fix02FaultInjectionTest,com.yubin.formyself.KanataM6Fix03CommitAndLockTest,com.yubin.formyself.KanataM6Fix04StableLockTest,com.yubin.formyself.KanataM603RestoreEngineAndCoordinatorTest,com.yubin.formyself.KanataM603BridgeCapabilityTest,com.yubin.formyself.KanataM603CapacityBenchmarkTest,com.yubin.formyself.KanataM6AcBenchmarkTest"
 
 (
   cd android

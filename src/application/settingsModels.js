@@ -51,13 +51,25 @@ export const SETTINGS_SECTION_FIELDS = {
   "SettingsBackup": [
     "backupPickerOpen",
     "backupTypeOptions",
+    "cancelPortableRestore",
+    "confirmPortableRestore",
     "exportDataType",
     "exportJSON",
     "fileInputRef",
     "getDataTypeLabel",
     "handleFileUpload",
+    "handlePortableFileChange",
     "isGeneralSection",
-    "triggerImport"
+    "manualCleanupUnconfirmedTask",
+    "portableBackupPassword",
+    "portableFileInputRef",
+    "portableRestoreState",
+    "refreshBackupCapability",
+    "retryPortableRestoreSync",
+    "reverifyUnconfirmedTask",
+    "startPortableRestore",
+    "triggerImport",
+    "triggerPortableFileSelect"
   ],
   "SettingsCatalogs": [
     "newMoodPriority",

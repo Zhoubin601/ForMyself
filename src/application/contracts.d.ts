@@ -80,13 +80,35 @@ export interface NativeListenerHandle { remove(): void | Promise<void> }
 export interface NativeListenerPlugin {
   addListener(event: string, listener: (...args: any[]) => unknown): Promise<NativeListenerHandle>
 }
+export type RestoreCoordinatorPhase =
+  | 'idle'
+  | 'capability_check'
+  | 'reading_kpb1'
+  | 'authenticating'
+  | 'staging_import'
+  | 'verifying_staging'
+  | 'awaiting_confirmation'
+  | 'coordinator_prepare'
+  | 'journal_persisting'
+  | 'applying'
+  | 'rolling_back'
+  | 'committing'
+  | 'clearing_journal'
+  | 'synchronizing'
+  | 'succeeded'
+  | 'failed'
+  | 'rollback_failed'
+  | 'cancelled'
+  | 'unconfirmed'
+  | 'manual_verification_required'
+
 export interface RestoreState { blocked: boolean; busy: boolean; message: string; syncError: string }
 export interface RestoreRecord<Snapshot> { version: 1; previous: Snapshot; target: Snapshot }
 export type {RestoreCipherEnvelope,CompressedRestorePayload} from '../platform/storage/restorePayloadTypes'
 export interface RestoreJournal<Snapshot> {
   inspect(): Promise<{ encrypted: string; committed: boolean; digest: string } | null>
   prepare(record: RestoreRecord<Snapshot>, password: string): Promise<void | {digest:string}>
-  commit(): Promise<void>
+  commit(expectedDigest?: string): Promise<void>
   clear(): Promise<void>
 }
 export interface RestoreCoordinatorOptions<Snapshot> {
@@ -96,11 +118,119 @@ export interface RestoreCoordinatorOptions<Snapshot> {
   journalRollback?: boolean
   state: RestoreState
   prepare(options?: { recovering?: boolean }): Promise<unknown>
-  capture(): Snapshot
+  capture(): Snapshot | Promise<Snapshot>
   apply(snapshot: Snapshot): Promise<unknown>
   validate(value: unknown): Snapshot
   validateRecovery?(value: unknown): Snapshot
   synchronize?(): Promise<unknown>
+  assertSession?(): void
+  onPhase?(phase: RestoreCoordinatorPhase): void
+}
+
+export type BackupCapabilityUnavailableCode =
+  | ''
+  | 'UNSUPPORTED_PLATFORM'
+  | 'WEBVIEW_BELOW_CAPACITOR_FLOOR'
+  | 'BRIDGE_UNAVAILABLE'
+  | 'HANDSHAKE_FAILED'
+  | 'HANDSHAKE_TIMEOUT'
+  | 'HANDSHAKE_NONCE_MISMATCH'
+  | 'SQLITE_PLUGIN_MISSING'
+  | 'SQLITE_PLUGIN_NOT_ACTIVATED'
+  | 'SAF_UNAVAILABLE'
+
+export interface BackupRuntimeCapability {
+  platform: 'web' | 'android' | 'ios' | 'unknown'
+  checkedAt: number
+  androidApi: number | null
+  androidRelease: string
+  webviewPackage: string
+  webviewVersion: string
+  webviewMajorVersion: number | null
+  bridgeStatus: 'ready' | 'unavailable' | 'blocked_webview' | 'handshake_failed' | 'not_applicable'
+  bridgeHandshakeOk: boolean
+  sqlitePluginStatus: 'ready' | 'registered_not_activated' | 'missing' | 'web_encrypted_file_adapter'
+  safStatus: 'available' | 'unavailable' | 'browser_file_api'
+  portableRestoreAvailable: boolean
+  unavailableCode: BackupCapabilityUnavailableCode
+  unavailableReason: string
+}
+
+export interface KanataSqliteGenerationDescriptor {
+  readonly kind: 'kanata-sqlite-generation-v1'
+  readonly generationId: string
+  readonly taskId: string
+  readonly absent: boolean
+  readonly dbPath: string
+  readonly dbSha256Hex: string
+  readonly envelopePath?: string
+  readonly schemaVersion: 5
+  readonly applicationId: 0x4b4e5441
+  readonly schemaFingerprint: string
+  readonly datasetIdentity: string
+  readonly totalBusinessRows: number
+  readonly tableCount: 50
+  readonly transcriptHex?: string
+  readonly verified: boolean
+}
+
+export interface UnconfirmedTaskSummary {
+  taskId: string
+  kind: 'EXPORT' | 'IMPORT' | 'UNKNOWN'
+  state: string
+  journalPath: string
+  targetPath: string
+  expectedSha256Hex: string
+  actualTargetSha256Hex: string
+  targetExists: boolean
+  lockActive: boolean
+  shaMatches: boolean
+  reason: string
+}
+
+export interface UnconfirmedManualActionResult {
+  taskId: string
+  resolved: boolean
+  outcome: string
+  reason: string
+}
+
+export interface KanataPortableStageRequest {
+  source: unknown
+  backupPassword: string
+  signal?: AbortSignal
+  onProgress?: (progress: { phase: RestoreCoordinatorPhase; percent: number }) => void
+}
+
+export interface KanataPortableRestoreEngine {
+  stageAndVerify(request: KanataPortableStageRequest): Promise<{
+    descriptor: KanataSqliteGenerationDescriptor
+    summary?: { worldCount: number; messageCount: number }
+    metrics?: Record<string, unknown>
+  }>
+  destroyStaging?(descriptor: KanataSqliteGenerationDescriptor): Promise<unknown>
+  prepareWriteDrain(options?: { recovering?: boolean }): Promise<unknown>
+  capturePreviousGeneration(): Promise<KanataSqliteGenerationDescriptor>
+  applyGeneration(descriptor: KanataSqliteGenerationDescriptor): Promise<unknown>
+  finalizeArtifacts?(artifacts: {
+    previous: KanataSqliteGenerationDescriptor | null
+    target: KanataSqliteGenerationDescriptor
+  }): Promise<unknown>
+  inspectUnconfirmed?(): Promise<UnconfirmedTaskSummary[]>
+  reverifyUnconfirmed?(taskId: string): Promise<UnconfirmedManualActionResult>
+  manualCleanupUnconfirmed?(
+    taskId: string,
+    options: { confirmed: boolean; restoreJournalPending: boolean },
+  ): Promise<UnconfirmedManualActionResult>
+}
+
+export interface KanataPortableRestoreCoordinatorOptions {
+  journal: RestoreJournal<KanataSqliteGenerationDescriptor>
+  state: RestoreState
+  engine: KanataPortableRestoreEngine
+  getOwnerIdentity?: () => { ownerId: string; sessionRevision: number }
+  synchronize?: () => Promise<unknown>
+  onPhase?: (phase: RestoreCoordinatorPhase) => void
 }
 export interface FullBackupDTO {
   type: 'formyself-full-backup'

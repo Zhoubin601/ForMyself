@@ -71,9 +71,12 @@ export function createRestoreJournal(filesystem = Filesystem) {
       // record that happened to appear between preparation and the coordinator's inspection.
       return {digest:sha256Text(encrypted)}
     },
-    async commit() {
+    async commit(expectedDigest) {
       const record = await inspect()
       if (!record) throw new Error('RESTORE_RECORD_MISSING')
+      if (expectedDigest !== undefined && expectedDigest !== '' && record.digest !== expectedDigest) {
+        throw new Error('RESTORE_COMMIT_MISMATCH')
+      }
       await writeVerified(COMMIT_PATH, JSON.stringify({ digest: record.digest }))
     },
     async clear() {

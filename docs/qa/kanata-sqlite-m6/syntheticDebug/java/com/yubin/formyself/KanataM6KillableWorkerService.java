@@ -29,6 +29,16 @@ public final class KanataM6KillableWorkerService extends Service {
     public static final String ACTION_CHECK_IMPORT_RECOVERY = "com.yubin.formyself.M6_CHECK_IMPORT_RECOVERY";
     public static final String ACTION_COMPETE_EXPORTER_LOCK = "com.yubin.formyself.M6_COMPETE_EXPORTER_LOCK";
     public static final String ACTION_COMPETE_IMPORTER_LOCK = "com.yubin.formyself.M6_COMPETE_IMPORTER_LOCK";
+    public static final String ACTION_START_M603_RESTORE_PAUSE = "com.yubin.formyself.M603_START_RESTORE_PAUSE";
+    public static final String EXTRA_JOURNAL_DIR = "journalDir";
+    public static final String EXTRA_MASTER_PASSWORD = "masterPassword";
+    public static final String STAGE_M603_DURING_STAGING = "M603_DURING_STAGING";
+    public static final String STAGE_M603_AFTER_STAGING_BEFORE_JOURNAL = "M603_AFTER_STAGING_BEFORE_JOURNAL";
+    public static final String STAGE_M603_AFTER_JOURNAL_BEFORE_APPLY = "M603_AFTER_JOURNAL_BEFORE_APPLY";
+    public static final String STAGE_M603_DURING_APPLY_BEFORE_RENAME = "M603_DURING_APPLY_BEFORE_RENAME";
+    public static final String STAGE_M603_BEFORE_COMMIT_MARKER = "M603_BEFORE_COMMIT_MARKER";
+    public static final String STAGE_M603_AFTER_COMMIT_MARKER = "M603_AFTER_COMMIT_MARKER";
+    public static final String STAGE_M603_DURING_JOURNAL_CLEAR = "M603_DURING_JOURNAL_CLEAR";
     public static final String EXTRA_WORK_DIR = "workDir";
     public static final String EXTRA_SPOOL_DIR = "spoolDir";
     public static final String EXTRA_DB_PATH = "dbPath";
@@ -486,6 +496,154 @@ public final class KanataM6KillableWorkerService extends Service {
                 }
                 stopSelf(startId);
             }, "m6-compete-importer-lock").start();
+        } else if (ACTION_START_M603_RESTORE_PAUSE.equals(action)) {
+            String packagePath = intent.getStringExtra(EXTRA_PACKAGE_PATH);
+            String rawKeyHex = intent.getStringExtra(EXTRA_RAW_KEY_HEX);
+            String backupPassword = intent.getStringExtra(EXTRA_PASSWORD);
+            String masterPassword = intent.getStringExtra(EXTRA_MASTER_PASSWORD);
+            String targetPath = intent.getStringExtra(EXTRA_TARGET_PATH);
+            String journalDirPath = intent.getStringExtra(EXTRA_JOURNAL_DIR);
+            String pauseStage = intent.getStringExtra(EXTRA_PAUSE_STAGE);
+
+            new Thread(() -> {
+                byte[] rawKey = null;
+                try {
+                    System.loadLibrary("sqlcipher");
+                    KanataM6PortableCatalog catalog = KanataM6PortableCatalog.load(getApplicationContext());
+                    rawKey = KanataM6PortableCrypto.hexToBytes(rawKeyHex);
+                    File targetFile = new File(targetPath);
+                    File targetDir = targetFile.getParentFile();
+                    File journalDir = new File(journalDirPath);
+                    if (!journalDir.exists()) journalDir.mkdirs();
+                    File stagingDir = new File(targetDir, "staging");
+                    File rollbackDir = new File(targetDir, "rollback");
+                    if (!stagingDir.exists()) stagingDir.mkdirs();
+                    if (!rollbackDir.exists()) rollbackDir.mkdirs();
+
+                    KanataM6StagingRestoreEngine.PreparedStagingArtifact staged =
+                            KanataM6StagingRestoreEngine.prepareStagingFromFile(
+                                    new File(packagePath),
+                                    backupPassword,
+                                    catalog,
+                                    workDir,
+                                    stagingDir,
+                                    rawKey,
+                                    null,
+                                    50,
+                                    new AtomicBoolean(false),
+                                    new KanataM6StagingRestoreEngine.StagingHooks() {
+                                        @Override
+                                        public void beforeBatchCommit(String tableName, int batchIndex, int rowsInBatch, net.zetetic.database.sqlcipher.SQLiteDatabase stagingDb) {
+                                            if (STAGE_M603_DURING_STAGING.equals(pauseStage) && "messages".equals(tableName)) {
+                                                signalReadyAndHoldForSigkill(workDir, taskId, pauseStage, null);
+                                            }
+                                        }
+                                    },
+                                    taskId);
+
+                    if (STAGE_M603_AFTER_STAGING_BEFORE_JOURNAL.equals(pauseStage)) {
+                        signalReadyAndHoldForSigkill(workDir, taskId, pauseStage, staged.stagingDbFile,
+                                new JSONObject().put("stagePath", staged.stagingDbFile.getAbsolutePath())
+                                        .put("stageSha", staged.stagingSha256Hex));
+                        return;
+                    }
+
+                    KanataM6StagingRestoreEngine.CapturedPreviousGeneration previous =
+                            KanataM6StagingRestoreEngine.capturePreviousGeneration(
+                                    targetFile, rawKey, rollbackDir, taskId, new KanataM6SnapshotOwner.WriteGate());
+
+                    // Persist AES-256-GCM encrypted restore journal record (restore-v1.enc)
+                    JSONObject record = new JSONObject()
+                            .put("version", 1)
+                            .put("taskId", taskId)
+                            .put("previous", new JSONObject()
+                                    .put("absent", previous.absent)
+                                    .put("dbPath", previous.rollbackDbFile != null ? previous.rollbackDbFile.getAbsolutePath() : "")
+                                    .put("dbSha256Hex", previous.rollbackSha256Hex))
+                            .put("target", new JSONObject()
+                                    .put("absent", false)
+                                    .put("dbPath", staged.stagingDbFile.getAbsolutePath())
+                                    .put("dbSha256Hex", staged.stagingSha256Hex));
+                    byte[] salt = KanataM6PortableCrypto.randomBytes(16);
+                    byte[] iv = KanataM6PortableCrypto.randomBytes(12);
+                    byte[] key = new byte[32];
+                    KanataM6PortableCrypto.pbkdf2HmacSha256ZeroAllocInto(
+                            masterPassword.getBytes(StandardCharsets.UTF_8), salt, 50_000, 32, new AtomicBoolean(false), key);
+                    byte[] plain = record.toString().getBytes(StandardCharsets.UTF_8);
+                    byte[] cipher = KanataM6PortableCrypto.aesGcmEncrypt(key, iv, plain, plain.length, new byte[0], "worker-journal");
+                    KanataM6PortableCrypto.zeroize(key, plain);
+                    JSONObject env = new JSONObject()
+                            .put("version", 1)
+                            .put("saltHex", KanataM6PortableCrypto.bytesToHex(salt))
+                            .put("ivHex", KanataM6PortableCrypto.bytesToHex(iv))
+                            .put("cipherHex", KanataM6PortableCrypto.bytesToHex(cipher));
+                    String encText = env.toString();
+                    File journalFile = new File(journalDir, "restore-v1.enc");
+                    File commitFile = new File(journalDir, "restore-v1.commit");
+                    writeJsonAtomically(journalFile, env);
+                    KanataM6SchemeCExporter.fsyncDirectoryStrict(journalDir);
+                    String journalDigest = KanataM6SchemeCExporter.computeFileSha256Hex(journalFile);
+
+                    if (STAGE_M603_AFTER_JOURNAL_BEFORE_APPLY.equals(pauseStage)) {
+                        signalReadyAndHoldForSigkill(workDir, taskId, pauseStage, journalFile,
+                                new JSONObject().put("journalDigest", journalDigest)
+                                        .put("rollbackPath", previous.rollbackDbFile != null ? previous.rollbackDbFile.getAbsolutePath() : "")
+                                        .put("stagePath", staged.stagingDbFile.getAbsolutePath()));
+                        return;
+                    }
+
+                    KanataM6StagingRestoreEngine.applyVerifiedGeneration(
+                            staged.stagingDbFile,
+                            staged.stagingSha256Hex,
+                            false,
+                            targetFile,
+                            rawKey,
+                            taskId,
+                            new AtomicBoolean(false),
+                            new KanataM6StagingRestoreEngine.ApplyHooks() {
+                                @Override
+                                public void beforeApplyRename(File applyTmpFile, File activeDbFile) {
+                                    if (STAGE_M603_DURING_APPLY_BEFORE_RENAME.equals(pauseStage)) {
+                                        signalReadyAndHoldForSigkill(workDir, taskId, pauseStage, applyTmpFile);
+                                    }
+                                }
+                            });
+
+                    if (STAGE_M603_BEFORE_COMMIT_MARKER.equals(pauseStage)) {
+                        signalReadyAndHoldForSigkill(workDir, taskId, pauseStage, journalFile,
+                                new JSONObject().put("journalDigest", journalDigest));
+                        return;
+                    }
+
+                    writeJsonAtomically(commitFile, new JSONObject().put("digest", journalDigest));
+                    KanataM6SchemeCExporter.fsyncDirectoryStrict(journalDir);
+
+                    if (STAGE_M603_AFTER_COMMIT_MARKER.equals(pauseStage)) {
+                        signalReadyAndHoldForSigkill(workDir, taskId, pauseStage, commitFile,
+                                new JSONObject().put("journalDigest", journalDigest));
+                        return;
+                    }
+
+                    // Delete restore-v1.enc first, then pause before removing commit marker
+                    journalFile.delete();
+                    KanataM6SchemeCExporter.fsyncDirectoryStrict(journalDir);
+                    if (STAGE_M603_DURING_JOURNAL_CLEAR.equals(pauseStage)) {
+                        signalReadyAndHoldForSigkill(workDir, taskId, pauseStage, commitFile,
+                                new JSONObject().put("journalDigest", journalDigest));
+                        return;
+                    }
+                    commitFile.delete();
+                    KanataM6SchemeCExporter.fsyncDirectoryStrict(journalDir);
+                } catch (Throwable t) {
+                    try {
+                        writeJsonAtomically(new File(workDir, "worker_error.txt"),
+                                new JSONObject().put("error", t.getClass().getName() + ":" + t.getMessage()));
+                    } catch (Throwable ignored) {}
+                } finally {
+                    KanataM6PortableCrypto.zeroize(rawKey);
+                }
+                stopSelf(startId);
+            }, "m603-restore-pause-worker").start();
         }
         return START_NOT_STICKY;
     }

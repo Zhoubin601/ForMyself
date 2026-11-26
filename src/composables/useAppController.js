@@ -31,6 +31,7 @@ import { syncScheduleNotifications } from '../features/schedule/scheduleNotifica
 import { appAlert, appToast } from '../services/uiFeedback'
 import { dispatchBackAction } from '../services/backNavigation'
 import { afterNextPaint, afterTwoPaints, markAppPerformance, measureAppPerformance } from '../services/appPerformance.js'
+import { probeBackupRuntimeCapability } from '../platform/runtime/backupCapabilityProbe.js'
 
 export function useAppController() {
   const authStore = useAuthStore()
@@ -352,6 +353,7 @@ export function useAppController() {
     }
     backgroundedAt = null
     void lifecycle.resume()
+    void probeBackupRuntimeCapability().catch(() => {})
     if (protectedAccess.status.chat === 'ready') {
       resyncChatProactive().catch(error => console.warn('恢复应用后同步温馨小家主动联系失败', error))
     }
@@ -367,6 +369,7 @@ export function useAppController() {
   }
 
   onMounted(async () => {
+    void probeBackupRuntimeCapability().catch(() => {})
     // Capacitor's Web factory creates an instance on first use; resolve it once
     // before concurrent subscriptions so all events share that instance.
     if (!Capacitor.isNativePlatform()) {

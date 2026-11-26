@@ -1,0 +1,159 @@
+{
+  "taskId": "KANATA-M6-03-RESTORE-COORDINATOR-2026-11-26",
+  "date": "2026-11-26",
+  "branch": "m6/encrypted-backup-recovery",
+  "worktree": ".worktrees/kanata-m5",
+  "baselineSha": "b32ebb2366422bdb1a653f7bee45b56956b1722d",
+  "status": "PASS",
+  "governance": {
+    "canonicalStorage": "legacy",
+    "ordinaryApkKanataM2Synthetic": false,
+    "minSdkVersion": 24,
+    "schema001To005Unchanged": true,
+    "kpb1ByteContractUnchanged": true,
+    "m602Fix04StableLockUnchanged": true,
+    "syntheticReleaseBlocked": true,
+    "distContainsSyntheticMarkers": false,
+    "m604Started": false,
+    "markedClosedByAgent": false
+  },
+  "hostVerification": {
+    "eslintErrors": 0,
+    "eslintWarnings": 60,
+    "nodeTestsPassed": 820,
+    "nodeTestsFailed": 0,
+    "vitestFilesPassed": 46,
+    "vitestTestsPassed": 431,
+    "vitestTestsFailed": 0,
+    "vueTscAndContractsStrict": "PASS",
+    "viteBuild": "PASS",
+    "standardAndroidGradle": "PASS",
+    "syntheticM6Gradle": "PASS",
+    "syntheticReleaseBlocked": "PASS (Exit 1: assembleRelease not found)"
+  },
+  "androidEmulatorMatrix": {
+    "api34": {
+      "avd": "Codex_Todo_WebView34",
+      "androidApi": 34,
+      "androidRelease": "14",
+      "webviewPackage": "com.google.android.webview",
+      "webviewVersion": "113.0.5672.136",
+      "webviewMajorVersion": 113,
+      "bridgeHandshakeOk": true,
+      "safAvailable": true,
+      "sqlitePluginRegistered": true,
+      "sqlitePluginActivated": true,
+      "coreAndBridgeAndFix04Result": "PASS (10/10, 138.736s)",
+      "sigkillCrashStagesPassed": 7,
+      "negativeMatrixPassed": 12,
+      "batchRollbackOk": true,
+      "unconfirmedPreservedAndResolved": true,
+      "fix04StableLockRegression": "PASS (4/4)"
+    },
+    "api24": {
+      "avd": "Codex_Kanata_API24",
+      "androidApi": 24,
+      "androidRelease": "7.0",
+      "webviewPackage": "com.android.webview",
+      "webviewVersion": "52.0.2743.100",
+      "webviewMajorVersion": 52,
+      "webviewMeetsHardFloor": false,
+      "webviewSupportedForBridge": false,
+      "bridgeHandshakeOk": false,
+      "jsBridgeResult": {
+        "available": false,
+        "reason": "PLUGIN_MISSING"
+      },
+      "safAvailable": true,
+      "sqlcipherNativeAvailable": true,
+      "nativeSuiteResult": "PASS (5/5 Native + 1/1 Honest WebView 52 Block = 6/6, 42.064s)",
+      "sigkillCrashStagesPassed": 7,
+      "negativeMatrixPassed": 12,
+      "batchRollbackOk": true,
+      "unconfirmedPreservedAndResolved": true
+    }
+  },
+  "capacityBenchmarksApi34": {
+    "rssCeilingKiB": 524288,
+    "batchSize": 500,
+    "samples": [
+      {
+        "scale": 1000,
+        "kpb1FileBytes": 197584,
+        "totalRestoreMs": 5104,
+        "decodeMs": 2971,
+        "stagingInstallMs": 1499,
+        "verifyMs": 626,
+        "batchCount": 45,
+        "maxBatchRows": 500,
+        "maxBatchMs": 378,
+        "medianBatchMs": 11,
+        "stagingDbBytes": 1265664,
+        "peakRssKiB": 156696,
+        "peakJavaHeapBytes": 39465960,
+        "peakNativeHeapBytes": 9611888,
+        "webViewRssKiB": 156696,
+        "dataFrameCount": 3,
+        "totalBusinessRows": 1056,
+        "datasetIdentity": "kds-44a095f1200622cf",
+        "verified50Tables": true
+      },
+      {
+        "scale": 10000,
+        "kpb1FileBytes": 1943106,
+        "totalRestoreMs": 12204,
+        "decodeMs": 4354,
+        "stagingInstallMs": 6161,
+        "verifyMs": 1682,
+        "batchCount": 63,
+        "maxBatchRows": 500,
+        "maxBatchMs": 333,
+        "medianBatchMs": 12,
+        "stagingDbBytes": 4730880,
+        "peakRssKiB": 132820,
+        "peakJavaHeapBytes": 7169120,
+        "peakNativeHeapBytes": 12429952,
+        "webViewRssKiB": 132820,
+        "dataFrameCount": 30,
+        "totalBusinessRows": 10056,
+        "datasetIdentity": "kds-44a095f1200622cf",
+        "verified50Tables": true
+      },
+      {
+        "scale": 100000,
+        "kpb1FileBytes": 19758398,
+        "totalRestoreMs": 162206,
+        "decodeMs": 21683,
+        "stagingInstallMs": 70702,
+        "verifyMs": 69818,
+        "batchSize": 500,
+        "batchCount": 243,
+        "maxBatchRows": 500,
+        "maxBatchMs": 511,
+        "medianBatchMs": 343,
+        "stagingDbBytes": 40796160,
+        "peakRssKiB": 135392,
+        "peakJavaHeapBytes": 9666808,
+        "peakNativeHeapBytes": 12478400,
+        "webViewRssKiB": 135300,
+        "dataFrameCount": 302,
+        "totalBusinessRows": 100056,
+        "datasetIdentity": "kds-44a095f1200622cf",
+        "verified50Tables": true
+      }
+    ]
+  },
+  "selfAudit": {
+    "round1Findings": [
+      "Android 11+ (API 30+) package visibility blocked PackageManager.resolveActivity for SAF intents -> fixed by adding <queries> for OPEN_DOCUMENT & CREATE_DOCUMENT in AndroidManifest.xml.",
+      "Post-SIGKILL crash recovery failed with apply-active-dirty-sidecars when previous generation left uncheckpointed WAL sidecars -> fixed in KanataM6StagingRestoreEngine.applyVerifiedGeneration() under FIX-04 stable target lock.",
+      "m603_02 FK injection test triggered Schema 001 memories_immutable_scope before reaching foreign_key_check -> fixed test hook to drop memories_immutable_scope so verifyStagingDatabase() foreign_key_check is exercised.",
+      "vue-tsc strict narrowing flagged Set<string> in restoreDecoder.js -> added explicit ReadonlySet<string> annotation."
+    ],
+    "round2Verification": "PASS (0 errors across lint, 820 Node tests, 431 Vitest tests, vue-tsc + strict contracts, Vite build, standard/synthetic Android Gradle, API 34 10/10 + 3/3 capacity, API 24 6/6, boundary diff Exit 0)"
+  },
+  "ci": {
+    "commitSha": "PENDING_COMMIT",
+    "workflowRunId": "PENDING_CI"
+  }
+}

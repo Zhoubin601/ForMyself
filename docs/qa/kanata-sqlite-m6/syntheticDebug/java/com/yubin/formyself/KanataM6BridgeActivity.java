@@ -70,6 +70,7 @@ public final class KanataM6BridgeActivity extends BridgeActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         registerPlugin(KanataSqlitePlugin.class);
+        registerPlugin(KanataRuntimeCapabilityPlugin.class);
         registerPlugin(KanataM6SyntheticPortablePlugin.class);
         super.onCreate(savedInstanceState);
     }
