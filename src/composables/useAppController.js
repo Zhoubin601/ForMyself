@@ -31,7 +31,7 @@ import { syncScheduleNotifications } from '../features/schedule/scheduleNotifica
 import { appAlert, appToast } from '../services/uiFeedback'
 import { dispatchBackAction } from '../services/backNavigation'
 import { afterNextPaint, afterTwoPaints, markAppPerformance, measureAppPerformance } from '../services/appPerformance.js'
-import { probeBackupRuntimeCapability } from '../platform/runtime/backupCapabilityProbe.js'
+import { notifyBackupCapabilityResume, probeBackupRuntimeCapability } from '../platform/runtime/backupCapabilityProbe.js'
 
 export function useAppController() {
   const authStore = useAuthStore()
@@ -354,6 +354,7 @@ export function useAppController() {
     backgroundedAt = null
     void lifecycle.resume()
     void probeBackupRuntimeCapability().catch(() => {})
+    notifyBackupCapabilityResume()
     if (protectedAccess.status.chat === 'ready') {
       resyncChatProactive().catch(error => console.warn('恢复应用后同步温馨小家主动联系失败', error))
     }

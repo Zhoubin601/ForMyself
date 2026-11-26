@@ -324,3 +324,33 @@ export async function probeBackupRuntimeCapability({
     if (timerId !== null) clearTimeout(timerId)
   }
 }
+
+/** @type {Set<() => void>} */
+const capabilityResumeListeners = new Set()
+
+/**
+ * Subscribe to app foreground-resume notifications dispatched by the composition root.
+ * Keeps native Capacitor App event ownership centralized in useAppController.
+ * @param {() => void} listener
+ * @returns {() => void}
+ */
+export function subscribeBackupCapabilityResume(listener) {
+  if (typeof listener !== 'function') return () => {}
+  capabilityResumeListeners.add(listener)
+  return () => {
+    capabilityResumeListeners.delete(listener)
+  }
+}
+
+/**
+ * Notify active backup-capability consumers that the app resumed to the foreground.
+ */
+export function notifyBackupCapabilityResume() {
+  for (const listener of [...capabilityResumeListeners]) {
+    try {
+      listener()
+    } catch {
+      // Listener errors must never interrupt app resume lifecycle.
+    }
+  }
+}

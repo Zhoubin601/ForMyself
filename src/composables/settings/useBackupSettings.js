@@ -3,9 +3,8 @@ import { restoreState } from '../../platform/storage/restoreState.js'
 import { createFullBackupRuntime } from '../../application/fullBackupRuntime.js'
 import { backupFailureGuidance } from '../../application/backupErrors.js'
 import { Capacitor } from '@capacitor/core'
-import { App as CapacitorApp } from '@capacitor/app'
 import { getCurrentInstance, onBeforeUnmount, ref, watch } from 'vue'
-import { createListenerScope } from '../../application/moduleLifecycle.js'
+import { subscribeBackupCapabilityResume } from '../../platform/runtime/backupCapabilityProbe.js'
 import { createKanataPortableRestoreRuntime } from '../../application/kanataPortableRestoreRuntime.js'
 import { Filesystem, Directory, Encoding } from '@capacitor/filesystem'
 import { Share } from '@capacitor/share'
@@ -61,7 +60,6 @@ export function useBackupSettings() {
 
   const portableRestore = createKanataPortableRestoreRuntime()
   const portableRestoreState = portableRestore.state
-  const portableListeners = createListenerScope()
   const stopSectionWatch = watch(
     () => settingsStore.settingsSection,
     section => {
@@ -72,20 +70,18 @@ export function useBackupSettings() {
     },
     { immediate: true }
   )
-  void portableListeners.listenMany(CapacitorApp, [
-    ['appStateChange', ({ isActive }) => {
-      if (isActive && settingsStore.settingsSection === 'data') {
-        void portableRestore.refreshCapability()
-        void portableRestore.refreshUnconfirmed()
-      }
-    }]
-  ])
+  const unsubscribeCapabilityResume = subscribeBackupCapabilityResume(() => {
+    if (settingsStore.settingsSection === 'data') {
+      void portableRestore.refreshCapability()
+      void portableRestore.refreshUnconfirmed()
+    }
+  })
 
   const cleanupPortableRestore = () => {
     stopSectionWatch()
+    unsubscribeCapabilityResume()
     portableBackupPassword.value = ''
     portableRestore.dispose()
-    portableListeners.dispose()
   }
   if (getCurrentInstance()) {
     onBeforeUnmount(cleanupPortableRestore)
