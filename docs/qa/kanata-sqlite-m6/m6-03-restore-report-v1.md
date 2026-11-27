@@ -122,16 +122,28 @@
   2. **崩溃恢复旧 WAL 侧文件死锁缺陷**：首轮 `m603_04` 真实 `SIGKILL` 测试发现旧代数据库残留 `-wal` 会导致 `applyVerifiedGeneration()` 报错 `apply-active-dirty-sidecars` 阻断崩溃恢复。已修复为在持有 FIX-04 稳定目标锁且完成 WriteGate 排空/崩溃接管后安全清除被替换旧代侧文件，复测 7/7 `SIGKILL` 中断点全部收敛。
   3. **`m603_02` 外键注入测试触发路径偏差**：原测试更新 `memories.world_id` 提前命中 Schema 001 `memories_immutable_scope` 触发器。已修正为先删除该触发器再破坏外键，确保真实覆盖 `verifyStagingDatabase()` 的 `pragma_foreign_key_check`。
   4. **`vue-tsc` 严格类型收窄**：`restoreDecoder.js` 补齐 `ReadonlySet<string>` JSDoc 注释，全量 `vue-tsc` + `tsc -p tsconfig.contracts.json` 零错误通过。
-- **Round 2 复审**：
+- **Round 2 复审与 CI 全矩阵回归闭环**：
   - 边界隔离 `git diff --exit-code`（Schema 001–005、KPB1 冻结字节合同、M6-02 FIX-04 稳定锁、`kanataCanonicalStorage='legacy'`、`variables.gradle`、`package.json`/`package-lock.json`）：**Exit 0**。
   - `dist/assets/*.js` 隔离扫描：无 `KPB1/` 或 `0xff01` 测试常量泄露。
-  - `npm run check`、标准 Android Debug 构建与单测、合成 M6 构建、合成 Release 阻断、API 34 (10/10 + 3/3 压测)、API 24 (6/6)：**全量通过**。
+  - **CI 真实发现与修复（第 5 项发现）**：首次推送 `e1fcc9dcf493b3dc35a4904ca1254cd36ee8b302`（CI Run `45781842254`）中 `web`、`m6-synthetic-android (33)` 与 `m6-synthetic-android (34)` 均一次性通过，但普通 APK 的 `android` Playwright `verify.mjs` 报错 `Ambiguous actual journal`。根因为 `useBackupSettings.js` 静态导入 `@capacitor/app` 导致 Vite/Rollup 将 Capacitor `App` 插件 Proxy 导出到主入口 chunk `index-*.js`，命中了 `resolveRestoreJournal` 的鸭子类型匹配。在提交 `6f97b4820fb953212d93ee8106fb307a46dbda3a` 中将前台恢复通知统一收口到组合根 `useAppController.js` 与 `backupCapabilityProbe.js` 订阅通道，确认主入口 chunk 插件 Proxy 导出数为 `0`，重跑完整 4/4 CI 全绿通过。
+  - `npm run check`、标准 Android Debug 构建与单测、合成 M6 构建、合成 Release 阻断、API 34 (10/10 + 3/3 压测)、API 24 (6/6) 及远端 4/4 CI 矩阵：**全量通过**。
 
 ---
 
 ## 8. 远端 CI 记录与精确提交 SHA
 
-- **实现与报告提交 SHA**：待本次提交后写入精确 SHA 与 GitHub Actions Run ID（见后续同步更新）。
+- **任务基线 SHA**：`b32ebb2366422bdb1a653f7bee45b56956b1722d`
+- **初始实现提交 SHA**：`e1fcc9dcf493b3dc35a4904ca1254cd36ee8b302`（CI Run `45781842254`：`web` / `m6-synthetic-android (33)` / `m6-synthetic-android (34)` 通过；`android` 发现主入口 chunk Proxy 导出回归）
+- **CI 全绿代码提交 SHA**：`6f97b4820fb953212d93ee8106fb307a46dbda3a`
+- **GitHub Actions `Quality` Run ID**：**`45793217397`**（[查看 Run 45793217397](https://github.com/Zhoubin601/ForMyself/actions/runs/45793217397)）
+- **全量 4/4 Job 实测结果**：
+  | Job 名称 | Job ID | 结论 | 耗时 |
+  | --- | ---: | :---: | ---: |
+  | `web` (`npm run check`) | `139817213438` | **success** | 2m35s |
+  | `android`（普通 APK + Playwright WebView 全量回归） | `139817213289` | **success** | 5m1s |
+  | `m6-synthetic-android (33)`（API 33 全套 M6 + M6-03 + 容量压测） | `139817213392` | **success** | 15m8s |
+  | `m6-synthetic-android (34)`（API 34 全套 M6 + M6-03 + 容量压测） | `139817212956` | **success** | 23m9s |
+- **CI 归档产物**：`android-test-reports`、`m6-synthetic-api33-reports`、`m6-synthetic-api34-reports`（均已上传至 Run `45793217397`）。
 
 ---
 

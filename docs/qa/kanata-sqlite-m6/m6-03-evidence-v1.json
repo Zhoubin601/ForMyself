@@ -150,10 +150,44 @@
       "m603_02 FK injection test triggered Schema 001 memories_immutable_scope before reaching foreign_key_check -> fixed test hook to drop memories_immutable_scope so verifyStagingDatabase() foreign_key_check is exercised.",
       "vue-tsc strict narrowing flagged Set<string> in restoreDecoder.js -> added explicit ReadonlySet<string> annotation."
     ],
-    "round2Verification": "PASS (0 errors across lint, 820 Node tests, 431 Vitest tests, vue-tsc + strict contracts, Vite build, standard/synthetic Android Gradle, API 34 10/10 + 3/3 capacity, API 24 6/6, boundary diff Exit 0)"
+    "ciRegressionFoundAndFixed": [
+      "Quality CI Run 45781842254 (commit e1fcc9dcf493b3dc35a4904ca1254cd36ee8b302): web, m6-synthetic-android (33), and m6-synthetic-android (34) passed; android Playwright verify.mjs failed with 'Ambiguous actual journal' because static import of @capacitor/app in useBackupSettings.js caused Vite/Rollup to export the Capacitor App plugin Proxy from the main entry chunk (matching resolveRestoreJournal duck-typing). Fixed in commit 6f97b4820fb953212d93ee8106fb307a46dbda3a by centralizing foreground-resume subscription through backupCapabilityProbe.js + useAppController.js (0 plugin proxy exports in entry chunk)."
+    ],
+    "round2Verification": "PASS (0 errors across lint, 820 Node tests, 431 Vitest tests, vue-tsc + strict contracts, Vite build, entry chunk 0 plugin proxy exports, standard/synthetic Android Gradle, API 34 10/10 + 3/3 capacity, API 24 6/6, boundary diff Exit 0, and full 4/4 GitHub Actions Quality CI Run 45793217397)"
   },
   "ci": {
-    "commitSha": "PENDING_COMMIT",
-    "workflowRunId": "PENDING_CI"
+    "initialImplementationSha": "e1fcc9dcf493b3dc35a4904ca1254cd36ee8b302",
+    "verifiedCodeCommitSha": "6f97b4820fb953212d93ee8106fb307a46dbda3a",
+    "workflowName": "Quality",
+    "workflowRunId": 45793217397,
+    "workflowRunUrl": "https://github.com/Zhoubin601/ForMyself/actions/runs/45793217397",
+    "conclusion": "success",
+    "jobs": {
+      "web": {
+        "jobId": 139817213438,
+        "conclusion": "success",
+        "duration": "2m35s"
+      },
+      "android": {
+        "jobId": 139817213289,
+        "conclusion": "success",
+        "duration": "5m1s"
+      },
+      "m6-synthetic-android (33)": {
+        "jobId": 139817213392,
+        "conclusion": "success",
+        "duration": "15m8s"
+      },
+      "m6-synthetic-android (34)": {
+        "jobId": 139817212956,
+        "conclusion": "success",
+        "duration": "23m9s"
+      }
+    },
+    "artifacts": [
+      "android-test-reports",
+      "m6-synthetic-api33-reports",
+      "m6-synthetic-api34-reports"
+    ]
   }
 }
