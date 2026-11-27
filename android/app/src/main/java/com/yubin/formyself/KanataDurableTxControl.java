@@ -106,15 +106,28 @@ public final class KanataDurableTxControl {
 
     public static final class TxControlException extends Exception {
         public final String code;
+        public final String detail;
 
         public TxControlException(String code, String message) {
             super(code + ": " + message);
             this.code = code;
+            this.detail = message;
         }
 
         public TxControlException(String code, String message, Throwable cause) {
             super(code + ": " + message, cause);
             this.code = code;
+            this.detail = message;
+        }
+
+        private TxControlException(String code, String detail, boolean exactCodeMessage) {
+            super(exactCodeMessage ? code : (code + ": " + detail));
+            this.code = code;
+            this.detail = detail;
+        }
+
+        public static TxControlException withExactCodeMessage(String code, String detail) {
+            return new TxControlException(code, detail, true);
         }
     }
 
@@ -902,7 +915,7 @@ public final class KanataDurableTxControl {
             LockedWork<T> work) throws Exception {
         LegacyInventory legacy = inspectLegacyRestoreArtifacts(context);
         if (legacy.orphanOrConflict) {
-            throw new TxControlException("RESTORE_RECOVERY_REQUIRED",
+            throw TxControlException.withExactCodeMessage("RESTORE_RECOVERY_REQUIRED",
                     "Legacy restore artifact conflict/orphan: " + legacy.status);
         }
         int rootMode;
@@ -913,7 +926,7 @@ public final class KanataDurableTxControl {
         }
         if (rootMode == 0) {
             if (blockOnLegacyPending && !legacy.clean) {
-                throw new TxControlException("RESTORE_RECOVERY_REQUIRED",
+                throw TxControlException.withExactCodeMessage("RESTORE_RECOVERY_REQUIRED",
                         "Legacy restore pending: " + legacy.status);
             }
             return work.run();
@@ -924,7 +937,7 @@ public final class KanataDurableTxControl {
         try (StableControlLock ignored = acquireControlLock(controlRoot)) {
             AuthoritativeState state = probeLocked(context, controlRoot, AndroidKeyStoreBackend.INSTANCE, FaultInjector.NONE);
             if (state.blocked) {
-                throw new TxControlException("RESTORE_RECOVERY_REQUIRED",
+                throw TxControlException.withExactCodeMessage("RESTORE_RECOVERY_REQUIRED",
                         "Durable tx control fence active: " + state.reasonCode + " (" + state.recoveryAction + ")");
             }
             return work.run();
@@ -974,7 +987,7 @@ public final class KanataDurableTxControl {
             FaultInjector faults) throws TxControlException {
         LegacyInventory legacy = inspectLegacyRestoreArtifacts(context);
         if (!legacy.clean) {
-            throw new TxControlException("RESTORE_RECOVERY_REQUIRED",
+            throw TxControlException.withExactCodeMessage("RESTORE_RECOVERY_REQUIRED",
                     "Legacy restore artifact gate active: " + legacy.status);
         }
         int rootMode;
@@ -992,7 +1005,7 @@ public final class KanataDurableTxControl {
         try (StableControlLock ignored = acquireControlLock(controlRoot)) {
             AuthoritativeState state = probeLocked(context, controlRoot, keyBackend, faults);
             if (state.blocked) {
-                throw new TxControlException("RESTORE_RECOVERY_REQUIRED",
+                throw TxControlException.withExactCodeMessage("RESTORE_RECOVERY_REQUIRED",
                         "Durable tx control fence active: " + state.reasonCode + " (" + state.recoveryAction + ")");
             }
         }

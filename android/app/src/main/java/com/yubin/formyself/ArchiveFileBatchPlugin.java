@@ -23,11 +23,17 @@ public class ArchiveFileBatchPlugin extends Plugin {
                             if ("write".equals(op) || "delete".equals(op)) { hasMutation = true; break; }
                         }
                     }
-                    if (hasMutation) {
-                        KanataDurableTxControl.assertOrdinaryWriteAllowed(getContext());
-                    }
                     JSObject result = new JSObject();
-                    result.put("results", ArchiveFileBatchStore.execute(getContext().getFilesDir(), ops));
+                    if (hasMutation) {
+                        org.json.JSONArray executed = KanataDurableTxControl.executeOrdinaryWriteUnderFence(
+                                getContext(),
+                                KanataDurableTxControl.defaultControlRoot(getContext()),
+                                false,
+                                () -> ArchiveFileBatchStore.execute(getContext().getFilesDir(), ops));
+                        result.put("results", executed);
+                    } else {
+                        result.put("results", ArchiveFileBatchStore.execute(getContext().getFilesDir(), ops));
+                    }
                     call.resolve(result);
                 } catch (Exception ignored) { call.reject("ARCHIVE_FILE_BATCH_FAILED", "ARCHIVE_FILE_BATCH_FAILED"); }
             });
