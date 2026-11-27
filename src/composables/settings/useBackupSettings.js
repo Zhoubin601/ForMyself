@@ -6,6 +6,11 @@ import { Capacitor } from '@capacitor/core'
 import { getCurrentInstance, onBeforeUnmount, ref, watch } from 'vue'
 import { subscribeBackupCapabilityResume } from '../../platform/runtime/backupCapabilityProbe.js'
 import { createKanataPortableRestoreRuntime } from '../../application/kanataPortableRestoreRuntime.js'
+import {
+  createSyntheticPortableRestoreCoordinator,
+  isSyntheticPortableRestoreBridgeAvailable,
+  pickNativeBackupDocument,
+} from '../../application/kanataSyntheticRestoreWiring.js'
 import { Filesystem, Directory, Encoding } from '@capacitor/filesystem'
 import { Share } from '@capacitor/share'
 import CryptoJS from 'crypto-js'
@@ -58,7 +63,24 @@ export function useBackupSettings() {
 
   const backupTypeOptions = BACKUP_TYPE_OPTIONS
 
-  const portableRestore = createKanataPortableRestoreRuntime()
+  const portableCoordinator = createSyntheticPortableRestoreCoordinator({
+    state: restoreState,
+    getOwnerIdentity: () => ({
+      ownerId: 'settings-backup-ui',
+      sessionRevision: authStore.sessionRevision,
+      epoch: protectedAccess.revision,
+    }),
+    synchronize: async () => {
+      await syncReminderNotifications(settingsStore.notificationSettings, {
+        personalizedBodies: getPersonalizedReminderBodies(settingsStore.notificationAiContent)
+      })
+      await todoStore.syncReminders()
+      await syncScheduleNotifications(scheduleStore.snapshot)
+    },
+  })
+  const portableRestore = createKanataPortableRestoreRuntime({
+    coordinator: portableCoordinator,
+  })
   const portableRestoreState = portableRestore.state
   const stopSectionWatch = watch(
     () => settingsStore.settingsSection,
@@ -88,8 +110,21 @@ export function useBackupSettings() {
   }
 
   const refreshBackupCapability = () => portableRestore.refreshCapability()
-  const triggerPortableFileSelect = () => {
-    if (portableRestoreState.busy || !portableFileInputRef.value) return
+  const triggerPortableFileSelect = async () => {
+    if (portableRestoreState.busy) return
+    if (isSyntheticPortableRestoreBridgeAvailable()) {
+      beginNativeActivityGuard()
+      try {
+        const picked = await pickNativeBackupDocument()
+        if (picked && picked.uri) {
+          portableRestore.selectBackupFile({ name: picked.name || 'backup.kpb1', uri: picked.uri })
+        }
+      } catch {
+        // User cancelled SAF picker or picker unavailable
+      }
+      return
+    }
+    if (!portableFileInputRef.value) return
     beginNativeActivityGuard()
     portableFileInputRef.value.click()
   }
@@ -100,8 +135,13 @@ export function useBackupSettings() {
   }
   const startPortableRestore = async () => {
     const password = portableBackupPassword.value
+    let localMasterPassword = ''
+    if (portableCoordinator) {
+      if (!await protectedAccess.authenticate()) return
+      localMasterPassword = authStore.savedMasterPwd
+    }
     try {
-      await portableRestore.startStaging({ backupPassword: password })
+      await portableRestore.startStaging({ backupPassword: password, localMasterPassword })
     } finally {
       portableBackupPassword.value = ''
     }
@@ -120,6 +160,7 @@ export function useBackupSettings() {
     await portableRestore.cancelRestore()
   }
   const retryPortableRestoreSync = () => portableRestore.retrySync()
+  const retryPortableRestoreCleanup = () => portableRestore.retryCleanup()
   const reverifyUnconfirmedTask = taskId => portableRestore.reverifyUnconfirmed(taskId)
   const manualCleanupUnconfirmedTask = async taskId => {
     const confirmed = await appConfirm(
@@ -414,6 +455,7 @@ export function useBackupSettings() {
     confirmPortableRestore,
     cancelPortableRestore,
     retryPortableRestoreSync,
+    retryPortableRestoreCleanup,
     reverifyUnconfirmedTask,
     manualCleanupUnconfirmedTask,
     cleanupPortableRestore

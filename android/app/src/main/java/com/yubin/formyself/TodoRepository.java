@@ -39,12 +39,41 @@ public final class TodoRepository {
         if (!context.getSharedPreferences("CapacitorStorage", Context.MODE_PRIVATE).edit().putString(KEY, data.toString()).commit()) throw new Exception("TODO_WRITE_FAILED");
     }
     public static JSONObject compareAndSet(Context context, long expected, JSONObject data) throws Exception {
+        return compareAndSet(context, KanataDurableTxControl.defaultControlRoot(context), expected, data);
+    }
+    public static JSONObject compareAndSet(Context context, java.io.File controlRoot, long expected, JSONObject data) throws Exception {
         synchronized (LOCK) {
-            JSONObject current = readUnlocked(context);
-            if (current.optLong("revision") != expected) throw new Exception("TODO_CONFLICT");
-            if (data.optInt("version") != 1 || data.optLong("revision") != expected + 1) throw new Exception("INVALID_TODO_DATA");
-            commit(context, data);
-            return data;
+            return KanataDurableTxControl.executeOrdinaryWriteUnderFence(context, controlRoot, false, () -> {
+                JSONObject current = readUnlocked(context);
+                if (current.optLong("revision") != expected) throw new Exception("TODO_CONFLICT");
+                if (data.optInt("version") != 1 || data.optLong("revision") != expected + 1) throw new Exception("INVALID_TODO_DATA");
+                commit(context, data);
+                return data;
+            });
+        }
+    }
+    public static JSONObject applyRecoveryCompareAndSet(
+            Context context,
+            java.io.File controlRoot,
+            KanataDurableTxControl.RecoveryCapability capability,
+            long expected,
+            JSONObject data,
+            KanataDurableTxControl.KeyBackend keyBackend) throws Exception {
+        synchronized (LOCK) {
+            return KanataDurableTxControl.executeRecoveryWriteWithCapability(
+                    context,
+                    controlRoot,
+                    capability,
+                    "todo",
+                    KanataDurableTxControl.OP_RECOVERY_TODO_CAS,
+                    keyBackend,
+                    () -> {
+                        JSONObject current = readUnlocked(context);
+                        if (current.optLong("revision") != expected) throw new Exception("TODO_CONFLICT");
+                        if (data.optInt("version") != 1 || data.optLong("revision") != expected + 1) throw new Exception("INVALID_TODO_DATA");
+                        commit(context, data);
+                        return data;
+                    });
         }
     }
     public static boolean matches(JSONObject task, String date) throws Exception {
@@ -93,39 +122,49 @@ public final class TodoRepository {
         return result;
     }
     private static void ensureNoPendingRestore(Context context) throws Exception {
-        if (new java.io.File(context.getFilesDir(), "formyself/restore-v1.enc").exists()) throw new Exception("RESTORE_RECOVERY_REQUIRED");
+        KanataDurableTxControl.assertOrdinaryWriteAllowed(context);
     }
     public static JSONObject toggleCompleted(Context context,String taskId,String date) throws Exception {
+        return toggleCompleted(context, KanataDurableTxControl.defaultControlRoot(context), taskId, date);
+    }
+    public static JSONObject toggleCompleted(Context context, java.io.File controlRoot, String taskId, String date) throws Exception {
         synchronized (LOCK) {
-            ensureNoPendingRestore(context);
-            if (!today().equals(date)) throw new Exception("TODO_STALE_WIDGET");
-            for(JSONObject item:day(readUnlocked(context),date)) {
-                if(item.getString("id").equals(taskId)) return setCompleted(context,taskId,date,!item.optBoolean("completed"));
-            }
-            throw new Exception("TODO_STALE_WIDGET");
+            return KanataDurableTxControl.executeOrdinaryWriteUnderFence(context, controlRoot, true, () -> {
+                if (!today().equals(date)) throw new Exception("TODO_STALE_WIDGET");
+                for(JSONObject item:day(readUnlocked(context),date)) {
+                    if(item.getString("id").equals(taskId)) return setCompletedUnlocked(context,taskId,date,!item.optBoolean("completed"));
+                }
+                throw new Exception("TODO_STALE_WIDGET");
+            });
         }
     }
     public static JSONObject setCompleted(Context context, String taskId, String date, boolean completed) throws Exception {
+        return setCompleted(context, KanataDurableTxControl.defaultControlRoot(context), taskId, date, completed);
+    }
+    public static JSONObject setCompleted(Context context, java.io.File controlRoot, String taskId, String date, boolean completed) throws Exception {
         synchronized (LOCK) {
-            ensureNoPendingRestore(context);
-            if (!today().equals(date)) throw new Exception("TODO_STALE_WIDGET");
-            JSONObject data = readUnlocked(context);
-            boolean valid = false;
-            for (JSONObject item : day(data, date)) if (item.getString("id").equals(taskId)) valid = true;
-            if (!valid) throw new Exception("TODO_STALE_WIDGET");
-            String key = taskId + "@" + date;
-            JSONArray old = data.getJSONArray("completions"), next = new JSONArray();
-            boolean wasCompleted = false;
-            for (int i=0; i<old.length(); i++) {
-                JSONObject item = old.getJSONObject(i);
-                if (key.equals(item.optString("key"))) { wasCompleted=true; if (completed) next.put(item); }
-                else next.put(item);
-            }
-            if (wasCompleted == completed) return data;
-            if (completed) next.put(new JSONObject().put("taskId", taskId).put("date", date).put("key", key).put("completedAt", System.currentTimeMillis()));
-            data.put("completions", next); data.put("revision", data.optLong("revision") + 1);
-            commit(context, data);
-            return data;
+            return KanataDurableTxControl.executeOrdinaryWriteUnderFence(context, controlRoot, true, () ->
+                    setCompletedUnlocked(context, taskId, date, completed));
         }
+    }
+    private static JSONObject setCompletedUnlocked(Context context, String taskId, String date, boolean completed) throws Exception {
+        if (!today().equals(date)) throw new Exception("TODO_STALE_WIDGET");
+        JSONObject data = readUnlocked(context);
+        boolean valid = false;
+        for (JSONObject item : day(data, date)) if (item.getString("id").equals(taskId)) valid = true;
+        if (!valid) throw new Exception("TODO_STALE_WIDGET");
+        String key = taskId + "@" + date;
+        JSONArray old = data.getJSONArray("completions"), next = new JSONArray();
+        boolean wasCompleted = false;
+        for (int i=0; i<old.length(); i++) {
+            JSONObject item = old.getJSONObject(i);
+            if (key.equals(item.optString("key"))) { wasCompleted=true; if (completed) next.put(item); }
+            else next.put(item);
+        }
+        if (wasCompleted == completed) return data;
+        if (completed) next.put(new JSONObject().put("taskId", taskId).put("date", date).put("key", key).put("completedAt", System.currentTimeMillis()));
+        data.put("completions", next); data.put("revision", data.optLong("revision") + 1);
+        commit(context, data);
+        return data;
     }
 }

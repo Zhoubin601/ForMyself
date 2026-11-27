@@ -30,6 +30,23 @@ public final class KanataM6KillableWorkerService extends Service {
     public static final String ACTION_COMPETE_EXPORTER_LOCK = "com.yubin.formyself.M6_COMPETE_EXPORTER_LOCK";
     public static final String ACTION_COMPETE_IMPORTER_LOCK = "com.yubin.formyself.M6_COMPETE_IMPORTER_LOCK";
     public static final String ACTION_START_M603_RESTORE_PAUSE = "com.yubin.formyself.M603_START_RESTORE_PAUSE";
+    public static final String ACTION_N05_CROSS_PROCESS_CAS = "com.yubin.formyself.N05_CROSS_PROCESS_CAS";
+    public static final String ACTION_N05_SIGKILL_AT_STATE = "com.yubin.formyself.N05_SIGKILL_AT_STATE";
+    public static final String EXTRA_CONTROL_ROOT = "controlRoot";
+    public static final String EXTRA_EXPECTED_SEQ = "expectedSeq";
+    public static final String EXTRA_EXPECTED_DIGEST = "expectedDigest";
+    public static final String EXTRA_OWNER_ID = "ownerId";
+    public static final String EXTRA_HOLD_LOCK_MS = "holdLockMs";
+    public static final String STAGE_N05_AFTER_GATE = "N05_AFTER_GATE";
+    public static final String STAGE_N05_AFTER_PREPARED = "N05_AFTER_PREPARED";
+    public static final String STAGE_N05_BEFORE_HEAD_RENAME = "N05_BEFORE_HEAD_RENAME";
+    public static final String STAGE_N05_AFTER_DECISION_TARGET = "N05_AFTER_DECISION_TARGET";
+    public static final String ACTION_E2E_M603R_SIGKILL = "com.yubin.formyself.E2E_M603R_SIGKILL";
+    public static final String STAGE_E2E_AFTER_GATE = "E2E_AFTER_GATE";
+    public static final String STAGE_E2E_AFTER_PREPARED = "E2E_AFTER_PREPARED";
+    public static final String STAGE_E2E_BEFORE_HEAD_RENAME = "E2E_BEFORE_HEAD_RENAME";
+    public static final String STAGE_E2E_AFTER_DECISION_TARGET = "E2E_AFTER_DECISION_TARGET";
+    public static final String STAGE_E2E_AFTER_FINALIZED_BEFORE_GC = "E2E_AFTER_FINALIZED_BEFORE_GC";
     public static final String EXTRA_JOURNAL_DIR = "journalDir";
     public static final String EXTRA_MASTER_PASSWORD = "masterPassword";
     public static final String STAGE_M603_DURING_STAGING = "M603_DURING_STAGING";
@@ -644,6 +661,306 @@ public final class KanataM6KillableWorkerService extends Service {
                 }
                 stopSelf(startId);
             }, "m603-restore-pause-worker").start();
+        } else if (ACTION_N05_CROSS_PROCESS_CAS.equals(action)) {
+            final String controlRootPath = intent.getStringExtra(EXTRA_CONTROL_ROOT);
+            final long expectedSeq = intent.getLongExtra(EXTRA_EXPECTED_SEQ, 0L);
+            final String expectedDigest = intent.getStringExtra(EXTRA_EXPECTED_DIGEST);
+            final String ownerId = intent.getStringExtra(EXTRA_OWNER_ID);
+            final long holdLockMs = intent.getLongExtra(EXTRA_HOLD_LOCK_MS, 0L);
+            new Thread(() -> {
+                File controlRoot = new File(controlRootPath);
+                JSONObject res = new JSONObject();
+                try {
+                    res.put("pid", Process.myPid());
+                    res.put("ownerId", ownerId);
+                    if (holdLockMs > 0) {
+                        try (KanataDurableTxControl.StableControlLock lock =
+                                     KanataDurableTxControl.acquireControlLock(controlRoot)) {
+                            res.put("lockDev", lock.dev);
+                            res.put("lockIno", lock.ino);
+                            writeJsonAtomically(new File(workDir, "n05_lock_held.json"),
+                                    new JSONObject().put("pid", Process.myPid()).put("dev", lock.dev).put("ino", lock.ino));
+                            Thread.sleep(holdLockMs);
+                        }
+                        res.put("ok", true);
+                        res.put("mode", "hold_lock");
+                    } else {
+                        KanataDurableTxControl.ControlRecord next = KanataDurableTxControl.compareAndSetTransition(
+                                getApplicationContext(),
+                                controlRoot,
+                                "txn-" + ownerId,
+                                ownerId,
+                                1L,
+                                expectedSeq,
+                                expectedDigest,
+                                KanataDurableTxControl.STATE_GATE,
+                                KanataDurableTxControl.DIR_NONE,
+                                false,
+                                "",
+                                null,
+                                null,
+                                null,
+                                "input-n05",
+                                "",
+                                "worker-gate",
+                                "kanata-portable-restore",
+                                "kanata-portable-v1",
+                                java.util.Arrays.asList("kanata", "todo", "settings", "vault"),
+                                false,
+                                0L,
+                                KanataDurableTxControl.AndroidKeyStoreBackend.INSTANCE,
+                                KanataDurableTxControl.FaultInjector.NONE);
+                        res.put("ok", true);
+                        res.put("sequence", next.sequence);
+                        res.put("recordDigest", next.recordDigest);
+                        res.put("txnId", next.txnId);
+                    }
+                } catch (KanataDurableTxControl.TxControlException e) {
+                    try {
+                        res.put("ok", false);
+                        res.put("errorCode", e.code);
+                        res.put("error", e.getMessage());
+                    } catch (Throwable ignored) {}
+                } catch (Throwable t) {
+                    try {
+                        res.put("ok", false);
+                        res.put("errorCode", "UNEXPECTED");
+                        res.put("error", t.getClass().getName() + ":" + t.getMessage());
+                    } catch (Throwable ignored) {}
+                }
+                try {
+                    writeJsonAtomically(new File(workDir, "n05_worker_result.json"), res);
+                } catch (Throwable ignored) {}
+                stopSelf(startId);
+            }, "n05-cas-worker").start();
+        } else if (ACTION_N05_SIGKILL_AT_STATE.equals(action)) {
+            final String controlRootPath = intent.getStringExtra(EXTRA_CONTROL_ROOT);
+            final String pauseStage = intent.getStringExtra(EXTRA_PAUSE_STAGE);
+            final String ownerId = intent.getStringExtra(EXTRA_OWNER_ID);
+            new Thread(() -> {
+                File controlRoot = new File(controlRootPath);
+                try {
+                    KanataDurableTxControl.AuthoritativeState st = KanataDurableTxControl.probe(
+                            getApplicationContext(),
+                            controlRoot,
+                            KanataDurableTxControl.AndroidKeyStoreBackend.INSTANCE,
+                            KanataDurableTxControl.FaultInjector.NONE);
+                    KanataDurableTxControl.ControlRecord cur = st.headRecord;
+                    KanataDurableTxControl.GenerationRegistration prevGen = cur.previousGeneration;
+                    KanataDurableTxControl.GenerationRegistration targetGen =
+                            KanataDurableTxControl.GenerationRegistration.absentGeneration("gen-n05-target");
+                    // Build a real sealed target generation dir if one was pre-staged in workDir
+                    File stagedMarker = new File(workDir, "n05_target_gen.json");
+                    if (stagedMarker.exists()) {
+                        byte[] raw = KanataM6SchemeCExporter.readSmallFileBounded(stagedMarker, 65536);
+                        targetGen = KanataDurableTxControl.GenerationRegistration.fromJson(
+                                new JSONObject(new String(raw, StandardCharsets.UTF_8)));
+                    }
+
+                    KanataDurableTxControl.ControlRecord gated = KanataDurableTxControl.compareAndSetTransition(
+                            getApplicationContext(), controlRoot,
+                            "txn-sigkill-" + pauseStage, ownerId, cur.epoch + 1L,
+                            cur.sequence, cur.recordDigest,
+                            KanataDurableTxControl.STATE_GATE, KanataDurableTxControl.DIR_NONE,
+                            false, "", prevGen, null, cur.activeGenerationId,
+                            "input-sigkill", "", "gate-entered",
+                            "kanata-portable-restore", "kanata-portable-v1",
+                            java.util.Arrays.asList("kanata", "todo", "settings", "vault"),
+                            false, 0L,
+                            KanataDurableTxControl.AndroidKeyStoreBackend.INSTANCE,
+                            KanataDurableTxControl.FaultInjector.NONE);
+
+                    if (STAGE_N05_AFTER_GATE.equals(pauseStage)) {
+                        signalReadyAndHoldForSigkill(workDir, taskId, pauseStage, null,
+                                new JSONObject().put("sequence", gated.sequence).put("txnId", gated.txnId));
+                        return;
+                    }
+
+                    KanataDurableTxControl.ControlRecord prepared = KanataDurableTxControl.compareAndSetTransition(
+                            getApplicationContext(), controlRoot,
+                            gated.txnId, ownerId, gated.epoch,
+                            gated.sequence, gated.recordDigest,
+                            KanataDurableTxControl.STATE_PREPARED, KanataDurableTxControl.DIR_NONE,
+                            false, "", prevGen, targetGen, cur.activeGenerationId,
+                            "input-sigkill", "", "prepared",
+                            "kanata-portable-restore", "kanata-portable-v1",
+                            gated.participants, false, 0L,
+                            KanataDurableTxControl.AndroidKeyStoreBackend.INSTANCE,
+                            KanataDurableTxControl.FaultInjector.NONE);
+
+                    if (STAGE_N05_AFTER_PREPARED.equals(pauseStage)) {
+                        signalReadyAndHoldForSigkill(workDir, taskId, pauseStage, null,
+                                new JSONObject().put("sequence", prepared.sequence)
+                                        .put("txnId", prepared.txnId)
+                                        .put("preparedDigest", prepared.preparedDigest));
+                        return;
+                    }
+
+                    KanataDurableTxControl.FaultInjector headPauseInjector = STAGE_N05_BEFORE_HEAD_RENAME.equals(pauseStage)
+                            ? new KanataDurableTxControl.FaultInjector() {
+                                @Override
+                                public void beforeRename(String targetLabel) {
+                                    if ("head".equals(targetLabel)) {
+                                        JSONObject extra = null;
+                                        try {
+                                            extra = new JSONObject().put("sequence", prepared.sequence)
+                                                    .put("txnId", prepared.txnId);
+                                        } catch (Exception ignored) {}
+                                        signalReadyAndHoldForSigkill(workDir, taskId, pauseStage, null, extra);
+                                    }
+                                }
+                            }
+                            : KanataDurableTxControl.FaultInjector.NONE;
+
+                    KanataDurableTxControl.ControlRecord decided = KanataDurableTxControl.compareAndSetTransition(
+                            getApplicationContext(), controlRoot,
+                            prepared.txnId, ownerId, prepared.epoch,
+                            prepared.sequence, prepared.recordDigest,
+                            KanataDurableTxControl.STATE_DECISION, KanataDurableTxControl.DIR_TARGET,
+                            false, prepared.preparedDigest, prevGen, targetGen,
+                            targetGen.absent ? "" : targetGen.generationId,
+                            "input-sigkill", "", "decided-target",
+                            "kanata-portable-restore", "kanata-portable-v1",
+                            prepared.participants, false, 0L,
+                            KanataDurableTxControl.AndroidKeyStoreBackend.INSTANCE,
+                            headPauseInjector);
+
+                    if (STAGE_N05_AFTER_DECISION_TARGET.equals(pauseStage)) {
+                        signalReadyAndHoldForSigkill(workDir, taskId, pauseStage, null,
+                                new JSONObject().put("sequence", decided.sequence)
+                                        .put("txnId", decided.txnId)
+                                        .put("activeGenerationId", decided.activeGenerationId));
+                        return;
+                    }
+                } catch (Throwable t) {
+                    try {
+                        writeJsonAtomically(new File(workDir, "worker_error.txt"),
+                                new JSONObject().put("error", t.getClass().getName() + ":" + t.getMessage()));
+                    } catch (Throwable ignored) {}
+                }
+                stopSelf(startId);
+            }, "n05-sigkill-worker").start();
+        } else if (ACTION_E2E_M603R_SIGKILL.equals(action)) {
+            final String controlRootPath = intent.getStringExtra(EXTRA_CONTROL_ROOT);
+            final String packagePath = intent.getStringExtra(EXTRA_PACKAGE_PATH);
+            final String backupPassword = intent.getStringExtra(EXTRA_PASSWORD);
+            final String masterPassword = intent.getStringExtra(EXTRA_MASTER_PASSWORD);
+            final String pauseStage = intent.getStringExtra(EXTRA_PAUSE_STAGE);
+            final String ownerId = intent.getStringExtra(EXTRA_OWNER_ID);
+            new Thread(() -> {
+                File controlRoot = new File(controlRootPath);
+                try {
+                    KanataM6PortableCatalog catalog = KanataM6PortableCatalog.load(getApplicationContext());
+                    KanataDurableTxControl.AuthoritativeState st = KanataDurableTxControl.probe(
+                            getApplicationContext(), controlRoot,
+                            KanataDurableTxControl.AndroidKeyStoreBackend.INSTANCE,
+                            KanataDurableTxControl.FaultInjector.NONE);
+                    KanataDurableTxControl.ControlRecord cur = st.headRecord;
+
+                    // 1) Real KPB1 staging into isolated target generation directory with fresh DEK + envelope
+                    KanataM6GenerationStore.StagedGenerationResult staged = KanataM6GenerationStore.stageKpb1IntoGeneration(
+                            getApplicationContext(), controlRoot, null, new File(packagePath),
+                            backupPassword, masterPassword, "e2e-" + taskId, ownerId, 1L, cur.epoch + 1L,
+                            catalog, KanataM6StagingRestoreEngine.DEFAULT_BATCH_SIZE,
+                            new AtomicBoolean(false), new KanataM6StagingRestoreEngine.StagingHooks() {},
+                            KanataDurableTxControl.AndroidKeyStoreBackend.INSTANCE);
+
+                    // 2) FINALIZED -> GATE
+                    KanataDurableTxControl.ControlRecord gated = KanataDurableTxControl.compareAndSetTransition(
+                            getApplicationContext(), controlRoot, "txn-e2e-" + taskId, ownerId, cur.epoch + 1L,
+                            cur.sequence, cur.recordDigest,
+                            KanataDurableTxControl.STATE_GATE, KanataDurableTxControl.DIR_NONE,
+                            false, "", cur.previousGeneration, null, cur.activeGenerationId,
+                            staged.artifact.transcriptHex, "", "e2e-gate",
+                            "kanata-portable-restore", "kanata-portable-v1", cur.participants,
+                            false, 0L, KanataDurableTxControl.AndroidKeyStoreBackend.INSTANCE,
+                            KanataDurableTxControl.FaultInjector.NONE);
+
+                    if (STAGE_E2E_AFTER_GATE.equals(pauseStage)) {
+                        signalReadyAndHoldForSigkill(workDir, taskId, pauseStage, null,
+                                new JSONObject().put("txnId", gated.txnId).put("targetGenId", staged.registration.generationId));
+                        return;
+                    }
+
+                    // 3) GATE -> PREPARED (with AEAD recovery payload + two-generation registration)
+                    String payloadId = KanataDurableTxControl.writeEncryptedPayload(
+                            getApplicationContext(), controlRoot, gated.txnId, "recovery-state",
+                            staged.registration.generationId,
+                            new JSONObject().put("prev", cur.activeGenerationId).put("target", staged.registration.generationId).toString().getBytes(StandardCharsets.UTF_8),
+                            KanataDurableTxControl.AndroidKeyStoreBackend.INSTANCE,
+                            KanataDurableTxControl.FaultInjector.NONE);
+
+                    KanataDurableTxControl.ControlRecord prepared = KanataDurableTxControl.compareAndSetTransition(
+                            getApplicationContext(), controlRoot, gated.txnId, ownerId, gated.epoch,
+                            gated.sequence, gated.recordDigest,
+                            KanataDurableTxControl.STATE_PREPARED, KanataDurableTxControl.DIR_NONE,
+                            false, "", cur.previousGeneration, staged.registration, cur.activeGenerationId,
+                            staged.artifact.transcriptHex, payloadId, "e2e-prepared",
+                            "kanata-portable-restore", "kanata-portable-v1", gated.participants,
+                            false, 0L, KanataDurableTxControl.AndroidKeyStoreBackend.INSTANCE,
+                            KanataDurableTxControl.FaultInjector.NONE);
+
+                    if (STAGE_E2E_AFTER_PREPARED.equals(pauseStage)) {
+                        signalReadyAndHoldForSigkill(workDir, taskId, pauseStage, null,
+                                new JSONObject().put("txnId", prepared.txnId).put("preparedDigest", prepared.preparedDigest));
+                        return;
+                    }
+
+                    KanataDurableTxControl.FaultInjector headHook = STAGE_E2E_BEFORE_HEAD_RENAME.equals(pauseStage)
+                            ? new KanataDurableTxControl.FaultInjector() {
+                                @Override
+                                public void beforeRename(String targetLabel) {
+                                    if ("head".equals(targetLabel)) {
+                                        JSONObject ex = null;
+                                        try { ex = new JSONObject().put("txnId", prepared.txnId); } catch (Exception ignored) {}
+                                        signalReadyAndHoldForSigkill(workDir, taskId, pauseStage, null, ex);
+                                    }
+                                }
+                            }
+                            : KanataDurableTxControl.FaultInjector.NONE;
+
+                    // 4) PREPARED -> DECISION(target)
+                    KanataDurableTxControl.ControlRecord decided = KanataDurableTxControl.compareAndSetTransition(
+                            getApplicationContext(), controlRoot, prepared.txnId, ownerId, prepared.epoch,
+                            prepared.sequence, prepared.recordDigest,
+                            KanataDurableTxControl.STATE_DECISION, KanataDurableTxControl.DIR_TARGET,
+                            false, prepared.preparedDigest, cur.previousGeneration, staged.registration,
+                            staged.registration.generationId, staged.artifact.transcriptHex, payloadId,
+                            "e2e-decided-target", "kanata-portable-restore", "kanata-portable-v1",
+                            prepared.participants, false, 0L,
+                            KanataDurableTxControl.AndroidKeyStoreBackend.INSTANCE, headHook);
+
+                    if (STAGE_E2E_AFTER_DECISION_TARGET.equals(pauseStage)) {
+                        signalReadyAndHoldForSigkill(workDir, taskId, pauseStage, null,
+                                new JSONObject().put("txnId", decided.txnId).put("targetGenId", staged.registration.generationId));
+                        return;
+                    }
+
+                    // 5) DECISION(target) -> FINALIZED, then pause BEFORE cleaning up retired previous generation
+                    KanataDurableTxControl.ControlRecord fin = KanataDurableTxControl.compareAndSetTransition(
+                            getApplicationContext(), controlRoot, decided.txnId, ownerId, decided.epoch,
+                            decided.sequence, decided.recordDigest,
+                            KanataDurableTxControl.STATE_FINALIZED, KanataDurableTxControl.DIR_TARGET,
+                            false, decided.preparedDigest, cur.previousGeneration, staged.registration,
+                            staged.registration.generationId, staged.artifact.transcriptHex, payloadId,
+                            "e2e-finalized", "kanata-portable-restore", "kanata-portable-v1",
+                            decided.participants, false, 0L,
+                            KanataDurableTxControl.AndroidKeyStoreBackend.INSTANCE,
+                            KanataDurableTxControl.FaultInjector.NONE);
+
+                    if (STAGE_E2E_AFTER_FINALIZED_BEFORE_GC.equals(pauseStage)) {
+                        signalReadyAndHoldForSigkill(workDir, taskId, pauseStage, null,
+                                new JSONObject().put("txnId", fin.txnId).put("activeGenId", fin.activeGenerationId));
+                        return;
+                    }
+                } catch (Throwable t) {
+                    try {
+                        writeJsonAtomically(new File(workDir, "worker_error.txt"),
+                                new JSONObject().put("error", t.getClass().getName() + ":" + t.getMessage()));
+                    } catch (Throwable ignored) {}
+                }
+                stopSelf(startId);
+            }, "e2e-m603r-sigkill-worker").start();
         }
         return START_NOT_STICKY;
     }

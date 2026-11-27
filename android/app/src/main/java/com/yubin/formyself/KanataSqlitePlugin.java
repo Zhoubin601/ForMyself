@@ -42,6 +42,8 @@ import net.zetetic.database.LogTarget;
 @CapacitorPlugin(name = "KanataSqlite")
 public final class KanataSqlitePlugin extends Plugin {
     private static final long MAX_SAFE_INTEGER = 9007199254740991L;
+    private static final java.util.Set<KanataSqlitePlugin> ACTIVE_INSTANCES =
+            java.util.Collections.newSetFromMap(new java.util.concurrent.ConcurrentHashMap<>());
     private final ExecutorService worker = Executors.newSingleThreadExecutor();
     private final AtomicLong epoch = new AtomicLong();
     private volatile boolean foreground;
@@ -100,9 +102,43 @@ public final class KanataSqlitePlugin extends Plugin {
         }
     }
 
+    @Override public void load() {
+        ACTIVE_INSTANCES.add(this);
+    }
+
     @Override protected void handleOnResume() { foreground = true; }
     @Override protected void handleOnPause() { revoke(); }
-    @Override protected void handleOnDestroy() { revoke(); worker.shutdown(); }
+    @Override protected void handleOnDestroy() {
+        ACTIVE_INSTANCES.remove(this);
+        revoke();
+        worker.shutdown();
+    }
+
+    /**
+     * Deterministically revoke leases and drain the single-threaded SQLite worker
+     * across all active plugin instances before a restore GATE -> PREPARED barrier.
+     * Never uses sleep-based polling.
+     */
+    static void drainAndRevokeAllInstances() throws Exception {
+        for (KanataSqlitePlugin inst : ACTIVE_INSTANCES) {
+            inst.epoch.incrementAndGet();
+            java.util.concurrent.CountDownLatch drained = new java.util.concurrent.CountDownLatch(1);
+            final Exception[] err = new Exception[1];
+            try {
+                inst.worker.execute(() -> {
+                    try { inst.closeStorage(); }
+                    catch (Exception failure) { err[0] = failure; }
+                    finally { drained.countDown(); }
+                });
+            } catch (RejectedExecutionException destroyed) {
+                drained.countDown();
+            }
+            if (!drained.await(15, java.util.concurrent.TimeUnit.SECONDS)) {
+                throw new IllegalStateException("KANATA_SQLITE_DRAIN_TIMEOUT");
+            }
+            if (err[0] != null) throw err[0];
+        }
+    }
 
     private void revoke() {
         foreground = false;
@@ -170,8 +206,14 @@ public final class KanataSqlitePlugin extends Plugin {
         require(parentMode == 0 || OsConstants.S_ISDIR(parentMode), "STATE_UNKNOWN");
         for (String path : new String[] {
             "kanata-v1.enc", "kanata-v1.enc.bak", "kanata-v1.enc.tmp", "kanata-pages-v1",
-            "restore-v1.enc", "restore-v1.enc.commit", "restore-v1.enc.tmp",
+            "restore-v1.enc", "restore-v1.commit", "restore-v1.tmp",
+            "restore-v1.enc.commit", "restore-v1.enc.tmp",
         }) require(!exists(new File(files, "formyself/" + path)), "LEGACY_PRESENT");
+        try {
+            KanataDurableTxControl.assertOrdinaryWriteAllowed(getContext());
+        } catch (KanataDurableTxControl.TxControlException blocked) {
+            throw new Refusal("STATE_UNKNOWN");
+        }
         verifyRecoveryPreferences();
         require(!atomicExists(marker()), "INCOMPLETE_CREATION");
         int directoryMode = mode(root());
@@ -407,6 +449,11 @@ public final class KanataSqlitePlugin extends Plugin {
     @PluginMethod public void begin(PluginCall call) {
         dispatch(call, "TRANSACTION_BUSY", requestedEpoch -> {
             authorize(call, requestedEpoch);
+            try {
+                KanataDurableTxControl.assertOrdinaryWriteAllowed(getContext());
+            } catch (KanataDurableTxControl.TxControlException blocked) {
+                throw new Refusal("STATE_UNKNOWN");
+            }
             require(transaction == null, "TRANSACTION_BUSY");
             database.beginTransactionNonExclusive(); // Pins the primary writer with BEGIN IMMEDIATE.
             transactionFailed = false;
@@ -437,8 +484,19 @@ public final class KanataSqlitePlugin extends Plugin {
             database.setTransactionSuccessful();
             transaction = null;
             long start = SystemClock.elapsedRealtimeNanos();
-            try { database.endTransaction(); }
-            catch (RuntimeException failure) {
+            try {
+                KanataDurableTxControl.executeOrdinaryWriteUnderFence(
+                        getContext(),
+                        KanataDurableTxControl.defaultControlRoot(getContext()),
+                        true,
+                        () -> {
+                            database.endTransaction();
+                            return null;
+                        });
+            } catch (KanataDurableTxControl.TxControlException fenceBlocked) {
+                try { database.rawExecSQL("ROLLBACK"); } catch (RuntimeException ignored) {}
+                throw new Refusal("STATE_UNKNOWN");
+            } catch (RuntimeException failure) {
                 // SQLCipher 4.17 ends the Java session and returns its writer to the pool
                 // on failed COMMIT. The raw path bypasses session transaction handling
                 // and reacquires that primary writer; nothing else can interleave here.

@@ -18,6 +18,7 @@ const {
   portableFileInputRef,
   portableRestoreState,
   refreshBackupCapability,
+  retryPortableRestoreCleanup,
   retryPortableRestoreSync,
   reverifyUnconfirmedTask,
   startPortableRestore,
@@ -176,6 +177,13 @@ const canStartPortableRestore = computed(() =>
         <div>{{ portableRestoreState.syncError }}</div>
         <button class="text-link" type="button" data-testid="retry-sync-btn" @click="retryPortableRestoreSync">
           重试派生同步
+        </button>
+      </div>
+
+      <div v-if="portableRestoreState.cleanupError" class="caption" data-testid="restore-cleanup-error" style="margin-top: 8px; color: var(--warning, #b06000);">
+        <div>{{ portableRestoreState.cleanupError }}</div>
+        <button class="text-link" type="button" data-testid="retry-cleanup-btn" @click="retryPortableRestoreCleanup">
+          重试清理临时材料
         </button>
       </div>
     </div>

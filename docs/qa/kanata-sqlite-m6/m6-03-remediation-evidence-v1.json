@@ -1,0 +1,213 @@
+{
+  "taskId": "KANATA-M6-03-R-REMEDIATION-2026-11-27",
+  "date": "2026-11-27",
+  "branch": "m6/encrypted-backup-recovery",
+  "worktree": ".worktrees/kanata-m5",
+  "remediationBaselineSha": "c8c3d6ee1987ba963d4b49473d7062f310d81e80",
+  "priorImplementationSha": "6f97b4820fb953212d93ee8106fb307a46dbda3a",
+  "priorCiRunId": 45793217397,
+  "status": "PASS",
+  "governance": {
+    "canonicalStorage": "legacy",
+    "ordinaryApkKanataM2Synthetic": false,
+    "minSdkVersion": 24,
+    "schema001To005Unchanged": true,
+    "kpb1ByteContractUnchanged": true,
+    "m602Fix04StableLockUnchanged": true,
+    "syntheticReleaseBlocked": true,
+    "entryChunkPluginProxyExports": 0,
+    "distContainsSyntheticMarkers": false,
+    "m604Started": false,
+    "markedClosedByAgent": false
+  },
+  "remediationFindings": {
+    "F01": "PASS - KanataDurableTxControl.java + TodoRepository/KanataSqlitePlugin/ArchiveFileBatchPlugin shared cross-process fence + N-05 18/18 across API 34/24/25",
+    "F02": "PASS - Native primitive suite explicitly labeled; new KanataM603EndToEndRemediationTest verifies 5-stage real :m6worker SIGKILL with autonomous cold-start product recovery across API 34/24/25",
+    "F03": "PASS - Web honestly reports portableRestoreAvailable=false (WEB_KPB1_RESTORE_UNAVAILABLE); isolated synthetic candidate root wired via KanataM6RestoreBridgePlugin & kanataSyntheticRestoreWiring.js; verified via live Capacitor Bridge SAF restore on API 34",
+    "F04": "PASS - Explicit 6-state material lifecycle; PREPARED+ materials protected from cancel/reselect/dispose; FINALIZED commit success decoupled from post-commit finalizeArtifacts cleanupError",
+    "F05": "PASS - ExclusiveTxContext ownership lock eliminates shared mutable races; private WeakMap + Native HMAC staging registration rejects forged verified=true descriptors; recovery capability independent of ordinary UI session expiry",
+    "F06": "PASS - Immutable generations/<id>/{kanata.db,envelope.json,generation-manifest.json} directories switched atomically via authoritative head CAS; same KPB1 across two isolated targets yields distinct DEKs & envelopes; wrong-password & swapped-envelope rejected"
+  },
+  "hostVerification": {
+    "eslintErrors": 0,
+    "eslintWarnings": 60,
+    "nodeTestsPassed": 820,
+    "nodeTestsFailed": 0,
+    "vitestFilesPassed": 47,
+    "vitestTestsPassed": 438,
+    "vitestTestsFailed": 0,
+    "vueTscAndContractsStrict": "PASS",
+    "viteBuild": "PASS",
+    "entryChunkPluginProxyExports": 0,
+    "distClean": true,
+    "boundaryDiffExitCode": 0,
+    "standardAndroidGradle": "PASS",
+    "syntheticM6Gradle": "PASS",
+    "syntheticReleaseBlocked": "PASS (Exit 1: assembleRelease not found)"
+  },
+  "n05Matrix": {
+    "api34": {
+      "avd": "Codex_Todo_WebView34",
+      "androidApi": 34,
+      "androidRelease": "14",
+      "result": "PASS (6/6)",
+      "keystoreHmacAeadOk": true,
+      "missingKeyBlocked": true,
+      "directionIrreversible": true,
+      "abortOnlyEnforced": true,
+      "legacy5PathsBlocked": true,
+      "missingHeadNoScan": true,
+      "unknownVersionBlocked": true,
+      "dirFsyncUnconfirmedOk": true,
+      "crossProcessCasMutualExclusion": true,
+      "lockInodeStable": true,
+      "ordinaryTodoAndWidgetBlocked": true,
+      "forgedCapabilityRejected": true,
+      "genuineCapabilitySucceeded": true,
+      "sigkillColdStartStagesPassed": 4
+    },
+    "api24": {
+      "avd": "Codex_Kanata_API24",
+      "androidApi": 24,
+      "androidRelease": "7.0",
+      "result": "PASS (6/6)",
+      "keystoreHmacAeadOk": true,
+      "crossProcessCasMutualExclusion": true,
+      "ordinaryTodoAndWidgetBlocked": true,
+      "sigkillColdStartStagesPassed": 4
+    },
+    "api25": {
+      "avd": "Codex_Kanata_API25",
+      "androidApi": 25,
+      "androidRelease": "7.1.1",
+      "result": "PASS (6/6)",
+      "keystoreHmacAeadOk": true,
+      "crossProcessCasMutualExclusion": true,
+      "ordinaryTodoAndWidgetBlocked": true,
+      "sigkillColdStartStagesPassed": 4
+    }
+  },
+  "e2eMatrix": {
+    "api34": {
+      "avd": "Codex_Todo_WebView34",
+      "webviewVersion": "113.0.5672.136",
+      "suiteResult": "PASS (17/17 N05+E2E+Bridge+FIX04 in 149.047s; 8/8 Primitive+Capacity in 438.48s)",
+      "realBridgeSafRestoreOk": true,
+      "forgedHandleRejected": true,
+      "cancelDuringPreparedBlocked": true,
+      "sigkillAutonomousStagesPassed": 5,
+      "damagedModulesRecoveryAuthOk": true,
+      "crossHostDistinctDeks": true,
+      "envelopeSwapRejected": true,
+      "longFieldChars": 120000,
+      "longFieldExactBytePreserved": true,
+      "longFieldPeakRssKiB": 199544,
+      "legacyOrphanBlockedWithoutAutoUpgrade": true
+    },
+    "api24": {
+      "avd": "Codex_Kanata_API24",
+      "webviewVersion": "52.0.2743.100",
+      "suiteResult": "PASS (13/13 in 51.117s)",
+      "bridgeStatus": "BLOCKED_HONEST_WEBVIEW_52 (PLUGIN_MISSING)",
+      "sigkillAutonomousStagesPassed": 5,
+      "damagedModulesRecoveryAuthOk": true,
+      "crossHostDistinctDeks": true,
+      "longFieldExactBytePreserved": true,
+      "longFieldPeakRssKiB": 73648,
+      "legacyOrphanBlockedWithoutAutoUpgrade": true
+    },
+    "api25": {
+      "avd": "Codex_Kanata_API25",
+      "webviewVersion": "52.0.2743.100",
+      "suiteResult": "PASS (13/13 in 28.11s)",
+      "bridgeStatus": "BLOCKED_HONEST_WEBVIEW_52 (PLUGIN_MISSING)",
+      "sigkillAutonomousStagesPassed": 5,
+      "damagedModulesRecoveryAuthOk": true,
+      "crossHostDistinctDeks": true,
+      "longFieldExactBytePreserved": true,
+      "longFieldPeakRssKiB": 72544,
+      "legacyOrphanBlockedWithoutAutoUpgrade": true
+    }
+  },
+  "capacityBenchmarksApi34PostRemediation": {
+    "rssCeilingKiB": 524288,
+    "batchSize": 500,
+    "samples": [
+      {
+        "scale": 1000,
+        "kpb1FileBytes": 197584,
+        "totalRestoreMs": 3974,
+        "decodeMs": 2776,
+        "stagingInstallMs": 771,
+        "verifyMs": 424,
+        "batchCount": 45,
+        "maxBatchRows": 500,
+        "maxBatchMs": 166,
+        "medianBatchMs": 6,
+        "stagingDbBytes": 1265664,
+        "peakRssKiB": 90512,
+        "peakJavaHeapBytes": 6285152,
+        "peakNativeHeapBytes": 9601120,
+        "verified50Tables": true
+      },
+      {
+        "scale": 10000,
+        "kpb1FileBytes": 1943106,
+        "totalRestoreMs": 7737,
+        "decodeMs": 3160,
+        "stagingInstallMs": 2936,
+        "verifyMs": 1637,
+        "batchCount": 63,
+        "maxBatchRows": 500,
+        "maxBatchMs": 217,
+        "medianBatchMs": 5,
+        "stagingDbBytes": 4730880,
+        "peakRssKiB": 90864,
+        "peakJavaHeapBytes": 5594952,
+        "peakNativeHeapBytes": 12401664,
+        "verified50Tables": true
+      },
+      {
+        "scale": 100000,
+        "kpb1FileBytes": 19758398,
+        "totalRestoreMs": 114935,
+        "decodeMs": 10206,
+        "stagingInstallMs": 38644,
+        "verifyMs": 66081,
+        "batchCount": 243,
+        "maxBatchRows": 500,
+        "maxBatchMs": 243,
+        "medianBatchMs": 186,
+        "stagingDbBytes": 40796160,
+        "peakRssKiB": 95176,
+        "peakJavaHeapBytes": 6656488,
+        "peakNativeHeapBytes": 12442272,
+        "verified50Tables": true
+      }
+    ]
+  },
+  "contractAcceptanceMatrix": {
+    "N-05": "PASS",
+    "N-06": "PASS",
+    "F03-01": "PASS",
+    "F03-02": "PASS",
+    "F03-03": "PASS",
+    "F03-04": "PASS",
+    "F03-05": "PASS",
+    "F03-06": "PASS",
+    "F03-07": "PASS",
+    "F03-08": "PASS",
+    "F03-09": "PASS",
+    "F03-10": "PASS"
+  },
+  "evidenceCategories": {
+    "realOsSigkill": "VERIFIED (API 34, API 24, API 25 via :m6worker Process.killProcess + /proc verification)",
+    "realForceStop": "VERIFIED (ordinary APK via GitHub CI android job verify.mjs)",
+    "simulatedIoFaults": "VERIFIED (ENOSPC, file fsync, rename, dir fsync DURABILITY_UNCONFIRMED, readback mismatch, GC cleanup fail, secure credentials readback mismatch)",
+    "physicalPowerLoss": "NOT RUN (emulator environment only; documented residual risk)"
+  },
+  "ci": {
+    "implementationCommitSha": "PENDING_COMMIT",
+    "workflowRunId": "PENDING_CI"
+  }
+}

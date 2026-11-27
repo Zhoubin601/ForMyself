@@ -65,6 +65,7 @@ export const SETTINGS_SECTION_FIELDS = {
     "portableFileInputRef",
     "portableRestoreState",
     "refreshBackupCapability",
+    "retryPortableRestoreCleanup",
     "retryPortableRestoreSync",
     "reverifyUnconfirmedTask",
     "startPortableRestore",

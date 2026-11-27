@@ -28,6 +28,8 @@ const validDesc: KanataSqliteGenerationDescriptor = validateKanataGenerationDesc
   absent: false,
   dbPath: '/data/staging.db',
   dbSha256Hex: 'a'.repeat(64),
+  envelopeSha256Hex: 'c'.repeat(64),
+  stagingHandle: 'stg-abc-123',
   schemaVersion: 5,
   applicationId: 0x4b4e5441,
   schemaFingerprint: '8d4ede29039ca2958146250e618ee78e76163490e47eeaaab74b02dde852f39a',
@@ -76,6 +78,10 @@ void badBridgeStatus
 // @ts-expect-error unknown unavailableCode cannot bypass typed capability errors
 const badUnavailableCode: BackupRuntimeCapability['unavailableCode'] = 'IGNORE_WEBVIEW_52'
 void badUnavailableCode
+
+const webUnavailableCode: BackupRuntimeCapability['unavailableCode'] = 'WEB_KPB1_RESTORE_UNAVAILABLE'
+void webUnavailableCode
+void portableCoordinator.retryPostCommitCleanup
 
 // @ts-expect-error restore phase must be a known coordinator state machine phase
 const badPhase: Parameters<NonNullable<RestoreCoordinatorOptions<KanataSqliteGenerationDescriptor>['onPhase']>>[0] = 'skip_journal'

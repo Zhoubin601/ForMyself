@@ -18,6 +18,13 @@ public class MainActivity extends BridgeActivity {
         registerPlugin(ArchiveFileBatchPlugin.class);
         registerPlugin(KanataSqlitePlugin.class);
         registerPlugin(KanataRuntimeCapabilityPlugin.class);
+        if (BuildConfig.KANATA_M2_SYNTHETIC && "com.yubin.formyself.m2qa".equals(getPackageName())) {
+            try {
+                Class.forName("com.yubin.formyself.KanataM6SyntheticPluginRegistrar")
+                    .getMethod("register", BridgeActivity.class)
+                    .invoke(null, this);
+            } catch (Throwable ignored) {}
+        }
         super.onCreate(savedInstanceState);
         WebSettings webSettings = getBridge().getWebView().getSettings();
         webSettings.setSupportZoom(false);

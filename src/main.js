@@ -1,3 +1,4 @@
+import { Capacitor } from '@capacitor/core'
 import { restoreJournal } from './platform/storage/restoreJournal.js'
 import { restoreState } from './platform/storage/restoreState.js'
 import { createApp } from 'vue'
@@ -16,7 +17,13 @@ const auth = useAuthStore(pinia)
 restoreState.blocked = true
 const probeRecovery = async () => {
   try {
-    restoreState.blocked = Boolean(await restoreJournal.inspect())
+    let blocked = Boolean(await restoreJournal.inspect())
+    if (!blocked && Capacitor.getPlatform() === 'android' && Capacitor.isPluginAvailable('KanataM6RestoreBridge')) {
+      const { probeNativeDurableControlState } = await import('./application/kanataSyntheticRestoreWiring.js')
+      const nativeState = await probeNativeDurableControlState()
+      if (nativeState?.blocked) blocked = true
+    }
+    restoreState.blocked = blocked
     if (restoreState.blocked) restoreState.message = '检测到未完成的数据恢复，请验证身份后继续。'
   } catch { restoreState.blocked = true; restoreState.message = '恢复记录无法读取，请保留应用数据并重试。' }
 }

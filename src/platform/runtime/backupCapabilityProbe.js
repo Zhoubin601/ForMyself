@@ -57,9 +57,12 @@ export function evaluateBackupCapability({
       bridgeHandshakeOk: false,
       sqlitePluginStatus: 'web_encrypted_file_adapter',
       safStatus: 'browser_file_api',
-      portableRestoreAvailable: true,
-      unavailableCode: '',
-      unavailableReason: '',
+      // F03: Web stays on the existing encrypted .json file adapter without forcing WASM/OPFS.
+      // Because Web does NOT implement KPB1 isolated SQLCipher restore, it must honestly report
+      // portableRestoreAvailable=false rather than conflating legacy JSON restore availability.
+      portableRestoreAvailable: false,
+      unavailableCode: 'WEB_KPB1_RESTORE_UNAVAILABLE',
+      unavailableReason: '当前 Web 浏览器沿用加密 .json 文件适配器，未启用 KPB1 隔离 SQLCipher 恢复；请继续使用上方现有加密 .json 备份与恢复。',
     }
   }
 

@@ -336,7 +336,7 @@ describe('M6-03 Work Package E: Android WebView & Capacitor Bridge capability de
     expect(parseWebViewMajorVersion(null)).toBe(null)
   })
 
-  it('keeps Web on existing encrypted file adapter without forcing WASM/OPFS', async () => {
+  it('keeps Web on existing encrypted file adapter and honestly reports KPB1 portable restore unavailable (F03)', async () => {
     const cap = await probeBackupRuntimeCapability({
       capacitor: { getPlatform: () => 'web', isPluginAvailable: () => false },
     })
@@ -344,7 +344,8 @@ describe('M6-03 Work Package E: Android WebView & Capacitor Bridge capability de
     expect(cap.sqlitePluginStatus).toBe('web_encrypted_file_adapter')
     expect(cap.safStatus).toBe('browser_file_api')
     expect(cap.bridgeStatus).toBe('not_applicable')
-    expect(cap.portableRestoreAvailable).toBe(true)
+    expect(cap.portableRestoreAvailable).toBe(false)
+    expect(cap.unavailableCode).toBe('WEB_KPB1_RESTORE_UNAVAILABLE')
   })
 
   it('blocks API 24/25 stock AOSP WebView 52.0.2743.100 honestly and never marks it supported', () => {

@@ -1,8 +1,19 @@
 // @ts-check
-// M6-03 Kanata SQLCipher Portable Restore Coordinator.
+// M6-03-R Kanata SQLCipher Portable Restore Coordinator (F04 / F05 / F06).
 // Deeply integrates isolated SQLCipher staging restore into the project's single
-// RestoreCoordinator + AES-GCM RestoreJournal protocol. Never bypasses coordinator
-// or deletes journals to clear errors.
+// RestoreCoordinator + AES-GCM RestoreJournal / Native Durable Tx Control protocol.
+//
+// Guarantees:
+// - Explicit 6-state material lifecycle (UNREGISTERED_STAGING -> VERIFIED_AWAITING_CONFIRM ->
+//   PREPARED_REGISTERED -> DECIDED -> FINALIZED / UNCONFIRMED).
+// - After PREPARED_REGISTERED, UI cancel/reselect/dispose CANNOT delete referenced materials.
+// - Exclusive TxContext ownership lock eliminates shared-state races (activeExpectedIdentity,
+//   restoreGeneration, lastCapturedPrevious).
+// - Staging descriptors are privately registered & bound to (ownerId, sessionRevision, epoch, generation);
+//   externally forged `{ verified: true }` descriptors are rejected before prepare/journal.
+// - Post-FINALIZED artifact cleanup failure is decoupled from committed business success (`committed: true` + `cleanupError`).
+// - Recovery of already-decided or pending transactions runs under dedicated recovery capability,
+//   never blocked by ordinary UI session invalidation.
 
 import { createRestoreCoordinator } from './restoreCoordinator.js'
 
@@ -11,6 +22,15 @@ export const KANATA_SQLITE_APPLICATION_ID = 0x4b4e5441
 export const KANATA_SQLITE_SCHEMA_VERSION = 5
 export const KANATA_SQLITE_SCHEMA_005_FINGERPRINT = '8d4ede29039ca2958146250e618ee78e76163490e47eeaaab74b02dde852f39a'
 export const KANATA_SQLITE_VERIFIER_COUNT = 50
+
+export const RESTORE_MATERIAL_LIFECYCLE = Object.freeze({
+  UNREGISTERED_STAGING: 'UNREGISTERED_STAGING',
+  VERIFIED_AWAITING_CONFIRM: 'VERIFIED_AWAITING_CONFIRM',
+  PREPARED_REGISTERED: 'PREPARED_REGISTERED',
+  DECIDED: 'DECIDED',
+  FINALIZED: 'FINALIZED',
+  UNCONFIRMED: 'UNCONFIRMED',
+})
 
 const HEX64_RE = /^[a-f0-9]{64}$/
 const SAFE_ID_RE = /^[A-Za-z0-9._-]{1,128}$/
@@ -71,6 +91,12 @@ export function validateKanataGenerationDescriptor(input) {
   if (d.envelopePath !== undefined && (typeof d.envelopePath !== 'string' || d.envelopePath.includes('..'))) {
     throw Object.assign(new Error('INVALID_ENVELOPE_PATH'), { code: 'INVALID_LOGICAL' })
   }
+  if (d.envelopeSha256Hex !== undefined && d.envelopeSha256Hex !== '' && (typeof d.envelopeSha256Hex !== 'string' || !HEX64_RE.test(d.envelopeSha256Hex))) {
+    throw Object.assign(new Error('INVALID_ENVELOPE_SHA256'), { code: 'INVALID_LOGICAL' })
+  }
+  if (d.stagingHandle !== undefined && d.stagingHandle !== '' && (typeof d.stagingHandle !== 'string' || !SAFE_ID_RE.test(d.stagingHandle))) {
+    throw Object.assign(new Error('INVALID_STAGING_HANDLE'), { code: 'INVALID_LOGICAL' })
+  }
   if (d.transcriptHex !== undefined && (typeof d.transcriptHex !== 'string' || !HEX64_RE.test(d.transcriptHex))) {
     throw Object.assign(new Error('INVALID_TRANSCRIPT_HEX'), { code: 'INVALID_LOGICAL' })
   }
@@ -84,6 +110,8 @@ export function validateKanataGenerationDescriptor(input) {
     dbPath: absent ? '' : /** @type {string} */ (d.dbPath),
     dbSha256Hex: absent ? '' : /** @type {string} */ (d.dbSha256Hex),
     ...(d.envelopePath ? { envelopePath: /** @type {string} */ (d.envelopePath) } : {}),
+    ...(d.envelopeSha256Hex ? { envelopeSha256Hex: /** @type {string} */ (d.envelopeSha256Hex) } : {}),
+    ...(d.stagingHandle ? { stagingHandle: /** @type {string} */ (d.stagingHandle) } : {}),
     schemaVersion: KANATA_SQLITE_SCHEMA_VERSION,
     applicationId: KANATA_SQLITE_APPLICATION_ID,
     schemaFingerprint: KANATA_SQLITE_SCHEMA_005_FINGERPRINT,
@@ -97,18 +125,8 @@ export function validateKanataGenerationDescriptor(input) {
 }
 
 /**
- * Create the M6-03 Kanata Portable Restore Coordinator wrapping the product's
- * RestoreCoordinator + AES-GCM RestoreJournal.
- *
- * Guarantees:
- * - Staging & verification happen completely outside active DB mutation.
- * - Unverified staging artifacts are rejected before coordinator prepare/journal.
- * - Every async boundary re-checks owner, session revision, and restore generation.
- * - Previous generation is captured durably before journal prepare and retained until
- *   after journal.clear() succeeds.
- * - Rollback failure keeps state.blocked=true and retains encrypted journal & materials.
- * - DURABILITY_UNCONFIRMED retains protected state for manual verification; never auto-deletes.
- * - Derived sync errors are kept separate from business DB commit success.
+ * Create the M6-03-R Kanata Portable Restore Coordinator wrapping the product's
+ * RestoreCoordinator + AES-GCM RestoreJournal / Native Durable Control Layer.
  *
  * @param {import('./contracts').KanataPortableRestoreCoordinatorOptions} options
  */
@@ -124,70 +142,198 @@ export function createKanataPortableRestoreCoordinator({
     throw new Error('PORTABLE_RESTORE_COORDINATOR_DEPS_REQUIRED')
   }
 
-  let restoreGeneration = 0
-  /** @type {import('./contracts').KanataSqliteGenerationDescriptor | null} */
-  let lastCapturedPrevious = null
-  /** @type {import('./contracts').KanataSqliteGenerationDescriptor | null} */
-  let lastStagedTarget = null
+  let generationCounter = 0
+  let txTokenSeq = 0
+
+  /**
+   * Private authentic staging registry: ONLY descriptors produced by this coordinator's
+   * `stageAndVerify()` enter this registry. External caller-fabricated `{ verified: true }`
+   * objects are rejected on `commitStagedRestore()`.
+   * @typedef {{
+   *   key: string,
+   *   descriptor: import('./contracts').KanataSqliteGenerationDescriptor,
+   *   ownerId: string,
+   *   sessionRevision: number,
+   *   epoch: number,
+   *   generation: number,
+   *   lifecycle: string,
+   * }} StagedBinding
+   */
+  /** @type {WeakMap<object, StagedBinding>} */
+  const stagedByObject = new WeakMap()
+  /** @type {Map<string, StagedBinding>} */
+  const stagedByKey = new Map()
+
+  /**
+   * Exclusive transaction ownership context (F05):
+   * Eliminates shared mutable `activeExpectedIdentity`, `lastCapturedPrevious`, `lastStagedTarget`.
+   * @typedef {{
+   *   txToken: number,
+   *   kind: 'stage' | 'commit' | 'recover' | 'cleanup',
+   *   ownerId: string,
+   *   sessionRevision: number,
+   *   epoch: number,
+   *   generation: number,
+   *   lifecycle: string,
+   *   capturedPrevious: import('./contracts').KanataSqliteGenerationDescriptor | null,
+   *   stagedBinding: StagedBinding | null,
+   *   recoveryMode: boolean,
+   * }} ExclusiveTxContext
+   */
+  /** @type {ExclusiveTxContext | null} */
+  let activeTx = null
+
+  /** @type {{ previous: import('./contracts').KanataSqliteGenerationDescriptor | null, target: import('./contracts').KanataSqliteGenerationDescriptor } | null} */
+  let pendingPostCommitCleanup = null
+
+  const bindingKey = (/** @type {import('./contracts').KanataSqliteGenerationDescriptor} */ d) =>
+    `${d.generationId}::${d.taskId}::${d.dbSha256Hex}::${d.stagingHandle || ''}`
+
+  const readOwnerSnapshot = () => {
+    const id = getOwnerIdentity?.()
+    return {
+      ownerId: id?.ownerId ?? 'default',
+      sessionRevision: id?.sessionRevision ?? 0,
+      epoch: typeof id?.epoch === 'number' ? id.epoch : 0,
+      generation: generationCounter,
+    }
+  }
 
   /** @param {string} phase */
   const emitPhase = phase => {
     try { onPhase?.(/** @type {import('./contracts').RestoreCoordinatorPhase} */ (phase)) } catch {}
   }
 
-  const snapshotIdentity = () => {
-    const id = getOwnerIdentity?.()
-    return {
-      ownerId: id?.ownerId ?? 'default',
-      sessionRevision: id?.sessionRevision ?? 0,
-      generation: restoreGeneration,
+  /**
+   * Acquire exclusive ownership before mutating any shared transaction state.
+   * @param {'stage' | 'commit' | 'recover' | 'cleanup'} kind
+   * @param {{ recoveryMode?: boolean, stagedBinding?: StagedBinding | null }} [opts]
+   * @returns {ExclusiveTxContext}
+   */
+  const acquireExclusiveTx = (kind, { recoveryMode = false, stagedBinding = null } = {}) => {
+    if (activeTx !== null) {
+      throw Object.assign(new Error('RESTORE_BUSY'), { code: 'RESTORE_BUSY' })
+    }
+    const snap = readOwnerSnapshot()
+    const ctx = {
+      txToken: ++txTokenSeq,
+      kind,
+      ownerId: snap.ownerId,
+      sessionRevision: snap.sessionRevision,
+      epoch: snap.epoch,
+      generation: snap.generation,
+      lifecycle: stagedBinding ? stagedBinding.lifecycle : RESTORE_MATERIAL_LIFECYCLE.UNREGISTERED_STAGING,
+      capturedPrevious: null,
+      stagedBinding,
+      recoveryMode,
+    }
+    activeTx = ctx
+    return ctx
+  }
+
+  /** @param {ExclusiveTxContext} ctx */
+  const releaseExclusiveTx = ctx => {
+    if (activeTx && activeTx.txToken === ctx.txToken) {
+      activeTx = null
     }
   }
 
-  /** @param {{ ownerId: string, sessionRevision: number, generation: number }} expected */
-  const assertIdentityMatches = expected => {
-    const current = getOwnerIdentity?.()
-    const curOwner = current?.ownerId ?? 'default'
-    const curSession = current?.sessionRevision ?? 0
-    if (curOwner !== expected.ownerId || curSession !== expected.sessionRevision || restoreGeneration !== expected.generation) {
+  /**
+   * Re-verify exclusive ownership, ownerId, sessionRevision, epoch, and generation at every await boundary.
+   * Note (F05): Once a transaction is in `recoveryMode` OR has already reached durable `DECIDED`,
+   * ordinary UI session expiry MUST NOT abort mandatory recovery/completion of the decided direction.
+   * @param {ExclusiveTxContext} ctx
+   */
+  const assertTxBoundary = ctx => {
+    if (!activeTx || activeTx.txToken !== ctx.txToken) {
+      throw Object.assign(new Error('RESTORE_OWNERSHIP_LOST'), { code: 'CANCELLED' })
+    }
+    if (ctx.recoveryMode || ctx.lifecycle === RESTORE_MATERIAL_LIFECYCLE.DECIDED) {
+      return
+    }
+    const cur = readOwnerSnapshot()
+    if (
+      cur.ownerId !== ctx.ownerId ||
+      cur.sessionRevision !== ctx.sessionRevision ||
+      cur.epoch !== ctx.epoch ||
+      cur.generation !== ctx.generation
+    ) {
       throw Object.assign(new Error('RESTORE_SESSION_OR_OWNER_CHANGED'), { code: 'CANCELLED' })
     }
   }
 
-  /** @type {{ ownerId: string, sessionRevision: number, generation: number } | null} */
-  let activeExpectedIdentity = null
-
-  const assertActiveSession = () => {
-    if (activeExpectedIdentity) {
-      assertIdentityMatches(activeExpectedIdentity)
+  /**
+   * @param {ExclusiveTxContext} ctx
+   * @param {string} nextLifecycle
+   */
+  const advanceLifecycle = (ctx, nextLifecycle) => {
+    ctx.lifecycle = nextLifecycle
+    if (ctx.stagedBinding) {
+      ctx.stagedBinding.lifecycle = nextLifecycle
     }
+  }
+
+  /** @param {string} lifecycle */
+  const isReferencedLifecycle = lifecycle =>
+    lifecycle === RESTORE_MATERIAL_LIFECYCLE.PREPARED_REGISTERED ||
+    lifecycle === RESTORE_MATERIAL_LIFECYCLE.DECIDED ||
+    lifecycle === RESTORE_MATERIAL_LIFECYCLE.UNCONFIRMED
+
+  /** @param {import('./contracts').RestoreCoordinatorPhase} phase */
+  const handleCoordinatorPhase = phase => {
+    const tx = activeTx
+    if (tx) {
+      if (phase === 'journal_persisting') {
+        advanceLifecycle(tx, RESTORE_MATERIAL_LIFECYCLE.PREPARED_REGISTERED)
+      } else if (phase === 'committing') {
+        advanceLifecycle(tx, RESTORE_MATERIAL_LIFECYCLE.DECIDED)
+      } else if (phase === 'unconfirmed') {
+        advanceLifecycle(tx, RESTORE_MATERIAL_LIFECYCLE.UNCONFIRMED)
+      } else if (phase === 'clearing_journal' || phase === 'succeeded') {
+        advanceLifecycle(tx, RESTORE_MATERIAL_LIFECYCLE.FINALIZED)
+      }
+    }
+    emitPhase(phase)
   }
 
   const coordinator = createRestoreCoordinator({
     journal,
     state,
     journalRollback: true,
-    assertSession: assertActiveSession,
-    onPhase: emitPhase,
+    assertSession: () => {
+      if (activeTx) assertTxBoundary(activeTx)
+    },
+    onPhase: handleCoordinatorPhase,
     validate: validateKanataGenerationDescriptor,
     validateRecovery: validateKanataGenerationDescriptor,
     prepare: async (options = {}) => {
-      await engine.prepareWriteDrain(options)
+      const tx = activeTx
+      await engine.prepareWriteDrain({
+        ...options,
+        ownerId: tx?.ownerId,
+        epoch: tx?.epoch,
+      })
     },
     capture: async () => {
+      const tx = activeTx
       const captured = validateKanataGenerationDescriptor(await engine.capturePreviousGeneration())
-      lastCapturedPrevious = captured
+      if (tx) tx.capturedPrevious = captured
       return captured
     },
     apply: async descriptor => {
-      await engine.applyGeneration(descriptor)
+      const tx = activeTx
+      await engine.applyGeneration(descriptor, {
+        recoveryMode: Boolean(tx?.recoveryMode),
+        ownerId: tx?.ownerId,
+        epoch: tx?.epoch,
+      })
     },
     synchronize,
   })
 
   return {
     /**
-     * Probe both the encrypted RestoreJournal and any Native UNCONFIRMED records.
+     * Probe both the encrypted RestoreJournal / Native durable control root and UNCONFIRMED records.
      */
     async probe() {
       await coordinator.probe()
@@ -205,8 +351,18 @@ export function createKanataPortableRestoreCoordinator({
     },
 
     /**
+     * Query current lifecycle state for a staged descriptor.
+     * @param {import('./contracts').KanataSqliteGenerationDescriptor | null | undefined} descriptor
+     */
+    getMaterialLifecycle(descriptor) {
+      if (!descriptor || typeof descriptor !== 'object') return RESTORE_MATERIAL_LIFECYCLE.UNREGISTERED_STAGING
+      const binding = stagedByObject.get(descriptor) || stagedByKey.get(bindingKey(descriptor))
+      return binding ? binding.lifecycle : RESTORE_MATERIAL_LIFECYCLE.UNREGISTERED_STAGING
+    },
+
+    /**
      * Phase 1: Stream-decode KPB1 into isolated SQLCipher staging DB and run full 12-point verification.
-     * Does NOT touch active DB or RestoreJournal.
+     * Acquires exclusive staging ownership; never touches active DB or durable control head.
      * @param {import('./contracts').KanataPortableStageRequest} request
      */
     async stageAndVerify(request) {
@@ -216,40 +372,84 @@ export function createKanataPortableRestoreCoordinator({
       if (state.busy) {
         throw Object.assign(new Error('RESTORE_BUSY'), { code: 'RESTORE_BUSY' })
       }
-      const expected = snapshotIdentity()
-      emitPhase('reading_kpb1')
-      const staged = await engine.stageAndVerify(request)
-      assertIdentityMatches(expected)
-      const descriptor = validateKanataGenerationDescriptor(staged.descriptor)
-      if (descriptor.absent || !descriptor.verified) {
-        throw Object.assign(new Error('STAGING_NOT_VERIFIED'), { code: 'INVALID_LOGICAL' })
-      }
-      lastStagedTarget = descriptor
-      emitPhase('awaiting_confirmation')
-      return {
-        descriptor,
-        summary: staged.summary,
-        metrics: staged.metrics,
+      const tx = acquireExclusiveTx('stage')
+      try {
+        emitPhase('reading_kpb1')
+        const staged = await engine.stageAndVerify({
+          ...request,
+          ownerId: tx.ownerId,
+          sessionRevision: tx.sessionRevision,
+          epoch: tx.epoch,
+        })
+        try {
+          assertTxBoundary(tx)
+        } catch (sessionErr) {
+          // Staging returned after session/owner invalidated: destroy unregistered staging safely!
+          if (staged?.descriptor && !staged.descriptor.absent) {
+            await engine.destroyStaging?.(staged.descriptor).catch(() => {})
+          }
+          throw sessionErr
+        }
+        const descriptor = validateKanataGenerationDescriptor(staged.descriptor)
+        if (descriptor.absent || !descriptor.verified) {
+          throw Object.assign(new Error('STAGING_NOT_VERIFIED'), { code: 'INVALID_LOGICAL' })
+        }
+        /** @type {StagedBinding} */
+        const binding = {
+          key: bindingKey(descriptor),
+          descriptor,
+          ownerId: tx.ownerId,
+          sessionRevision: tx.sessionRevision,
+          epoch: tx.epoch,
+          generation: tx.generation,
+          lifecycle: RESTORE_MATERIAL_LIFECYCLE.VERIFIED_AWAITING_CONFIRM,
+        }
+        stagedByObject.set(descriptor, binding)
+        stagedByKey.set(binding.key, binding)
+        emitPhase('awaiting_confirmation')
+        return {
+          descriptor,
+          summary: staged.summary,
+          metrics: staged.metrics,
+          lifecycle: binding.lifecycle,
+        }
+      } finally {
+        releaseExclusiveTx(tx)
       }
     },
 
     /**
-     * Cancel/discard a prepared staging artifact before coordinator commit.
+     * Cancel/discard a staging artifact ONLY when it has NOT entered PREPARED_REGISTERED or beyond.
+     * STRICT F04: Never deletes any material referenced by an in-flight or UNCONFIRMED transaction.
      * @param {import('./contracts').KanataSqliteGenerationDescriptor | null} [descriptor]
      */
-    async discardStaging(descriptor = lastStagedTarget) {
-      if (descriptor && !descriptor.absent) {
-        await engine.destroyStaging?.(descriptor)
+    async discardStaging(descriptor) {
+      if (!descriptor || descriptor.absent) {
+        return { discarded: false, reason: 'NO_STAGING' }
       }
-      if (descriptor === lastStagedTarget) {
-        lastStagedTarget = null
+      const binding = stagedByObject.get(descriptor) || stagedByKey.get(bindingKey(descriptor))
+      if (binding && isReferencedLifecycle(binding.lifecycle)) {
+        return { discarded: false, reason: 'MATERIAL_REFERENCED_BY_TX' }
       }
+      // Also refuse if an exclusive commit/recover transaction is currently referencing this descriptor
+      if (activeTx && activeTx.kind === 'commit' && activeTx.stagedBinding?.key === bindingKey(descriptor)) {
+        return { discarded: false, reason: 'MATERIAL_REFERENCED_BY_TX' }
+      }
+      await engine.destroyStaging?.(descriptor)
+      if (binding) {
+        stagedByObject.delete(binding.descriptor)
+        stagedByKey.delete(binding.key)
+      }
+      return { discarded: true, reason: 'DISCARDED' }
     },
 
     /**
-     * Phase 2: Hand a fully verified staging descriptor to the single RestoreCoordinator.
-     * Checks owner, session revision, and restore generation after every await.
-     * Cleans up unreferenced rollback/staging artifacts ONLY AFTER journal.clear() succeeds.
+     * Phase 2: Hand an authentically registered staging descriptor to the single RestoreCoordinator.
+     * - Rejects externally forged `{ verified: true }` descriptors (F05).
+     * - Verifies ownerId / sessionRevision / epoch / generation binding (F05).
+     * - Protects materials from UI deletion once PREPARED_REGISTERED is reached (F04).
+     * - Decouples post-FINALIZED `finalizeArtifacts` cleanup failure from business commit success (F04).
+     *
      * @param {import('./contracts').KanataSqliteGenerationDescriptor} stagedDescriptor
      * @param {string} localMasterPassword
      */
@@ -261,45 +461,130 @@ export function createKanataPortableRestoreCoordinator({
       if (validated.absent || !validated.verified) {
         throw Object.assign(new Error('STAGING_NOT_VERIFIED'), { code: 'INVALID_LOGICAL' })
       }
-      restoreGeneration += 1
-      activeExpectedIdentity = snapshotIdentity()
-      lastCapturedPrevious = null
+
+      // F05: Reject any externally fabricated descriptor not authentically registered by stageAndVerify()!
+      const binding = stagedByObject.get(stagedDescriptor) || stagedByKey.get(bindingKey(validated))
+      if (!binding) {
+        throw Object.assign(new Error('STAGING_NOT_REGISTERED'), { code: 'STAGING_NOT_REGISTERED' })
+      }
+      if (binding.lifecycle !== RESTORE_MATERIAL_LIFECYCLE.VERIFIED_AWAITING_CONFIRM) {
+        throw Object.assign(new Error('STAGING_LIFECYCLE_INVALID'), { code: 'RESTORE_RECOVERY_REQUIRED' })
+      }
+
+      // Verify owner/session/epoch/generation still matches the binding created at staging time!
+      const curSnap = readOwnerSnapshot()
+      if (
+        curSnap.ownerId !== binding.ownerId ||
+        curSnap.sessionRevision !== binding.sessionRevision ||
+        curSnap.epoch !== binding.epoch ||
+        curSnap.generation !== binding.generation
+      ) {
+        throw Object.assign(new Error('RESTORE_SESSION_OR_OWNER_CHANGED'), { code: 'CANCELLED' })
+      }
+
+      // Optional Native HMAC registration check before acquiring commit barrier
+      if (typeof engine.verifyStagingRegistration === 'function') {
+        await engine.verifyStagingRegistration(validated, {
+          ownerId: binding.ownerId,
+          sessionRevision: binding.sessionRevision,
+          epoch: binding.epoch,
+        })
+      }
+
+      const tx = acquireExclusiveTx('commit', { stagedBinding: binding })
       try {
         await coordinator.restore(validated, localMasterPassword)
-        // Coordinator commit + journal.clear() succeeded! Safe to clean up proven-unreferenced artifacts.
-        await engine.finalizeArtifacts?.({
-          previous: lastCapturedPrevious,
-          target: validated,
-        })
-        lastStagedTarget = null
-        lastCapturedPrevious = null
+        advanceLifecycle(tx, RESTORE_MATERIAL_LIFECYCLE.FINALIZED)
+
+        // Business commit + journal.clear() SUCCEEDED!
+        // F04: Artifact cleanup is strictly separated from business commit success.
+        let cleanupError = ''
+        try {
+          await engine.finalizeArtifacts?.({
+            previous: tx.capturedPrevious,
+            target: validated,
+          })
+          pendingPostCommitCleanup = null
+        } catch (gcErr) {
+          cleanupError = (gcErr && typeof gcErr === 'object' && 'code' in gcErr && typeof gcErr.code === 'string')
+            ? gcErr.code
+            : 'ARTIFACT_CLEANUP_FAILED'
+          pendingPostCommitCleanup = {
+            previous: tx.capturedPrevious,
+            target: validated,
+          }
+        }
+        stagedByObject.delete(binding.descriptor)
+        stagedByKey.delete(binding.key)
         return {
           committed: true,
           descriptor: validated,
           syncError: state.syncError,
+          cleanupError,
         }
       } finally {
-        activeExpectedIdentity = null
+        releaseExclusiveTx(tx)
       }
     },
 
     /**
-     * Recover an interrupted restore from the AES-GCM encrypted RestoreJournal.
-     * Before commit marker -> restores previous; after commit marker -> replays target.
+     * Retry non-critical post-FINALIZED unreferenced artifact cleanup without re-importing business data.
+     */
+    async retryPostCommitCleanup() {
+      if (!pendingPostCommitCleanup) {
+        return { cleaned: true, cleanupError: '' }
+      }
+      if (state.blocked || state.busy) {
+        return { cleaned: false, cleanupError: 'RESTORE_RECOVERY_REQUIRED' }
+      }
+      const tx = acquireExclusiveTx('cleanup')
+      try {
+        await engine.finalizeArtifacts?.(pendingPostCommitCleanup)
+        pendingPostCommitCleanup = null
+        return { cleaned: true, cleanupError: '' }
+      } catch (err) {
+        const code = (err && typeof err === 'object' && 'code' in err && typeof err.code === 'string')
+          ? err.code
+          : 'ARTIFACT_CLEANUP_FAILED'
+        return { cleaned: false, cleanupError: code }
+      } finally {
+        releaseExclusiveTx(tx)
+      }
+    },
+
+    /**
+     * Recover an interrupted restore from the authoritative durable record / AES-GCM RestoreJournal.
+     * Runs under `recoveryMode: true` so ordinary UI session revocation does NOT prevent recovery
+     * of an already-prepared or decided transaction (F05 / B-01).
      * @param {string} localMasterPassword
      */
     async recover(localMasterPassword) {
-      restoreGeneration += 1
-      activeExpectedIdentity = snapshotIdentity()
+      const tx = acquireExclusiveTx('recover', { recoveryMode: true })
       try {
+        if (typeof engine.recoverAuthoritative === 'function') {
+          const res = await engine.recoverAuthoritative(localMasterPassword)
+          if (res?.recovered === true && res?.blocked === false) {
+            state.blocked = false
+            state.message = ''
+            emitPhase('succeeded')
+            return {
+              recovered: true,
+              blocked: false,
+              convergedDirection: res.convergedDirection || '',
+              syncError: state.syncError,
+              cleanupError: res.cleanupError || '',
+            }
+          }
+        }
         await coordinator.recover(localMasterPassword)
         return {
           recovered: true,
           blocked: state.blocked,
           syncError: state.syncError,
+          cleanupError: '',
         }
       } finally {
-        activeExpectedIdentity = null
+        releaseExclusiveTx(tx)
       }
     },
 
@@ -313,25 +598,30 @@ export function createKanataPortableRestoreCoordinator({
 
     /**
      * Re-verify an UNCONFIRMED task under Native stable lock + SHA-256 + directory fsync.
+     * Serialized via exclusive cleanup lock so it cannot race with active restore/recover.
      * @param {string} taskId
      */
     async reverifyUnconfirmed(taskId) {
       if (!engine.reverifyUnconfirmed) {
         return { taskId, resolved: false, outcome: 'UNSUPPORTED', reason: 'NO_NATIVE_REVERIFY' }
       }
-      const res = await engine.reverifyUnconfirmed(taskId)
-      const remaining = (await engine.inspectUnconfirmed?.()) ?? []
-      if (remaining.length === 0 && !(await journal.inspect())) {
-        state.blocked = false
-        state.message = ''
+      const tx = acquireExclusiveTx('cleanup', { recoveryMode: true })
+      try {
+        const res = await engine.reverifyUnconfirmed(taskId)
+        const remaining = (await engine.inspectUnconfirmed?.()) ?? []
+        if (remaining.length === 0 && !(await journal.inspect())) {
+          state.blocked = false
+          state.message = ''
+        }
+        return res
+      } finally {
+        releaseExclusiveTx(tx)
       }
-      return res
     },
 
     /**
      * Manual safe cleanup for an UNCONFIRMED task.
-     * Refuses without explicit confirmation, refuses when restore journal is pending,
-     * and refuses whenever safety (lock/inode/containment/SHA-256) cannot be proven.
+     * Serialized via exclusive cleanup lock; refuses without confirmation or when journal/tx is active.
      * @param {string} taskId
      * @param {{ confirmed: boolean }} options
      */
@@ -339,27 +629,32 @@ export function createKanataPortableRestoreCoordinator({
       if (confirmed !== true) {
         return { taskId, resolved: false, outcome: 'REFUSED', reason: 'USER_CONFIRMATION_REQUIRED' }
       }
-      const pendingJournal = await journal.inspect()
-      if (pendingJournal) {
-        return { taskId, resolved: false, outcome: 'REFUSED_BLOCKED', reason: 'RESTORE_JOURNAL_PENDING' }
+      const tx = acquireExclusiveTx('cleanup', { recoveryMode: true })
+      try {
+        const pendingJournal = await journal.inspect()
+        if (pendingJournal) {
+          return { taskId, resolved: false, outcome: 'REFUSED_BLOCKED', reason: 'RESTORE_JOURNAL_PENDING' }
+        }
+        if (!engine.manualCleanupUnconfirmed) {
+          return { taskId, resolved: false, outcome: 'REFUSED', reason: 'NO_NATIVE_CLEANUP' }
+        }
+        const res = await engine.manualCleanupUnconfirmed(taskId, {
+          confirmed: true,
+          restoreJournalPending: false,
+        })
+        const remaining = (await engine.inspectUnconfirmed?.()) ?? []
+        if (remaining.length === 0 && !(await journal.inspect())) {
+          state.blocked = false
+          state.message = ''
+        }
+        return res
+      } finally {
+        releaseExclusiveTx(tx)
       }
-      if (!engine.manualCleanupUnconfirmed) {
-        return { taskId, resolved: false, outcome: 'REFUSED', reason: 'NO_NATIVE_CLEANUP' }
-      }
-      const res = await engine.manualCleanupUnconfirmed(taskId, {
-        confirmed: true,
-        restoreJournalPending: false,
-      })
-      const remaining = (await engine.inspectUnconfirmed?.()) ?? []
-      if (remaining.length === 0 && !(await journal.inspect())) {
-        state.blocked = false
-        state.message = ''
-      }
-      return res
     },
 
     invalidateGeneration() {
-      restoreGeneration += 1
+      generationCounter += 1
     },
   }
 }

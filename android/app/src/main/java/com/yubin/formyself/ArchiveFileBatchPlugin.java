@@ -15,8 +15,19 @@ public class ArchiveFileBatchPlugin extends Plugin {
         try {
             executor.execute(() -> {
                 try {
+                    org.json.JSONArray ops = call.getArray("operations");
+                    boolean hasMutation = false;
+                    if (ops != null) {
+                        for (int i = 0; i < ops.length(); i++) {
+                            String op = ops.optJSONObject(i) != null ? ops.optJSONObject(i).optString("operation", "") : "";
+                            if ("write".equals(op) || "delete".equals(op)) { hasMutation = true; break; }
+                        }
+                    }
+                    if (hasMutation) {
+                        KanataDurableTxControl.assertOrdinaryWriteAllowed(getContext());
+                    }
                     JSObject result = new JSObject();
-                    result.put("results", ArchiveFileBatchStore.execute(getContext().getFilesDir(), call.getArray("operations")));
+                    result.put("results", ArchiveFileBatchStore.execute(getContext().getFilesDir(), ops));
                     call.resolve(result);
                 } catch (Exception ignored) { call.reject("ARCHIVE_FILE_BATCH_FAILED", "ARCHIVE_FILE_BATCH_FAILED"); }
             });

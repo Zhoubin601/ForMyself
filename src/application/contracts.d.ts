@@ -138,6 +138,7 @@ export type BackupCapabilityUnavailableCode =
   | 'SQLITE_PLUGIN_MISSING'
   | 'SQLITE_PLUGIN_NOT_ACTIVATED'
   | 'SAF_UNAVAILABLE'
+  | 'WEB_KPB1_RESTORE_UNAVAILABLE'
 
 export interface BackupRuntimeCapability {
   platform: 'web' | 'android' | 'ios' | 'unknown'
@@ -164,6 +165,8 @@ export interface KanataSqliteGenerationDescriptor {
   readonly dbPath: string
   readonly dbSha256Hex: string
   readonly envelopePath?: string
+  readonly envelopeSha256Hex?: string
+  readonly stagingHandle?: string
   readonly schemaVersion: 5
   readonly applicationId: 0x4b4e5441
   readonly schemaFingerprint: string
@@ -198,6 +201,10 @@ export interface UnconfirmedManualActionResult {
 export interface KanataPortableStageRequest {
   source: unknown
   backupPassword: string
+  localMasterPassword?: string
+  ownerId?: string
+  sessionRevision?: number
+  epoch?: number
   signal?: AbortSignal
   onProgress?: (progress: { phase: RestoreCoordinatorPhase; percent: number }) => void
 }
@@ -205,17 +212,30 @@ export interface KanataPortableStageRequest {
 export interface KanataPortableRestoreEngine {
   stageAndVerify(request: KanataPortableStageRequest): Promise<{
     descriptor: KanataSqliteGenerationDescriptor
-    summary?: { worldCount: number; messageCount: number }
+    summary?: { worldCount: number; messageCount: number; dekFingerprintHex?: string }
     metrics?: Record<string, unknown>
   }>
+  verifyStagingRegistration?(
+    descriptor: KanataSqliteGenerationDescriptor,
+    binding: { ownerId: string; sessionRevision: number; epoch: number },
+  ): Promise<unknown>
   destroyStaging?(descriptor: KanataSqliteGenerationDescriptor): Promise<unknown>
-  prepareWriteDrain(options?: { recovering?: boolean }): Promise<unknown>
+  prepareWriteDrain(options?: { recovering?: boolean; ownerId?: string; epoch?: number }): Promise<unknown>
   capturePreviousGeneration(): Promise<KanataSqliteGenerationDescriptor>
-  applyGeneration(descriptor: KanataSqliteGenerationDescriptor): Promise<unknown>
+  applyGeneration(
+    descriptor: KanataSqliteGenerationDescriptor,
+    options?: { recoveryMode?: boolean; ownerId?: string; epoch?: number },
+  ): Promise<unknown>
   finalizeArtifacts?(artifacts: {
     previous: KanataSqliteGenerationDescriptor | null
     target: KanataSqliteGenerationDescriptor
   }): Promise<unknown>
+  recoverAuthoritative?(localMasterPassword: string): Promise<{
+    recovered: boolean
+    blocked: boolean
+    convergedDirection?: string
+    cleanupError?: string
+  }>
   inspectUnconfirmed?(): Promise<UnconfirmedTaskSummary[]>
   reverifyUnconfirmed?(taskId: string): Promise<UnconfirmedManualActionResult>
   manualCleanupUnconfirmed?(
@@ -228,7 +248,7 @@ export interface KanataPortableRestoreCoordinatorOptions {
   journal: RestoreJournal<KanataSqliteGenerationDescriptor>
   state: RestoreState
   engine: KanataPortableRestoreEngine
-  getOwnerIdentity?: () => { ownerId: string; sessionRevision: number }
+  getOwnerIdentity?: () => { ownerId: string; sessionRevision: number; epoch?: number }
   synchronize?: () => Promise<unknown>
   onPhase?: (phase: RestoreCoordinatorPhase) => void
 }

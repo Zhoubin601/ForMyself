@@ -36,12 +36,17 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * M6-03 Android Instrumentation Test Suite:
- * - Work Package A: KPB1 streaming decode via File & real SAF DocumentsProvider + full negative rejection matrix
+ * M6-03 Native Primitive-Level Verification Suite (retained per M6-03-R F02):
+ * - Work Package A: KPB1 streaming decode via File & real SAF DocumentsProvider + 12-case negative rejection matrix
  * - Work Package B: Isolated SQLCipher 4.17.0 batched atomic staging engine + 12-point verification + batch rollback
- * - Work Package C & D: RestoreCoordinator encrypted journal + 7 real multi-process SIGKILL crash points +
- *   rollback failure blocked barrier + DURABILITY_UNCONFIRMED preservation, re-verify & safe manual cleanup
- * - Work Package E: Native WebViewCompat runtime capability inspection (honest WebView 52 blocking on API 24/25)
+ * - Native crash/lock/UNCONFIRMED primitives (worker-level test journal & manual check)
+ * - Work Package E: Native WebViewCompat runtime capability inspection
+ *
+ * NOTE (M6-03-R F02): Authoritative G-04 durable transaction control, real Capacitor Bridge wiring,
+ * and autonomous cold-start SIGKILL recovery (without any test-only journal or test-chosen direction)
+ * are verified by:
+ * - KanataM603N05DurableTxControlTest (N-05 across API 24 / 25 / 34)
+ * - KanataM603EndToEndRemediationTest (F02 / F03 / F06 / N-06 / F03-01~10)
  */
 @RunWith(AndroidJUnit4.class)
 public class KanataM603RestoreEngineAndCoordinatorTest {
