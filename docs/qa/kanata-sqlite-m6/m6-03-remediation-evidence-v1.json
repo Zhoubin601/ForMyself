@@ -207,7 +207,63 @@
     "physicalPowerLoss": "NOT RUN (emulator environment only; documented residual risk)"
   },
   "ci": {
-    "implementationCommitSha": "PENDING_COMMIT",
-    "workflowRunId": "PENDING_CI"
+    "implementationCommitChain": [
+      "88ec405120da9e83bb8399dc38fb590a33630610",
+      "1fa09fed59e673f94edafe9c3e16b5dd0c5e1c06",
+      "d127a63c791f766ea53167becbadca4aa1ec72a2"
+    ],
+    "implementationCommitSha": "d127a63c791f766ea53167becbadca4aa1ec72a2",
+    "workflowName": "Quality",
+    "workflowRunId": 45957580830,
+    "workflowRunUrl": "https://github.com/Zhoubin601/ForMyself/actions/runs/45957580830",
+    "conclusion": "success",
+    "jobsPassed": "4/4",
+    "jobs": [
+      {
+        "name": "web",
+        "jobId": 140367535035,
+        "durationSec": 181,
+        "conclusion": "success",
+        "url": "https://github.com/Zhoubin601/ForMyself/actions/runs/45957580830/job/140367535035"
+      },
+      {
+        "name": "android",
+        "jobId": 140367534720,
+        "durationSec": 382,
+        "conclusion": "success",
+        "url": "https://github.com/Zhoubin601/ForMyself/actions/runs/45957580830/job/140367534720"
+      },
+      {
+        "name": "m6-synthetic-android (33)",
+        "jobId": 140367535080,
+        "durationSec": 1108,
+        "conclusion": "success",
+        "url": "https://github.com/Zhoubin601/ForMyself/actions/runs/45957580830/job/140367535080"
+      },
+      {
+        "name": "m6-synthetic-android (34)",
+        "jobId": 140367534954,
+        "durationSec": 1495,
+        "conclusion": "success",
+        "url": "https://github.com/Zhoubin601/ForMyself/actions/runs/45957580830/job/140367534954"
+      }
+    ],
+    "artifacts": [
+      {
+        "id": 15178799618,
+        "name": "android-test-reports",
+        "sizeBytes": 15273096
+      },
+      {
+        "id": 15180531305,
+        "name": "m6-synthetic-api33-reports",
+        "sizeBytes": 936375
+      },
+      {
+        "id": 15180422316,
+        "name": "m6-synthetic-api34-reports",
+        "sizeBytes": 1067794
+      }
+    ]
   }
 }

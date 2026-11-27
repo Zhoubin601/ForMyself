@@ -71,16 +71,35 @@
   2. `KanataM6GenerationStore` 查询 `dataset_metadata` 列名误写 `dataset_identity` → 修正为基线 Schema 001 真实列名 `SELECT user_id FROM dataset_metadata WHERE singleton = 1`。
   3. `TodoRepository.compareAndSet` 在普通未初始化控制根的 legacy APK 上需保留旧 `restore-v1.enc` P6 恢复写兼容，而在新控制根初始化后全部普通 CAS / Widget 写一律在 `control.lock` 内受持久 fence 拦截、仅允许不可伪造 `RecoveryCapability` 写入 → 通过 `executeOrdinaryWriteUnderFence(..., blockOnLegacyPending=false)` 精确解耦，兼顾 B-07 与普通 APK 零回归。
   4. `kanataSyntheticRestoreWiring.js` 避免顶层 `registerPlugin` 导出到主入口 chunk，且 `src/main.js` / `useAppController.js` 仅在检测到 `KanataM6RestoreBridge` 时动态懒加载 → 实测主入口 chunk `plugin proxy exports: []`、`DIST_CLEAN=true`。
-- **Round 2 复审**：
+- **Round 2 复审与远端 CI 回归闭环**：
   - 冻结基线 `git diff --exit-code`（Schema 001–005、KPB1 冻结 Codec、M6-02 Exporter/Importer、`kanataSqliteCandidate.js`、`variables.gradle`、`package.json`/`package-lock.json`）：**Exit 0**。
   - 合成 Release 构建阻断验证：**Exit 1（预期阻断）**。
-  - 本地全量 `npm run check`（ESLint 0 errors、Node 820/820、Vitest 47 文件 438/438、`vue-tsc` + `tsc -p tsconfig.contracts.json`、`vite build`）、标准 Android Gradle、API 34 (17/17 + 8/8)、API 24 (13/13)、API 25 (13/13)：**全量 PASS**。
+  - 远端 CI 实际捕获并修复 2 项标准 APK 回归：
+    1. `1fa09fed59e673f94edafe9c3e16b5dd0c5e1c06`：`KanataDurableTxControl.TxControlException.withExactCodeMessage` 保留 `RESTORE_RECOVERY_REQUIRED` 精确消息契约（满足 `ArchitectureContractTest.nativeWidgetCannotModifyDataDuringPendingRestore` 与 `TodoPlugin` 错误码契约），同时 `ArchiveFileBatchPlugin` 仅阻断未初始化旧 APK 的孤立/冲突标记而在 durable control 启用时于 `control.lock` 内全量加锁阻断。
+    2. `d127a63c791f766ea53167becbadca4aa1ec72a2`：`vite.config.js` 通过 `manualChunks` 将 `@capacitor/filesystem` 拆分为独立 chunk `capacitor-filesystem`，确保主入口 `index-*.js` 导出零 Capacitor 插件代理，使 P6 原生验收 `verify.mjs` 的 `resolveRestoreJournal(entry)` 确定性命中唯一 `restoreJournal`。
+  - 本地全量 `npm run check`（ESLint 0 errors、Node 820/820、Vitest 47 文件 438/438、`vue-tsc` + `tsc -p tsconfig.contracts.json`、`vite build`）、标准 Android Gradle、API 34 (17/17 + 8/8)、API 24 (13/13)、API 25 (13/13) 及远端 GitHub Actions `Quality` 4/4：**全量 PASS**。
 
 ---
 
 ## 6. 远端 CI 与精确提交 SHA
 
-- **待本次提交推送后写入精确实现 SHA、CI Run ID、4/4 Job 结论与 Artifacts**（见后续证据同步提交）。
+- **整改代码提交链**：
+  - `88ec405120da9e83bb8399dc38fb590a33630610`（F01–F06 完整整改实现与自动化测试）
+  - `1fa09fed59e673f94edafe9c3e16b5dd0c5e1c06`（`RESTORE_RECOVERY_REQUIRED` 精确消息契约与旧版 `ArchiveFileBatch` 兼容修复）
+  - **`d127a63c791f766ea53167becbadca4aa1ec72a2`**（`@capacitor/filesystem` 独立 chunk 隔离，**全绿 CI 对应精确代码 SHA**）
+- **GitHub Actions `Quality` Run ID**：**`45957580830`**（`https://github.com/Zhoubin601/ForMyself/actions/runs/45957580830`，结论：**`success` 4/4**）
+
+| CI Job | Job ID | 耗时 | 结论 | 覆盖范围 |
+| --- | --- | ---: | :---: | --- |
+| `web` | `140367535035` | 181 s | **success** | `npm run check`（ESLint + 820 Node + 438 Vitest + TypeScript strict + Vite build） |
+| `android` | `140367534720` | 382 s | **success** | 普通 APK Debug + UnitTest + 16 项 `connectedDebugAndroidTest` + 真实 WebView Playwright P6 (`verify.mjs` 含 `am force-stop`) |
+| `m6-synthetic-android (33)` | `140367535080` | 1,108 s | **success** | Release 阻断 + API 33 全套 58/58 合成测试（含 N-05、E2E、5 阶段 SIGKILL、SAF、FIX-04、容量基准） |
+| `m6-synthetic-android (34)` | `140367534954` | 1,495 s | **success** | Release 阻断 + API 34 全套 58/58 合成测试（含 N-05、E2E、5 阶段 SIGKILL、SAF、FIX-04、容量基准） |
+
+- **已归档 CI Artifacts**：
+  - `android-test-reports`（ID `15178799618`，15,273,096 B）
+  - `m6-synthetic-api33-reports`（ID `15180531305`，936,375 B）
+  - `m6-synthetic-api34-reports`（ID `15180422316`，1,067,794 B）
 
 ---
 
