@@ -7,11 +7,14 @@ import android.util.Base64;
 
 import net.zetetic.database.sqlcipher.SQLiteDatabase;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.SecureRandom;
@@ -220,7 +223,11 @@ public final class KanataM6GenerationStore {
             DatabasePopulator populator) throws Exception {
         System.loadLibrary("sqlcipher");
         File genDir = KanataDurableTxControl.generationDir(controlRoot, generationId);
-        if (!genDir.exists() && !genDir.mkdirs()) {
+        if (genDir.exists()) {
+            throw new KanataDurableTxControl.TxControlException("GENERATION_ALREADY_EXISTS",
+                    "Initial generation directory already exists: " + generationId);
+        }
+        if (!genDir.mkdirs()) {
             throw new IOException("Unable to create generation dir: " + genDir);
         }
         File dbFile = new File(genDir, "kanata.db");
@@ -301,21 +308,26 @@ public final class KanataM6GenerationStore {
             KanataDurableTxControl.KeyBackend keyBackend) throws Exception {
         System.loadLibrary("sqlcipher");
         String genId = "gen-" + taskId;
-        File genDir = KanataDurableTxControl.generationDir(controlRoot, genId);
-        if (!genDir.exists() && !genDir.mkdirs()) {
-            throw new IOException("Unable to create target generation directory");
-        }
+        // R02.1 & R02.2: Atomically reserve unique generationId BEFORE touching envelope, DB, or work dir.
+        // If generationId already exists, is referenced by head, or is reserved by another task,
+        // reserveGenerationExclusive throws immediately with ZERO mutation/deletion of existing materials!
+        KanataDurableTxControl.GenerationReservation reservation = KanataDurableTxControl.reserveGenerationExclusive(
+                context, controlRoot, genId, taskId, ownerId, keyBackend);
+        File genDir = reservation.generationDir;
         File stagingWorkDir = new File(genDir, "_stage_work");
-        if (!stagingWorkDir.exists() && !stagingWorkDir.mkdirs()) {
-            throw new IOException("Unable to create staging work directory");
-        }
 
         // Derive fresh local KEK for a brand-new random DEK (KanataKeyEnvelope.create inside engine).
         JSONObject envHeader = KanataKeyEnvelope.newHeader();
-        byte[] kek = deriveLocalKek(localMasterPassword, envHeader.getString("salt"));
+        byte[] kek = null;
         byte[] dek = null;
         byte[] rawKey = null;
+        String createdHandle = null;
+        boolean succeeded = false;
         try {
+            if (!stagingWorkDir.mkdirs() && !stagingWorkDir.isDirectory()) {
+                throw new IOException("Unable to create staging work directory");
+            }
+            kek = deriveLocalKek(localMasterPassword, envHeader.getString("salt"));
             File envFile = new File(genDir, "envelope.json");
             dek = KanataKeyEnvelope.create(new AtomicFile(envFile), envHeader, kek);
             String dekFingerprintHex = KanataDurableTxControl.sha256Hex(
@@ -342,12 +354,19 @@ public final class KanataM6GenerationStore {
             new File(artifact.stagingDbFile.getPath() + "-shm").delete();
             stagingWorkDir.delete();
 
-            String dbSha = KanataDurableTxControl.sha256FileHex(finalDb);
-            String envSha = KanataDurableTxControl.sha256FileHex(envFile);
-            if (!dbSha.equals(artifact.stagingSha256Hex)) {
+            String preStampDbSha = KanataDurableTxControl.sha256FileHex(finalDb);
+            if (!preStampDbSha.equals(artifact.stagingSha256Hex)) {
                 throw new KanataDurableTxControl.TxControlException("STAGING_DIGEST_MISMATCH",
                         "Post-move staging DB digest mismatch");
             }
+            // R03.1: KPB1 excludes the 3 local runtime tables (schema_migrations, schema_migration_applications,
+            // data_migrations). Stamp the APK's authoritative kanata-sqlite-catalog.json schema journal rows
+            // BEFORE sealing generation-manifest.json so the real KanataSqlitePlugin business runtime passes
+            // verifyReadOnlySchema() when opening this restored generation!
+            stampOfficialSchemaJournal(context, finalDb, rawKey);
+
+            String dbSha = KanataDurableTxControl.sha256FileHex(finalDb);
+            String envSha = KanataDurableTxControl.sha256FileHex(envFile);
 
             KanataDurableTxControl.GenerationRegistration reg = new KanataDurableTxControl.GenerationRegistration(
                     genId,
@@ -365,17 +384,30 @@ public final class KanataM6GenerationStore {
             KanataDurableTxControl.sealGenerationDirectory(
                     controlRoot, reg, KanataDurableTxControl.FaultInjector.NONE);
 
-            String handle = KanataDurableTxControl.registerVerifiedStaging(
+            createdHandle = KanataDurableTxControl.registerVerifiedStaging(
                     context, controlRoot, reg, ownerId, sessionRevision, epoch,
                     artifact.transcriptHex, keyBackend);
 
-            return new StagedGenerationResult(reg, artifact, handle, dekFingerprintHex);
+            // Release exclusive creation reservation while retaining the sealed & registered generation!
+            KanataDurableTxControl.releaseGenerationReservation(
+                    context, controlRoot, reservation, false, null, keyBackend);
+            succeeded = true;
+
+            return new StagedGenerationResult(reg, artifact, createdHandle, dekFingerprintHex);
         } catch (Exception e) {
-            // Clean up failed unregistered generation dir
-            deleteRecursiveQuiet(genDir);
+            // R02.3 & R02.4: Delete ONLY the directory created by THIS reservation under Native control.lock
+            // after verifying ownership token and verifying it is NOT referenced by authoritative head!
+            if (!succeeded) {
+                try {
+                    KanataDurableTxControl.releaseGenerationReservation(
+                            context, controlRoot, reservation, true, createdHandle, keyBackend);
+                } catch (Exception ignoredCleanup) {
+                    // Never mask original staging error; lock-protected reference checks preserve live data.
+                }
+            }
             throw e;
         } finally {
-            Arrays.fill(kek, (byte) 0);
+            if (kek != null) Arrays.fill(kek, (byte) 0);
             if (dek != null) Arrays.fill(dek, (byte) 0);
             if (rawKey != null) Arrays.fill(rawKey, (byte) 0);
         }
@@ -478,6 +510,77 @@ public final class KanataM6GenerationStore {
                     "No active generation registered in head");
         }
         return openAndVerifyGeneration(controlRoot, st.headRecord.activeGenerationId, localMasterPassword);
+    }
+
+    /**
+     * R03.1: Populate local runtime schema_migrations & schema_migration_applications rows
+     * from the APK's authoritative kanata-sqlite-catalog.json so KanataSqlitePlugin.verifyReadOnlySchema()
+     * accepts the KPB1-restored generation DB without weakening any schema journal check.
+     */
+    private static void stampOfficialSchemaJournal(Context context, File dbFile, byte[] rawKey) throws Exception {
+        byte[] catalogBytes;
+        try (InputStream is = context.getAssets().open("kanata-sqlite-catalog.json");
+             ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            byte[] buf = new byte[4096];
+            int n;
+            while ((n = is.read(buf)) != -1) {
+                out.write(buf, 0, n);
+            }
+            catalogBytes = out.toByteArray();
+        }
+        JSONObject catalogJson = new JSONObject(new String(catalogBytes, StandardCharsets.UTF_8));
+        JSONArray journal = catalogJson.getJSONArray("journal");
+
+        SQLiteDatabase db = SQLiteDatabase.openDatabase(
+                dbFile.getPath(), rawKey, null, SQLiteDatabase.OPEN_READWRITE | SQLiteDatabase.NO_LOCALIZED_COLLATORS, null, null);
+        try {
+            db.setForeignKeyConstraintsEnabled(true);
+            db.rawExecSQL("PRAGMA temp_store=MEMORY");
+            db.rawExecSQL("PRAGMA synchronous=FULL");
+            long existingCount = scalarLong(db, "SELECT COUNT(*) FROM schema_migrations");
+            if (existingCount == 0L) {
+                long nowMs = System.currentTimeMillis();
+                db.beginTransactionNonExclusive();
+                try {
+                    for (int i = 0; i < journal.length(); i++) {
+                        JSONObject entry = journal.getJSONObject(i);
+                        int ver = entry.getInt("version");
+                        String name = entry.getString("name");
+                        String checksum = entry.getString("checksum");
+                        db.execSQL("INSERT INTO schema_migrations(version, name, checksum) VALUES(?, ?, ?)",
+                                new Object[] { ver, name, checksum });
+                        db.execSQL("INSERT INTO schema_migration_applications(version, applied_at, time_source) VALUES(?, ?, 'js-wall-clock-utc-ms')",
+                                new Object[] { ver, nowMs });
+                    }
+                    db.setTransactionSuccessful();
+                } finally {
+                    db.endTransaction();
+                }
+            }
+            try (android.database.Cursor c = db.rawQuery("PRAGMA wal_checkpoint(TRUNCATE)", null)) {
+                c.moveToFirst();
+            }
+            try (android.database.Cursor c = db.rawQuery("PRAGMA cipher_integrity_check", null)) {
+                if (c.moveToFirst()) {
+                    throw new KanataDurableTxControl.TxControlException("INTEGRITY_FAILED",
+                            "cipher_integrity_check failed after schema journal stamp");
+                }
+            }
+            if (!"ok".equalsIgnoreCase(scalarString(db, "PRAGMA integrity_check(1)"))) {
+                throw new KanataDurableTxControl.TxControlException("INTEGRITY_FAILED",
+                        "integrity_check failed after schema journal stamp");
+            }
+            try (android.database.Cursor c = db.rawQuery("SELECT * FROM pragma_foreign_key_check LIMIT 1", null)) {
+                if (c.moveToFirst()) {
+                    throw new KanataDurableTxControl.TxControlException("INTEGRITY_FAILED",
+                            "foreign_key_check failed after schema journal stamp");
+                }
+            }
+        } finally {
+            db.close();
+        }
+        new File(dbFile.getPath() + "-wal").delete();
+        new File(dbFile.getPath() + "-shm").delete();
     }
 
     private static long scalarLong(SQLiteDatabase db, String sql) {

@@ -39,7 +39,7 @@ public final class TodoRepository {
         if (!context.getSharedPreferences("CapacitorStorage", Context.MODE_PRIVATE).edit().putString(KEY, data.toString()).commit()) throw new Exception("TODO_WRITE_FAILED");
     }
     public static JSONObject compareAndSet(Context context, long expected, JSONObject data) throws Exception {
-        return compareAndSet(context, KanataDurableTxControl.defaultControlRoot(context), expected, data);
+        return compareAndSet(context, KanataDurableTxControl.effectiveControlRoot(context), expected, data);
     }
     public static JSONObject compareAndSet(Context context, java.io.File controlRoot, long expected, JSONObject data) throws Exception {
         synchronized (LOCK) {
@@ -125,7 +125,7 @@ public final class TodoRepository {
         KanataDurableTxControl.assertOrdinaryWriteAllowed(context);
     }
     public static JSONObject toggleCompleted(Context context,String taskId,String date) throws Exception {
-        return toggleCompleted(context, KanataDurableTxControl.defaultControlRoot(context), taskId, date);
+        return toggleCompleted(context, KanataDurableTxControl.effectiveControlRoot(context), taskId, date);
     }
     public static JSONObject toggleCompleted(Context context, java.io.File controlRoot, String taskId, String date) throws Exception {
         synchronized (LOCK) {
@@ -139,7 +139,7 @@ public final class TodoRepository {
         }
     }
     public static JSONObject setCompleted(Context context, String taskId, String date, boolean completed) throws Exception {
-        return setCompleted(context, KanataDurableTxControl.defaultControlRoot(context), taskId, date, completed);
+        return setCompleted(context, KanataDurableTxControl.effectiveControlRoot(context), taskId, date, completed);
     }
     public static JSONObject setCompleted(Context context, java.io.File controlRoot, String taskId, String date, boolean completed) throws Exception {
         synchronized (LOCK) {

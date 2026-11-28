@@ -89,6 +89,7 @@ export const useSettingsStore = defineStore('settings', () => {
   let apiKeyRevision = 0
 
   const flushPreferenceWrite = async key => {
+    if (restoreState.blocked) return
     const pending = pendingPreferenceWrites.get(key)
     if (!pending) return
     const timer = pendingPreferenceTimers.get(key)
@@ -107,6 +108,7 @@ export const useSettingsStore = defineStore('settings', () => {
     }, delay))
   }
   const flushApiKeyWrite = async () => {
+    if (restoreState.blocked) return
     if (apiKeyWritePromise) {
       await apiKeyWritePromise
       if (pendingApiKey !== null) await flushApiKeyWrite()
@@ -180,14 +182,18 @@ export const useSettingsStore = defineStore('settings', () => {
         let key = current.key || legacy.key || ''
         if (Capacitor.isNativePlatform()) {
           const storedKey = await secureCredentials.getApiKey()
-          if (!storedKey && key) await secureCredentials.storeApiKey(key)
-          else key = storedKey
-          // Never discard the legacy copy before a successful read or verified migration.
-          await Preferences.set({
-            key: STORAGE_KEYS.aiProviderSettings,
-            value: JSON.stringify({ url: aiProviderUrl.value, model: aiModel.value })
-          })
-          if (legacyRes.value) await Preferences.remove({ key: STORAGE_KEYS.legacyAiSettings })
+          if (!restoreState.blocked) {
+            if (!storedKey && key) await secureCredentials.storeApiKey(key)
+            else key = storedKey
+            // Never discard the legacy copy before a successful read or verified migration.
+            await Preferences.set({
+              key: STORAGE_KEYS.aiProviderSettings,
+              value: JSON.stringify({ url: aiProviderUrl.value, model: aiModel.value })
+            })
+            if (legacyRes.value) await Preferences.remove({ key: STORAGE_KEYS.legacyAiSettings })
+          } else {
+            key = storedKey || key
+          }
         }
         applyLoadedApiKey(key)
         aiSettingsReady = true

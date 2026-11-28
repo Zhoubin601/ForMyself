@@ -102,6 +102,14 @@ export type RestoreCoordinatorPhase =
   | 'unconfirmed'
   | 'manual_verification_required'
 
+export type RestoreCommitStrategy = 'apply_then_commit' | 'decision_then_apply'
+
+export interface RestoreRecoveryPlan<Snapshot> {
+  direction: 'previous' | 'target' | 'none'
+  snapshot?: Snapshot
+  alreadyFinalized?: boolean
+}
+
 export interface RestoreState { blocked: boolean; busy: boolean; message: string; syncError: string }
 export interface RestoreRecord<Snapshot> { version: 1; previous: Snapshot; target: Snapshot }
 export type {RestoreCipherEnvelope,CompressedRestorePayload} from '../platform/storage/restorePayloadTypes'
@@ -110,12 +118,20 @@ export interface RestoreJournal<Snapshot> {
   prepare(record: RestoreRecord<Snapshot>, password: string): Promise<void | {digest:string}>
   commit(expectedDigest?: string): Promise<void>
   clear(): Promise<void>
+  /** Optional Native durable control abort for undecided GATE/PREPARED transactions (never decodes legacy AES-GCM JSON). */
+  abortPrepared?(expectedDigest: string, password: string): Promise<void>
+  /** Optional Native durable control cold-start recovery resolver (never calls legacy openRestoreRecord). */
+  resolveRecovery?(password: string): Promise<RestoreRecoveryPlan<Snapshot>>
 }
 export interface RestoreCoordinatorOptions<Snapshot> {
   journal: RestoreJournal<Snapshot>
   /** Release the captured rollback graph only after its complete encrypted journal is durable;
    * compensation reopens the same uncommitted digest and validates its previous image. */
   journalRollback?: boolean
+  /** Transaction execution strategy:
+   * - 'apply_then_commit' (default): legacy JSON restore (`prepare -> journal.prepare -> apply -> commit -> clear`).
+   * - 'decision_then_apply': Native durable generation restore (`prepare -> journal.prepare -> commit(DECISION) -> apply(verify selected) -> clear(FINALIZED)`). */
+  commitStrategy?: RestoreCommitStrategy
   state: RestoreState
   prepare(options?: { recovering?: boolean }): Promise<unknown>
   capture(): Snapshot | Promise<Snapshot>
@@ -248,6 +264,7 @@ export interface KanataPortableRestoreCoordinatorOptions {
   journal: RestoreJournal<KanataSqliteGenerationDescriptor>
   state: RestoreState
   engine: KanataPortableRestoreEngine
+  commitStrategy?: RestoreCommitStrategy
   getOwnerIdentity?: () => { ownerId: string; sessionRevision: number; epoch?: number }
   synchronize?: () => Promise<unknown>
   onPhase?: (phase: RestoreCoordinatorPhase) => void

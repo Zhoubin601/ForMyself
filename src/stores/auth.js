@@ -4,6 +4,7 @@ import { Capacitor } from '@capacitor/core'
 import { NativeBiometric } from '@capgo/capacitor-native-biometric'
 import { STORAGE_KEYS } from '../platform/storage/keys.js'
 import { preferenceStorage } from '../platform/storage/preferences.js'
+import { restoreState } from '../platform/storage/restoreState.js'
 import { secureCredentials } from '../platform/security/secureCredentials.js'
 import {
   createMasterPasswordVerifier,
@@ -112,6 +113,7 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   const provisionBiometricCredential = async password => {
+    if (restoreState.blocked) return false
     if (!hasBiometric.value || !Capacitor.isNativePlatform() || !verifierRecord.value) {
       biometricCredentialReady.value = false
       return false

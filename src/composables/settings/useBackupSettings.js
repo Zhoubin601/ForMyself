@@ -39,6 +39,8 @@ import { syncScheduleNotifications } from '../../features/schedule/scheduleNotif
 import { normalizeScheduleData } from '../../features/schedule/scheduleCore'
 import { appAlert, appConfirm, appToast } from '../../services/uiFeedback'
 
+let retainedPortableSession = null
+
 export function useBackupSettings() {
 
   const authStore = useAuthStore()
@@ -63,24 +65,38 @@ export function useBackupSettings() {
 
   const backupTypeOptions = BACKUP_TYPE_OPTIONS
 
-  const portableCoordinator = createSyntheticPortableRestoreCoordinator({
-    state: restoreState,
-    getOwnerIdentity: () => ({
-      ownerId: 'settings-backup-ui',
-      sessionRevision: authStore.sessionRevision,
-      epoch: protectedAccess.revision,
-    }),
-    synchronize: async () => {
-      await syncReminderNotifications(settingsStore.notificationSettings, {
-        personalizedBodies: getPersonalizedReminderBodies(settingsStore.notificationAiContent)
-      })
-      await todoStore.syncReminders()
-      await syncScheduleNotifications(scheduleStore.snapshot)
-    },
-  })
-  const portableRestore = createKanataPortableRestoreRuntime({
-    coordinator: portableCoordinator,
-  })
+  let portableCoordinator = null
+  let portableRestore = null
+  if (retainedPortableSession) {
+    const retained = retainedPortableSession
+    retainedPortableSession = null
+    if (retained.sessionRevision === authStore.sessionRevision && !restoreState.blocked) {
+      portableCoordinator = retained.coordinator
+      portableRestore = retained.runtime
+    } else {
+      retained.runtime.dispose()
+    }
+  }
+  if (!portableRestore) {
+    portableCoordinator = createSyntheticPortableRestoreCoordinator({
+      state: restoreState,
+      getOwnerIdentity: () => ({
+        ownerId: 'settings-backup-ui',
+        sessionRevision: authStore.sessionRevision,
+        epoch: protectedAccess.revision,
+      }),
+      synchronize: async () => {
+        await syncReminderNotifications(settingsStore.notificationSettings, {
+          personalizedBodies: getPersonalizedReminderBodies(settingsStore.notificationAiContent)
+        })
+        await todoStore.syncReminders()
+        await syncScheduleNotifications(scheduleStore.snapshot)
+      },
+    })
+    portableRestore = createKanataPortableRestoreRuntime({
+      coordinator: portableCoordinator,
+    })
+  }
   const portableRestoreState = portableRestore.state
   const stopSectionWatch = watch(
     () => settingsStore.settingsSection,
@@ -103,6 +119,14 @@ export function useBackupSettings() {
     stopSectionWatch()
     unsubscribeCapabilityResume()
     portableBackupPassword.value = ''
+    if (portableRestoreState.busy) {
+      retainedPortableSession = {
+        coordinator: portableCoordinator,
+        runtime: portableRestore,
+        sessionRevision: authStore.sessionRevision,
+      }
+      return
+    }
     portableRestore.dispose()
   }
   if (getCurrentInstance()) {
@@ -153,7 +177,14 @@ export function useBackupSettings() {
       { title: '确认提交恢复？', confirmText: '确认切换', destructive: true }
     )
     if (!confirmed) return false
-    return portableRestore.confirmCommitRestore({ localMasterPassword: authStore.savedMasterPwd })
+    try {
+      return await portableRestore.confirmCommitRestore({ localMasterPassword: authStore.savedMasterPwd })
+    } finally {
+      if (restoreState.blocked && retainedPortableSession?.runtime === portableRestore) {
+        retainedPortableSession = null
+        portableRestore.dispose()
+      }
+    }
   }
   const cancelPortableRestore = async () => {
     portableBackupPassword.value = ''

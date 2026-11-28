@@ -41,14 +41,41 @@ public final class KanataM6RestoreBridgePlugin extends Plugin {
     private static final ExecutorService WORKER = Executors.newSingleThreadExecutor();
     private static final ConcurrentHashMap<String, AtomicBoolean> ACTIVE_STAGING_CANCELS = new ConcurrentHashMap<>();
     private static volatile File OVERRIDE_CONTROL_ROOT = null;
+    private static volatile Uri TEST_PICKED_URI = null;
+    private static volatile String TEST_PICKED_NAME = "synthetic-backup.kpb1";
+    private static final AtomicBoolean TEST_FAIL_NEXT_VERIFY_APPLY = new AtomicBoolean(false);
+    private static final java.util.concurrent.CopyOnWriteArrayList<String> NATIVE_CALL_TRACE =
+            new java.util.concurrent.CopyOnWriteArrayList<>();
 
     public static void setTestControlRootOverride(File controlRoot) {
         OVERRIDE_CONTROL_ROOT = controlRoot;
+        KanataDurableTxControl.setTestControlRootOverride(controlRoot);
+    }
+
+    public static void setTestPickedDocument(Uri uri, String name) {
+        TEST_PICKED_URI = uri;
+        TEST_PICKED_NAME = name != null ? name : "synthetic-backup.kpb1";
+    }
+
+    public static void setTestFailNextVerifyApply(boolean fail) {
+        TEST_FAIL_NEXT_VERIFY_APPLY.set(fail);
+    }
+
+    public static void clearCallTrace() {
+        NATIVE_CALL_TRACE.clear();
+    }
+
+    public static List<String> snapshotCallTrace() {
+        return new ArrayList<>(NATIVE_CALL_TRACE);
+    }
+
+    private static void recordCall(String label) {
+        NATIVE_CALL_TRACE.add(label);
     }
 
     private File controlRoot() {
         File ov = OVERRIDE_CONTROL_ROOT;
-        return ov != null ? ov : KanataDurableTxControl.defaultControlRoot(getContext());
+        return ov != null ? ov : KanataDurableTxControl.effectiveControlRoot(getContext());
     }
 
     private boolean activated() {
@@ -86,6 +113,15 @@ public final class KanataM6RestoreBridgePlugin extends Plugin {
     @PluginMethod
     public void pickBackupDocument(PluginCall call) {
         if (!requireActivated(call)) return;
+        recordCall("pickBackupDocument");
+        Uri syntheticPicked = TEST_PICKED_URI;
+        if (syntheticPicked != null) {
+            JSObject out = new JSObject();
+            out.put("uri", syntheticPicked.toString());
+            out.put("name", TEST_PICKED_NAME);
+            call.resolve(out);
+            return;
+        }
         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
         intent.setType("*/*");
@@ -110,6 +146,7 @@ public final class KanataM6RestoreBridgePlugin extends Plugin {
     @PluginMethod
     public void probeState(PluginCall call) {
         if (!requireActivated(call)) return;
+        recordCall("probeState");
         WORKER.execute(() -> {
             try {
                 File root = controlRoot();
@@ -135,6 +172,7 @@ public final class KanataM6RestoreBridgePlugin extends Plugin {
     @PluginMethod
     public void stageBackup(PluginCall call) {
         if (!requireActivated(call)) return;
+        recordCall("stageBackup");
         final String sourceUriStr = call.getString("sourceUri", "");
         final String sourcePath = call.getString("sourcePath", "");
         final String backupPassword = call.getString("backupPassword", "");
@@ -146,8 +184,12 @@ public final class KanataM6RestoreBridgePlugin extends Plugin {
         final int batchSize = call.getInt("batchSize", KanataM6StagingRestoreEngine.DEFAULT_BATCH_SIZE);
         scrubSecrets(call);
 
+        // R02.5: Atomic non-overwriting taskId registration in ACTIVE_STAGING_CANCELS!
         AtomicBoolean cancelFlag = new AtomicBoolean(false);
-        ACTIVE_STAGING_CANCELS.put(taskId, cancelFlag);
+        if (ACTIVE_STAGING_CANCELS.putIfAbsent(taskId, cancelFlag) != null) {
+            call.reject("Duplicate active staging taskId: " + taskId, "DUPLICATE_TASK_ID");
+            return;
+        }
 
         WORKER.execute(() -> {
             try {
@@ -212,7 +254,7 @@ public final class KanataM6RestoreBridgePlugin extends Plugin {
             } catch (Exception e) {
                 call.reject(e.getMessage(), extractErrorCode(e));
             } finally {
-                ACTIVE_STAGING_CANCELS.remove(taskId);
+                ACTIVE_STAGING_CANCELS.remove(taskId, cancelFlag);
             }
         });
     }
@@ -220,6 +262,7 @@ public final class KanataM6RestoreBridgePlugin extends Plugin {
     @PluginMethod
     public void cancelOrDestroyStaging(PluginCall call) {
         if (!requireActivated(call)) return;
+        recordCall("cancelOrDestroyStaging");
         final String taskId = call.getString("taskId", "");
         final String generationId = call.getString("generationId", "");
         final String stagingHandle = call.getString("stagingHandle", "");
@@ -247,6 +290,7 @@ public final class KanataM6RestoreBridgePlugin extends Plugin {
     @PluginMethod
     public void beginGateAndDrain(PluginCall call) {
         if (!requireActivated(call)) return;
+        recordCall("beginGateAndDrain");
         final String txnId = call.getString("txnId", "txn-" + UUID.randomUUID().toString().substring(0, 12));
         final String ownerId = call.getString("ownerId", "ui-owner");
         final long epoch = call.getData().optLong("epoch", 1L);
@@ -300,6 +344,7 @@ public final class KanataM6RestoreBridgePlugin extends Plugin {
     @PluginMethod
     public void prepareTransaction(PluginCall call) {
         if (!requireActivated(call)) return;
+        recordCall("prepareTransaction");
         final String txnId = call.getString("txnId", "");
         final String ownerId = call.getString("ownerId", "");
         final long epoch = call.getData().optLong("epoch", 0L);
@@ -360,6 +405,7 @@ public final class KanataM6RestoreBridgePlugin extends Plugin {
         final String txnId = call.getString("txnId", "");
         final String participantId = call.getString("participantId", "kanata");
         final String operation = call.getString("operation", KanataDurableTxControl.OP_COMMIT_DECISION);
+        recordCall("authenticateAndIssueCapability:" + operation);
         final String generationId = call.getString("generationId", "");
         final String ownerId = call.getString("ownerId", "");
         final long epoch = call.getData().optLong("epoch", 0L);
@@ -394,6 +440,7 @@ public final class KanataM6RestoreBridgePlugin extends Plugin {
         final String expectedDigest = call.getString("expectedDigest", "");
         final String preparedDigest = call.getString("preparedDigest", "");
         final String direction = call.getString("direction", "");
+        recordCall("commitDecision:" + direction);
         final JSONObject capObj = call.getObject("capability");
 
         WORKER.execute(() -> {
@@ -431,12 +478,17 @@ public final class KanataM6RestoreBridgePlugin extends Plugin {
     @PluginMethod
     public void verifyAndApplyGeneration(PluginCall call) {
         if (!requireActivated(call)) return;
+        recordCall("verifyAndApplyGeneration");
         final String localMasterPassword = call.getString("localMasterPassword", "");
         final JSONObject capObj = call.getObject("capability");
         scrubSecrets(call);
 
         WORKER.execute(() -> {
             try {
+                if (TEST_FAIL_NEXT_VERIFY_APPLY.compareAndSet(true, false)) {
+                    throw new KanataDurableTxControl.TxControlException("IO_FAILED",
+                            "Injected post-DECISION interruption during verifyAndApplyGeneration");
+                }
                 File root = controlRoot();
                 KanataDurableTxControl.RecoveryCapability cap = KanataDurableTxControl.RecoveryCapability.fromJson(capObj);
                 KanataDurableTxControl.ControlRecord cur;
@@ -445,14 +497,23 @@ public final class KanataM6RestoreBridgePlugin extends Plugin {
                             getContext(), root, cap, "kanata", KanataDurableTxControl.OP_APPLY_GENERATION,
                             KanataDurableTxControl.AndroidKeyStoreBackend.INSTANCE);
                 }
+                if (!KanataDurableTxControl.STATE_DECISION.equals(cur.state)) {
+                    throw new KanataDurableTxControl.TxControlException("RECOVERY_CAPABILITY_STATE_INVALID",
+                            "verifyAndApplyGeneration is strictly forbidden outside STATE_DECISION; current=" + cur.state);
+                }
                 KanataDurableTxControl.GenerationRegistration chosen = KanataDurableTxControl.DIR_TARGET.equals(cur.decisionDirection)
                         ? cur.targetGeneration : cur.previousGeneration;
                 if (chosen == null || chosen.absent) {
                     call.resolve(new JSObject().put("absent", true).put("verified", true));
                     return;
                 }
+                KanataDurableTxControl.verifyGenerationMaterialsOnDisk(root, chosen);
                 KanataM6GenerationStore.ActiveGenerationHealth health =
                         KanataM6GenerationStore.openAndVerifyGeneration(root, chosen.generationId, localMasterPassword);
+                // R01.4 & R01.5: Persist HMAC-authenticated verification receipt required before FINALIZED!
+                KanataDurableTxControl.recordDecisionGenerationVerified(
+                        getContext(), root, cur, chosen,
+                        KanataDurableTxControl.AndroidKeyStoreBackend.INSTANCE);
                 call.resolve(JSObject.fromJSONObject(health.toJson()));
             } catch (Exception e) {
                 call.reject(e.getMessage(), extractErrorCode(e));
@@ -463,6 +524,7 @@ public final class KanataM6RestoreBridgePlugin extends Plugin {
     @PluginMethod
     public void finalizeTransaction(PluginCall call) {
         if (!requireActivated(call)) return;
+        recordCall("finalizeTransaction");
         final String txnId = call.getString("txnId", "");
         final String ownerId = call.getString("ownerId", "");
         final long epoch = call.getData().optLong("epoch", 0L);
@@ -482,10 +544,14 @@ public final class KanataM6RestoreBridgePlugin extends Plugin {
                             getContext(), root, cap, "kanata", KanataDurableTxControl.OP_FINALIZE,
                             KanataDurableTxControl.AndroidKeyStoreBackend.INSTANCE);
                 }
+                // R01.5: Prove the selected generation completed verification under DECISION before FINALIZED!
+                KanataDurableTxControl.assertDecisionGenerationVerified(
+                        getContext(), root, cur,
+                        KanataDurableTxControl.AndroidKeyStoreBackend.INSTANCE);
                 KanataDurableTxControl.ControlRecord fin = KanataDurableTxControl.compareAndSetTransition(
                         getContext(), root, txnId, ownerId, epoch, expectedSeq, expectedDigest,
                         KanataDurableTxControl.STATE_FINALIZED, cur.decisionDirection,
-                        false, preparedDigest, cur.previousGeneration, cur.targetGeneration,
+                        cur.abortOnly, preparedDigest, cur.previousGeneration, cur.targetGeneration,
                         cur.activeGenerationId, cur.inputDigest, cur.payloadId, "finalized",
                         cur.kind, cur.scope, cur.participants, false, 0L,
                         KanataDurableTxControl.AndroidKeyStoreBackend.INSTANCE,
@@ -527,9 +593,105 @@ public final class KanataM6RestoreBridgePlugin extends Plugin {
      * - FINALIZED -> no-op READY
      * - Corrupt / missing head / missing key / unknown version / legacy conflict -> stays BLOCKED!
      */
+    /**
+     * R01.7: Step 1 of Coordinator-driven Native cold-start recovery (`RestoreCoordinator.recover()`).
+     * Authenticates local master password via recovery verifier (bypassing damaged Vault/Kanata/Settings),
+     * drains active SQLite instances, advances undecided GATE/PREPARED to DECISION(previous) or takes over
+     * epoch on irreversible DECISION(target|previous), and returns the authoritative DECISION state so
+     * RestoreCoordinator executes `apply(selected)` (verifyAndApplyGeneration) -> `clear()` (finalizeTransaction).
+     */
+    @PluginMethod
+    public void prepareRecoveryDecision(PluginCall call) {
+        if (!requireActivated(call)) return;
+        recordCall("prepareRecoveryDecision");
+        final String localMasterPassword = call.getString("localMasterPassword", "");
+        final String ownerId = call.getString("ownerId", "cold-start-recovery");
+        scrubSecrets(call);
+
+        WORKER.execute(() -> {
+            try {
+                File root = controlRoot();
+                KanataDurableTxControl.KeyBackend kb = KanataDurableTxControl.AndroidKeyStoreBackend.INSTANCE;
+                KanataDurableTxControl.AuthoritativeState st = KanataDurableTxControl.probe(
+                        getContext(), root, kb, KanataDurableTxControl.FaultInjector.NONE);
+                if (!st.initialized || st.headRecord == null
+                        || "BLOCKED_CORRUPT_OR_UNKNOWN".equals(st.recoveryAction)
+                        || "BLOCKED_LEGACY_CONFLICT".equals(st.recoveryAction)
+                        || "BLOCKED_LEGACY_PENDING".equals(st.recoveryAction)) {
+                    throw new KanataDurableTxControl.TxControlException(st.reasonCode,
+                            "Authoritative control state cannot auto-converge: " + st.recoveryAction);
+                }
+                if ("READY".equals(st.recoveryAction)) {
+                    JSONObject out = st.toJson();
+                    out.put("alreadyFinalized", true);
+                    out.put("direction", "none");
+                    call.resolve(JSObject.fromJSONObject(out));
+                    return;
+                }
+                if (!KanataM6GenerationStore.verifyRecoveryPassword(root, localMasterPassword)) {
+                    throw new KanataDurableTxControl.TxControlException("AUTH_FAILED",
+                            "Recovery password verification failed");
+                }
+                KanataSqlitePlugin.drainAndRevokeAllInstances();
+                KanataDurableTxControl.ControlRecord cur = st.headRecord;
+                long takeoverEpoch = cur.epoch + 1L;
+                if (KanataDurableTxControl.STATE_GATE.equals(cur.state)) {
+                    KanataDurableTxControl.GenerationRegistration prevGen = cur.previousGeneration != null
+                            ? cur.previousGeneration
+                            : KanataDurableTxControl.GenerationRegistration.absentGeneration("gen-prev-absent");
+                    cur = KanataDurableTxControl.compareAndSetTransition(
+                            getContext(), root, cur.txnId, ownerId, cur.epoch,
+                            cur.sequence, cur.recordDigest,
+                            KanataDurableTxControl.STATE_PREPARED, KanataDurableTxControl.DIR_NONE,
+                            true, "", prevGen, null, cur.activeGenerationId,
+                            cur.inputDigest, cur.payloadId, "recovery-abort-gate",
+                            cur.kind, cur.scope, cur.participants, true, takeoverEpoch,
+                            kb, KanataDurableTxControl.FaultInjector.NONE);
+                }
+                if (KanataDurableTxControl.STATE_PREPARED.equals(cur.state)) {
+                    boolean needTakeover = !ownerId.equals(cur.ownerId);
+                    long nextEpoch = needTakeover ? cur.epoch + 1L : cur.epoch;
+                    String prevActive = (cur.previousGeneration != null && !cur.previousGeneration.absent)
+                            ? cur.previousGeneration.generationId : "";
+                    cur = KanataDurableTxControl.compareAndSetTransition(
+                            getContext(), root, cur.txnId, ownerId, cur.epoch,
+                            cur.sequence, cur.recordDigest,
+                            KanataDurableTxControl.STATE_DECISION, KanataDurableTxControl.DIR_PREVIOUS,
+                            cur.abortOnly, cur.preparedDigest, cur.previousGeneration, cur.targetGeneration,
+                            prevActive, cur.inputDigest, cur.payloadId, "recovery-decided-previous",
+                            cur.kind, cur.scope, cur.participants, needTakeover, nextEpoch,
+                            kb, KanataDurableTxControl.FaultInjector.NONE);
+                }
+                if (KanataDurableTxControl.STATE_DECISION.equals(cur.state)) {
+                    if (!ownerId.equals(cur.ownerId)) {
+                        cur = KanataDurableTxControl.compareAndSetTransition(
+                                getContext(), root, cur.txnId, ownerId, cur.epoch,
+                                cur.sequence, cur.recordDigest,
+                                KanataDurableTxControl.STATE_DECISION, cur.decisionDirection,
+                                cur.abortOnly, cur.preparedDigest, cur.previousGeneration, cur.targetGeneration,
+                                cur.activeGenerationId, cur.inputDigest, cur.payloadId, "recovery-owner-takeover",
+                                cur.kind, cur.scope, cur.participants, true, cur.epoch + 1L,
+                                kb, KanataDurableTxControl.FaultInjector.NONE);
+                    }
+                    JSONObject out = cur.toSummaryJson();
+                    out.put("alreadyFinalized", false);
+                    out.put("direction", cur.decisionDirection);
+                    out.put("headRecord", cur.toCanonicalJson());
+                    call.resolve(JSObject.fromJSONObject(out));
+                    return;
+                }
+                throw new KanataDurableTxControl.TxControlException("TX_CONTROL_UNKNOWN_STATE",
+                        "Unexpected recovery state: " + cur.state);
+            } catch (Exception e) {
+                call.reject(e.getMessage(), extractErrorCode(e));
+            }
+        });
+    }
+
     @PluginMethod
     public void recoverAuthoritative(PluginCall call) {
         if (!requireActivated(call)) return;
+        recordCall("recoverAuthoritative");
         final String localMasterPassword = call.getString("localMasterPassword", "");
         final String ownerId = call.getString("ownerId", "cold-start-recovery");
         scrubSecrets(call);
@@ -646,8 +808,10 @@ public final class KanataM6RestoreBridgePlugin extends Plugin {
 
             KanataM6GenerationStore.ActiveGenerationHealth health = null;
             if (!chosenGenId.isEmpty()) {
+                KanataDurableTxControl.verifyGenerationMaterialsOnDisk(controlRoot, chosen);
                 health = KanataM6GenerationStore.openAndVerifyGeneration(
                         controlRoot, chosenGenId, localMasterPassword);
+                KanataDurableTxControl.recordDecisionGenerationVerified(context, controlRoot, cur, chosen, kb);
             }
 
             KanataDurableTxControl.RecoveryCapability finCap = KanataDurableTxControl.issueRecoveryCapability(
@@ -657,6 +821,7 @@ public final class KanataM6RestoreBridgePlugin extends Plugin {
                 KanataDurableTxControl.verifyRecoveryCapabilityLocked(
                         context, controlRoot, finCap, "kanata", KanataDurableTxControl.OP_FINALIZE, kb);
             }
+            KanataDurableTxControl.assertDecisionGenerationVerified(context, controlRoot, cur, kb);
 
             cur = KanataDurableTxControl.compareAndSetTransition(
                     context, controlRoot, cur.txnId, cur.ownerId, cur.epoch,

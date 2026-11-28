@@ -80,6 +80,11 @@ export async function pickNativeBackupDocument({
  * Create a real product-candidate KanataPortableRestoreCoordinator wired to the Native
  * KanataM6RestoreBridgePlugin + KanataDurableTxControl + SQLCipher 4.17.0.
  *
+ * Uses `commitStrategy: 'decision_then_apply'` inside the single RestoreCoordinator:
+ *   GATE -> PREPARED -> DECISION(target) -> verifyAndApplyGeneration(selected) -> FINALIZED -> GC.
+ * Cold-start recovery routes through `RestoreCoordinator.recover()` -> `resolveRecovery()`
+ * (NEVER calls legacy `openRestoreRecord()` on Native control records).
+ *
  * Returns null on ordinary APK and Web (preserving legacy canonical isolation).
  *
  * @param {{
@@ -87,6 +92,7 @@ export async function pickNativeBackupDocument({
  *   getOwnerIdentity: () => { ownerId: string, sessionRevision: number, epoch?: number },
  *   synchronize?: () => Promise<unknown>,
  *   onPhase?: (phase: import('./contracts').RestoreCoordinatorPhase) => void,
+ *   onNativeCall?: (method: string, meta?: Record<string, unknown>) => void,
  *   capacitor?: typeof Capacitor,
  *   bridge?: any,
  * }} options
@@ -96,6 +102,7 @@ export function createSyntheticPortableRestoreCoordinator({
   getOwnerIdentity,
   synchronize = async () => {},
   onPhase,
+  onNativeCall,
   capacitor = Capacitor,
   bridge = null,
 }) {
@@ -103,19 +110,62 @@ export function createSyntheticPortableRestoreCoordinator({
     return null
   }
   const activeBridge = bridge || getNativeRestoreBridge()
+  const trace = (/** @type {string} */ method, /** @type {Record<string, unknown>} */ meta = {}) => {
+    try { onNativeCall?.(method, meta) } catch {}
+  }
 
-  /** @type {{ txnId: string, ownerId: string, epoch: number, sequence: number, recordDigest: string, preparedDigest: string, localMasterPassword: string, targetGenerationId: string } | null} */
+  /** @type {{ txnId: string, ownerId: string, epoch: number, sequence: number, recordDigest: string, preparedDigest: string, localMasterPassword: string, targetGenerationId: string, selectedGenerationId: string, decisionDirection: 'none' | 'previous' | 'target' } | null} */
   let activeNativeTx = null
 
+  /** @param {any} gen @param {string} fallbackTaskId @returns {import('./contracts').KanataSqliteGenerationDescriptor} */
+  const toDescriptorFromNativeGen = (gen, fallbackTaskId) => {
+    if (!gen || gen.absent) {
+      return {
+        kind: 'kanata-sqlite-generation-v1',
+        generationId: gen?.generationId || 'gen-prev-absent',
+        taskId: fallbackTaskId,
+        absent: true,
+        dbPath: '',
+        dbSha256Hex: '',
+        schemaVersion: 5,
+        applicationId: 0x4b4e5441,
+        schemaFingerprint: '8d4ede29039ca2958146250e618ee78e76163490e47eeaaab74b02dde852f39a',
+        datasetIdentity: 'absent',
+        totalBusinessRows: 0,
+        tableCount: 50,
+        verified: false,
+      }
+    }
+    return {
+      kind: 'kanata-sqlite-generation-v1',
+      generationId: gen.generationId,
+      taskId: fallbackTaskId,
+      absent: false,
+      dbPath: gen.relativeDir ? `${gen.relativeDir}/kanata.db` : `generations/${gen.generationId}/kanata.db`,
+      dbSha256Hex: gen.dbSha256Hex,
+      envelopeSha256Hex: gen.envelopeSha256Hex,
+      schemaVersion: 5,
+      applicationId: 0x4b4e5441,
+      schemaFingerprint: gen.schemaFingerprint || '8d4ede29039ca2958146250e618ee78e76163490e47eeaaab74b02dde852f39a',
+      datasetIdentity: gen.datasetIdentity || fallbackTaskId,
+      totalBusinessRows: typeof gen.totalBusinessRows === 'number' ? gen.totalBusinessRows : 0,
+      tableCount: typeof gen.tableCount === 'number' ? gen.tableCount : 50,
+      verified: true,
+    }
+  }
+
   /**
-   * Native-backed RestoreJournal adapter driven directly by KanataDurableTxControl (G-04).
-   * - inspect() queries authoritative Native head.json + H-05 legacy inventory.
-   * - prepare() transitions GATE -> PREPARED (writes AEAD payload + fixes preparedDigest).
-   * - commit(expectedDigest) authenticates recovery capability + transitions PREPARED -> DECISION(target).
-   * - clear() authenticates recovery capability + transitions DECISION -> FINALIZED.
+   * Native-backed RestoreJournal adapter driven directly by KanataDurableTxControl (G-04 / R01).
+   * - inspect(): read-only authoritative Native head + H-05 five-path legacy inventory.
+   * - prepare(): GATE -> PREPARED (writes AEAD payload + binds preparedDigest).
+   * - commit(expectedDigest): authenticates recovery capability + PREPARED -> DECISION(target).
+   * - abortPrepared(expectedDigest, password): pre-decision rollback (GATE/PREPARED -> DECISION(previous) -> verify -> FINALIZED).
+   * - clear(): verifies selected generation receipt + DECISION -> FINALIZED.
+   * - resolveRecovery(password): Native cold-start recovery resolver (NEVER calls legacy openRestoreRecord).
    */
   const nativeControlJournal = {
     async inspect() {
+      trace('probeState')
       const st = await activeBridge.probeState()
       if (!st || !st.blocked) return null
       return {
@@ -130,6 +180,7 @@ export function createSyntheticPortableRestoreCoordinator({
       }
       const target = record?.target
       const id = getOwnerIdentity()
+      trace('prepareTransaction', { txnId: activeNativeTx.txnId, generationId: target?.generationId || '' })
       const prepared = await activeBridge.prepareTransaction({
         txnId: activeNativeTx.txnId,
         ownerId: activeNativeTx.ownerId,
@@ -158,6 +209,7 @@ export function createSyntheticPortableRestoreCoordinator({
       if (expectedDigest && activeNativeTx.preparedDigest && expectedDigest !== activeNativeTx.preparedDigest) {
         throw Object.assign(new Error('RESTORE_COMMIT_MISMATCH'), { code: 'CAS_PREPARED_DIGEST_MISMATCH' })
       }
+      trace('authenticateAndIssueCapability', { operation: 'COMMIT_DECISION', generationId: activeNativeTx.targetGenerationId })
       const cap = await activeBridge.authenticateAndIssueCapability({
         localMasterPassword: activeNativeTx.localMasterPassword,
         txnId: activeNativeTx.txnId,
@@ -167,6 +219,7 @@ export function createSyntheticPortableRestoreCoordinator({
         ownerId: activeNativeTx.ownerId,
         epoch: activeNativeTx.epoch,
       })
+      trace('commitDecision', { direction: 'target', generationId: activeNativeTx.targetGenerationId })
       const decided = await activeBridge.commitDecision({
         txnId: activeNativeTx.txnId,
         ownerId: activeNativeTx.ownerId,
@@ -179,18 +232,37 @@ export function createSyntheticPortableRestoreCoordinator({
       })
       activeNativeTx.sequence = decided.sequence
       activeNativeTx.recordDigest = decided.recordDigest
+      activeNativeTx.decisionDirection = 'target'
+      activeNativeTx.selectedGenerationId = decided.activeGenerationId || activeNativeTx.targetGenerationId
+    },
+    async abortPrepared(_expectedDigest, localMasterPassword) {
+      // Pre-decision abort: converge undecided GATE or PREPARED to DECISION(previous) -> verify -> FINALIZED
+      // without ever invoking legacy openRestoreRecord().
+      const owner = getOwnerIdentity()
+      const pwd = localMasterPassword || activeNativeTx?.localMasterPassword || ''
+      trace('recoverAuthoritative', { reason: 'pre_commit_abort' })
+      const aborted = await activeBridge.recoverAuthoritative({
+        localMasterPassword: pwd,
+        ownerId: owner?.ownerId || activeNativeTx?.ownerId || 'pre-commit-abort',
+      })
+      activeNativeTx = null
+      if (!aborted || aborted.recovered !== true || aborted.blocked !== false) {
+        throw Object.assign(new Error('RESTORE_PRE_COMMIT_ABORT_FAILED'), { code: 'ROLLBACK_FAILED' })
+      }
     },
     async clear() {
       if (!activeNativeTx) return
+      trace('authenticateAndIssueCapability', { operation: 'FINALIZE', generationId: activeNativeTx.selectedGenerationId })
       const cap = await activeBridge.authenticateAndIssueCapability({
         localMasterPassword: activeNativeTx.localMasterPassword,
         txnId: activeNativeTx.txnId,
         participantId: 'kanata',
         operation: 'FINALIZE',
-        generationId: activeNativeTx.targetGenerationId,
+        generationId: activeNativeTx.selectedGenerationId,
         ownerId: activeNativeTx.ownerId,
         epoch: activeNativeTx.epoch,
       })
+      trace('finalizeTransaction', { txnId: activeNativeTx.txnId, direction: activeNativeTx.decisionDirection })
       const fin = await activeBridge.finalizeTransaction({
         txnId: activeNativeTx.txnId,
         ownerId: activeNativeTx.ownerId,
@@ -205,12 +277,47 @@ export function createSyntheticPortableRestoreCoordinator({
       activeNativeTx.recordDigest = fin.recordDigest
       activeNativeTx = null
     },
+    async resolveRecovery(localMasterPassword) {
+      // R01.7: Native cold-start recovery driven through RestoreCoordinator.recover()
+      // (prepareDecisionForRecovery -> apply(selected) -> clear(FINALIZED)), NEVER openRestoreRecord!
+      const owner = getOwnerIdentity()
+      trace('prepareRecoveryDecision')
+      const plan = await activeBridge.prepareRecoveryDecision({
+        localMasterPassword,
+        ownerId: owner?.ownerId || 'cold-start-recovery',
+      })
+      if (plan?.alreadyFinalized === true) {
+        activeNativeTx = null
+        return { direction: /** @type {'none'} */ ('none'), alreadyFinalized: true }
+      }
+      /** @type {'previous' | 'target'} */
+      const dir = plan?.direction === 'target' ? 'target' : 'previous'
+      const selectedGen = dir === 'target' ? plan?.headRecord?.targetGeneration : plan?.headRecord?.previousGeneration
+      activeNativeTx = {
+        txnId: plan.txnId,
+        ownerId: plan.ownerId,
+        epoch: plan.epoch,
+        sequence: plan.sequence,
+        recordDigest: plan.recordDigest,
+        preparedDigest: plan.preparedDigest,
+        localMasterPassword,
+        targetGenerationId: plan?.headRecord?.targetGeneration?.generationId || '',
+        selectedGenerationId: plan.activeGenerationId || selectedGen?.generationId || '',
+        decisionDirection: dir,
+      }
+      return {
+        direction: dir,
+        snapshot: toDescriptorFromNativeGen(selectedGen, dir),
+        alreadyFinalized: false,
+      }
+    },
   }
 
   /** @type {import('./contracts').KanataPortableRestoreEngine} */
   const nativeEngine = {
     async stageAndVerify(request) {
       const src = /** @type {any} */ (request.source)
+      trace('stageBackup', { sourceUri: src?.uri || '', sourcePath: src?.path || '' })
       const res = await activeBridge.stageBackup({
         sourceUri: src?.uri || '',
         sourcePath: src?.path || '',
@@ -227,6 +334,7 @@ export function createSyntheticPortableRestoreCoordinator({
       }
     },
     async destroyStaging(descriptor) {
+      trace('cancelOrDestroyStaging', { generationId: descriptor.generationId })
       await activeBridge.cancelOrDestroyStaging({
         taskId: descriptor.taskId,
         generationId: descriptor.generationId,
@@ -234,6 +342,7 @@ export function createSyntheticPortableRestoreCoordinator({
       })
     },
     async prepareWriteDrain({ ownerId = 'ui-owner', epoch = 1 } = {}) {
+      trace('probeState')
       const probed = await activeBridge.probeState()
       if (!probed || !probed.initialized) {
         throw Object.assign(new Error('TX_CONTROL_NOT_INITIALIZED'), { code: 'TX_CONTROL_CORRUPT' })
@@ -241,6 +350,7 @@ export function createSyntheticPortableRestoreCoordinator({
       if (probed.blocked) {
         throw Object.assign(new Error('RESTORE_RECOVERY_REQUIRED'), { code: 'RESTORE_RECOVERY_REQUIRED' })
       }
+      trace('beginGateAndDrain', { ownerId })
       const gated = await activeBridge.beginGateAndDrain({
         txnId: `txn-${Date.now()}-${Math.random().toString(16).slice(2, 10)}`,
         ownerId,
@@ -258,56 +368,31 @@ export function createSyntheticPortableRestoreCoordinator({
         preparedDigest: '',
         localMasterPassword: '',
         targetGenerationId: '',
+        selectedGenerationId: '',
+        decisionDirection: 'none',
       }
     },
     async capturePreviousGeneration() {
+      trace('probeState')
       const probed = await activeBridge.probeState()
       const prev = probed?.headRecord?.previousGeneration
-      if (!prev || prev.absent) {
-        return {
-          kind: 'kanata-sqlite-generation-v1',
-          generationId: prev?.generationId || 'gen-prev-absent',
-          taskId: 'previous',
-          absent: true,
-          dbPath: '',
-          dbSha256Hex: '',
-          schemaVersion: 5,
-          applicationId: 0x4b4e5441,
-          schemaFingerprint: '8d4ede29039ca2958146250e618ee78e76163490e47eeaaab74b02dde852f39a',
-          datasetIdentity: 'absent',
-          totalBusinessRows: 0,
-          tableCount: 50,
-          verified: false,
-        }
-      }
-      return {
-        kind: 'kanata-sqlite-generation-v1',
-        generationId: prev.generationId,
-        taskId: 'previous',
-        absent: false,
-        dbPath: prev.relativeDir ? `${prev.relativeDir}/kanata.db` : 'generations/previous/kanata.db',
-        dbSha256Hex: prev.dbSha256Hex,
-        envelopeSha256Hex: prev.envelopeSha256Hex,
-        schemaVersion: 5,
-        applicationId: 0x4b4e5441,
-        schemaFingerprint: prev.schemaFingerprint || '8d4ede29039ca2958146250e618ee78e76163490e47eeaaab74b02dde852f39a',
-        datasetIdentity: prev.datasetIdentity || 'previous',
-        totalBusinessRows: prev.totalBusinessRows || 0,
-        tableCount: prev.tableCount || 50,
-        verified: true,
-      }
+      return toDescriptorFromNativeGen(prev, 'previous')
     },
     async applyGeneration(descriptor) {
       if (!activeNativeTx || !descriptor || descriptor.absent) return
+      // Under `decision_then_apply`, this runs strictly AFTER durable DECISION!
+      const chosenGenId = activeNativeTx.selectedGenerationId || descriptor.generationId
+      trace('authenticateAndIssueCapability', { operation: 'APPLY_GENERATION', generationId: chosenGenId })
       const cap = await activeBridge.authenticateAndIssueCapability({
         localMasterPassword: activeNativeTx.localMasterPassword,
         txnId: activeNativeTx.txnId,
         participantId: 'kanata',
         operation: 'APPLY_GENERATION',
-        generationId: descriptor.generationId,
+        generationId: chosenGenId,
         ownerId: activeNativeTx.ownerId,
         epoch: activeNativeTx.epoch,
       })
+      trace('verifyAndApplyGeneration', { generationId: chosenGenId })
       await activeBridge.verifyAndApplyGeneration({
         localMasterPassword: activeNativeTx.localMasterPassword,
         capability: cap,
@@ -315,6 +400,7 @@ export function createSyntheticPortableRestoreCoordinator({
     },
     async finalizeArtifacts({ previous }) {
       if (previous && !previous.absent && previous.generationId) {
+        trace('cancelOrDestroyStaging', { generationId: previous.generationId, postFinalizeGc: true })
         await activeBridge.cancelOrDestroyStaging({
           taskId: previous.taskId,
           generationId: previous.generationId,
@@ -324,19 +410,23 @@ export function createSyntheticPortableRestoreCoordinator({
     },
     async recoverAuthoritative(localMasterPassword) {
       const id = getOwnerIdentity()
+      trace('recoverAuthoritative')
       return activeBridge.recoverAuthoritative({
         localMasterPassword,
         ownerId: id?.ownerId || 'recovery-owner',
       })
     },
     async inspectUnconfirmed() {
+      trace('probeState')
       const st = await activeBridge.probeState()
       return Array.isArray(st?.unconfirmed) ? st.unconfirmed : []
     },
     async reverifyUnconfirmed(taskId) {
+      trace('reverifyUnconfirmed', { taskId })
       return activeBridge.reverifyUnconfirmed({ taskId })
     },
     async manualCleanupUnconfirmed(taskId, { confirmed }) {
+      trace('manualCleanupUnconfirmed', { taskId, confirmed })
       return activeBridge.manualCleanupUnconfirmed({ taskId, confirmed })
     },
   }
@@ -345,6 +435,7 @@ export function createSyntheticPortableRestoreCoordinator({
     journal: nativeControlJournal,
     state,
     engine: nativeEngine,
+    commitStrategy: 'decision_then_apply',
     getOwnerIdentity,
     synchronize,
     onPhase,

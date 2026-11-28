@@ -27,7 +27,7 @@ public class ArchiveFileBatchPlugin extends Plugin {
                     if (hasMutation) {
                         org.json.JSONArray executed = KanataDurableTxControl.executeOrdinaryWriteUnderFence(
                                 getContext(),
-                                KanataDurableTxControl.defaultControlRoot(getContext()),
+                                KanataDurableTxControl.effectiveControlRoot(getContext()),
                                 false,
                                 () -> ArchiveFileBatchStore.execute(getContext().getFilesDir(), ops));
                         result.put("results", executed);

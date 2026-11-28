@@ -48,6 +48,7 @@ public final class KanataSqlitePlugin extends Plugin {
     private final AtomicLong epoch = new AtomicLong();
     private volatile boolean foreground;
     private Challenge challenge;
+    private StorageTarget activeTarget;
     private SQLiteDatabase database;
     private byte[] rawKey;
     private Owner owner;
@@ -59,7 +60,8 @@ public final class KanataSqlitePlugin extends Plugin {
     private JSONObject catalog;
 
     private record Identity(long revision, long generation) {}
-    private record Challenge(Identity identity, long epoch, String token, long expires, JSONObject header, boolean create) {}
+    private record StorageTarget(File rootDir, File db, AtomicFile env, String activeGenerationId, long headSequence, boolean authoritative) {}
+    private record Challenge(Identity identity, long epoch, String token, long expires, JSONObject header, boolean create, StorageTarget target) {}
     private record Owner(Identity identity, long epoch, String lease) {}
 
     private static final class Refusal extends RuntimeException {
@@ -171,6 +173,7 @@ public final class KanataSqlitePlugin extends Plugin {
             throw new Refusal("CLOSE_FAILED");
         } finally {
             database = null;
+            activeTarget = null;
             if (rawKey != null) Arrays.fill(rawKey, (byte) 0);
             rawKey = null;
         }
@@ -181,9 +184,68 @@ public final class KanataSqlitePlugin extends Plugin {
     }
 
     private File root() { return new File(getContext().getNoBackupFilesDir(), "kanata-sqlite-v1"); }
-    private File dbFile() { return new File(root(), "kanata.db"); }
-    private AtomicFile envelope() { return new AtomicFile(new File(root(), "envelope.json")); }
+    private File dbFile() { return activeTarget != null ? activeTarget.db() : new File(root(), "kanata.db"); }
+    private AtomicFile envelope() { return activeTarget != null ? activeTarget.env() : new AtomicFile(new File(root(), "envelope.json")); }
     private AtomicFile marker() { return new AtomicFile(new File(root(), "creation.pending")); }
+
+    /**
+     * R03.1 & R03.2: Resolve authoritative SQLite DB + envelope storage target.
+     * - When KanataDurableTxControl is initialized in the isolated candidate build, obeys
+     *   `head.activeGenerationId` strictly (`controlRoot/generations/<activeGenerationId>/{kanata.db,envelope.json}`).
+     * - Blocks immediately if the durable transaction fence is active or control root is corrupt.
+     * - Falls back to legacy candidate `no_backup/kanata-sqlite-v1` only when control root is uninitialized.
+     */
+    private StorageTarget resolveStorageTarget(boolean create) throws Exception {
+        File ctrlRoot = KanataDurableTxControl.effectiveControlRoot(getContext());
+        KanataDurableTxControl.AuthoritativeState st = KanataDurableTxControl.probe(
+                getContext(), ctrlRoot,
+                KanataDurableTxControl.AndroidKeyStoreBackend.INSTANCE,
+                KanataDurableTxControl.FaultInjector.NONE);
+        if (st.blocked) {
+            throw new Refusal("STATE_UNKNOWN");
+        }
+        if (st.initialized && st.headRecord != null && !st.headRecord.activeGenerationId.isEmpty()) {
+            require(!create, "INCOMPLETE_CREATION");
+            String genId = st.headRecord.activeGenerationId;
+            File genDir = KanataDurableTxControl.generationDir(ctrlRoot, genId);
+            return new StorageTarget(
+                    genDir,
+                    new File(genDir, "kanata.db"),
+                    new AtomicFile(new File(genDir, "envelope.json")),
+                    genId,
+                    st.headRecord.sequence,
+                    true);
+        }
+        File fallbackRoot = root();
+        return new StorageTarget(
+                fallbackRoot,
+                new File(fallbackRoot, "kanata.db"),
+                new AtomicFile(new File(fallbackRoot, "envelope.json")),
+                "",
+                -1L,
+                false);
+    }
+
+    private void verifyPinnedAuthoritativeRoute() throws Exception {
+        File ctrlRoot = KanataDurableTxControl.effectiveControlRoot(getContext());
+        try {
+            KanataDurableTxControl.assertOrdinaryWriteAllowed(
+                    getContext(), ctrlRoot,
+                    KanataDurableTxControl.AndroidKeyStoreBackend.INSTANCE,
+                    KanataDurableTxControl.FaultInjector.NONE);
+        } catch (KanataDurableTxControl.TxControlException blocked) {
+            throw new Refusal("STATE_UNKNOWN");
+        }
+        if (activeTarget != null && activeTarget.authoritative()) {
+            KanataDurableTxControl.AuthoritativeState st = KanataDurableTxControl.probe(
+                    getContext(), ctrlRoot,
+                    KanataDurableTxControl.AndroidKeyStoreBackend.INSTANCE,
+                    KanataDurableTxControl.FaultInjector.NONE);
+            require(!st.blocked && st.initialized && st.headRecord != null
+                    && activeTarget.activeGenerationId().equals(st.headRecord.activeGenerationId)
+                    && activeTarget.headSequence() == st.headRecord.sequence, "LEASE_REVOKED");
+        }
+    }
 
     private static int mode(File file) throws ErrnoException {
         try { return Os.lstat(file.getPath()).st_mode; }
@@ -200,7 +262,7 @@ public final class KanataSqlitePlugin extends Plugin {
         return exists(base) || exists(new File(base.getPath() + ".bak")) || exists(new File(base.getPath() + ".new"));
     }
 
-    private void verifyInventory(boolean create) throws Exception {
+    private StorageTarget verifyInventory(boolean create) throws Exception {
         File files = getContext().getFilesDir();
         int parentMode = mode(new File(files, "formyself"));
         require(parentMode == 0 || OsConstants.S_ISDIR(parentMode), "STATE_UNKNOWN");
@@ -210,30 +272,38 @@ public final class KanataSqlitePlugin extends Plugin {
             "restore-v1.enc.commit", "restore-v1.enc.tmp",
         }) require(!exists(new File(files, "formyself/" + path)), "LEGACY_PRESENT");
         try {
-            KanataDurableTxControl.assertOrdinaryWriteAllowed(getContext());
+            KanataDurableTxControl.assertOrdinaryWriteAllowed(
+                    getContext(), KanataDurableTxControl.effectiveControlRoot(getContext()),
+                    KanataDurableTxControl.AndroidKeyStoreBackend.INSTANCE,
+                    KanataDurableTxControl.FaultInjector.NONE);
         } catch (KanataDurableTxControl.TxControlException blocked) {
             throw new Refusal("STATE_UNKNOWN");
         }
         verifyRecoveryPreferences();
-        require(!atomicExists(marker()), "INCOMPLETE_CREATION");
-        int directoryMode = mode(root());
+        StorageTarget target = resolveStorageTarget(create);
+        if (!target.authoritative()) {
+            require(!atomicExists(marker()), "INCOMPLETE_CREATION");
+        }
+        int directoryMode = mode(target.rootDir());
         require(directoryMode == 0 || OsConstants.S_ISDIR(directoryMode), "STATE_UNKNOWN");
-        int databaseMode = mode(dbFile());
-        int envelopeMode = mode(envelope().getBaseFile());
+        int databaseMode = mode(target.db());
+        int envelopeMode = mode(target.env().getBaseFile());
         boolean hasDb = databaseMode != 0;
         boolean hasEnvelope = envelopeMode != 0;
         require(hasDb == hasEnvelope, "INCOMPLETE_CREATION");
-        require(!exists(new File(root(), "envelope.json.bak")) && !exists(new File(root(), "envelope.json.new")),
+        require(!exists(new File(target.rootDir(), "envelope.json.bak"))
+                && !exists(new File(target.rootDir(), "envelope.json.new")),
             "INCOMPLETE_CREATION");
         if (hasDb) {
             require(OsConstants.S_ISREG(databaseMode) && OsConstants.S_ISREG(envelopeMode), "STATE_UNKNOWN");
             require(!create, "INCOMPLETE_CREATION");
         } else {
             for (String suffix : new String[] { "-wal", "-shm", "-journal" }) {
-                require(!exists(new File(dbFile().getPath() + suffix)), "INCOMPLETE_CREATION");
+                require(!exists(new File(target.db().getPath() + suffix)), "INCOMPLETE_CREATION");
             }
             require(create, "DATABASE_ABSENT");
         }
+        return target;
     }
 
     private void verifyRecoveryPreferences() throws Exception {
@@ -286,14 +356,15 @@ public final class KanataSqlitePlugin extends Plugin {
             front(requestedEpoch, "CHALLENGE_INVALID");
             require(database == null, "TRANSACTION_BUSY");
             boolean create = Boolean.TRUE.equals(call.getBoolean("create"));
-            verifyInventory(create);
+            StorageTarget target = verifyInventory(create);
             JSONObject header;
-            try { header = create ? KanataKeyEnvelope.newHeader() : KanataKeyEnvelope.readHeader(envelope()); }
+            try { header = create ? KanataKeyEnvelope.newHeader() : KanataKeyEnvelope.readHeader(target.env()); }
             catch (Exception failure) { throw new Refusal("UNLOCK_FAILED"); }
             String token = UUID.randomUUID().toString();
             challenge = new Challenge(identity(call), requestedEpoch, token,
-                SystemClock.elapsedRealtime() + 30000, header, create);
-            call.resolve(new JSObject().put("token", token).put("salt", header.getString("salt")));
+                SystemClock.elapsedRealtime() + 30000, header, create, target);
+            call.resolve(new JSObject().put("token", token).put("salt", header.getString("salt"))
+                .put("activeGenerationId", target.activeGenerationId()));
         });
     }
 
@@ -305,25 +376,30 @@ public final class KanataSqlitePlugin extends Plugin {
             require(pending != null && pending.epoch() == requestedEpoch && database == null
                 && pending.token().equals(call.getString("token")) && pending.identity().equals(identity(call))
                 && SystemClock.elapsedRealtime() < pending.expires(), "CHALLENGE_INVALID");
-            try { verifyInventory(pending.create()); }
+            StorageTarget verifiedTarget;
+            try { verifiedTarget = verifyInventory(pending.create()); }
             catch (Refusal failure) { throw failure; }
             catch (Exception failure) { throw new Refusal("STATE_UNKNOWN"); }
+            require(verifiedTarget.activeGenerationId().equals(pending.target().activeGenerationId())
+                && verifiedTarget.headSequence() == pending.target().headSequence(), "CHALLENGE_INVALID");
             byte[] kek = new byte[32];
             byte[] dek = null;
             try {
                 KanataKeyEnvelope.decodeKek(call.getString("kek"), kek);
                 call.getData().remove("kek");
+                activeTarget = verifiedTarget;
                 if (pending.create()) {
-                    if (!root().mkdirs() && !root().isDirectory()) throw new IOException();
+                    if (!verifiedTarget.rootDir().mkdirs() && !verifiedTarget.rootDir().isDirectory()) throw new IOException();
                     KanataKeyEnvelope.writeVerified(marker(), new byte[] { 1 });
-                    dek = KanataKeyEnvelope.create(envelope(), pending.header(), kek);
+                    dek = KanataKeyEnvelope.create(verifiedTarget.env(), pending.header(), kek);
                 } else dek = KanataKeyEnvelope.unwrap(kek, pending.header());
                 rawKey = KanataKeyEnvelope.rawSqlCipherKey(dek);
                 openStorage(pending.create());
                 front(requestedEpoch, "LEASE_REVOKED");
                 creating = pending.create();
                 owner = new Owner(pending.identity(), requestedEpoch, UUID.randomUUID().toString());
-                call.resolve(new JSObject().put("lease", owner.lease()));
+                call.resolve(new JSObject().put("lease", owner.lease())
+                    .put("activeGenerationId", verifiedTarget.activeGenerationId()));
             } catch (Exception | LinkageError failure) {
                 closeStorage();
                 throw failure;
@@ -449,11 +525,7 @@ public final class KanataSqlitePlugin extends Plugin {
     @PluginMethod public void begin(PluginCall call) {
         dispatch(call, "TRANSACTION_BUSY", requestedEpoch -> {
             authorize(call, requestedEpoch);
-            try {
-                KanataDurableTxControl.assertOrdinaryWriteAllowed(getContext());
-            } catch (KanataDurableTxControl.TxControlException blocked) {
-                throw new Refusal("STATE_UNKNOWN");
-            }
+            verifyPinnedAuthoritativeRoute();
             require(transaction == null, "TRANSACTION_BUSY");
             database.beginTransactionNonExclusive(); // Pins the primary writer with BEGIN IMMEDIATE.
             transactionFailed = false;
@@ -487,7 +559,7 @@ public final class KanataSqlitePlugin extends Plugin {
             try {
                 KanataDurableTxControl.executeOrdinaryWriteUnderFence(
                         getContext(),
-                        KanataDurableTxControl.defaultControlRoot(getContext()),
+                        KanataDurableTxControl.effectiveControlRoot(getContext()),
                         true,
                         () -> {
                             database.endTransaction();
@@ -605,6 +677,7 @@ public final class KanataSqlitePlugin extends Plugin {
     @PluginMethod public void execute(PluginCall call) {
         dispatch(call, "TRANSACTION_FAILED", requestedEpoch -> {
             authorizeTransaction(call, requestedEpoch);
+            verifyPinnedAuthoritativeRoute();
             boolean successful = false;
             try {
                 JSONObject entry = statement(call, false);

@@ -134,6 +134,7 @@ export function createKanataPortableRestoreCoordinator({
   journal,
   state,
   engine,
+  commitStrategy = 'apply_then_commit',
   getOwnerIdentity,
   synchronize = async () => {},
   onPhase,
@@ -289,7 +290,7 @@ export function createKanataPortableRestoreCoordinator({
         advanceLifecycle(tx, RESTORE_MATERIAL_LIFECYCLE.DECIDED)
       } else if (phase === 'unconfirmed') {
         advanceLifecycle(tx, RESTORE_MATERIAL_LIFECYCLE.UNCONFIRMED)
-      } else if (phase === 'clearing_journal' || phase === 'succeeded') {
+      } else if (phase === 'succeeded') {
         advanceLifecycle(tx, RESTORE_MATERIAL_LIFECYCLE.FINALIZED)
       }
     }
@@ -300,6 +301,7 @@ export function createKanataPortableRestoreCoordinator({
     journal,
     state,
     journalRollback: true,
+    commitStrategy,
     assertSession: () => {
       if (activeTx) assertTxBoundary(activeTx)
     },
@@ -561,6 +563,16 @@ export function createKanataPortableRestoreCoordinator({
     async recover(localMasterPassword) {
       const tx = acquireExclusiveTx('recover', { recoveryMode: true })
       try {
+        if (typeof journal.resolveRecovery === 'function') {
+          // R01: Always drive Native cold-start recovery through the single RestoreCoordinator!
+          await coordinator.recover(localMasterPassword)
+          return {
+            recovered: true,
+            blocked: state.blocked,
+            syncError: state.syncError,
+            cleanupError: '',
+          }
+        }
         if (typeof engine.recoverAuthoritative === 'function') {
           const res = await engine.recoverAuthoritative(localMasterPassword)
           if (res?.recovered === true && res?.blocked === false) {

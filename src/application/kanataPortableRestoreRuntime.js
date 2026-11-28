@@ -169,6 +169,8 @@ export function createKanataPortableRestoreRuntime({
     errorCode: '',
     errorMessage: '',
     retryHint: '',
+    /** @type {'' | 'pre_commit' | 'post_decision' | 'post_finalize_cleanup'} */
+    failureStage: '',
     syncError: '',
     cleanupError: '',
     /** @type {import('./contracts').UnconfirmedTaskSummary[]} */
@@ -210,6 +212,7 @@ export function createKanataPortableRestoreRuntime({
     state.errorCode = ''
     state.errorMessage = ''
     state.retryHint = ''
+    state.failureStage = ''
   }
 
   const refreshCapability = async () => {
@@ -408,6 +411,7 @@ export function createKanataPortableRestoreRuntime({
       state.cleanupError = result.cleanupError
         ? `业务数据已成功提交并生效，但旧临时材料清理失败（${result.cleanupError}），请点击“重试清理临时材料”，切勿重复导入。`
         : ''
+      state.failureStage = result.cleanupError ? 'post_finalize_cleanup' : ''
       state.completionResult = {
         committed: true,
         datasetIdentity: result.descriptor.datasetIdentity,
@@ -424,6 +428,9 @@ export function createKanataPortableRestoreRuntime({
       state.errorCode = info.code
       state.errorMessage = info.message
       state.retryHint = info.retryHint
+      state.failureStage = (error && typeof error === 'object' && 'failureStage' in error && (error.failureStage === 'post_decision' || error.failureStage === 'pre_commit'))
+        ? /** @type {'pre_commit' | 'post_decision'} */ (error.failureStage)
+        : 'pre_commit'
       if (info.code === 'DURABILITY_UNCONFIRMED') {
         state.materialLifecycle = RESTORE_MATERIAL_LIFECYCLE.UNCONFIRMED
         setPhase('unconfirmed', 90)
@@ -502,8 +509,40 @@ export function createKanataPortableRestoreRuntime({
       state.cleanupError = res.cleaned
         ? ''
         : `临时材料清理暂未完成（${res.cleanupError}），业务数据保持已提交状态，可稍后重试。`
+      state.failureStage = res.cleaned ? (state.failureStage === 'post_finalize_cleanup' ? '' : state.failureStage) : 'post_finalize_cleanup'
     }
     return Boolean(res.cleaned)
+  }
+
+  /**
+   * Recover an interrupted durable restore through the real RestoreCoordinator (never bypassing coordinator).
+   * @param {{ localMasterPassword: string }} params
+   */
+  const recoverInterrupted = async ({ localMasterPassword }) => {
+    if (disposed || state.busy || !coordinator) return null
+    clearErrors()
+    state.busy = true
+    try {
+      const res = await coordinator.recover(localMasterPassword)
+      if (!disposed && res?.recovered && !res.blocked) {
+        pendingStagedDescriptor = null
+        state.materialLifecycle = RESTORE_MATERIAL_LIFECYCLE.FINALIZED
+        state.syncError = res.syncError || ''
+        setPhase('succeeded', 100)
+      }
+      return res
+    } catch (error) {
+      if (!disposed) {
+        const info = describePortableRestoreError(error)
+        state.errorCode = info.code
+        state.errorMessage = info.message
+        state.retryHint = info.retryHint
+        setPhase('failed', 0)
+      }
+      throw error
+    } finally {
+      if (!disposed) state.busy = false
+    }
   }
 
   /** @param {string} taskId */
@@ -586,6 +625,7 @@ export function createKanataPortableRestoreRuntime({
     cancelRestore,
     retrySync,
     retryCleanup,
+    recoverInterrupted,
     reverifyUnconfirmed,
     manualCleanupUnconfirmed,
     dispose,

@@ -17,11 +17,21 @@ const auth = useAuthStore(pinia)
 restoreState.blocked = true
 const probeRecovery = async () => {
   try {
-    let blocked = Boolean(await restoreJournal.inspect())
-    if (!blocked && Capacitor.getPlatform() === 'android' && Capacitor.isPluginAvailable('KanataM6RestoreBridge')) {
+    let blocked = false
+    // R03.7 / H-05: In the isolated candidate build, ALWAYS run the Native read-only 5-path
+    // inventory + authoritative head probe FIRST so legacy `restoreJournal.inspect()` can NEVER
+    // silently delete orphan markers (`restore-v1.commit` / `restore-v1.tmp`) before inspection!
+    if (Capacitor.getPlatform() === 'android' && Capacitor.isPluginAvailable('KanataM6RestoreBridge')) {
       const { probeNativeDurableControlState } = await import('./application/kanataSyntheticRestoreWiring.js')
       const nativeState = await probeNativeDurableControlState()
-      if (nativeState?.blocked) blocked = true
+      if (!nativeState || nativeState.blocked || nativeState.legacyInventory?.clean === false) {
+        blocked = true
+      } else {
+        blocked = false
+      }
+    } else {
+      // Ordinary production APK & Web keep existing legacy RestoreJournal inspection path unchanged.
+      blocked = Boolean(await restoreJournal.inspect())
     }
     restoreState.blocked = blocked
     if (restoreState.blocked) restoreState.message = '检测到未完成的数据恢复，请验证身份后继续。'

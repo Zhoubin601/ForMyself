@@ -96,11 +96,14 @@ public final class KanataDurableTxControl {
     private static final String PAYLOADS_DIR_NAME = "payloads";
     private static final String GENERATIONS_DIR_NAME = "generations";
     private static final String STAGING_REG_DIR_NAME = "staging-reg";
+    private static final String RESERVATIONS_DIR_NAME = "reservations";
+    private static final String VERIFIED_DECISIONS_DIR_NAME = "verified-decisions";
 
     private static final int MAX_CONTROL_FILE_BYTES = 512 * 1024;
     private static final SecureRandom RANDOM = new SecureRandom();
     private static final ConcurrentHashMap<String, ReentrantLock> PROCESS_LOCKS = new ConcurrentHashMap<>();
     private static final byte[] PROCESS_CAPABILITY_SECRET = randomBytes(32);
+    private static volatile File TEST_CONTROL_ROOT_OVERRIDE = null;
 
     private KanataDurableTxControl() {}
 
@@ -766,6 +769,44 @@ public final class KanataDurableTxControl {
         }
     }
 
+    public static final class GenerationReservation {
+        public final String generationId;
+        public final String ownerTaskId;
+        public final String ownerId;
+        public final String reservationToken;
+        public final File generationDir;
+        public final boolean createdDirectory;
+
+        GenerationReservation(
+                String generationId,
+                String ownerTaskId,
+                String ownerId,
+                String reservationToken,
+                File generationDir,
+                boolean createdDirectory) {
+            this.generationId = generationId;
+            this.ownerTaskId = ownerTaskId;
+            this.ownerId = ownerId;
+            this.reservationToken = reservationToken;
+            this.generationDir = generationDir;
+            this.createdDirectory = createdDirectory;
+        }
+    }
+
+    public static void setTestControlRootOverride(File controlRoot) {
+        if (BuildConfig.KANATA_M2_SYNTHETIC) {
+            TEST_CONTROL_ROOT_OVERRIDE = controlRoot;
+        }
+    }
+
+    public static File effectiveControlRoot(Context context) {
+        if (BuildConfig.KANATA_M2_SYNTHETIC) {
+            File ov = TEST_CONTROL_ROOT_OVERRIDE;
+            if (ov != null) return ov;
+        }
+        return defaultControlRoot(context);
+    }
+
     public static File defaultControlRoot(Context context) {
         return new File(context.getNoBackupFilesDir(), CONTROL_ROOT_NAME);
     }
@@ -1232,40 +1273,99 @@ public final class KanataDurableTxControl {
             long nextSeq = cur.sequence + 1L;
             long nowMs = System.currentTimeMillis();
 
-            GenerationRegistration resolvedPrev = previousGen != null ? previousGen : cur.previousGeneration;
-            GenerationRegistration resolvedTarget = abortOnly ? null : (targetGen != null ? targetGen : cur.targetGeneration);
+            GenerationRegistration resolvedPrev;
+            GenerationRegistration resolvedTarget;
             String resolvedActiveGen = activeGenerationId != null ? activeGenerationId : cur.activeGenerationId;
-            String resolvedKind = (kind != null && !kind.isEmpty()) ? kind : cur.kind;
-            String resolvedScope = (scope != null && !scope.isEmpty()) ? scope : cur.scope;
-            List<String> resolvedParticipants = (participants != null && !participants.isEmpty())
-                    ? participants : cur.participants;
-            String resolvedInputDigest = (inputDigest != null && !inputDigest.isEmpty()) ? inputDigest : cur.inputDigest;
-            String resolvedPayloadId = (payloadId != null && !payloadId.isEmpty()) ? payloadId : cur.payloadId;
-
-            // Compute/carry preparedDigest cleanly.
+            String resolvedKind;
+            String resolvedScope;
+            List<String> resolvedParticipants;
+            String resolvedInputDigest;
+            String resolvedPayloadId;
             String resolvedPreparedDigest = cur.preparedDigest;
-            if (STATE_GATE.equals(nextState)) {
-                resolvedPreparedDigest = "";
-            } else if (STATE_PREPARED.equals(nextState)) {
-                // Prepared digest binds txnId, participants, abortOnly, previousGen, targetGen, and inputDigest.
-                JSONObject binding = new JSONObject();
-                binding.put("abortOnly", abortOnly);
-                binding.put("inputDigest", resolvedInputDigest);
-                binding.put("installationId", current.installation.installationId);
-                JSONArray pArr = new JSONArray();
-                for (String p : resolvedParticipants) pArr.put(p);
-                binding.put("participants", pArr);
-                binding.put("previousGeneration", resolvedPrev != null ? resolvedPrev.toJson() : JSONObject.NULL);
-                binding.put("scope", resolvedScope);
-                binding.put("targetGeneration", resolvedTarget != null ? resolvedTarget.toJson() : JSONObject.NULL);
-                binding.put("txnId", nextTxnId);
-                resolvedPreparedDigest = sha256Hex(binding.toString().getBytes(StandardCharsets.UTF_8));
-            } else if (STATE_DECISION.equals(nextState) || STATE_FINALIZED.equals(nextState)) {
+
+            if (STATE_DECISION.equals(nextState) || STATE_FINALIZED.equals(nextState)) {
+                // R03.5: After PREPARED, previous, target, abortOnly, kind, scope, participants, inputDigest,
+                // and payloadId are strictly IMMUTABLE. Reject any caller attempting to substitute fields
+                // while carrying the old preparedDigest!
                 if (expectedPreparedDigest == null || !expectedPreparedDigest.equals(cur.preparedDigest)) {
                     throw new TxControlException("CAS_PREPARED_DIGEST_MISMATCH",
                             "DECISION/FINALIZED requires exact preparedDigest binding");
                 }
+                if (previousGen != null && !sameGenerationRegistration(previousGen, cur.previousGeneration)) {
+                    throw new TxControlException("CAS_PREPARED_BINDING_IMMUTABLE",
+                            "Cannot replace previousGeneration after PREPARED");
+                }
+                if (targetGen != null && !sameGenerationRegistration(targetGen, cur.targetGeneration)) {
+                    throw new TxControlException("CAS_PREPARED_BINDING_IMMUTABLE",
+                            "Cannot replace targetGeneration after PREPARED");
+                }
+                if (abortOnly != cur.abortOnly) {
+                    throw new TxControlException("CAS_PREPARED_BINDING_IMMUTABLE",
+                            "Cannot change abortOnly flag after PREPARED");
+                }
+                if (kind != null && !kind.isEmpty() && !kind.equals(cur.kind)) {
+                    throw new TxControlException("CAS_PREPARED_BINDING_IMMUTABLE",
+                            "Cannot replace kind after PREPARED");
+                }
+                if (scope != null && !scope.isEmpty() && !scope.equals(cur.scope)) {
+                    throw new TxControlException("CAS_PREPARED_BINDING_IMMUTABLE",
+                            "Cannot replace scope after PREPARED");
+                }
+                if (participants != null && !participants.isEmpty() && !participants.equals(cur.participants)) {
+                    throw new TxControlException("CAS_PREPARED_BINDING_IMMUTABLE",
+                            "Cannot replace participants after PREPARED");
+                }
+                if (inputDigest != null && !inputDigest.isEmpty() && !inputDigest.equals(cur.inputDigest)) {
+                    throw new TxControlException("CAS_PREPARED_BINDING_IMMUTABLE",
+                            "Cannot replace inputDigest after PREPARED");
+                }
+                if (payloadId != null && !payloadId.isEmpty() && !payloadId.equals(cur.payloadId)) {
+                    throw new TxControlException("CAS_PREPARED_BINDING_IMMUTABLE",
+                            "Cannot replace payloadId after PREPARED");
+                }
+                String recomputed = computePreparedDigest(
+                        current.installation.installationId,
+                        cur.txnId,
+                        cur.abortOnly,
+                        cur.inputDigest,
+                        cur.scope,
+                        cur.participants,
+                        cur.previousGeneration,
+                        cur.targetGeneration);
+                if (!recomputed.equals(cur.preparedDigest)) {
+                    throw new TxControlException("CAS_PREPARED_DIGEST_MISMATCH",
+                            "Stored preparedDigest does not match frozen PREPARED bindings");
+                }
+                resolvedPrev = cur.previousGeneration;
+                resolvedTarget = cur.targetGeneration;
+                resolvedKind = cur.kind;
+                resolvedScope = cur.scope;
+                resolvedParticipants = cur.participants;
+                resolvedInputDigest = cur.inputDigest;
+                resolvedPayloadId = cur.payloadId;
                 resolvedPreparedDigest = cur.preparedDigest;
+            } else {
+                resolvedPrev = previousGen != null ? previousGen : cur.previousGeneration;
+                resolvedTarget = abortOnly ? null : (targetGen != null ? targetGen : cur.targetGeneration);
+                resolvedKind = (kind != null && !kind.isEmpty()) ? kind : cur.kind;
+                resolvedScope = (scope != null && !scope.isEmpty()) ? scope : cur.scope;
+                resolvedParticipants = (participants != null && !participants.isEmpty())
+                        ? participants : cur.participants;
+                resolvedInputDigest = (inputDigest != null && !inputDigest.isEmpty()) ? inputDigest : cur.inputDigest;
+                resolvedPayloadId = (payloadId != null && !payloadId.isEmpty()) ? payloadId : cur.payloadId;
+                if (STATE_GATE.equals(nextState)) {
+                    resolvedPreparedDigest = "";
+                } else if (STATE_PREPARED.equals(nextState)) {
+                    resolvedPreparedDigest = computePreparedDigest(
+                            current.installation.installationId,
+                            nextTxnId,
+                            abortOnly,
+                            resolvedInputDigest,
+                            resolvedScope,
+                            resolvedParticipants,
+                            resolvedPrev,
+                            resolvedTarget);
+                }
             }
 
             // On DECISION(dir), verify selected generation directory materials exist on disk before head switch.
@@ -1474,6 +1574,7 @@ public final class KanataDurableTxControl {
                 throw new TxControlException("RECOVERY_CAPABILITY_NO_ACTIVE_TX",
                         "Cannot issue recovery capability when transaction is already FINALIZED");
             }
+            validateCapabilityStateForOperation(cur.state, operation);
             String tokenId = "cap-" + randomHex16();
             long nowElapsed = SystemClock.elapsedRealtime();
             long boundedTtl = Math.max(1000L, Math.min(ttlMs > 0 ? ttlMs : DEFAULT_CAPABILITY_TTL_MS, 300_000L));
@@ -1522,6 +1623,7 @@ public final class KanataDurableTxControl {
             throw new TxControlException("RECOVERY_CAPABILITY_TX_FINALIZED",
                     "Transaction already finalized");
         }
+        validateCapabilityStateForOperation(cur.state, requiredOperation);
         if (STATE_DECISION.equals(cur.state) && !cap.generationId.isEmpty()) {
             GenerationRegistration expected = DIR_TARGET.equals(cur.decisionDirection)
                     ? cur.targetGeneration : cur.previousGeneration;
@@ -1627,10 +1729,338 @@ public final class KanataDurableTxControl {
         }
     }
 
+    private static void validateCapabilityStateForOperation(String state, String operation) throws TxControlException {
+        if (OP_COMMIT_DECISION.equals(operation)) {
+            if (!STATE_PREPARED.equals(state)) {
+                throw new TxControlException("RECOVERY_CAPABILITY_STATE_INVALID",
+                        "COMMIT_DECISION is only permitted in PREPARED state, current=" + state);
+            }
+            return;
+        }
+        if (OP_APPLY_GENERATION.equals(operation) || OP_FINALIZE.equals(operation)) {
+            if (!STATE_DECISION.equals(state)) {
+                throw new TxControlException("RECOVERY_CAPABILITY_STATE_INVALID",
+                        operation + " is only permitted in DECISION state, current=" + state);
+            }
+        }
+    }
+
+    private static String computePreparedDigest(
+            String installationId,
+            String txnId,
+            boolean abortOnly,
+            String inputDigest,
+            String scope,
+            List<String> participants,
+            GenerationRegistration prev,
+            GenerationRegistration target) throws Exception {
+        JSONObject binding = new JSONObject();
+        binding.put("abortOnly", abortOnly);
+        binding.put("inputDigest", inputDigest == null ? "" : inputDigest);
+        binding.put("installationId", installationId == null ? "" : installationId);
+        JSONArray pArr = new JSONArray();
+        if (participants != null) {
+            for (String p : participants) pArr.put(p);
+        }
+        binding.put("participants", pArr);
+        binding.put("previousGeneration", prev != null ? prev.toJson() : JSONObject.NULL);
+        binding.put("scope", scope == null ? "" : scope);
+        binding.put("targetGeneration", target != null ? target.toJson() : JSONObject.NULL);
+        binding.put("txnId", txnId == null ? "" : txnId);
+        return sha256Hex(binding.toString().getBytes(StandardCharsets.UTF_8));
+    }
+
+    private static boolean sameGenerationRegistration(GenerationRegistration a, GenerationRegistration b) {
+        if (a == b) return true;
+        if (a == null || b == null) return false;
+        try {
+            return a.toJson().toString().equals(b.toJson().toString());
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private static boolean isGenerationReferencedByHeadLocked(ControlRecord cur, String generationId) {
+        if (cur == null || generationId == null || generationId.isEmpty()) return false;
+        if (generationId.equals(cur.activeGenerationId)) return true;
+        boolean inFlight = !STATE_FINALIZED.equals(cur.state);
+        if (inFlight) {
+            if (cur.previousGeneration != null && generationId.equals(cur.previousGeneration.generationId)) return true;
+            if (cur.targetGeneration != null && generationId.equals(cur.targetGeneration.generationId)) return true;
+        }
+        return false;
+    }
+
+    /**
+     * R01.4 & R01.5: Persist an HMAC-authenticated verification receipt proving the decided generation
+     * passed SQLCipher open/unwrap/integrity checks in DECISION state before FINALIZED is permitted.
+     */
+    public static void recordDecisionGenerationVerified(
+            Context context,
+            File controlRoot,
+            ControlRecord decisionRecord,
+            GenerationRegistration verifiedGen,
+            KeyBackend keyBackend) throws TxControlException {
+        if (decisionRecord == null || !STATE_DECISION.equals(decisionRecord.state)) {
+            throw new TxControlException("RECOVERY_CAPABILITY_STATE_INVALID",
+                    "Decision verification receipt requires STATE_DECISION");
+        }
+        KeyBackend kb = keyBackend != null ? keyBackend : AndroidKeyStoreBackend.INSTANCE;
+        try (StableControlLock ignored = acquireControlLock(controlRoot)) {
+            AuthoritativeState st = probeLocked(context, controlRoot, kb, FaultInjector.NONE);
+            if (!st.initialized || st.installation == null || st.headRecord == null) {
+                throw new TxControlException("TX_CONTROL_CORRUPT", "Control root unreadable during verification receipt");
+            }
+            ControlRecord cur = st.headRecord;
+            if (!STATE_DECISION.equals(cur.state)
+                    || !cur.txnId.equals(decisionRecord.txnId)
+                    || !cur.preparedDigest.equals(decisionRecord.preparedDigest)
+                    || !cur.decisionDirection.equals(decisionRecord.decisionDirection)) {
+                throw new TxControlException("CAS_STATE_DRIFT",
+                        "Head changed before verification receipt could be persisted");
+            }
+            GenerationRegistration chosen = DIR_TARGET.equals(cur.decisionDirection)
+                    ? cur.targetGeneration : cur.previousGeneration;
+            if (chosen != null && !chosen.absent) {
+                if (verifiedGen == null || !chosen.generationId.equals(verifiedGen.generationId)) {
+                    throw new TxControlException("GENERATION_VERIFY_MISMATCH",
+                            "Verified generation does not match authoritative decided generation");
+                }
+                verifyGenerationMaterialsOnDisk(controlRoot, chosen);
+            }
+            JSONObject canonical = new JSONObject();
+            canonical.put("decisionDirection", cur.decisionDirection);
+            canonical.put("dbSha256Hex", chosen != null ? chosen.dbSha256Hex : "");
+            canonical.put("envelopeSha256Hex", chosen != null ? chosen.envelopeSha256Hex : "");
+            canonical.put("generationId", chosen != null ? chosen.generationId : "");
+            canonical.put("installationId", st.installation.installationId);
+            canonical.put("preparedDigest", cur.preparedDigest);
+            canonical.put("txnId", cur.txnId);
+            canonical.put("verifiedAtMs", System.currentTimeMillis());
+            byte[] env = buildAuthenticatedEnvelope(
+                    kb, FaultInjector.NONE, st.installation.hmacKeyAlias, st.installation.installationId,
+                    "verified-decision", canonical);
+            File dir = new File(controlRoot, VERIFIED_DECISIONS_DIR_NAME);
+            ensureDirectoryWithParentSync(dir, FaultInjector.NONE);
+            writeAtomicDurableVerified(
+                    new File(dir, cur.preparedDigest + ".json"),
+                    env, "verified-decision", FaultInjector.NONE);
+        } catch (TxControlException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new TxControlException("DECISION_VERIFY_RECEIPT_FAILED", "Failed to persist verification receipt", e);
+        }
+    }
+
+    /**
+     * R01.5: Assert an HMAC-authenticated verification receipt exists for the current DECISION record
+     * matching (installationId, txnId, preparedDigest, decisionDirection, generationId, dbSha256, envelopeSha256)
+     * BEFORE allowing transition to FINALIZED.
+     */
+    public static void assertDecisionGenerationVerified(
+            Context context,
+            File controlRoot,
+            ControlRecord decisionRecord,
+            KeyBackend keyBackend) throws TxControlException {
+        if (decisionRecord == null || !STATE_DECISION.equals(decisionRecord.state)) {
+            throw new TxControlException("RECOVERY_CAPABILITY_STATE_INVALID",
+                    "FINALIZED requires STATE_DECISION");
+        }
+        GenerationRegistration chosen = DIR_TARGET.equals(decisionRecord.decisionDirection)
+                ? decisionRecord.targetGeneration : decisionRecord.previousGeneration;
+        if (chosen == null || chosen.absent) {
+            return; // Absent previous generation has no DB/envelope to verify.
+        }
+        KeyBackend kb = keyBackend != null ? keyBackend : AndroidKeyStoreBackend.INSTANCE;
+        try (StableControlLock ignored = acquireControlLock(controlRoot)) {
+            AuthoritativeState st = probeLocked(context, controlRoot, kb, FaultInjector.NONE);
+            if (!st.initialized || st.installation == null || st.headRecord == null) {
+                throw new TxControlException("TX_CONTROL_CORRUPT", "Control root unreadable during finalize check");
+            }
+            File receiptFile = new File(new File(controlRoot, VERIFIED_DECISIONS_DIR_NAME),
+                    decisionRecord.preparedDigest + ".json");
+            if (!fileExists(receiptFile)) {
+                throw new TxControlException("FINALIZE_UNVERIFIED_GENERATION",
+                        "Selected generation " + chosen.generationId + " has not been verified under DECISION");
+            }
+            JSONObject canonical = readAndVerifyAuthenticatedEnvelope(
+                    receiptFile, kb, FaultInjector.NONE,
+                    st.installation.hmacKeyAlias, st.installation.installationId, "verified-decision");
+            if (!st.installation.installationId.equals(canonical.optString("installationId", ""))
+                    || !decisionRecord.txnId.equals(canonical.optString("txnId", ""))
+                    || !decisionRecord.preparedDigest.equals(canonical.optString("preparedDigest", ""))
+                    || !decisionRecord.decisionDirection.equals(canonical.optString("decisionDirection", ""))
+                    || !chosen.generationId.equals(canonical.optString("generationId", ""))
+                    || !chosen.dbSha256Hex.equals(canonical.optString("dbSha256Hex", ""))
+                    || !chosen.envelopeSha256Hex.equals(canonical.optString("envelopeSha256Hex", ""))) {
+                throw new TxControlException("FINALIZE_UNVERIFIED_GENERATION",
+                        "Verification receipt binding mismatch for generation " + chosen.generationId);
+            }
+        } catch (TxControlException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new TxControlException("FINALIZE_UNVERIFIED_GENERATION",
+                    "Unable to authenticate decision verification receipt", e);
+        }
+    }
+
+    /**
+     * R02.1 & R02.2: Atomically reserve a unique generationId BEFORE creating envelope.json,
+     * kanata.db, or staging work directories.
+     * Rejects active/referenced IDs, existing directories, and IDs currently held by another task.
+     */
+    public static GenerationReservation reserveGenerationExclusive(
+            Context context,
+            File controlRoot,
+            String generationId,
+            String ownerTaskId,
+            String ownerId,
+            KeyBackend keyBackend) throws TxControlException {
+        validateSafeId(generationId, "INVALID_GENERATION_ID");
+        validateSafeId(ownerTaskId, "INVALID_TASK_ID");
+        KeyBackend kb = keyBackend != null ? keyBackend : AndroidKeyStoreBackend.INSTANCE;
+        try (StableControlLock ignored = acquireControlLock(controlRoot)) {
+            AuthoritativeState st = probeLocked(context, controlRoot, kb, FaultInjector.NONE);
+            if (st.initialized && st.headRecord != null) {
+                ControlRecord cur = st.headRecord;
+                if (generationId.equals(cur.activeGenerationId)
+                        || (cur.previousGeneration != null && generationId.equals(cur.previousGeneration.generationId))
+                        || (cur.targetGeneration != null && generationId.equals(cur.targetGeneration.generationId))) {
+                    throw new TxControlException("GENERATION_ID_CONFLICT",
+                            "Generation ID already referenced by authoritative head: " + generationId);
+                }
+            }
+            File gensRoot = new File(controlRoot, GENERATIONS_DIR_NAME);
+            ensureDirectoryWithParentSync(gensRoot, FaultInjector.NONE);
+            File resRoot = new File(controlRoot, RESERVATIONS_DIR_NAME);
+            ensureDirectoryWithParentSync(resRoot, FaultInjector.NONE);
+
+            File genDir = generationDir(controlRoot, generationId);
+            if (lstatMode(genDir) != 0) {
+                throw new TxControlException("GENERATION_ALREADY_EXISTS",
+                        "Generation directory already exists: " + generationId);
+            }
+            File resFile = new File(resRoot, generationId + ".res.json");
+            if (lstatMode(resFile) != 0) {
+                throw new TxControlException("GENERATION_ID_IN_USE",
+                        "Generation ID is already reserved by another task: " + generationId);
+            }
+            String token = "res-" + randomHex16();
+            JSONObject meta = new JSONObject();
+            meta.put("createdAtMs", System.currentTimeMillis());
+            meta.put("generationId", generationId);
+            meta.put("ownerId", ownerId == null ? "" : ownerId);
+            meta.put("ownerTaskId", ownerTaskId);
+            meta.put("reservationToken", token);
+            byte[] metaBytes = meta.toString().getBytes(StandardCharsets.UTF_8);
+
+            // Atomic exclusive file creation (O_CREAT | O_EXCL) + fsync + parent dir fsync
+            FileDescriptor fd = null;
+            try {
+                fd = Os.open(resFile.getPath(),
+                        OsConstants.O_CREAT | OsConstants.O_EXCL | OsConstants.O_WRONLY, 0600);
+                try (FileOutputStream fos = new FileOutputStream(fd)) {
+                    fos.write(metaBytes);
+                    fos.flush();
+                    fos.getFD().sync();
+                }
+                fd = null;
+            } catch (ErrnoException e) {
+                if (e.errno == OsConstants.EEXIST) {
+                    throw new TxControlException("GENERATION_ID_IN_USE",
+                            "Generation reservation race lost for " + generationId, e);
+                }
+                throw e;
+            } finally {
+                if (fd != null) {
+                    try { Os.close(fd); } catch (Exception ignoredClose) {}
+                }
+            }
+            fsyncDirectoryStrict(resRoot);
+
+            try {
+                Os.mkdir(genDir.getPath(), 0700);
+                fsyncDirectoryStrict(gensRoot);
+            } catch (ErrnoException e) {
+                resFile.delete();
+                fsyncDirectoryStrict(resRoot);
+                if (e.errno == OsConstants.EEXIST) {
+                    throw new TxControlException("GENERATION_ALREADY_EXISTS",
+                            "Generation directory created concurrently: " + generationId, e);
+                }
+                throw e;
+            }
+            return new GenerationReservation(generationId, ownerTaskId, ownerId == null ? "" : ownerId,
+                    token, genDir, true);
+        } catch (TxControlException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new TxControlException("GENERATION_RESERVE_FAILED",
+                    "Failed to reserve generation " + generationId, e);
+        }
+    }
+
+    /**
+     * R02.3 & R02.4: Release an owned generation reservation under control.lock.
+     * When `cleanupOwnedDirectory == true`, deletes ONLY the directory created by THIS reservation
+     * AFTER proving ownership token match AND proving the generation is NOT referenced by authoritative head.
+     */
+    public static boolean releaseGenerationReservation(
+            Context context,
+            File controlRoot,
+            GenerationReservation reservation,
+            boolean cleanupOwnedDirectory,
+            String stagingHandleToRemove,
+            KeyBackend keyBackend) throws TxControlException {
+        if (reservation == null || !reservation.createdDirectory) return false;
+        validateSafeId(reservation.generationId, "INVALID_GENERATION_ID");
+        KeyBackend kb = keyBackend != null ? keyBackend : AndroidKeyStoreBackend.INSTANCE;
+        try (StableControlLock ignored = acquireControlLock(controlRoot)) {
+            File resRoot = new File(controlRoot, RESERVATIONS_DIR_NAME);
+            File resFile = new File(resRoot, reservation.generationId + ".res.json");
+            if (!fileExists(resFile)) {
+                return false;
+            }
+            byte[] raw = readBoundedFile(resFile, MAX_CONTROL_FILE_BYTES);
+            JSONObject meta = new JSONObject(new String(raw, StandardCharsets.UTF_8));
+            if (!reservation.reservationToken.equals(meta.optString("reservationToken", ""))
+                    || !reservation.ownerTaskId.equals(meta.optString("ownerTaskId", ""))) {
+                throw new TxControlException("GENERATION_OWNERSHIP_MISMATCH",
+                        "Reservation token mismatch for " + reservation.generationId);
+            }
+
+            boolean removed = false;
+            if (cleanupOwnedDirectory) {
+                AuthoritativeState st = probeLocked(context, controlRoot, kb, FaultInjector.NONE);
+                if (st.initialized && st.headRecord != null
+                        && isGenerationReferencedByHeadLocked(st.headRecord, reservation.generationId)) {
+                    throw new TxControlException("MATERIAL_REFERENCED_BY_TX",
+                            "Refusing to delete generation referenced by authoritative head: " + reservation.generationId);
+                }
+                File dir = generationDir(controlRoot, reservation.generationId);
+                removed = deleteDirectoryContentsStrict(dir);
+                if (stagingHandleToRemove != null && !stagingHandleToRemove.isEmpty()) {
+                    validateSafeId(stagingHandleToRemove, "INVALID_STAGING_HANDLE");
+                    File regFile = new File(new File(controlRoot, STAGING_REG_DIR_NAME), stagingHandleToRemove + ".json");
+                    if (regFile.exists()) regFile.delete();
+                }
+                fsyncDirectoryStrict(new File(controlRoot, GENERATIONS_DIR_NAME));
+            }
+            resFile.delete();
+            fsyncDirectoryStrict(resRoot);
+            return removed;
+        } catch (TxControlException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new TxControlException("GENERATION_RELEASE_FAILED",
+                    "Failed to release reservation for " + reservation.generationId, e);
+        }
+    }
+
     /**
      * Garbage-collect an unregistered staging generation or unreferenced retired generation.
-     * STRICT F04 RULE: Refuses to delete any generation referenced by the active headRecord
-     * (activeGenerationId, previousGeneration, or targetGeneration when not FINALIZED).
+     * STRICT F04 / R02.4 RULE: Refuses to delete any generation referenced by the active headRecord
+     * OR currently held by an active exclusive reservation.
      */
     public static boolean destroyUnreferencedGeneration(
             Context context,
@@ -1646,20 +2076,14 @@ public final class KanataDurableTxControl {
                 throw new TxControlException("TX_CONTROL_CORRUPT", "Cannot GC while control root is corrupt");
             }
             ControlRecord cur = st.headRecord;
-            if (generationId.equals(cur.activeGenerationId)) {
+            if (isGenerationReferencedByHeadLocked(cur, generationId)) {
                 throw new TxControlException("MATERIAL_REFERENCED_BY_TX",
-                        "Refusing to delete active generation: " + generationId);
+                        "Refusing to delete generation referenced by head: " + generationId);
             }
-            boolean inFlight = !STATE_FINALIZED.equals(cur.state);
-            if (inFlight) {
-                if (cur.previousGeneration != null && generationId.equals(cur.previousGeneration.generationId)) {
-                    throw new TxControlException("MATERIAL_REFERENCED_BY_TX",
-                            "Refusing to delete previous generation referenced by in-flight tx: " + generationId);
-                }
-                if (cur.targetGeneration != null && generationId.equals(cur.targetGeneration.generationId)) {
-                    throw new TxControlException("MATERIAL_REFERENCED_BY_TX",
-                            "Refusing to delete target generation referenced by in-flight tx: " + generationId);
-                }
+            File resFile = new File(new File(controlRoot, RESERVATIONS_DIR_NAME), generationId + ".res.json");
+            if (lstatMode(resFile) != 0) {
+                throw new TxControlException("GENERATION_ID_IN_USE",
+                        "Refusing to delete generation currently reserved by an active staging task: " + generationId);
             }
             File dir = generationDir(controlRoot, generationId);
             boolean removed = deleteDirectoryContentsStrict(dir);

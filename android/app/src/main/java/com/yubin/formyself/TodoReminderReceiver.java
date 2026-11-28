@@ -89,6 +89,15 @@ public class TodoReminderReceiver extends BroadcastReceiver {
         PendingResult result = goAsync();
         new Thread(() -> {
             try {
+                // R03.3: Background broadcast receiver obeys the persistent restore writer fence.
+                try {
+                    KanataDurableTxControl.assertOrdinaryWriteAllowed(
+                            c, KanataDurableTxControl.effectiveControlRoot(c),
+                            KanataDurableTxControl.AndroidKeyStoreBackend.INSTANCE,
+                            KanataDurableTxControl.FaultInjector.NONE);
+                } catch (KanataDurableTxControl.TxControlException fenced) {
+                    return;
+                }
                 String id=intent.getStringExtra("taskId"),date=intent.getStringExtra("date");
                 if(id!=null && date!=null) {
                     for(JSONObject item:TodoRepository.day(TodoRepository.read(c),date)) {

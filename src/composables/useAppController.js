@@ -540,26 +540,32 @@ export function useAppController() {
   const retryFullRecovery = async () => {
     if (restoreState.busy) return
     try {
-      // G-04 / B-01: When the Native durable transaction control root holds an active/pending
+      // R01 / G-04 / B-01: When the Native durable transaction control root holds an active/pending
       // transaction in the isolated synthetic candidate build, authenticate directly via local
-      // password WITHOUT loading potentially damaged Vault, legacy Kanata, or Settings readiness.
+      // password WITHOUT loading potentially damaged Vault, legacy Kanata, or Settings readiness,
+      // and execute recovery through the single RestoreCoordinator (`resolveRecovery -> apply -> FINALIZED`).
       if (Capacitor.getPlatform() === 'android' && Capacitor.isPluginAvailable('KanataM6RestoreBridge')) {
-        const { probeNativeDurableControlState, recoverNativeDurableControlState } =
-          await import('../application/kanataSyntheticRestoreWiring.js')
+        const {
+          probeNativeDurableControlState,
+          createSyntheticPortableRestoreCoordinator,
+        } = await import('../application/kanataSyntheticRestoreWiring.js')
         const nativeState = await probeNativeDurableControlState()
         if (nativeState?.blocked) {
           if (!await protectedAccess.authenticate()) return
-          restoreState.busy = true
-          try {
-            const recovered = await recoverNativeDurableControlState(authStore.savedMasterPwd)
+          const portableCoordinator = createSyntheticPortableRestoreCoordinator({
+            state: restoreState,
+            getOwnerIdentity: () => ({
+              ownerId: 'app-cold-start-recovery',
+              sessionRevision: authStore.sessionRevision,
+              epoch: protectedAccess.revision,
+            }),
+          })
+          if (portableCoordinator) {
+            const recovered = await portableCoordinator.recover(authStore.savedMasterPwd)
             if (recovered?.recovered === true && recovered?.blocked === false) {
-              restoreState.blocked = false
-              restoreState.message = ''
               appToast('已完成持久恢复并解除写入保护', { tone: 'success' })
               return
             }
-          } finally {
-            restoreState.busy = false
           }
         }
       }
