@@ -5,8 +5,8 @@
 - **仓库 / 分支**：`Zhoubin601/ForMyself` / `m6/encrypted-backup-recovery`
 - **工作树**：`.worktrees/kanata-m5`
 - **整改基线 SHA**：`4f46251235bb998464c4ae3653175d3f4c734269`（上一轮全绿 CI Run `45957580830`，实现提交 `d127a63c791f766ea53167becbadca4aa1ec72a2`）
-- **最终代码 SHA**：待远端 CI 验证后回填
-- **远端 `Quality` CI Run ID**：待远端 CI 验证后回填（4/4 Jobs）
+- **最终代码 SHA**：`6ccef4df2ccaea9d2af4aae745d93f05572297a4`
+- **远端 `Quality` CI Run ID**：`46119267461`（**4/4 Jobs `success`**，https://github.com/Zhoubin601/ForMyself/actions/runs/46119267461）
 - **当前状态**：`PASS`（等待网页版 GPT-6.2 独立审计与最终签核；**未自宣 `CLOSED`**，未进入 M6-04，未发布 APK，未合并至 `Kanata`/`main`）
 
 ---
@@ -152,4 +152,22 @@
 
 ## 八、远端 GitHub Actions `Quality` CI 验证记录
 
-> 待提交并 fast-forward 推送至 `origin/m6/encrypted-backup-recovery` 后，回填最终代码 SHA、Run ID、4/4 Job 结果及 Artifact ID。
+- **验证代码提交 SHA**：`6ccef4df2ccaea9d2af4aae745d93f05572297a4`
+- **工作流**：`Quality`
+- **Run ID**：`46119267461`（结论：**`success` — 4/4 Jobs 全绿**）
+- **Run URL**：https://github.com/Zhoubin601/ForMyself/actions/runs/46119267461
+
+| Job 名称 | Job ID | 耗时 | 结论 | 链接 |
+| --- | --- | --- | --- | --- |
+| `web` | `140899929966` | 124s | **success** | https://github.com/Zhoubin601/ForMyself/actions/runs/46119267461/job/140899929966 |
+| `android` | `140899930158` | 308s | **success** | https://github.com/Zhoubin601/ForMyself/actions/runs/46119267461/job/140899930158 |
+| `m6-synthetic-android (33)` | `140899930262` | 1253s | **success** | https://github.com/Zhoubin601/ForMyself/actions/runs/46119267461/job/140899930262 |
+| `m6-synthetic-android (34)` | `140899930211` | 1615s | **success** | https://github.com/Zhoubin601/ForMyself/actions/runs/46119267461/job/140899930211 |
+
+**CI 产物（Artifacts）**：
+
+| Artifact 名称 | Artifact ID | 大小 |
+| --- | --- | --- |
+| `android-test-reports` | `15253310544` | 15,286,747 B |
+| `m6-synthetic-api33-reports` | `15253837003` | 1,332,202 B |
+| `m6-synthetic-api34-reports` | `15253244543` | 1,324,836 B |
